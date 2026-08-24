@@ -1,0 +1,26 @@
+# Secrets — never commit these
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*credentials*.json
+*service-account*.json
+*serviceaccount*.json
+secrets/
+.secrets/
+
+# Dependencies / build output
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# Vercel
+.vercel
+
+# OS / editor
+.DS_Store
