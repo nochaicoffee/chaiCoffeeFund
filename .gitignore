@@ -24,3 +24,12 @@ next-env.d.ts
 
 # OS / editor
 .DS_Store
+
+# Statement-ingestion pipeline: run logs and the local processed-message-id cache
+/logs/
+/state/
+
+# PDFs: real bank/card statements and design exports carry personal financial data.
+# Only synthetic test fixtures are committed.
+*.pdf
+!src/lib/pdf/__fixtures__/*.pdf

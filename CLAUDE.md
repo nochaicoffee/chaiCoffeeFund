@@ -32,7 +32,7 @@ Create `.env.local` yourself (gitignored, and blocked from tool writes by permis
 
 # Code Maintainability & Architecture
 
-The full system design — domain model, architecture decisions, and a running log of real fixes as they're found — lives at `/Users/prathik/.claude/plans/i-want-us-to-spicy-garden.md`. **Read it before making structural changes, and add to it when you find or fix something non-obvious** — it's a living document, not a historical record of the original design.
+The full system design — domain model, architecture decisions, and a running log of real fixes as they're found — lives at [`docs/system-design.md`](docs/system-design.md), inside the repo. It used to live at `~/.claude/plans/`, outside the repo, and was lost when that folder was deleted. Never keep project docs outside the repo again. **Read it before making structural changes, and add to it when you find or fix something non-obvious** — it's a living document, not a historical record of the original design.
 
 ## Adding a new entity (new financial data type)
 
@@ -59,6 +59,14 @@ Tab names and column order in the real Sheet are ground truth, not what was disc
 ## Don't drive Google Sheets' UI via browser automation
 
 Low-level browser automation (click + type synthetic events) against the Sheets grid is unreliable — cells don't clear/type correctly, characters land in the wrong place. Don't attempt it for adding rows/headers/data. Either ask the user to make the change in Sheets directly, or make it through the Sheets API (`googleapis`) via the app's own code.
+
+# Design Artifacts
+
+UI/UX design work (Claude Design canvases — `.dc.html` artboards plus `canvas.json`) must be built as **working files inside this repo**, never left only in a session's scratchpad/temp directory. Scratchpad dirs get swept by the OS with no warning — a full week of dashboard-design mockups was lost that way once already.
+
+- Source of truth: `design/<canvas-name>/*.dc.html` and `design/<canvas-name>/canvas.json` — one directory per distinct canvas or exploration (e.g. `design/dashboards/AccountsList.dc.html`). These are real project files: track and commit them with `jj` like anything else, once a design session's changes are ready.
+- The Claude Design skill's seeded/published output — the large single-file HTML with the editor payload baked in — is a *build artifact*, not source. Regenerate it on demand from the `.dc.html`/`canvas.json` files with the skill's `seed-canvas.mjs` helper; write that generated file to the scratchpad (not into `design/`) and hand it to the user directly rather than committing it.
+- If publishing to a Claude Artifact URL is ever blocked, unreliable, or the artifact gets overwritten by something unrelated, the repo copy of the `.dc.html`/`canvas.json` files is the durable source of truth — re-seed from there and hand over the output file again, rather than depending on the hosted artifact to survive.
 
 <!-- BEGIN:nextjs-agent-rules -->
 
