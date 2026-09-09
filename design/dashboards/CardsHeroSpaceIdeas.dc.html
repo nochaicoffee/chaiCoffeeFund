@@ -1,0 +1,1656 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+
+    .chai-app {
+      --bg-solid: oklch(0.965 0.004 90);
+      --card-bg: oklch(0.995 0 0);
+      --card-border: oklch(0 0 0 / 0.07);
+      --fg: oklch(0.19 0.008 260);
+      --muted: oklch(0.52 0.012 260);
+      --neutral-fill: oklch(0 0 0 / 0.055);
+      --neutral-fill-2: oklch(0 0 0 / 0.09);
+      --divider: oklch(0 0 0 / 0.08);
+      --shadow-card: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+      --accent: oklch(0.72 0.19 145);
+      --accent-tint: oklch(0.93 0.06 145);
+      --on-accent: oklch(0.99 0 0);
+      --ink: oklch(0.16 0.008 260);
+      --on-ink: oklch(0.99 0 0);
+    }
+
+    .glass-strong { background: var(--card-bg); border: 1px solid var(--card-border); box-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05); }
+    .card-label { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .option-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: var(--fg); }
+    .option-badge .n { width: 22px; height: 22px; border-radius: 50%; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; font-size: 11px; }
+  </style>
+</helmet>
+<div class="chai-app" style="position: relative; width: 1700px; height: 9020px; font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; background: var(--bg-solid); color: var(--fg); padding: 32px; display: flex; flex-direction: column; gap: 40px;">
+
+  <!-- ============ OPTION A ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">A</span>2&times;2 widget grid beside the hero</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">The 4 existing widgets shrink into a compact grid that fills the space — no separate widget row below.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 16px;">
+
+        <div class="glass-strong" style="border-radius: 20px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+          <div class="card-label" style="font-size: 12px; color: var(--fg); font-weight: 700;">Spend range</div>
+          <div style="display: flex; align-items: center; gap: 16px; flex: 1;">
+            <svg width="72" height="72" viewBox="0 0 80 80" style="flex-shrink: 0;">
+              <circle cx="40" cy="40" r="32" fill="none" stroke="var(--neutral-fill)" stroke-width="8"></circle>
+              <circle cx="40" cy="40" r="32" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="26 175" transform="rotate(-90 40 40)"></circle>
+              <text x="40" y="45" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="16" font-weight="800" fill="var(--fg)">13%</text>
+            </svg>
+            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px;">
+              <div><span style="color: var(--muted);">Highest &middot; </span><b>₹57,300</b> <span style="color: var(--muted);">Jul</span></div>
+              <div><span style="color: var(--muted);">Lowest &middot; </span><b>₹40,400</b> <span style="color: var(--muted);">May</span></div>
+              <div><span style="color: var(--muted);">Avg &middot; </span><b>₹47,940</b></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-strong" style="border-radius: 20px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px;">
+          <div class="card-label" style="font-size: 12px; color: var(--fg); font-weight: 700;">Payment due</div>
+          <div style="position: relative; flex: 1; display: flex; flex-direction: column; justify-content: center;">
+            <div style="position: relative; height: 2px; background: var(--divider); margin: 0 6px;">
+              <div style="position: absolute; left: 0; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--muted);"></div>
+              <div style="position: absolute; left: 42%; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent);"></div>
+              <div style="position: absolute; left: 58%; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent);"></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-top: 8px; font-size: 10px; color: var(--muted);">
+              <span>Today</span><span>+30d</span>
+            </div>
+            <div style="font-size: 11px; margin-top: 6px;"><b>Amazon Pay</b> <span style="color: var(--muted);">Aug 23</span> &middot; <b>Regalia Gold</b> <span style="color: var(--muted);">Aug 25</span></div>
+          </div>
+        </div>
+
+        <div class="glass-strong" style="border-radius: 20px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="card-label" style="font-size: 12px; color: var(--fg); font-weight: 700;">Month-over-month</div>
+          <div style="display: flex; align-items: baseline; gap: 6px;">
+            <span style="font-size: 20px; font-weight: 800;">&minus;₹6,400</span>
+            <span style="font-size: 11px; color: var(--muted);">&minus;11%</span>
+          </div>
+          <div style="display: flex; align-items: flex-end; gap: 4px; flex: 1;">
+            <div style="width: 10px; height: 40%; border-radius: 3px; background: var(--neutral-fill-2);"></div>
+            <div style="width: 10px; height: 55%; border-radius: 3px; background: var(--neutral-fill-2);"></div>
+            <div style="width: 10px; height: 48%; border-radius: 3px; background: var(--neutral-fill-2);"></div>
+            <div style="width: 10px; height: 65%; border-radius: 3px; background: var(--neutral-fill-2);"></div>
+            <div style="width: 10px; height: 100%; border-radius: 3px; background: var(--accent);"></div>
+            <div style="width: 10px; height: 88%; border-radius: 3px; background: var(--accent); opacity: 0.85;"></div>
+          </div>
+        </div>
+
+        <div class="glass-strong" style="border-radius: 20px; padding: 18px 20px; display: flex; align-items: center; gap: 16px;">
+          <svg width="72" height="72" viewBox="0 0 100 100" style="flex-shrink: 0;">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="var(--neutral-fill)" stroke-width="7"></circle>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="32.6 219.7" transform="rotate(-90 50 50)"></circle>
+            <circle cx="50" cy="50" r="30" fill="none" stroke="var(--neutral-fill)" stroke-width="7"></circle>
+            <circle cx="50" cy="50" r="30" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linecap="round" stroke-dasharray="188.5 0" opacity="0.75" transform="rotate(-90 50 50)"></circle>
+          </svg>
+          <div style="font-size: 11px; line-height: 1.7;">
+            <div class="card-label" style="font-size: 12px; color: var(--fg); font-weight: 700; margin-bottom: 4px;">Activity</div>
+            <div>&#9679; Utilization 13%</div>
+            <div style="opacity: 0.75;">&#9679; Cards active 3/3</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ OPTION B ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">B</span>Two combined widgets beside the hero</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">Spend range + Month-over-month merge into one "Spending" card; Payment due + Activity merge into one "Status" card. Fewer, richer cards.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div class="glass-strong" style="flex: 1; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 18px;">
+        <div class="card-label" style="font-size: 14px; color: var(--fg); font-weight: 700;">Spending &mdash; All Cards</div>
+        <div style="display: flex; align-items: center; gap: 24px;">
+          <svg width="110" height="110" viewBox="0 0 100 100" style="flex-shrink: 0;">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="var(--neutral-fill)" stroke-width="9"></circle>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round" stroke-dasharray="32.7 218.6" transform="rotate(-90 50 50)"></circle>
+            <text x="50" y="47" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="20" font-weight="800" fill="var(--fg)">13%</text>
+            <text x="50" y="63" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="9" fill="var(--muted)">utilization</text>
+          </svg>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px 28px; font-size: 13px;">
+            <div><div class="card-label" style="font-size: 10px;">Highest spent</div><b style="font-size: 15px;">₹57,300</b> <span style="color: var(--muted); font-size: 11px;">Jul 2026</span></div>
+            <div><div class="card-label" style="font-size: 10px;">Lowest spent</div><b style="font-size: 15px;">₹40,400</b> <span style="color: var(--muted); font-size: 11px;">May 2026</span></div>
+            <div><div class="card-label" style="font-size: 10px;">Monthly average</div><b style="font-size: 15px;">₹47,940</b></div>
+            <div><div class="card-label" style="font-size: 10px;">Outstanding</div><b style="font-size: 15px;">₹50,900</b></div>
+          </div>
+        </div>
+        <div style="height: 1px; background: var(--divider);"></div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div class="card-label" style="font-size: 11px;">Month-over-month</div>
+            <div style="display: flex; align-items: baseline; gap: 6px; margin-top: 2px;">
+              <span style="font-size: 22px; font-weight: 800;">&minus;₹6,400</span>
+              <span style="font-size: 12px; color: var(--muted);">Aug vs Jul &middot; &minus;11%</span>
+            </div>
+          </div>
+          <div style="display: flex; align-items: flex-end; gap: 5px; height: 44px;">
+            <div style="width: 11px; height: 40%; border-radius: 3px; background: var(--neutral-fill-2);"></div>
+            <div style="width: 11px; height: 55%; border-radius: 3px; background: var(--neutral-fill-2);"></div>
+            <div style="width: 11px; height: 48%; border-radius: 3px; background: var(--neutral-fill-2);"></div>
+            <div style="width: 11px; height: 65%; border-radius: 3px; background: var(--neutral-fill-2);"></div>
+            <div style="width: 11px; height: 100%; border-radius: 3px; background: var(--accent);"></div>
+            <div style="width: 11px; height: 88%; border-radius: 3px; background: var(--accent); opacity: 0.85;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="glass-strong" style="flex: 1; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 18px;">
+        <div class="card-label" style="font-size: 14px; color: var(--fg); font-weight: 700;">Due &amp; activity</div>
+        <div>
+          <svg width="100%" height="80" viewBox="0 0 300 80">
+            <line x1="24" y1="45" x2="276" y2="45" stroke="var(--divider)" stroke-width="2"></line>
+            <circle cx="24" cy="45" r="5" fill="var(--muted)"></circle>
+            <text x="24" y="65" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="var(--muted)">Today</text>
+            <circle cx="115" cy="45" r="5.5" fill="var(--accent)"></circle>
+            <text x="115" y="30" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="800" fill="var(--fg)">Amazon Pay &middot; Aug 23</text>
+            <circle cx="149" cy="45" r="5.5" fill="var(--accent)"></circle>
+            <text x="149" y="65" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="800" fill="var(--fg)">Regalia Gold &middot; Aug 25</text>
+            <text x="276" y="65" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="10" fill="var(--muted)">+30d</text>
+          </svg>
+        </div>
+        <div style="height: 1px; background: var(--divider);"></div>
+        <div style="display: flex; align-items: center; gap: 20px; flex: 1;">
+          <svg width="100" height="100" viewBox="0 0 200 200" style="flex-shrink: 0;">
+            <circle cx="100" cy="100" r="80" fill="none" stroke="var(--neutral-fill)" stroke-width="14"></circle>
+            <circle cx="100" cy="100" r="80" fill="none" stroke="var(--accent)" stroke-width="14" stroke-linecap="round" stroke-dasharray="65.3 439.3" transform="rotate(-90 100 100)"></circle>
+            <circle cx="100" cy="100" r="60" fill="none" stroke="var(--neutral-fill)" stroke-width="14"></circle>
+            <circle cx="100" cy="100" r="60" fill="none" stroke="var(--accent)" stroke-width="14" stroke-linecap="round" stroke-dasharray="376.99 0" opacity="0.75" transform="rotate(-90 100 100)"></circle>
+            <circle cx="100" cy="100" r="40" fill="none" stroke="var(--neutral-fill)" stroke-width="14"></circle>
+            <circle cx="100" cy="100" r="40" fill="none" stroke="var(--accent)" stroke-width="14" stroke-linecap="round" stroke-dasharray="163.4 87.9" opacity="0.55" transform="rotate(-90 100 100)"></circle>
+          </svg>
+          <div style="font-size: 12px; line-height: 1.8;">
+            <div>&#9679; Utilization 13%</div>
+            <div style="opacity: 0.75;">&#9679; Cards active 3/3</div>
+            <div style="opacity: 0.55;">&#9679; Cycle elapsed 65%</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION C ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">C</span>One consolidated "at a glance" panel</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">All 4 widgets reduced to their key numbers in a single minimal panel — a stat row, one trend chart, one due strip. Most minimal option.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div class="glass-strong" style="flex: 1; border-radius: 24px; padding: 26px 28px; display: flex; flex-direction: column; gap: 22px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div class="card-label" style="font-size: 10px;">Utilization</div>
+            <div style="font-size: 19px; font-weight: 800; margin-top: 3px;">13%</div>
+          </div>
+          <div style="width: 1px; height: 32px; background: var(--divider);"></div>
+          <div>
+            <div class="card-label" style="font-size: 10px;">Highest month</div>
+            <div style="font-size: 19px; font-weight: 800; margin-top: 3px;">₹57.3k <span style="font-size: 12px; color: var(--muted); font-weight: 600;">Jul</span></div>
+          </div>
+          <div style="width: 1px; height: 32px; background: var(--divider);"></div>
+          <div>
+            <div class="card-label" style="font-size: 10px;">Month-over-month</div>
+            <div style="font-size: 19px; font-weight: 800; margin-top: 3px; color: var(--accent);">&minus;₹6,400</div>
+          </div>
+          <div style="width: 1px; height: 32px; background: var(--divider);"></div>
+          <div>
+            <div class="card-label" style="font-size: 10px;">Cycle elapsed</div>
+            <div style="font-size: 19px; font-weight: 800; margin-top: 3px;">65%</div>
+          </div>
+        </div>
+
+        <div style="flex: 1;">
+          <div class="card-label" style="font-size: 11px; margin-bottom: 8px;">Spend trend &mdash; last 6 months</div>
+          <svg width="100%" height="100%" viewBox="0 0 620 130" preserveAspectRatio="none">
+            <path d="M20,90 C90,86 130,80 200,66 C270,52 300,28 380,18 C440,10 500,26 600,36 L600,120 L20,120 Z" fill="var(--accent)" opacity="0.12"></path>
+            <path d="M20,90 C90,86 130,80 200,66 C270,52 300,28 380,18 C440,10 500,26 600,36" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"></path>
+            <circle cx="380" cy="18" r="5" fill="var(--accent)"></circle>
+            <circle cx="600" cy="36" r="4" fill="var(--accent)"></circle>
+          </svg>
+        </div>
+
+        <div style="border-radius: 14px; padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; background: var(--neutral-fill);">
+          <div style="font-size: 12px; font-weight: 700;">2 bills pending &middot; ₹50,900</div>
+          <div style="font-size: 12px; color: var(--muted);"><b style="color: var(--fg);">Amazon Pay</b> Aug 23 &nbsp;&middot;&nbsp; <b style="color: var(--fg);">Regalia Gold</b> Aug 25</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION D ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">D</span>Hero ring &mdash; one big beautiful visual</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">Everything else steps back. One large utilization ring is the whole story, with a slim stat row and a quiet due-date strip underneath. Maximum whitespace.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div class="glass-strong" style="flex: 1; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; position: relative; overflow: hidden;">
+        <div style="position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); width: 320px; height: 320px; border-radius: 50%; background: radial-gradient(circle, var(--accent-tint) 0%, transparent 72%); opacity: 0.6; pointer-events: none;"></div>
+
+        <svg width="190" height="190" viewBox="0 0 200 200" style="position: relative; flex-shrink: 0;">
+          <defs>
+            <linearGradient id="heroRingGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="oklch(0.82 0.16 145)"></stop>
+              <stop offset="100%" stop-color="oklch(0.60 0.19 150)"></stop>
+            </linearGradient>
+          </defs>
+          <circle cx="100" cy="100" r="86" fill="none" stroke="var(--neutral-fill)" stroke-width="14"></circle>
+          <circle cx="100" cy="100" r="86" fill="none" stroke="url(#heroRingGrad)" stroke-width="14" stroke-linecap="round" stroke-dasharray="70.3 470.6" transform="rotate(-90 100 100)"></circle>
+          <text x="100" y="94" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="42" font-weight="800" fill="var(--fg)">13%</text>
+          <text x="100" y="122" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="600" fill="var(--muted)">utilization</text>
+        </svg>
+
+        <div style="position: relative; display: flex; align-items: center; gap: 28px;">
+          <div style="text-align: center;">
+            <div class="card-label" style="font-size: 10px;">Highest month</div>
+            <div style="font-size: 16px; font-weight: 800; margin-top: 3px;">₹57.3k <span style="font-size: 11px; color: var(--muted); font-weight: 600;">Jul</span></div>
+          </div>
+          <div style="width: 1px; height: 30px; background: var(--divider);"></div>
+          <div style="text-align: center;">
+            <div class="card-label" style="font-size: 10px;">Monthly average</div>
+            <div style="font-size: 16px; font-weight: 800; margin-top: 3px;">₹47,940</div>
+          </div>
+          <div style="width: 1px; height: 30px; background: var(--divider);"></div>
+          <div style="text-align: center;">
+            <div class="card-label" style="font-size: 10px;">Month-over-month</div>
+            <div style="font-size: 16px; font-weight: 800; margin-top: 3px; color: oklch(0.55 0.17 145);">&minus;₹6,400</div>
+          </div>
+        </div>
+
+        <div style="position: relative; display: flex; align-items: center; gap: 10px;">
+          <div style="padding: 8px 16px; border-radius: 999px; background: var(--neutral-fill); font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block;"></span>Amazon Pay &middot; ₹12,400 &middot; Aug 23</div>
+          <div style="padding: 8px 16px; border-radius: 999px; background: var(--neutral-fill); font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 6px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block;"></span>Regalia Gold &middot; ₹38,500 &middot; Aug 25</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION E ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">E</span>Bento &mdash; one big chart, two quiet side cells</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">An asymmetric grid: a large spend-trend chart carries the visual weight, with due dates and utilization tucked into two calmer cells beside it.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; display: flex; gap: 16px;">
+
+        <div class="glass-strong" style="flex: 1.5; border-radius: 24px; padding: 26px; display: flex; flex-direction: column; gap: 6px;">
+          <div class="card-label" style="font-size: 13px; color: var(--fg); font-weight: 700;">Spend trend</div>
+          <div style="font-size: 11px; color: var(--muted); margin-bottom: 4px;">Last 6 months &middot; peak <b style="color: var(--fg);">₹57.3k</b> in July</div>
+          <svg width="100%" height="100%" viewBox="0 0 500 260" preserveAspectRatio="none" style="flex: 1;">
+            <defs>
+              <linearGradient id="bentoFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.28"></stop>
+                <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+            <path d="M10,190 C70,182 110,168 170,138 C220,114 250,58 320,36 C370,22 430,52 490,72 L490,250 L10,250 Z" fill="url(#bentoFill)"></path>
+            <path d="M10,190 C70,182 110,168 170,138 C220,114 250,58 320,36 C370,22 430,52 490,72" fill="none" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"></path>
+            <circle cx="320" cy="36" r="6" fill="var(--accent)"></circle>
+            <text x="320" y="20" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="var(--fg)">₹57.3k</text>
+          </svg>
+        </div>
+
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+
+          <div class="glass-strong" style="flex: 1; border-radius: 20px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+            <div class="card-label" style="font-size: 11px; color: var(--fg); font-weight: 700;">Upcoming</div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block;"></span>Amazon Pay</div>
+              <div style="font-size: 11px; color: var(--muted);">Aug 23 &middot; ₹12,400</div>
+            </div>
+            <div style="height: 1px; background: var(--divider);"></div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700;"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block;"></span>Regalia Gold</div>
+              <div style="font-size: 11px; color: var(--muted);">Aug 25 &middot; ₹38,500</div>
+            </div>
+          </div>
+
+          <div class="glass-strong" style="flex: 1; border-radius: 20px; padding: 18px 20px; display: flex; align-items: center; gap: 16px;">
+            <svg width="56" height="56" viewBox="0 0 80 80" style="flex-shrink: 0;">
+              <circle cx="40" cy="40" r="32" fill="none" stroke="var(--neutral-fill)" stroke-width="8"></circle>
+              <circle cx="40" cy="40" r="32" fill="none" stroke="var(--accent)" stroke-width="8" stroke-linecap="round" stroke-dasharray="26 175" transform="rotate(-90 40 40)"></circle>
+              <text x="40" y="45" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="15" font-weight="800" fill="var(--fg)">13%</text>
+            </svg>
+            <div>
+              <div class="card-label" style="font-size: 10px;">Utilization</div>
+              <div style="font-size: 12px; color: var(--muted); margin-top: 4px;">MoM <span style="color: oklch(0.55 0.17 145); font-weight: 700;">&minus;₹6,400</span></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION F ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">F</span>Editorial &mdash; soft gradient, big type, one sparkline</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">Text-led and quiet, like a magazine pull-quote — a huge headline number, a thin supporting sparkline, and plain-text due dates. No boxes within the box.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; border-radius: 24px; padding: 40px 44px; display: flex; flex-direction: column; justify-content: center; gap: 22px; position: relative; overflow: hidden; background: linear-gradient(145deg, var(--accent-tint), var(--card-bg) 60%); border: 1px solid var(--card-border);">
+        <div style="position: absolute; right: -60px; top: -60px; width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.16 145 / 0.55), transparent 70%); filter: blur(30px); pointer-events: none;"></div>
+
+        <div style="position: relative;">
+          <div class="card-label" style="font-size: 12px; margin-bottom: 6px;">Monthly average spend</div>
+          <div style="font-size: 56px; font-weight: 800; line-height: 1; color: var(--fg);">₹47,940</div>
+          <div style="font-size: 14px; color: var(--muted); margin-top: 8px;">Peaked at <b style="color: var(--fg);">₹57,300</b> in July &middot; down <b style="color: oklch(0.42 0.14 145);">₹6,400</b> this month</div>
+        </div>
+
+        <svg width="220" height="46" viewBox="0 0 220 46" style="position: relative;">
+          <path d="M4,34 C30,32 46,26 66,20 C86,14 100,4 130,6 C155,8 175,20 216,14" fill="none" stroke="oklch(0.55 0.17 145)" stroke-width="2.5" stroke-linecap="round"></path>
+          <circle cx="130" cy="6" r="4" fill="oklch(0.55 0.17 145)"></circle>
+        </svg>
+
+        <div style="position: relative; font-size: 14px; color: var(--muted); line-height: 1.8;">
+          <b style="color: var(--fg);">Amazon Pay</b> ₹12,400 due Aug 23 &nbsp;&middot;&nbsp; <b style="color: var(--fg);">Regalia Gold</b> ₹38,500 due Aug 25
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION G ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">G</span>Floating type &mdash; no card at all</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">Nothing boxed in. Just a huge number, a thin sparkline floating beside it, and plain-text due dates sitting directly on the page background.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 26px; padding: 8px 36px;">
+        <div>
+          <div class="card-label" style="font-size: 12px;">Monthly average spend</div>
+          <div style="display: flex; align-items: baseline; gap: 18px; margin-top: 8px;">
+            <div style="font-size: 68px; font-weight: 800; line-height: 1; letter-spacing: -0.01em;">₹47,940</div>
+            <svg width="130" height="40" viewBox="0 0 130 40" style="flex-shrink: 0;">
+              <path d="M2,28 C18,26 26,20 38,16 C50,12 56,4 70,5 C84,6 92,16 128,10" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"></path>
+              <circle cx="70" cy="5" r="3.5" fill="var(--accent)"></circle>
+            </svg>
+          </div>
+          <div style="font-size: 14px; color: var(--muted); margin-top: 10px;">Peaked at <b style="color: var(--fg);">₹57,300</b> in July &middot; <b style="color: oklch(0.42 0.14 145);">&minus;₹6,400</b> vs last month</div>
+        </div>
+
+        <div style="width: 100%; height: 1px; background: var(--divider);"></div>
+
+        <div style="display: flex; align-items: center; gap: 40px; font-size: 14px;">
+          <div><span style="color: var(--muted);">Amazon Pay &middot; </span><b>₹12,400</b> <span style="color: var(--muted);">due Aug 23</span></div>
+          <div><span style="color: var(--muted);">Regalia Gold &middot; </span><b>₹38,500</b> <span style="color: var(--muted);">due Aug 25</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION H ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">H</span>Floating ring &mdash; overlay, no card</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">Same big ring as option D, but the card box is gone entirely — the ring and its glow sit straight on the page background.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; position: relative;">
+        <div style="position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, var(--accent-tint) 0%, transparent 70%); opacity: 0.7; pointer-events: none;"></div>
+
+        <svg width="210" height="210" viewBox="0 0 220 220" style="position: relative;">
+          <defs>
+            <linearGradient id="floatRingGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="oklch(0.82 0.16 145)"></stop>
+              <stop offset="100%" stop-color="oklch(0.58 0.19 150)"></stop>
+            </linearGradient>
+          </defs>
+          <circle cx="110" cy="110" r="94" fill="none" stroke="oklch(0 0 0 / 0.05)" stroke-width="12"></circle>
+          <circle cx="110" cy="110" r="94" fill="none" stroke="url(#floatRingGrad)" stroke-width="12" stroke-linecap="round" stroke-dasharray="76.7 513.7" transform="rotate(-90 110 110)"></circle>
+          <text x="110" y="104" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="46" font-weight="800" fill="var(--fg)">13%</text>
+          <text x="110" y="134" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="600" fill="var(--muted)">utilization</text>
+        </svg>
+
+        <div style="position: relative; display: flex; align-items: center; gap: 30px; font-size: 13px; color: var(--muted);">
+          <span>Highest <b style="color: var(--fg);">₹57.3k</b> Jul</span>
+          <span>Avg <b style="color: var(--fg);">₹47,940</b></span>
+          <span>MoM <b style="color: oklch(0.42 0.14 145);">&minus;₹6,400</b></span>
+        </div>
+
+        <div style="position: relative; font-size: 13px; color: var(--muted); display: flex; gap: 8px; align-items: center;">
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: var(--accent); display: inline-block;"></span>
+          <b style="color: var(--fg);">Amazon Pay</b> Aug 23
+          <span style="width: 5px; height: 5px; border-radius: 50%; background: var(--accent); display: inline-block; margin-left: 10px;"></span>
+          <b style="color: var(--fg);">Regalia Gold</b> Aug 25
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION I ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">I</span>Ghost-chart poster &mdash; annotations on a watermark</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">One huge, very pale trend chart fills the space like a watermark; the actual numbers float on top of it as plain labels. No card, no box, the chart *is* the background.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; position: relative; overflow: hidden;">
+        <svg width="100%" height="100%" viewBox="0 0 500 400" preserveAspectRatio="none" style="position: absolute; top: 0; left: 0;">
+          <path d="M0,300 C70,290 110,270 170,220 C220,180 250,90 320,58 C370,36 430,90 500,120 L500,400 L0,400 Z" fill="var(--accent)" opacity="0.08"></path>
+          <path d="M0,300 C70,290 110,270 170,220 C220,180 250,90 320,58 C370,36 430,90 500,120" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" opacity="0.35"></path>
+          <circle cx="320" cy="58" r="6" fill="var(--accent)" opacity="0.55"></circle>
+        </svg>
+
+        <div style="position: absolute; left: 24px; top: 22px; display: flex; align-items: center; gap: 28px; font-size: 13px; color: var(--muted);">
+          <span><b style="color: var(--fg); font-size: 15px;">13%</b> utilization</span>
+          <span><b style="color: var(--fg); font-size: 15px;">₹47,940</b> monthly avg</span>
+        </div>
+
+        <div style="position: absolute; left: 336px; top: 14px; text-align: left;">
+          <div style="font-size: 24px; font-weight: 800; color: var(--fg);">₹57,300</div>
+          <div style="font-size: 12px; color: var(--muted); font-weight: 600;">highest &middot; July 2026</div>
+        </div>
+
+        <div style="position: absolute; left: 24px; bottom: 24px; display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+          <div><span style="color: var(--muted);">Amazon Pay &middot; </span><b style="color: var(--fg);">₹12,400</b> <span style="color: var(--muted);">due Aug 23</span></div>
+          <div><span style="color: var(--muted);">Regalia Gold &middot; </span><b style="color: var(--fg);">₹38,500</b> <span style="color: var(--muted);">due Aug 25</span></div>
+        </div>
+
+        <div style="position: absolute; right: 24px; bottom: 24px; font-size: 13px; color: oklch(0.42 0.14 145); font-weight: 700;">&minus;₹6,400 vs last month</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION I2 ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">I2</span>Ghost bars &mdash; watermark bar chart</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">Same idea as I, but the watermark is a bar chart of the last 5 months instead of a line — July's bar is the one that's not quite as pale, anchoring the "highest month" label.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; position: relative; overflow: hidden;">
+        <svg width="100%" height="100%" viewBox="0 0 500 400" preserveAspectRatio="none" style="position: absolute; top: 0; left: 0;">
+          <rect x="40" y="248" width="64" height="130" rx="10" fill="var(--accent)" opacity="0.09"></rect>
+          <rect x="140" y="255" width="64" height="123" rx="10" fill="var(--accent)" opacity="0.09"></rect>
+          <rect x="240" y="196" width="64" height="182" rx="10" fill="var(--accent)" opacity="0.11"></rect>
+          <rect x="340" y="98" width="64" height="280" rx="10" fill="var(--accent)" opacity="0.22"></rect>
+          <rect x="440" y="185" width="50" height="193" rx="10" fill="var(--accent)" opacity="0.13"></rect>
+        </svg>
+
+        <div style="position: absolute; left: 24px; top: 22px; display: flex; align-items: center; gap: 28px; font-size: 13px; color: var(--muted);">
+          <span><b style="color: var(--fg); font-size: 15px;">13%</b> utilization</span>
+          <span><b style="color: var(--fg); font-size: 15px;">₹47,940</b> monthly avg</span>
+        </div>
+
+        <div style="position: absolute; left: 340px; top: 66px; width: 100px; text-align: center;">
+          <div style="font-size: 24px; font-weight: 800; color: var(--fg);">₹57,300</div>
+          <div style="font-size: 12px; color: var(--muted); font-weight: 600;">highest &middot; July</div>
+        </div>
+
+        <div style="position: absolute; left: 24px; bottom: 24px; display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+          <div><span style="color: var(--muted);">Amazon Pay &middot; </span><b style="color: var(--fg);">₹12,400</b> <span style="color: var(--muted);">due Aug 23</span></div>
+          <div><span style="color: var(--muted);">Regalia Gold &middot; </span><b style="color: var(--fg);">₹38,500</b> <span style="color: var(--muted);">due Aug 25</span></div>
+        </div>
+
+        <div style="position: absolute; right: 24px; bottom: 24px; font-size: 13px; color: oklch(0.42 0.14 145); font-weight: 700;">&minus;₹6,400 vs last month</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION I3 ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">I3</span>Ghost donut &mdash; watermark pie of spend by card</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">The watermark shape is a big, pale donut split by which card holds the outstanding balance — each ghost segment even borrows that card's own hue. New information, still weightless.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; position: relative; overflow: hidden; display: flex; align-items: center;">
+        <svg width="400" height="400" viewBox="0 0 400 400" style="position: absolute; right: -60px; top: 50%; transform: translateY(-50%);">
+          <circle cx="200" cy="200" r="150" fill="none" stroke="oklch(0 0 0 / 0.05)" stroke-width="34"></circle>
+          <circle cx="200" cy="200" r="150" fill="none" stroke="oklch(0.55 0.09 258 / 0.28)" stroke-width="34" stroke-dasharray="712.6 229.9" transform="rotate(-90 200 200)"></circle>
+          <circle cx="200" cy="200" r="150" fill="none" stroke="oklch(0.55 0.11 20 / 0.30)" stroke-width="34" stroke-dasharray="229.9 712.6" stroke-dashoffset="-712.6" transform="rotate(-90 200 200)"></circle>
+        </svg>
+
+        <div style="position: relative; display: flex; flex-direction: column; gap: 22px; padding-left: 12px; z-index: 1;">
+          <div>
+            <div class="card-label" style="font-size: 11px;">Outstanding by card</div>
+            <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px; font-size: 13px;">
+              <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: oklch(0.45 0.09 258); display: inline-block;"></span><b>Regalia Gold</b> <span style="color: var(--muted);">75.6% &middot; ₹38,500</span></div>
+              <div style="display: flex; align-items: center; gap: 8px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: oklch(0.45 0.11 20); display: inline-block;"></span><b>Amazon Pay</b> <span style="color: var(--muted);">24.4% &middot; ₹12,400</span></div>
+            </div>
+          </div>
+          <div style="width: 140px; height: 1px; background: var(--divider);"></div>
+          <div style="display: flex; gap: 26px; font-size: 13px; color: var(--muted);">
+            <span>Highest <b style="color: var(--fg);">₹57.3k</b> Jul</span>
+            <span>Avg <b style="color: var(--fg);">₹47,940</b></span>
+          </div>
+          <div style="font-size: 13px; color: var(--muted);"><b style="color: var(--fg);">Amazon Pay</b> Aug 23 &nbsp;&middot;&nbsp; <b style="color: var(--fg);">Regalia Gold</b> Aug 25</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION I4 ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">I4</span>Ghost combo &mdash; bars + donut together</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">Both watermark shapes at once: pale monthly bars carry the trend, a small pale ring in the corner carries utilization. One floating caption ties the two together.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; position: relative; overflow: hidden;">
+        <svg width="100%" height="100%" viewBox="0 0 500 400" preserveAspectRatio="none" style="position: absolute; top: 0; left: 0;">
+          <rect x="40" y="278" width="54" height="100" rx="9" fill="var(--accent)" opacity="0.08"></rect>
+          <rect x="126" y="284" width="54" height="94" rx="9" fill="var(--accent)" opacity="0.08"></rect>
+          <rect x="212" y="240" width="54" height="138" rx="9" fill="var(--accent)" opacity="0.10"></rect>
+          <rect x="298" y="166" width="54" height="212" rx="9" fill="var(--accent)" opacity="0.20"></rect>
+          <rect x="384" y="232" width="44" height="146" rx="9" fill="var(--accent)" opacity="0.12"></rect>
+        </svg>
+
+        <svg width="230" height="230" viewBox="0 0 230 230" style="position: absolute; right: -30px; top: -30px;">
+          <circle cx="115" cy="115" r="90" fill="none" stroke="oklch(0 0 0 / 0.045)" stroke-width="20"></circle>
+          <circle cx="115" cy="115" r="90" fill="none" stroke="var(--accent)" stroke-width="20" stroke-linecap="round" stroke-dasharray="73.5 491.3" opacity="0.30" transform="rotate(-90 115 115)"></circle>
+        </svg>
+
+        <div style="position: absolute; left: 24px; top: 22px; display: flex; align-items: center; gap: 28px; font-size: 13px; color: var(--muted);">
+          <span><b style="color: var(--fg); font-size: 15px;">13%</b> utilization</span>
+          <span><b style="color: var(--fg); font-size: 15px;">₹47,940</b> monthly avg</span>
+        </div>
+
+        <div style="position: absolute; left: 288px; top: 118px; width: 100px; text-align: center;">
+          <div style="font-size: 22px; font-weight: 800; color: var(--fg);">₹57,300</div>
+          <div style="font-size: 11px; color: var(--muted); font-weight: 600;">highest &middot; July</div>
+        </div>
+
+        <div style="position: absolute; left: 24px; bottom: 24px; display: flex; flex-direction: column; gap: 8px; font-size: 13px;">
+          <div><span style="color: var(--muted);">Amazon Pay &middot; </span><b style="color: var(--fg);">₹12,400</b> <span style="color: var(--muted);">due Aug 23</span></div>
+          <div><span style="color: var(--muted);">Regalia Gold &middot; </span><b style="color: var(--fg);">₹38,500</b> <span style="color: var(--muted);">due Aug 25</span></div>
+        </div>
+
+        <div style="position: absolute; right: 24px; bottom: 24px; font-size: 13px; color: oklch(0.42 0.14 145); font-weight: 700;">&minus;₹6,400 vs last month</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION J ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">J</span>Everything combined &mdash; floating, no card</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">Spend range, Payment due, Month-over-month and Activity all folded into ONE section beside the hero — nothing repeated, the whole 4-widget row below disappears. Floating, same style as the current live poster.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 20px; padding: 4px 10px;">
+
+        <div style="display: flex; align-items: center; gap: 32px;">
+          <svg width="96" height="96" viewBox="0 0 100 100" style="flex-shrink: 0;">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="var(--neutral-fill)" stroke-width="9"></circle>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round" stroke-dasharray="32.7 218.6" transform="rotate(-90 50 50)"></circle>
+            <text x="50" y="47" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="19" font-weight="800" fill="var(--fg)">13%</text>
+            <text x="50" y="63" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="8" fill="var(--muted)">utilization</text>
+          </svg>
+          <div style="display: grid; grid-template-columns: repeat(3, auto); gap: 8px 32px; font-size: 13px;">
+            <div><div class="card-label" style="font-size: 10px;">Highest</div><b style="font-size: 15px;">₹57,300</b> <span style="color: var(--muted); font-size: 11px;">Jul</span></div>
+            <div><div class="card-label" style="font-size: 10px;">Lowest</div><b style="font-size: 15px;">₹40,400</b> <span style="color: var(--muted); font-size: 11px;">May</span></div>
+            <div><div class="card-label" style="font-size: 10px;">Monthly avg</div><b style="font-size: 15px;">₹47,940</b></div>
+          </div>
+        </div>
+
+        <div style="height: 1px; background: var(--divider);"></div>
+
+        <div>
+          <div class="card-label" style="font-size: 10px; margin-bottom: 10px;">Upcoming</div>
+          <div style="position: relative; height: 2px; background: var(--divider); margin: 0 4px;">
+            <div style="position: absolute; left: 0; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--muted);"></div>
+            <div style="position: absolute; left: 40%; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent);"></div>
+            <div style="position: absolute; left: 58%; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent);"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px;">
+            <span style="color: var(--muted);">Today</span>
+            <span><b>Amazon Pay</b> <span style="color: var(--muted);">₹12,400 &middot; Aug 23</span></span>
+            <span><b>Regalia Gold</b> <span style="color: var(--muted);">₹38,500 &middot; Aug 25</span></span>
+            <span style="color: var(--muted);">+30d</span>
+          </div>
+        </div>
+
+        <div style="height: 1px; background: var(--divider);"></div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div>
+              <div class="card-label" style="font-size: 10px;">Month-over-month</div>
+              <div style="font-size: 18px; font-weight: 800;">&minus;₹6,400 <span style="font-size: 11px; color: var(--muted); font-weight: 600;">&minus;11%</span></div>
+            </div>
+            <svg width="70" height="30" viewBox="0 0 70 30">
+              <rect x="0" y="18" width="8" height="12" rx="2" fill="var(--neutral-fill-2)"></rect>
+              <rect x="12" y="14" width="8" height="16" rx="2" fill="var(--neutral-fill-2)"></rect>
+              <rect x="24" y="10" width="8" height="20" rx="2" fill="var(--neutral-fill-2)"></rect>
+              <rect x="36" y="4" width="8" height="26" rx="2" fill="var(--accent)"></rect>
+              <rect x="48" y="8" width="8" height="22" rx="2" fill="var(--accent)" opacity="0.85"></rect>
+            </svg>
+          </div>
+          <div style="font-size: 12px; color: var(--muted); text-align: right; line-height: 1.7;">
+            <div>&#9679; Cards active <b style="color: var(--fg);">3/3</b></div>
+            <div>&#9679; Cycle elapsed <b style="color: var(--fg);">65%</b></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION K ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">K</span>Everything combined &mdash; one bounded card</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">Identical content to J, but wrapped in a single defined card instead of floating loose — worth comparing now that this section carries a lot more information than a plain watermark.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div class="glass-strong" style="flex: 1; border-radius: 24px; padding: 26px 28px; display: flex; flex-direction: column; justify-content: center; gap: 20px;">
+
+        <div style="display: flex; align-items: center; gap: 32px;">
+          <svg width="92" height="92" viewBox="0 0 100 100" style="flex-shrink: 0;">
+            <circle cx="50" cy="50" r="40" fill="none" stroke="var(--neutral-fill)" stroke-width="9"></circle>
+            <circle cx="50" cy="50" r="40" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round" stroke-dasharray="32.7 218.6" transform="rotate(-90 50 50)"></circle>
+            <text x="50" y="47" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="19" font-weight="800" fill="var(--fg)">13%</text>
+            <text x="50" y="63" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="8" fill="var(--muted)">utilization</text>
+          </svg>
+          <div style="display: grid; grid-template-columns: repeat(3, auto); gap: 8px 30px; font-size: 13px;">
+            <div><div class="card-label" style="font-size: 10px;">Highest</div><b style="font-size: 15px;">₹57,300</b> <span style="color: var(--muted); font-size: 11px;">Jul</span></div>
+            <div><div class="card-label" style="font-size: 10px;">Lowest</div><b style="font-size: 15px;">₹40,400</b> <span style="color: var(--muted); font-size: 11px;">May</span></div>
+            <div><div class="card-label" style="font-size: 10px;">Monthly avg</div><b style="font-size: 15px;">₹47,940</b></div>
+          </div>
+        </div>
+
+        <div style="height: 1px; background: var(--divider);"></div>
+
+        <div>
+          <div class="card-label" style="font-size: 10px; margin-bottom: 10px;">Upcoming</div>
+          <div style="position: relative; height: 2px; background: var(--divider); margin: 0 4px;">
+            <div style="position: absolute; left: 0; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--muted);"></div>
+            <div style="position: absolute; left: 40%; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent);"></div>
+            <div style="position: absolute; left: 58%; top: -4px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent);"></div>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-top: 10px; font-size: 12px;">
+            <span style="color: var(--muted);">Today</span>
+            <span><b>Amazon Pay</b> <span style="color: var(--muted);">₹12,400 &middot; Aug 23</span></span>
+            <span><b>Regalia Gold</b> <span style="color: var(--muted);">₹38,500 &middot; Aug 25</span></span>
+            <span style="color: var(--muted);">+30d</span>
+          </div>
+        </div>
+
+        <div style="height: 1px; background: var(--divider);"></div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 14px;">
+            <div>
+              <div class="card-label" style="font-size: 10px;">Month-over-month</div>
+              <div style="font-size: 18px; font-weight: 800;">&minus;₹6,400 <span style="font-size: 11px; color: var(--muted); font-weight: 600;">&minus;11%</span></div>
+            </div>
+            <svg width="70" height="30" viewBox="0 0 70 30">
+              <rect x="0" y="18" width="8" height="12" rx="2" fill="var(--neutral-fill-2)"></rect>
+              <rect x="12" y="14" width="8" height="16" rx="2" fill="var(--neutral-fill-2)"></rect>
+              <rect x="24" y="10" width="8" height="20" rx="2" fill="var(--neutral-fill-2)"></rect>
+              <rect x="36" y="4" width="8" height="26" rx="2" fill="var(--accent)"></rect>
+              <rect x="48" y="8" width="8" height="22" rx="2" fill="var(--accent)" opacity="0.85"></rect>
+            </svg>
+          </div>
+          <div style="font-size: 12px; color: var(--muted); text-align: right; line-height: 1.7;">
+            <div>&#9679; Cards active <b style="color: var(--fg);">3/3</b></div>
+            <div>&#9679; Cycle elapsed <b style="color: var(--fg);">65%</b></div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION L ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">L</span>Bento stat blocks + annotated chart tooltip</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">Same combined content as J/K, restyled after your reference: bold solid-color stat blocks (ink / mint / white) up top, and the trend line gets a real floating tooltip pinned to the peak with a connector line down to it, instead of a plain label.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div class="glass-strong" style="flex: 1; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 14px;">
+
+        <div style="display: flex; gap: 12px; height: 88px;">
+          <div style="flex: 1; border-radius: 16px; background: var(--ink); color: var(--on-ink); padding: 12px 16px; display: flex; flex-direction: column; justify-content: space-between;">
+            <span style="font-size: 11px; font-weight: 600; opacity: 0.7;">Utilization</span>
+            <span style="font-size: 26px; font-weight: 800;">13%</span>
+          </div>
+          <div style="flex: 1; border-radius: 16px; background: var(--accent-tint); padding: 12px 16px; display: flex; flex-direction: column; justify-content: space-between;">
+            <span style="font-size: 11px; font-weight: 600; color: oklch(0.42 0.14 145);">Monthly avg</span>
+            <span style="font-size: 26px; font-weight: 800; color: oklch(0.30 0.13 145);">₹47.9k</span>
+          </div>
+          <div style="flex: 1; border-radius: 16px; background: var(--card-bg); border: 1px solid var(--card-border); padding: 12px 16px; display: flex; flex-direction: column; justify-content: space-between;">
+            <span style="font-size: 11px; font-weight: 600; color: var(--muted);">Highest &middot; Jul</span>
+            <span style="font-size: 26px; font-weight: 800; color: var(--fg);">₹57.3k</span>
+          </div>
+        </div>
+
+        <div style="position: relative; flex: 1; margin-top: 10px;">
+          <div style="position: absolute; left: 62%; top: 0; transform: translateX(-50%); background: var(--ink); color: var(--on-ink); border-radius: 10px; padding: 6px 12px; font-size: 12px; font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 7px; box-shadow: 0 6px 14px oklch(0 0 0 / 0.18); z-index: 2;">
+            Jul 2026 &middot; ₹57,300
+            <span style="background: var(--accent); color: oklch(0.20 0.03 145); border-radius: 999px; padding: 1px 6px; font-size: 10px; font-weight: 800;">+20%</span>
+          </div>
+          <div style="position: absolute; left: 62%; top: 30px; width: 1px; height: calc(100% - 30px); background: var(--divider); z-index: 1;"></div>
+
+          <svg width="100%" height="100%" viewBox="0 0 500 140" preserveAspectRatio="none" style="position: relative;">
+            <defs>
+              <linearGradient id="bentoTooltipFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.22"></stop>
+                <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+            <path d="M0,108 C60,104 100,96 150,80 C200,64 240,30 310,20 C380,12 440,34 500,46 L500,140 L0,140 Z" fill="url(#bentoTooltipFill)"></path>
+            <path d="M0,108 C60,104 100,96 150,80 C200,64 240,30 310,20 C380,12 440,34 500,46" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"></path>
+            <circle cx="310" cy="20" r="5.5" fill="var(--accent)"></circle>
+            <circle cx="0" cy="108" r="3.5" fill="var(--muted)"></circle>
+          </svg>
+          <div style="position: absolute; left: 0; bottom: 4px; font-size: 11px; color: var(--muted);">₹40.4k low &middot; May</div>
+        </div>
+
+        <div style="height: 1px; background: var(--divider);"></div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 12px;">
+          <div style="display: flex; align-items: center; gap: 18px;">
+            <span><b style="color: var(--fg);">Amazon Pay</b> <span style="color: var(--muted);">₹12,400 &middot; Aug 23</span></span>
+            <span><b style="color: var(--fg);">Regalia Gold</b> <span style="color: var(--muted);">₹38,500 &middot; Aug 25</span></span>
+          </div>
+          <div style="color: var(--muted);">MoM <b style="color: oklch(0.42 0.14 145);">&minus;₹6,400</b> &nbsp;&middot;&nbsp; Active <b style="color: var(--fg);">3/3</b></div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION M ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">M</span>Giant number + slim tooltip line</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">Simpler than L — one big number, one thin annotated line, one quiet due row. No color blocks, no card, nothing competing for attention.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px; padding: 6px 40px;">
+
+        <div>
+          <div class="card-label" style="font-size: 12px;">Monthly average spend</div>
+          <div style="font-size: 58px; font-weight: 800; line-height: 1; margin-top: 6px; color: var(--fg);">₹47,940</div>
+          <div style="font-size: 14px; color: var(--muted); margin-top: 8px;"><b style="color: var(--fg);">13%</b> utilization &middot; highest <b style="color: var(--fg);">₹57,300</b> in July</div>
+        </div>
+
+        <div style="position: relative; height: 66px;">
+          <div style="position: absolute; left: 64%; top: -8px; transform: translateX(-50%); background: var(--ink); color: var(--on-ink); border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 700; white-space: nowrap; z-index: 2;">₹57,300</div>
+          <svg width="100%" height="100%" viewBox="0 0 500 66" preserveAspectRatio="none">
+            <path d="M0,50 C60,48 100,44 150,36 C200,28 240,13 320,9 C380,6 440,16 500,21" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"></path>
+            <circle cx="320" cy="9" r="4.5" fill="var(--accent)"></circle>
+          </svg>
+        </div>
+
+        <div style="height: 1px; background: var(--divider);"></div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px;">
+          <div><span style="color: var(--muted);">Amazon Pay &middot; </span><b>₹12,400</b> <span style="color: var(--muted);">Aug 23</span> &nbsp;&middot;&nbsp; <span style="color: var(--muted);">Regalia Gold &middot; </span><b>₹38,500</b> <span style="color: var(--muted);">Aug 25</span></div>
+          <div style="color: oklch(0.42 0.14 145); font-weight: 700;">&minus;₹6,400 MoM</div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION N ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">N</span>Centered ring, ultra minimal</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">Just the ring and the two things that actually need a reaction — what's due and when. Everything else becomes one quiet caption line.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; position: relative;">
+        <div style="position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); width: 300px; height: 300px; border-radius: 50%; background: radial-gradient(circle, var(--accent-tint) 0%, transparent 70%); opacity: 0.6; pointer-events: none;"></div>
+
+        <svg width="148" height="148" viewBox="0 0 160 160" style="position: relative;">
+          <circle cx="80" cy="80" r="68" fill="none" stroke="oklch(0 0 0 / 0.05)" stroke-width="11"></circle>
+          <circle cx="80" cy="80" r="68" fill="none" stroke="var(--accent)" stroke-width="11" stroke-linecap="round" stroke-dasharray="55.4 372.3" transform="rotate(-90 80 80)"></circle>
+          <text x="80" y="76" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="32" font-weight="800" fill="var(--fg)">13%</text>
+          <text x="80" y="98" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="11" fill="var(--muted)">utilization</text>
+        </svg>
+
+        <div style="position: relative; font-size: 13px; color: var(--muted); text-align: center;">Avg <b style="color: var(--fg);">₹47,940</b> &middot; highest <b style="color: var(--fg);">₹57.3k</b> in July &middot; <b style="color: oklch(0.42 0.14 145);">&minus;₹6,400</b> this month</div>
+
+        <div style="position: relative; width: 60%; height: 1px; background: var(--divider);"></div>
+
+        <div style="position: relative; display: flex; align-items: center; gap: 36px; font-size: 13px;">
+          <span><b style="color: var(--fg);">Amazon Pay</b> <span style="color: var(--muted);">₹12,400 &middot; Aug 23</span></span>
+          <span><b style="color: var(--fg);">Regalia Gold</b> <span style="color: var(--muted);">₹38,500 &middot; Aug 25</span></span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============ OPTION O ============ -->
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div>
+      <div class="option-badge"><span class="n">O</span>Big chart hero + plain stat strip</div>
+      <div style="font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px;">One bounded card, but almost all of it is the chart — a single thin row of plain-text stats underneath, no dividers between boxes, no color blocking.</div>
+    </div>
+
+    <div style="display: flex; gap: 16px; height: 400px;">
+
+      <div class="glass-grain" style="flex: 0 0 620px; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258)); border: 1px solid oklch(1 0 0 / 0.12); border-top-color: oklch(1 0 0 / 0.22); box-shadow: 0 10px 26px oklch(0 0 0 / 0.28); color: oklch(0.95 0.004 260);">
+        <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+          <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+          <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));"></div>
+          <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80)); overflow: hidden;">
+            <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">All Cards &middot; 3 cards</span>
+        <div style="position: relative;">
+          <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, oklch(0.80 0.13 80) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none;"></div>
+          <div style="position: relative; font-size: 26px; font-weight: 800;">₹50,900 <span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 700;">outstanding &middot; 13%</span></div>
+        </div>
+        <div style="position: relative; height: 58px;">
+          <div style="position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: oklch(1 0 0 / 0.14);">Avg &middot; ₹47,940</div>
+            <div style="width: 1px; height: 12px; background: oklch(0.80 0.13 80); margin-top: 2px;"></div>
+          </div>
+          <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: oklch(1 0 0 / 0.14); overflow: hidden;">
+            <div style="width: 12.7%; height: 100%; background: oklch(0.80 0.13 80);"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹0</span>
+          <span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">₹4,00,000 limit</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Available</span><span style="font-size: 14px; font-weight: 700;">₹3,49,100</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12px; color: oklch(1 0 0 / 0.55); font-weight: 600;">Total spent (this year)</span><span style="font-size: 14px; font-weight: 700;">₹2,39,700</span></div>
+        </div>
+        <div style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: oklch(1 0 0 / 0.08); border: 1px solid oklch(1 0 0 / 0.1);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="font-size: 11px; color: oklch(1 0 0 / 0.55);">Next due</div>
+            <div style="padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: oklch(0.80 0.13 80 / 0.22); color: oklch(0.86 0.12 80);">2 pending</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹12,400 &middot; Amazon Pay</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 23</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">₹38,500 &middot; Regalia Gold</span><span style="font-size: 11px; color: oklch(1 0 0 / 0.5);">Aug 25</span></div>
+        </div>
+      </div>
+
+      <div class="glass-strong" style="flex: 1; border-radius: 24px; padding: 26px; display: flex; flex-direction: column; gap: 18px;">
+
+        <div style="position: relative; flex: 1;">
+          <div style="position: absolute; left: 64%; top: 0; transform: translateX(-50%); background: var(--ink); color: var(--on-ink); border-radius: 10px; padding: 6px 12px; font-size: 12px; font-weight: 700; white-space: nowrap; box-shadow: 0 6px 14px oklch(0 0 0 / 0.18); z-index: 2;">Jul 2026 &middot; ₹57,300</div>
+          <div style="position: absolute; left: 64%; top: 28px; width: 1px; height: calc(100% - 28px); background: var(--divider);"></div>
+          <svg width="100%" height="100%" viewBox="0 0 500 160" preserveAspectRatio="none" style="position: relative;">
+            <defs>
+              <linearGradient id="simpleHeroFill" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.24"></stop>
+                <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"></stop>
+              </linearGradient>
+            </defs>
+            <path d="M0,128 C60,124 100,114 150,94 C200,74 240,34 320,24 C380,16 440,40 500,54 L500,160 L0,160 Z" fill="url(#simpleHeroFill)"></path>
+            <path d="M0,128 C60,124 100,114 150,94 C200,74 240,34 320,24 C380,16 440,40 500,54" fill="none" stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round"></path>
+            <circle cx="320" cy="24" r="5.5" fill="var(--accent)"></circle>
+          </svg>
+        </div>
+
+        <div style="height: 1px; background: var(--divider);"></div>
+
+        <div style="display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--muted);">
+          <span><b style="color: var(--fg);">13%</b> utilization</span>
+          <span><b style="color: var(--fg);">₹47,940</b> avg/mo</span>
+          <span><b style="color: var(--fg);">Amazon Pay</b> Aug 23</span>
+          <span><b style="color: var(--fg);">Regalia Gold</b> Aug 25</span>
+          <span style="color: oklch(0.42 0.14 145); font-weight: 700;">&minus;₹6,400 MoM</span>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

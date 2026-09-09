@@ -1,0 +1,44 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "Cards" },
+    { "id": "page-2", "name": "Subscriptions" },
+    { "id": "page-3", "name": "Income" },
+    { "id": "page-4", "name": "Accounts" },
+    { "id": "page-5", "name": "Loans" },
+    { "id": "page-6", "name": "Fixed Income" },
+    { "id": "page-7", "name": "Investments" },
+    { "id": "page-8", "name": "Color Palette Ideas" },
+    { "id": "page-9", "name": "Light Theme (Mint)" },
+    { "id": "page-10", "name": "Hero Space Ideas" }
+  ],
+  "artboards": [
+    { "file": "CardsList.dc.html", "x": 0, "y": 0, "w": 1700, "h": 2140, "page": "page-1" },
+    { "file": "SubscriptionsList.dc.html", "x": 0, "y": 0, "w": 1600, "h": 1665, "page": "page-2" },
+    { "file": "IncomeList.dc.html", "x": 0, "y": 0, "w": 1600, "h": 1665, "page": "page-3" },
+    { "file": "AccountsList.dc.html", "x": 0, "y": 0, "w": 1600, "h": 1665, "page": "page-4" },
+    { "file": "LoansList.dc.html", "x": 0, "y": 0, "w": 1600, "h": 1665, "page": "page-5" },
+    { "file": "FixedIncomeList.dc.html", "x": 0, "y": 0, "w": 1600, "h": 1665, "page": "page-6" },
+    { "file": "InvestmentsList.dc.html", "x": 0, "y": 0, "w": 1600, "h": 2060, "page": "page-7" },
+
+    { "file": "CardsVault.dc.html", "x": 0, "y": 0, "w": 1700, "h": 1740, "page": "page-8" },
+    { "file": "CardsLedger.dc.html", "x": 1780, "y": 0, "w": 1700, "h": 1740, "page": "page-8" },
+    { "file": "CardsLedgerNight.dc.html", "x": 3560, "y": 0, "w": 1700, "h": 1740, "page": "page-8" },
+
+    { "file": "CardsListLight.dc.html", "x": 0, "y": 0, "w": 1700, "h": 2250, "page": "page-9" },
+
+    { "file": "CardsHeroSpaceIdeas.dc.html", "x": 0, "y": 0, "w": 1700, "h": 9020, "page": "page-10" }
+  ],
+  "annotations": [
+    { "id": "note-cards", "x": 0, "y": -70, "w": 700, "text": "Rebuilt from a PDF export of the real page you had saved — numbers here are exact (Regalia Gold, Amazon Pay, Gold Card; ₹50,900 outstanding of ₹4,00,000 across 3 cards).", "page": "page-1" },
+    { "id": "note-subs", "x": 0, "y": -70, "w": 700, "text": "Rebuilt fresh in the same system — I didn't have this page's exact original numbers memorized, so Netflix/Spotify/Amazon Prime and all figures here are plausible placeholders, not a restore. Replace with the real subscriptions whenever convenient.", "page": "page-2" },
+    { "id": "note-income", "x": 0, "y": -70, "w": 700, "text": "Rebuilt fresh in the same system. The YTD total (₹23,63,700) and July peak (₹5.78L) are real figures I remembered from this project's notes; the individual entries (NetApp Salary/Bonus/Freelance split) are plausible placeholders built to add up to that real total, not a restore of the original page.", "page": "page-3" },
+    { "id": "note-accounts", "x": 0, "y": -70, "w": 700, "text": "Restored at high fidelity from what I'd read directly earlier this session — real account data (HDFC/ICICI/SBI/Axis) and widget numbers should match the original closely. The two widgets I didn't have exact source for (Balance constellation, Net flow) are rebuilt to spec but with re-derived chart coordinates.", "page": "page-4" },
+    { "id": "note-loans", "x": 0, "y": -70, "w": 700, "text": "Restored at high fidelity — this page was fully read and edited within this session, so content should match the last working version closely (interest rates on tiles, Outstanding balance heatmap in place of the old broken Principal-vs-interest widget).", "page": "page-5" },
+    { "id": "note-fixedincome", "x": 0, "y": -70, "w": 700, "text": "Restored at high fidelity — authored in full within this session (EPF/PPF/HDFC FD/SBI RD/NSC), so this should be an exact match to the last working version.", "page": "page-6" },
+    { "id": "note-investments", "x": 0, "y": -70, "w": 700, "text": "Restored at high fidelity, then extended with 4 widgets borrowed from a FinPoint dashboard screenshot you shared: a Diversification meter (header, next to the title), a Watchlist strip with sparklines (NTAP, Nifty 50, USD/INR, HDFC Debt NAV), a Concentration risk gauge, and Allocation-by-category bars. Restyled into our single-accent glass system throughout — no new hues, no FinPoint chrome (still our rail nav, still glass cards).", "page": "page-7" },
+    { "id": "note-palette", "x": 0, "y": -70, "w": 1400, "text": "Three accent directions on the real Cards page — the glass system itself (blur, borders, shadows, sheen streaks) is untouched; only --accent/--accent-tint/--on-accent, the heatmap tiers, the ambient background glow, and the data-glow color (rings, chart points, bar highlights — previously hardcoded white, now color-matched to the accent) change per variant. Vault = warm gold, for a premium/wealth feel. Ledger = mint-teal, calm and unmistakably fintech. Ledger Night = indigo, with a slightly deeper near-black base for a moodier, more SaaS-tool feel.", "page": "page-8" },
+    { "id": "note-light", "x": 0, "y": -90, "w": 1400, "text": "Explored per your reference screenshot: moved the whole chrome away from glass morphism (no blur, flat white cards with hairline borders + soft shadows) onto a light bg with a mint-green accent, matching black active states/buttons. The 4 card tiles and the graphite details/KPI section were kept exactly as-is (still dark, still their own gradient colors) — they now pop as objects against the light page instead of blending into a dark glass panel. The 3 KPI tiles were later replaced by the greeting/overview text at the top of the page, and the space beside the details card now holds a 'ghost-chart poster' (picked from the Hero Space Ideas exploration, page 10, option I): a large, very pale trend line fills the space like a watermark, with utilization, monthly average, highest month, due dates and the MoM change floating on top of it as plain text — no card, no box. One deliberate side effect: the selected-tile checkmark badge renders in the new mint green instead of white, since it shares the global --accent token with the rest of the page.", "page": "page-9" },
+    { "id": "note-hero-ideas", "x": 0, "y": -70, "w": 1400, "text": "Exploration only — CardsListLight.dc.html is untouched. All with the same hero card copied verbatim. A/B/C repack the existing 4 widgets (2×2 grid / 2 combined cards / 1 dense panel). D/E/F are designed single-focal-point cards (big gradient ring / bento chart+cells / editorial soft-gradient with huge type). G/H/I drop the card container entirely — text and shapes float straight on the page background: (G) huge number + inline sparkline + plain-text due row; (H) the D ring with no card behind it; (I) a large pale 'ghost' line/area trend chart as a watermark with numbers floating on top. I2/I3/I4 vary the watermark chart type per your ask: (I2) same idea with a pale bar chart instead of a line; (I3) a big pale donut split by which card holds the outstanding balance, each segment tinted with that card's own hue — new info, not just a restyle; (I4) both at once — pale bars for the trend plus a small pale ring inset for utilization, one caption tying them together. J/K go further and fold the ENTIRE 4-widget row below (Spend range, Payment due, Month-over-month, Activity) into this same section too, so nothing is duplicated between the two: a utilization ring + highest/lowest/avg stats on top, an upcoming-due timeline in the middle, month-over-month + activity at the bottom — same content in both, (J) floating with no card, (K) wrapped in one bounded card. Picking J or K means the separate widget row disappears entirely. L restyles that same combined content after a reference you shared: the ring+stats row becomes three bold solid-color stat blocks (ink 'Utilization', mint 'Monthly avg', white 'Highest'), and the trend line gets a real floating tooltip pinned to the July peak with a connector line down to it and a green delta chip, instead of a plain floating label — plus a quiet 'low' caption near the chart's start. M/N/O are simpler still — no color blocks, much more whitespace, one clean visual moment each: (M) one giant number (monthly average) with a thin annotated line beneath it; (N) just a centered utilization ring with everything else reduced to one quiet caption line, plus the two due dates; (O) one bounded card that's almost entirely the annotated trend chart, with a single plain-text stat row underneath — no dividers, no boxes, no color.", "page": "page-10" }
+  ],
+  "launch": { "view": "canvas", "page": "page-10" }
+}

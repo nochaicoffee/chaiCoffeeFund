@@ -1,0 +1,474 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+
+    .chai-app {
+      --bg-solid: oklch(0.13 0.012 260);
+      --glass: oklch(1 0 0 / 0.09);
+      --glass-strong: oklch(1 0 0 / 0.15);
+      --glass-border: oklch(1 0 0 / 0.16);
+      --fg: oklch(0.95 0.004 260);
+      --muted: oklch(0.68 0.012 260);
+      --neutral-fill: oklch(1 0 0 / 0.12);
+      --neutral-fill-2: oklch(1 0 0 / 0.22);
+      --divider: oklch(1 0 0 / 0.12);
+      --shadow-card: 0 8px 32px oklch(0 0 0 / 0.35), inset 0 1px 0 oklch(1 0 0 / 0.14);
+      --accent: oklch(0.97 0 0);
+      --accent-tint: oklch(1 0 0 / 0.18);
+      --on-accent: oklch(0.16 0.01 260);
+      --blob-1: oklch(0.70 0.17 125 / 0.30);
+      --blob-2: oklch(1 0 0 / 0.06);
+      --heat-1: oklch(1 0 0 / 0.14);
+      --heat-2: oklch(1 0 0 / 0.32);
+      --heat-3: oklch(1 0 0 / 0.52);
+      --heat-4: oklch(1 0 0 / 0.72);
+      --heat-5: oklch(1 0 0 / 0.95);
+    }
+
+    .glass { background: var(--glass); backdrop-filter: blur(30px) saturate(150%); -webkit-backdrop-filter: blur(30px) saturate(150%); border: 1px solid var(--glass-border); border-top-color: oklch(1 0 0 / 0.26); box-shadow: var(--shadow-card); }
+    .glass-strong { background: var(--glass-strong); backdrop-filter: blur(34px) saturate(150%); -webkit-backdrop-filter: blur(34px) saturate(150%); border: 1px solid var(--glass-border); border-top-color: oklch(1 0 0 / 0.30); }
+    .glass-grain { background-image: radial-gradient(oklch(1 0 0 / 0.05) 1px, transparent 1.3px); background-size: 5px 5px; }
+    .rail-item { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; color: var(--muted); flex-shrink: 0; }
+    .rail-item.active { background: var(--accent-tint); color: var(--accent); }
+
+    .card-label { font-size: 12px; color: var(--muted); font-weight: 600; }
+    .card-title { font-size: 21px; font-weight: 800; color: var(--fg); margin-top: 3px; }
+
+    .pill-btn { padding: 10px 20px; border-radius: 999px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+    .pill-btn.primary { background: var(--accent); color: var(--on-accent); }
+    .pill-btn.ghost { background: var(--neutral-fill); color: var(--fg); }
+
+    .badge-pill { padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+    .badge-pill.on { background: var(--accent-tint); color: var(--accent); }
+    .badge-pill.off { background: var(--neutral-fill); color: var(--muted); }
+
+    .fi-tile { width: 230px; height: 158px; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; justify-content: space-between; flex-shrink: 0; }
+    .fi-tile.selected { border: 1.5px solid var(--accent); }
+
+    .tr { display: grid; grid-template-columns: 1.3fr 0.8fr 1fr 0.9fr 0.9fr; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--divider); font-size: 13px; }
+    .tr:last-child { border-bottom: none; }
+    .th { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+
+    .heat-grid { display: grid; grid-template-columns: 52px repeat(12, 1fr); gap: 8px; align-items: center; }
+    .heat-month { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+    .heat-cell { height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+    .heat-swatch { width: 12px; height: 12px; border-radius: 4px; }
+  </style>
+</helmet>
+<div class="chai-app" style="position: relative; display: flex; flex-direction: column; width: 1600px; height: 1665px; font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; background: var(--bg-solid); color: var(--fg); overflow: hidden; padding: 24px;">
+
+  <div style="position: absolute; top: -110px; left: 260px; width: 460px; height: 460px; border-radius: 50%; background: var(--blob-1); filter: blur(100px); z-index: 0;"></div>
+  <div style="position: absolute; bottom: -160px; right: -100px; width: 520px; height: 520px; border-radius: 50%; background: var(--blob-2); filter: blur(110px); z-index: 0;"></div>
+  <div style="position: absolute; top: -90px; right: -70px; width: 400px; height: 400px; border-radius: 50%; background: var(--blob-1); filter: blur(95px); opacity: 0.55; z-index: 0;"></div>
+
+  <div style="position: relative; z-index: 1; display: flex; gap: 20px; align-items: stretch; flex: 1;">
+
+    <div class="glass-strong" style="width: 64px; flex-shrink: 0; border-radius: 999px; display: flex; flex-direction: column; align-items: center; padding: 18px 0; gap: 10px;">
+      <div class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></div>
+      <div class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V10"></path><path d="M19 21V10"></path><path d="M3 10l9-6 9 6"></path><path d="M9 21v-6"></path><path d="M15 21v-6"></path></svg></div>
+      <div class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg></div>
+      <div class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 22l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></div>
+      <div class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"></polyline><polyline points="14 7 21 7 21 14"></polyline></svg></div>
+      <div class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg></div>
+      <div class="rail-item active" style="position: relative; overflow: hidden;"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="position: relative; z-index: 1;"><rect x="4" y="10" width="16" height="10" rx="2"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3"></path></svg><div style="position: absolute; top: -60%; left: -40%; width: 56%; height: 220%; background: linear-gradient(100deg, transparent, oklch(1 0 0 / 0.5), transparent); transform: rotate(14deg); pointer-events: none;"></div></div>
+      <div class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="4" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="20" y1="20" x2="20" y2="14"></line></svg></div>
+      <div style="margin-top: auto; width: 30px; height: 30px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; color: var(--on-accent); font-weight: 800; font-size: 12px;">P</div>
+    </div>
+
+    <div class="glass" style="flex: 1; border-radius: 36px; padding: 26px; display: flex; flex-direction: column; gap: 20px;">
+
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div class="card-title" style="font-size: 24px;">Fixed Income</div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <div style="width: 30px; height: 30px; border-radius: 50%; background: var(--neutral-fill); display: flex; align-items: center; justify-content: center; color: var(--muted); flex-shrink: 0;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path><path d="M3 21v-5h5"></path></svg></div>
+            <span style="font-size: 11px; color: var(--muted);">Updated 2:45 PM</span>
+          </div>
+          <div class="pill-btn ghost"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>Open Sheet</div>
+          <div class="glass-strong" style="border-radius: 999px; padding: 10px 16px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            This year
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </div>
+          <div class="pill-btn primary" style="position: relative; overflow: hidden;">
+            <span style="position: relative; z-index: 1; display: flex; align-items: center; gap: 7px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add instrument</span>
+            <div style="position: absolute; top: -60%; left: -30%; width: 46%; height: 220%; background: linear-gradient(100deg, transparent, oklch(1 0 0 / 0.6), transparent); transform: rotate(14deg); pointer-events: none;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 16px; overflow-x: auto;">
+
+        <div class="glass-strong fi-tile selected">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+            <svg width="24" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6"><rect x="4" y="10" width="16" height="10" rx="2"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3"></path></svg>
+            <span class="card-label" style="font-size: 10px;">4 active</span>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <div>
+              <div style="font-size: 16px; font-weight: 800;">All Fixed Income</div>
+              <div style="font-size: 11px; color: var(--muted); margin-top: 6px;">₹14,78,600 total</div>
+            </div>
+            <svg width="40" height="40" viewBox="0 0 40 40" style="flex-shrink: 0; filter: drop-shadow(0 0 6px oklch(1 0 0 / 0.5)) drop-shadow(0 0 14px oklch(1 0 0 / 0.28));">
+              <circle cx="20" cy="20" r="16" fill="none" stroke="var(--neutral-fill)" stroke-width="5"></circle>
+              <circle cx="20" cy="20" r="16" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="80 20" transform="rotate(-90 20 20)"></circle>
+              <text x="20" y="23" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="800" fill="var(--fg)">80%</text>
+            </svg>
+          </div>
+        </div>
+
+        <div class="glass-strong fi-tile">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6"><rect x="3" y="7" width="18" height="13" rx="2"></rect><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="3" y1="13" x2="21" y2="13"></line></svg>
+            <span class="card-label" style="font-size: 10px;">Retirement</span>
+          </div>
+          <div>
+            <div style="font-size: 16px; font-weight: 800;">EPF</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+              <span style="font-size: 11px; color: var(--muted);">8.25% p.a.</span>
+              <span class="badge-pill on">Active</span>
+            </div>
+            <div style="font-size: 10px; color: var(--muted); margin-top: 6px;">₹8,42,600 balance</div>
+          </div>
+        </div>
+
+        <div class="glass-strong fi-tile">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6"><rect x="4" y="10" width="16" height="10" rx="2"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3"></path></svg>
+            <span class="card-label" style="font-size: 10px;">15-yr lock-in</span>
+          </div>
+          <div>
+            <div style="font-size: 16px; font-weight: 800;">PPF</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+              <span style="font-size: 11px; color: var(--muted);">7.1% p.a.</span>
+              <span class="badge-pill on">Active</span>
+            </div>
+            <div style="font-size: 10px; color: var(--muted); margin-top: 6px;">₹3,15,400 &middot; matures 2037</div>
+          </div>
+        </div>
+
+        <div class="glass-strong fi-tile">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+            <svg width="24" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6"><path d="M3 21h18"></path><path d="M5 21V10"></path><path d="M19 21V10"></path><path d="M3 10l9-6 9 6"></path><path d="M9 21v-6"></path><path d="M15 21v-6"></path></svg>
+            <span class="card-label" style="font-size: 10px;">Bank FD</span>
+          </div>
+          <div>
+            <div style="font-size: 16px; font-weight: 800;">HDFC FD</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+              <span style="font-size: 11px; color: var(--muted);">7.25% p.a.</span>
+              <span class="badge-pill on">Active</span>
+            </div>
+            <div style="font-size: 10px; color: var(--muted); margin-top: 6px;">₹2,13,300 &middot; matures Oct 2028</div>
+          </div>
+        </div>
+
+        <div class="glass-strong fi-tile">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            <span class="card-label" style="font-size: 10px;">Recurring</span>
+          </div>
+          <div>
+            <div style="font-size: 16px; font-weight: 800;">SBI RD</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+              <span style="font-size: 11px; color: var(--muted);">6.8% p.a.</span>
+              <span class="badge-pill on">Active</span>
+            </div>
+            <div style="font-size: 10px; color: var(--muted); margin-top: 6px;">₹1,07,300 &middot; ₹5,000/mo</div>
+          </div>
+        </div>
+
+        <div class="glass-strong fi-tile" style="opacity: 0.6;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between;">
+            <svg width="20" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.6"><rect x="5" y="3" width="14" height="18" rx="2"></rect><line x1="9" y1="8" x2="15" y2="8"></line><line x1="9" y1="12" x2="15" y2="12"></line><line x1="9" y1="16" x2="13" y2="16"></line></svg>
+            <span class="card-label" style="font-size: 10px;">Post Office</span>
+          </div>
+          <div>
+            <div style="font-size: 16px; font-weight: 800;">NSC</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 8px;">
+              <span style="font-size: 11px; color: var(--muted);">7.7% p.a.</span>
+              <span class="badge-pill off">Matured</span>
+            </div>
+            <div style="font-size: 10px; color: var(--muted); margin-top: 6px;">Matured &middot; Jan 2025</div>
+          </div>
+        </div>
+
+        <div class="fi-tile" style="border: 1.5px dashed var(--glass-border); display: flex; align-items: center; justify-content: center;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; color: var(--muted);">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: var(--neutral-fill); display: flex; align-items: center; justify-content: center;"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+            <span style="font-size: 12px; font-weight: 600;">Add instrument</span>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display: flex; gap: 16px; flex: 1;">
+
+        <div class="glass-strong glass-grain sub-card" style="flex: 0.8; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden;">
+          <div style="position: absolute; right: 14px; top: 12px; width: 74px; height: 60px;">
+            <div style="position: absolute; bottom: 0; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.72 0 0), oklch(0.42 0 0)); box-shadow: 0 8px 14px oklch(0 0 0 / 0.4);"></div>
+            <div style="position: absolute; bottom: 8px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.80 0 0), oklch(0.50 0 0));"></div>
+            <div style="position: absolute; bottom: 16px; left: 6px; width: 62px; height: 21px; border-radius: 50%; background: linear-gradient(180deg, oklch(0.92 0 0), oklch(0.62 0 0)); overflow: hidden;">
+              <div style="position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%);"></div>
+            </div>
+          </div>
+          <div class="card-label">All Fixed Income &middot; 4 active</div>
+
+          <div style="position: relative;">
+            <div style="position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, var(--accent) 0%, transparent 70%); opacity: 0.3; filter: blur(20px); pointer-events: none;"></div>
+            <div style="position: relative; font-size: 24px; font-weight: 800;">₹14,78,600 <span style="font-size: 12px; color: var(--muted); font-weight: 700;">total &middot; +0.7% MoM</span></div>
+          </div>
+
+          <div style="position: relative; height: 58px;">
+            <div style="position: absolute; left: 25%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center;">
+              <div class="glass-strong" style="border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap;">Avg &middot; ₹3,69,650</div>
+              <div style="width: 1px; height: 12px; background: var(--accent); margin-top: 2px;"></div>
+            </div>
+            <div style="position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: var(--neutral-fill); overflow: hidden;">
+              <div style="width: 100%; height: 100%; background: var(--accent);"></div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-top: -14px;">
+            <span style="font-size: 11px; color: var(--muted);">₹0</span>
+            <span style="font-size: 11px; color: var(--muted);">₹14,78,600 all-time high</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;"><span class="card-label">Active instruments</span><span style="font-size: 14px; font-weight: 700;">4 / 5</span></div>
+            <div style="display: flex; align-items: center; justify-content: space-between;"><span class="card-label">Avg. value per instrument</span><span style="font-size: 14px; font-weight: 700;">₹3,69,650</span></div>
+          </div>
+          <div class="glass" style="border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="font-size: 11px; color: var(--muted);">Recent interest credits</div>
+              <div class="badge-pill on">4 this month</div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">+₹5,790 &middot; EPF</span><span style="font-size: 11px; color: var(--muted);">Sep 1</span></div>
+            <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 13px; font-weight: 700;">+₹1,870 &middot; PPF</span><span style="font-size: 11px; color: var(--muted);">Sep 1</span></div>
+          </div>
+        </div>
+
+        <div class="glass-strong sub-card" style="flex: 1.5; border-radius: 24px; padding: 22px; display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;">
+            <div class="card-label" style="font-size: 14px; color: var(--fg); font-weight: 700;">Instruments — All Fixed Income</div>
+            <div class="pill-btn ghost" style="padding: 7px 16px; font-size: 12px;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add snapshot</div>
+          </div>
+          <div class="tr" style="padding-top: 0; padding-bottom: 8px;">
+            <span class="th">Instrument</span><span class="th">Rate</span><span class="th">Maturity</span><span class="th">Value</span><span class="th">Status</span>
+          </div>
+          <div class="tr">
+            <span style="font-weight: 600;">EPF</span><span>8.25%</span><span>&mdash;</span><span style="font-weight: 700;">₹8,42,600</span><span><span class="badge-pill on">Active</span></span>
+          </div>
+          <div class="tr">
+            <span style="font-weight: 600;">PPF</span><span>7.1%</span><span>2037</span><span style="font-weight: 700;">₹3,15,400</span><span><span class="badge-pill on">Active</span></span>
+          </div>
+          <div class="tr">
+            <span style="font-weight: 600;">HDFC FD</span><span>7.25%</span><span>Oct 2028</span><span style="font-weight: 700;">₹2,13,300</span><span><span class="badge-pill on">Active</span></span>
+          </div>
+          <div class="tr">
+            <span style="font-weight: 600;">SBI RD</span><span>6.8%</span><span>Jan 2028</span><span style="font-weight: 700;">₹1,07,300</span><span><span class="badge-pill on">Active</span></span>
+          </div>
+          <div class="tr" style="opacity: 0.5;">
+            <span style="font-weight: 600;">NSC</span><span>7.7%</span><span>Jan 2025</span><span style="font-weight: 700;">₹1,44,910</span><span><span class="badge-pill off">Matured</span></span>
+          </div>
+        </div>
+
+      </div>
+
+      <div style="display: flex; gap: 16px; height: 300px;">
+
+        <div class="glass-strong sub-card" style="flex: 1; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 12px;">
+          <div class="card-label" style="font-size: 14px; color: var(--fg); font-weight: 700;">Rate range — All Fixed Income</div>
+          <div style="position: relative; flex: 1;">
+            <svg width="100%" height="100%" viewBox="0 0 380 300" style="position: absolute; top: 0; left: 0;">
+              <line x1="190" y1="105" x2="190" y2="88" stroke="var(--divider)" stroke-width="1.5"></line>
+              <line x1="190" y1="195" x2="190" y2="212" stroke="var(--divider)" stroke-width="1.5"></line>
+              <line x1="145" y1="150" x2="110" y2="150" stroke="var(--divider)" stroke-width="1.5"></line>
+              <line x1="235" y1="150" x2="270" y2="150" stroke="var(--divider)" stroke-width="1.5"></line>
+              <circle cx="190" cy="150" r="40" fill="none" stroke="var(--neutral-fill)" stroke-width="9"></circle>
+              <circle cx="190" cy="150" r="40" fill="none" stroke="var(--accent)" stroke-width="9" stroke-linecap="round" stroke-dasharray="23.9 227.4" transform="rotate(-90 190 150)"></circle>
+              <text x="190" y="147" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="19" font-weight="800" fill="var(--fg)">9.5%</text>
+              <text x="190" y="163" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="8" fill="var(--muted)">growth</text>
+              <circle cx="190" cy="88" r="3" fill="var(--accent)"></circle>
+              <circle cx="190" cy="212" r="3" fill="var(--accent)"></circle>
+              <circle cx="110" cy="150" r="3" fill="var(--accent)"></circle>
+              <circle cx="270" cy="150" r="3" fill="var(--accent)"></circle>
+            </svg>
+            <div style="position: absolute; left: 50%; top: 26.7%; transform: translate(-50%, -100%); text-align: center; white-space: nowrap;">
+              <div class="card-label" style="font-size: 9px;">Total invested</div>
+              <div style="font-size: 14px; font-weight: 800;">₹13,50,000</div>
+            </div>
+            <div style="position: absolute; left: 50%; top: 73.3%; transform: translate(-50%, 0); text-align: center; white-space: nowrap;">
+              <div class="card-label" style="font-size: 9px;">Current value</div>
+              <div style="font-size: 14px; font-weight: 800;">₹14,78,600</div>
+            </div>
+            <div style="position: absolute; left: 28.9%; top: 50%; transform: translate(-100%, -50%); text-align: center; white-space: nowrap; padding-right: 8px;">
+              <div class="card-label" style="font-size: 9px;">Lowest rate</div>
+              <div style="font-size: 14px; font-weight: 800;">6.8%</div>
+              <div class="card-label" style="font-size: 9px;">SBI RD</div>
+            </div>
+            <div style="position: absolute; left: 71.1%; top: 50%; transform: translate(0, -50%); text-align: center; white-space: nowrap; padding-left: 8px;">
+              <div class="card-label" style="font-size: 9px;">Highest rate</div>
+              <div style="font-size: 14px; font-weight: 800;">8.25%</div>
+              <div class="card-label" style="font-size: 9px;">EPF</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-strong sub-card" style="flex: 1; border-radius: 24px; padding: 22px; display: flex; flex-direction: column;">
+          <div class="card-label" style="font-size: 14px; color: var(--fg); font-weight: 700; margin-bottom: 2px;">Maturity timeline</div>
+          <div style="font-size: 10px; color: var(--muted); margin-bottom: 4px;">PPF 2037 &middot; EPF ongoing</div>
+          <svg width="100%" height="100%" viewBox="0 0 300 190" style="flex: 1;">
+            <line x1="24" y1="110" x2="276" y2="110" stroke="var(--divider)" stroke-width="2"></line>
+            <circle cx="24" cy="110" r="5" fill="var(--muted)"></circle>
+            <text x="24" y="135" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="10" font-weight="700" fill="var(--muted)">Today</text>
+            <line x1="136" y1="110" x2="136" y2="80" stroke="var(--divider)" stroke-width="1" stroke-dasharray="3 3"></line>
+            <circle cx="136" cy="80" r="5.5" fill="var(--accent)" style="filter: drop-shadow(0 0 6px oklch(1 0 0 / 0.65));"></circle>
+            <text x="136" y="68" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="800" fill="var(--fg)">SBI RD</text>
+            <text x="136" y="56" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="10" fill="var(--muted)">matures &middot; ~16mo</text>
+            <line x1="199" y1="110" x2="199" y2="140" stroke="var(--divider)" stroke-width="1" stroke-dasharray="3 3"></line>
+            <circle cx="199" cy="110" r="5.5" fill="var(--accent)" style="filter: drop-shadow(0 0 6px oklch(1 0 0 / 0.65));"></circle>
+            <text x="199" y="154" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="800" fill="var(--fg)">HDFC FD</text>
+            <text x="199" y="167" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="10" fill="var(--muted)">matures &middot; ~25mo</text>
+            <text x="276" y="135" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="10" fill="var(--muted)">6mo</text>
+          </svg>
+        </div>
+
+        <div class="glass-strong sub-card" style="flex: 1; border-radius: 24px; padding: 22px; display: flex; flex-direction: column;">
+          <div class="card-label" style="font-size: 14px; color: var(--fg); font-weight: 700; margin-bottom: 2px;">This month's interest</div>
+          <div style="display: flex; align-items: center; gap: 6px; margin-top: 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+            <span style="font-size: 21px; font-weight: 800;">+₹9,560</span>
+          </div>
+          <div style="font-size: 11px; color: var(--muted); line-height: 1.4; margin-top: 2px;">Sep vs Aug &middot; +0.7%</div>
+          <svg width="100%" height="100%" viewBox="0 0 300 140" style="flex: 1; margin-top: 6px;">
+            <rect x="20" y="60.4" width="14" height="39.6" rx="4" fill="var(--neutral-fill-2)"></rect>
+            <rect x="50" y="56.2" width="14" height="43.8" rx="4" fill="var(--neutral-fill-2)"></rect>
+            <rect x="80" y="52" width="14" height="48" rx="4" fill="var(--neutral-fill-2)"></rect>
+            <rect x="110" y="47.9" width="14" height="52.1" rx="4" fill="var(--neutral-fill-2)"></rect>
+            <rect x="140" y="43.7" width="14" height="56.3" rx="4" fill="var(--neutral-fill-2)"></rect>
+            <rect x="170" y="39.5" width="14" height="60.5" rx="4" fill="var(--neutral-fill-2)"></rect>
+            <rect x="200" y="35.3" width="14" height="64.7" rx="4" fill="var(--accent)" opacity="0.75"></rect>
+            <rect x="230" y="31.1" width="14" height="68.9" rx="4" fill="var(--accent)" opacity="0.85"></rect>
+            <rect x="260" y="27" width="14" height="73" rx="4" fill="var(--accent)" style="filter: drop-shadow(0 0 5px oklch(1 0 0 / 0.55));"></rect>
+            <line x1="10" y1="100" x2="292" y2="100" stroke="var(--divider)" stroke-width="1"></line>
+            <text x="27" y="112" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="8" fill="var(--muted)">Jan</text>
+            <text x="237" y="112" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="700" fill="var(--fg)">Aug</text>
+            <text x="267" y="112" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="9" font-weight="800" fill="var(--fg)">Sep</text>
+          </svg>
+        </div>
+
+        <div class="glass-strong sub-card" style="flex: 1; border-radius: 24px; padding: 22px; display: flex; flex-direction: column;">
+          <div class="card-label" style="font-size: 14px; color: var(--fg); font-weight: 700; margin-bottom: 4px;">Activity rings</div>
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; flex: 1;">
+            <svg width="120" height="120" viewBox="0 0 200 200" style="flex-shrink: 0;">
+              <circle cx="100" cy="100" r="80" fill="none" stroke="var(--neutral-fill)" stroke-width="14"></circle>
+              <circle cx="100" cy="100" r="80" fill="none" stroke="var(--accent)" stroke-width="14" stroke-linecap="round" stroke-dasharray="47.9 454.7" transform="rotate(-90 100 100)" style="filter: drop-shadow(0 0 4px oklch(1 0 0 / 0.4));"></circle>
+              <circle cx="100" cy="100" r="60" fill="none" stroke="var(--neutral-fill)" stroke-width="14"></circle>
+              <circle cx="100" cy="100" r="60" fill="none" stroke="var(--accent)" stroke-width="14" stroke-linecap="round" stroke-dasharray="301.6 75.4" opacity="0.75" transform="rotate(-90 100 100)"></circle>
+              <circle cx="100" cy="100" r="40" fill="none" stroke="var(--neutral-fill)" stroke-width="14"></circle>
+              <circle cx="100" cy="100" r="40" fill="none" stroke="var(--accent)" stroke-width="14" stroke-linecap="round" stroke-dasharray="195 56.3" opacity="0.55" transform="rotate(-90 100 100)"></circle>
+            </svg>
+            <div style="font-size: 10px; line-height: 1.6;">
+              <div>&#9679; Growth since investment 9.5%</div>
+              <div style="opacity: 0.75;">&#9679; Active instruments 4/5</div>
+              <div style="opacity: 0.55;">&#9679; Blended rate 7.76%</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="glass-strong sub-card" style="border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 14px; height: 150px;">
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <div class="card-label" style="font-size: 14px; color: var(--fg); font-weight: 700;">Interest earned heatmap — All Fixed Income</div>
+          <div style="display: flex; align-items: center; gap: 7px;">
+            <span style="font-size: 11px; color: var(--muted);">Low</span>
+            <div class="heat-swatch" style="background: var(--heat-1);"></div>
+            <div class="heat-swatch" style="background: var(--heat-3);"></div>
+            <div class="heat-swatch" style="background: var(--heat-5);"></div>
+            <span style="font-size: 11px; color: var(--muted);">High</span>
+          </div>
+        </div>
+        <div class="heat-grid">
+          <div></div>
+          <div class="heat-month">Jan</div><div class="heat-month">Feb</div><div class="heat-month">Mar</div><div class="heat-month">Apr</div><div class="heat-month">May</div><div class="heat-month">Jun</div><div class="heat-month">Jul</div><div class="heat-month">Aug</div><div class="heat-month">Sep</div><div class="heat-month">Oct</div><div class="heat-month">Nov</div><div class="heat-month">Dec</div>
+        </div>
+        <div class="heat-grid">
+          <div style="font-size: 12px; color: var(--muted); font-weight: 700;">2026</div>
+          <div class="heat-cell" style="background: var(--heat-1); color: var(--fg);">₹8,720</div>
+          <div class="heat-cell" style="background: var(--heat-1); color: var(--fg);">₹8,825</div>
+          <div class="heat-cell" style="background: var(--heat-2); color: var(--fg);">₹8,930</div>
+          <div class="heat-cell" style="background: var(--heat-2); color: var(--fg);">₹9,035</div>
+          <div class="heat-cell" style="background: var(--heat-3); color: var(--fg);">₹9,140</div>
+          <div class="heat-cell" style="background: var(--heat-3); color: var(--fg);">₹9,245</div>
+          <div class="heat-cell" style="background: var(--heat-4); color: var(--fg);">₹9,350</div>
+          <div class="heat-cell" style="background: var(--heat-4); color: var(--fg);">₹9,455</div>
+          <div class="heat-cell" style="background: var(--heat-5); color: var(--on-accent);">₹9,560</div>
+          <div class="heat-cell" style="background: var(--neutral-fill); color: var(--muted);">–</div>
+          <div class="heat-cell" style="background: var(--neutral-fill); color: var(--muted);">–</div>
+          <div class="heat-cell" style="background: var(--neutral-fill); color: var(--muted);">–</div>
+        </div>
+      </div>
+
+      <div class="glass-strong sub-card" style="border-radius: 24px; padding: 22px; display: flex; flex-direction: column; height: 450px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+          <div class="card-label" style="font-size: 14px; color: var(--fg); font-weight: 700;">Fixed income value trend</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="padding: 7px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted);">All</div>
+            <div style="padding: 7px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--accent-tint); color: var(--accent);">9M</div>
+            <div style="padding: 7px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted);">3M</div>
+          </div>
+        </div>
+
+        <svg width="100%" height="100%" viewBox="0 0 900 240" preserveAspectRatio="none" style="flex: 1;">
+          <defs>
+            <linearGradient id="fiTrendFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="var(--accent)" stop-opacity="0.28"></stop>
+              <stop offset="100%" stop-color="var(--accent)" stop-opacity="0"></stop>
+            </linearGradient>
+          </defs>
+          <line x1="60" y1="20" x2="880" y2="20" stroke="var(--divider)" stroke-width="1" stroke-dasharray="4 4"></line>
+          <line x1="60" y1="86" x2="880" y2="86" stroke="var(--divider)" stroke-width="1" stroke-dasharray="4 4"></line>
+          <line x1="60" y1="152" x2="880" y2="152" stroke="var(--divider)" stroke-width="1" stroke-dasharray="4 4"></line>
+          <line x1="60" y1="218" x2="880" y2="218" stroke="var(--divider)" stroke-width="1" stroke-dasharray="4 4"></line>
+          <text x="46" y="24" text-anchor="end" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="11" fill="var(--muted)">₹15.0L</text>
+          <text x="46" y="90" text-anchor="end" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="11" fill="var(--muted)">₹10.0L</text>
+          <text x="46" y="156" text-anchor="end" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="11" fill="var(--muted)">₹5.0L</text>
+          <text x="46" y="222" text-anchor="end" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="11" fill="var(--muted)">₹0</text>
+
+          <path d="M110,35.2 C155,34.5 185,34 230,33.1 C275,32.1 315,31.6 360,31.1 C405,30.6 445,29.5 490,29 C535,28.5 575,27.4 620,26.9 C665,26.4 705,25.3 750,24.8 C795,24.3 835,23.3 870,22.8 L870,218 L110,218 Z" fill="url(#fiTrendFill)"></path>
+          <path d="M110,35.2 C155,34.5 185,34 230,33.1 C275,32.1 315,31.6 360,31.1 C405,30.6 445,29.5 490,29 C535,28.5 575,27.4 620,26.9 C665,26.4 705,25.3 750,24.8 C795,24.3 835,23.3 870,22.8" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round"></path>
+
+          <circle cx="110" cy="35.2" r="5.5" fill="var(--accent)" style="filter: drop-shadow(0 0 6px oklch(1 0 0 / 0.6));"></circle>
+          <circle cx="230" cy="33.1" r="4.5" fill="var(--accent)"></circle>
+          <circle cx="360" cy="31.1" r="4.5" fill="var(--accent)"></circle>
+          <circle cx="490" cy="29" r="4.5" fill="var(--accent)"></circle>
+          <circle cx="620" cy="26.9" r="4.5" fill="var(--accent)"></circle>
+          <circle cx="750" cy="24.8" r="4.5" fill="var(--accent)"></circle>
+          <circle cx="870" cy="22.8" r="5.5" fill="var(--accent)" style="filter: drop-shadow(0 0 6px oklch(1 0 0 / 0.6));"></circle>
+
+          <text x="110" y="52" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="var(--accent)">₹13.85L</text>
+          <text x="870" y="15" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="700" fill="var(--accent)">₹14.79L</text>
+
+          <text x="110" y="236" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="12" fill="var(--muted)">Jan 2026</text>
+          <text x="360" y="236" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="12" fill="var(--muted)">Mar 2026</text>
+          <text x="620" y="236" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="12" fill="var(--muted)">Jun 2026</text>
+          <text x="870" y="236" text-anchor="middle" font-family="'Manrope', ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="800" fill="var(--fg)">Sep 2026</text>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
