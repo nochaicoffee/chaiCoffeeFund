@@ -1,0 +1,21 @@
+import { describe, expect, it } from "vitest";
+import { detectBank } from "./bankDetection";
+
+describe("detectBank", () => {
+  it.each([
+    ["HDFC Bank Statement of Accounts", "hdfc"],
+    ["Welcome to ICICI Bank Credit Card", "icici"],
+    ["AXIS BANK payment summary", "axis"],
+    ["SBI Card statement", "sbi"],
+    ["Your KOTAK credit card bill", "kotak"],
+    ["AMERICAN EXPRESS Card Member Statement", "amex"],
+    ["Statement from CSB Bank / jupiter.money", "csb"],
+    ["YES BANK Credit Card Statement", "yes"],
+  ] as const)("detects %s as %s", (text, expected) => {
+    expect(detectBank(text)).toBe(expected);
+  });
+
+  it("returns unknown when no keyword matches", () => {
+    expect(detectBank("Some random statement text")).toBe("unknown");
+  });
+});

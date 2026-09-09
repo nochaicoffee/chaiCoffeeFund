@@ -39,6 +39,10 @@ export interface Card {
   statementAnchorDate: string;
   dueAnchorDate: string;
   status: CardStatus;
+  /** Password to open this card's statement PDF — used only by the Gmail ingestion pipeline. */
+  statementPdfPassword?: string;
+  /** Comma-separated extra keywords for matching a statement email to this card, beyond name/alias. */
+  emailMatchKeywords?: string;
 }
 
 export interface Statement {
