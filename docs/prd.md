@@ -1,6 +1,6 @@
 # chaiCoffeeFund: Product Requirements
 
-- **Status:** Draft v0.1, ready for review
+- **Status:** Approved v1.0. Changes from here go into v2.
 - **Owner:** Prathik
 - **Last updated:** 2026-10-16
 - **Related:** [system-design.md](system-design.md) (how it works) · [adr/](adr/) (why) · [process.md](process.md) (how we build) · [`design/dashboards/`](../design/dashboards/) (what it looks like)
@@ -41,7 +41,7 @@ The finances live in a Google Sheet that has stopped being trustworthy:
   - A monthly check-in: what's due, what was spent, net worth.
   - Logging events as they happen: a statement arrives, an EMI is paid, a salary lands, a trade happens.
 
-## 5. Success metrics (proposed; please confirm)
+## 5. Success metrics
 
 | Metric | Target |
 |---|---|
@@ -64,8 +64,6 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 - **P0:** required for v1.0
 - **P1:** should be in v1.0
 - **P2:** later
-
-Priorities are my proposal, so please review them.
 
 **Status:**
 - **Live:** built and verified against the real Sheet
@@ -204,7 +202,7 @@ Following standard practice, acceptance criteria are written in full only for th
 - Lending money to others
 - Tax reporting, tax lots, vesting schedules
 - Multiple users or sharing
-- Automatic bank sync through an aggregator (*assumed; please confirm*)
+- Automatic bank sync through an aggregator
 - Net worth history (F-OV-06 is P2)
 
 ## 11. Proposed release plan
@@ -230,10 +228,12 @@ Following standard practice, acceptance criteria are written in full only for th
 | Q6 | Cards design: which merged-widget option (J–O) replaces the 4-widget row and the poster? | F-CC-05 |
 | Q7 | Phone layouts: design each page's phone layout as part of its epic, or do a mobile design pass for every page up front? | F-PL-03 |
 | Q8 | Overview design: needs a mockup in the new design language | F-OV-05 |
-| Q9 | Are the success metrics (§5) and the priorities (§7) right? | PRD v1.0 |
+
+Each open question is also a GitHub issue labelled `question`, in the milestone it blocks. When one is answered, record the answer here (and in an ADR, if it's a hard-to-reverse decision), then close its issue.
 
 ## 13. Document history
 
 | Version | Date | Change |
 |---|---|---|
 | 0.1 | 2026-10-16 | First draft, consolidating the system design, the mockups, the as-built code, and these decisions from 2026-10-16: the Standard process, GitHub Issues + Projects, laptop and phone with the full app on both, statement totals only, in-app reminders only, and Cards first. |
+| 1.0 | 2026-10-16 | Approved by Prathik as written, including the priorities, success metrics, out-of-scope list and release plan. Further changes go into v2. |

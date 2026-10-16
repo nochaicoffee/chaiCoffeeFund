@@ -4,7 +4,7 @@ Every planning and design doc for this project lives in this folder. Never keep 
 
 | Doc | Answers | Status |
 |---|---|---|
-| [prd.md](prd.md) | What are we building, for whom, and why? Feature list, priorities, acceptance criteria, release plan, open questions. | Draft v0.1 |
+| [prd.md](prd.md) | What are we building, for whom, and why? Feature list, priorities, acceptance criteria, release plan, open questions. | Approved v1.0 |
 | [system-design.md](system-design.md) | How does it work? Data model, storage, backend, frontend. | Restored 2026-10-16. Doesn't yet cover the Gmail import or hosting. |
 | [adr/](adr/) | Why did we make each hard-to-reverse decision? | 0001–0006 accepted, 0007 proposed |
 | [process.md](process.md) | How does work go from idea to merged code? Definition of Ready and Done, the jj and GitHub workflow. | Adopted 2026-10-16 |
