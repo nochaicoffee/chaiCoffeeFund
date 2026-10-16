@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npm run lint
+      - name: Typecheck
+        # next-env.d.ts and route types are gitignored; generate them first.
+        run: npx next typegen && npx tsc --noEmit
+      - name: Unit tests
+        # Pure-function tests only; nothing here needs Sheets or Gmail credentials.
+        run: npm test
