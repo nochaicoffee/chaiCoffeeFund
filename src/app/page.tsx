@@ -1,6 +1,8 @@
 import { BalanceTrendChart } from "@/components/BalanceTrendChart";
 import { RefreshButton } from "@/components/RefreshButton";
+import { PageHeader } from "@/components/shell/PageHeader";
 import { StatTile } from "@/components/StatTile";
+import { todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import { balanceTrend } from "@/lib/aggregate/accounts";
 import { computeCardSummaries } from "@/lib/aggregate/cards";
@@ -48,7 +50,7 @@ export default async function OverviewPage() {
     getCachedIncomeEntries(),
   ]);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayIso();
   const yearMonth = today.slice(0, 7);
 
   const netWorth = computeNetWorth({
@@ -100,13 +102,7 @@ export default async function OverviewPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Overview</h1>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-foreground/50">As of {today}</span>
-          <RefreshButton />
-        </div>
-      </div>
+      <PageHeader section="Overview" title="Overview" actions={<RefreshButton />} />
 
       <div className="rounded-lg border border-divider p-6">
         <div className="text-sm text-foreground/60">Net worth</div>

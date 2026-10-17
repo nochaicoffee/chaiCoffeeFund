@@ -21,7 +21,7 @@ export function RefreshButton() {
           router.refresh();
         })
       }
-      className="rounded-md border border-divider px-3 py-1.5 text-sm hover:bg-fill disabled:opacity-50"
+      className="rounded-full bg-fill px-5 py-2.5 text-[13px] font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50 max-md:min-h-11"
     >
       {isPending ? "Refreshing…" : "Refresh"}
     </button>

@@ -1,6 +1,7 @@
 "use server";
 
 import { updateTag } from "next/cache";
+import { todayIso } from "@/lib/format/date";
 import { CACHE_TAGS } from "@/lib/sheets/cached";
 import { cardsRepository, createCardSchema } from "@/lib/sheets/cards";
 import { statementsRepository, createStatementSchema } from "@/lib/sheets/statements";
@@ -51,7 +52,7 @@ export async function markStatementPaid(formData: FormData): Promise<void> {
   await statementsRepository.update(id, {
     status: "Paid",
     amountPaid,
-    paidDate: new Date().toISOString().slice(0, 10),
+    paidDate: todayIso(),
     paidFromAccountId,
     paidFromCardId,
   });
