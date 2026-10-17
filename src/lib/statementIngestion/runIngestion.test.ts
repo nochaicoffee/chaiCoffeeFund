@@ -49,6 +49,9 @@ vi.mock("@/lib/statementParsing/parseStatement", () => ({
 }));
 vi.mock("@/lib/statementParsing/toStatementFields", () => ({
   toStatementFields: (details: { text: string }) => {
+    // "nodue <date>": a PDF that prints no due date, like HDFC's credit-balance statements.
+    const noDue = details.text.match(/nodue (\S+)/)?.[1];
+    if (noDue) return { problem: "the PDF shows no due date, as nothing is owed on it", statementDate: noDue };
     const date = details.text.match(/date (\S+)/)?.[1];
     return date ? { fields: { statementDate: date, dueDate: "2026-11-05", totalAmountDue: 38500, minimumAmountDue: 3850 } } : { problem: "couldn't read the statement date from the PDF" };
   },
@@ -158,15 +161,45 @@ describe("reading each email", () => {
       email("duplicate", "2026-10-16"),
     ];
     const { outcomes } = await sync();
-    expect(outcomes.map((o) => [o.messageId, o.outcome, o.cardId, o.reason])).toEqual([
-      ["no-pdf", "skipped", undefined, "no PDF attachment found"],
-      ["locked", "skipped", undefined, "no_password_matched"],
-      ["no-card", "skipped", undefined, 'no card matched "Your account summary"'],
-      ["other-bank", "skipped", "regalia", expect.stringContaining("the PDF looks like it's from YES Bank")],
-      ["no-date", "skipped", "regalia", "couldn't read the statement date from the PDF"],
-      ["other-number", "skipped", "regalia", expect.stringContaining("the PDF shows a card ending 8821")],
-      ["duplicate", "duplicate", "regalia", undefined],
+    expect(outcomes.map((o) => [o.messageId, o.outcome, o.problem, o.cardId, o.reason])).toEqual([
+      ["no-pdf", "skipped", "no-pdf", undefined, "no PDF attachment found"],
+      ["locked", "skipped", "locked", undefined, "none of the saved PDF passwords opens it"],
+      ["no-card", "skipped", "no-card", undefined, 'no card matched "Your account summary"'],
+      ["other-bank", "skipped", "wrong-bank", "regalia", expect.stringContaining("the PDF looks like it's from YES Bank")],
+      ["no-date", "skipped", "unreadable", "regalia", "couldn't read the statement date from the PDF"],
+      ["other-number", "skipped", "card-number", "regalia", expect.stringContaining("the PDF shows a card ending 8821")],
+      ["duplicate", "duplicate", undefined, "regalia", undefined],
     ]);
+  });
+
+  it("reports a PDF that won't open, or has no PDF, by the card its subject names (#54)", async () => {
+    fake.emails = [
+      { id: "locked", subject: SUBJECT, text: "", pdfFailure: "no_password_matched" },
+      { id: "scanned", subject: SUBJECT, text: "", pdfFailure: "no_text_extracted" },
+      { id: "no-pdf", subject: SUBJECT, text: "", noPdf: true },
+    ];
+    const { outcomes } = await sync();
+    expect(outcomes.map((o) => [o.problem, o.cardId])).toEqual([
+      ["locked", "regalia"],
+      ["no-text", "regalia"],
+      ["no-pdf", "regalia"],
+    ]);
+  });
+
+  it("logs an email whose PDF gives no due date as a duplicate once its statement is in the Sheet", async () => {
+    fake.emails = [{ id: "credit", subject: SUBJECT, text: "HDFC Bank nodue 2026-03-15 XXXX 1234" }];
+    expect((await sync()).outcomes[0]).toMatchObject({ outcome: "skipped", problem: "unreadable" });
+
+    fake.statements.push({ id: "by-hand", cardId: "regalia", statementDate: "2026-03-15", dueDate: "2026-04-04", totalAmountDue: -4708.5, minimumAmountDue: 0, status: "Paid", amountPaid: 0 });
+    expect((await sync()).outcomes[0]).toMatchObject({ outcome: "duplicate", statementId: "by-hand", cardId: "regalia" });
+    expect(fake.log[0]).toMatchObject({ result: "Duplicate", statementId: "by-hand", attempts: 2 });
+  });
+
+  it("says what it read: the statement it added, and a last 4 it saved", async () => {
+    fake.cards = [regalia()];
+    fake.emails = [email("m1", "2026-10-16")];
+    const [outcome] = (await sync()).outcomes;
+    expect(outcome).toMatchObject({ statement: { statementDate: "2026-10-16", dueDate: "2026-11-05", totalAmountDue: 38500 }, filledLast4: "1234" });
   });
 
   it("reads a statement with the parser for its card's issuer", async () => {
