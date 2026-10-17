@@ -5,11 +5,16 @@ import { cardsQuery, parsePeriod, parseSelectedCard, periodYears } from "./param
 import { summarySentence } from "./summarySentence";
 import { RefreshButton } from "@/components/RefreshButton";
 import { AddCardTile, CardTile } from "@/components/cards/CardTile";
+import { SpendHeatmap } from "@/components/cards/SpendHeatmap";
 import { PeriodSelect } from "@/components/cards/PeriodSelect";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
 import {
   allCardsUtilization,
+  heatmapPeak,
+  heatmapRows,
+  heatmapYearTotals,
+  monthOf,
   pendingSummary,
   spendSummary,
   statementYears,
@@ -57,6 +62,8 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
   const currentYear = Number(today.slice(0, 4));
 
   const tiles = tileCards(data, today);
+  const heatRows = heatmapRows(data, period, today, cardId);
+  const yearTotals = heatmapYearTotals(data, heatRows, today, cardId);
   // Sample data never reaches the real forms, so it can't write to the Sheet.
   const addCardHref = demo ? "/cards#add-card" : "#add-card";
 
@@ -151,6 +158,14 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
           <AddCardTile href={addCardHref} />
         </div>
       </div>
+
+      <SpendHeatmap
+        title={selectedCard?.name ?? "All Cards"}
+        rows={heatRows}
+        yearTotals={yearTotals}
+        peak={heatmapPeak(heatRows)}
+        currentMonth={monthOf(today)}
+      />
 
       {!demo && <InterimManage cards={data.cards} statements={data.statements} accounts={accounts} today={today} />}
     </div>

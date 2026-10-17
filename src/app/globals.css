@@ -46,6 +46,12 @@
   --heat-3: oklch(0.76 0.11 151);
   --heat-4: oklch(0.6 0.12 153);
   --heat-5: oklch(0.42 0.1 156);
+  /* Text on the light shades (1–3); the dark shades (4–5) use --on-accent. */
+  --heat-ink: oklch(0.24 0.05 152);
+  --heat-no-data: oklch(0 0 0 / 0.04);
+  --heat-upcoming: oklch(0 0 0 / 0.13);
+  --heat-glow: oklch(1 0 0 / 0.26);
+  --heat-peak-shadow: 0 8px 18px oklch(0.3 0.09 155 / 0.28);
 
   /*
    * Card colours. Each is a 155° gradient (from, to) for the tile, plus a
@@ -120,6 +126,8 @@
   --color-heat-3: var(--heat-3);
   --color-heat-4: var(--heat-4);
   --color-heat-5: var(--heat-5);
+  --color-heat-ink: var(--heat-ink);
+  --color-heat-upcoming: var(--heat-upcoming);
 
   /* Older pages still use these names until they're redesigned. */
   --color-background: var(--page);
@@ -130,6 +138,7 @@
   --shadow-soft: var(--soft-shadow);
   --shadow-tile: var(--tile-shadow);
   --shadow-tile-selected: var(--tile-shadow-selected);
+  --shadow-heat-peak: var(--heat-peak-shadow);
 }
 
 @theme {

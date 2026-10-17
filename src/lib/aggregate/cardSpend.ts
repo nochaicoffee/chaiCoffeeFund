@@ -296,6 +296,33 @@ export function heatmapRows(data: CardData, period: SpendPeriod, today: string, 
   }));
 }
 
+export interface YearTotal {
+  year: number;
+  total: number;
+  /** Every month so far in that year (PRD §8): 12 for a past year, Jan to now for this year. */
+  months: number;
+  average: number;
+}
+
+/** Each heatmap row's total and monthly average, with the same rules as the rest of the page. */
+export function heatmapYearTotals(data: CardData, rows: HeatRow[], today: string, cardId?: string): YearTotal[] {
+  return rows.map(({ year }) => {
+    const summary = spendSummary(data, { kind: "year", year }, today, cardId);
+    return { year, total: summary.total, months: summary.months.length, average: summary.average };
+  });
+}
+
+/** The single highest month shown in the heatmap (the earliest wins a tie), for its "Peak" marker. */
+export function heatmapPeak(rows: HeatRow[]): MonthAmount | null {
+  let peak: MonthAmount | null = null;
+  for (const cell of rows.flatMap((r) => r.cells)) {
+    if (cell.state === "data" && cell.amount !== null && (peak === null || cell.amount > peak.amount)) {
+      peak = { month: cell.month, amount: cell.amount };
+    }
+  }
+  return peak;
+}
+
 export interface SeriesPoint {
   month: MonthKey;
   /** The sum of byCard, so stacked bars always add up to it. */
