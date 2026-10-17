@@ -1,44 +1,744 @@
 {
   "pages": [
-    { "id": "page-1", "name": "Cards" },
-    { "id": "page-2", "name": "Subscriptions" },
-    { "id": "page-3", "name": "Income" },
-    { "id": "page-4", "name": "Accounts" },
-    { "id": "page-5", "name": "Loans" },
-    { "id": "page-6", "name": "Fixed Income" },
-    { "id": "page-7", "name": "Investments" },
-    { "id": "page-8", "name": "Color Palette Ideas" },
-    { "id": "page-9", "name": "Light Theme (Mint)" },
-    { "id": "page-10", "name": "Hero Space Ideas" }
+    {
+      "id": "page-1",
+      "name": "Cards"
+    },
+    {
+      "id": "page-2",
+      "name": "Subscriptions"
+    },
+    {
+      "id": "page-3",
+      "name": "Income"
+    },
+    {
+      "id": "page-4",
+      "name": "Accounts"
+    },
+    {
+      "id": "page-5",
+      "name": "Loans"
+    },
+    {
+      "id": "page-6",
+      "name": "Fixed Income"
+    },
+    {
+      "id": "page-7",
+      "name": "Investments"
+    },
+    {
+      "id": "page-8",
+      "name": "Color Palette Ideas"
+    },
+    {
+      "id": "page-9",
+      "name": "Light Theme (Mint)"
+    },
+    {
+      "id": "page-10",
+      "name": "Hero Space Ideas"
+    },
+    {
+      "id": "page-11",
+      "name": "Details Card Ideas"
+    },
+    {
+      "id": "page-12",
+      "name": "Heatmap Ideas"
+    },
+    {
+      "id": "page-13",
+      "name": "Heatmap Multi-Year"
+    },
+    {
+      "id": "page-14",
+      "name": "Heatmap Palettes"
+    },
+    {
+      "id": "page-15",
+      "name": "Heatmap Textures"
+    },
+    {
+      "id": "page-16",
+      "name": "Trend Ideas"
+    },
+    {
+      "id": "page-17",
+      "name": "Trend Line + Bar"
+    },
+    {
+      "id": "page-18",
+      "name": "Trend Alternatives"
+    },
+    {
+      "id": "page-19",
+      "name": "Trend By card / Total"
+    },
+    {
+      "id": "page-20",
+      "name": "Hero Companion Ideas"
+    },
+    {
+      "id": "page-21",
+      "name": "Hero Companion · Any window"
+    },
+    {
+      "id": "page-22",
+      "name": "Hero Companion · Five years"
+    },
+    {
+      "id": "page-23",
+      "name": "Hero Companion · Folded years"
+    },
+    {
+      "id": "page-24",
+      "name": "Dark Theme Ideas"
+    },
+    {
+      "id": "page-25",
+      "name": "Details Card · Light"
+    },
+    {
+      "id": "page-26",
+      "name": "Details Card · Texture"
+    },
+    {
+      "id": "page-27",
+      "name": "Details Card · Mint header"
+    },
+    {
+      "id": "page-28",
+      "name": "Tile ↔ details shade"
+    },
+    {
+      "id": "page-29",
+      "name": "Next due · Variations"
+    },
+    {
+      "id": "page-30",
+      "name": "Next due · Bars"
+    },
+    {
+      "id": "page-31",
+      "name": "Next due · Textured bar"
+    }
   ],
   "artboards": [
-    { "file": "CardsList.dc.html", "x": 0, "y": 0, "w": 1700, "h": 2140, "page": "page-1" },
-    { "file": "SubscriptionsList.dc.html", "x": 0, "y": 0, "w": 1600, "h": 1665, "page": "page-2" },
-    { "file": "IncomeList.dc.html", "x": 0, "y": 0, "w": 1600, "h": 1665, "page": "page-3" },
-    { "file": "AccountsList.dc.html", "x": 0, "y": 0, "w": 1600, "h": 1665, "page": "page-4" },
-    { "file": "LoansList.dc.html", "x": 0, "y": 0, "w": 1600, "h": 1665, "page": "page-5" },
-    { "file": "FixedIncomeList.dc.html", "x": 0, "y": 0, "w": 1600, "h": 1665, "page": "page-6" },
-    { "file": "InvestmentsList.dc.html", "x": 0, "y": 0, "w": 1600, "h": 2060, "page": "page-7" },
-
-    { "file": "CardsVault.dc.html", "x": 0, "y": 0, "w": 1700, "h": 1740, "page": "page-8" },
-    { "file": "CardsLedger.dc.html", "x": 1780, "y": 0, "w": 1700, "h": 1740, "page": "page-8" },
-    { "file": "CardsLedgerNight.dc.html", "x": 3560, "y": 0, "w": 1700, "h": 1740, "page": "page-8" },
-
-    { "file": "CardsListLight.dc.html", "x": 0, "y": 0, "w": 1700, "h": 2250, "page": "page-9" },
-
-    { "file": "CardsHeroSpaceIdeas.dc.html", "x": 0, "y": 0, "w": 1700, "h": 9020, "page": "page-10" }
+    {
+      "file": "CardsList.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1700,
+      "h": 2140,
+      "page": "page-1"
+    },
+    {
+      "file": "SubscriptionsList.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1665,
+      "page": "page-2"
+    },
+    {
+      "file": "IncomeList.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1665,
+      "page": "page-3"
+    },
+    {
+      "file": "AccountsList.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1665,
+      "page": "page-4"
+    },
+    {
+      "file": "LoansList.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1665,
+      "page": "page-5"
+    },
+    {
+      "file": "FixedIncomeList.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1665,
+      "page": "page-6"
+    },
+    {
+      "file": "InvestmentsList.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2060,
+      "page": "page-7"
+    },
+    {
+      "file": "CardsVault.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1700,
+      "h": 1740,
+      "page": "page-8"
+    },
+    {
+      "file": "CardsLedger.dc.html",
+      "x": 1780,
+      "y": 0,
+      "w": 1700,
+      "h": 1740,
+      "page": "page-8"
+    },
+    {
+      "file": "CardsLedgerNight.dc.html",
+      "x": 3560,
+      "y": 0,
+      "w": 1700,
+      "h": 1740,
+      "page": "page-8"
+    },
+    {
+      "file": "CardsListLight.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1700,
+      "h": 1550,
+      "page": "page-9"
+    },
+    {
+      "file": "CardsHeroSpaceIdeas.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1700,
+      "h": 9020,
+      "page": "page-10"
+    },
+    {
+      "file": "CardsDetailsIdeas.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1400,
+      "h": 3390,
+      "page": "page-11"
+    },
+    {
+      "file": "CardsHeatmapIdeas.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 1910,
+      "page": "page-12"
+    },
+    {
+      "file": "CardsHeatmapMultiYear.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 1900,
+      "page": "page-13"
+    },
+    {
+      "file": "CardsHeatmapPalettes.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 2380,
+      "page": "page-14"
+    },
+    {
+      "file": "CardsHeatmapTextures.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 2060,
+      "page": "page-15"
+    },
+    {
+      "file": "CardsTrendIdeas.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 3350,
+      "page": "page-16"
+    },
+    {
+      "file": "CardsTrendToggleIdeas.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 6200,
+      "page": "page-17"
+    },
+    {
+      "file": "CardsTrendAltIdeas.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 4690,
+      "page": "page-18"
+    },
+    {
+      "file": "CardsTrendStackToggle.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 3520,
+      "page": "page-19"
+    },
+    {
+      "file": "CardsHeroCompanionIdeas.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 2790,
+      "page": "page-20"
+    },
+    {
+      "file": "CardsHeroCompanionMore.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 4875,
+      "page": "page-21"
+    },
+    {
+      "file": "CardsHeroCompanionYears.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 3260,
+      "page": "page-22"
+    },
+    {
+      "file": "CardsHeroCompanionFolded.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 4820,
+      "page": "page-23"
+    },
+    {
+      "file": "CardsDetailsLightIdeas.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 4245,
+      "page": "page-25"
+    },
+    {
+      "file": "CardsDetailsTextureIdeas.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 5880,
+      "page": "page-26"
+    },
+    {
+      "file": "CardsDetailsHeaderIdeas.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 4710,
+      "page": "page-27"
+    },
+    {
+      "file": "CardsShadeMatch.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 2370,
+      "page": "page-28"
+    },
+    {
+      "file": "StatementsList.dc.html",
+      "x": 1820,
+      "y": 0,
+      "w": 1700,
+      "h": 1020,
+      "page": "page-9"
+    },
+    {
+      "file": "CardsPendingIdeas.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 4390,
+      "page": "page-29"
+    },
+    {
+      "file": "CardsPendingBars.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 4915,
+      "page": "page-30"
+    },
+    {
+      "file": "CardsPendingBarsTexture.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1612,
+      "h": 2280,
+      "page": "page-31"
+    },
+    {
+      "file": "CardsListDarkGraphite.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1700,
+      "h": 1550,
+      "page": "page-24"
+    },
+    {
+      "file": "CardsListDarkForest.dc.html",
+      "x": 1820,
+      "y": 0,
+      "w": 1700,
+      "h": 1550,
+      "page": "page-24"
+    },
+    {
+      "file": "CardsListDarkMidnight.dc.html",
+      "x": 3640,
+      "y": 0,
+      "w": 1700,
+      "h": 1550,
+      "page": "page-24"
+    },
+    {
+      "file": "CardsListDarkEspresso.dc.html",
+      "x": 0,
+      "y": 1740,
+      "w": 1700,
+      "h": 1550,
+      "page": "page-24"
+    },
+    {
+      "file": "CardsListDarkOled.dc.html",
+      "x": 1820,
+      "y": 1740,
+      "w": 1700,
+      "h": 1550,
+      "page": "page-24"
+    },
+    {
+      "file": "CardsListDarkAurora.dc.html",
+      "x": 3640,
+      "y": 1740,
+      "w": 1700,
+      "h": 1550,
+      "page": "page-24"
+    }
   ],
   "annotations": [
-    { "id": "note-cards", "x": 0, "y": -70, "w": 700, "text": "Rebuilt from a PDF export of the real page you had saved — numbers here are exact (Regalia Gold, Amazon Pay, Gold Card; ₹50,900 outstanding of ₹4,00,000 across 3 cards).", "page": "page-1" },
-    { "id": "note-subs", "x": 0, "y": -70, "w": 700, "text": "Rebuilt fresh in the same system — I didn't have this page's exact original numbers memorized, so Netflix/Spotify/Amazon Prime and all figures here are plausible placeholders, not a restore. Replace with the real subscriptions whenever convenient.", "page": "page-2" },
-    { "id": "note-income", "x": 0, "y": -70, "w": 700, "text": "Rebuilt fresh in the same system. The YTD total (₹23,63,700) and July peak (₹5.78L) are real figures I remembered from this project's notes; the individual entries (NetApp Salary/Bonus/Freelance split) are plausible placeholders built to add up to that real total, not a restore of the original page.", "page": "page-3" },
-    { "id": "note-accounts", "x": 0, "y": -70, "w": 700, "text": "Restored at high fidelity from what I'd read directly earlier this session — real account data (HDFC/ICICI/SBI/Axis) and widget numbers should match the original closely. The two widgets I didn't have exact source for (Balance constellation, Net flow) are rebuilt to spec but with re-derived chart coordinates.", "page": "page-4" },
-    { "id": "note-loans", "x": 0, "y": -70, "w": 700, "text": "Restored at high fidelity — this page was fully read and edited within this session, so content should match the last working version closely (interest rates on tiles, Outstanding balance heatmap in place of the old broken Principal-vs-interest widget).", "page": "page-5" },
-    { "id": "note-fixedincome", "x": 0, "y": -70, "w": 700, "text": "Restored at high fidelity — authored in full within this session (EPF/PPF/HDFC FD/SBI RD/NSC), so this should be an exact match to the last working version.", "page": "page-6" },
-    { "id": "note-investments", "x": 0, "y": -70, "w": 700, "text": "Restored at high fidelity, then extended with 4 widgets borrowed from a FinPoint dashboard screenshot you shared: a Diversification meter (header, next to the title), a Watchlist strip with sparklines (NTAP, Nifty 50, USD/INR, HDFC Debt NAV), a Concentration risk gauge, and Allocation-by-category bars. Restyled into our single-accent glass system throughout — no new hues, no FinPoint chrome (still our rail nav, still glass cards).", "page": "page-7" },
-    { "id": "note-palette", "x": 0, "y": -70, "w": 1400, "text": "Three accent directions on the real Cards page — the glass system itself (blur, borders, shadows, sheen streaks) is untouched; only --accent/--accent-tint/--on-accent, the heatmap tiers, the ambient background glow, and the data-glow color (rings, chart points, bar highlights — previously hardcoded white, now color-matched to the accent) change per variant. Vault = warm gold, for a premium/wealth feel. Ledger = mint-teal, calm and unmistakably fintech. Ledger Night = indigo, with a slightly deeper near-black base for a moodier, more SaaS-tool feel.", "page": "page-8" },
-    { "id": "note-light", "x": 0, "y": -90, "w": 1400, "text": "Explored per your reference screenshot: moved the whole chrome away from glass morphism (no blur, flat white cards with hairline borders + soft shadows) onto a light bg with a mint-green accent, matching black active states/buttons. The 4 card tiles and the graphite details/KPI section were kept exactly as-is (still dark, still their own gradient colors) — they now pop as objects against the light page instead of blending into a dark glass panel. The 3 KPI tiles were later replaced by the greeting/overview text at the top of the page, and the space beside the details card now holds a 'ghost-chart poster' (picked from the Hero Space Ideas exploration, page 10, option I): a large, very pale trend line fills the space like a watermark, with utilization, monthly average, highest month, due dates and the MoM change floating on top of it as plain text — no card, no box. One deliberate side effect: the selected-tile checkmark badge renders in the new mint green instead of white, since it shares the global --accent token with the rest of the page.", "page": "page-9" },
-    { "id": "note-hero-ideas", "x": 0, "y": -70, "w": 1400, "text": "Exploration only — CardsListLight.dc.html is untouched. All with the same hero card copied verbatim. A/B/C repack the existing 4 widgets (2×2 grid / 2 combined cards / 1 dense panel). D/E/F are designed single-focal-point cards (big gradient ring / bento chart+cells / editorial soft-gradient with huge type). G/H/I drop the card container entirely — text and shapes float straight on the page background: (G) huge number + inline sparkline + plain-text due row; (H) the D ring with no card behind it; (I) a large pale 'ghost' line/area trend chart as a watermark with numbers floating on top. I2/I3/I4 vary the watermark chart type per your ask: (I2) same idea with a pale bar chart instead of a line; (I3) a big pale donut split by which card holds the outstanding balance, each segment tinted with that card's own hue — new info, not just a restyle; (I4) both at once — pale bars for the trend plus a small pale ring inset for utilization, one caption tying them together. J/K go further and fold the ENTIRE 4-widget row below (Spend range, Payment due, Month-over-month, Activity) into this same section too, so nothing is duplicated between the two: a utilization ring + highest/lowest/avg stats on top, an upcoming-due timeline in the middle, month-over-month + activity at the bottom — same content in both, (J) floating with no card, (K) wrapped in one bounded card. Picking J or K means the separate widget row disappears entirely. L restyles that same combined content after a reference you shared: the ring+stats row becomes three bold solid-color stat blocks (ink 'Utilization', mint 'Monthly avg', white 'Highest'), and the trend line gets a real floating tooltip pinned to the July peak with a connector line down to it and a green delta chip, instead of a plain floating label — plus a quiet 'low' caption near the chart's start. M/N/O are simpler still — no color blocks, much more whitespace, one clean visual moment each: (M) one giant number (monthly average) with a thin annotated line beneath it; (N) just a centered utilization ring with everything else reduced to one quiet caption line, plus the two due dates; (O) one bounded card that's almost entirely the annotated trend chart, with a single plain-text stat row underneath — no dividers, no boxes, no color.", "page": "page-10" }
+    {
+      "id": "note-cards",
+      "x": 0,
+      "y": -70,
+      "w": 700,
+      "text": "Rebuilt from a PDF export of the real page you had saved — numbers here are exact (Regalia Gold, Amazon Pay, Gold Card; ₹50,900 outstanding of ₹4,00,000 across 3 cards).",
+      "page": "page-1"
+    },
+    {
+      "id": "note-subs",
+      "x": 0,
+      "y": -70,
+      "w": 700,
+      "text": "Rebuilt fresh in the same system — I didn't have this page's exact original numbers memorized, so Netflix/Spotify/Amazon Prime and all figures here are plausible placeholders, not a restore. Replace with the real subscriptions whenever convenient.",
+      "page": "page-2"
+    },
+    {
+      "id": "note-income",
+      "x": 0,
+      "y": -70,
+      "w": 700,
+      "text": "Rebuilt fresh in the same system. The YTD total (₹23,63,700) and July peak (₹5.78L) are real figures I remembered from this project's notes; the individual entries (NetApp Salary/Bonus/Freelance split) are plausible placeholders built to add up to that real total, not a restore of the original page.",
+      "page": "page-3"
+    },
+    {
+      "id": "note-accounts",
+      "x": 0,
+      "y": -70,
+      "w": 700,
+      "text": "Restored at high fidelity from what I'd read directly earlier this session — real account data (HDFC/ICICI/SBI/Axis) and widget numbers should match the original closely. The two widgets I didn't have exact source for (Balance constellation, Net flow) are rebuilt to spec but with re-derived chart coordinates.",
+      "page": "page-4"
+    },
+    {
+      "id": "note-loans",
+      "x": 0,
+      "y": -70,
+      "w": 700,
+      "text": "Restored at high fidelity — this page was fully read and edited within this session, so content should match the last working version closely (interest rates on tiles, Outstanding balance heatmap in place of the old broken Principal-vs-interest widget).",
+      "page": "page-5"
+    },
+    {
+      "id": "note-fixedincome",
+      "x": 0,
+      "y": -70,
+      "w": 700,
+      "text": "Restored at high fidelity — authored in full within this session (EPF/PPF/HDFC FD/SBI RD/NSC), so this should be an exact match to the last working version.",
+      "page": "page-6"
+    },
+    {
+      "id": "note-investments",
+      "x": 0,
+      "y": -70,
+      "w": 700,
+      "text": "Restored at high fidelity, then extended with 4 widgets borrowed from a FinPoint dashboard screenshot you shared: a Diversification meter (header, next to the title), a Watchlist strip with sparklines (NTAP, Nifty 50, USD/INR, HDFC Debt NAV), a Concentration risk gauge, and Allocation-by-category bars. Restyled into our single-accent glass system throughout — no new hues, no FinPoint chrome (still our rail nav, still glass cards).",
+      "page": "page-7"
+    },
+    {
+      "id": "note-palette",
+      "x": 0,
+      "y": -70,
+      "w": 1400,
+      "text": "Three accent directions on the real Cards page — the glass system itself (blur, borders, shadows, sheen streaks) is untouched; only --accent/--accent-tint/--on-accent, the heatmap tiers, the ambient background glow, and the data-glow color (rings, chart points, bar highlights — previously hardcoded white, now color-matched to the accent) change per variant. Vault = warm gold, for a premium/wealth feel. Ledger = mint-teal, calm and unmistakably fintech. Ledger Night = indigo, with a slightly deeper near-black base for a moodier, more SaaS-tool feel.",
+      "page": "page-8"
+    },
+    {
+      "id": "note-light",
+      "x": 0,
+      "y": -90,
+      "w": 1400,
+      "text": "Explored per your reference screenshot: moved the whole chrome away from glass morphism (no blur, flat white cards with hairline borders + soft shadows) onto a light bg with a mint-green accent, matching black active states/buttons. The 4 card tiles and the graphite details/KPI section were kept exactly as-is (still dark, still their own gradient colors) — they now pop as objects against the light page instead of blending into a dark glass panel. The 3 KPI tiles were later replaced by the greeting/overview text at the top of the page, and the space beside the details card now holds a 'ghost-chart poster' (picked from the Hero Space Ideas exploration, page 10, option I): a large, very pale trend line fills the space like a watermark, with utilization, monthly average, highest month, due dates and the MoM change floating on top of it as plain text — no card, no box. One deliberate side effect: the selected-tile checkmark badge renders in the new mint green instead of white, since it shares the global --accent token with the rest of the page. The details card has since moved from graphite and gold to deep emerald with a soft mint light in the top-right corner and faint concentric lines (option F on the Details Card Ideas page), with no glow behind the balance, so it sits inside the mint palette. The spending heatmap is now layout F with palette P1 and texture T1 (Heatmap Ideas → Multi-Year → Palettes → Textures pages): one row per year with the year's total and average at the end, a single-hue emerald scale, a soft light and fine rings on every month with data, hatched months before tracking, dashed upcoming months, July raised as the peak and August ringed as this month. Only the real 2026 row is shown; each new year adds a row on top. The statement trend's switches work: By card / Total swaps between stacked-by-card bars and one green bar per month, and the line and bar icons turn on and off independently (both can be on together; both off shows an empty state). It opens on Total, bar view, 1Y. The range chips are not interactive yet. 1Y shows all of 2026: Jan–Mar hatched as no data, Sep–Dec dashed as upcoming, April–August as green bars on the heatmap's P1 scale with a dashed ₹47.9k average. Every bar carries the same light-and-rings texture in both modes; July is marked by its Peak tooltip and lift, August is ringed as this month. The details card is now a white card with an inset header in the same emerald as the selected All Cards tile (gradient, white rings, white text, lime progress bar): balance, average and progress bar sit on it; stats and dues below are plain. The panel beside the details card now opens on a short Statements list (card, statement date, due date, total due, status) with a ‘View all statements’ link to the full Statements page; its Statements / Spend range switch swaps in the ‘Where August sits’ range view (with its own This year / All time switch). The old Statement history section at the bottom is gone (board is 1550px tall). The details card’s stats are a 2×2 grid: Available, Total spent, Highest month (₹57,300 Jul) and Lowest month (₹40,400 May). Its Next due box is a stacked bar (option T1 from Next due · Textured bar): one segment per pending bill sized by amount, coloured by card, with the amount inside and the signature rings texture in each segment; total due on the right, next two bills in the legend and “+N more” when there are more.",
+      "page": "page-9"
+    },
+    {
+      "id": "note-hero-ideas",
+      "x": 0,
+      "y": -70,
+      "w": 1400,
+      "text": "Exploration only — CardsListLight.dc.html is untouched. All with the same hero card copied verbatim. A/B/C repack the existing 4 widgets (2×2 grid / 2 combined cards / 1 dense panel). D/E/F are designed single-focal-point cards (big gradient ring / bento chart+cells / editorial soft-gradient with huge type). G/H/I drop the card container entirely — text and shapes float straight on the page background: (G) huge number + inline sparkline + plain-text due row; (H) the D ring with no card behind it; (I) a large pale 'ghost' line/area trend chart as a watermark with numbers floating on top. I2/I3/I4 vary the watermark chart type per your ask: (I2) same idea with a pale bar chart instead of a line; (I3) a big pale donut split by which card holds the outstanding balance, each segment tinted with that card's own hue — new info, not just a restyle; (I4) both at once — pale bars for the trend plus a small pale ring inset for utilization, one caption tying them together. J/K go further and fold the ENTIRE 4-widget row below (Spend range, Payment due, Month-over-month, Activity) into this same section too, so nothing is duplicated between the two: a utilization ring + highest/lowest/avg stats on top, an upcoming-due timeline in the middle, month-over-month + activity at the bottom — same content in both, (J) floating with no card, (K) wrapped in one bounded card. Picking J or K means the separate widget row disappears entirely. L restyles that same combined content after a reference you shared: the ring+stats row becomes three bold solid-color stat blocks (ink 'Utilization', mint 'Monthly avg', white 'Highest'), and the trend line gets a real floating tooltip pinned to the July peak with a connector line down to it and a green delta chip, instead of a plain floating label — plus a quiet 'low' caption near the chart's start. M/N/O are simpler still — no color blocks, much more whitespace, one clean visual moment each: (M) one giant number (monthly average) with a thin annotated line beneath it; (N) just a centered utilization ring with everything else reduced to one quiet caption line, plus the two due dates; (O) one bounded card that's almost entirely the annotated trend chart, with a single plain-text stat row underneath — no dividers, no boxes, no color.",
+      "page": "page-10"
+    },
+    {
+      "id": "note-details-ideas",
+      "x": 0,
+      "y": -70,
+      "w": 1400,
+      "page": "page-11",
+      "text": "Exploration only — CardsListLight.dc.html is untouched. The details card restyled to sit inside the mint palette instead of being the one graphite-and-gold block on the page. Same content and layout in all six; each variant also moves the bar, glow, coins and badge from gold to mint. Now = current graphite + gold, for reference. (A) keep graphite, accents go mint — smallest change. (B) deep forest green with white text — the accent taken dark. (C) vivid mint fill with dark text and a black bar — boldest. (D) pale mint wash with dark text. (E) plain white card like the other widgets, mint only on the bar, badge and next-due box. A second set, 'My picks — richer finishes', goes beyond flat recolors: (F) deep emerald with a soft mint light bloom and faint concentric guilloche lines like a premium metal card; (G) graphite fading into deep green, bridging the dark tile row and the mint page; (H) a light card with a soft mint-and-lime mesh glow, dark text; (I) two-tone — balance and bar on a green top half, Available, Total spent and Next due on a white lower half; (J) a muted sage, so the bright mint bar and badge pop against it."
+    },
+    {
+      "id": "note-heatmap-ideas",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-12",
+      "text": "Exploration only — CardsListLight.dc.html is untouched. The spending heatmap redone in the mint/emerald system, all at the live card's exact width with the same 2026 data. Each version separates months before tracking (Jan–Mar) from months still to come (Sep–Dec), marks July as the peak and August as the current month. (A) the same grid with the scale ending in the emerald card finish; (B) a bar per month with a dashed line at the ₹47.9k average; (C) the twelve months as one continuous gradient ribbon with a tooltip over July; (D) the takeaway in words on the left (July is ₹9,360 above average) plus a compact version of A; (E) a tall pill per month, filled relative to the highest month."
+    },
+    {
+      "id": "note-heatmap-multi",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-13",
+      "text": "Exploration only — CardsListLight.dc.html is untouched. Heatmap variations built for multiple years: one row per year, newest on top, all on one shared color scale. The 2025 row is placeholder data to show stacking; 2026 is real (₹2,39,700 over Apr–Aug, ₹47,940 average). (F) emerald-cell rows with each year's total and average at the end; (G) one gradient ribbon per year with values inside; (H) a dot per month with the value underneath; (I) a strip of mini bars per year on one shared scale, with that year's average as a dashed line; (J) the F grid plus a row comparing each month to the same month last year."
+    },
+    {
+      "id": "note-heatmap-palettes",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-14",
+      "text": "Exploration only — CardsListLight.dc.html is untouched. Heatmap F with only the five low-to-high color steps changing. The texture (soft light bloom + fine rings) now marks each year's peak (July 2026, October 2025) instead of whichever months land in the darkest step. Current = mint to emerald. (P1) one emerald hue, even steps; (P2) mint cooling to teal; (P3) lime warming into emerald, widest spread; (P4) quiet: near-grey low months, green only for heavy ones; (P5) muted sage; (P6) vivid, built on the page's accent green. 2025 row is placeholder data."
+    },
+    {
+      "id": "note-heatmap-textures",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-15",
+      "text": "Exploration only — CardsListLight.dc.html is untouched. Heatmap F in palette P1 (one emerald hue) with texture on every month that has data; no-data and upcoming months stay plain, and the peak keeps its caption plus a slight lift. (T1) the same light bloom and rings on every month; (T2) texture strength grows with spend; (T3) one ring pattern per row centred on that year's peak, rippling out across the cells; (T4) fine engraved rings, no light; (T5) soft light only, no lines; (T6) fine diagonal engraving."
+    },
+    {
+      "id": "note-trend-ideas",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-16",
+      "text": "Exploration only. Statement trend variations on the real statements, April to August 2026 (₹41.0k, ₹40.4k, ₹50.1k, ₹57.3k, ₹50.9k; average ₹47.9k). Fix = the live chart's current style with corrected data: the earlier rebuild dropped June, labelled ₹50.1k as May and plotted every point too low; the live dashboard now has the corrected version. (A) refined area with a dashed average line, a peak tooltip and a this-month dot; (B) the same chart on the emerald card finish; (C) textured bars in the heatmap's P1 colors; (D) the month's number and change vs July as a headline, plus a quiet line; (E) lollipops with a soft band at the average. All curves are monotone, so they can't bulge above the peak."
+    },
+    {
+      "id": "note-trend-toggle",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-17",
+      "text": "Exploration only. Statement trend versions that each have three states of the line/bar switch (now a segmented control where either or both can be on): line only, bars only, and both on — bars with the line drawn through their tops, the line given a thin white halo so it stays readable over dark bars. Months sit at the centre of equal columns in both views, so toggling doesn't shift them sideways. Texture appears in exactly one place per version: (V1) area + heatmap-colored bars, texture on the peak bar only; (V2) thin line / slim pill bars, a faint ring watermark fading in from the bottom-right; (V3) a soft mint 'This month' column behind August in both views, texture inside that column only; (V4) an emerald header badge with August's total and the change vs July, texture on the badge only. Real data, April–August 2026."
+    },
+    {
+      "id": "note-trend-alt",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-18",
+      "text": "Exploration only. Three statement-trend chart types that show something the heatmap doesn't, each in all three switch states (line, bar, both on). (S1) stacked by card in each card's tile color — Regalia Gold carried ₹42.1k of July's ₹57.3k; June–August splits are from your statements (June's Amazon Pay = June total − the Regalia Gold statement), April and May splits are PLACEHOLDER and hatched, since the data only has per-card statements from June. (S2) difference from your ₹47.9k average — coral above, green below, actual amount under each month. (S3) step chart, one flat step per billing cycle, August's step in mint. Texture only on July in each."
+    },
+    {
+      "id": "note-trend-stack-toggle",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-19",
+      "text": "Exploration only. The statement trend with working switches: By card / Total swaps stacked-by-card bars for one green bar per month (P1 scale + dashed ₹47.9k average); line and bar toggle independently, so both can be on, and turning both off shows an empty state. Same texture on every bar in both modes. The six states are also drawn statically below. April and May card splits are placeholder (hatched); totals are real. Range chips are not interactive."
+    },
+    {
+      "id": "note-hero-companion",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-20",
+      "text": "Exploration only. Five replacements for the curve panel beside the details card (A dumbbell change vs July, B billing-cycle tracks, C pay-window rings, D four insight tiles, E textured range band). Each only shows facts not already on the dashboard. Today is Aug 18 (from the tiles' countdowns); next statement dates assume the same day each month."
+    },
+    {
+      "id": "note-hero-companion-more",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-21",
+      "text": "Exploration only. Five more replacements for the curve panel (F diverging comparison ladder, G one range band per year, H cycle tracks + per-year statement record, I right-now vs in-this-window split, J ranked insight feed), each shown on This year and on All time. Right-now facts ignore the window; period summaries follow it. 2025 is sample data (same placeholder year as the multi-year heatmap)."
+    },
+    {
+      "id": "note-hero-companion-years",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-22",
+      "text": "Exploration only. How G (range by year) and H (statement record) hold five years in the fixed 400px panel: G1 slim rows, G2 year columns, G3 recent years + one folded 'earlier' band; H1 compact rows, H2 recent years + summary chips, H3 one year at a time with a year strip. 2022–2025 are sample data; 2026 is real."
+    },
+    {
+      "id": "note-hero-companion-folded",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-23",
+      "text": "Exploration only. Variations of G3 (this year, last year, older years folded into one row): K amounts in side column, L amounts on band ends + stat strip, M range table, N ink card, P box plot, Q dot swarm, R ridgeline, S dumbbell, T vertical columns with an 'earlier' column. Highest/lowest amounts appear per row and/or in the bottom row. 2022–25 sample data; 2026 real."
+    },
+    {
+      "id": "note-details-light",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-25",
+      "text": "Exploration only. Eight calmer light-theme versions of the details card (A plain, B mint wash, C corner bloom, D accent rail, E mint header, F utilisation ring, G green type only, H selected outline), each beside the light Where August sits panel. Same content as the live card."
+    },
+    {
+      "id": "note-details-mint",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-26",
+      "text": "Exploration only. Details card variations: T1–T4 signature rings on white and pale-mint bases; D1–D4 a little darker than the shared example (deeper mint, gradient, sage); P1–P3 textured dues box on a plain white card (frosted, deep mint, small emerald). Same content as the live card."
+    },
+    {
+      "id": "note-details-header",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-27",
+      "text": "Exploration only. Variations of the mint-header details card (E): E1 band includes the bar, E2 band stops above it, E3 deeper, E4 fades out, E5 inset panel, E6 + matching textured dues, E7 sage, E8 curved edge, E9 emerald header. The progress bar is never split by the band edge."
+    },
+    {
+      "id": "note-shade-match",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-28",
+      "text": "Exploration only. Making the selected All Cards tile and the details header the same shade: (1) header takes the tile's emerald, (2) tile takes the header's mint; live state below for comparison."
+    },
+    {
+      "id": "note-statements-page",
+      "x": 1820,
+      "y": -90,
+      "w": 1400,
+      "page": "page-9",
+      "text": "Full Statements page (opened from 'View all statements' on the dashboard's Statements panel). Every field of the Statement entity: card (issuer · last 4), statement date, due date, total due, min due, status, amount paid, paid on, paid from, and variance (computed from amount paid − total due). Grouped by statement month; the All / Pending / Paid filter works. Paid on / Paid from are blank because they weren't recorded for these statements."
+    },
+    {
+      "id": "note-pending-ideas",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-29",
+      "text": "Exploration only. Eight designs for the details card's Next due box, each shown with today's 2 pending statements and with 5 (3 extra are sample data). All fit the box's fixed 100px."
+    },
+    {
+      "id": "note-pending-bars",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-30",
+      "text": "Exploration only. Variations of the stacked amount bar for the Next due box: S1 thicker bar with amounts, S2 tall bar with labels inside, S3 waffle grid, S4 separated blocks, S5 mini columns, S6 dot grid (₹1k per dot), S7 due-date order, S8 textured, S9 on a ₹ scale with gridlines and average month. Each with 2 and 5 pending (3 sample)."
+    },
+    {
+      "id": "note-pending-tex",
+      "x": 0,
+      "y": -70,
+      "w": 1500,
+      "page": "page-31",
+      "text": "Exploration only. S1 (thicker stacked bar, amounts inside) with the signature texture: T1 rings in each segment, T2 one pattern across the bar, T3 bolder and glossier; plain S1 for comparison. Each with 2 and 5 pending (3 sample)."
+    },
+    {
+      "id": "note-dark-graphite",
+      "x": 0,
+      "y": -70,
+      "w": 1700,
+      "page": "page-24",
+      "text": "A · Graphite — Neutral charcoal: no tint, so the emerald card and the green data carry all the colour. The safe default. Generated from the light board (CardsListLight) so it stays in sync; 2022–25 in the All time panel is still sample data."
+    },
+    {
+      "id": "note-dark-forest",
+      "x": 1820,
+      "y": -70,
+      "w": 1700,
+      "page": "page-24",
+      "text": "B · Forest — Every surface carries a little of the emerald card’s green, so the whole page feels like one family with the hero. Generated from the light board (CardsListLight) so it stays in sync; 2022–25 in the All time panel is still sample data."
+    },
+    {
+      "id": "note-dark-midnight",
+      "x": 3640,
+      "y": -70,
+      "w": 1700,
+      "page": "page-24",
+      "text": "C · Midnight — Deep navy surfaces. Cooler and calmer; the mint accent and green data pop harder against the blue. Generated from the light board (CardsListLight) so it stays in sync; 2022–25 in the All time panel is still sample data."
+    },
+    {
+      "id": "note-dark-espresso",
+      "x": 0,
+      "y": 1670,
+      "w": 1700,
+      "page": "page-24",
+      "text": "D · Espresso — Warm coffee-brown surfaces — a nod to the chaiCoffeeFund name. Cosier, and the Gold Card tile feels at home. Generated from the light board (CardsListLight) so it stays in sync; 2022–25 in the All time panel is still sample data."
+    },
+    {
+      "id": "note-dark-oled",
+      "x": 1820,
+      "y": 1670,
+      "w": 1700,
+      "page": "page-24",
+      "text": "E · OLED — True black page with near-black cards and slightly brighter borders. Maximum contrast; saves battery on OLED screens. Generated from the light board (CardsListLight) so it stays in sync; 2022–25 in the All time panel is still sample data."
+    },
+    {
+      "id": "note-dark-aurora",
+      "x": 3640,
+      "y": 1670,
+      "w": 1700,
+      "page": "page-24",
+      "text": "F · Aurora — Style experiment: soft emerald and teal glows behind frosted, see-through cards. The most atmospheric; a callback to the original glass look, but calmer. Generated from the light board (CardsListLight) so it stays in sync; 2022–25 in the All time panel is still sample data."
+    }
   ],
-  "launch": { "view": "canvas", "page": "page-10" }
+  "launch": {
+    "view": "canvas",
+    "page": "page-9"
+  }
 }
