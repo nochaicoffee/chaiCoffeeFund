@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { loadCardData } from "../loadCardData";
 import { cardsQuery, parsePage, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodYears, statementsQuery, type StatementsListState } from "../params";
+import { RefreshButton } from "@/components/RefreshButton";
 import { PeriodSelect } from "@/components/cards/PeriodSelect";
 import { StatementsList } from "@/components/cards/StatementsList";
 import { StatementsSummary } from "@/components/cards/StatementsSummary";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { pendingSummary, statementYears } from "@/lib/aggregate/cardSpend";
 import { filterCounts, filterStatements, groupByMonth, minimumDueNow, paginate, paidSummary, periodOverview } from "@/lib/aggregate/cardStatements";
 import { formatShortDate, todayIso } from "@/lib/format/date";
@@ -19,7 +21,7 @@ const PAGE_SIZE = 25;
 export default async function StatementsPage({ searchParams }: PageProps<"/cards/statements">) {
   const params = await searchParams;
   const today = todayIso();
-  const { demo, data, accounts } = await loadCardData(params, today);
+  const { demo, data, accounts, skipped } = await loadCardData(params, today);
 
   const period = parsePeriod(params, today);
   const currentYear = Number(today.slice(0, 4));
@@ -61,6 +63,7 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
         actions={
           <>
             <PeriodSelect years={periodYears(statementYears(data, today), period)} currentYear={currentYear} value={period.kind === "all" ? "all" : String(period.year)} />
+            <RefreshButton iconOnly />
             <Link
               href={addStatementHref}
               className="flex min-h-11 items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:min-h-0"
@@ -86,6 +89,7 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
           )}
         </p>
         {demo && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
+        <SkippedRowsNotice tabs={skipped} />
       </PageHeader>
 
       <StatementsSummary

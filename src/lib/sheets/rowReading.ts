@@ -16,6 +16,19 @@ export interface RowProblem {
   message: string;
 }
 
+/** A row left out because it failed its schema: where it is and what's wrong, never its cells. */
+export interface SkippedRow {
+  /** The row's number in the Sheet, counting the header as row 1. */
+  rowNumber: number;
+  problems: RowProblem[];
+}
+
+/** The rows one tab left out, by tab name ("CardStatements"), as the cached reads give them to pages. */
+export interface SkippedRows {
+  tab: string;
+  rows: SkippedRow[];
+}
+
 export type RowResult<T> =
   /** Every cell is blank: an empty row in the Table, skipped without a report. */
   | { kind: "blank" }

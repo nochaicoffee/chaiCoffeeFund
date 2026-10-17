@@ -3,7 +3,7 @@ import { randomUUID } from "crypto";
 import type { z } from "zod";
 import { toUserEnteredCell } from "./cellValues";
 import { getSheetsClient, getSpreadsheetId } from "./client";
-import { assertColumnsMatchSchema, columnKinds, readRow, reportInvalidRow, type RowProblem } from "./rowReading";
+import { assertColumnsMatchSchema, columnKinds, readRow, reportInvalidRow, type RowProblem, type SkippedRow } from "./rowReading";
 
 export class NotFoundError extends Error {
   constructor(message: string) {
@@ -22,13 +22,13 @@ export interface RepositoryConfig<T extends { id: string }> {
 }
 
 /** A row that failed its schema: left out of list() and get(), but still visible to readAll(). */
-export interface InvalidRow<T> {
-  /** The row's number in the Sheet, counting the header as row 1. */
-  rowNumber: number;
+export interface InvalidRow<T> extends SkippedRow {
   /** Its cells by column, cleaned up the same way as a valid row's. */
   values: Partial<Record<keyof T, unknown>>;
-  problems: RowProblem[];
 }
+
+/** What createRepository() returns for an entity. */
+export type Repository<T extends { id: string }> = ReturnType<typeof createRepository<T>>;
 
 function columnLetter(index: number): string {
   return String.fromCharCode(65 + index);
@@ -200,5 +200,5 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     });
   }
 
-  return { list, readAll, get, create, createMany, update, remove };
+  return { sheetName, list, readAll, get, create, createMany, update, remove };
 }
