@@ -1,5 +1,6 @@
 import { ISO_DATE_PATTERN } from "../format/date";
 import type { Card, Statement } from "../sheets/types";
+import { nextOccurrence } from "./recurring";
 
 /**
  * Card spending math behind the Cards dashboard. Definitions are PRD §8
@@ -70,6 +71,13 @@ function spendOf(statement: Statement): number {
 /** What's still due on a statement: total minus anything paid, never below ₹0. Blank amounts count as ₹0. */
 export function remainingDue(statement: Statement): number {
   return Math.max(0, (toAmount(statement.totalAmountDue) ?? 0) - (toAmount(statement.amountPaid) ?? 0));
+}
+
+/** Every year that has a statement, newest first, always including the current year. */
+export function statementYears(data: CardData, today: string): number[] {
+  const years = new Set(usableStatements(data).map((s) => Number(s.statementDate.slice(0, 4))));
+  years.add(Number(today.slice(0, 4)));
+  return [...years].sort((a, b) => b - a);
 }
 
 export function monthOf(isoDate: string): MonthKey {
@@ -220,6 +228,8 @@ export function pendingSummary(data: CardData, today: string, cardId?: string): 
 export interface CardsUtilization {
   /** What's still due on pending bills across every card, closed ones included. Equals the pending total. */
   outstanding: number;
+  /** The part of outstanding on active cards: the numerator of utilization. */
+  activeOutstanding: number;
   /** Credit limit across active cards. */
   limit: number;
   /** Active cards' outstanding ÷ active cards' limit; null when no active card has a limit. */
@@ -233,7 +243,7 @@ export function allCardsUtilization(data: CardData): CardsUtilization {
   const outstanding = pending.reduce((sum, s) => sum + remainingDue(s), 0);
   const activeOutstanding = pending.filter((s) => active.has(s.cardId)).reduce((sum, s) => sum + remainingDue(s), 0);
   const limit = data.cards.filter((c) => active.has(c.id)).reduce((sum, c) => sum + c.creditLimit, 0);
-  return { outstanding, limit, utilization: limit > 0 ? activeOutstanding / limit : null };
+  return { outstanding, activeOutstanding, limit, utilization: limit > 0 ? activeOutstanding / limit : null };
 }
 
 /** Heatmap shade 1 (lowest) to 5 (highest), relative to the largest month shown. */
@@ -301,4 +311,37 @@ export function spendSeries(data: CardData, months: MonthKey[]): SeriesPoint[] {
     const byCard = Object.fromEntries(data.cards.map((c) => [c.id, perCard.get(c.id)?.get(month) ?? 0]));
     return { month, total: Object.values(byCard).reduce((sum, v) => sum + v, 0), byCard };
   });
+}
+
+export interface CardTileData {
+  card: Card;
+  /** What's still due on this card's pending bills. */
+  outstanding: number;
+  /** outstanding ÷ credit limit, null when the card has no limit. */
+  utilization: number | null;
+  /** The soonest pending bill, if any. */
+  nextDue: DueItem | null;
+  /** When the next statement is expected, from the card's statement date. */
+  nextStatementDate: string;
+}
+
+/**
+ * The cards shown as tiles, in Sheet order: every card that isn't closed, plus
+ * closed cards while they still have a bill to pay.
+ */
+export function tileCards(data: CardData, today: string): CardTileData[] {
+  const pending = pendingStatements(data, today);
+  return data.cards
+    .filter((card) => card.status !== "Closed" || pending.some((d) => d.statement.cardId === card.id))
+    .map((card) => {
+      const own = pending.filter((d) => d.statement.cardId === card.id);
+      const outstanding = own.reduce((sum, d) => sum + d.remaining, 0);
+      return {
+        card,
+        outstanding,
+        utilization: card.creditLimit > 0 ? outstanding / card.creditLimit : null,
+        nextDue: own[0] ?? null,
+        nextStatementDate: nextOccurrence(card.statementAnchorDate, "Monthly", today),
+      };
+    });
 }

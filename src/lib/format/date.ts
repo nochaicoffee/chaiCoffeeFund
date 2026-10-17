@@ -19,3 +19,28 @@ export function todayIso(now: Date = new Date(), timeZone: string = appConfig.ti
 export function formatHeaderDate(now: Date = new Date(), timeZone: string = appConfig.timeZone): string {
   return new Intl.DateTimeFormat("en-IN", { timeZone, weekday: "short", day: "numeric", month: "short" }).format(now);
 }
+
+/** "Good morning" before noon, "Good afternoon" until 5 pm, "Good evening" after, by the clock in `timeZone`. */
+export function greetingFor(now: Date = new Date(), timeZone: string = appConfig.timeZone): string {
+  const hour = Number(new Intl.DateTimeFormat("en-US", { timeZone, hour: "numeric", hourCycle: "h23" }).format(now));
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
+
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+/** An ISO date as the design writes it: "2026-08-23" → "Aug 23". */
+export function formatShortDate(isoDate: string): string {
+  return `${MONTHS[Number(isoDate.slice(5, 7)) - 1].slice(0, 3)} ${Number(isoDate.slice(8, 10))}`;
+}
+
+/** A month key as words: "2026-07" → "July 2026". */
+export function formatMonthYear(month: string): string {
+  return `${MONTHS[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`;
+}
+
+/** A month key's short name: "2026-07" → "Jul". */
+export function formatMonthShort(month: string): string {
+  return MONTHS[Number(month.slice(5, 7)) - 1].slice(0, 3);
+}
