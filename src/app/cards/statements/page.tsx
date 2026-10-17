@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { loadCardData } from "../loadCardData";
-import { cardsQuery, parsePage, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodYears, statementsQuery, type StatementsListState } from "../params";
+import { cardsQuery, parsePage, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodMenu, periodValue, statementsQuery, type StatementsListState } from "../params";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SyncStatementsButton } from "@/components/SyncStatementsButton";
 import { SyncProvider } from "@/components/sync/SyncContext";
@@ -13,7 +13,7 @@ import { StatementsSummary } from "@/components/cards/StatementsSummary";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { cardName } from "@/lib/format/labels";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
-import { pendingSummary, statementYears } from "@/lib/aggregate/cardSpend";
+import { pendingSummary } from "@/lib/aggregate/cardSpend";
 import { filterCounts, filterStatements, groupByMonth, minimumDueNow, paginate, paidSummary, periodOverview } from "@/lib/aggregate/cardStatements";
 import { formatShortDate, todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
@@ -89,7 +89,7 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
           title="Statements"
           actions={
             <>
-              <PeriodSelect years={periodYears(statementYears(data, today), period)} currentYear={currentYear} value={period.kind === "all" ? "all" : String(period.year)} />
+              <PeriodSelect options={periodMenu(data, period, today, state.cardId)} value={periodValue(period, today) ?? ""} />
               <RefreshButton iconOnly />
               {/* Every card has a chip here, closed ones included, so this is how a card without a tile is edited. */}
               {state.cardId && clientCardsById.has(state.cardId) && (

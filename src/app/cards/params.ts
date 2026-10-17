@@ -1,5 +1,7 @@
-import type { CardData, SpendPeriod } from "@/lib/aggregate/cardSpend";
+import { spendSummary, statementYears, type CardData, type SpendPeriod } from "@/lib/aggregate/cardSpend";
 import type { SortOrder, StatementQuery, StatusFilter } from "@/lib/aggregate/cardStatements";
+import { formatInrCompact } from "@/lib/format/money";
+import type { SelectOption } from "@/components/Select";
 
 export type PanelView = "statements" | "range";
 
@@ -29,7 +31,7 @@ export function parsePanel(params: SearchParams): PanelView {
 }
 
 /** `?period=` for a link: left out for this year, the default. */
-function periodValue(period: SpendPeriod, today: string): string | undefined {
+export function periodValue(period: SpendPeriod, today: string): string | undefined {
   if (period.kind === "all") return "all";
   return period.year === Number(today.slice(0, 4)) ? undefined : String(period.year);
 }
@@ -112,4 +114,19 @@ export function periodYears(yearsWithStatements: number[], period: SpendPeriod):
   const years = new Set(yearsWithStatements);
   if (period.kind === "year") years.add(period.year);
   return [...years].sort((a, b) => b - a);
+}
+
+/**
+ * The period menu's options: this year, every other year with statements, then
+ * all time, each with what was spent in it (on the selected card, as the page
+ * shows). Each option's value is its `?period=`, blank for this year.
+ */
+export function periodMenu(data: CardData, period: SpendPeriod, today: string, cardId?: string): SelectOption[] {
+  const currentYear = Number(today.slice(0, 4));
+  const periods: SpendPeriod[] = [...periodYears(statementYears(data, today), period).map((year): SpendPeriod => ({ kind: "year", year })), { kind: "all" }];
+  return periods.map((p) => ({
+    value: periodValue(p, today) ?? "",
+    label: p.kind === "all" ? "All time" : p.year === currentYear ? "This year" : String(p.year),
+    meta: formatInrCompact(spendSummary(data, p, today, cardId).total),
+  }));
 }

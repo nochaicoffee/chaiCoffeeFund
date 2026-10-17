@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { loadCardData } from "./loadCardData";
-import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, parseShowClosed, periodYears, statementsQuery } from "./params";
+import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, parseShowClosed, periodMenu, periodValue, statementsQuery } from "./params";
 import { summarySentence } from "./summarySentence";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SyncStatementsButton } from "@/components/SyncStatementsButton";
@@ -30,7 +30,6 @@ import {
   spendRange,
   spendSummary,
   statementCounts,
-  statementYears,
   tileCards,
   closedCardTiles,
   type CardTileData,
@@ -132,11 +131,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
           title={`${greetingFor()}, ${appConfig.ownerName}`}
           actions={
             <>
-              <PeriodSelect
-                years={periodYears(statementYears(data, today), period)}
-                currentYear={currentYear}
-                value={period.kind === "all" ? "all" : String(period.year)}
-              />
+              <PeriodSelect options={periodMenu(data, period, today, cardId)} value={periodValue(period, today) ?? ""} />
               <RefreshButton iconOnly />
               {!demo && <SyncStatementsButton />}
               <AddCardButton accounts={accountOptions} usedColors={usedColors} disabledReason={disabledReason} variant="header" />

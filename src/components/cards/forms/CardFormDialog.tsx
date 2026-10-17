@@ -151,16 +151,16 @@ export function CardFormDialog({
           <TextInput {...describedBy("card-alias", undefined, true)} name="alias" value={alias} onChange={(e) => setAlias(e.target.value)} placeholder="e.g. Regalia Gold" invalid={false} />
         </Field>
         <Field id="card-issuer" label="Issuer" required error={errors.issuer}>
-          <SelectInput {...describedBy("card-issuer", errors.issuer, false)} name="issuer" value={issuer} onChange={(e) => setIssuer(e.target.value)} onBlur={() => reveal("issuer")} invalid={Boolean(errors.issuer)}>
-            <option value="" disabled>
-              Choose bank
-            </option>
-            {CARD_ISSUERS.map((i) => (
-              <option key={i} value={i}>
-                {optionLabel(i)}
-              </option>
-            ))}
-          </SelectInput>
+          <SelectInput
+            {...describedBy("card-issuer", errors.issuer, false)}
+            name="issuer"
+            value={issuer}
+            onChange={setIssuer}
+            onBlur={() => reveal("issuer")}
+            placeholder="Choose bank"
+            options={CARD_ISSUERS.map((i) => ({ value: i, label: optionLabel(i) }))}
+            invalid={Boolean(errors.issuer)}
+          />
         </Field>
       </div>
 
@@ -180,16 +180,16 @@ export function CardFormDialog({
 
       <div className="grid grid-cols-2 gap-x-3.5 gap-y-4">
         <Field id="card-day" label="Statement day" required help="Day of the month it's generated." error={errors.statementDay}>
-          <SelectInput {...describedBy("card-day", errors.statementDay, true)} name="statementDay" value={statementDay} onChange={(e) => setStatementDay(e.target.value)} onBlur={() => reveal("statementDay")} invalid={Boolean(errors.statementDay)}>
-            <option value="" disabled>
-              Choose day
-            </option>
-            {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-              <option key={d} value={d}>
-                {ordinal(d)}
-              </option>
-            ))}
-          </SelectInput>
+          <SelectInput
+            {...describedBy("card-day", errors.statementDay, true)}
+            name="statementDay"
+            value={statementDay}
+            onChange={setStatementDay}
+            onBlur={() => reveal("statementDay")}
+            placeholder="Choose day"
+            options={Array.from({ length: 31 }, (_, i) => ({ value: String(i + 1), label: ordinal(i + 1) }))}
+            invalid={Boolean(errors.statementDay)}
+          />
         </Field>
         <Field id="card-buffer" label="Days to pay" required help="Each due date is this many days later." error={errors.dueDayBuffer}>
           <div className="relative">
@@ -215,14 +215,16 @@ export function CardFormDialog({
       </div>
 
       <Field id="card-account" label="Usually paid from" help={accounts.length === 0 ? "Add your accounts to choose one here." : "Mark paid starts with this account."} error={errors.defaultPaidFromAccountId}>
-        <SelectInput {...describedBy("card-account", errors.defaultPaidFromAccountId, true)} name="defaultPaidFromAccountId" value={account} onChange={(e) => setAccount(e.target.value)} disabled={accounts.length === 0} invalid={Boolean(errors.defaultPaidFromAccountId)}>
-          <option value="">{accounts.length === 0 ? "No accounts yet" : "Not set"}</option>
-          {accounts.map((a) => (
-            <option key={a.id} value={a.id}>
-              {a.name}
-            </option>
-          ))}
-        </SelectInput>
+        <SelectInput
+          {...describedBy("card-account", errors.defaultPaidFromAccountId, true)}
+          name="defaultPaidFromAccountId"
+          value={account}
+          onChange={setAccount}
+          disabled={accounts.length === 0}
+          placeholder={accounts.length === 0 ? "No accounts yet" : "Not set"}
+          options={accounts.length === 0 ? [] : [{ value: "", label: "Not set", quiet: true }, ...accounts.map((a) => ({ value: a.id, label: a.name }))]}
+          invalid={Boolean(errors.defaultPaidFromAccountId)}
+        />
       </Field>
 
       <details open={importOpen} onToggle={(e) => setImportOpen(e.currentTarget.open)} className="group rounded-[16px] border border-surface-line">
