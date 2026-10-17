@@ -462,12 +462,69 @@ describe("heatmapPeak", () => {
 describe("heatmapYearTotals", () => {
   it("gives each row its year's total and every-month-so-far average", () => {
     const rows = heatmapRows(DESIGN, { kind: "year", year: 2026 }, TODAY);
-    expect(heatmapYearTotals(DESIGN, rows, TODAY)).toEqual([{ year: 2026, total: 239700, months: 8, average: 239700 / 8 }]);
+    expect(heatmapYearTotals(DESIGN, rows, { kind: "year", year: 2026 }, TODAY)).toEqual([{ year: 2026, total: 239700, months: 8, average: 239700 / 8 }]);
   });
 
   it("follows the selected card", () => {
     const rows = heatmapRows(DESIGN, { kind: "year", year: 2026 }, TODAY, "amazon");
-    expect(heatmapYearTotals(DESIGN, rows, TODAY, "amazon")[0].total).toBe(11400 + 12300 + 14500 + 15200 + 12400);
+    expect(heatmapYearTotals(DESIGN, rows, { kind: "year", year: 2026 }, TODAY, "amazon")[0].total).toBe(11400 + 12300 + 14500 + 15200 + 12400);
+  });
+
+  it("totals and averages only the range's months on each row (#113)", () => {
+    const range = { kind: "range" as const, from: "2026-05", to: "2026-07" };
+    expect(heatmapYearTotals(DESIGN, heatmapRows(DESIGN, range, TODAY), range, TODAY)).toEqual([{ year: 2026, total: 147800, months: 3, average: 147800 / 3 }]);
+    const lastYear = { kind: "range" as const, from: "2025-09", to: "2026-08", last: 12 as const };
+    expect(heatmapYearTotals(DESIGN, heatmapRows(DESIGN, lastYear, TODAY), lastYear, TODAY)).toEqual([
+      { year: 2025, total: 0, months: 4, average: 0 },
+      { year: 2026, total: 239700, months: 8, average: 239700 / 8 },
+    ]);
+  });
+});
+
+describe("a range of months as the period (#113)", () => {
+  const range = { kind: "range" as const, from: "2026-05", to: "2026-07" };
+
+  it("runs a range's months, up to the current one", () => {
+    expect(monthsSoFar({ kind: "range", from: "2025-11", to: "2026-05" }, "2026-03-10", withCards([]))).toEqual(["2025-11", "2025-12", "2026-01", "2026-02", "2026-03"]);
+    expect(monthsSoFar(range, TODAY, DESIGN)).toEqual(["2026-05", "2026-06", "2026-07"]);
+  });
+
+  it("totals and averages just the range's months, by statement date", () => {
+    const s = spendSummary(DESIGN, range, TODAY);
+    expect(s).toMatchObject({ total: 40400 + 50100 + 57300, monthsWithStatements: 3, highest: { month: "2026-07", amount: 57300 }, lowest: { month: "2026-05", amount: 40400 } });
+    expect(s.average).toBeCloseTo(147800 / 3, 6);
+  });
+
+  it("leaves the heatmap's months outside the range blank, and shades against the range's largest month", () => {
+    const [row] = heatmapRows(DESIGN, range, TODAY);
+    expect(row.year).toBe(2026);
+    expect(row.cells.map((c) => c.state)).toEqual(["outside", "outside", "outside", "outside", "data", "data", "data", "outside", "outside", "outside", "outside", "outside"]);
+    expect(row.cells.slice(4, 7).map((c) => c.level)).toEqual([4, 5, 5]);
+  });
+
+  it("gives the heatmap a row for every year a range touches", () => {
+    const rows = heatmapRows(DESIGN, { kind: "range", from: "2025-09", to: "2026-08", last: 12 }, TODAY);
+    expect(rows.map((r) => r.year)).toEqual([2025, 2026]);
+    expect(rows[0].cells.filter((c) => c.state === "outside")).toHaveLength(8);
+    expect(rows[0].cells.slice(8).every((c) => c.state === "no-data")).toBe(true);
+    expect(rows[1].cells.slice(8).every((c) => c.state === "outside")).toBe(true);
+  });
+
+  it("lists and counts only the range's statements", () => {
+    expect(recentStatements(DESIGN, { kind: "range", from: "2026-06", to: "2026-07" }, 10).map((s) => s.statementDate.slice(0, 7))).toEqual(["2026-07", "2026-07", "2026-06", "2026-06"]);
+    expect(statementCounts(DESIGN, range).pending + statementCounts(DESIGN, range).closed).toBe(6);
+  });
+
+  it("shows the Spend range for the range's months only, without this month when it's outside", () => {
+    const shown = spendRange(DESIGN, { kind: "range", from: "2026-04", to: "2026-06" }, TODAY);
+    expect(shown.rows.map((r) => r.months.map((m) => m.month))).toEqual([["2026-04", "2026-05", "2026-06"]]);
+    expect(shown.rows[0].average).toBeCloseTo((41000 + 40400 + 50100) / 3, 6);
+    expect(shown.showsCurrentMonth).toBe(false);
+    expect(shown.current).toBeNull();
+    const lastYear = spendRange(DESIGN, { kind: "range", from: "2025-09", to: "2026-08", last: 12 }, TODAY);
+    expect(lastYear.rows.map((r) => r.year)).toEqual([2026, 2025]);
+    expect(lastYear.showsCurrentMonth).toBe(true);
+    expect(lastYear.current).toEqual({ month: "2026-08", amount: 50900 });
   });
 });
 
@@ -560,6 +617,7 @@ describe("spendRange", () => {
     const range = spendRange(DESIGN, { kind: "year", year: 2025 }, TODAY);
     expect(range.current).toBeNull();
     expect(range.currentVsAverage).toBeNull();
+    expect(range.showsCurrentMonth).toBe(false);
   });
 
   it("gives one row per year with statements for all time, newest first", () => {

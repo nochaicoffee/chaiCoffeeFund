@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { loadCardData } from "./loadCardData";
-import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, parseShowClosed, periodMenu, periodValue, statementsQuery } from "./params";
+import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, parseShowClosed, periodMenu, periodMenuValue, rangePickerStart, statementsQuery } from "./params";
+import { periodLabel as labelFor, withinOneYear } from "@/lib/aggregate/period";
 import { summarySentence } from "./summarySentence";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SyncStatementsButton } from "@/components/SyncStatementsButton";
@@ -59,7 +60,6 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
   const { demo, data, accounts, skipped } = await loadCardData(params, today);
 
   const period = parsePeriod(params, today);
-  const currentYear = Number(today.slice(0, 4));
   const cardId = parseSelectedCard(params, data);
   const selectedCard = data.cards.find((c) => c.id === cardId);
   const panel = parsePanel(params);
@@ -80,9 +80,9 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
 
   const tiles = tileCards(data, today);
   const heatRows = heatmapRows(data, period, today, cardId);
-  const yearTotals = heatmapYearTotals(data, heatRows, today, cardId);
+  const yearTotals = heatmapYearTotals(data, heatRows, period, today, cardId);
   const cardsById = new Map(data.cards.map((c) => [c.id, c]));
-  const periodLabel = period.kind === "all" ? "all time" : period.year === currentYear ? "this year" : String(period.year);
+  const periodLabel = labelFor(period, today);
   // Sample data never reaches the Sheet: the form buttons show disabled.
   const disabledReason = demo ? "Sample data can't be changed" : undefined;
   const clientCards = data.cards.map(toClientCard);
@@ -131,7 +131,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
           title={`${greetingFor()}, ${appConfig.ownerName}`}
           actions={
             <>
-              <PeriodSelect options={periodMenu(data, period, today, cardId)} value={periodValue(period, today) ?? ""} />
+              <PeriodSelect options={periodMenu(data, period, today, cardId)} value={periodMenuValue(period, today)} start={rangePickerStart(data, period, today, cardId)} currentMonth={monthOf(today)} />
               <RefreshButton iconOnly />
               {!demo && <SyncStatementsButton />}
               <AddCardButton accounts={accountOptions} usedColors={usedColors} disabledReason={disabledReason} variant="header" />
@@ -202,6 +202,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
         currentMonth={monthOf(today)}
         details={monthDetails}
         cards={Object.fromEntries(data.cards.map((c) => [c.id, { name: cardName(c), swatch: cardSwatch(c.color) }]))}
+        totalsLabel={period.kind === "range" ? "Total" : "Year"}
       />
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,620px)_minmax(0,1fr)]">
@@ -211,7 +212,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
           cardsById={cardsById}
           cardCount={tiles.length}
           periodLabel={periodLabel}
-          singleYear={period.kind === "year"}
+          singleYear={withinOneYear(period)}
           action={
             selectedCard && (
               <EditCardButton card={toClientCard(selectedCard)} accounts={accountOptions} usedColors={usedColors} disabledReason={disabledReason} />
@@ -230,6 +231,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
           viewAllHref={`/cards/statements${statementsQuery({ period, cardId, demo }, today)}`}
           addStatement={<AddStatementButton cards={clientCards} statements={data.statements} today={today} initialCardId={cardId} disabledReason={disabledReason} variant="link" />}
           quickPay={!demo}
+          averageLabel={period.kind === "range" ? "avg" : "year avg"}
         />
       </div>
 
