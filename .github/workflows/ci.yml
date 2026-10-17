@@ -8,6 +8,9 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
+    env:
+      # Next.js sends anonymous build telemetry by default; keep CI from reporting anything.
+      NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -23,3 +26,15 @@ jobs:
       - name: Unit tests
         # Pure-function tests only; nothing here needs Sheets or Gmail credentials.
         run: npm test
+      - name: Cache Next.js build output
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**') }}
+          restore-keys: |
+            next-${{ runner.os }}-${{ hashFiles('package-lock.json') }}-
+      - name: Production build
+        # Catches build-only failures (bundling, prerendering) that lint, types
+        # and tests can't. The build needs no credentials: every page and route
+        # reads env vars and Sheets only when a request comes in.
+        run: npm run build
