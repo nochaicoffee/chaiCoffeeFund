@@ -25,6 +25,7 @@
   --fill-strong: oklch(0 0 0 / 0.09);
   --divider: oklch(0 0 0 / 0.08);
   --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+  --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
 
   --accent: oklch(0.72 0.19 145);
   --accent-tint: oklch(0.93 0.06 145);
@@ -105,6 +106,7 @@
 
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: var(--card-shadow);
+  --shadow-soft: var(--soft-shadow);
 }
 
 @theme {

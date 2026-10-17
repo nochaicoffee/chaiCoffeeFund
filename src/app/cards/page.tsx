@@ -1,11 +1,14 @@
 import { createCard, createStatement, markStatementPaid } from "./actions";
 import { RefreshButton } from "@/components/RefreshButton";
+import { PageHeader } from "@/components/shell/PageHeader";
 import { SyncStatementsButton } from "@/components/SyncStatementsButton";
 import { StatTile } from "@/components/StatTile";
+import { todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import { computeCardSummaries } from "@/lib/aggregate/cards";
 import { getCachedAccounts, getCachedCards, getCachedStatements } from "@/lib/sheets/cached";
 import type { Card } from "@/lib/sheets/types";
+import type { Metadata } from "next";
 
 function utilizationTone(utilization: number | null): "positive" | "neutral" | "negative" {
   if (utilization === null) return "neutral";
@@ -18,6 +21,8 @@ function cardLabel(card: Card): string {
   return `${card.name} (${card.alias})`;
 }
 
+export const metadata: Metadata = { title: "Cards" };
+
 export default async function CardsPage() {
   const [cards, statements, accounts] = await Promise.all([
     getCachedCards(),
@@ -25,7 +30,7 @@ export default async function CardsPage() {
     getCachedAccounts(),
   ]);
 
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayIso();
   const summaries = computeCardSummaries(cards, statements, today);
   const totalOutstanding = summaries.reduce((sum, s) => sum + s.outstandingBalance, 0);
   const totalLimit = cards.reduce((sum, c) => sum + c.creditLimit, 0);
@@ -35,14 +40,16 @@ export default async function CardsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Cards</h1>
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-foreground/50">As of {today}</span>
-          <RefreshButton />
-          <SyncStatementsButton />
-        </div>
-      </div>
+      <PageHeader
+        section="Cards"
+        title="Cards"
+        actions={
+          <>
+            <RefreshButton />
+            <SyncStatementsButton />
+          </>
+        }
+      />
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
         <StatTile label="Total outstanding" value={formatInr(totalOutstanding)} tone="negative" />
