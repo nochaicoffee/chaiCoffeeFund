@@ -164,6 +164,7 @@ Following standard practice, acceptance criteria are written in full only for th
   - Each statement's own due date comes from its PDF. The card's schedule only predicts the next statement and prefills a new one.
 - [ ] I can add a statement to a card with a statement date, due date, total due and minimum due.
 - [ ] I can mark a statement paid with an amount, a date and the account it was paid from. The card's outstanding balance and utilization update.
+- [ ] A part payment can leave the bill Pending until I pay the rest, and a paid bill's payment can be edited, for example to record a second payment (#84).
 - [ ] Paying more or less than the total due shows as overpaid or underpaid by the exact difference.
 - [ ] Every new row lands inside the Sheet's Table with its dropdowns intact. This is verified with a real round trip.
 
