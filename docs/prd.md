@@ -1,6 +1,6 @@
 # chaiCoffeeFund: Product Requirements
 
-- **Status:** Approved v1.0. Changes from here go into v2.
+- **Status:** Approved v1.1 (v1.0 plus M1 clarifications). Scope changes go into v2.
 - **Owner:** Prathik
 - **Last updated:** 2026-10-16
 - **Related:** [system-design.md](system-design.md) (how it works) · [adr/](adr/) (why) · [process.md](process.md) (how we build) · [`design/dashboards/`](../design/dashboards/) (what it looks like)
@@ -156,7 +156,7 @@ Following standard practice, acceptance criteria are written in full only for th
 
 ### F-CC-01 and F-CC-02: Cards and statements
 *As Prathik, I want to add my cards and their statements in the app, so that I never type them into the Sheet.*
-- [ ] I can add a card with a name, alias, issuer, credit limit, statement date and due date. It appears straight away, with no manual refresh.
+- [ ] I can add a card with a name, alias, issuer, last 4 digits, colour, credit limit, statement date and due date, plus an optional statement PDF password and email keywords. It appears straight away, with no manual refresh.
 - [ ] I can add a statement to a card with a statement date, due date, total due and minimum due.
 - [ ] I can mark a statement paid with an amount, a date and the account it was paid from. The card's outstanding balance and utilization update.
 - [ ] Paying more or less than the total due shows as overpaid or underpaid by the exact difference.
@@ -165,22 +165,35 @@ Following standard practice, acceptance criteria are written in full only for th
 ### F-CC-03: Import statements from Gmail
 *As Prathik, I want statements pulled from my email automatically, so that I stop re-typing PDFs.*
 - [ ] Clicking "Sync statements" processes every labelled, not-yet-imported statement email and reports how many were imported, skipped or failed, and why.
-- [ ] For each supported bank, a real statement imports with the statement date, due date, total due and minimum due all matching the PDF exactly. This needs one real statement per bank (Q5).
+- [ ] For each bank with a current card (HDFC, ICICI, Axis, YES and CSB/Jupiter; Q5), a real statement imports with the statement date, due date, total due and minimum due all matching the PDF exactly.
 - [ ] Running sync twice never creates a duplicate statement.
 - [ ] A statement that matches no card or more than one card is **not written**. It's listed so I can fix the card's keywords.
 - [ ] A PDF that no stored password opens is reported, not silently skipped.
-- [ ] Gmail access is read-only, and no credential or PDF password is ever committed (Q3).
+- [ ] Gmail access is read-only, and no credential is ever committed. Statement PDF passwords live in the Cards Sheet tab (Q3).
 
 ### F-CC-05 and F-CC-06: Cards dashboard
 *As Prathik, I want the Cards page to show my card spending at a glance, so that a monthly check-in takes minutes.*
-- [ ] Layout matches the chosen mockup ([`CardsListLight.dc.html`](../design/dashboards/CardsListLight.dc.html) plus the option picked from J–O), in both light and dark mode.
-- [ ] A greeting summary at the top shows: bills pending, total spent in the selected period, the highest month with its amount (and the year, if the period spans years), and the monthly average.
-- [ ] Card tiles: an "All Cards" tile that combines every card, one tile per card, and an add card tile. The selected tile is clearly marked.
-- [ ] A spending heatmap by month for the selected period, from statement totals.
-- [ ] A details card coloured to match the selected card, with its KPIs: utilization, average, highest, upcoming due date, and change vs. last month.
-- [ ] A statement trend chart, then the statement history table, for the selected card.
+
+**How the numbers are defined** (decided 2026-10-17):
+- **A month's spend** is the sum of `totalAmountDue` across statements whose **statement date** falls in that month.
+- **The monthly average** is the period's total spend ÷ **every month so far in the period**:
+  - This year: January to the current month.
+  - A past year: 12 months.
+  - All time: the month of the first statement to the current month.
+- **Utilization** is outstanding ÷ credit limit. For All Cards, it uses the totals across active cards.
+- **The pending line** counts **all** pending statements and their total, plus the next due date.
+
+**Criteria:**
+- [ ] Layout matches the final mockup, [`CardsListLight.dc.html`](../design/dashboards/CardsListLight.dc.html), in light mode, and in dark once a dark palette is picked.
+- [ ] A greeting summary at the top shows: total spent in the selected period, the monthly average, the highest month with its amount (and the year, if the period spans years), and the pending line.
+- [ ] Card tiles: an "All Cards" tile that combines every card, one tile per card in its own colour with issuer and last 4 digits, and an add card tile. The selected tile is clearly marked.
+- [ ] A spending heatmap by month for the selected period, one row per year, from statement totals.
+- [ ] A details card coloured to match the selected tile: outstanding, utilization against the limit, available credit, highest and lowest month, total spent, and a Next-due bar split by pending bill.
+- [ ] Beside it, a panel with the 5 most recent statements (linking to the full Statements page), and a Spend range view showing where the current month sits against highest, lowest and average.
+- [ ] A statement trend chart (By card / Total, bars and/or line, ranges 3M to All).
+- [ ] A full **Statements page** ([`StatementsList.dc.html`](../design/dashboards/StatementsList.dc.html)) lists every statement grouped by month, with status and card filters, payment details and variance, and Mark paid on pending rows. Statement history lives here, not on the dashboard.
 - [ ] The next expected statement date and due date are shown per card, and show up in the Overview's "needs attention" list.
-- [ ] Everything works at phone width (F-PL-03), using a phone layout designed for this page.
+- [ ] Everything works at phone width (F-PL-03). Phone layouts and the forms, sync report and empty states are designed in code in the same design language (decided 2026-10-17).
 - [ ] With zero cards or zero statements, the page shows a clear empty state with the add actions.
 
 ## 9. Non-functional requirements
@@ -218,15 +231,15 @@ Following standard practice, acceptance criteria are written in full only for th
 
 ## 12. Open questions
 
-| # | Question | Blocks |
+| # | Question | Blocks, or the answer |
 |---|---|---|
 | Q1 | Fixed Income: how should recurring-contribution holdings (EPF, PPF, RD) be modelled, given that an FD is a single lump sum? | F-FI-02 |
 | Q2 | Where do live prices and FX rates come from: a `GOOGLEFINANCE` Prices tab or a market-data API? And does Indian ticker coverage hold up? | F-IV-01 (FX at entry), F-IV-03 |
-| Q3 | Where do statement PDF passwords live? Today they're planned as a plaintext Sheet column. The alternatives are the host's secret store, or a rule that derives them (many banks use DOB plus name). | F-CC-03 going live |
+| Q3 | Where do statement PDF passwords live? | **Answered 2026-10-17:** in the Cards Sheet tab (`statementPdfPassword`), as built. The Sheet is private to Prathik and the service account, and this keeps adding passwords inside the app. |
 | Q4 | Hosting platform and login method (ADR 0007) | F-PL-01, F-PL-02, F-CC-04 |
-| Q5 | Which banks are your current cards with? We need one real statement from each to verify its parser. | F-CC-03 acceptance |
-| Q6 | Cards design: which merged-widget option (J–O) replaces the 4-widget row and the poster? | F-CC-05 |
-| Q7 | Phone layouts: design each page's phone layout as part of its epic, or do a mobile design pass for every page up front? | F-PL-03 |
+| Q5 | Which banks are your current cards with? | **Answered 2026-10-17:** HDFC, ICICI, Axis, YES and CSB/Jupiter. All five have parsers. |
+| Q6 | Cards design: which merged-widget option (J–O)? | **Answered 2026-10-17:** none. A new final design replaced them (see §8). |
+| Q7 | Phone layouts: per epic, or a mobile design pass up front? | **Answered 2026-10-17:** per epic. M1 sets the shared phone patterns. |
 | Q8 | Overview design: needs a mockup in the new design language | F-OV-05 |
 
 Each open question is also a GitHub issue labelled `question`, in the milestone it blocks. When one is answered, record the answer here (and in an ADR, if it's a hard-to-reverse decision), then close its issue.
@@ -237,3 +250,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 |---|---|---|
 | 0.1 | 2026-10-16 | First draft, consolidating the system design, the mockups, the as-built code, and these decisions from 2026-10-16: the Standard process, GitHub Issues + Projects, laptop and phone with the full app on both, statement totals only, in-app reminders only, and Cards first. |
 | 1.0 | 2026-10-16 | Approved by Prathik as written, including the priorities, success metrics, out-of-scope list and release plan. Further changes go into v2. |
+| 1.1 | 2026-10-17 | Clarifications for M1, no scope change. Answers to Q3, Q5, Q6 and Q7. §8 updated to the final Cards design (a separate Statements page, and `last4` and colour on cards). Card-spend definitions added (statement-date month, average over every month so far, all pending bills). Undesigned pieces get designed in code. |

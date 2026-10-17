@@ -22,3 +22,6 @@ Credit card statements arrive by email as password-protected PDFs. Typing each s
 ## Alternatives considered
 - **Manual entry only:** that's the chore this exists to remove.
 - **Reusing the old Apps Script:** it breaks ADR 0002, and it matched cards ambiguously.
+
+## Updates
+- **2026-10-17:** the open point on PDF passwords is resolved (PRD Q3). `statementPdfPassword` stays a column in the `Cards` Sheet tab. The Sheet is private to Prathik and the service account, and this keeps adding passwords inside the app. Current cards are with HDFC, ICICI, Axis, YES and CSB/Jupiter (Q5).

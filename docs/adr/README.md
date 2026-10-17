@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-An ADR records one decision that's expensive to reverse: what we chose, why, and what it costs. Each one is short, and once a decision is accepted its ADR is never edited. If a decision changes, write a new ADR that supersedes the old one, and set the old one's status to `Superseded by NNNN`.
+An ADR records one decision that's expensive to reverse: what we chose, why, and what it costs. Each one is short, and once a decision is accepted its ADR isn't rewritten. When an open point it lists gets resolved, append a dated line under `## Updates`. If the decision itself changes, write a new ADR that supersedes the old one, and set the old one's status to `Superseded by NNNN`.
 
 Write an ADR when a choice affects the data model, storage, hosting, security, money math, or an external integration. Routine implementation choices go in [system-design.md](../system-design.md) instead.
 
