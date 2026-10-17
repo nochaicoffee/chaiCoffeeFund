@@ -186,6 +186,11 @@ Following standard practice, acceptance criteria are written in full only for th
 - **Utilization** is outstanding ÷ credit limit, using **active cards only**: their unpaid bills ÷ their limits.
 - **The pending line** counts **all** pending statements, plus the next due date. Its total always equals outstanding.
 - **Statements whose card no longer exists** are left out of every total.
+- On the Statements page (decided 2026-10-17 with #50):
+  - **Due now** is the pending line: every pending bill's remaining amount, whatever period is shown.
+  - **Minimum due** is each pending bill's minimum due less anything already paid on it, never below ₹0. A payment counts towards the minimum first.
+  - **Paid** is the amount paid on the period's statements marked Paid. **Paid in full** counts those where the amount paid is at least the total due.
+  - **Variance** is amount paid − total due, to the paisa: paid in full at ₹0, otherwise overpaid or underpaid by that difference.
 
 **Criteria:**
 - [ ] Layout matches the final mockup, [`CardsListLight.dc.html`](../design/dashboards/CardsListLight.dc.html), in light mode, and in dark once a dark palette is picked.

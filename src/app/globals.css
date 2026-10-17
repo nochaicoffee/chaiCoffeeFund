@@ -40,6 +40,12 @@
   --negative: oklch(0.55 0.16 25);
   --negative-tint: oklch(0.95 0.035 40);
 
+  /* The one highlighted summary tile on a page (the Statements page's Due now). */
+  --feature-tile: oklch(0.935 0.052 148);
+  --feature-tile-line: oklch(0.62 0.15 150 / 0.24);
+  --feature-tile-glow: oklch(1 0 0 / 0.55);
+  --feature-tile-rings: oklch(0.45 0.11 152 / 0.1);
+
   /* Spend heatmap, low to high. */
   --heat-1: oklch(0.95 0.03 150);
   --heat-2: oklch(0.87 0.07 150);
@@ -115,6 +121,8 @@
   --color-warning: var(--warning);
   --color-negative: var(--negative);
   --color-negative-tint: var(--negative-tint);
+  --color-feature-tile: var(--feature-tile);
+  --color-feature-tile-line: var(--feature-tile-line);
   --color-on-card: var(--on-card);
   --color-on-card-muted: var(--on-card-muted);
   --color-on-card-faint: var(--on-card-faint);

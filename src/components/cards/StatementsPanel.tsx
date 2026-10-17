@@ -5,6 +5,7 @@ import type { Card, Statement } from "@/lib/sheets/types";
 import { formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import { cardSwatch } from "./CardTile";
+import { StatusPill } from "./StatusPill";
 import type { PanelView } from "@/app/cards/params";
 
 
@@ -88,13 +89,7 @@ function StatementsView({
                   </td>
                   <td className="pr-3 text-right font-bold tabular-nums">{formatInr(s.totalAmountDue)}</td>
                   <td className="text-right">
-                    <span
-                      className={`rounded-full px-[11px] py-1 text-[10px] font-bold ${
-                        s.status === "Paid" ? "bg-accent-tint text-accent-text" : "bg-fill text-muted"
-                      }`}
-                    >
-                      {s.status}
-                    </span>
+                    <StatusPill status={s.status} />
                   </td>
                 </tr>
               );

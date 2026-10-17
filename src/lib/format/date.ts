@@ -35,6 +35,11 @@ export function formatShortDate(isoDate: string): string {
   return `${MONTHS[Number(isoDate.slice(5, 7)) - 1].slice(0, 3)} ${Number(isoDate.slice(8, 10))}`;
 }
 
+/** An ISO date with its year, as the Statements page writes it: "2026-08-05" → "Aug 5, 2026". */
+export function formatDate(isoDate: string): string {
+  return `${formatShortDate(isoDate)}, ${isoDate.slice(0, 4)}`;
+}
+
 /** A month key as words: "2026-07" → "July 2026". */
 export function formatMonthYear(month: string): string {
   return `${MONTHS[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`;

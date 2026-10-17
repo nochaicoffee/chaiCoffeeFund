@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatInr, formatInrCompact } from "./money";
+import { formatInr, formatInrCompact, formatInrExact } from "./money";
 
 describe("formatInr", () => {
   it("uses Indian digit grouping", () => {
@@ -19,6 +19,22 @@ describe("formatInr", () => {
   it("never shows a negative zero", () => {
     expect(formatInr(0)).toBe("₹0");
     expect(formatInr(-0.2)).toBe("₹0");
+  });
+});
+
+describe("formatInrExact", () => {
+  it("shows paise only when there are any, with Indian grouping", () => {
+    expect(formatInrExact(38500)).toBe("₹38,500");
+    expect(formatInrExact(238512.4)).toBe("₹2,38,512.40");
+    expect(formatInrExact(0.1)).toBe("₹0.10");
+    expect(formatInrExact(250.5)).toBe("₹250.50");
+  });
+
+  it("rounds to the paisa, and never shows a negative zero", () => {
+    expect(formatInrExact(100.3 - 100.2)).toBe("₹0.10");
+    expect(formatInrExact(-0.001)).toBe("₹0");
+    expect(formatInrExact(-6400.25)).toBe("−₹6,400.25");
+    expect(formatInrExact(Number.NaN)).toBe("—");
   });
 });
 

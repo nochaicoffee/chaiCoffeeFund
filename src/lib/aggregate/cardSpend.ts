@@ -37,7 +37,7 @@ export interface MonthAmount {
  * A Sheet cell as a number, or null when it's blank or not a number. Blank cells
  * arrive as "" and text cells as strings, and Number("") would silently be 0.
  */
-function toAmount(value: unknown): number | null {
+export function toAmount(value: unknown): number | null {
   if (typeof value === "number") return Number.isFinite(value) ? value : null;
   if (typeof value === "string" && value.trim() !== "") {
     const parsed = Number(value);
@@ -50,7 +50,7 @@ function toAmount(value: unknown): number | null {
  * The statements every function works from: on a card that exists, with readable
  * dates and total, and with amounts as real numbers (a blank amount paid is 0).
  */
-function usableStatements({ cards, statements }: CardData, cardId?: string): Statement[] {
+export function usableStatements({ cards, statements }: CardData, cardId?: string): Statement[] {
   const cardIds = new Set(cards.map((c) => c.id));
   const usable: Statement[] = [];
   for (const s of statements) {
@@ -425,7 +425,7 @@ export function cardDetails(data: CardData, period: SpendPeriod, today: string, 
 }
 
 /** Statements dated in the period: its year, or any year for all time. */
-function inPeriod(statements: Statement[], period: SpendPeriod): Statement[] {
+export function inPeriod(statements: Statement[], period: SpendPeriod): Statement[] {
   return period.kind === "all" ? statements : statements.filter((s) => s.statementDate.startsWith(`${period.year}-`));
 }
 
