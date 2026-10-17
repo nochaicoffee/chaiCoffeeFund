@@ -187,6 +187,8 @@ Following standard practice, acceptance criteria are written in full only for th
   - This year: January to the current month.
   - A past year: 12 months.
   - All time: the month of the first statement to the current month.
+  - The last 3, 6 or 12 months, or a custom range: every month of the range up to the current month, **including months with no statements**, the same rule as the years (confirmed by Prathik 2026-10-20, #113).
+- **The period** can be this year, a past year, all time, the last 3, 6 or 12 months (the current month included), or a custom range of whole months. A range counts statements by statement date, like the years (decided 2026-10-20, #113).
 - **Highest and lowest month** only look at months that have statements.
 - **A credit balance** (a negative total due) counts as ₹0 spend. The credit already lowers the next statement's total.
 - **Outstanding** is what's still due on pending bills: total minus anything paid, never below ₹0. It includes closed cards, because their unpaid bills are still owed. That also applies to net worth.
@@ -206,7 +208,7 @@ Following standard practice, acceptance criteria are written in full only for th
 - [ ] A spending heatmap by month for the selected period, one row per year, from statement totals.
 - [ ] A details card coloured to match the selected tile: outstanding, utilization against the limit, available credit, highest and lowest month, total spent, and a Next-due bar split by pending bill.
 - [ ] Beside it, a panel with the 5 most recent statements (linking to the full Statements page), and a Spend range view showing where the current month sits against highest, lowest and average.
-- [ ] A statement trend chart (By card / Total, bars and/or line, ranges 3M to All).
+- [ ] A statement trend chart (By card / Total, bars and/or line) over the selected period. It follows the page's period and has no ranges of its own (decided 2026-10-20, #113).
 - [ ] A full **Statements page** ([`StatementsList.dc.html`](../design/dashboards/StatementsList.dc.html)) lists every statement grouped by month, with status and card filters, payment details and variance, and Mark paid on pending rows. Statement history lives here, not on the dashboard.
 - [ ] The next expected statement date and due date are shown per card, and show up in the Overview's "needs attention" list.
 - [ ] Everything works at phone width (F-PL-03). Phone layouts and the forms, sync report and empty states are designed in code in the same design language (decided 2026-10-17).
@@ -270,3 +272,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.2 | 2026-10-17 | More card-spend rules confirmed while building the math (#44): highest and lowest month use months with statements; a credit balance counts as ₹0; outstanding includes closed cards (in net worth too) and always equals the pending total; utilization uses active cards only; statements on deleted cards are left out. |
 | 1.3 | 2026-10-19 | Card setup matches the old sheet (#75): a card type (Reward Points or Cashback), and the schedule as a statement day plus a due-day buffer instead of two full dates. Also adds issuer and colour dropdowns and an optional default payment account. |
 | 1.4 | 2026-10-19 | A card's last 4 is optional when it's added. The import fills it in from the statement PDF, then uses it to check each statement belongs to its card (#78). |
+| 1.5 | 2026-10-20 | The period can also be the last 3, 6 or 12 months or a custom range of months, by statement date, and a range's average divides by every month of it so far (#113). The trend chart follows the period instead of having its own 3M to All ranges. |

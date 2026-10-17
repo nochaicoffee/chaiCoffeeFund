@@ -495,6 +495,17 @@ describe("a range of months as the period (#113)", () => {
     expect(s.average).toBeCloseTo(147800 / 3, 6);
   });
 
+  it("averages over every month of the range so far, months without statements included (PRD §8, confirmed by Prathik 2026-10-20)", () => {
+    const s = spendSummary(DESIGN, { kind: "range", from: "2026-02", to: "2026-05" }, TODAY);
+    expect(s.months.map((m) => m.month)).toEqual(["2026-02", "2026-03", "2026-04", "2026-05"]);
+    expect(s.total).toBe(41000 + 40400);
+    expect(s.average).toBeCloseTo((41000 + 40400) / 4, 6);
+    // A range that runs past this month counts only the months so far: Jul–Dec 2026 on 18 Aug is 2 months.
+    const ongoing = spendSummary(DESIGN, { kind: "range", from: "2026-07", to: "2026-12" }, TODAY);
+    expect(ongoing.months).toHaveLength(2);
+    expect(ongoing.average).toBeCloseTo((57300 + 50900) / 2, 6);
+  });
+
   it("leaves the heatmap's months outside the range blank, and shades against the range's largest month", () => {
     const [row] = heatmapRows(DESIGN, range, TODAY);
     expect(row.year).toBe(2026);
