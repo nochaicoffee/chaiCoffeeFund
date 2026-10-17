@@ -43,6 +43,20 @@ export function formatInrExact(value: number): string {
   return value < 0 ? MINUS + formatted : formatted;
 }
 
+/**
+ * Amount text as it's typed or printed, as a number, or null when it isn't one:
+ * "38500", "₹38,500.50", "Rs. 5,000.00", "INR 5000", "-14,238.61", and the
+ * typographic minus this app displays ("−₹6,400"). Only plain digits with an
+ * optional sign and decimals count, so "1e3", "0x10" and "38.5k" are null.
+ */
+export function parseAmountText(text: string): number | null {
+  const cleaned = text
+    .replace(/\u2212/g, "-")
+    .replace(/[₹,\s]/g, "")
+    .replace(/^(-?)(Rs\.?|INR)/i, "$1");
+  return /^-?\d+(\.\d+)?$/.test(cleaned) ? Number(cleaned) : null;
+}
+
 /** Rounds to one decimal of `size`, dividing by size/10 so .x5 cases don't drift in binary floating point. */
 function oneDecimal(abs: number, size: number): number {
   return Math.round(abs / (size / 10)) / 10;

@@ -38,7 +38,7 @@ The full system design — domain model, architecture decisions, and a running l
 
 Every entity follows the same shape. Adding one means:
 1. Add its type(s) to `src/lib/sheets/types.ts` — enum fields as Title-Case string literals, hyphenated for multi-word values (`"Emergency-Fund"`, not `"emergencyFund"`), matching the Sheet's actual dropdown text exactly (Sheets Tables validate writes against that literal text).
-2. One file at `src/lib/sheets/<entity>.ts` holding **both** the `createRepository(...)` config **and** its zod `create<Entity>Schema`/`update<Entity>Schema` — keep them together, not in a separate schemas file, so everything about one entity stays in one place.
+2. One file at `src/lib/sheets/<entity>.ts` holding **both** the `createRepository(...)` config **and** its zod `create<Entity>Schema`/`update<Entity>Schema`/`<entity>RowSchema` — keep them together, not in a separate schemas file, so everything about one entity stays in one place. The row schema (usually the create schema plus `id`) is passed to `createRepository` as `schema`, and every row read from the Sheet is checked against it (see "Reading from Sheets" in `docs/system-design.md`).
 3. Two route files using the factories in `src/lib/api/createCrudRoutes.ts` (`createListRoute`, `createItemRoute`) — this should be ~4 lines each, not hand-rolled logic. Only reach for a custom route (like `loans`) when an entity's write does more than one thing (e.g. also generates a schedule).
 4. If pages will read it, add a cached list/getById pair to `src/lib/sheets/cached.ts` via the existing `cachedList`/`cachedGetById` helpers, and a tag in `CACHE_TAGS`.
 

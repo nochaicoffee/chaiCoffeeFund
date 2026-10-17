@@ -102,7 +102,33 @@ Writes use `valueInputOption: "USER_ENTERED"`, which parses each value the way t
 - **All other text gets a leading apostrophe**, which tells Sheets to keep it literally. Without it, USER_ENTERED turned `"0425"` (a card's last 4) or a digits-only PDF password into a number that lost its leading zero, and would have turned text starting with `=` into a formula. The apostrophe isn't stored, and reads return the plain text.
 - **Numbers go as numbers.** NaN and Infinity are refused, because JSON would turn them into `null` and silently clear the cell.
 - **`RAW` was tried and rejected.** It keeps text right, but stores dates as bare serial numbers, which brings the original display bug back.
-- **Reads aren't validated yet.** A blank cell comes back as `""`, and a number typed as text comes back as a string. Validating rows at the read boundary is #63; until then, aggregates such as `cardSpend.ts` defend themselves.
+
+### Reading from Sheets (#63)
+
+Reads use `UNFORMATTED_VALUE` with `SERIAL_NUMBER` dates, so cells arrive as the Sheet stores them: a blank cell is `""`, a date is a serial number, and a number typed as text is a string. Every row goes through `readRow` in `lib/sheets/rowReading.ts` before anything sees it:
+
+- **Each cell is cleaned up for its column**, using the kind the entity's row schema expects there (read from the schema itself, so the two can't drift):
+  - a blank cell becomes `undefined`, so an optional field is simply absent;
+  - a date serial becomes an ISO date;
+  - number text becomes a number (`"38500"`, `"₹38,500.50"`);
+  - a number in a text column becomes text.
+  - A last 4 typed as `425` (its leading zero lost) still fails its own four-digit rule.
+  - Number text is read by `parseAmountText` (`lib/format/money.ts`), the same parser the PDF import uses. It also accepts the typographic minus the app displays (`−₹6,400`).
+  - A date serial's time of day is dropped, never rounded, so an evening time can't move the date.
+- **Then the row is checked against the entity's row schema**: its create schema plus `id`, in the entity's own file next to the create and update schemas.
+  - `createRepository` checks at load that the columns match the schema, and that the date columns are exactly the `isoDate` fields. A mismatch would fail every row of the tab, so it throws instead. `entities.test.ts` loads every repository, so a mismatch also fails CI.
+  - A few fields are looser than on create, where old or real data needs it. A card's last 4 and colour may be blank on rows from before those columns existed. A statement's total due may be negative, for a credit balance.
+- **A row that fails is left out of `list()` and `get()`, and logged once** (`[sheets] CardStatements row 7 (id …) was left out: totalAmountDue is blank`).
+  - The log has only field names and rule messages, never cell values, because a Cards row holds a PDF password.
+  - A row with every cell blank is skipped without a report. A row with data but no id is reported.
+- **`readAll()` still returns the failed rows**, with their cleaned cells and row numbers, for code where skipping one would do harm:
+  - The statement sync's duplicate check counts a badly edited row as existing, so it never imports that statement a second time.
+  - Deleting a loan also deletes installment rows that fail validation. If one of them has no id, it can't be deleted, so the loan isn't deleted either and the error names the row.
+  - The sync also takes PDF passwords from invalid card rows. Their statements still open, and are reported as matching no card instead of as a password failure.
+- **`update()` and `remove()` find invalid rows too, without logging them as left out.** An update starts from the cleaned cells, so it can repair a row: a number stored as text is written back as a number.
+- **Typed Table columns convert typed text on their own** (found in the #63 round trip, 2026-10-18).
+  - Writing `'12400` to a number column, or `'5 Jul` to a date column, stores a real number or date, apostrophe or not. Text columns do keep the apostrophe's meaning, so `0425` stays text.
+  - So in this Sheet the realistic bad row is a blank required cell, or a value outside a dropdown. Converting number text still covers columns that aren't typed.
 
 ## Backend architecture
 

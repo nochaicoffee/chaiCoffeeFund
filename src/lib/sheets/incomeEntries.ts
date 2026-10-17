@@ -4,12 +4,6 @@ import { createRepository } from "./repository";
 import { isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
 import type { IncomeEntry } from "./types";
 
-export const incomeEntriesRepository = createRepository<IncomeEntry>({
-  sheetName: "IncomeEntries",
-  columns: ["id", "incomeSourceId", "expectedDate", "receivedDate", "amount", "status", "accountId", "tag"],
-  dateColumns: ["expectedDate", "receivedDate"],
-});
-
 export const createIncomeEntrySchema = z.object({
   incomeSourceId: nonEmptyString,
   expectedDate: isoDate,
@@ -21,3 +15,13 @@ export const createIncomeEntrySchema = z.object({
 });
 
 export const updateIncomeEntrySchema = createIncomeEntrySchema.partial();
+
+/** A row as read back from the Sheet: a valid create, plus its id. */
+export const incomeEntryRowSchema = createIncomeEntrySchema.extend({ id: nonEmptyString });
+
+export const incomeEntriesRepository = createRepository<IncomeEntry>({
+  sheetName: "IncomeEntries",
+  columns: ["id", "incomeSourceId", "expectedDate", "receivedDate", "amount", "status", "accountId", "tag"],
+  dateColumns: ["expectedDate", "receivedDate"],
+  schema: incomeEntryRowSchema,
+});

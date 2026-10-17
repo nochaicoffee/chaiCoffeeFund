@@ -4,6 +4,37 @@ import { createRepository } from "./repository";
 import { isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
 import type { InvestmentTransaction } from "./types";
 
+const investmentTransactionFields = z.object({
+  tradeDate: isoDate,
+  symbol: nonEmptyString,
+  market: z.enum(["IND", "US"]),
+  currency: z.enum(["INR", "USD"]),
+  tradeType: z.enum(["Buy", "Sell"]),
+  source: z.enum(["Market", "RSU", "ESPP"]),
+  quantity: nonNegativeNumber,
+  price: nonNegativeNumber,
+  total: nonNegativeNumber,
+  assetType: nonEmptyString,
+  broker: nonEmptyString,
+  settlementAccountId: nonEmptyString.optional(),
+  fxRateToInr: nonNegativeNumber.optional(),
+});
+
+/** A US-market trade needs its USD→INR rate, captured once on the trade date. */
+function requireFxRateForUs<T extends z.ZodType<{ market: string; fxRateToInr?: number }>>(schema: T): T {
+  return schema.refine((data) => data.market !== "US" || data.fxRateToInr !== undefined, {
+    message: "fxRateToInr is required for US-market transactions",
+    path: ["fxRateToInr"],
+  }) as T;
+}
+
+export const createInvestmentTransactionSchema = requireFxRateForUs(investmentTransactionFields);
+
+export const updateInvestmentTransactionSchema = investmentTransactionFields.partial();
+
+/** A row as read back from the Sheet: a valid create, plus its id. */
+export const investmentTransactionRowSchema = requireFxRateForUs(investmentTransactionFields.extend({ id: nonEmptyString }));
+
 export const investmentTransactionsRepository = createRepository<InvestmentTransaction>({
   sheetName: "InvestmentTransactions",
   columns: [
@@ -23,41 +54,5 @@ export const investmentTransactionsRepository = createRepository<InvestmentTrans
     "fxRateToInr",
   ],
   dateColumns: ["tradeDate"],
-});
-
-export const createInvestmentTransactionSchema = z
-  .object({
-    tradeDate: isoDate,
-    symbol: nonEmptyString,
-    market: z.enum(["IND", "US"]),
-    currency: z.enum(["INR", "USD"]),
-    tradeType: z.enum(["Buy", "Sell"]),
-    source: z.enum(["Market", "RSU", "ESPP"]),
-    quantity: nonNegativeNumber,
-    price: nonNegativeNumber,
-    total: nonNegativeNumber,
-    assetType: nonEmptyString,
-    broker: nonEmptyString,
-    settlementAccountId: nonEmptyString.optional(),
-    fxRateToInr: nonNegativeNumber.optional(),
-  })
-  .refine((data) => data.market !== "US" || data.fxRateToInr !== undefined, {
-    message: "fxRateToInr is required for US-market transactions",
-    path: ["fxRateToInr"],
-  });
-
-export const updateInvestmentTransactionSchema = z.object({
-  tradeDate: isoDate.optional(),
-  symbol: nonEmptyString.optional(),
-  market: z.enum(["IND", "US"]).optional(),
-  currency: z.enum(["INR", "USD"]).optional(),
-  tradeType: z.enum(["Buy", "Sell"]).optional(),
-  source: z.enum(["Market", "RSU", "ESPP"]).optional(),
-  quantity: nonNegativeNumber.optional(),
-  price: nonNegativeNumber.optional(),
-  total: nonNegativeNumber.optional(),
-  assetType: nonEmptyString.optional(),
-  broker: nonEmptyString.optional(),
-  settlementAccountId: nonEmptyString.optional(),
-  fxRateToInr: nonNegativeNumber.optional(),
+  schema: investmentTransactionRowSchema,
 });

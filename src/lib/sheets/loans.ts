@@ -6,26 +6,6 @@ import { generateInstallments } from "../schedule/generateInstallments";
 import { isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
 import type { Loan, LoanInstallment } from "./types";
 
-export const loansRepository = createRepository<Loan>({
-  sheetName: "Loans",
-  columns: [
-    "id",
-    "name",
-    "lenderName",
-    "category",
-    "repaymentStructure",
-    "principalAmount",
-    "annualInterestRate",
-    "tenureMonths",
-    "paymentFrequency",
-    "processingFee",
-    "disbursementDate",
-    "accountId",
-    "status",
-  ],
-  dateColumns: ["disbursementDate"],
-});
-
 export const createLoanSchema = z.object({
   name: nonEmptyString,
   lenderName: nonEmptyString,
@@ -46,6 +26,30 @@ export const createLoanSchema = z.object({
 // this is for correcting metadata (name, status, lenderName) rather than
 // terms. Revisit if editing terms after creation becomes a real need.
 export const updateLoanSchema = createLoanSchema.partial();
+
+/** A row as read back from the Sheet: a valid create, plus its id. */
+export const loanRowSchema = createLoanSchema.extend({ id: nonEmptyString });
+
+export const loansRepository = createRepository<Loan>({
+  sheetName: "Loans",
+  columns: [
+    "id",
+    "name",
+    "lenderName",
+    "category",
+    "repaymentStructure",
+    "principalAmount",
+    "annualInterestRate",
+    "tenureMonths",
+    "paymentFrequency",
+    "processingFee",
+    "disbursementDate",
+    "accountId",
+    "status",
+  ],
+  dateColumns: ["disbursementDate"],
+  schema: loanRowSchema,
+});
 
 /**
  * Creates a Loan and its full installment schedule together, so a loan
@@ -87,12 +91,25 @@ export async function createLoanWithSchedule(
  * createLoanWithSchedule, just for the other end of a loan's lifecycle.
  */
 export async function deleteLoanWithSchedule(loanId: string): Promise<void> {
-  const installments = await loanInstallmentsRepository.list();
-  const toDelete = installments.filter((installment) => installment.loanId === loanId);
+  // readAll, not list: an installment row that fails validation still belongs
+  // to the loan and must go with it.
+  const { records, invalid } = await loanInstallmentsRepository.readAll();
+  const invalidRows = invalid.filter((row) => row.values.loanId === loanId);
+  // Checked before deleting anything, so a loan is never left half-deleted.
+  const withoutId = invalidRows.filter((row) => typeof row.values.id !== "string");
+  if (withoutId.length > 0) {
+    throw new Error(
+      `Loan ${loanId} wasn't deleted: LoanInstallments ${withoutId.length === 1 ? "row" : "rows"} ${withoutId.map((row) => row.rowNumber).join(", ")} belong to it but have no id, so they couldn't be deleted with it. Fix or delete them in the Sheet first.`,
+    );
+  }
+  const ids = [
+    ...records.filter((installment) => installment.loanId === loanId).map((installment) => installment.id),
+    ...invalidRows.map((row) => row.values.id as string),
+  ];
   // Sequential, not Promise.all — concurrent deletes against the same tab
-  // race on row-index computation (see the plan's Verification notes).
-  for (const installment of toDelete) {
-    await loanInstallmentsRepository.remove(installment.id);
+  // race on row-index computation (see docs/system-design.md).
+  for (const id of ids) {
+    await loanInstallmentsRepository.remove(id);
   }
   await loansRepository.remove(loanId);
 }
