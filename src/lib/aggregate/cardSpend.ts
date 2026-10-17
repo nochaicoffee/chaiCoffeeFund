@@ -1,3 +1,4 @@
+import { ISO_DATE_PATTERN } from "../format/date";
 import type { Card, Statement } from "../sheets/types";
 
 /**
@@ -31,8 +32,6 @@ export interface MonthAmount {
   amount: number;
 }
 
-const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
-
 /**
  * A Sheet cell as a number, or null when it's blank or not a number. Blank cells
  * arrive as "" and text cells as strings, and Number("") would silently be 0.
@@ -55,7 +54,7 @@ function usableStatements({ cards, statements }: CardData, cardId?: string): Sta
   const usable: Statement[] = [];
   for (const s of statements) {
     if (!cardIds.has(s.cardId) || (cardId !== undefined && s.cardId !== cardId)) continue;
-    if (!ISO_DATE.test(String(s.statementDate)) || !ISO_DATE.test(String(s.dueDate))) continue;
+    if (!ISO_DATE_PATTERN.test(String(s.statementDate)) || !ISO_DATE_PATTERN.test(String(s.dueDate))) continue;
     const totalAmountDue = toAmount(s.totalAmountDue);
     if (totalAmountDue === null) continue;
     usable.push({ ...s, totalAmountDue, amountPaid: toAmount(s.amountPaid) ?? 0 });

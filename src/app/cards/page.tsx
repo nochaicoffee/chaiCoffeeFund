@@ -7,7 +7,7 @@ import { todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import { computeCardSummaries } from "@/lib/aggregate/cards";
 import { getCachedAccounts, getCachedCards, getCachedStatements } from "@/lib/sheets/cached";
-import type { Card } from "@/lib/sheets/types";
+import { CARD_COLORS, type Card } from "@/lib/sheets/types";
 import type { Metadata } from "next";
 
 function utilizationTone(utilization: number | null): "positive" | "neutral" | "negative" {
@@ -178,6 +178,33 @@ export default async function CardsPage() {
             <input name="name" placeholder="Name" required className="rounded-md border border-divider px-2 py-1" />
             <input name="alias" placeholder="Alias" required className="rounded-md border border-divider px-2 py-1" />
             <input name="issuer" placeholder="Issuer" required className="rounded-md border border-divider px-2 py-1" />
+            <input
+              name="last4"
+              placeholder="Last 4 digits"
+              required
+              inputMode="numeric"
+              pattern="[0-9]{4}"
+              maxLength={4}
+              className="rounded-md border border-divider px-2 py-1"
+            />
+            <select name="color" required defaultValue="Sapphire" className="rounded-md border border-divider px-2 py-1">
+              {CARD_COLORS.map((color) => (
+                <option key={color} value={color}>
+                  {color}
+                </option>
+              ))}
+            </select>
+            <input
+              name="statementPdfPassword"
+              placeholder="Statement PDF password (optional)"
+              autoComplete="off"
+              className="rounded-md border border-divider px-2 py-1"
+            />
+            <input
+              name="emailMatchKeywords"
+              placeholder="Subject keywords, comma-separated (optional)"
+              className="rounded-md border border-divider px-2 py-1"
+            />
             <input
               name="creditLimit"
               type="number"

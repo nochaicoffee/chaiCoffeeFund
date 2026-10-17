@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { createRepository } from "./repository";
 import { isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
-import type { Card } from "./types";
+import { CARD_COLORS, type Card } from "./types";
 
 export const cardsRepository = createRepository<Card>({
   sheetName: "Cards",
@@ -17,6 +17,8 @@ export const cardsRepository = createRepository<Card>({
     "status",
     "statementPdfPassword",
     "emailMatchKeywords",
+    "last4",
+    "color",
   ],
   dateColumns: ["statementAnchorDate", "dueAnchorDate"],
 });
@@ -31,6 +33,8 @@ export const createCardSchema = z.object({
   status: z.enum(["Active", "Inactive", "Closed"]),
   statementPdfPassword: nonEmptyString.optional(),
   emailMatchKeywords: nonEmptyString.optional(),
+  last4: z.string().regex(/^\d{4}$/, "Enter the last 4 digits of the card number"),
+  color: z.enum(CARD_COLORS),
 });
 
 export const updateCardSchema = createCardSchema.partial();

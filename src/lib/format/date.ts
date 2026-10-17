@@ -1,5 +1,8 @@
 import { appConfig } from "../appConfig";
 
+/** A plain YYYY-MM-DD date, the only date format this app stores or passes around. */
+export const ISO_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
+
 /**
  * Today's date as YYYY-MM-DD in the app's time zone (India by default).
  * `new Date().toISOString()` gives the UTC date instead, which is still
