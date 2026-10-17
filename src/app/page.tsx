@@ -1,6 +1,7 @@
 import { BalanceTrendChart } from "@/components/BalanceTrendChart";
 import { RefreshButton } from "@/components/RefreshButton";
-import { formatInr, StatTile } from "@/components/StatTile";
+import { StatTile } from "@/components/StatTile";
+import { formatInr } from "@/lib/format/money";
 import { balanceTrend } from "@/lib/aggregate/accounts";
 import { computeCardSummaries } from "@/lib/aggregate/cards";
 import { totalEstimatedFixedDepositValue } from "@/lib/aggregate/fixedDeposits";
@@ -107,7 +108,7 @@ export default async function OverviewPage() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-black/10 p-6 dark:border-white/10">
+      <div className="rounded-lg border border-divider p-6">
         <div className="text-sm text-foreground/60">Net worth</div>
         <div className="mt-1 text-4xl font-bold">{formatInr(netWorth.netWorth)}</div>
         <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-foreground/60 sm:grid-cols-5">
@@ -134,12 +135,12 @@ export default async function OverviewPage() {
         <StatTile label="Monthly obligations" value={formatInr(monthlyObligations)} tone="negative" />
       </div>
 
-      <div className="rounded-lg border border-black/10 p-4 dark:border-white/10">
+      <div className="rounded-lg border border-divider p-4">
         <div className="mb-2 text-sm font-medium">Bank balance trend</div>
         <BalanceTrendChart data={trend} />
       </div>
 
-      <div className="rounded-lg border border-black/10 p-4 dark:border-white/10">
+      <div className="rounded-lg border border-divider p-4">
         <div className="mb-2 text-sm font-medium">What needs attention</div>
         {attention.length === 0 ? (
           <div className="text-sm text-foreground/50">Nothing outstanding right now.</div>

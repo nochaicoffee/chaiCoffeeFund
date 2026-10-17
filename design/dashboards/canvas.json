@@ -123,6 +123,10 @@
     {
       "id": "page-31",
       "name": "Next due · Textured bar"
+    },
+    {
+      "id": "page-32",
+      "name": "Add card / statement forms"
     }
   ],
   "artboards": [
@@ -437,6 +441,14 @@
       "w": 1700,
       "h": 1550,
       "page": "page-24"
+    },
+    {
+      "file": "CardsFormsIdeas.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1196,
+      "h": 6400,
+      "page": "page-32"
     }
   ],
   "annotations": [
@@ -735,6 +747,14 @@
       "w": 1700,
       "page": "page-24",
       "text": "F · Aurora — Style experiment: soft emerald and teal glows behind frosted, see-through cards. The most atmospheric; a callback to the original glass look, but calmer. Generated from the light board (CardsListLight) so it stays in sync; 2022–25 in the All time panel is still sample data."
+    },
+    {
+      "id": "note-forms",
+      "x": 0,
+      "y": -70,
+      "w": 1100,
+      "page": "page-32",
+      "text": "Exploration only. Add card (A drawer, B modal with live tile preview, C two steps) and Add statement (A drawer pending, B drawer already paid, C quick add with validation). Fields match the Card / Statement data model; 'Last 4 digits' and 'Tile colour' in Add card B are proposed new fields."
     }
   ],
   "launch": {
