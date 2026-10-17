@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatInr, formatInrCompact, formatInrExact } from "./money";
+import { formatInr, formatInrCompact, formatInrExact, parseAmountText } from "./money";
 
 describe("formatInr", () => {
   it("uses Indian digit grouping", () => {
@@ -35,6 +35,26 @@ describe("formatInrExact", () => {
     expect(formatInrExact(-0.001)).toBe("₹0");
     expect(formatInrExact(-6400.25)).toBe("−₹6,400.25");
     expect(formatInrExact(Number.NaN)).toBe("—");
+  });
+});
+
+describe("parseAmountText", () => {
+  it("reads amounts as typed or printed", () => {
+    expect(parseAmountText("38500")).toBe(38500);
+    expect(parseAmountText(" ₹38,500.50 ")).toBe(38500.5);
+    expect(parseAmountText("Rs. 5,000.00")).toBe(5000);
+    expect(parseAmountText("INR 5000")).toBe(5000);
+    expect(parseAmountText("1,00,000")).toBe(100000);
+  });
+
+  it("reads a negative with either minus sign", () => {
+    expect(parseAmountText("-14,238.61")).toBe(-14238.61);
+    expect(parseAmountText("−₹6,400")).toBe(-6400);
+    expect(parseAmountText(formatInr(-6400))).toBe(-6400);
+  });
+
+  it("is null for anything that isn't plain digits", () => {
+    for (const text of ["", "Nil", "38.5k", "1e3", "0x10", "Infinity", "12345.67Cr", "."]) expect(parseAmountText(text)).toBeNull();
   });
 });
 

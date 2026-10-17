@@ -1,3 +1,5 @@
+import { parseAmountText } from "../format/money";
+
 const MONTH_INDEX: Record<string, number> = {
   jan: 0,
   feb: 1,
@@ -19,11 +21,9 @@ export function cleanAmount(raw: string): string {
   return stripped.replace(/^(Rs\.?|INR)\s*/i, "");
 }
 
-/** `cleanAmount` plus conversion to a number — `null` (never NaN) when the input can't be read as an amount. */
+/** The amount as a number — `null` (never NaN) when the input can't be read as one. Same rules as a Sheet cell's amount text (parseAmountText). */
 export function cleanAmountToNumber(raw: string | undefined): number | null {
-  if (!raw) return null;
-  const value = Number(cleanAmount(raw));
-  return Number.isFinite(value) ? value : null;
+  return raw ? parseAmountText(raw) : null;
 }
 
 function pad2(n: number): string {

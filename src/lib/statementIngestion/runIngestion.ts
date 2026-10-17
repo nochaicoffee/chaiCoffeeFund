@@ -10,7 +10,7 @@ import { parseStatement } from "@/lib/statementParsing/parseStatement";
 import { toStatementFields } from "@/lib/statementParsing/toStatementFields";
 import { cardsRepository } from "@/lib/sheets/cards";
 import { createStatementSchema, statementsRepository } from "@/lib/sheets/statements";
-import type { Card, Statement } from "@/lib/sheets/types";
+import type { Card } from "@/lib/sheets/types";
 import { isProcessed, loadProcessedMessageIds, markProcessed, saveProcessedMessageIds } from "./processedMessageIds";
 import type { IngestionOutcome, IngestionResult } from "./types";
 
@@ -27,14 +27,26 @@ export async function runStatementIngestion(): Promise<IngestionResult> {
   const gmail = getGmailClient();
   const label = getStatementLabel();
 
-  const [cards, statements, messageRefs, processedStore] = await Promise.all([
-    cardsRepository.list(),
-    statementsRepository.list(),
+  const [cardRows, statementRows, messageRefs, processedStore] = await Promise.all([
+    cardsRepository.readAll(),
+    statementsRepository.readAll(),
     listMessagesWithLabel(gmail, label),
     loadProcessedMessageIds(PROCESSED_IDS_PATH),
   ]);
+  // Rows that fail validation still count as existing, so a statement whose row
+  // was edited badly in the Sheet is reported as a duplicate, not imported twice.
+  const statements: ExistingStatement[] = [...statementRows.records, ...statementRows.invalid.map((row) => row.values)];
 
-  const candidatePasswords = [...new Set(cards.map((c) => c.statementPdfPassword).filter((p): p is string => Boolean(p)))];
+  const cards = cardRows.records;
+  // Passwords come from invalid card rows too, so their statements still open
+  // and are reported as matching no card, rather than as a password failure.
+  const candidatePasswords = [
+    ...new Set(
+      [...cards.map((c) => c.statementPdfPassword), ...cardRows.invalid.map((row) => row.values.statementPdfPassword)].filter(
+        (p): p is string => typeof p === "string" && p !== "",
+      ),
+    ),
+  ];
   const pending = messageRefs.filter((ref) => !isProcessed(processedStore, ref.id));
 
   const outcomes: IngestionOutcome[] = [];
@@ -56,11 +68,14 @@ export async function runStatementIngestion(): Promise<IngestionResult> {
   return { outcomes };
 }
 
+/** What the duplicate check needs from each statement row, valid or not. */
+type ExistingStatement = { id?: unknown; cardId?: unknown; statementDate?: unknown };
+
 async function processMessageSafely(
   gmail: gmail_v1.Gmail,
   messageId: string,
   cards: Card[],
-  existingStatements: Statement[],
+  existingStatements: ExistingStatement[],
   candidatePasswords: string[],
 ): Promise<IngestionOutcome> {
   try {
@@ -81,7 +96,7 @@ async function processMessage(
   gmail: gmail_v1.Gmail,
   messageId: string,
   cards: Card[],
-  existingStatements: Statement[],
+  existingStatements: ExistingStatement[],
   candidatePasswords: string[],
 ): Promise<IngestionOutcome> {
   const message = await getMessage(gmail, messageId);
@@ -121,7 +136,7 @@ async function processMessage(
   const card = matchResult.card;
   const duplicate = existingStatements.find((s) => s.cardId === card.id && s.statementDate === fields.statementDate);
   if (duplicate) {
-    return { messageId, subject, outcome: "duplicate", statementId: duplicate.id, cardId: card.id };
+    return { messageId, subject, outcome: "duplicate", statementId: typeof duplicate.id === "string" ? duplicate.id : undefined, cardId: card.id };
   }
 
   const input = createStatementSchema.parse({
