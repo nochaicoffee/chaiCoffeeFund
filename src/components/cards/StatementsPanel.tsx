@@ -3,6 +3,7 @@ import type { RangeRow, SpendRange, StatementCounts } from "@/lib/aggregate/card
 import { daysBetween } from "@/lib/aggregate/cardSpend";
 import type { Card, Statement } from "@/lib/sheets/types";
 import { formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
+import { cardName } from "@/lib/format/labels";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import { cardSwatch } from "./CardTile";
 import { StatusPill } from "./StatusPill";
@@ -74,7 +75,7 @@ function StatementsView({
                   <td className="pr-3 font-bold">
                     <span className="inline-flex items-center gap-2">
                       <span className="size-[9px] shrink-0 rounded-[3px]" style={{ background: cardSwatch(card?.color) }} aria-hidden="true" />
-                      {card?.name ?? "Unknown card"}
+                      {card ? cardName(card) : "Unknown card"}
                     </span>
                   </td>
                   <td className="pr-3 text-muted tabular-nums">{formatShortDate(s.statementDate)}</td>

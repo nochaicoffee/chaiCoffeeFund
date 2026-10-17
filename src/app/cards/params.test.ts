@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cardsQuery, parsePage, parsePanel, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodYears, statementsQuery } from "./params";
+import { cardsQuery, parsePage, parseShowClosed, parsePanel, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodYears, statementsQuery } from "./params";
 import type { Card } from "@/lib/sheets/types";
 
 const TODAY = "2026-10-17";
@@ -74,5 +74,13 @@ describe("Statements page params", () => {
     expect(statementsQuery({ period: { kind: "all" }, cardId: "regalia", status: "pending", search: "38,500", sort: "oldest", page: 2, demo: true }, TODAY)).toBe(
       "?card=regalia&period=all&status=pending&q=38%2C500&sort=oldest&page=2&demo",
     );
+  });
+});
+
+describe("closed cards in the card row", () => {
+  it("opens with ?closed=1 and keeps it in links", () => {
+    expect(parseShowClosed({ closed: "1" })).toBe(true);
+    expect(parseShowClosed({})).toBe(false);
+    expect(cardsQuery({ period: { kind: "year", year: 2026 }, cardId: "edge", showClosed: true, demo: false }, TODAY)).toBe("?card=edge&closed=1");
   });
 });

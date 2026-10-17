@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { InterimManage } from "./InterimManage";
 import { loadCardData } from "./loadCardData";
-import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, periodYears, statementsQuery } from "./params";
+import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, parseShowClosed, periodYears, statementsQuery } from "./params";
 import { summarySentence } from "./summarySentence";
 import { RefreshButton } from "@/components/RefreshButton";
+import { SyncStatementsButton } from "@/components/SyncStatementsButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
-import { AddCardTile, CardTile } from "@/components/cards/CardTile";
+import { CardTile, ClosedCardsTile } from "@/components/cards/CardTile";
+import { AddCardButton, AddStatementButton, EditCardButton } from "@/components/cards/forms/FormButtons";
 import { DetailsCard } from "@/components/cards/DetailsCard";
 import { StatementsPanel } from "@/components/cards/StatementsPanel";
 import { SpendHeatmap } from "@/components/cards/SpendHeatmap";
@@ -28,10 +28,13 @@ import {
   statementCounts,
   statementYears,
   tileCards,
+  closedCardTiles,
+  type CardTileData,
 } from "@/lib/aggregate/cardSpend";
 import { trendPoints } from "@/lib/aggregate/cardTrend";
 import { formatShortDate, greetingFor, todayIso } from "@/lib/format/date";
-import { optionLabel } from "@/lib/format/labels";
+import { cardName, optionLabel } from "@/lib/format/labels";
+import { toClientCard } from "@/lib/forms/clientCard";
 import { formatInr } from "@/lib/format/money";
 
 export const metadata: Metadata = { title: "Cards" };
@@ -57,8 +60,15 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
   const cardId = parseSelectedCard(params, data);
   const selectedCard = data.cards.find((c) => c.id === cardId);
   const panel = parsePanel(params);
-  const linkFor = (id?: string) => cardsQuery({ period, cardId: id, panel, demo }, today);
-  const panelHref = (view: "statements" | "range") => cardsQuery({ period, cardId, panel: view, demo }, today);
+  // Closed cards with nothing left to pay fold away at the end of the row; a selected one keeps them open.
+  const closedTiles = closedCardTiles(data, today);
+  const closedOpen = parseShowClosed(params) || closedTiles.some((t) => t.card.id === cardId);
+  const linkFor = (id?: string) => cardsQuery({ period, cardId: id, panel, showClosed: closedOpen, demo }, today);
+  const panelHref = (view: "statements" | "range") => cardsQuery({ period, cardId, panel: view, showClosed: closedOpen, demo }, today);
+  // Folding them away also lets go of a selected closed card, which would otherwise keep them open.
+  const closedToggleHref = closedOpen
+    ? cardsQuery({ period, cardId: closedTiles.some((t) => t.card.id === cardId) ? undefined : cardId, panel, demo }, today)
+    : cardsQuery({ period, cardId, panel, showClosed: true, demo }, today);
 
   const summary = spendSummary(data, period, today, cardId);
   const pending = pendingSummary(data, today, cardId);
@@ -70,8 +80,37 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
   const yearTotals = heatmapYearTotals(data, heatRows, today, cardId);
   const cardsById = new Map(data.cards.map((c) => [c.id, c]));
   const periodLabel = period.kind === "all" ? "all time" : period.year === currentYear ? "this year" : String(period.year);
-  // Sample data never reaches the real forms, so it can't write to the Sheet.
-  const addCardHref = demo ? "/cards#add-card" : "#add-card";
+  // Sample data never reaches the Sheet: the form buttons show disabled.
+  const disabledReason = demo ? "Sample data can't be changed" : undefined;
+  const clientCards = data.cards.map(toClientCard);
+  const accountOptions = accounts.filter((a) => a.status === "Active").map((a) => ({ id: a.id, name: a.name }));
+  const usedColors = data.cards.flatMap((c) => (c.color ? [c.color] : []));
+
+  const cardTile = ({ card, outstanding, utilization, nextDue, nextStatementDate }: CardTileData) => (
+    <div role="listitem" key={card.id}>
+      <CardTile
+        dimmed={card.status === "Closed" && outstanding === 0}
+        href={linkFor(card.id)}
+        selected={card.id === cardId}
+        variant="card"
+        title={cardName(card)}
+        corner={optionLabel(card.issuer)}
+        color={card.color}
+        last4={card.last4}
+        balance={`${formatInr(outstanding)} / ${formatInr(card.creditLimit)}`}
+        utilizationLabel={percent(utilization, 1)}
+        utilization={utilization ?? 0}
+        pill={nextDue ? dueLabel(nextDue.statement.dueDate, nextDue.daysUntilDue) : undefined}
+        footnote={
+          nextDue
+            ? `Min ${formatInr(nextDue.statement.minimumAmountDue)}`
+            : card.status === "Active"
+              ? `Next statement ${formatShortDate(nextStatementDate)}`
+              : card.status
+        }
+      />
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -86,21 +125,14 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
               value={period.kind === "all" ? "all" : String(period.year)}
             />
             <RefreshButton iconOnly />
-            <Link
-              href={addCardHref}
-              className="flex min-h-11 items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:min-h-0"
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Add card
-            </Link>
+            {!demo && <SyncStatementsButton />}
+            <AddStatementButton cards={clientCards} statements={data.statements} today={today} initialCardId={cardId} disabledReason={disabledReason} variant="ghost" />
+            <AddCardButton accounts={accountOptions} usedColors={usedColors} disabledReason={disabledReason} variant="header" />
           </>
         }
       >
         <p className="max-w-[960px] text-base leading-[1.7] font-medium text-muted">
-          {summarySentence({ summary, pending, period, today, cardName: selectedCard?.name }).map((part, i) =>
+          {summarySentence({ summary, pending, period, today, cardName: selectedCard && cardName(selectedCard) }).map((part, i) =>
             part.strong ? (
               <span key={i} className="font-bold whitespace-nowrap text-fg tabular-nums">
                 {part.text}
@@ -137,37 +169,20 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
             footnote={allPending.nextDueDate ? `Next ${formatShortDate(allPending.nextDueDate)}` : "Nothing due"}
           />
         </div>
-        {tiles.map(({ card, outstanding, utilization, nextDue, nextStatementDate }) => (
-          <div role="listitem" key={card.id}>
-            <CardTile
-              href={linkFor(card.id)}
-              selected={card.id === cardId}
-              variant="card"
-              title={card.name}
-              corner={optionLabel(card.issuer)}
-              color={card.color}
-              last4={card.last4}
-              balance={`${formatInr(outstanding)} / ${formatInr(card.creditLimit)}`}
-              utilizationLabel={percent(utilization, 1)}
-              utilization={utilization ?? 0}
-              pill={nextDue ? dueLabel(nextDue.statement.dueDate, nextDue.daysUntilDue) : undefined}
-              footnote={
-                nextDue
-                  ? `Min ${formatInr(nextDue.statement.minimumAmountDue)}`
-                  : card.status === "Active"
-                    ? `Next statement ${formatShortDate(nextStatementDate)}`
-                    : card.status
-              }
-            />
+        {tiles.map(cardTile)}
+        {closedTiles.length > 0 && (
+          <div role="listitem">
+            <ClosedCardsTile href={closedToggleHref} colors={closedTiles.map((t) => t.card.color)} open={closedOpen} />
           </div>
-        ))}
+        )}
+        {closedOpen && closedTiles.map(cardTile)}
         <div role="listitem">
-          <AddCardTile href={addCardHref} />
+          <AddCardButton accounts={accountOptions} usedColors={usedColors} disabledReason={disabledReason} variant="tile" />
         </div>
       </div>
 
       <SpendHeatmap
-        title={selectedCard?.name ?? "All Cards"}
+        title={selectedCard ? cardName(selectedCard) : "All Cards"}
         rows={heatRows}
         yearTotals={yearTotals}
         peak={heatmapPeak(heatRows)}
@@ -182,6 +197,11 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
           cardCount={tiles.length}
           periodLabel={periodLabel}
           singleYear={period.kind === "year"}
+          action={
+            selectedCard && (
+              <EditCardButton card={toClientCard(selectedCard)} accounts={accountOptions} usedColors={usedColors} disabledReason={disabledReason} />
+            )
+          }
         />
         <StatementsPanel
           view={panel}
@@ -198,11 +218,10 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
 
       <TrendChart
         points={trendPoints(data, today, period, cardId)}
-        cards={(selectedCard ? [selectedCard] : data.cards).map((c) => ({ id: c.id, name: c.name, color: c.color }))}
+        cards={(selectedCard ? [selectedCard] : data.cards).map((c) => ({ id: c.id, name: cardName(c), color: c.color }))}
         currentMonth={monthOf(today)}
       />
 
-      {!demo && <InterimManage cards={data.cards} accounts={accounts} />}
     </div>
   );
 }

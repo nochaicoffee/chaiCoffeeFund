@@ -1,16 +1,14 @@
+import type { ReactNode } from "react";
 import type { CardDetails, MonthAmount } from "@/lib/aggregate/cardSpend";
 import type { Card } from "@/lib/sheets/types";
 import { formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
-import { optionLabel } from "@/lib/format/labels";
+import { cardName, formatPercent, optionLabel } from "@/lib/format/labels";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import { cardGradient, cardSwatch } from "./CardTile";
 
 const ALL_CARDS_BACKGROUND =
   "radial-gradient(circle at 92% 6%, var(--card-emerald-glow), transparent 42%), linear-gradient(150deg, var(--card-emerald-from), var(--card-emerald-to))";
 
-function percentLabel(value: number | null): string {
-  return value === null ? "no limit" : `${(value * 100).toFixed(value * 100 >= 10 ? 0 : 1).replace(/\.0$/, "")}%`;
-}
 
 function Stat({ label, value, marker, suffix }: { label: string; value: string; marker?: "up" | "down"; suffix?: string }) {
   return (
@@ -39,6 +37,7 @@ export function DetailsCard({
   cardCount,
   periodLabel,
   singleYear,
+  action,
 }: {
   details: CardDetails;
   /** The selected card, or undefined for All Cards. */
@@ -49,6 +48,8 @@ export function DetailsCard({
   periodLabel: string;
   /** Whether month labels can drop the year. */
   singleYear: boolean;
+  /** A control on the coloured header, such as Edit card for the selected card. */
+  action?: ReactNode;
 }) {
   const month = (m: MonthAmount | null) => (m ? (singleYear ? formatMonthShort(m.month) : formatMonthYear(m.month)) : undefined);
   const dueTotal = details.due.reduce((sum, d) => sum + d.remaining, 0);
@@ -57,15 +58,18 @@ export function DetailsCard({
     : `All Cards · ${cardCount} ${cardCount === 1 ? "card" : "cards"}`;
 
   return (
-    <section aria-label={`${card?.name ?? "All Cards"} details`} className="flex flex-col gap-4 rounded-[24px] border border-surface-line bg-surface p-[22px] shadow-soft">
+    <section aria-label={`${card ? cardName(card) : "All Cards"} details`} className="flex flex-col gap-4 rounded-[24px] border border-surface-line bg-surface p-[22px] shadow-soft">
       <div
         className="-mx-3 -mt-3 flex flex-col gap-4 rounded-[18px] border border-on-card-line px-3 pt-3 pb-3.5 text-on-card shadow-tile"
         style={{ background: card ? cardGradient(card.color) : ALL_CARDS_BACKGROUND }}
       >
-        <span className="text-xs font-semibold text-on-card-muted">{card ? `${card.name} · ${label}` : label}</span>
+        <div className="flex items-center justify-between gap-3">
+          <span className="min-w-0 truncate text-xs font-semibold text-on-card-muted">{card ? `${cardName(card)} · ${label}` : label}</span>
+          {action}
+        </div>
         <div className="text-[26px] leading-none font-extrabold tabular-nums">
           {formatInr(details.outstanding)}{" "}
-          <span className="text-xs font-bold text-on-card-muted">outstanding · {percentLabel(details.utilization)}</span>
+          <span className="text-xs font-bold text-on-card-muted">outstanding · {details.utilization === null ? "no limit" : formatPercent(details.utilization)}</span>
         </div>
         {details.limit > 0 && (
           <div>
@@ -113,7 +117,7 @@ export function DetailsCard({
         </div>
         {details.due.length > 0 && (
           <>
-            <div className="flex h-[26px] gap-[3px] overflow-hidden rounded-[9px]" role="img" aria-label={`Due: ${details.due.map((d) => `${cardsById.get(d.statement.cardId)?.name ?? "Card"} ${formatInr(d.remaining)}`).join(", ")}`}>
+            <div className="flex h-[26px] gap-[3px] overflow-hidden rounded-[9px]" role="img" aria-label={`Due: ${details.due.map((d) => `${cardName(cardsById.get(d.statement.cardId) ?? { name: "Card" })} ${formatInr(d.remaining)}`).join(", ")}`}>
               {details.due.map((d) => {
                 const share = dueTotal > 0 ? d.remaining / dueTotal : 1 / details.due.length;
                 return (
@@ -131,7 +135,7 @@ export function DetailsCard({
               {details.due.map((d) => (
                 <span key={d.statement.id} className="inline-flex items-center gap-1.5 text-[11px] font-bold whitespace-nowrap">
                   <span className="size-2 shrink-0 rounded-[3px]" style={{ background: cardSwatch(cardsById.get(d.statement.cardId)?.color) }} aria-hidden="true" />
-                  {cardsById.get(d.statement.cardId)?.name ?? "Card"} {formatInrCompact(d.remaining)}
+                  {cardName(cardsById.get(d.statement.cardId) ?? { name: "Card" })} {formatInrCompact(d.remaining)}
                   <span className="font-semibold text-muted">
                     · {d.daysUntilDue < 0 ? `overdue since ${formatShortDate(d.statement.dueDate)}` : formatShortDate(d.statement.dueDate)}
                   </span>

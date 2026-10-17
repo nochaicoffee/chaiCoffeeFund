@@ -5,10 +5,9 @@ import { dueLabel, paymentVariance, type FilterCounts, type MonthGroup, type Pag
 import type { StatementsListState } from "@/app/cards/params";
 import type { Account, Card, Statement } from "@/lib/sheets/types";
 import { ISO_DATE_PATTERN, formatDate, formatMonthYear } from "@/lib/format/date";
-import { optionLabel } from "@/lib/format/labels";
+import { cardName, optionLabel } from "@/lib/format/labels";
 import { formatInr, formatInrExact } from "@/lib/format/money";
 import { cardGradient, cardSwatch } from "./CardTile";
-import { MarkPaidButton } from "./MarkPaidButton";
 import { StatusPill } from "./StatusPill";
 
 /** The design's eleven columns; below `lg` each row stacks into a small two-column card instead. */
@@ -66,15 +65,14 @@ function StatementRow({
   card,
   paidFrom,
   today,
-  accounts,
-  demo,
+  markPaid,
 }: {
   statement: Statement;
   card: Card | undefined;
   paidFrom: string | undefined;
   today: string;
-  accounts: Account[];
-  demo: boolean;
+  /** Mark paid for a pending row, built by the page. */
+  markPaid?: ReactNode;
 }) {
   const paid = statement.status === "Paid";
   // A pending bill can already be part-paid; its totals elsewhere count only what's left.
@@ -90,7 +88,7 @@ function StatementRow({
       <Cell className="flex items-center gap-2.5">
         <span className="h-5 w-[30px] shrink-0 rounded-[5px] shadow-[0_2px_5px_oklch(0_0_0/0.18)]" style={{ background: cardGradient(card?.color) }} aria-hidden="true" />
         <div className="min-w-0 leading-tight">
-          <div className="truncate font-bold">{card?.name ?? "Unknown card"}</div>
+          <div className="truncate font-bold">{card ? cardName(card) : "Unknown card"}</div>
           <div className="truncate text-[11px] font-semibold text-muted">
             {card && optionLabel(card.issuer)}
             {card?.last4 && ` ·· ${card.last4}`}
@@ -122,14 +120,7 @@ function StatementRow({
         <VarianceValue statement={statement} />
       </Cell>
       <Cell className={`flex justify-end max-lg:col-span-2 ${paid ? "max-lg:hidden" : "max-lg:[&>*]:w-full"}`}>
-        {!paid && (
-          <MarkPaidButton
-            statement={statement}
-            cardName={card?.name ?? "this card"}
-            accounts={accounts}
-            disabledReason={demo ? "Sample data can't be changed" : undefined}
-          />
-        )}
+        {!paid && markPaid}
       </Cell>
     </div>
   );
@@ -168,7 +159,8 @@ export function StatementsList({
   today,
   periodText,
   periodTotal,
-  addStatementHref,
+  addStatement,
+  markPaidFor,
 }: {
   state: StatementsListState;
   /** A link to this page with some choices changed, back on page 1 unless a page is given. */
@@ -183,7 +175,10 @@ export function StatementsList({
   periodText: string;
   /** Every statement in the period, before filters. */
   periodTotal: number;
-  addStatementHref: string;
+  /** The empty state's Add a statement button. */
+  addStatement: ReactNode;
+  /** Mark paid for a pending statement. */
+  markPaidFor: (statement: Statement) => ReactNode;
 }) {
   const status = state.status ?? "all";
   const cardsById = new Map(cards.map((c) => [c.id, c]));
@@ -193,7 +188,7 @@ export function StatementsList({
   const blanksShown = paidShown.some((s) => !s.paidDate || (!s.paidFromAccountId && !s.paidFromCardId));
   const filtered = status !== "all" || state.cardId !== undefined || Boolean(state.search);
   const paidFromName = (s: Statement) =>
-    s.paidFromAccountId ? (accountsById.get(s.paidFromAccountId)?.name ?? "Unknown account") : s.paidFromCardId ? (cardsById.get(s.paidFromCardId)?.name ?? "Unknown card") : undefined;
+    s.paidFromAccountId ? (accountsById.get(s.paidFromAccountId)?.name ?? "Unknown account") : s.paidFromCardId ? (cardsById.has(s.paidFromCardId) ? cardName(cardsById.get(s.paidFromCardId)!) : "Unknown card") : undefined;
 
   const chip = (selected: boolean, empty: boolean) =>
     `inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-bold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-accent md:h-[30px] ${
@@ -234,7 +229,7 @@ export function StatementsList({
                 className={chip(state.cardId === c.id, counts.byCard[c.id] === 0)}
               >
                 <span className="size-2 rounded-[3px]" style={{ background: cardSwatch(c.color) }} aria-hidden="true" />
-                {c.name} <Count value={counts.byCard[c.id] ?? 0} />
+                {cardName(c)} <Count value={counts.byCard[c.id] ?? 0} />
               </Link>
             ))}
           </nav>
@@ -289,9 +284,7 @@ export function StatementsList({
               Clear filters
             </Link>
           ) : (
-            <Link href={addStatementHref} className="inline-flex min-h-11 items-center text-xs font-bold text-accent-text hover:underline md:min-h-0">
-              Add a statement
-            </Link>
+            addStatement
           )}
         </div>
       ) : (
@@ -321,7 +314,7 @@ export function StatementsList({
                 </div>
               </div>
               {group.statements.map((s) => (
-                <StatementRow key={s.id} statement={s} card={cardsById.get(s.cardId)} paidFrom={paidFromName(s)} today={today} accounts={accounts} demo={state.demo} />
+                <StatementRow key={s.id} statement={s} card={cardsById.get(s.cardId)} paidFrom={paidFromName(s)} today={today} markPaid={s.status === "Pending" ? markPaidFor(s) : undefined} />
               ))}
             </div>
           ))}

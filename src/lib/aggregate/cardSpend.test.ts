@@ -21,6 +21,7 @@ import {
   statementCounts,
   statementYears,
   tileCards,
+  closedCardTiles,
 } from "./cardSpend";
 import { computeCardSummaries } from "./cards";
 import type { Card, Statement } from "../sheets/types";
@@ -398,6 +399,15 @@ describe("tileCards", () => {
       statements: [statement({ cardId: "closed-owing", status: "Pending" }), statement({ cardId: "closed-done", status: "Paid" })],
     };
     expect(tileCards(owing, "2026-01-10").map((t) => t.card.id)).toEqual(["open", "closed-owing"]);
+  });
+
+  it("folds a closed card with nothing left to pay into closedCardTiles", () => {
+    const owing = {
+      cards: [card({ id: "open" }), card({ id: "closed-owing", status: "Closed" }), card({ id: "closed-paid", status: "Closed" }), card({ id: "resting", status: "Inactive" })],
+      statements: [statement({ cardId: "closed-owing", status: "Pending" })],
+    };
+    expect(tileCards(owing, "2026-01-10").map((t) => t.card.id)).toEqual(["open", "closed-owing", "resting"]);
+    expect(closedCardTiles(owing, "2026-01-10").map((t) => t.card.id)).toEqual(["closed-paid"]);
   });
 
   it("knows when each card's next statement is due", () => {

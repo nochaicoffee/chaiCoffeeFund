@@ -64,7 +64,8 @@ function SelectedBadge() {
 }
 
 export interface CardTileProps {
-  href: string;
+  /** Where the tile leads. Without one it's a plain picture of the card, as in the Add card preview. */
+  href?: string;
   selected: boolean;
   variant: "all" | "card";
   title: string;
@@ -81,6 +82,8 @@ export interface CardTileProps {
   /** A pill on the left of the footer, such as "Due Aug 25 · 7d", or nothing. */
   pill?: string;
   footnote: ReactNode;
+  /** A closed card's tile: faded until it's selected. */
+  dimmed?: boolean;
 }
 
 /**
@@ -89,17 +92,36 @@ export interface CardTileProps {
  */
 export function CardTile(props: CardTileProps) {
   const isAll = props.variant === "all";
+  const className = `relative isolate flex h-[196px] w-[300px] max-w-full shrink-0 snap-start flex-col justify-between rounded-card p-[18px] text-on-card ${
+    props.selected ? "border-[1.5px] border-accent shadow-tile-selected" : "border border-on-card-line shadow-tile"
+  } ${props.dimmed && !props.selected ? "opacity-55 saturate-50 hover:opacity-80" : ""}`;
+  const style = { background: isAll ? ALL_CARDS_BACKGROUND : cardGradient(props.color) };
+  const face = <TileFace {...props} isAll={isAll} />;
+  if (!props.href) {
+    return (
+      <div className={className} style={style} aria-hidden="true">
+        {face}
+      </div>
+    );
+  }
   return (
     <Link
       href={props.href}
       scroll={false}
       aria-current={props.selected ? "true" : undefined}
       aria-label={`${props.title}: ${props.balance}${props.utilizationLabel ? `, ${props.utilizationLabel} used` : ""}`}
-      className={`relative isolate flex h-[196px] w-[300px] shrink-0 snap-start flex-col justify-between rounded-card p-[18px] text-on-card transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent ${
-        props.selected ? "border-[1.5px] border-accent shadow-tile-selected" : "border border-on-card-line shadow-tile"
-      }`}
-      style={{ background: isAll ? ALL_CARDS_BACKGROUND : cardGradient(props.color) }}
+      className={`${className} transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent`}
+      style={style}
     >
+      {face}
+    </Link>
+  );
+}
+
+function TileFace(props: CardTileProps & { isAll: boolean }) {
+  const { isAll } = props;
+  return (
+    <>
       {isAll && (
         <span className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-[inherit]">
           <Rings />
@@ -134,17 +156,65 @@ export function CardTile(props: CardTileProps) {
           <span className="truncate text-[10px] text-on-card-faint">{props.footnote}</span>
         </div>
       </div>
+    </>
+  );
+}
+
+/** The dashed tiles at the end of the row that aren't cards: the closed-cards fold and Add card. */
+const END_TILE_CLASS =
+  "flex h-[196px] shrink-0 snap-start items-center justify-center rounded-card border-[1.5px] border-dashed border-divider text-muted transition-colors hover:border-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
+
+/**
+ * The fold for closed cards with nothing left to pay, after the live cards: a
+ * small faded stack of them in their own colours. Opening it lays them out as
+ * faded tiles after it, so "Hide" stays where it was clicked.
+ */
+export function ClosedCardsTile({ href, colors, open }: { href: string; colors: (CardColor | undefined)[]; open: boolean }) {
+  const label = `${colors.length} closed ${colors.length === 1 ? "card" : "cards"}`;
+  // Up to three, the first in front and each one after it peeking out behind, up and to the left.
+  const stack = colors.slice(0, 3).reverse();
+  const step = { x: 7, y: 6 };
+  return (
+    <Link
+      href={href}
+      scroll={false}
+      aria-expanded={open}
+      aria-label={open ? `Hide ${label}` : `Show ${label}`}
+      className={`${END_TILE_CLASS} group w-[168px] flex-col gap-3.5`}
+    >
+      <span
+        className={`relative block transition-opacity group-hover:opacity-100 ${open ? "opacity-45" : "opacity-75"}`}
+        style={{ width: 66 + step.x * (stack.length - 1), height: 42 + step.y * (stack.length - 1) }}
+        aria-hidden="true"
+      >
+        {stack.map((color, i) => (
+          <span
+            key={i}
+            className="absolute flex h-[42px] w-[66px] rounded-[8px] border border-on-card-line p-[7px] shadow-soft saturate-50"
+            style={{ background: cardGradient(color), left: step.x * i, top: step.y * i }}
+          >
+            {i === stack.length - 1 && <span className="h-[7px] w-[10px] rounded-[2px]" style={{ background: "var(--card-chip)" }} />}
+          </span>
+        ))}
+      </span>
+      <span className="flex flex-col items-center gap-1">
+        <span className="text-xs font-semibold">{label}</span>
+        <span className="flex items-center gap-1 text-[11px] font-bold text-accent-text">
+          {open ? "Hide" : "Show"}
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" className={open ? "rotate-180" : ""}>
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </span>
+      </span>
     </Link>
   );
 }
 
-/** The last tile in the row: a dashed outline that leads to adding a card. */
-export function AddCardTile({ href }: { href: string }) {
+export const ADD_CARD_TILE_CLASS = `${END_TILE_CLASS} w-[230px] disabled:cursor-not-allowed disabled:opacity-60`;
+
+/** The inside of the last tile in the row: a plus and "Add card". */
+export function AddCardTileContent() {
   return (
-    <Link
-      href={href}
-      className="flex h-[196px] w-[230px] shrink-0 snap-start items-center justify-center rounded-card border-[1.5px] border-dashed border-divider text-muted transition-colors hover:border-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent"
-    >
       <span className="flex flex-col items-center gap-2">
         <span className="flex size-[34px] items-center justify-center rounded-full bg-fill" aria-hidden="true">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -154,6 +224,5 @@ export function AddCardTile({ href }: { href: string }) {
         </span>
         <span className="text-xs font-semibold">Add card</span>
       </span>
-    </Link>
   );
 }
