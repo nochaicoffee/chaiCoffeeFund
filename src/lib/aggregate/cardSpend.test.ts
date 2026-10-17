@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   addMonths,
   allCardsUtilization,
+  cardDetails,
   daysBetween,
   heatLevel,
   heatmapPeak,
@@ -13,8 +14,11 @@ import {
   pendingStatements,
   pendingSummary,
   percentChange,
+  recentStatements,
+  spendRange,
   spendSeries,
   spendSummary,
+  statementCounts,
   statementYears,
   tileCards,
 } from "./cardSpend";
@@ -422,5 +426,115 @@ describe("heatmapYearTotals", () => {
   it("follows the selected card", () => {
     const rows = heatmapRows(DESIGN, { kind: "year", year: 2026 }, TODAY, "amazon");
     expect(heatmapYearTotals(DESIGN, rows, TODAY, "amazon")[0].total).toBe(11400 + 12300 + 14500 + 15200 + 12400);
+  });
+});
+
+describe("cardDetails", () => {
+  const thisYear = { kind: "year" as const, year: 2026 };
+
+  it("matches the design's All Cards details card", () => {
+    const d = cardDetails(DESIGN, thisYear, TODAY);
+    expect(d).toMatchObject({ outstanding: 50900, limit: 400000, available: 349100, total: 239700 });
+    expect(d.utilization).toBeCloseTo(0.12725, 6);
+    expect(d.highest).toEqual({ month: "2026-07", amount: 57300 });
+    expect(d.lowest).toEqual({ month: "2026-05", amount: 40400 });
+    expect(d.due.map((i) => [i.statement.cardId, i.remaining])).toEqual([["amazon", 12400], ["regalia", 38500]]);
+    // The confirmed average is ÷ 8 months, so the marker sits at 29,962.5 of 4,00,000.
+    expect(d.averageOnLimit).toBeCloseTo(239700 / 8 / 400000, 6);
+  });
+
+  it("uses one card's own balance and limit when selected", () => {
+    const d = cardDetails(DESIGN, thisYear, TODAY, "regalia");
+    expect(d).toMatchObject({ outstanding: 38500, limit: 120000, available: 81500 });
+    expect(d.due).toHaveLength(1);
+  });
+
+  it("counts a closed card's unpaid bill as outstanding, but not against the active limit", () => {
+    const data = {
+      cards: [card({ id: "a", creditLimit: 100000 }), card({ id: "b", creditLimit: 50000, status: "Closed" })],
+      statements: [statement({ cardId: "a", status: "Pending", totalAmountDue: 10000 }), statement({ cardId: "b", status: "Pending", totalAmountDue: 5000 })],
+    };
+    expect(cardDetails(data, thisYear, "2026-01-20")).toMatchObject({ outstanding: 15000, limit: 100000, utilization: 0.1, available: 90000 });
+  });
+
+  it("has no utilization or average marker without a limit", () => {
+    const d = cardDetails({ cards: [], statements: [] }, thisYear, TODAY);
+    expect(d.utilization).toBeNull();
+    expect(d.averageOnLimit).toBeNull();
+    expect(d.available).toBe(0);
+  });
+});
+
+describe("recentStatements and statementCounts", () => {
+  it("lists the newest statements first", () => {
+    expect(recentStatements(DESIGN, { kind: "all" }, 3).map((s) => [s.cardId, s.statementDate])).toEqual([
+      ["regalia", "2026-08-05"],
+      ["amazon", "2026-08-03"],
+      ["regalia", "2026-07-05"],
+    ]);
+    expect(recentStatements(DESIGN, { kind: "all" }, 5, "amazon")).toHaveLength(5);
+    expect(recentStatements(DESIGN, { kind: "year", year: 2025 }, 5)).toEqual([]);
+  });
+
+  it("counts pending, closed and paid-in-full statements in the period", () => {
+    const data = withCards([
+      statement({ status: "Paid", totalAmountDue: 1000, amountPaid: 1000 }),
+      statement({ status: "Paid", totalAmountDue: 1000, amountPaid: 400 }),
+      statement({ status: "Pending", totalAmountDue: 1000 }),
+    ]);
+    expect(statementCounts(data, { kind: "all" })).toEqual({ pending: 1, closed: 2, inFull: 1 });
+    expect(statementCounts(data, { kind: "year", year: 2025 })).toEqual({ pending: 0, closed: 0, inFull: 0 });
+  });
+});
+
+describe("spendRange", () => {
+  it("shows where the current month sits in the design's year", () => {
+    const range = spendRange(DESIGN, { kind: "year", year: 2026 }, TODAY);
+    expect(range.rows).toHaveLength(1);
+    expect(range.rows[0].months.map((m) => m.month)).toEqual(["2026-04", "2026-05", "2026-06", "2026-07", "2026-08"]);
+    expect(range.rows[0].highest).toEqual({ month: "2026-07", amount: 57300 });
+    expect(range.rows[0].lowest).toEqual({ month: "2026-05", amount: 40400 });
+    expect(range.current).toEqual({ month: "2026-08", amount: 50900 });
+    expect(range.currentVsAverage).toBeCloseTo(50900 / (239700 / 8) - 1, 6);
+    // Spans the months and the ₹29,962.50 average, rounded out to ₹10,000s.
+    expect([range.scaleMin, range.scaleMax]).toEqual([20000, 60000]);
+    expect(range.ticks).toEqual([20000, 30000, 40000, 50000, 60000]);
+    expect(range.highest).toEqual({ month: "2026-07", amount: 57300 });
+    expect(range.lowest).toEqual({ month: "2026-05", amount: 40400 });
+  });
+
+  it("keeps the axis to a handful of labels for large amounts", () => {
+    const big = withCards([
+      statement({ statementDate: "2026-01-05", totalAmountDue: 150000 }),
+      statement({ statementDate: "2026-02-05", totalAmountDue: 480000 }),
+    ]);
+    const range = spendRange(big, { kind: "year", year: 2026 }, "2026-02-20");
+    expect(range.ticks.length).toBeLessThanOrEqual(7);
+    expect(range.ticks[0]).toBeLessThanOrEqual(150000);
+    expect(range.ticks.at(-1)).toBeGreaterThanOrEqual(480000);
+  });
+
+  it("has no current month when the period is another year", () => {
+    const range = spendRange(DESIGN, { kind: "year", year: 2025 }, TODAY);
+    expect(range.current).toBeNull();
+    expect(range.currentVsAverage).toBeNull();
+  });
+
+  it("gives one row per year with statements for all time, newest first", () => {
+    const data = withCards([statement({ statementDate: "2024-05-05", totalAmountDue: 20000 }), statement({ statementDate: "2026-01-05", totalAmountDue: 30000 })]);
+    expect(spendRange(data, { kind: "all" }, "2026-01-20").rows.map((r) => r.year)).toEqual([2026, 2024]);
+  });
+
+  it("has no current month until it has statements", () => {
+    const range = spendRange(DESIGN, { kind: "year", year: 2026 }, "2026-09-02");
+    expect(range.current).toBeNull();
+    expect(range.currentVsAverage).toBeNull();
+  });
+
+  it("still gives a usable scale with one value or none", () => {
+    const one = spendRange(withCards([statement({ statementDate: "2026-01-05", totalAmountDue: 30000 })]), { kind: "year", year: 2026 }, "2026-01-20");
+    expect(one.scaleMax).toBeGreaterThan(one.scaleMin);
+    const none = spendRange(withCards([]), { kind: "year", year: 2026 }, "2026-01-20");
+    expect([none.scaleMin, none.scaleMax]).toEqual([0, 10000]);
   });
 });

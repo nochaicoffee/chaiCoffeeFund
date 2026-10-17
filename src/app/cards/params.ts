@@ -1,5 +1,7 @@
 import type { CardData, SpendPeriod } from "@/lib/aggregate/cardSpend";
 
+export type PanelView = "statements" | "range";
+
 type SearchParams = Record<string, string | string[] | undefined>;
 
 function first(value: string | string[] | undefined): string | undefined {
@@ -20,12 +22,21 @@ export function parseSelectedCard(params: SearchParams, data: CardData): string 
   return value && data.cards.some((c) => c.id === value) ? value : undefined;
 }
 
-/** The query string for a Cards page link, keeping the other choices (period, sample data). */
-export function cardsQuery(current: { period: SpendPeriod; cardId?: string; demo: boolean }, today: string): string {
+/** `?panel=range` shows the Spend range view beside the details card; anything else is the Statements view. */
+export function parsePanel(params: SearchParams): PanelView {
+  return first(params.panel) === "range" ? "range" : "statements";
+}
+
+/** The query string for a Cards page link, keeping the other choices (period, panel, sample data). */
+export function cardsQuery(
+  current: { period: SpendPeriod; cardId?: string; panel?: PanelView; demo: boolean },
+  today: string,
+): string {
   const query = new URLSearchParams();
   if (current.cardId) query.set("card", current.cardId);
   if (current.period.kind === "all") query.set("period", "all");
   else if (current.period.year !== Number(today.slice(0, 4))) query.set("period", String(current.period.year));
+  if (current.panel === "range") query.set("panel", "range");
   if (current.demo) query.set("demo", "");
   const text = query.toString().replace(/demo=(&|$)/, "demo$1");
   return text ? `?${text}` : "?";

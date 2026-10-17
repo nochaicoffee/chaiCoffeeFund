@@ -1,22 +1,28 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { InterimManage } from "./InterimManage";
-import { cardsQuery, parsePeriod, parseSelectedCard, periodYears } from "./params";
+import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, periodYears } from "./params";
 import { summarySentence } from "./summarySentence";
 import { RefreshButton } from "@/components/RefreshButton";
 import { AddCardTile, CardTile } from "@/components/cards/CardTile";
+import { DetailsCard } from "@/components/cards/DetailsCard";
+import { StatementsPanel } from "@/components/cards/StatementsPanel";
 import { SpendHeatmap } from "@/components/cards/SpendHeatmap";
 import { PeriodSelect } from "@/components/cards/PeriodSelect";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
 import {
   allCardsUtilization,
+  cardDetails,
   heatmapPeak,
   heatmapRows,
   heatmapYearTotals,
   monthOf,
   pendingSummary,
+  recentStatements,
+  spendRange,
   spendSummary,
+  statementCounts,
   statementYears,
   tileCards,
   type CardData,
@@ -51,19 +57,23 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
       ]);
 
   const period = parsePeriod(params, today);
+  const currentYear = Number(today.slice(0, 4));
   const cardId = parseSelectedCard(params, data);
   const selectedCard = data.cards.find((c) => c.id === cardId);
-  const linkFor = (id?: string) => cardsQuery({ period, cardId: id, demo }, today);
+  const panel = parsePanel(params);
+  const linkFor = (id?: string) => cardsQuery({ period, cardId: id, panel, demo }, today);
+  const panelHref = (view: "statements" | "range") => cardsQuery({ period, cardId, panel: view, demo }, today);
 
   const summary = spendSummary(data, period, today, cardId);
   const pending = pendingSummary(data, today, cardId);
   const allCards = allCardsUtilization(data);
   const allPending = pendingSummary(data, today);
-  const currentYear = Number(today.slice(0, 4));
 
   const tiles = tileCards(data, today);
   const heatRows = heatmapRows(data, period, today, cardId);
   const yearTotals = heatmapYearTotals(data, heatRows, today, cardId);
+  const cardsById = new Map(data.cards.map((c) => [c.id, c]));
+  const periodLabel = period.kind === "all" ? "all time" : period.year === currentYear ? "this year" : String(period.year);
   // Sample data never reaches the real forms, so it can't write to the Sheet.
   const addCardHref = demo ? "/cards#add-card" : "#add-card";
 
@@ -166,6 +176,28 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
         peak={heatmapPeak(heatRows)}
         currentMonth={monthOf(today)}
       />
+
+      <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,620px)_minmax(0,1fr)]">
+        <DetailsCard
+          details={cardDetails(data, period, today, cardId)}
+          card={selectedCard}
+          cardsById={cardsById}
+          cardCount={tiles.length}
+          periodLabel={periodLabel}
+          singleYear={period.kind === "year"}
+        />
+        <StatementsPanel
+          view={panel}
+          hrefFor={panelHref}
+          statements={recentStatements(data, period, 5, cardId)}
+          cardsById={cardsById}
+          today={today}
+          counts={statementCounts(data, period, cardId)}
+          periodLabel={periodLabel}
+          range={spendRange(data, period, today, cardId)}
+          viewAllHref={demo ? undefined : "#manage-heading"}
+        />
+      </div>
 
       {!demo && <InterimManage cards={data.cards} statements={data.statements} accounts={accounts} today={today} />}
     </div>
