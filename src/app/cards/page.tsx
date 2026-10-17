@@ -8,6 +8,7 @@ import { AddCardTile, CardTile } from "@/components/cards/CardTile";
 import { DetailsCard } from "@/components/cards/DetailsCard";
 import { StatementsPanel } from "@/components/cards/StatementsPanel";
 import { SpendHeatmap } from "@/components/cards/SpendHeatmap";
+import { TrendChart } from "@/components/cards/TrendChart";
 import { PeriodSelect } from "@/components/cards/PeriodSelect";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
@@ -27,6 +28,7 @@ import {
   tileCards,
   type CardData,
 } from "@/lib/aggregate/cardSpend";
+import { trendPoints } from "@/lib/aggregate/cardTrend";
 import { demoCardData, isDemoAllowed } from "@/lib/demo/cardsDemo";
 import { formatShortDate, greetingFor, todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
@@ -198,6 +200,12 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
           viewAllHref={demo ? undefined : "#manage-heading"}
         />
       </div>
+
+      <TrendChart
+        points={trendPoints(data, today, period, cardId)}
+        cards={(selectedCard ? [selectedCard] : data.cards).map((c) => ({ id: c.id, name: c.name, color: c.color }))}
+        currentMonth={monthOf(today)}
+      />
 
       {!demo && <InterimManage cards={data.cards} statements={data.statements} accounts={accounts} today={today} />}
     </div>
