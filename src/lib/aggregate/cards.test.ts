@@ -34,6 +34,10 @@ describe("cardOutstandingBalance", () => {
     expect(cardOutstandingBalance("card-1", statements)).toBe(6000);
   });
 
+  it("never lets an overpaid pending bill go below zero", () => {
+    expect(cardOutstandingBalance("card-1", [statement({ totalAmountDue: 1000, amountPaid: 1500 })])).toBe(0);
+  });
+
   it("ignores statements for other cards", () => {
     const statements = [statement({ cardId: "other-card", totalAmountDue: 10000 })];
     expect(cardOutstandingBalance("card-1", statements)).toBe(0);
@@ -70,12 +74,17 @@ describe("computeCardSummaries", () => {
 });
 
 describe("totalCardOutstanding", () => {
-  it("only counts active cards", () => {
+  it("counts unpaid bills on closed cards too, since they're still owed", () => {
     const cards = [card({ id: "c1", status: "Active" }), card({ id: "c2", status: "Closed" })];
     const statements = [
       statement({ cardId: "c1", totalAmountDue: 5000 }),
       statement({ cardId: "c2", totalAmountDue: 9000 }),
     ];
-    expect(totalCardOutstanding(cards, statements)).toBe(5000);
+    expect(totalCardOutstanding(cards, statements)).toBe(14000);
+  });
+
+  it("leaves out statements whose card no longer exists", () => {
+    const statements = [statement({ cardId: "c1", totalAmountDue: 5000 }), statement({ cardId: "gone", totalAmountDue: 9000 })];
+    expect(totalCardOutstanding([card({ id: "c1" })], statements)).toBe(5000);
   });
 });

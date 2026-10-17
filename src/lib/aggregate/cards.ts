@@ -1,3 +1,4 @@
+import { remainingDue } from "./cardSpend";
 import { nextOccurrence } from "./recurring";
 import type { Card, Statement } from "../sheets/types";
 
@@ -14,11 +15,11 @@ export interface StatementVariance {
   variance: number;
 }
 
-/** Sum of unpaid amounts across a card's Pending statements. */
+/** What's still due across a card's Pending statements (each one's total minus anything paid, never below ₹0). */
 export function cardOutstandingBalance(cardId: string, statements: Statement[]): number {
   return statements
     .filter((s) => s.cardId === cardId && s.status === "Pending")
-    .reduce((sum, s) => sum + (s.totalAmountDue - (s.amountPaid ?? 0)), 0);
+    .reduce((sum, s) => sum + remainingDue(s), 0);
 }
 
 export function statementVariance(statement: Statement): StatementVariance {
@@ -37,9 +38,11 @@ export function computeCardSummaries(cards: Card[], statements: Statement[], fro
   });
 }
 
-/** Sum of outstanding balances across active cards — the credit-card liability term in net worth. */
+/**
+ * What's still owed across every card, closed ones included: the credit-card
+ * liability in net worth. An unpaid bill on a closed card is still owed
+ * (decided 2026-10-17, PRD §8), so it counts the same as the Cards page.
+ */
 export function totalCardOutstanding(cards: Card[], statements: Statement[]): number {
-  return cards
-    .filter((c) => c.status === "Active")
-    .reduce((sum, c) => sum + cardOutstandingBalance(c.id, statements), 0);
+  return cards.reduce((sum, c) => sum + cardOutstandingBalance(c.id, statements), 0);
 }
