@@ -1,8 +1,9 @@
 import type { CSSProperties } from "react";
-import type { HeatCell, HeatRow, MonthAmount, MonthKey, YearTotal } from "@/lib/aggregate/cardSpend";
+import type { HeatCell, HeatRow, MonthAmount, MonthDetail, MonthKey, YearTotal } from "@/lib/aggregate/cardSpend";
 import { formatMonthShort, formatMonthYear } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import { RingTexture } from "../RingTexture";
+import { HeatmapHover, type HeatmapCardInfo } from "./HeatmapHover";
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => `2000-${String(i + 1).padStart(2, "0")}`);
 // Month columns never shrink below 46px, so every amount fits; the table scrolls inside its card instead.
@@ -40,8 +41,10 @@ function Cell({ cell, isPeak, isCurrent }: { cell: HeatCell; isPeak: boolean; is
     <div
       role="cell"
       aria-label={`${label}: ${formatInr(cell.amount)}${caption ? `, ${caption.toLowerCase()}` : ""}`}
-      title={`${label}: ${formatInr(cell.amount)}`}
-      className={`relative isolate flex h-[52px] flex-col items-center justify-center overflow-hidden rounded-control text-[11px] font-bold tabular-nums ${
+      // Hovering, focusing or tapping it opens the month card (HeatmapHover): the cell lifts and its rings ripple.
+      data-month={cell.month}
+      tabIndex={0}
+      className={`group/cell relative isolate flex h-[52px] cursor-default flex-col items-center justify-center overflow-hidden rounded-control text-[11px] font-bold tabular-nums transition-[translate,box-shadow] duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent data-active:-translate-y-[3px] data-active:shadow-card ${
         dark ? "text-on-accent" : "text-heat-ink"
       } ${isPeak ? "-translate-y-0.5 shadow-heat-peak" : ""} ${isCurrent ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}`}
       style={{ background: `var(--heat-${cell.level})` }}
@@ -56,6 +59,7 @@ function Cell({ cell, isPeak, isCurrent }: { cell: HeatCell; isPeak: boolean; is
         stroke={dark ? "var(--rings-light)" : "var(--rings-ink)"}
         opacity={dark ? 0.1 : 0.11}
         sheen="radial-gradient(circle at 90% 8%, var(--heat-glow), transparent 58%)"
+        ringsClassName="origin-bottom-right motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out group-data-active/cell:scale-[1.18]"
       />
       <span>{formatInrCompact(cell.amount)}</span>
       {caption && <span className="mt-px text-[9px] font-semibold opacity-85">{caption}</span>}
@@ -74,12 +78,17 @@ export function SpendHeatmap({
   yearTotals,
   peak,
   currentMonth,
+  details,
+  cards,
 }: {
   title: string;
   rows: HeatRow[];
   yearTotals: YearTotal[];
   peak: MonthAmount | null;
   currentMonth: MonthKey;
+  /** Each month's split by card and paid status, for the month card (#104). */
+  details: Record<MonthKey, MonthDetail>;
+  cards: Record<string, HeatmapCardInfo>;
 }) {
   const totals = new Map(yearTotals.map((t) => [t.year, t]));
   const currentMonthNumber = currentMonth.slice(5, 7);
@@ -107,55 +116,57 @@ export function SpendHeatmap({
       {rows.length === 0 ? (
         <p className="py-6 text-center text-sm text-muted">No statements yet. The heatmap fills in as statements arrive.</p>
       ) : (
-        <div className="-mx-[22px] overflow-x-auto px-[22px] pt-1 pb-1">
-          <div role="table" aria-label={`Spending by month, ${title}`} className="flex w-max min-w-full flex-col gap-2">
-            <div role="row" className={GRID}>
-              {/* A real grid cell, so the month labels line up; the text is for screen readers only. */}
-              <span role="columnheader">
-                <span className="sr-only">Year</span>
-              </span>
-              {MONTHS.map((m) => {
-                const isCurrent = showsCurrentYear && m.slice(5, 7) === currentMonthNumber;
+        <HeatmapHover details={details} cards={cards} averages={Object.fromEntries(yearTotals.map((t) => [t.year, t.average]))} peak={peak?.month ?? null} current={currentMonth}>
+          <div className="-mx-[22px] overflow-x-auto px-[22px] pt-1 pb-1">
+            <div role="table" aria-label={`Spending by month, ${title}`} className="flex w-max min-w-full flex-col gap-2">
+              <div role="row" className={GRID}>
+                {/* A real grid cell, so the month labels line up; the text is for screen readers only. */}
+                <span role="columnheader">
+                  <span className="sr-only">Year</span>
+                </span>
+                {MONTHS.map((m) => {
+                  const isCurrent = showsCurrentYear && m.slice(5, 7) === currentMonthNumber;
+                  return (
+                    <span
+                      role="columnheader"
+                      key={m}
+                      className={`text-center text-[10px] font-bold tracking-[0.02em] uppercase ${isCurrent ? "text-fg" : "text-muted"}`}
+                    >
+                      {formatMonthShort(m)}
+                      {isCurrent && <span aria-hidden="true" className="ml-1 inline-block size-[5px] rounded-full bg-accent align-middle" />}
+                    </span>
+                  );
+                })}
+                <span role="columnheader" className="text-right text-[10px] font-bold tracking-[0.02em] text-muted uppercase">
+                  Year
+                </span>
+              </div>
+              {rows.map((row) => {
+                const total = totals.get(row.year);
                 return (
-                  <span
-                    role="columnheader"
-                    key={m}
-                    className={`text-center text-[10px] font-bold tracking-[0.02em] uppercase ${isCurrent ? "text-fg" : "text-muted"}`}
-                  >
-                    {formatMonthShort(m)}
-                    {isCurrent && <span aria-hidden="true" className="ml-1 inline-block size-[5px] rounded-full bg-accent align-middle" />}
-                  </span>
+                  <div role="row" key={row.year} className={GRID}>
+                    <span role="rowheader" className="text-xs font-extrabold text-fg">
+                      {row.year}
+                    </span>
+                    {row.cells.map((cell) => (
+                      <Cell key={cell.month} cell={cell} isPeak={peak?.month === cell.month} isCurrent={cell.month === currentMonth} />
+                    ))}
+                    <div role="cell" className="text-right leading-tight">
+                      <div className="text-sm font-extrabold tabular-nums">{formatInr(total?.total ?? 0)}</div>
+                      {!total || total.total === 0 ? (
+                        <div className="text-[10px] font-semibold text-muted">No statements</div>
+                      ) : (
+                        <div className="text-[10px] font-semibold text-muted tabular-nums">
+                          {total.months} {total.months === 1 ? "month" : "months"} · avg {formatInr(total.average)}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 );
               })}
-              <span role="columnheader" className="text-right text-[10px] font-bold tracking-[0.02em] text-muted uppercase">
-                Year
-              </span>
             </div>
-            {rows.map((row) => {
-              const total = totals.get(row.year);
-              return (
-                <div role="row" key={row.year} className={GRID}>
-                  <span role="rowheader" className="text-xs font-extrabold text-fg">
-                    {row.year}
-                  </span>
-                  {row.cells.map((cell) => (
-                    <Cell key={cell.month} cell={cell} isPeak={peak?.month === cell.month} isCurrent={cell.month === currentMonth} />
-                  ))}
-                  <div role="cell" className="text-right leading-tight">
-                    <div className="text-sm font-extrabold tabular-nums">{formatInr(total?.total ?? 0)}</div>
-                    {!total || total.total === 0 ? (
-                      <div className="text-[10px] font-semibold text-muted">No statements</div>
-                    ) : (
-                      <div className="text-[10px] font-semibold text-muted tabular-nums">
-                        {total.months} {total.months === 1 ? "month" : "months"} · avg {formatInr(total.average)}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
           </div>
-        </div>
+        </HeatmapHover>
       )}
     </section>
   );

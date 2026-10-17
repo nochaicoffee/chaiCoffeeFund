@@ -8,7 +8,7 @@ import { SyncProvider } from "@/components/sync/SyncContext";
 import { SyncReportPanel } from "@/components/sync/SyncReportPanel";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { CardRow } from "@/components/cards/CardRow";
-import { CardTile, ClosedCardsTile } from "@/components/cards/CardTile";
+import { CardTile, ClosedCardsTile, cardSwatch } from "@/components/cards/CardTile";
 import { AddCardButton, AddStatementButton, EditCardButton } from "@/components/cards/forms/FormButtons";
 import { DetailsCard } from "@/components/cards/DetailsCard";
 import { StatementsPanel } from "@/components/cards/StatementsPanel";
@@ -20,6 +20,7 @@ import { appConfig } from "@/lib/appConfig";
 import {
   allCardsUtilization,
   cardDetails,
+  heatmapMonthDetails,
   heatmapPeak,
   heatmapRows,
   heatmapYearTotals,
@@ -202,6 +203,8 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
         yearTotals={yearTotals}
         peak={heatmapPeak(heatRows)}
         currentMonth={monthOf(today)}
+        details={heatmapMonthDetails(data, cardId)}
+        cards={Object.fromEntries(data.cards.map((c) => [c.id, { name: cardName(c), swatch: cardSwatch(c.color) }]))}
       />
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,620px)_minmax(0,1fr)]">
