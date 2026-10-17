@@ -158,11 +158,13 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
         </PageHeader>
       </SyncProvider>
 
-      {/* Scrolls sideways by trackpad, touch, shift-scroll or keyboard (a focused tile scrolls into view), with no scrollbar drawn under it. */}
+      {/* Scrolls sideways by trackpad, touch, shift-scroll or keyboard (a focused tile scrolls into view), with no scrollbar drawn under it.
+          A scrolling row clips what's outside it, so its bottom padding leaves room for the tiles' whole shadow (0 10px 26px) to fade out,
+          and the negative margin keeps the gap to the heatmap as it was. */}
       <div
         role="list"
         aria-label="Cards"
-        className="-mx-4 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pt-3 pb-4 [scrollbar-width:none] md:-mx-[26px] md:scroll-px-[26px] md:px-[26px] [&::-webkit-scrollbar]:hidden"
+        className="-mx-4 -mb-6 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pt-3 pb-10 [scrollbar-width:none] md:-mx-[26px] md:scroll-px-[26px] md:px-[26px] [&::-webkit-scrollbar]:hidden"
       >
         <div role="listitem">
           <CardTile
