@@ -46,7 +46,7 @@ function Cell({ cell, isPeak, isCurrent }: { cell: HeatCell; isPeak: boolean; is
       tabIndex={0}
       className={`group/cell relative isolate flex h-[52px] cursor-default flex-col items-center justify-center overflow-hidden rounded-control text-[11px] font-bold tabular-nums transition-[translate,box-shadow] duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent data-active:-translate-y-[3px] data-active:shadow-card ${
         dark ? "text-on-accent" : "text-heat-ink"
-      } ${isPeak ? "-translate-y-0.5 shadow-heat-peak" : ""} ${isCurrent ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}`}
+      } ${isCurrent ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}`}
       style={{ background: `var(--heat-${cell.level})` }}
     >
       <RingTexture
