@@ -4,7 +4,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 /**
  * The "This year ▾" pill from the design. Changing it updates `?period=` and
- * keeps everything else in the URL, so every number on the page follows it.
+ * keeps everything else in the URL, so every number on the page follows it,
+ * except a page number: a different period's list starts again at page 1.
  */
 export function PeriodSelect({ years, currentYear, value }: { years: number[]; currentYear: number; value: string }) {
   const router = useRouter();
@@ -13,6 +14,7 @@ export function PeriodSelect({ years, currentYear, value }: { years: number[]; c
 
   function choose(next: string) {
     const query = new URLSearchParams(searchParams.toString());
+    query.delete("page");
     if (next === String(currentYear)) query.delete("period");
     else query.set("period", next);
     const text = query.toString().replace(/(^|&)demo=(&|$)/, "$1demo$2");

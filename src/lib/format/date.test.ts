@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatHeaderDate, formatMonthShort, formatMonthYear, formatShortDate, greetingFor, todayIso } from "./date";
+import { formatDate, formatHeaderDate, formatMonthShort, formatMonthYear, formatShortDate, greetingFor, todayIso } from "./date";
 
 describe("todayIso", () => {
   it("uses the given time zone, not UTC", () => {
@@ -44,6 +44,7 @@ describe("month and date labels", () => {
   it("writes dates and months the way the design does", () => {
     expect(formatShortDate("2026-08-23")).toBe("Aug 23");
     expect(formatShortDate("2026-01-05")).toBe("Jan 5");
+    expect(formatDate("2026-08-05")).toBe("Aug 5, 2026");
     expect(formatMonthYear("2026-07")).toBe("July 2026");
     expect(formatMonthShort("2026-12")).toBe("Dec");
   });

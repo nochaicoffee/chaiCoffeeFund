@@ -1,31 +1,18 @@
-import { createCard, createStatement, markStatementPaid } from "./actions";
+import { createCard, createStatement } from "./actions";
 import { SyncStatementsButton } from "@/components/SyncStatementsButton";
-import { formatInr } from "@/lib/format/money";
-import { CARD_COLORS, type Account, type Card, type Statement } from "@/lib/sheets/types";
+import { CARD_COLORS, type Card } from "@/lib/sheets/types";
 
 function cardLabel(card: Card): string {
   return `${card.name} (${card.alias})`;
 }
 
 /**
- * The pre-design statements table and add forms, kept working below the new
- * dashboard until their designed replacements land: the Statements panel and
- * page (#48, #50) and the add/mark-paid dialogs (#51).
+ * The pre-design add card and add statement forms and the sync button, kept
+ * working below the new dashboard until the designed forms (#51) and sync
+ * report (#54) replace them. Statements are listed and marked paid on the
+ * Statements page (#50).
  */
-export function InterimManage({
-  cards,
-  statements,
-  accounts,
-  today,
-}: {
-  cards: Card[];
-  statements: Statement[];
-  accounts: Account[];
-  today: string;
-}) {
-  const sortedStatements = [...statements].sort((a, b) => b.statementDate.localeCompare(a.statementDate));
-  const cardById = new Map(cards.map((c) => [c.id, c]));
-
+export function InterimManage({ cards }: { cards: Card[] }) {
   return (
     <section aria-labelledby="manage-heading" className="flex flex-col gap-4 border-t border-divider pt-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -34,79 +21,6 @@ export function InterimManage({
         </h2>
         <SyncStatementsButton />
       </div>
-      <div className="rounded-lg border border-divider p-4">
-        <div className="mb-2 text-sm font-medium">Statements</div>
-        {sortedStatements.length === 0 ? (
-          <div className="text-sm text-foreground/50">No statements yet.</div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead className="text-foreground/50">
-                <tr>
-                  <th className="py-1 pr-4">Card</th>
-                  <th className="py-1 pr-4">Statement date</th>
-                  <th className="py-1 pr-4">Due date</th>
-                  <th className="py-1 pr-4">Total due</th>
-                  <th className="py-1 pr-4">Min due</th>
-                  <th className="py-1 pr-4">Status</th>
-                  <th className="py-1 pr-4" />
-                </tr>
-              </thead>
-              <tbody>
-                {sortedStatements.map((statement) => {
-                  const card = cardById.get(statement.cardId);
-                  const dueSoon = statement.status === "Pending" && statement.dueDate <= today;
-                  return (
-                    <tr key={statement.id} className="border-t border-divider">
-                      <td className="py-1.5 pr-4">{card ? card.name : statement.cardId}</td>
-                      <td className="py-1.5 pr-4">{statement.statementDate}</td>
-                      <td className={`py-1.5 pr-4 ${dueSoon ? "font-medium text-negative" : ""}`}>
-                        {statement.dueDate}
-                      </td>
-                      <td className="py-1.5 pr-4">{formatInr(statement.totalAmountDue)}</td>
-                      <td className="py-1.5 pr-4">{formatInr(statement.minimumAmountDue)}</td>
-                      <td className="py-1.5 pr-4">{statement.status}</td>
-                      <td className="py-1.5 pr-4">
-                        {statement.status === "Pending" && (
-                          <form action={markStatementPaid} className="flex items-center gap-1">
-                            <input type="hidden" name="id" value={statement.id} />
-                            <input
-                              type="number"
-                              step="0.01"
-                              name="amountPaid"
-                              defaultValue={statement.totalAmountDue}
-                              className="w-24 rounded-md border border-divider px-1.5 py-0.5 text-xs"
-                            />
-                            <select
-                              name="paidFromAccountId"
-                              className="rounded-md border border-divider px-1.5 py-0.5 text-xs"
-                              defaultValue=""
-                            >
-                              <option value="">From…</option>
-                              {accounts.map((account) => (
-                                <option key={account.id} value={account.id}>
-                                  {account.name}
-                                </option>
-                              ))}
-                            </select>
-                            <button
-                              type="submit"
-                              className="rounded-md border border-divider px-2 py-0.5 text-xs hover:bg-fill"
-                            >
-                              Mark paid
-                            </button>
-                          </form>
-                        )}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div className="rounded-lg border border-divider p-4">
           <div id="add-card" className="mb-3 scroll-mt-6 text-sm font-medium">Add card</div>
@@ -182,7 +96,7 @@ export function InterimManage({
         </div>
 
         <div className="rounded-lg border border-divider p-4">
-          <div className="mb-3 text-sm font-medium">Add statement</div>
+          <div id="add-statement" className="mb-3 scroll-mt-6 text-sm font-medium">Add statement</div>
           <form action={createStatement} className="flex flex-col gap-2 text-sm">
             <select name="cardId" required defaultValue="" className="rounded-md border border-divider px-2 py-1">
               <option value="" disabled>

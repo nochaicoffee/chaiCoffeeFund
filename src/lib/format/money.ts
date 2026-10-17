@@ -24,6 +24,25 @@ export function formatInr(value: number): string {
   return value < 0 && Math.round(Math.abs(value)) !== 0 ? MINUS + formatted : formatted;
 }
 
+const inrPaise = new Intl.NumberFormat("en-IN", {
+  style: "currency",
+  currency: "INR",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+/**
+ * The amount as a statement prints it: paise only when there are any.
+ * 38500 → "₹38,500", 38512.4 → "₹38,512.40", 0.1 → "₹0.10".
+ */
+export function formatInrExact(value: number): string {
+  if (!Number.isFinite(value)) return NO_VALUE;
+  const abs = Math.round(Math.abs(value) * 100) / 100;
+  if (abs === 0) return "₹0";
+  const formatted = Number.isInteger(abs) ? inr.format(abs) : inrPaise.format(abs);
+  return value < 0 ? MINUS + formatted : formatted;
+}
+
 /** Rounds to one decimal of `size`, dividing by size/10 so .x5 cases don't drift in binary floating point. */
 function oneDecimal(abs: number, size: number): number {
   return Math.round(abs / (size / 10)) / 10;

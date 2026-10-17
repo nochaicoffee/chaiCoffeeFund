@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { InterimManage } from "./InterimManage";
-import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, periodYears } from "./params";
+import { loadCardData } from "./loadCardData";
+import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, periodYears, statementsQuery } from "./params";
 import { summarySentence } from "./summarySentence";
 import { RefreshButton } from "@/components/RefreshButton";
 import { AddCardTile, CardTile } from "@/components/cards/CardTile";
@@ -26,13 +27,10 @@ import {
   statementCounts,
   statementYears,
   tileCards,
-  type CardData,
 } from "@/lib/aggregate/cardSpend";
 import { trendPoints } from "@/lib/aggregate/cardTrend";
-import { demoCardData, isDemoAllowed } from "@/lib/demo/cardsDemo";
 import { formatShortDate, greetingFor, todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
-import { getCachedAccounts, getCachedCards, getCachedStatements } from "@/lib/sheets/cached";
 
 export const metadata: Metadata = { title: "Cards" };
 
@@ -50,13 +48,7 @@ function dueLabel(dueDate: string, daysUntilDue: number): string {
 export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
   const params = await searchParams;
   const today = todayIso();
-  const demo = isDemoAllowed() && params.demo !== undefined;
-  const [data, accounts]: [CardData, Awaited<ReturnType<typeof getCachedAccounts>>] = demo
-    ? [demoCardData(today), []]
-    : await Promise.all([
-        Promise.all([getCachedCards(), getCachedStatements()]).then(([cards, statements]) => ({ cards, statements })),
-        getCachedAccounts(),
-      ]);
+  const { demo, data } = await loadCardData(params, today);
 
   const period = parsePeriod(params, today);
   const currentYear = Number(today.slice(0, 4));
@@ -197,7 +189,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
           counts={statementCounts(data, period, cardId)}
           periodLabel={periodLabel}
           range={spendRange(data, period, today, cardId)}
-          viewAllHref={demo ? undefined : "#manage-heading"}
+          viewAllHref={`/cards/statements${statementsQuery({ period, cardId, demo }, today)}`}
         />
       </div>
 
@@ -207,7 +199,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
         currentMonth={monthOf(today)}
       />
 
-      {!demo && <InterimManage cards={data.cards} statements={data.statements} accounts={accounts} today={today} />}
+      {!demo && <InterimManage cards={data.cards} />}
     </div>
   );
 }

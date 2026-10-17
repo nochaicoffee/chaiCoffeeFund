@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, periodYears } from "./params";
+import { cardsQuery, parsePage, parsePanel, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodYears, statementsQuery } from "./params";
 import type { Card } from "@/lib/sheets/types";
 
 const TODAY = "2026-10-17";
@@ -49,5 +49,30 @@ describe("parsePanel", () => {
     expect(parsePanel({ panel: "range" })).toBe("range");
     expect(parsePanel({ panel: "other" })).toBe("statements");
     expect(cardsQuery({ period: { kind: "year", year: 2026 }, panel: "range", demo: false }, TODAY)).toBe("?panel=range");
+  });
+});
+
+describe("Statements page params", () => {
+  it("reads the status, sort, search and page, falling back to the defaults", () => {
+    expect(parseStatus({ status: "pending" })).toBe("pending");
+    expect(parseStatus({ status: "paid" })).toBe("paid");
+    expect(parseStatus({ status: "other" })).toBe("all");
+    expect(parseSort({ sort: "oldest" })).toBe("oldest");
+    expect(parseSort({})).toBe("newest");
+    expect(parseSearch({ q: "  hdfc  " })).toBe("hdfc");
+    expect(parseSearch({ q: "x".repeat(500) })).toHaveLength(100);
+    expect(parseSearch({})).toBe("");
+    expect(parsePage({ page: "3" })).toBe(3);
+    expect(parsePage({ page: "0" })).toBe(1);
+    expect(parsePage({ page: "2.5" })).toBe(1);
+    expect(parsePage({ page: "abc" })).toBe(1);
+  });
+
+  it("builds links that keep every choice except the defaults", () => {
+    const thisYear = { kind: "year", year: 2026 } as const;
+    expect(statementsQuery({ period: thisYear, status: "all", sort: "newest", page: 1, demo: false }, TODAY)).toBe("?");
+    expect(statementsQuery({ period: { kind: "all" }, cardId: "regalia", status: "pending", search: "38,500", sort: "oldest", page: 2, demo: true }, TODAY)).toBe(
+      "?card=regalia&period=all&status=pending&q=38%2C500&sort=oldest&page=2&demo",
+    );
   });
 });
