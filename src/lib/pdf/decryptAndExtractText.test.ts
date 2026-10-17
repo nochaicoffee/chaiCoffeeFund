@@ -1,7 +1,8 @@
-import { readFileSync } from "fs";
+import { pathToFileURL } from "url";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { describe, expect, it } from "vitest";
-import { decryptAndExtractText } from "./decryptAndExtractText";
+import { decryptAndExtractText, pdfWorkerPath } from "./decryptAndExtractText";
 
 // Throwaway synthetic PDF generated locally with pypdf — never a real
 // statement, even encrypted. Password is "test1234".
@@ -30,5 +31,23 @@ describe("decryptAndExtractText", () => {
   it("reports no_password_matched when given no candidates at all", async () => {
     const result = await decryptAndExtractText(loadFixture(), []);
     expect(result).toEqual({ failure: "no_password_matched" });
+  });
+});
+
+describe("pdfWorkerPath", () => {
+  it("points at pdf.js's worker file, as a plain path string", () => {
+    const worker = pdfWorkerPath();
+    expect(typeof worker).toBe("string");
+    expect(worker.endsWith("pdf.worker.mjs")).toBe(true);
+    expect(existsSync(worker)).toBe(true);
+  });
+});
+
+describe("worker setup", () => {
+  it("points pdf.js at the real worker file, not its relative default", async () => {
+    const { GlobalWorkerOptions } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+    await decryptAndExtractText(loadFixture(), ["test1234"]);
+    // pdf.js's own default is "./pdf.worker.mjs", which breaks once Next bundles pdf.js.
+    expect(GlobalWorkerOptions.workerSrc).toBe(pathToFileURL(pdfWorkerPath()).href);
   });
 });
