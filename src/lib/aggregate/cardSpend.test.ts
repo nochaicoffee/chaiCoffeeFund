@@ -4,6 +4,8 @@ import {
   allCardsUtilization,
   daysBetween,
   heatLevel,
+  heatmapPeak,
+  heatmapYearTotals,
   heatmapRows,
   monthOverMonth,
   monthRange,
@@ -396,5 +398,29 @@ describe("tileCards", () => {
   it("knows when each card's next statement is due", () => {
     const [tile] = tileCards({ cards: [card({ id: "c", statementAnchorDate: "2026-01-05" })], statements: [] }, "2026-10-17");
     expect(tile.nextStatementDate).toBe("2026-11-05");
+  });
+});
+
+describe("heatmapPeak", () => {
+  it("marks the single highest month across every row shown", () => {
+    expect(heatmapPeak(heatmapRows(DESIGN, { kind: "year", year: 2026 }, TODAY))).toEqual({ month: "2026-07", amount: 57300 });
+    const multiYear = withCards([statement({ statementDate: "2025-03-05", totalAmountDue: 9000 }), statement({ statementDate: "2026-02-05", totalAmountDue: 4000 })]);
+    expect(heatmapPeak(heatmapRows(multiYear, { kind: "all" }, "2026-03-01"))).toEqual({ month: "2025-03", amount: 9000 });
+  });
+
+  it("is null when nothing has statements", () => {
+    expect(heatmapPeak(heatmapRows(withCards([]), { kind: "year", year: 2026 }, TODAY))).toBeNull();
+  });
+});
+
+describe("heatmapYearTotals", () => {
+  it("gives each row its year's total and every-month-so-far average", () => {
+    const rows = heatmapRows(DESIGN, { kind: "year", year: 2026 }, TODAY);
+    expect(heatmapYearTotals(DESIGN, rows, TODAY)).toEqual([{ year: 2026, total: 239700, months: 8, average: 239700 / 8 }]);
+  });
+
+  it("follows the selected card", () => {
+    const rows = heatmapRows(DESIGN, { kind: "year", year: 2026 }, TODAY, "amazon");
+    expect(heatmapYearTotals(DESIGN, rows, TODAY, "amazon")[0].total).toBe(11400 + 12300 + 14500 + 15200 + 12400);
   });
 });
