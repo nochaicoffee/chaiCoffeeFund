@@ -22,15 +22,15 @@ export async function PageHeader({
   await connection();
   const today = formatHeaderDate();
   return (
-    <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4">
-      <div className="flex min-w-0 max-w-[960px] flex-col gap-3">
+    <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-4 lg:flex-nowrap">
+      <div className="flex w-full min-w-0 max-w-[960px] flex-col gap-3 lg:w-auto lg:flex-1">
         <div className="text-xs font-bold tracking-[0.04em] text-muted uppercase">
           {section} · {today}
         </div>
         <h1 className="text-[26px] leading-tight font-extrabold text-balance text-fg md:text-[30px]">{title}</h1>
         {children}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2.5 md:mt-1">{actions}</div>}
+      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2.5 md:mt-1">{actions}</div>}
     </header>
   );
 }

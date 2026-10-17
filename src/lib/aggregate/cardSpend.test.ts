@@ -13,6 +13,8 @@ import {
   percentChange,
   spendSeries,
   spendSummary,
+  statementYears,
+  tileCards,
 } from "./cardSpend";
 import { computeCardSummaries } from "./cards";
 import type { Card, Statement } from "../sheets/types";
@@ -103,7 +105,7 @@ describe("the finalized design's numbers", () => {
   });
 
   it("computes All Cards utilization from totals: ₹50,900 of ₹4,00,000", () => {
-    expect(allCardsUtilization(DESIGN)).toEqual({ outstanding: 50900, limit: 400000, utilization: 50900 / 400000 });
+    expect(allCardsUtilization(DESIGN)).toEqual({ outstanding: 50900, activeOutstanding: 50900, limit: 400000, utilization: 50900 / 400000 });
   });
 
   it("matches the per-card utilization on the tiles", () => {
@@ -246,7 +248,7 @@ describe("allCardsUtilization", () => {
         statement({ cardId: "b", status: "Pending", totalAmountDue: 50000 }),
       ],
     };
-    expect(allCardsUtilization(data)).toEqual({ outstanding: 60000, limit: 100000, utilization: 0.1 });
+    expect(allCardsUtilization(data)).toEqual({ outstanding: 60000, activeOutstanding: 10000, limit: 100000, utilization: 0.1 });
   });
 
   it("always matches the pending total", () => {
@@ -361,5 +363,38 @@ describe("rows read from the Sheet", () => {
   it("treats a blank amount paid as nothing paid", () => {
     const data = withCards([raw({ status: "Pending", totalAmountDue: 5000, amountPaid: "" })]);
     expect(pendingSummary(data, "2026-01-01").total).toBe(5000);
+  });
+});
+
+describe("statementYears", () => {
+  it("lists years with statements, newest first, plus this year", () => {
+    const data = withCards([statement({ statementDate: "2024-03-05" }), statement({ statementDate: "2025-07-05" })]);
+    expect(statementYears(data, "2026-01-10")).toEqual([2026, 2025, 2024]);
+    expect(statementYears(withCards([]), "2026-01-10")).toEqual([2026]);
+  });
+});
+
+describe("tileCards", () => {
+  it("matches the design's tiles", () => {
+    const tiles = tileCards(DESIGN, TODAY);
+    expect(tiles.map((t) => [t.card.id, t.outstanding, t.nextDue?.daysUntilDue ?? null])).toEqual([
+      ["regalia", 38500, 7],
+      ["amazon", 12400, 5],
+      ["gold", 0, null],
+    ]);
+    expect(tiles[0].utilization).toBeCloseTo(0.3208, 4);
+  });
+
+  it("shows a closed card only while it still has a bill to pay", () => {
+    const owing = {
+      cards: [card({ id: "open" }), card({ id: "closed-owing", status: "Closed" }), card({ id: "closed-done", status: "Closed" })],
+      statements: [statement({ cardId: "closed-owing", status: "Pending" }), statement({ cardId: "closed-done", status: "Paid" })],
+    };
+    expect(tileCards(owing, "2026-01-10").map((t) => t.card.id)).toEqual(["open", "closed-owing"]);
+  });
+
+  it("knows when each card's next statement is due", () => {
+    const [tile] = tileCards({ cards: [card({ id: "c", statementAnchorDate: "2026-01-05" })], statements: [] }, "2026-10-17");
+    expect(tile.nextStatementDate).toBe("2026-11-05");
   });
 });

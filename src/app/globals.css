@@ -73,6 +73,21 @@
   --card-copper-from: oklch(0.33 0.09 50);
   --card-copper-to: oklch(0.16 0.05 50);
   --card-copper: oklch(0.6 0.12 50);
+  --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
+
+  /* Text, marks and edges on the card tiles, which are dark in both themes. */
+  --on-card: oklch(0.95 0.004 260);
+  --on-card-muted: oklch(1 0 0 / 0.6);
+  --on-card-faint: oklch(1 0 0 / 0.5);
+  --on-card-fill: oklch(1 0 0 / 0.16);
+  --on-card-line: oklch(1 0 0 / 0.12);
+  --on-card-line-top: oklch(1 0 0 / 0.22);
+  --on-card-lime: oklch(0.88 0.17 138);
+  --card-chip: oklch(0.8 0.13 80);
+  --card-chip-mid: oklch(0.68 0.13 80);
+  --card-chip-deep: oklch(0.55 0.1 80);
+  --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
+  --tile-shadow-selected: 0 10px 26px oklch(0.3 0.09 155 / 0.35), 0 0 0 4px oklch(1 0 0 / 0.08), 0 0 18px oklch(1 0 0 / 0.2);
 }
 
 @theme inline {
@@ -94,6 +109,12 @@
   --color-warning: var(--warning);
   --color-negative: var(--negative);
   --color-negative-tint: var(--negative-tint);
+  --color-on-card: var(--on-card);
+  --color-on-card-muted: var(--on-card-muted);
+  --color-on-card-faint: var(--on-card-faint);
+  --color-on-card-fill: var(--on-card-fill);
+  --color-on-card-line: var(--on-card-line);
+  --color-on-card-lime: var(--on-card-lime);
   --color-heat-1: var(--heat-1);
   --color-heat-2: var(--heat-2);
   --color-heat-3: var(--heat-3);
@@ -107,6 +128,8 @@
   --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: var(--card-shadow);
   --shadow-soft: var(--soft-shadow);
+  --shadow-tile: var(--tile-shadow);
+  --shadow-tile-selected: var(--tile-shadow-selected);
 }
 
 @theme {
