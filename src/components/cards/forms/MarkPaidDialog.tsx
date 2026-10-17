@@ -169,6 +169,7 @@ export function MarkPaidDialog({
       pending={pending}
       errorCount={count}
       saveFailed={state.status === "failed"}
+      failMessage={state.status === "failed" ? state.message : undefined}
       close={state.status === "saved"}
       onClose={onClose}
       formProps={{ action: formAction, onSubmit }}
