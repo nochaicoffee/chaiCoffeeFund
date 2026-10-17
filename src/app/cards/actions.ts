@@ -4,6 +4,7 @@ import { updateTag } from "next/cache";
 import { todayIso } from "@/lib/format/date";
 import { findDuplicateStatement, readCardForm, readMarkPaidForm, readStatementForm } from "@/lib/forms/cardForms";
 import type { FormState } from "@/lib/forms/formState";
+import { canUndo, completePayment, payInFull, paymentFields, type PaymentFields } from "@/lib/forms/quickPay";
 import { CACHE_TAGS, getCachedAccounts, getCachedCards, getCachedStatements } from "@/lib/sheets/cached";
 import { cardsRepository, createCardSchema, updateCardSchema } from "@/lib/sheets/cards";
 import { NotFoundError } from "@/lib/sheets/repository";
@@ -112,4 +113,58 @@ export async function markPaid(_previous: FormState, formData: FormData): Promis
   }
   updateTag(CACHE_TAGS.statements);
   return { status: "saved", at: Date.now() };
+}
+
+/** What a one-click payment from the dashboard did (#103): what it wrote and what was there, for its toast and Undo. */
+export type QuickPayResult = { ok: true; written: PaymentFields; before: PaymentFields } | { ok: false; message: string };
+
+const NOT_FOUND = "This statement couldn't be found. Refresh and try again.";
+
+/**
+ * Writes a statement's payment fields, all of them, so a blank one is cleared
+ * rather than left as it was. completePayment puts back the blanks a server
+ * action's arguments lose on the way from the browser.
+ */
+async function writePayment(id: string, payment: PaymentFields): Promise<void> {
+  const complete = completePayment(payment);
+  updateStatementSchema.parse(complete);
+  await statementsRepository.update(id, complete);
+}
+
+/**
+ * Mark paid in one click from the Cards page's Statements panel (#103): paid in
+ * full today, from the card's usual account (payInFull). Part payments and
+ * other accounts still go through the Mark paid form.
+ */
+export async function payStatementInFull(id: string): Promise<QuickPayResult> {
+  const [statement, cards] = await Promise.all([statementsRepository.get(id), getCachedCards()]);
+  if (!statement) return { ok: false, message: NOT_FOUND };
+  if (statement.status !== "Pending") return { ok: false, message: "This bill is already marked paid. Refresh to see it." };
+  const before = paymentFields(statement);
+  const written = payInFull(statement, cards.find((card) => card.id === statement.cardId), todayIso());
+  try {
+    await writePayment(id, written);
+  } catch (error) {
+    if (error instanceof NotFoundError) return { ok: false, message: NOT_FOUND };
+    console.error(`[cards] payStatementInFull failed: ${error instanceof Error ? error.name : "error"}`);
+    return { ok: false, message: "Couldn't save that to the Sheet. Try again." };
+  }
+  updateTag(CACHE_TAGS.statements);
+  return { ok: true, written, before };
+}
+
+/** Undo for payStatementInFull: puts the payment back as it was, unless the bill has been changed since (canUndo). */
+export async function undoStatementPayment(id: string, written: PaymentFields, before: PaymentFields): Promise<QuickPayResult> {
+  const statement = await statementsRepository.get(id);
+  if (!statement) return { ok: false, message: NOT_FOUND };
+  if (!canUndo(statement, completePayment(written))) return { ok: false, message: "This bill has changed since, so it wasn't put back. Edit its payment on the Statements page." };
+  try {
+    await writePayment(id, before);
+  } catch (error) {
+    if (error instanceof NotFoundError) return { ok: false, message: NOT_FOUND };
+    console.error(`[cards] undoStatementPayment failed: ${error instanceof Error ? error.name : "error"}`);
+    return { ok: false, message: "Couldn't put it back in the Sheet. Try again." };
+  }
+  updateTag(CACHE_TAGS.statements);
+  return { ok: true, written: before, before: written };
 }
