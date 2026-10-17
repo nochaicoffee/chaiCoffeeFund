@@ -1,6 +1,7 @@
 import { createCard, createStatement } from "./actions";
 import { SyncStatementsButton } from "@/components/SyncStatementsButton";
-import { CARD_COLORS, type Card } from "@/lib/sheets/types";
+import { optionLabel } from "@/lib/format/labels";
+import { CARD_COLORS, CARD_ISSUERS, CARD_TYPES, type Account, type Card } from "@/lib/sheets/types";
 
 function cardLabel(card: Card): string {
   return `${card.name} (${card.alias})`;
@@ -12,7 +13,7 @@ function cardLabel(card: Card): string {
  * report (#54) replace them. Statements are listed and marked paid on the
  * Statements page (#50).
  */
-export function InterimManage({ cards }: { cards: Card[] }) {
+export function InterimManage({ cards, accounts }: { cards: Card[]; accounts: Account[] }) {
   return (
     <section aria-labelledby="manage-heading" className="flex flex-col gap-4 border-t border-divider pt-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -27,7 +28,26 @@ export function InterimManage({ cards }: { cards: Card[] }) {
           <form action={createCard} className="flex flex-col gap-2 text-sm">
             <input name="name" placeholder="Name" required className="rounded-md border border-divider px-2 py-1" />
             <input name="alias" placeholder="Alias" required className="rounded-md border border-divider px-2 py-1" />
-            <input name="issuer" placeholder="Issuer" required className="rounded-md border border-divider px-2 py-1" />
+            <select name="issuer" required defaultValue="" className="rounded-md border border-divider px-2 py-1">
+              <option value="" disabled>
+                Issuer…
+              </option>
+              {CARD_ISSUERS.map((issuer) => (
+                <option key={issuer} value={issuer}>
+                  {optionLabel(issuer)}
+                </option>
+              ))}
+            </select>
+            <select name="cardType" required defaultValue="" className="rounded-md border border-divider px-2 py-1">
+              <option value="" disabled>
+                Card type…
+              </option>
+              {CARD_TYPES.map((type) => (
+                <option key={type} value={type}>
+                  {optionLabel(type)}
+                </option>
+              ))}
+            </select>
             <input
               name="last4"
               placeholder="Last 4 digits"
@@ -64,23 +84,41 @@ export function InterimManage({ cards }: { cards: Card[] }) {
               className="rounded-md border border-divider px-2 py-1"
             />
             <label className="text-xs text-foreground/60">
-              Statement anchor date
+              Statement day of the month
               <input
-                name="statementAnchorDate"
-                type="date"
+                name="statementDay"
+                type="number"
+                min={1}
+                max={31}
+                step={1}
                 required
+                placeholder="e.g. 16"
                 className="mt-1 w-full rounded-md border border-divider px-2 py-1"
               />
             </label>
             <label className="text-xs text-foreground/60">
-              Due anchor date
+              Days from statement to due date
               <input
-                name="dueAnchorDate"
-                type="date"
+                name="dueDayBuffer"
+                type="number"
+                min={1}
+                max={60}
+                step={1}
                 required
+                placeholder="e.g. 20"
                 className="mt-1 w-full rounded-md border border-divider px-2 py-1"
               />
             </label>
+            <select name="defaultPaidFromAccountId" defaultValue="" className="rounded-md border border-divider px-2 py-1">
+              <option value="">Usually paid from… (optional)</option>
+              {accounts
+                .filter((account) => account.status === "Active")
+                .map((account) => (
+                  <option key={account.id} value={account.id}>
+                    {account.name}
+                  </option>
+                ))}
+            </select>
             <select name="status" required defaultValue="Active" className="rounded-md border border-divider px-2 py-1">
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>

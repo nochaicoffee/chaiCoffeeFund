@@ -21,15 +21,14 @@ vi.mock("./client", () => ({
 
 const { getCachedCardsTab } = await import("./cached");
 
-/** 46239 is 2026-08-05 as a Sheets date serial. */
-const AUG_5 = 46239;
-const goodCard = ["c1", "Regalia", "regalia", "HDFC", 300000, AUG_5, AUG_5, "Active", "", "", "4242", "Sapphire"];
+// Columns: id, name, alias, issuer, cardType, creditLimit, statementDay, dueDayBuffer, status, password, keywords, last4, color.
+const goodCard = ["c1", "Regalia", "regalia", "HDFC-Bank", "Reward-Points", 300000, 16, 20, "Active", "", "", "4242", "Sapphire"];
 // A blank credit limit, and a PDF password that must never reach a page.
-const badCard = ["c2", "Coral", "coral", "ICICI", "", AUG_5, AUG_5, "Active", "FAKE-PDF-PASSWORD", "", "1111", "Ruby"];
+const badCard = ["c2", "Coral", "coral", "ICICI-Bank", "Cashback", "", 13, 18, "Active", "FAKE-PDF-PASSWORD", "", "1111", "Ruby"];
 
 beforeEach(() => {
   sheet.reads = 0;
-  sheet.rows = { "Cards!A2:L": [goodCard, badCard] };
+  sheet.rows = { "Cards!A2:N": [goodCard, badCard] };
   vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 afterEach(() => vi.restoreAllMocks());

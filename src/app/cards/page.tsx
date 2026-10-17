@@ -31,6 +31,7 @@ import {
 } from "@/lib/aggregate/cardSpend";
 import { trendPoints } from "@/lib/aggregate/cardTrend";
 import { formatShortDate, greetingFor, todayIso } from "@/lib/format/date";
+import { optionLabel } from "@/lib/format/labels";
 import { formatInr } from "@/lib/format/money";
 
 export const metadata: Metadata = { title: "Cards" };
@@ -49,7 +50,7 @@ function dueLabel(dueDate: string, daysUntilDue: number): string {
 export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
   const params = await searchParams;
   const today = todayIso();
-  const { demo, data, skipped } = await loadCardData(params, today);
+  const { demo, data, accounts, skipped } = await loadCardData(params, today);
 
   const period = parsePeriod(params, today);
   const currentYear = Number(today.slice(0, 4));
@@ -143,7 +144,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
               selected={card.id === cardId}
               variant="card"
               title={card.name}
-              corner={card.issuer}
+              corner={optionLabel(card.issuer)}
               color={card.color}
               last4={card.last4}
               balance={`${formatInr(outstanding)} / ${formatInr(card.creditLimit)}`}
@@ -201,7 +202,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
         currentMonth={monthOf(today)}
       />
 
-      {!demo && <InterimManage cards={data.cards} />}
+      {!demo && <InterimManage cards={data.cards} accounts={accounts} />}
     </div>
   );
 }

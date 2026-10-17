@@ -19,6 +19,12 @@ describe("nextOccurrence", () => {
     expect(nextOccurrence("2026-01-31", "Monthly", "2026-02-01")).toBe("2026-02-28");
   });
 
+  it("comes back to the 31st after a short month, instead of drifting to the 28th", () => {
+    expect(nextOccurrence("2026-01-31", "Monthly", "2026-03-01")).toBe("2026-03-31");
+    expect(nextOccurrence("2026-01-31", "Monthly", "2026-04-01")).toBe("2026-04-30");
+    expect(nextOccurrence("2026-01-31", "Monthly", "2026-05-01")).toBe("2026-05-31");
+  });
+
   it("handles quarterly cycles", () => {
     expect(nextOccurrence("2026-01-15", "Quarterly", "2026-08-25")).toBe("2026-10-15");
   });

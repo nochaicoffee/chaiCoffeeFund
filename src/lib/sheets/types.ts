@@ -32,16 +32,49 @@ export type CardStatus = "Active" | "Inactive" | "Closed";
 /** Tile colours a card can be given. Each maps to the --card-<colour> tokens in globals.css; emerald is kept for All Cards. */
 export const CARD_COLORS = ["Sapphire", "Ruby", "Onyx", "Violet", "Teal", "Copper"] as const;
 export type CardColor = (typeof CARD_COLORS)[number];
+
+/** What a card earns (#75). Shown as "Reward Points" and "Cashback". */
+export const CARD_TYPES = ["Reward-Points", "Cashback"] as const;
+export type CardType = (typeof CARD_TYPES)[number];
+
+/**
+ * The banks that issue cards in India, as the Cards tab's issuer dropdown lists
+ * them (#75). Shown without the hyphens ("HDFC Bank"). Other is for a bank not
+ * listed yet; add it here and to the Sheet's dropdown together.
+ */
+export const CARD_ISSUERS = [
+  "HDFC-Bank",
+  "ICICI-Bank",
+  "Axis-Bank",
+  "SBI-Card",
+  "Kotak-Mahindra-Bank",
+  "YES-Bank",
+  "IDFC-FIRST-Bank",
+  "IndusInd-Bank",
+  "AU-Small-Finance-Bank",
+  "RBL-Bank",
+  "Federal-Bank",
+  "CSB-Bank",
+  "HSBC",
+  "Standard-Chartered",
+  "American-Express",
+  "Other",
+] as const;
+export type CardIssuer = (typeof CARD_ISSUERS)[number];
+
 export type StatementStatus = "Pending" | "Paid";
 
 export interface Card {
   id: string;
   name: string;
   alias: string;
-  issuer: string;
+  issuer: CardIssuer;
+  cardType: CardType;
   creditLimit: number;
-  statementAnchorDate: string;
-  dueAnchorDate: string;
+  /** Day of the month the statement is generated, 1–31. A short month uses its last day (see cardSchedule.ts). */
+  statementDay: number;
+  /** Days from a statement to its due date. Each statement's actual due date comes from its PDF. */
+  dueDayBuffer: number;
   status: CardStatus;
   /** Password to open this card's statement PDF — used only by the Gmail ingestion pipeline. */
   statementPdfPassword?: string;
@@ -51,6 +84,8 @@ export interface Card {
   last4?: string;
   /** The card's tile colour. Optional only for rows created before it existed. */
   color?: CardColor;
+  /** The bank account this card's bill is usually paid from: Mark paid's default. */
+  defaultPaidFromAccountId?: string;
 }
 
 export interface Statement {

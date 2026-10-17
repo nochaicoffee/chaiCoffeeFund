@@ -5,6 +5,8 @@
 *.pem
 *.key
 *credentials*.json
+# Google OAuth client downloads (client_secret_<id>.apps.googleusercontent.com.json)
+client_secret*.json
 *service-account*.json
 *serviceaccount*.json
 secrets/

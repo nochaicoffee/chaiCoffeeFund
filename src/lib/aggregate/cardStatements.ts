@@ -1,5 +1,6 @@
 import { daysBetween, inPeriod, monthOf, remainingDue, statementCounts, toAmount, usableStatements, type CardData, type MonthKey, type SpendPeriod } from "./cardSpend";
 import { statementVariance } from "./cards";
+import { optionLabel } from "../format/labels";
 import type { Card, Statement } from "../sheets/types";
 
 /**
@@ -69,7 +70,7 @@ export interface StatementQuery {
 }
 
 function cardWords(card: Card | undefined): string {
-  return [card?.name, card?.alias, card?.issuer, card?.last4].filter(Boolean).join(" ").toLowerCase();
+  return [card?.name, card?.alias, card && optionLabel(card.issuer), card?.last4].filter(Boolean).join(" ").toLowerCase();
 }
 
 /**

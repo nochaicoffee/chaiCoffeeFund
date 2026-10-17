@@ -18,10 +18,11 @@ const card = (overrides: Partial<Card>): Card => ({
   id: "card",
   name: "Card",
   alias: "C",
-  issuer: "Bank",
+  issuer: "Other",
+  cardType: "Reward-Points",
   creditLimit: 100000,
-  statementAnchorDate: "2026-01-05",
-  dueAnchorDate: "2026-01-25",
+  statementDay: 5,
+  dueDayBuffer: 20,
   status: "Active",
   ...overrides,
 });
@@ -43,9 +44,9 @@ const statement = (overrides: Partial<Statement>): Statement => ({
  * on 18 Aug 2026: two pending August bills and three July/June bills paid in full.
  */
 const TODAY = "2026-08-18";
-const regalia = card({ id: "regalia", name: "Regalia Gold", alias: "Regalia", issuer: "HDFC Bank", last4: "7042" });
-const amazon = card({ id: "amazon", name: "Amazon Pay", alias: "Amazon", issuer: "ICICI Bank", last4: "3189" });
-const gold = card({ id: "gold", name: "Gold Card", alias: "Gold", issuer: "Amex", last4: "5560" });
+const regalia = card({ id: "regalia", name: "Regalia Gold", alias: "Regalia", issuer: "HDFC-Bank", last4: "7042" });
+const amazon = card({ id: "amazon", name: "Amazon Pay", alias: "Amazon", issuer: "ICICI-Bank", last4: "3189" });
+const gold = card({ id: "gold", name: "Gold Card", alias: "Gold", issuer: "American-Express", last4: "5560" });
 const augRegalia = statement({ cardId: "regalia", statementDate: "2026-08-05", dueDate: "2026-08-25", totalAmountDue: 38500, minimumAmountDue: 3850, status: "Pending" });
 const augAmazon = statement({ cardId: "amazon", statementDate: "2026-08-03", dueDate: "2026-08-23", totalAmountDue: 12400, minimumAmountDue: 1240, status: "Pending" });
 const julRegalia = statement({ cardId: "regalia", statementDate: "2026-07-05", dueDate: "2026-07-25", totalAmountDue: 42100, minimumAmountDue: 4210, amountPaid: 42100 });

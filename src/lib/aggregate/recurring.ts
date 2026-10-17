@@ -22,12 +22,15 @@ export function addMonthsUTC(iso: string, months: number): string {
 /**
  * The next occurrence of a recurring date on or after `from`, stepping
  * forward from `anchorDate` by whole `cycle` intervals (never partial).
+ * Each step counts from the anchor itself, not from the previous result, so
+ * an anchor on the 31st comes back to the 31st after a short month instead
+ * of drifting to the 28th for good.
  */
 export function nextOccurrence(anchorDate: string, cycle: RecurrenceCycle, from: string): string {
   const step = CYCLE_STEP_MONTHS[cycle];
   let occurrence = anchorDate;
-  for (let i = 0; i < 10_000 && occurrence < from; i++) {
-    occurrence = addMonthsUTC(occurrence, step);
+  for (let i = 1; i <= 10_000 && occurrence < from; i++) {
+    occurrence = addMonthsUTC(anchorDate, i * step);
   }
   return occurrence;
 }
