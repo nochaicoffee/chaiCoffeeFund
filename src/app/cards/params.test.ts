@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cardsQuery, parsePeriod, parseSelectedCard, periodYears } from "./params";
+import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, periodYears } from "./params";
 import type { Card } from "@/lib/sheets/types";
 
 const TODAY = "2026-10-17";
@@ -40,5 +40,14 @@ describe("periodYears", () => {
     expect(periodYears([2026, 2025], { kind: "year", year: 2023 })).toEqual([2026, 2025, 2023]);
     expect(periodYears([2026, 2025], { kind: "year", year: 2025 })).toEqual([2026, 2025]);
     expect(periodYears([2026], { kind: "all" })).toEqual([2026]);
+  });
+});
+
+describe("parsePanel", () => {
+  it("defaults to statements and keeps range in links", () => {
+    expect(parsePanel({})).toBe("statements");
+    expect(parsePanel({ panel: "range" })).toBe("range");
+    expect(parsePanel({ panel: "other" })).toBe("statements");
+    expect(cardsQuery({ period: { kind: "year", year: 2026 }, panel: "range", demo: false }, TODAY)).toBe("?panel=range");
   });
 });

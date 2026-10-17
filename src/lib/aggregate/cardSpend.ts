@@ -372,3 +372,163 @@ export function tileCards(data: CardData, today: string): CardTileData[] {
       };
     });
 }
+
+export interface CardDetails {
+  /** What's still due on pending bills: every card for All Cards (closed ones included), or the one card. */
+  outstanding: number;
+  /** Credit limit: active cards for All Cards, or the card's own. */
+  limit: number;
+  /** Outstanding on active cards ÷ their limit (All Cards), or the card's outstanding ÷ its limit. */
+  utilization: number | null;
+  /** Limit minus what's used of it, never below 0. */
+  available: number;
+  /** The period's monthly average, and where it falls on the limit bar (0–1), if there's a limit. */
+  average: number;
+  averageOnLimit: number | null;
+  total: number;
+  highest: MonthAmount | null;
+  lowest: MonthAmount | null;
+  /** Pending bills, soonest first, for the Next due bar. */
+  due: DueItem[];
+}
+
+/** Everything the details card shows, for All Cards (no cardId) or one card, using the page's rules. */
+export function cardDetails(data: CardData, period: SpendPeriod, today: string, cardId?: string): CardDetails {
+  const summary = spendSummary(data, period, today, cardId);
+  const due = pendingStatements(data, today, cardId);
+  const card = cardId === undefined ? undefined : data.cards.find((c) => c.id === cardId);
+  let outstanding: number;
+  let used: number;
+  let limit: number;
+  if (card) {
+    outstanding = due.reduce((sum, d) => sum + d.remaining, 0);
+    used = outstanding;
+    limit = card.creditLimit;
+  } else {
+    const all = allCardsUtilization(data);
+    outstanding = all.outstanding;
+    used = all.activeOutstanding;
+    limit = all.limit;
+  }
+  return {
+    outstanding,
+    limit,
+    utilization: limit > 0 ? used / limit : null,
+    available: Math.max(0, limit - used),
+    average: summary.average,
+    averageOnLimit: limit > 0 ? Math.min(1, summary.average / limit) : null,
+    total: summary.total,
+    highest: summary.highest,
+    lowest: summary.lowest,
+    due,
+  };
+}
+
+/** Statements dated in the period: its year, or any year for all time. */
+function inPeriod(statements: Statement[], period: SpendPeriod): Statement[] {
+  return period.kind === "all" ? statements : statements.filter((s) => s.statementDate.startsWith(`${period.year}-`));
+}
+
+/** The period's newest statements first (by statement date, then due date), for the Statements panel. */
+export function recentStatements(data: CardData, period: SpendPeriod, count: number, cardId?: string): Statement[] {
+  return inPeriod(usableStatements(data, cardId), period)
+    .sort((a, b) => b.statementDate.localeCompare(a.statementDate) || b.dueDate.localeCompare(a.dueDate))
+    .slice(0, count);
+}
+
+export interface StatementCounts {
+  /** Pending statements dated in the period. */
+  pending: number;
+  /** Closed (Paid) statements dated in the period, and how many were paid in full (amount paid at least the total due). */
+  closed: number;
+  inFull: number;
+}
+
+/** Counts for the Statements panel heading and footer, scoped to the period like its list. */
+export function statementCounts(data: CardData, period: SpendPeriod, cardId?: string): StatementCounts {
+  const shown = inPeriod(usableStatements(data, cardId), period);
+  const closed = shown.filter((s) => s.status === "Paid");
+  return {
+    pending: shown.filter((s) => s.status === "Pending").length,
+    closed: closed.length,
+    inFull: closed.filter((s) => (s.amountPaid ?? 0) >= s.totalAmountDue).length,
+  };
+}
+
+export interface RangeRow {
+  year: number;
+  /** Months that have statements, oldest first. */
+  months: MonthAmount[];
+  highest: MonthAmount | null;
+  lowest: MonthAmount | null;
+  /** The year's average: its total ÷ every month so far in it (PRD §8). */
+  average: number;
+}
+
+export interface SpendRange {
+  /** Newest year first: the period's year, or every year with statements for all time. */
+  rows: RangeRow[];
+  /** A shared scale for every row, rounded out to a "nice" step (₹10k, ₹20k, ₹50k, ₹1L, ...). */
+  scaleMin: number;
+  scaleMax: number;
+  /** Axis labels from scaleMin to scaleMax, at most about 6 of them. */
+  ticks: number[];
+  /** Highest and lowest month across every row shown; earliest wins a tie. */
+  highest: MonthAmount | null;
+  lowest: MonthAmount | null;
+  /** This calendar month's spend, when its year is shown and it has statements, and how it compares with its year's average. */
+  current: MonthAmount | null;
+  currentVsAverage: number | null;
+}
+
+/** The smallest of 1, 2 or 5 × a power of ten that's at least `x` (x > 0). */
+function niceStep(x: number): number {
+  const power = 10 ** Math.floor(Math.log10(x));
+  for (const m of [1, 2, 5, 10]) if (m * power >= x) return m * power;
+  return 10 * power;
+}
+
+/** "Where this month sits": each year's spread from lowest to highest month, its average, and the current month. */
+export function spendRange(data: CardData, period: SpendPeriod, today: string, cardId?: string): SpendRange {
+  const statements = usableStatements(data, cardId);
+  const spend = spendByMonth(statements);
+  const years =
+    period.kind === "year"
+      ? [period.year]
+      : [...new Set(statements.map((s) => Number(s.statementDate.slice(0, 4))))].sort((a, b) => b - a);
+  const current = monthOf(today);
+  const rows: RangeRow[] = years.map((year) => {
+    const summary = spendSummary(data, { kind: "year", year }, today, cardId);
+    const months = summary.months.filter((m) => spend.has(m.month));
+    return { year, months, highest: summary.highest, lowest: summary.lowest, average: summary.average };
+  });
+  const values = rows.flatMap((r) => [...r.months.map((m) => m.amount), ...(r.months.length > 0 ? [r.average] : [])]);
+  let scaleMin = 0;
+  let scaleMax = 10000;
+  let step = 10000;
+  if (values.length > 0) {
+    const low = Math.min(...values);
+    const high = Math.max(...values);
+    // About five intervals across the spread; a single value gets a band around it.
+    step = niceStep(high > low ? (high - low) / 5 : Math.max(high, 1000) / 2);
+    scaleMin = Math.max(0, Math.floor(low / step) * step);
+    scaleMax = Math.ceil(high / step) * step;
+    if (scaleMax <= scaleMin) scaleMax = scaleMin + step;
+  }
+  const ticks: number[] = [];
+  for (let t = scaleMin; t <= scaleMax + step / 2; t += step) ticks.push(t);
+
+  const shownMonths = rows.flatMap((r) => r.months);
+  const currentRow = rows.find((r) => r.year === Number(current.slice(0, 4)));
+  const currentAmount = currentRow ? spend.get(current) : undefined;
+  return {
+    rows,
+    scaleMin,
+    scaleMax,
+    ticks,
+    highest: shownMonths.reduce<MonthAmount | null>((b, m) => (b === null || m.amount > b.amount ? m : b), null),
+    lowest: shownMonths.reduce<MonthAmount | null>((b, m) => (b === null || m.amount < b.amount ? m : b), null),
+    current: currentAmount === undefined ? null : { month: current, amount: currentAmount },
+    currentVsAverage: currentAmount === undefined || !currentRow ? null : percentChange(currentAmount, currentRow.average),
+  };
+}
