@@ -1,7 +1,8 @@
 import { createCard, createStatement, markStatementPaid } from "./actions";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SyncStatementsButton } from "@/components/SyncStatementsButton";
-import { formatInr, StatTile } from "@/components/StatTile";
+import { StatTile } from "@/components/StatTile";
+import { formatInr } from "@/lib/format/money";
 import { computeCardSummaries } from "@/lib/aggregate/cards";
 import { getCachedAccounts, getCachedCards, getCachedStatements } from "@/lib/sheets/cached";
 import type { Card } from "@/lib/sheets/types";
@@ -58,7 +59,7 @@ export default async function CardsPage() {
           <div className="text-sm text-foreground/50">No cards yet — add one below.</div>
         ) : (
           summaries.map(({ card, outstandingBalance, utilization, nextStatementDate }) => (
-            <div key={card.id} className="rounded-lg border border-black/10 p-4 dark:border-white/10">
+            <div key={card.id} className="rounded-lg border border-divider p-4">
               <div className="flex items-center justify-between">
                 <div className="font-medium">{card.name}</div>
                 <span className="text-xs text-foreground/50">{card.status}</span>
@@ -71,14 +72,14 @@ export default async function CardsPage() {
                 <span className="text-foreground/50">/ {formatInr(card.creditLimit)}</span>
               </div>
               {utilization !== null && (
-                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
+                <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-fill-strong">
                   <div
                     className={`h-full ${
                       utilizationTone(utilization) === "negative"
-                        ? "bg-red-500"
+                        ? "bg-negative"
                         : utilizationTone(utilization) === "neutral"
-                          ? "bg-amber-500"
-                          : "bg-emerald-500"
+                          ? "bg-warning"
+                          : "bg-accent"
                     }`}
                     style={{ width: `${Math.min(utilization * 100, 100)}%` }}
                   />
@@ -90,7 +91,7 @@ export default async function CardsPage() {
         )}
       </div>
 
-      <div className="rounded-lg border border-black/10 p-4 dark:border-white/10">
+      <div className="rounded-lg border border-divider p-4">
         <div className="mb-2 text-sm font-medium">Statements</div>
         {sortedStatements.length === 0 ? (
           <div className="text-sm text-foreground/50">No statements yet.</div>
@@ -113,10 +114,10 @@ export default async function CardsPage() {
                   const card = cardById.get(statement.cardId);
                   const dueSoon = statement.status === "Pending" && statement.dueDate <= today;
                   return (
-                    <tr key={statement.id} className="border-t border-black/5 dark:border-white/5">
+                    <tr key={statement.id} className="border-t border-divider">
                       <td className="py-1.5 pr-4">{card ? card.name : statement.cardId}</td>
                       <td className="py-1.5 pr-4">{statement.statementDate}</td>
-                      <td className={`py-1.5 pr-4 ${dueSoon ? "font-medium text-red-600 dark:text-red-400" : ""}`}>
+                      <td className={`py-1.5 pr-4 ${dueSoon ? "font-medium text-negative" : ""}`}>
                         {statement.dueDate}
                       </td>
                       <td className="py-1.5 pr-4">{formatInr(statement.totalAmountDue)}</td>
@@ -131,11 +132,11 @@ export default async function CardsPage() {
                               step="0.01"
                               name="amountPaid"
                               defaultValue={statement.totalAmountDue}
-                              className="w-24 rounded-md border border-black/10 px-1.5 py-0.5 text-xs dark:border-white/10"
+                              className="w-24 rounded-md border border-divider px-1.5 py-0.5 text-xs"
                             />
                             <select
                               name="paidFromAccountId"
-                              className="rounded-md border border-black/10 px-1.5 py-0.5 text-xs dark:border-white/10"
+                              className="rounded-md border border-divider px-1.5 py-0.5 text-xs"
                               defaultValue=""
                             >
                               <option value="">From…</option>
@@ -147,7 +148,7 @@ export default async function CardsPage() {
                             </select>
                             <button
                               type="submit"
-                              className="rounded-md border border-black/10 px-2 py-0.5 text-xs hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
+                              className="rounded-md border border-divider px-2 py-0.5 text-xs hover:bg-fill"
                             >
                               Mark paid
                             </button>
@@ -164,19 +165,19 @@ export default async function CardsPage() {
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border border-black/10 p-4 dark:border-white/10">
+        <div className="rounded-lg border border-divider p-4">
           <div className="mb-3 text-sm font-medium">Add card</div>
           <form action={createCard} className="flex flex-col gap-2 text-sm">
-            <input name="name" placeholder="Name" required className="rounded-md border border-black/10 px-2 py-1 dark:border-white/10" />
-            <input name="alias" placeholder="Alias" required className="rounded-md border border-black/10 px-2 py-1 dark:border-white/10" />
-            <input name="issuer" placeholder="Issuer" required className="rounded-md border border-black/10 px-2 py-1 dark:border-white/10" />
+            <input name="name" placeholder="Name" required className="rounded-md border border-divider px-2 py-1" />
+            <input name="alias" placeholder="Alias" required className="rounded-md border border-divider px-2 py-1" />
+            <input name="issuer" placeholder="Issuer" required className="rounded-md border border-divider px-2 py-1" />
             <input
               name="creditLimit"
               type="number"
               step="0.01"
               placeholder="Credit limit"
               required
-              className="rounded-md border border-black/10 px-2 py-1 dark:border-white/10"
+              className="rounded-md border border-divider px-2 py-1"
             />
             <label className="text-xs text-foreground/60">
               Statement anchor date
@@ -184,7 +185,7 @@ export default async function CardsPage() {
                 name="statementAnchorDate"
                 type="date"
                 required
-                className="mt-1 w-full rounded-md border border-black/10 px-2 py-1 dark:border-white/10"
+                className="mt-1 w-full rounded-md border border-divider px-2 py-1"
               />
             </label>
             <label className="text-xs text-foreground/60">
@@ -193,27 +194,27 @@ export default async function CardsPage() {
                 name="dueAnchorDate"
                 type="date"
                 required
-                className="mt-1 w-full rounded-md border border-black/10 px-2 py-1 dark:border-white/10"
+                className="mt-1 w-full rounded-md border border-divider px-2 py-1"
               />
             </label>
-            <select name="status" required defaultValue="Active" className="rounded-md border border-black/10 px-2 py-1 dark:border-white/10">
+            <select name="status" required defaultValue="Active" className="rounded-md border border-divider px-2 py-1">
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
               <option value="Closed">Closed</option>
             </select>
             <button
               type="submit"
-              className="mt-1 rounded-md border border-black/10 px-3 py-1.5 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
+              className="mt-1 rounded-md border border-divider px-3 py-1.5 hover:bg-fill"
             >
               Add card
             </button>
           </form>
         </div>
 
-        <div className="rounded-lg border border-black/10 p-4 dark:border-white/10">
+        <div className="rounded-lg border border-divider p-4">
           <div className="mb-3 text-sm font-medium">Add statement</div>
           <form action={createStatement} className="flex flex-col gap-2 text-sm">
-            <select name="cardId" required defaultValue="" className="rounded-md border border-black/10 px-2 py-1 dark:border-white/10">
+            <select name="cardId" required defaultValue="" className="rounded-md border border-divider px-2 py-1">
               <option value="" disabled>
                 Select card…
               </option>
@@ -229,7 +230,7 @@ export default async function CardsPage() {
                 name="statementDate"
                 type="date"
                 required
-                className="mt-1 w-full rounded-md border border-black/10 px-2 py-1 dark:border-white/10"
+                className="mt-1 w-full rounded-md border border-divider px-2 py-1"
               />
             </label>
             <label className="text-xs text-foreground/60">
@@ -238,7 +239,7 @@ export default async function CardsPage() {
                 name="dueDate"
                 type="date"
                 required
-                className="mt-1 w-full rounded-md border border-black/10 px-2 py-1 dark:border-white/10"
+                className="mt-1 w-full rounded-md border border-divider px-2 py-1"
               />
             </label>
             <input
@@ -247,7 +248,7 @@ export default async function CardsPage() {
               step="0.01"
               placeholder="Total amount due"
               required
-              className="rounded-md border border-black/10 px-2 py-1 dark:border-white/10"
+              className="rounded-md border border-divider px-2 py-1"
             />
             <input
               name="minimumAmountDue"
@@ -255,11 +256,11 @@ export default async function CardsPage() {
               step="0.01"
               placeholder="Minimum amount due"
               required
-              className="rounded-md border border-black/10 px-2 py-1 dark:border-white/10"
+              className="rounded-md border border-divider px-2 py-1"
             />
             <button
               type="submit"
-              className="mt-1 rounded-md border border-black/10 px-3 py-1.5 hover:bg-black/5 dark:border-white/10 dark:hover:bg-white/10"
+              className="mt-1 rounded-md border border-divider px-3 py-1.5 hover:bg-fill"
             >
               Add statement
             </button>

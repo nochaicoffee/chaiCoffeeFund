@@ -12,13 +12,13 @@ const LINKS = [
 
 export function Nav() {
   return (
-    <nav className="flex w-56 flex-col gap-1 border-r border-black/10 p-4 dark:border-white/10">
+    <nav className="flex w-56 flex-col gap-1 border-r border-divider p-4">
       <div className="mb-4 px-2 text-lg font-semibold">Finance Tracker</div>
       {LINKS.map((link) => (
         <Link
           key={link.href}
           href={link.href}
-          className="rounded-md px-2 py-1.5 text-sm text-foreground/80 hover:bg-black/5 hover:text-foreground dark:hover:bg-white/10"
+          className="rounded-md px-2 py-1.5 text-sm text-foreground/80 hover:bg-fill hover:text-foreground"
         >
           {link.label}
         </Link>

@@ -1,26 +1,119 @@
 @import "tailwindcss";
 
+/*
+ * `dark:` utilities apply only when a dark theme is switched on explicitly
+ * (data-theme="dark" on <html>), never from the OS setting alone. Until the
+ * dark palette lands (#57), the app stays fully light instead of half-dark.
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/*
+ * Design tokens, taken from the final light Cards board
+ * (design/dashboards/CardsListLight.dc.html). Components use only these
+ * tokens, never literal colours, so the dark palette (#57) can be added by
+ * redefining them under [data-theme="dark"].
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: light;
+
+  --page: oklch(0.965 0.004 90);
+  --surface: oklch(0.995 0 0);
+  --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260);
+  --muted: oklch(0.52 0.012 260);
+  --fill: oklch(0 0 0 / 0.055);
+  --fill-strong: oklch(0 0 0 / 0.09);
+  --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+
+  --accent: oklch(0.72 0.19 145);
+  --accent-tint: oklch(0.93 0.06 145);
+  --accent-text: oklch(0.42 0.14 145);
+  --on-accent: oklch(0.99 0 0);
+  --ink: oklch(0.16 0.008 260);
+  --on-ink: oklch(0.99 0 0);
+
+  /* Semantic states: good / attention / bad. Separate from the accent. */
+  --positive: oklch(0.42 0.14 145);
+  --warning: oklch(0.72 0.14 75);
+  --negative: oklch(0.55 0.16 25);
+  --negative-tint: oklch(0.95 0.035 40);
+
+  /* Spend heatmap, low to high. */
+  --heat-1: oklch(0.95 0.03 150);
+  --heat-2: oklch(0.87 0.07 150);
+  --heat-3: oklch(0.76 0.11 151);
+  --heat-4: oklch(0.6 0.12 153);
+  --heat-5: oklch(0.42 0.1 156);
+
+  /*
+   * Card colours. Each is a 155° gradient (from, to) for the tile, plus a
+   * solid swatch for chart marks and legend dots. Emerald is reserved for
+   * the All Cards tile; the rest are the palette a card can be given.
+   */
+  --card-emerald-from: oklch(0.42 0.11 155);
+  --card-emerald-to: oklch(0.24 0.07 162);
+  --card-emerald: oklch(0.6 0.12 153);
+  --card-sapphire-from: oklch(0.32 0.09 258);
+  --card-sapphire-to: oklch(0.16 0.05 258);
+  --card-sapphire: oklch(0.48 0.1 258);
+  --card-ruby-from: oklch(0.3 0.11 20);
+  --card-ruby-to: oklch(0.15 0.07 20);
+  --card-ruby: oklch(0.57 0.13 22);
+  --card-onyx-from: oklch(0.28 0.02 75);
+  --card-onyx-to: oklch(0.15 0.01 75);
+  --card-onyx: oklch(0.56 0.04 75);
+  --card-violet-from: oklch(0.31 0.1 300);
+  --card-violet-to: oklch(0.16 0.06 300);
+  --card-violet: oklch(0.53 0.13 300);
+  --card-teal-from: oklch(0.32 0.07 200);
+  --card-teal-to: oklch(0.16 0.04 200);
+  --card-teal: oklch(0.56 0.09 200);
+  --card-copper-from: oklch(0.33 0.09 50);
+  --card-copper-to: oklch(0.16 0.05 50);
+  --card-copper: oklch(0.6 0.12 50);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-page: var(--page);
+  --color-surface: var(--surface);
+  --color-surface-line: var(--surface-line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-fill: var(--fill);
+  --color-fill-strong: var(--fill-strong);
+  --color-divider: var(--divider);
+  --color-accent: var(--accent);
+  --color-accent-tint: var(--accent-tint);
+  --color-accent-text: var(--accent-text);
+  --color-on-accent: var(--on-accent);
+  --color-ink: var(--ink);
+  --color-on-ink: var(--on-ink);
+  --color-positive: var(--positive);
+  --color-warning: var(--warning);
+  --color-negative: var(--negative);
+  --color-negative-tint: var(--negative-tint);
+  --color-heat-1: var(--heat-1);
+  --color-heat-2: var(--heat-2);
+  --color-heat-3: var(--heat-3);
+  --color-heat-4: var(--heat-4);
+  --color-heat-5: var(--heat-5);
+
+  /* Older pages still use these names until they're redesigned. */
+  --color-background: var(--page);
+  --color-foreground: var(--fg);
+
+  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: var(--card-shadow);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@theme {
+  --radius-card: 22px;
+  --radius-control: 13px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--page);
+  color: var(--fg);
+  font-family: var(--font-sans);
 }
