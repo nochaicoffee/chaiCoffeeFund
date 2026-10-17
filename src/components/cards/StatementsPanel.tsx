@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import type { RangeRow, SpendRange, StatementCounts } from "@/lib/aggregate/cardSpend";
 import { daysBetween } from "@/lib/aggregate/cardSpend";
 import type { Card, Statement } from "@/lib/sheets/types";
@@ -44,15 +45,22 @@ function StatementsView({
   today,
   counts,
   viewAllHref,
+  addStatement,
 }: {
   statements: Statement[];
   cardsById: Map<string, Card>;
   today: string;
   counts: StatementCounts;
   viewAllHref?: string;
+  addStatement?: ReactNode;
 }) {
   if (statements.length === 0) {
-    return <p className="flex flex-1 items-center justify-center py-8 text-sm text-muted">No statements yet.</p>;
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-1 py-8 text-sm text-muted">
+        <p>No statements yet.</p>
+        {addStatement}
+      </div>
+    );
   }
   return (
     <>
@@ -104,14 +112,17 @@ function StatementsView({
           Showing the {statements.length} most recent
           {counts.closed > 0 && ` · ${counts.inFull} of ${counts.closed} closed ${counts.closed === 1 ? "statement" : "statements"} paid in full`}
         </span>
-        {viewAllHref && (
-          <Link href={viewAllHref} className="inline-flex min-h-11 items-center gap-1 text-xs font-bold text-accent-text hover:underline md:min-h-0">
-            View all statements
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </Link>
-        )}
+        <span className="flex items-center gap-4">
+          {addStatement}
+          {viewAllHref && (
+            <Link href={viewAllHref} className="inline-flex min-h-11 items-center gap-1 text-xs font-bold text-accent-text hover:underline md:min-h-0">
+              View all statements
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </Link>
+          )}
+        </span>
       </div>
     </>
   );
@@ -270,6 +281,7 @@ export function StatementsPanel({
   periodLabel,
   range,
   viewAllHref,
+  addStatement,
 }: {
   view: PanelView;
   hrefFor: (v: PanelView) => string;
@@ -280,6 +292,8 @@ export function StatementsPanel({
   periodLabel: string;
   range: SpendRange;
   viewAllHref?: string;
+  /** The Add statement link, which lives here on the Cards page rather than in its header. */
+  addStatement?: ReactNode;
 }) {
   const monthName = formatMonthYear(today.slice(0, 7)).split(" ")[0];
   // Only promise "where this month sits" when this month's year is actually shown.
@@ -308,7 +322,7 @@ export function StatementsPanel({
         <Segmented view={view} hrefFor={hrefFor} />
       </div>
       {view === "statements" ? (
-        <StatementsView statements={statements} cardsById={cardsById} today={today} counts={counts} viewAllHref={viewAllHref} />
+        <StatementsView statements={statements} cardsById={cardsById} today={today} counts={counts} viewAllHref={viewAllHref} addStatement={addStatement} />
       ) : (
         <RangeView range={range} monthName={monthName} />
       )}

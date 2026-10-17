@@ -132,7 +132,6 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
               />
               <RefreshButton iconOnly />
               {!demo && <SyncStatementsButton />}
-              <AddStatementButton cards={clientCards} statements={data.statements} today={today} initialCardId={cardId} disabledReason={disabledReason} variant="ghost" />
               <AddCardButton accounts={accountOptions} usedColors={usedColors} disabledReason={disabledReason} variant="header" />
             </>
           }
@@ -224,6 +223,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
           periodLabel={periodLabel}
           range={spendRange(data, period, today, cardId)}
           viewAllHref={`/cards/statements${statementsQuery({ period, cardId, demo }, today)}`}
+          addStatement={<AddStatementButton cards={clientCards} statements={data.statements} today={today} initialCardId={cardId} disabledReason={disabledReason} variant="link" />}
         />
       </div>
 

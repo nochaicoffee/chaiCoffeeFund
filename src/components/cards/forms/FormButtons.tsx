@@ -120,10 +120,10 @@ export function AddStatementButton({
   today: string;
   initialCardId?: string;
   disabledReason?: string;
-  variant: "primary" | "ghost" | "link";
+  variant: "primary" | "link";
 }) {
   const [open, setOpen] = useState(false);
-  const className = variant === "primary" ? PRIMARY : variant === "ghost" ? GHOST : "inline-flex min-h-11 items-center text-xs font-bold text-accent-text hover:underline md:min-h-0";
+  const className = variant === "primary" ? PRIMARY : "inline-flex min-h-11 items-center text-xs font-bold text-accent-text hover:underline md:min-h-0";
   return (
     <>
       <Trigger className={className} disabledReason={disabledReason} onOpen={() => setOpen(true)}>
