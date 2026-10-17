@@ -1,6 +1,6 @@
 # chaiCoffeeFund: Product Requirements
 
-- **Status:** Approved v1.1 (v1.0 plus M1 clarifications). Scope changes go into v2.
+- **Status:** Approved v1.2 (v1.0 plus M1 clarifications). Scope changes go into v2.
 - **Owner:** Prathik
 - **Last updated:** 2026-10-16
 - **Related:** [system-design.md](system-design.md) (how it works) · [adr/](adr/) (why) · [process.md](process.md) (how we build) · [`design/dashboards/`](../design/dashboards/) (what it looks like)
@@ -180,8 +180,12 @@ Following standard practice, acceptance criteria are written in full only for th
   - This year: January to the current month.
   - A past year: 12 months.
   - All time: the month of the first statement to the current month.
-- **Utilization** is outstanding ÷ credit limit. For All Cards, it uses the totals across active cards.
-- **The pending line** counts **all** pending statements and their total, plus the next due date.
+- **Highest and lowest month** only look at months that have statements.
+- **A credit balance** (a negative total due) counts as ₹0 spend. The credit already lowers the next statement's total.
+- **Outstanding** is what's still due on pending bills: total minus anything paid, never below ₹0. It includes closed cards, because their unpaid bills are still owed. That also applies to net worth.
+- **Utilization** is outstanding ÷ credit limit, using **active cards only**: their unpaid bills ÷ their limits.
+- **The pending line** counts **all** pending statements, plus the next due date. Its total always equals outstanding.
+- **Statements whose card no longer exists** are left out of every total.
 
 **Criteria:**
 - [ ] Layout matches the final mockup, [`CardsListLight.dc.html`](../design/dashboards/CardsListLight.dc.html), in light mode, and in dark once a dark palette is picked.
@@ -251,3 +255,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 0.1 | 2026-10-16 | First draft, consolidating the system design, the mockups, the as-built code, and these decisions from 2026-10-16: the Standard process, GitHub Issues + Projects, laptop and phone with the full app on both, statement totals only, in-app reminders only, and Cards first. |
 | 1.0 | 2026-10-16 | Approved by Prathik as written, including the priorities, success metrics, out-of-scope list and release plan. Further changes go into v2. |
 | 1.1 | 2026-10-17 | Clarifications for M1, no scope change. Answers to Q3, Q5, Q6 and Q7. §8 updated to the final Cards design (a separate Statements page, and `last4` and colour on cards). Card-spend definitions added (statement-date month, average over every month so far, all pending bills). Undesigned pieces get designed in code. |
+| 1.2 | 2026-10-17 | More card-spend rules confirmed while building the math (#44): highest and lowest month use months with statements; a credit balance counts as ₹0; outstanding includes closed cards (in net worth too) and always equals the pending total; utilization uses active cards only; statements on deleted cards are left out. |
