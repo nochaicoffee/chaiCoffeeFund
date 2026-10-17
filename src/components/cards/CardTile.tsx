@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { CardColor } from "@/lib/sheets/types";
+import { RingTexture } from "../RingTexture";
 
 /** The tile background for a card colour, from the --card-* tokens (globals.css). Cards without one use onyx. */
 export function cardGradient(color: CardColor | undefined): string {
@@ -33,19 +34,6 @@ function StackIcon() {
       <rect x="1" y="8" width="18" height="13" rx="2.5" fill="var(--card-chip-deep)" />
       <rect x="4" y="4.5" width="18" height="13" rx="2.5" fill="var(--card-chip-mid)" />
       <rect x="7" y="1" width="18" height="13" rx="2.5" fill="var(--card-chip)" />
-    </svg>
-  );
-}
-
-/** Faint concentric rings in the corner of the All Cards tile, from the design. */
-function Rings() {
-  return (
-    <svg viewBox="0 0 300 196" preserveAspectRatio="none" className="block size-full" aria-hidden="true">
-      <g fill="none" stroke="var(--on-card)" strokeOpacity="0.07" strokeWidth="1">
-        {Array.from({ length: 10 }, (_, i) => (
-          <circle key={i} cx="310" cy="215" r={45 + i * 26} />
-        ))}
-      </g>
     </svg>
   );
 }
@@ -122,11 +110,8 @@ function TileFace(props: CardTileProps & { isAll: boolean }) {
   const { isAll } = props;
   return (
     <>
-      {isAll && (
-        <span className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-[inherit]">
-          <Rings />
-        </span>
-      )}
+      {/* The design's rings on the All Cards tile stop at 10, short of its far corner. */}
+      {isAll && <RingTexture width={300} height={196} dx={10} dy={19} first={45} step={26} count={10} stroke="var(--rings-light)" opacity={0.07} />}
       {props.selected && <SelectedBadge />}
       <div className="flex items-start justify-between">
         {isAll ? <StackIcon /> : <ChipIcon />}

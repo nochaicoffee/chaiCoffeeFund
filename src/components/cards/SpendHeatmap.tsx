@@ -2,6 +2,7 @@ import type { CSSProperties } from "react";
 import type { HeatCell, HeatRow, MonthAmount, MonthKey, YearTotal } from "@/lib/aggregate/cardSpend";
 import { formatMonthShort, formatMonthYear } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
+import { RingTexture } from "../RingTexture";
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => `2000-${String(i + 1).padStart(2, "0")}`);
 // Month columns never shrink below 46px, so every amount fits; the table scrolls inside its card instead.
@@ -45,7 +46,17 @@ function Cell({ cell, isPeak, isCurrent }: { cell: HeatCell; isPeak: boolean; is
       } ${isPeak ? "-translate-y-0.5 shadow-heat-peak" : ""} ${isCurrent ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}`}
       style={{ background: `var(--heat-${cell.level})` }}
     >
-      <span aria-hidden="true" className="absolute inset-0 -z-10" style={{ background: "radial-gradient(circle at 90% 8%, var(--heat-glow), transparent 58%)" }} />
+      <RingTexture
+        width={97.2}
+        height={52}
+        dx={10}
+        dy={12}
+        first={10}
+        step={11}
+        stroke={dark ? "var(--rings-light)" : "var(--rings-ink)"}
+        opacity={dark ? 0.1 : 0.11}
+        sheen="radial-gradient(circle at 90% 8%, var(--heat-glow), transparent 58%)"
+      />
       <span>{formatInrCompact(cell.amount)}</span>
       {caption && <span className="mt-px text-[9px] font-semibold opacity-85">{caption}</span>}
     </div>

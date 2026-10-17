@@ -46,6 +46,17 @@
   --feature-tile-glow: oklch(1 0 0 / 0.55);
   --feature-tile-rings: oklch(0.45 0.11 152 / 0.1);
 
+  /*
+   * The texture on chart marks (RingTexture): faint rings, ink on light marks
+   * and light on dark ones, each drawn at its mark's opacity from the design,
+   * and a white sheen in the top-right corner of some.
+   */
+  --rings-ink: oklch(0.42 0.1 152);
+  --rings-light: oklch(1 0 0);
+  --bar-glow: oklch(1 0 0 / 0.26);
+  --range-glow: oklch(1 0 0 / 0.55);
+  --due-glow: oklch(1 0 0 / 0.3);
+
   /* Spend heatmap, low to high. */
   --heat-1: oklch(0.95 0.03 150);
   --heat-2: oklch(0.87 0.07 150);

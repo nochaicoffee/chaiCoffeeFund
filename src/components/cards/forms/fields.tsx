@@ -1,6 +1,7 @@
 "use client";
 
 import type { ComponentProps, ReactNode } from "react";
+import { RingTexture } from "../../RingTexture";
 import { AlertIcon, InfoIcon } from "./icons";
 
 /**
@@ -173,13 +174,7 @@ export function Segmented<T extends string>({
 export function PreviewPanel({ children, caption }: { children: ReactNode; caption?: ReactNode }) {
   return (
     <div className="relative isolate flex flex-col gap-4 overflow-hidden rounded-[22px] border border-feature-tile-line bg-feature-tile p-5 max-md:gap-3 max-md:p-4">
-      <svg viewBox="0 0 320 600" preserveAspectRatio="none" className="pointer-events-none absolute inset-0 -z-10 size-full" aria-hidden="true">
-        <g fill="none" stroke="var(--feature-tile-rings)" strokeWidth="1">
-          {Array.from({ length: 24 }, (_, i) => (
-            <circle key={i} cx="340" cy="640" r={30 * (i + 1)} />
-          ))}
-        </g>
-      </svg>
+      <RingTexture width={320} height={600} dx={20} dy={40} first={30} step={30} stroke="var(--feature-tile-rings)" />
       <span className="text-[11px] font-extrabold tracking-[0.06em] text-accent-text uppercase max-md:hidden">Live preview</span>
       {children}
       {caption && <p className="text-[11px] font-semibold text-muted max-md:hidden">{caption}</p>}
