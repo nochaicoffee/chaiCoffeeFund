@@ -1,6 +1,6 @@
 # chaiCoffeeFund: Product Requirements
 
-- **Status:** Approved v1.3 (v1.0 plus M1 clarifications). Scope changes go into v2.
+- **Status:** Approved v1.4 (v1.0 plus M1 clarifications). Scope changes go into v2.
 - **Owner:** Prathik
 - **Last updated:** 2026-10-19
 - **Related:** [system-design.md](system-design.md) (how it works) · [adr/](adr/) (why) · [process.md](process.md) (how we build) · [`design/dashboards/`](../design/dashboards/) (what it looks like)
@@ -158,7 +158,7 @@ Following standard practice, acceptance criteria are written in full only for th
 *As Prathik, I want to add my cards and their statements in the app, so that I never type them into the Sheet.*
 - [ ] I can add a card with these fields, and it appears straight away with no manual refresh (fields decided 2026-10-19, #75):
   - a name, alias, issuer and card type (Reward Points or Cashback);
-  - the last 4 digits, a colour and the credit limit;
+  - a colour and the credit limit, plus the last 4 digits if known. Otherwise the statement import fills them in (#78);
   - the statement day of the month, and how many days after it the bill is due;
   - optionally, the statement PDF password, email keywords and the account it's usually paid from.
   - Each statement's own due date comes from its PDF. The card's schedule only predicts the next statement and prefills a new one.
@@ -174,6 +174,7 @@ Following standard practice, acceptance criteria are written in full only for th
 - [ ] Running sync twice never creates a duplicate statement.
 - [ ] A statement that matches no card or more than one card is **not written**. It's listed so I can fix the card's keywords.
 - [ ] A PDF that no stored password opens is reported, not silently skipped.
+- [ ] The import reads the masked card number from each PDF. It fills in a card's missing last 4, and won't import a statement whose card number doesn't match the card it was matched to (#78).
 - [ ] Gmail access is read-only, and no credential is ever committed. Statement PDF passwords live in the Cards Sheet tab (Q3).
 
 ### F-CC-05 and F-CC-06: Cards dashboard
@@ -267,3 +268,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.1 | 2026-10-17 | Clarifications for M1, no scope change. Answers to Q3, Q5, Q6 and Q7. §8 updated to the final Cards design (a separate Statements page, and `last4` and colour on cards). Card-spend definitions added (statement-date month, average over every month so far, all pending bills). Undesigned pieces get designed in code. |
 | 1.2 | 2026-10-17 | More card-spend rules confirmed while building the math (#44): highest and lowest month use months with statements; a credit balance counts as ₹0; outstanding includes closed cards (in net worth too) and always equals the pending total; utilization uses active cards only; statements on deleted cards are left out. |
 | 1.3 | 2026-10-19 | Card setup matches the old sheet (#75): a card type (Reward Points or Cashback), and the schedule as a statement day plus a due-day buffer instead of two full dates. Also adds issuer and colour dropdowns and an optional default payment account. |
+| 1.4 | 2026-10-19 | A card's last 4 is optional when it's added. The import fills it in from the statement PDF, then uses it to check each statement belongs to its card (#78). |

@@ -25,7 +25,7 @@ export async function createCard(formData: FormData): Promise<void> {
     statementDay: Number(str(formData, "statementDay")),
     dueDayBuffer: Number(str(formData, "dueDayBuffer")),
     status: str(formData, "status"),
-    last4: str(formData, "last4"),
+    last4: optionalStr(formData, "last4"),
     color: str(formData, "color"),
     statementPdfPassword: optionalStr(formData, "statementPdfPassword"),
     emailMatchKeywords: optionalStr(formData, "emailMatchKeywords"),

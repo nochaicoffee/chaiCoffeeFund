@@ -80,7 +80,10 @@ export interface Card {
   statementPdfPassword?: string;
   /** Comma-separated extra keywords for matching a statement email to this card, beyond name/alias. */
   emailMatchKeywords?: string;
-  /** Last 4 digits of the card number, shown on its tile ("•••• 7042"). Text, so a leading zero survives. */
+  /**
+   * Last 4 digits of the card number, shown on its tile ("•••• 7042"). Text, so a leading zero survives.
+   * Optional: the statement import fills it in from the PDF, and checks it on every statement after (#78).
+   */
   last4?: string;
   /** The card's tile colour. Optional only for rows created before it existed. */
   color?: CardColor;

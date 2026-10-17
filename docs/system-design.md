@@ -1,6 +1,6 @@
 > **Restored 2026-10-16.** This file was originally `~/.claude/plans/i-want-us-to-spicy-garden.md`, outside the repo. That folder was deleted at some point, so this copy was recovered from the last full read in a session transcript (2026-09-09). No edits to the original were found after that date.
 >
-> **Not yet covered here:** the `/cards` page and the Gmail statement-ingestion pipeline (`src/lib/gmail`, `src/lib/pdf`, `src/lib/statementParsing`, `src/lib/statementIngestion`, `scripts/`), built 2026-09-09.
+> **Not yet covered here:** the `/cards` page and the Gmail statement-ingestion pipeline (`src/lib/gmail`, `src/lib/pdf`, `src/lib/statementParsing`, `src/lib/statementIngestion`, `scripts/`), built 2026-09-09. Since #78 the import also checks the masked card number in each PDF. It fills in a card's missing `last4` (a write to the Cards tab) and skips a statement whose number doesn't match its matched card (`lib/statementParsing/extractCardLast4.ts`).
 
 # Personal Finance Tracker — End-to-End System Design
 

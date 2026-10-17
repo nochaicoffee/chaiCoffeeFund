@@ -7,6 +7,8 @@ import type { IngestionResult } from "@/lib/statementIngestion/types";
 export function SyncStatementsButton() {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
+  // What else the import did, e.g. filling in a card's last 4 (#78). The full sync report is #54.
+  const [notes, setNotes] = useState<string[]>([]);
   const router = useRouter();
 
   return (
@@ -17,6 +19,7 @@ export function SyncStatementsButton() {
         onClick={() =>
           startTransition(async () => {
             setMessage(null);
+            setNotes([]);
             try {
               const res = await fetch("/api/statements/sync", { method: "POST" });
               const data = await res.json();
@@ -28,6 +31,7 @@ export function SyncStatementsButton() {
                 const duplicate = result.outcomes.filter((o) => o.outcome === "duplicate").length;
                 const skipped = result.outcomes.filter((o) => o.outcome === "skipped").length;
                 setMessage(`Sync: ${created} added, ${duplicate} already had a statement, ${skipped} skipped.`);
+                setNotes(result.outcomes.flatMap((o) => o.notes ?? []));
                 router.refresh();
               }
             } catch (error) {
@@ -40,6 +44,13 @@ export function SyncStatementsButton() {
         {isPending ? "Syncing…" : "Sync statements"}
       </button>
       {message && <span className="max-w-xs text-right text-xs text-muted">{message}</span>}
+      {notes.length > 0 && (
+        <ul className="max-w-xs text-right text-xs text-muted">
+          {notes.map((note, i) => (
+            <li key={i}>{note}</li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

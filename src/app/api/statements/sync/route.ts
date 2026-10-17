@@ -13,6 +13,8 @@ export async function POST() {
   try {
     const result = await runStatementIngestion();
     revalidateTag(CACHE_TAGS.statements, "max");
+    // The import can fill in a card's last 4 (#78).
+    revalidateTag(CACHE_TAGS.cards, "max");
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : String(error) }, { status: 500 });

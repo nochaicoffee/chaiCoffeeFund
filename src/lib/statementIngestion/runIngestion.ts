@@ -4,6 +4,7 @@ import type { gmail_v1 } from "googleapis";
 import { getGmailClient, getStatementLabel } from "@/lib/gmail/client";
 import { downloadPdfAttachment, getMessage, getSubjectHeader, listMessagesWithLabel } from "@/lib/gmail/messages";
 import { decryptAndExtractText } from "@/lib/pdf/decryptAndExtractText";
+import { checkCardLast4, findCardLast4s } from "@/lib/statementParsing/extractCardLast4";
 import { extractCardNameFromSubject } from "@/lib/statementParsing/extractCardNameFromSubject";
 import { matchCard } from "@/lib/statementParsing/matchCard";
 import { parseStatement } from "@/lib/statementParsing/parseStatement";
@@ -134,9 +135,29 @@ async function processMessage(
   }
 
   const card = matchResult.card;
+  // The PDF's masked card number confirms the match, and fills in a card's missing last 4 (#78).
+  const last4 = checkCardLast4(card, findCardLast4s(decrypted.text));
+  if (last4.kind === "mismatch") {
+    return {
+      messageId,
+      subject,
+      outcome: "skipped",
+      cardId: card.id,
+      reason: `the PDF shows a card ending ${last4.found.join(" or ")}, but ${card.name} ends ${card.last4}, so it's probably another card's statement. If the card was reissued with a new number, update its last 4 in the Cards tab`,
+    };
+  }
+  const notes = last4.kind === "fill" ? [await fillLast4(card, last4.last4)] : [];
+
   const duplicate = existingStatements.find((s) => s.cardId === card.id && s.statementDate === fields.statementDate);
   if (duplicate) {
-    return { messageId, subject, outcome: "duplicate", statementId: typeof duplicate.id === "string" ? duplicate.id : undefined, cardId: card.id };
+    return {
+      messageId,
+      subject,
+      outcome: "duplicate",
+      statementId: typeof duplicate.id === "string" ? duplicate.id : undefined,
+      cardId: card.id,
+      ...(notes.length > 0 && { notes }),
+    };
   }
 
   const input = createStatementSchema.parse({
@@ -148,6 +169,23 @@ async function processMessage(
     status: "Pending",
   });
   const created = await statementsRepository.create(input);
+  // Counted from now on, so a second email for the same statement in this run is a duplicate too.
+  existingStatements.push(created);
 
-  return { messageId, subject, outcome: "created", statementId: created.id, cardId: card.id };
+  return { messageId, subject, outcome: "created", statementId: created.id, cardId: card.id, ...(notes.length > 0 && { notes }) };
+}
+
+/**
+ * Saves a last 4 read from a statement onto its card, and onto the in-memory
+ * card too, so the rest of the run checks against it. A failed save is only
+ * noted: the statement itself still imports.
+ */
+async function fillLast4(card: Card, last4: string): Promise<string> {
+  try {
+    await cardsRepository.update(card.id, { last4 });
+    card.last4 = last4;
+    return `filled in ${card.name}'s last 4 (${last4}) from the statement`;
+  } catch (error) {
+    return `couldn't save ${card.name}'s last 4 (${last4}): ${error instanceof Error ? error.message : String(error)}`;
+  }
 }

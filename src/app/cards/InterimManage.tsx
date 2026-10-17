@@ -50,8 +50,7 @@ export function InterimManage({ cards, accounts }: { cards: Card[]; accounts: Ac
             </select>
             <input
               name="last4"
-              placeholder="Last 4 digits"
-              required
+              placeholder="Last 4 digits (optional, filled in from your statements)"
               inputMode="numeric"
               pattern="[0-9]{4}"
               maxLength={4}
