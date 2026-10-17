@@ -89,7 +89,8 @@ export function EditCardButton({
       <Trigger
         className={
           tone === "card"
-            ? "inline-flex min-h-11 items-center gap-1.5 rounded-full bg-on-card-fill px-3 py-1 text-[11px] font-bold text-on-card hover:bg-on-card-line focus-visible:outline-2 focus-visible:outline-on-card md:min-h-0"
+            // 26px tall on desktop and 44px on a phone, the height the details card's header row keeps for it.
+            ? "inline-flex min-h-11 items-center gap-1.5 rounded-full bg-on-card-fill px-3 text-[11px] font-bold text-on-card hover:bg-on-card-line focus-visible:outline-2 focus-visible:outline-on-card md:h-[26px] md:min-h-0"
             : GHOST
         }
         disabledReason={disabledReason}

@@ -72,7 +72,8 @@ export function DetailsCard({
         {/* Selecting another card fades this one's colour into the next, and its numbers count to theirs (#102). */}
         <CrossfadeBackground background={background} />
         <RingTexture width={596} height={200} dx={20} dy={44} first={26} step={26} stroke="var(--rings-light)" opacity={0.07} />
-        <div className="flex items-center justify-between gap-3">
+        {/* As tall as the Edit card button even without it, so the header doesn't grow when a card is selected. */}
+        <div className="flex min-h-11 items-center justify-between gap-3 md:min-h-[26px]">
           <span className="min-w-0 truncate text-xs font-semibold text-on-card-muted">{card ? `${cardName(card)} · ${label}` : label}</span>
           {action}
         </div>
