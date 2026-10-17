@@ -136,6 +136,24 @@ Reads use `UNFORMATTED_VALUE` with `SERIAL_NUMBER` dates, so cells arrive as the
   - Writing `'12400` to a number column, or `'5 Jul` to a date column, stores a real number or date, apostrophe or not. Text columns do keep the apostrophe's meaning, so `0425` stays text.
   - So in this Sheet the realistic bad row is a blank required cell, or a value outside a dropdown. Converting number text still covers columns that aren't typed.
 
+### Verifying the Sheet (#77)
+
+The real Sheet's tab names and columns are ground truth, and `createRepository`'s load check only compares a repository with its own schema. So `npm run check-sheet` compares the real Sheet with every repository, with `npm run dev` running. It prints ✓ or ✗ per tab with each difference, and exits 1 if any tab differs.
+
+- **What it checks, per tab**: the tab exists and holds one Table starting at A1, since reads assume the header is row 1 and `id` is column A. Then the columns:
+  - every column is there, with nothing extra, in the code's order. Headers must be the field names exactly. Order is compared among the columns both sides have, so one missing column isn't also reported as every later column moving;
+  - each column has the right Table type: TEXT for text, DOUBLE or CURRENCY for a number, DATE for an `isoDate`, DROPDOWN for a `z.enum()`;
+  - a dropdown has exactly the enum's values. A value missing from the Sheet's list means writing it fails. A value only the Sheet has means a row with it fails the read schema.
+- **What each column expects comes from the row schema**: `columnExpectations` in `rowReading.ts`, next to `columnKinds`, and each repository exposes the result as `expectedColumns`. A field type no Sheet column type is known to fit (a boolean, say) throws when the repository loads, like the other load checks, so `entities.test.ts` fails in CI.
+- **The comparison is pure**: `compareTab` in `lib/sheets/tableStructure.ts`, tested against fixture metadata. `checkSheet.ts` makes one `spreadsheets.get` for titles and Table structure only (`tables[].range` and `columnProperties`), no cell values. Its `checkedRepositories` list must name every repository, and `entities.test.ts` fails if one is missing.
+- **It runs through the dev-only route `/api/dev/sheet-check`**, a 404 anywhere but `next dev`. A plain tsx script can't import the `server-only` Sheets code, the same limit `scripts/ingestStatements.ts` works around.
+- **Things the API does that the check allows for** (found 2026-10-19): it leaves out fields at their default. Column A has no `columnIndex`, a Table at A1 has no start indexes, and a column with no type has no `columnType`.
+- **First run, 2026-10-19**: the Cards tabs (Cards, CardStatements) and BalanceSnapshots, SubscriptionPayments and IncomeEntries match. Seven tabs don't:
+  - Accounts' `startDate` has no type.
+  - Subscriptions' `category` is a dropdown, but the code takes any text. Its `billingCycle` dropdown has `Quaterly` for `Quarterly`.
+  - IncomeSources' `frequency` dropdown has `Quaterly` and `OneTime` for `Quarterly` and `One-Time`.
+  - Loans, LoanInstallments, InvestmentTransactions and FixedDeposits still have the placeholder dropdown values `Option 1` and `Option 2`. InvestmentTransactions' `assetType` is a dropdown, but the code takes any text.
+
 ## Backend architecture
 
 Next.js (App Router), TypeScript:
@@ -189,6 +207,7 @@ Deferred by design — v1 is `npm run dev` only. Nothing in the architecture ass
 
 ## Verification
 
+- After any change to a tab or a repository, `npm run check-sheet` (with `npm run dev` running) confirms the two still match: names, order, column types and dropdown values. See "Verifying the Sheet".
 - Each repository gets a quick manual check against the real (new) Sheet: create a row via the app, confirm it appears in Sheets *inside the Table range* with its dropdowns/column types intact (not as a plain row below the Table); edit a Sheet row directly, hit Refresh, confirm the app picks it up.
 - `lib/aggregate` functions get unit tests against fixture data (no live Sheets calls needed) so net-worth math is verified independent of the data source.
 - Before treating a page "done," load it in the browser (dev server) and check both a populated state and an empty/zero-data state (e.g. a category with no rows yet) render sensibly.

@@ -41,6 +41,7 @@ Every entity follows the same shape. Adding one means:
 2. One file at `src/lib/sheets/<entity>.ts` holding **both** the `createRepository(...)` config **and** its zod `create<Entity>Schema`/`update<Entity>Schema`/`<entity>RowSchema` — keep them together, not in a separate schemas file, so everything about one entity stays in one place. The row schema (usually the create schema plus `id`) is passed to `createRepository` as `schema`, and every row read from the Sheet is checked against it (see "Reading from Sheets" in `docs/system-design.md`).
 3. Two route files using the factories in `src/lib/api/createCrudRoutes.ts` (`createListRoute`, `createItemRoute`) — this should be ~4 lines each, not hand-rolled logic. Only reach for a custom route (like `loans`) when an entity's write does more than one thing (e.g. also generates a schedule).
 4. If pages will read it, add a cached list/getById pair to `src/lib/sheets/cached.ts` via the existing `cachedList`/`cachedGetById` helpers, and a tag in `CACHE_TAGS`.
+5. Add the repository to `checkedRepositories` in `src/lib/sheets/checkSheet.ts` (`entities.test.ts` fails until you do), then run `npm run check-sheet` once the tab is built.
 
 If a step feels like it needs new boilerplate instead of just using the existing factories, that's a sign the factories need extending — extend them, don't duplicate around them.
 
@@ -54,7 +55,7 @@ If a step feels like it needs new boilerplate instead of just using the existing
 
 Unit tests alone won't catch Sheets-specific gotchas — the Sheets API returns display-formatted values by default (not raw), a Table append needs confirming it actually lands inside the Table's range with formatting intact, and concurrent writes to the same tab can race. Before considering a change to `lib/sheets/` done: create a real row through the app against the actual Sheet, confirm it, update it, delete it, and confirm the sheet is clean again — sequentially, not concurrently, if deleting multiple rows against one tab.
 
-Tab names and column order in the real Sheet are ground truth, not what was discussed — after the user says a tab is built, verify its actual name and header order before assuming a repository's `sheetName`/`columns` still match.
+Tab names and column order in the real Sheet are ground truth, not what was discussed — after the user says a tab is built, verify its actual name and header order before assuming a repository's `sheetName`/`columns` still match. `npm run check-sheet` (with `npm run dev` running) does this for every tab, and also checks column types and dropdown values (see "Verifying the Sheet" in `docs/system-design.md`).
 
 ## Don't drive Google Sheets' UI via browser automation
 

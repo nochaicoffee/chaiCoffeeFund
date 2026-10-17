@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { z } from "zod";
-import { assertColumnsMatchSchema, columnKinds, readRow, reportInvalidRow, serialToIsoDate } from "./rowReading";
+import { assertColumnsMatchSchema, columnExpectations, columnKinds, readRow, reportInvalidRow, serialToIsoDate } from "./rowReading";
 import { isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
 
 /** A cut-down statement row, with the same kinds of rules the real schemas use. */
@@ -132,6 +132,27 @@ describe("columnKinds", () => {
   });
 });
 
+describe("columnExpectations", () => {
+  it("reads what each column expects from the schema, in column order, through optional", () => {
+    expect(columnExpectations("Tab", columns as string[], schema)).toEqual([
+      { name: "id", kind: "text" },
+      { name: "cardId", kind: "text" },
+      { name: "statementDate", kind: "date" },
+      { name: "totalAmountDue", kind: "number" },
+      { name: "status", kind: "dropdown", options: ["Pending", "Paid"] },
+      { name: "amountPaid", kind: "number" },
+      { name: "paidDate", kind: "date" },
+      { name: "last4", kind: "text" },
+    ]);
+  });
+
+  it("throws for a field no Sheet column type is known to fit", () => {
+    expect(() => columnExpectations("Tab", ["id", "active"], z.object({ id: nonEmptyString, active: z.boolean() }))).toThrow(
+      "Tab: no Sheet column type is known to fit active's schema",
+    );
+  });
+});
+
 describe("serialToIsoDate", () => {
   it("counts days from the Sheets epoch", () => {
     expect(serialToIsoDate(AUG_5)).toBe("2026-08-05");
@@ -152,6 +173,12 @@ describe("assertColumnsMatchSchema", () => {
   it("names a schema field with no column, and a column the schema doesn't know", () => {
     expect(() => assertColumnsMatchSchema("Tab", ["id", "cardId", "statementDate", "totalAmountDue", "status", "amountPaid", "paidDate", "extra"], ["statementDate", "paidDate"], schema)).toThrow(
       "Tab: the columns don't match the row schema: last4 is in the schema but has no column; column extra isn't in the schema",
+    );
+  });
+
+  it("names a column listed twice", () => {
+    expect(() => assertColumnsMatchSchema("Tab", [...columns, "cardId"] as string[], [...dateColumns] as string[], schema)).toThrow(
+      "Tab: the columns don't match the row schema: column cardId is listed twice",
     );
   });
 
