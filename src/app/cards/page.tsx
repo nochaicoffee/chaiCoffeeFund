@@ -7,6 +7,7 @@ import { SyncStatementsButton } from "@/components/SyncStatementsButton";
 import { SyncProvider } from "@/components/sync/SyncContext";
 import { SyncReportPanel } from "@/components/sync/SyncReportPanel";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
+import { CardRow } from "@/components/cards/CardRow";
 import { CardTile, ClosedCardsTile } from "@/components/cards/CardTile";
 import { AddCardButton, AddStatementButton, EditCardButton } from "@/components/cards/forms/FormButtons";
 import { DetailsCard } from "@/components/cards/DetailsCard";
@@ -88,7 +89,8 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
   const accountOptions = accounts.filter((a) => a.status === "Active").map((a) => ({ id: a.id, name: a.name }));
   const usedColors = data.cards.flatMap((c) => (c.color ? [c.color] : []));
 
-  const cardTile = ({ card, outstanding, utilization, nextDue, nextStatementDate }: CardTileData) => (
+  // order: the tile's place in the row, so the bars fill one after another as the page opens (#102).
+  const cardTile = ({ card, outstanding, utilization, nextDue, nextStatementDate }: CardTileData, order: number) => (
     <div role="listitem" key={card.id}>
       <CardTile
         dimmed={card.status === "Closed" && outstanding === 0}
@@ -103,6 +105,8 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
         utilizationLabel={percent(utilization, 1)}
         utilization={utilization ?? 0}
         pill={nextDue ? dueLabel(nextDue.statement.dueDate, nextDue.daysUntilDue) : undefined}
+        pillUrgent={!!nextDue && nextDue.daysUntilDue <= 3}
+        fillDelay={120 + order * 90}
         footnote={
           nextDue
             ? `Min ${formatInr(nextDue.statement.minimumAmountDue)}`
@@ -160,7 +164,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
       {/* Scrolls sideways by trackpad, touch, shift-scroll or keyboard (a focused tile scrolls into view), with no scrollbar drawn under it.
           A scrolling row clips what's outside it, so its bottom padding leaves room for the tiles' whole shadow (0 10px 26px) to fade out,
           and the negative margin keeps the gap to the heatmap as it was. */}
-      <div
+      <CardRow
         role="list"
         aria-label="Cards"
         className="-mx-4 -mb-6 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pt-3 pb-10 [scrollbar-width:none] md:-mx-[26px] md:scroll-px-[26px] md:px-[26px] [&::-webkit-scrollbar]:hidden"
@@ -177,19 +181,20 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
             utilization={allCards.utilization ?? 0}
             pill={allPending.count > 0 ? `${allPending.count} pending` : undefined}
             footnote={allPending.nextDueDate ? `Next ${formatShortDate(allPending.nextDueDate)}` : "Nothing due"}
+            fillDelay={120}
           />
         </div>
-        {tiles.map(cardTile)}
+        {tiles.map((tile, i) => cardTile(tile, i + 1))}
         {closedTiles.length > 0 && (
           <div role="listitem">
             <ClosedCardsTile href={closedToggleHref} colors={closedTiles.map((t) => t.card.color)} open={closedOpen} />
           </div>
         )}
-        {closedOpen && closedTiles.map(cardTile)}
+        {closedOpen && closedTiles.map((tile, i) => cardTile(tile, tiles.length + 1 + i))}
         <div role="listitem">
           <AddCardButton accounts={accountOptions} usedColors={usedColors} disabledReason={disabledReason} variant="tile" />
         </div>
-      </div>
+      </CardRow>
 
       <SpendHeatmap
         title={selectedCard ? cardName(selectedCard) : "All Cards"}
