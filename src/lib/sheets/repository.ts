@@ -119,8 +119,11 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
    * One read serving both "does it exist" and "which row" — avoids scanning the sheet twice.
    * Finds invalid rows too, so update() can repair one and remove() can delete one.
    */
-  async function findRow(id: string): Promise<{ rowNumber: number; values: Partial<Record<keyof T, unknown>>; record: T | null; problems: RowProblem[] } | null> {
-    const rows = await fetchRows();
+  async function findRow(id: string) {
+    return locateRow(await fetchRows(), id);
+  }
+
+  function locateRow(rows: unknown[][], id: string): { rowNumber: number; values: Partial<Record<keyof T, unknown>>; record: T | null; problems: RowProblem[] } | null {
     // String(): an id typed into the Sheet by hand can come back as a number.
     const index = rows.findIndex((row) => row[0] !== undefined && String(row[0]) === id);
     if (index === -1) return null;
@@ -175,6 +178,32 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     return updated;
   }
 
+  /**
+   * Several updates for one read and one write, where an update() each would
+   * cost two requests per row against the Sheets quota (60 a minute), like the
+   * statement sync's email log. Writes nothing if any id is missing.
+   */
+  async function updateMany(changes: { id: string; patch: Partial<Omit<T, "id">> }[]): Promise<T[]> {
+    if (changes.length === 0) return [];
+    const rows = await fetchRows();
+    const found = changes.map(({ id, patch }) => {
+      const row = locateRow(rows, id);
+      if (!row) throw new NotFoundError(`${sheetName}: no record found for id ${id}`);
+      return { rowNumber: row.rowNumber, updated: { ...row.values, ...patch } as T };
+    });
+    await getSheetsClient().spreadsheets.values.batchUpdate({
+      spreadsheetId: getSpreadsheetId(),
+      requestBody: {
+        valueInputOption: "USER_ENTERED",
+        data: found.map(({ rowNumber, updated }) => ({
+          range: `${sheetName}!A${rowNumber}:${lastCol}${rowNumber}`,
+          values: [toRowValues(updated, columns, dateColumns)],
+        })),
+      },
+    });
+    return found.map(({ updated }) => updated);
+  }
+
   async function remove(id: string): Promise<void> {
     const found = await findRow(id);
     if (!found) return;
@@ -200,5 +229,5 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     });
   }
 
-  return { sheetName, list, readAll, get, create, createMany, update, remove };
+  return { sheetName, list, readAll, get, create, createMany, update, updateMany, remove };
 }

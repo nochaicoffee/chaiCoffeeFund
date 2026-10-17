@@ -11,14 +11,25 @@ async function getLabelId(gmail: gmail_v1.Gmail, labelName: string): Promise<str
   return label?.id ?? null;
 }
 
-/** Lists messages under a Gmail label by name — throws if the label doesn't exist (a config error, not a per-run one). */
+/**
+ * Every message under a Gmail label, newest first — throws if the label doesn't
+ * exist (a config error, not a per-run one). Reads page by page, so a label
+ * holding years of statements is read in full (#82).
+ */
 export async function listMessagesWithLabel(gmail: gmail_v1.Gmail, labelName: string): Promise<GmailMessageRef[]> {
   const labelId = await getLabelId(gmail, labelName);
   if (!labelId) {
     throw new Error(`Gmail label "${labelName}" not found — create it and apply it to statement emails first.`);
   }
-  const res = await gmail.users.messages.list({ userId: "me", labelIds: [labelId], maxResults: 50 });
-  return res.data.messages?.map((m) => ({ id: m.id! })) ?? [];
+  const refs: GmailMessageRef[] = [];
+  let pageToken: string | undefined;
+  do {
+    // 500 is the most Gmail returns at once. Each entry is just an id, so a page is cheap.
+    const res = await gmail.users.messages.list({ userId: "me", labelIds: [labelId], maxResults: 500, pageToken });
+    refs.push(...(res.data.messages ?? []).map((m) => ({ id: m.id! })));
+    pageToken = res.data.nextPageToken ?? undefined;
+  } while (pageToken);
+  return refs;
 }
 
 export async function getMessage(gmail: gmail_v1.Gmail, id: string): Promise<gmail_v1.Schema$Message> {

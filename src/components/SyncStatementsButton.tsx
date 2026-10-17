@@ -4,6 +4,9 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import type { IngestionResult } from "@/lib/statementIngestion/types";
 
+/** Syncs in a row for one press, each reading what fits in its time budget: plenty for a first sync of years of statements. */
+const MAX_ROUNDS = 10;
+
 export function SyncStatementsButton() {
   const [isPending, startTransition] = useTransition();
   const [message, setMessage] = useState<string | null>(null);
@@ -20,20 +23,34 @@ export function SyncStatementsButton() {
           startTransition(async () => {
             setMessage(null);
             setNotes([]);
+            const counts = { created: 0, duplicate: 0, skipped: 0 };
+            const found: string[] = [];
+            const summary = () => `Sync: ${counts.created} added, ${counts.duplicate} already had a statement, ${counts.skipped} skipped`;
             try {
-              const res = await fetch("/api/statements/sync", { method: "POST" });
-              const data = await res.json();
-              if (!res.ok) {
-                setMessage(`Sync failed: ${data.error ?? "unknown error"}`);
-              } else {
+              // Each sync stops after a time budget (#82), so carry on until the emails are all read.
+              for (let round = 1; ; round++) {
+                const res = await fetch("/api/statements/sync", { method: "POST" });
+                const data = await res.json();
+                if (!res.ok) {
+                  setMessage(`Sync failed: ${data.error ?? "unknown error"}`);
+                  break;
+                }
                 const result = data as IngestionResult;
-                const created = result.outcomes.filter((o) => o.outcome === "created").length;
-                const duplicate = result.outcomes.filter((o) => o.outcome === "duplicate").length;
-                const skipped = result.outcomes.filter((o) => o.outcome === "skipped").length;
-                setMessage(`Sync: ${created} added, ${duplicate} already had a statement, ${skipped} skipped.`);
-                setNotes(result.outcomes.flatMap((o) => o.notes ?? []));
-                router.refresh();
+                if (result.status === "already-running") {
+                  setMessage(round === 1 ? "A sync is already running. Try again in a minute." : `${summary()}. Another sync started, so this one stopped there.`);
+                  break;
+                }
+                for (const outcome of result.outcomes) counts[outcome.outcome]++;
+                found.push(...result.outcomes.flatMap((o) => o.notes ?? []));
+                setNotes([...found]);
+                if (result.remaining > 0 && round < MAX_ROUNDS) {
+                  setMessage(`${summary()}. Reading ${result.remaining} more…`);
+                  continue;
+                }
+                setMessage(result.remaining > 0 ? `${summary()}. ${result.remaining} more to read: sync again.` : `${summary()}.`);
+                break;
               }
+              router.refresh();
             } catch (error) {
               setMessage(`Sync failed: ${error instanceof Error ? error.message : String(error)}`);
             }
