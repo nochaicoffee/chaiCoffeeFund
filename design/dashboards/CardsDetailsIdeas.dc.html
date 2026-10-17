@@ -1,0 +1,485 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; }
+
+    .chai-app {
+      --bg-solid: oklch(0.965 0.004 90);
+      --card-bg: oklch(0.995 0 0);
+      --card-border: oklch(0 0 0 / 0.07);
+      --fg: oklch(0.19 0.008 260);
+      --muted: oklch(0.52 0.012 260);
+      --neutral-fill: oklch(0 0 0 / 0.055);
+      --shadow-card: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+      --accent: oklch(0.72 0.19 145);
+      --accent-tint: oklch(0.93 0.06 145);
+      --ink: oklch(0.16 0.008 260);
+      --on-ink: oklch(0.99 0 0);
+    }
+
+    .option-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: var(--fg); }
+    .option-badge .n { min-width: 22px; height: 22px; padding: 0 6px; border-radius: 999px; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; font-size: 11px; }
+    .option-note { font-size: 12px; color: var(--muted); margin-top: 4px; margin-left: 30px; max-width: 590px; line-height: 1.5; }
+
+    .dc { width: 620px; height: 400px; flex-shrink: 0; border-radius: 24px; padding: 22px; display: flex; flex-direction: column; gap: 16px; position: relative; overflow: hidden; background: var(--d-bg); color: var(--d-fg); border: 1px solid var(--d-border); box-shadow: var(--d-shadow); }
+    .dc .coins { position: absolute; right: 14px; top: 12px; width: 74px; height: 60px; }
+    .dc .coins > div { position: absolute; left: 6px; width: 62px; height: 21px; border-radius: 50%; }
+    .dc .c1 { bottom: 0; background: var(--d-coin-1); box-shadow: 0 8px 14px oklch(0 0 0 / 0.25); }
+    .dc .c2 { bottom: 8px; background: var(--d-coin-2); }
+    .dc .c3 { bottom: 16px; background: var(--d-coin-3); overflow: hidden; }
+    .dc .shine { position: absolute; inset: 2px; border-radius: 50%; background: linear-gradient(135deg, oklch(1 0 0 / 0.6), transparent 60%); }
+    .dc .lbl { font-size: 12px; font-weight: 600; color: var(--d-muted); }
+    .dc .glow { position: absolute; left: -10px; top: -18px; width: 150px; height: 90px; border-radius: 50%; background: radial-gradient(circle, var(--d-glow) 0%, transparent 70%); opacity: 0.35; filter: blur(20px); pointer-events: none; }
+    .dc .big { position: relative; font-size: 26px; font-weight: 800; }
+    .dc .sub { font-size: 12px; font-weight: 700; color: var(--d-muted); }
+    .dc .bar-wrap { position: relative; height: 58px; }
+    .dc .avg { position: absolute; left: 12%; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; }
+    .dc .avg-pill { border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 700; white-space: nowrap; background: var(--d-pill-bg); color: var(--d-pill-fg); }
+    .dc .avg-tick { width: 1px; height: 12px; background: var(--d-fill); margin-top: 2px; }
+    .dc .track { position: absolute; left: 0; right: 0; top: 36px; height: 14px; border-radius: 999px; background: var(--d-track); overflow: hidden; }
+    .dc .fill { width: 12.7%; height: 100%; background: var(--d-fill); }
+    .dc .range { display: flex; align-items: center; justify-content: space-between; margin-top: -14px; font-size: 11px; color: var(--d-faint); }
+    .dc .rows { display: flex; flex-direction: column; gap: 10px; }
+    .dc .row { display: flex; align-items: center; justify-content: space-between; }
+    .dc .rl { font-size: 12px; font-weight: 600; color: var(--d-muted); }
+    .dc .rv { font-size: 14px; font-weight: 700; }
+    .dc .due { border-radius: 14px; padding: 12px 14px; margin-top: auto; display: flex; flex-direction: column; gap: 8px; background: var(--d-box-bg); border: 1px solid var(--d-box-border); }
+    .dc .due-head, .dc .due-row { display: flex; align-items: center; justify-content: space-between; }
+    .dc .due-lbl { font-size: 11px; color: var(--d-muted); }
+    .dc .badge { padding: 4px 11px; border-radius: 999px; font-size: 10px; font-weight: 700; background: var(--d-badge-bg); color: var(--d-badge-fg); }
+    .dc .dv { font-size: 13px; font-weight: 700; }
+    .dc .dd { font-size: 11px; color: var(--d-faint); }
+
+    .v-current {
+      --d-bg: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258));
+      --d-fg: oklch(0.95 0.004 260); --d-muted: oklch(1 0 0 / 0.55); --d-faint: oklch(1 0 0 / 0.5);
+      --d-border: oklch(1 0 0 / 0.12); --d-shadow: 0 10px 26px oklch(0 0 0 / 0.28);
+      --d-track: oklch(1 0 0 / 0.14); --d-fill: oklch(0.80 0.13 80); --d-pill-bg: oklch(1 0 0 / 0.14); --d-pill-fg: inherit;
+      --d-glow: oklch(0.80 0.13 80); --d-box-bg: oklch(1 0 0 / 0.08); --d-box-border: oklch(1 0 0 / 0.1);
+      --d-badge-bg: oklch(0.80 0.13 80 / 0.22); --d-badge-fg: oklch(0.86 0.12 80);
+      --d-coin-1: linear-gradient(180deg, oklch(0.55 0.10 80), oklch(0.35 0.08 80));
+      --d-coin-2: linear-gradient(180deg, oklch(0.68 0.13 80), oklch(0.45 0.10 80));
+      --d-coin-3: linear-gradient(180deg, oklch(0.85 0.13 80), oklch(0.60 0.12 80));
+    }
+
+    .v-ink-mint {
+      --d-bg: linear-gradient(155deg, oklch(0.24 0.012 258), oklch(0.12 0.008 258));
+      --d-fg: oklch(0.95 0.004 260); --d-muted: oklch(1 0 0 / 0.55); --d-faint: oklch(1 0 0 / 0.5);
+      --d-border: oklch(1 0 0 / 0.12); --d-shadow: 0 10px 26px oklch(0 0 0 / 0.28);
+      --d-track: oklch(1 0 0 / 0.14); --d-fill: oklch(0.72 0.19 145); --d-pill-bg: oklch(1 0 0 / 0.14); --d-pill-fg: inherit;
+      --d-glow: oklch(0.72 0.19 145); --d-box-bg: oklch(1 0 0 / 0.08); --d-box-border: oklch(1 0 0 / 0.1);
+      --d-badge-bg: oklch(0.72 0.19 145 / 0.22); --d-badge-fg: oklch(0.82 0.16 145);
+      --d-coin-1: linear-gradient(180deg, oklch(0.50 0.14 150), oklch(0.32 0.10 150));
+      --d-coin-2: linear-gradient(180deg, oklch(0.62 0.17 148), oklch(0.42 0.13 150));
+      --d-coin-3: linear-gradient(180deg, oklch(0.82 0.16 145), oklch(0.58 0.17 148));
+    }
+
+    .v-forest {
+      --d-bg: linear-gradient(155deg, oklch(0.36 0.09 152), oklch(0.20 0.06 158));
+      --d-fg: oklch(0.98 0.01 145); --d-muted: oklch(1 0 0 / 0.62); --d-faint: oklch(1 0 0 / 0.55);
+      --d-border: oklch(1 0 0 / 0.14); --d-shadow: 0 10px 26px oklch(0.25 0.08 150 / 0.35);
+      --d-track: oklch(1 0 0 / 0.16); --d-fill: oklch(0.86 0.17 140); --d-pill-bg: oklch(1 0 0 / 0.16); --d-pill-fg: inherit;
+      --d-glow: oklch(0.86 0.17 140); --d-box-bg: oklch(1 0 0 / 0.10); --d-box-border: oklch(1 0 0 / 0.12);
+      --d-badge-bg: oklch(0.86 0.17 140 / 0.24); --d-badge-fg: oklch(0.92 0.14 140);
+      --d-coin-1: linear-gradient(180deg, oklch(0.62 0.12 148), oklch(0.42 0.09 150));
+      --d-coin-2: linear-gradient(180deg, oklch(0.76 0.14 145), oklch(0.55 0.12 148));
+      --d-coin-3: linear-gradient(180deg, oklch(0.92 0.10 140), oklch(0.72 0.14 145));
+    }
+
+    .v-vivid {
+      --d-bg: linear-gradient(150deg, oklch(0.80 0.17 142), oklch(0.66 0.19 148));
+      --d-fg: oklch(0.17 0.03 150); --d-muted: oklch(0.17 0.03 150 / 0.62); --d-faint: oklch(0.17 0.03 150 / 0.55);
+      --d-border: oklch(1 0 0 / 0.3); --d-shadow: 0 12px 28px oklch(0.55 0.17 148 / 0.35);
+      --d-track: oklch(0.17 0.03 150 / 0.14); --d-fill: oklch(0.16 0.008 260); --d-pill-bg: oklch(1 0 0 / 0.45); --d-pill-fg: inherit;
+      --d-glow: oklch(1 0 0); --d-box-bg: oklch(1 0 0 / 0.38); --d-box-border: oklch(1 0 0 / 0.45);
+      --d-badge-bg: oklch(0.16 0.008 260); --d-badge-fg: oklch(0.88 0.16 142);
+      --d-coin-1: linear-gradient(180deg, oklch(0.78 0.06 145), oklch(0.60 0.10 148));
+      --d-coin-2: linear-gradient(180deg, oklch(0.90 0.04 145), oklch(0.72 0.08 148));
+      --d-coin-3: linear-gradient(180deg, oklch(1 0 0), oklch(0.86 0.05 145));
+    }
+
+    .v-tint {
+      --d-bg: linear-gradient(150deg, oklch(0.92 0.07 145), oklch(0.97 0.025 140));
+      --d-fg: oklch(0.19 0.008 260); --d-muted: oklch(0.45 0.05 150); --d-faint: oklch(0.52 0.04 150);
+      --d-border: oklch(0.55 0.12 148 / 0.18); --d-shadow: 0 8px 22px oklch(0.55 0.14 148 / 0.14);
+      --d-track: oklch(0.55 0.12 148 / 0.14); --d-fill: oklch(0.72 0.19 145); --d-pill-bg: oklch(0.995 0 0); --d-pill-fg: oklch(0.35 0.12 148);
+      --d-glow: oklch(0.72 0.19 145); --d-box-bg: oklch(1 0 0 / 0.7); --d-box-border: oklch(0.55 0.12 148 / 0.14);
+      --d-badge-bg: oklch(0.72 0.19 145); --d-badge-fg: oklch(0.18 0.04 150);
+      --d-coin-1: linear-gradient(180deg, oklch(0.52 0.15 150), oklch(0.38 0.11 152));
+      --d-coin-2: linear-gradient(180deg, oklch(0.66 0.18 147), oklch(0.48 0.15 150));
+      --d-coin-3: linear-gradient(180deg, oklch(0.84 0.15 143), oklch(0.64 0.18 147));
+    }
+
+    .v-white {
+      --d-bg: oklch(0.995 0 0);
+      --d-fg: oklch(0.19 0.008 260); --d-muted: oklch(0.52 0.012 260); --d-faint: oklch(0.52 0.012 260);
+      --d-border: oklch(0 0 0 / 0.07); --d-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+      --d-track: oklch(0 0 0 / 0.055); --d-fill: oklch(0.72 0.19 145); --d-pill-bg: oklch(0.93 0.06 145); --d-pill-fg: oklch(0.36 0.13 148);
+      --d-glow: oklch(0.72 0.19 145); --d-box-bg: oklch(0.96 0.03 145); --d-box-border: oklch(0.55 0.12 148 / 0.14);
+      --d-badge-bg: oklch(0.72 0.19 145); --d-badge-fg: oklch(0.18 0.04 150);
+      --d-coin-1: linear-gradient(180deg, oklch(0.52 0.15 150), oklch(0.38 0.11 152));
+      --d-coin-2: linear-gradient(180deg, oklch(0.66 0.18 147), oklch(0.48 0.15 150));
+      --d-coin-3: linear-gradient(180deg, oklch(0.84 0.15 143), oklch(0.64 0.18 147));
+    }
+
+    .dc { isolation: isolate; }
+    .dc .pattern { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+    .dc .lower { margin: 4px -22px -22px; padding: 18px 22px 22px; flex: 1; display: flex; flex-direction: column; gap: 14px; background: var(--d-lower-bg); color: var(--d-lower-fg); --d-muted: var(--d-lower-muted); --d-faint: var(--d-lower-muted); }
+
+    .v-emerald {
+      --d-bg: radial-gradient(circle at 92% 6%, oklch(0.80 0.17 140 / 0.55), transparent 42%), linear-gradient(150deg, oklch(0.42 0.11 155), oklch(0.24 0.07 162));
+      --d-fg: oklch(0.98 0.01 145); --d-muted: oklch(1 0 0 / 0.64); --d-faint: oklch(1 0 0 / 0.56);
+      --d-border: oklch(1 0 0 / 0.16); --d-shadow: 0 14px 30px oklch(0.30 0.09 155 / 0.32);
+      --d-track: oklch(1 0 0 / 0.16); --d-fill: oklch(0.88 0.17 138); --d-pill-bg: oklch(1 0 0 / 0.16); --d-pill-fg: inherit;
+      --d-glow: oklch(0.88 0.17 138); --d-box-bg: oklch(1 0 0 / 0.10); --d-box-border: oklch(1 0 0 / 0.14);
+      --d-badge-bg: oklch(0.88 0.17 138); --d-badge-fg: oklch(0.22 0.06 155);
+      --d-coin-1: linear-gradient(180deg, oklch(0.66 0.12 148), oklch(0.44 0.09 152));
+      --d-coin-2: linear-gradient(180deg, oklch(0.80 0.13 145), oklch(0.58 0.12 148));
+      --d-coin-3: linear-gradient(180deg, oklch(0.95 0.08 138), oklch(0.76 0.14 143));
+    }
+
+    .v-emerald .glow { display: none; }
+
+    .v-bridge {
+      --d-bg: linear-gradient(135deg, oklch(0.22 0.012 258) 0%, oklch(0.24 0.035 210) 45%, oklch(0.33 0.10 155) 100%);
+      --d-fg: oklch(0.97 0.006 200); --d-muted: oklch(1 0 0 / 0.58); --d-faint: oklch(1 0 0 / 0.5);
+      --d-border: oklch(1 0 0 / 0.13); --d-shadow: 0 12px 28px oklch(0 0 0 / 0.26);
+      --d-track: oklch(1 0 0 / 0.14); --d-fill: oklch(0.78 0.18 142); --d-pill-bg: oklch(1 0 0 / 0.14); --d-pill-fg: inherit;
+      --d-glow: oklch(0.78 0.18 142); --d-box-bg: oklch(1 0 0 / 0.08); --d-box-border: oklch(1 0 0 / 0.11);
+      --d-badge-bg: oklch(0.78 0.18 142 / 0.24); --d-badge-fg: oklch(0.86 0.15 142);
+      --d-coin-1: linear-gradient(180deg, oklch(0.52 0.14 150), oklch(0.33 0.10 152));
+      --d-coin-2: linear-gradient(180deg, oklch(0.65 0.17 147), oklch(0.44 0.13 150));
+      --d-coin-3: linear-gradient(180deg, oklch(0.85 0.15 143), oklch(0.62 0.17 147));
+    }
+
+    .v-mesh {
+      --d-bg: radial-gradient(circle at 12% 18%, oklch(0.88 0.11 145) 0%, transparent 48%), radial-gradient(circle at 88% 12%, oklch(0.95 0.09 118) 0%, transparent 44%), radial-gradient(circle at 72% 96%, oklch(0.85 0.12 155) 0%, transparent 52%), oklch(0.975 0.02 140);
+      --d-fg: oklch(0.19 0.02 155); --d-muted: oklch(0.42 0.05 152); --d-faint: oklch(0.48 0.045 152);
+      --d-border: oklch(0.55 0.12 148 / 0.16); --d-shadow: 0 10px 26px oklch(0.55 0.14 148 / 0.16);
+      --d-track: oklch(0.45 0.10 150 / 0.13); --d-fill: oklch(0.50 0.15 150); --d-pill-bg: oklch(1 0 0 / 0.85); --d-pill-fg: oklch(0.32 0.11 150);
+      --d-glow: oklch(1 0 0); --d-box-bg: oklch(1 0 0 / 0.62); --d-box-border: oklch(1 0 0 / 0.8);
+      --d-badge-bg: oklch(0.19 0.02 155); --d-badge-fg: oklch(0.88 0.16 142);
+      --d-coin-1: linear-gradient(180deg, oklch(0.52 0.15 150), oklch(0.38 0.11 152));
+      --d-coin-2: linear-gradient(180deg, oklch(0.66 0.18 147), oklch(0.48 0.15 150));
+      --d-coin-3: linear-gradient(180deg, oklch(0.88 0.13 142), oklch(0.66 0.18 147));
+    }
+
+    .v-split {
+      --d-bg: linear-gradient(150deg, oklch(0.42 0.11 155), oklch(0.27 0.08 160));
+      --d-fg: oklch(0.98 0.01 145); --d-muted: oklch(1 0 0 / 0.64); --d-faint: oklch(1 0 0 / 0.56);
+      --d-border: oklch(0 0 0 / 0.07); --d-shadow: 0 12px 28px oklch(0.30 0.09 155 / 0.22);
+      --d-track: oklch(1 0 0 / 0.16); --d-fill: oklch(0.88 0.17 138); --d-pill-bg: oklch(1 0 0 / 0.16); --d-pill-fg: inherit;
+      --d-glow: oklch(0.88 0.17 138);
+      --d-lower-bg: oklch(0.995 0 0); --d-lower-fg: oklch(0.19 0.008 260); --d-lower-muted: oklch(0.52 0.012 260);
+      --d-box-bg: oklch(0.95 0.035 145); --d-box-border: oklch(0.55 0.12 148 / 0.12);
+      --d-badge-bg: oklch(0.72 0.19 145); --d-badge-fg: oklch(0.18 0.04 150);
+      --d-coin-1: linear-gradient(180deg, oklch(0.66 0.12 148), oklch(0.44 0.09 152));
+      --d-coin-2: linear-gradient(180deg, oklch(0.80 0.13 145), oklch(0.58 0.12 148));
+      --d-coin-3: linear-gradient(180deg, oklch(0.95 0.08 138), oklch(0.76 0.14 143));
+    }
+
+    .v-sage {
+      --d-bg: linear-gradient(155deg, oklch(0.55 0.055 150), oklch(0.37 0.045 156));
+      --d-fg: oklch(0.99 0.005 140); --d-muted: oklch(1 0 0 / 0.66); --d-faint: oklch(1 0 0 / 0.58);
+      --d-border: oklch(1 0 0 / 0.16); --d-shadow: 0 12px 28px oklch(0.35 0.05 155 / 0.28);
+      --d-track: oklch(1 0 0 / 0.18); --d-fill: oklch(0.90 0.16 138); --d-pill-bg: oklch(1 0 0 / 0.18); --d-pill-fg: inherit;
+      --d-glow: oklch(0.90 0.16 138); --d-box-bg: oklch(1 0 0 / 0.11); --d-box-border: oklch(1 0 0 / 0.15);
+      --d-badge-bg: oklch(0.90 0.16 138); --d-badge-fg: oklch(0.25 0.05 155);
+      --d-coin-1: linear-gradient(180deg, oklch(0.70 0.06 148), oklch(0.50 0.05 152));
+      --d-coin-2: linear-gradient(180deg, oklch(0.82 0.07 145), oklch(0.62 0.06 148));
+      --d-coin-3: linear-gradient(180deg, oklch(0.96 0.05 140), oklch(0.78 0.08 145));
+    }
+  </style>
+</helmet>
+<div class="chai-app" style="position: relative; width: 1400px; height: 3390px; font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; background: var(--bg-solid); color: var(--fg); padding: 48px; display: flex; flex-direction: column; gap: 40px;">
+
+  <div>
+    <div style="font-size: 22px; font-weight: 800;">Details card &mdash; palette variations</div>
+    <div style="font-size: 13px; color: var(--muted); margin-top: 6px;">Same content and layout as the live card; only the colors change. Each one also swaps the gold bar, glow, coins and badge to mint so nothing is left off-palette.</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 620px 620px; gap: 40px 48px;">
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div class="option-badge"><span class="n">Now</span>Current &mdash; graphite + gold</div>
+        <div class="option-note">For reference. The only dark, gold-accented block on an otherwise mint page.</div>
+      </div>
+      <div class="dc v-current">
+        <div class="coins"><div class="c1"></div><div class="c2"></div><div class="c3"><div class="shine"></div></div></div>
+        <span class="lbl">All Cards &middot; 3 cards</span>
+        <div style="position: relative;"><div class="glow"></div><div class="big">₹50,900 <span class="sub">outstanding &middot; 13%</span></div></div>
+        <div class="bar-wrap"><div class="avg"><div class="avg-pill">Avg &middot; ₹47,940</div><div class="avg-tick"></div></div><div class="track"><div class="fill"></div></div></div>
+        <div class="range"><span>₹0</span><span>₹4,00,000 limit</span></div>
+        <div class="rows">
+          <div class="row"><span class="rl">Available</span><span class="rv">₹3,49,100</span></div>
+          <div class="row"><span class="rl">Total spent (this year)</span><span class="rv">₹2,39,700</span></div>
+        </div>
+        <div class="due">
+          <div class="due-head"><div class="due-lbl">Next due</div><div class="badge">2 pending</div></div>
+          <div class="due-row"><span class="dv">₹12,400 &middot; Amazon Pay</span><span class="dd">Aug 23</span></div>
+          <div class="due-row"><span class="dv">₹38,500 &middot; Regalia Gold</span><span class="dd">Aug 25</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div class="option-badge"><span class="n">A</span>Graphite + mint accents</div>
+        <div class="option-note">Smallest change: keep the dark card, but the bar, glow, coins and badge turn mint so it reads as part of the same system.</div>
+      </div>
+      <div class="dc v-ink-mint">
+        <div class="coins"><div class="c1"></div><div class="c2"></div><div class="c3"><div class="shine"></div></div></div>
+        <span class="lbl">All Cards &middot; 3 cards</span>
+        <div style="position: relative;"><div class="glow"></div><div class="big">₹50,900 <span class="sub">outstanding &middot; 13%</span></div></div>
+        <div class="bar-wrap"><div class="avg"><div class="avg-pill">Avg &middot; ₹47,940</div><div class="avg-tick"></div></div><div class="track"><div class="fill"></div></div></div>
+        <div class="range"><span>₹0</span><span>₹4,00,000 limit</span></div>
+        <div class="rows">
+          <div class="row"><span class="rl">Available</span><span class="rv">₹3,49,100</span></div>
+          <div class="row"><span class="rl">Total spent (this year)</span><span class="rv">₹2,39,700</span></div>
+        </div>
+        <div class="due">
+          <div class="due-head"><div class="due-lbl">Next due</div><div class="badge">2 pending</div></div>
+          <div class="due-row"><span class="dv">₹12,400 &middot; Amazon Pay</span><span class="dd">Aug 23</span></div>
+          <div class="due-row"><span class="dv">₹38,500 &middot; Regalia Gold</span><span class="dd">Aug 25</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div class="option-badge"><span class="n">B</span>Deep forest green</div>
+        <div class="option-note">The accent taken dark: still a rich, card-like object with white text, but clearly the same green family as the rest of the page.</div>
+      </div>
+      <div class="dc v-forest">
+        <div class="coins"><div class="c1"></div><div class="c2"></div><div class="c3"><div class="shine"></div></div></div>
+        <span class="lbl">All Cards &middot; 3 cards</span>
+        <div style="position: relative;"><div class="glow"></div><div class="big">₹50,900 <span class="sub">outstanding &middot; 13%</span></div></div>
+        <div class="bar-wrap"><div class="avg"><div class="avg-pill">Avg &middot; ₹47,940</div><div class="avg-tick"></div></div><div class="track"><div class="fill"></div></div></div>
+        <div class="range"><span>₹0</span><span>₹4,00,000 limit</span></div>
+        <div class="rows">
+          <div class="row"><span class="rl">Available</span><span class="rv">₹3,49,100</span></div>
+          <div class="row"><span class="rl">Total spent (this year)</span><span class="rv">₹2,39,700</span></div>
+        </div>
+        <div class="due">
+          <div class="due-head"><div class="due-lbl">Next due</div><div class="badge">2 pending</div></div>
+          <div class="due-row"><span class="dv">₹12,400 &middot; Amazon Pay</span><span class="dd">Aug 23</span></div>
+          <div class="due-row"><span class="dv">₹38,500 &middot; Regalia Gold</span><span class="dd">Aug 25</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div class="option-badge"><span class="n">C</span>Vivid mint</div>
+        <div class="option-note">The accent itself as the fill, with dark text and a black bar. The boldest option, like the green insight card in your first reference.</div>
+      </div>
+      <div class="dc v-vivid">
+        <div class="coins"><div class="c1"></div><div class="c2"></div><div class="c3"><div class="shine"></div></div></div>
+        <span class="lbl">All Cards &middot; 3 cards</span>
+        <div style="position: relative;"><div class="glow"></div><div class="big">₹50,900 <span class="sub">outstanding &middot; 13%</span></div></div>
+        <div class="bar-wrap"><div class="avg"><div class="avg-pill">Avg &middot; ₹47,940</div><div class="avg-tick"></div></div><div class="track"><div class="fill"></div></div></div>
+        <div class="range"><span>₹0</span><span>₹4,00,000 limit</span></div>
+        <div class="rows">
+          <div class="row"><span class="rl">Available</span><span class="rv">₹3,49,100</span></div>
+          <div class="row"><span class="rl">Total spent (this year)</span><span class="rv">₹2,39,700</span></div>
+        </div>
+        <div class="due">
+          <div class="due-head"><div class="due-lbl">Next due</div><div class="badge">2 pending</div></div>
+          <div class="due-row"><span class="dv">₹12,400 &middot; Amazon Pay</span><span class="dd">Aug 23</span></div>
+          <div class="due-row"><span class="dv">₹38,500 &middot; Regalia Gold</span><span class="dd">Aug 25</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div class="option-badge"><span class="n">D</span>Soft mint tint</div>
+        <div class="option-note">A pale mint wash with dark text: blends into the light page, and the green bar and badge carry the color.</div>
+      </div>
+      <div class="dc v-tint">
+        <div class="coins"><div class="c1"></div><div class="c2"></div><div class="c3"><div class="shine"></div></div></div>
+        <span class="lbl">All Cards &middot; 3 cards</span>
+        <div style="position: relative;"><div class="glow"></div><div class="big">₹50,900 <span class="sub">outstanding &middot; 13%</span></div></div>
+        <div class="bar-wrap"><div class="avg"><div class="avg-pill">Avg &middot; ₹47,940</div><div class="avg-tick"></div></div><div class="track"><div class="fill"></div></div></div>
+        <div class="range"><span>₹0</span><span>₹4,00,000 limit</span></div>
+        <div class="rows">
+          <div class="row"><span class="rl">Available</span><span class="rv">₹3,49,100</span></div>
+          <div class="row"><span class="rl">Total spent (this year)</span><span class="rv">₹2,39,700</span></div>
+        </div>
+        <div class="due">
+          <div class="due-head"><div class="due-lbl">Next due</div><div class="badge">2 pending</div></div>
+          <div class="due-row"><span class="dv">₹12,400 &middot; Amazon Pay</span><span class="dd">Aug 23</span></div>
+          <div class="due-row"><span class="dv">₹38,500 &middot; Regalia Gold</span><span class="dd">Aug 25</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div class="option-badge"><span class="n">E</span>White + mint accents</div>
+        <div class="option-note">Same white card as every other widget, with mint only on the bar, badge and next-due box. Most consistent, least card-like.</div>
+      </div>
+      <div class="dc v-white">
+        <div class="coins"><div class="c1"></div><div class="c2"></div><div class="c3"><div class="shine"></div></div></div>
+        <span class="lbl">All Cards &middot; 3 cards</span>
+        <div style="position: relative;"><div class="glow"></div><div class="big">₹50,900 <span class="sub">outstanding &middot; 13%</span></div></div>
+        <div class="bar-wrap"><div class="avg"><div class="avg-pill">Avg &middot; ₹47,940</div><div class="avg-tick"></div></div><div class="track"><div class="fill"></div></div></div>
+        <div class="range"><span>₹0</span><span>₹4,00,000 limit</span></div>
+        <div class="rows">
+          <div class="row"><span class="rl">Available</span><span class="rv">₹3,49,100</span></div>
+          <div class="row"><span class="rl">Total spent (this year)</span><span class="rv">₹2,39,700</span></div>
+        </div>
+        <div class="due">
+          <div class="due-head"><div class="due-lbl">Next due</div><div class="badge">2 pending</div></div>
+          <div class="due-row"><span class="dv">₹12,400 &middot; Amazon Pay</span><span class="dd">Aug 23</span></div>
+          <div class="due-row"><span class="dv">₹38,500 &middot; Regalia Gold</span><span class="dd">Aug 25</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div style="margin-top: 16px; padding-top: 40px; border-top: 1px solid oklch(0 0 0 / 0.08);">
+    <div style="font-size: 22px; font-weight: 800;">My picks &mdash; richer finishes</div>
+    <div style="font-size: 13px; color: var(--muted); margin-top: 6px;">Beyond a flat recolor: light, texture and layout do some of the work. Same content in every card.</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 620px 620px; gap: 40px 48px;">
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div class="option-badge"><span class="n">F</span>Emerald with a light bloom</div>
+        <div class="option-note">Deep emerald with a soft mint light spilling in from the top-right corner, plus faint concentric guilloche lines like a premium metal card. No glow behind the balance. Applied to the live dashboard.</div>
+      </div>
+      <div class="dc v-emerald">
+        <svg class="pattern" viewBox="0 0 620 400" preserveAspectRatio="none"><g fill="none" stroke="oklch(1 0 0)" stroke-opacity="0.07" stroke-width="1.2"><circle cx="640" cy="430" r="90"></circle><circle cx="640" cy="430" r="142"></circle><circle cx="640" cy="430" r="194"></circle><circle cx="640" cy="430" r="246"></circle><circle cx="640" cy="430" r="298"></circle><circle cx="640" cy="430" r="350"></circle><circle cx="640" cy="430" r="402"></circle><circle cx="640" cy="430" r="454"></circle><circle cx="640" cy="430" r="506"></circle><circle cx="640" cy="430" r="558"></circle></g></svg>
+        <div class="coins"><div class="c1"></div><div class="c2"></div><div class="c3"><div class="shine"></div></div></div>
+        <span class="lbl">All Cards &middot; 3 cards</span>
+        <div style="position: relative;"><div class="glow"></div><div class="big">₹50,900 <span class="sub">outstanding &middot; 13%</span></div></div>
+        <div class="bar-wrap"><div class="avg"><div class="avg-pill">Avg &middot; ₹47,940</div><div class="avg-tick"></div></div><div class="track"><div class="fill"></div></div></div>
+        <div class="range"><span>₹0</span><span>₹4,00,000 limit</span></div>
+        <div class="rows">
+          <div class="row"><span class="rl">Available</span><span class="rv">₹3,49,100</span></div>
+          <div class="row"><span class="rl">Total spent (this year)</span><span class="rv">₹2,39,700</span></div>
+        </div>
+        <div class="due">
+          <div class="due-head"><div class="due-lbl">Next due</div><div class="badge">2 pending</div></div>
+          <div class="due-row"><span class="dv">₹12,400 &middot; Amazon Pay</span><span class="dd">Aug 23</span></div>
+          <div class="due-row"><span class="dv">₹38,500 &middot; Regalia Gold</span><span class="dd">Aug 25</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div class="option-badge"><span class="n">G</span>Graphite fading into green</div>
+        <div class="option-note">Starts in the same graphite as the card tiles and fades into deep green toward the bottom-right, so it bridges the dark tile row above and the mint page around it.</div>
+      </div>
+      <div class="dc v-bridge">
+        
+        <div class="coins"><div class="c1"></div><div class="c2"></div><div class="c3"><div class="shine"></div></div></div>
+        <span class="lbl">All Cards &middot; 3 cards</span>
+        <div style="position: relative;"><div class="glow"></div><div class="big">₹50,900 <span class="sub">outstanding &middot; 13%</span></div></div>
+        <div class="bar-wrap"><div class="avg"><div class="avg-pill">Avg &middot; ₹47,940</div><div class="avg-tick"></div></div><div class="track"><div class="fill"></div></div></div>
+        <div class="range"><span>₹0</span><span>₹4,00,000 limit</span></div>
+        <div class="rows">
+          <div class="row"><span class="rl">Available</span><span class="rv">₹3,49,100</span></div>
+          <div class="row"><span class="rl">Total spent (this year)</span><span class="rv">₹2,39,700</span></div>
+        </div>
+        <div class="due">
+          <div class="due-head"><div class="due-lbl">Next due</div><div class="badge">2 pending</div></div>
+          <div class="due-row"><span class="dv">₹12,400 &middot; Amazon Pay</span><span class="dd">Aug 23</span></div>
+          <div class="due-row"><span class="dv">₹38,500 &middot; Regalia Gold</span><span class="dd">Aug 25</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div class="option-badge"><span class="n">H</span>Soft mint mesh</div>
+        <div class="option-note">A light card with a soft multi-tone mint and lime glow, like the blurred green card in your first reference. Dark text, a deep green bar and an ink badge.</div>
+      </div>
+      <div class="dc v-mesh">
+        
+        <div class="coins"><div class="c1"></div><div class="c2"></div><div class="c3"><div class="shine"></div></div></div>
+        <span class="lbl">All Cards &middot; 3 cards</span>
+        <div style="position: relative;"><div class="glow"></div><div class="big">₹50,900 <span class="sub">outstanding &middot; 13%</span></div></div>
+        <div class="bar-wrap"><div class="avg"><div class="avg-pill">Avg &middot; ₹47,940</div><div class="avg-tick"></div></div><div class="track"><div class="fill"></div></div></div>
+        <div class="range"><span>₹0</span><span>₹4,00,000 limit</span></div>
+        <div class="rows">
+          <div class="row"><span class="rl">Available</span><span class="rv">₹3,49,100</span></div>
+          <div class="row"><span class="rl">Total spent (this year)</span><span class="rv">₹2,39,700</span></div>
+        </div>
+        <div class="due">
+          <div class="due-head"><div class="due-lbl">Next due</div><div class="badge">2 pending</div></div>
+          <div class="due-row"><span class="dv">₹12,400 &middot; Amazon Pay</span><span class="dd">Aug 23</span></div>
+          <div class="due-row"><span class="dv">₹38,500 &middot; Regalia Gold</span><span class="dd">Aug 25</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div class="option-badge"><span class="n">I</span>Two-tone: green header, white body</div>
+        <div class="option-note">The balance and bar sit on deep green; Available, Total spent and Next due sit on a white lower half. The green carries emphasis without making the whole block heavy.</div>
+      </div>
+      <div class="dc v-split">
+        
+        <div class="coins"><div class="c1"></div><div class="c2"></div><div class="c3"><div class="shine"></div></div></div>
+        <span class="lbl">All Cards &middot; 3 cards</span>
+        <div style="position: relative;"><div class="glow"></div><div class="big">₹50,900 <span class="sub">outstanding &middot; 13%</span></div></div>
+        <div class="bar-wrap"><div class="avg"><div class="avg-pill">Avg &middot; ₹47,940</div><div class="avg-tick"></div></div><div class="track"><div class="fill"></div></div></div>
+        <div class="range"><span>₹0</span><span>₹4,00,000 limit</span></div>
+        <div class="lower">
+          <div class="rows">
+            <div class="row"><span class="rl">Available</span><span class="rv">₹3,49,100</span></div>
+            <div class="row"><span class="rl">Total spent (this year)</span><span class="rv">₹2,39,700</span></div>
+          </div>
+          <div class="due">
+            <div class="due-head"><div class="due-lbl">Next due</div><div class="badge">2 pending</div></div>
+            <div class="due-row"><span class="dv">₹12,400 &middot; Amazon Pay</span><span class="dd">Aug 23</span></div>
+            <div class="due-row"><span class="dv">₹38,500 &middot; Regalia Gold</span><span class="dd">Aug 25</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div>
+        <div class="option-badge"><span class="n">J</span>Muted sage</div>
+        <div class="option-note">A desaturated, grown-up sage instead of a saturated green, so the bright mint bar and badge pop against it. Calmer than emerald, less generic than black.</div>
+      </div>
+      <div class="dc v-sage">
+        
+        <div class="coins"><div class="c1"></div><div class="c2"></div><div class="c3"><div class="shine"></div></div></div>
+        <span class="lbl">All Cards &middot; 3 cards</span>
+        <div style="position: relative;"><div class="glow"></div><div class="big">₹50,900 <span class="sub">outstanding &middot; 13%</span></div></div>
+        <div class="bar-wrap"><div class="avg"><div class="avg-pill">Avg &middot; ₹47,940</div><div class="avg-tick"></div></div><div class="track"><div class="fill"></div></div></div>
+        <div class="range"><span>₹0</span><span>₹4,00,000 limit</span></div>
+        <div class="rows">
+          <div class="row"><span class="rl">Available</span><span class="rv">₹3,49,100</span></div>
+          <div class="row"><span class="rl">Total spent (this year)</span><span class="rv">₹2,39,700</span></div>
+        </div>
+        <div class="due">
+          <div class="due-head"><div class="due-lbl">Next due</div><div class="badge">2 pending</div></div>
+          <div class="due-row"><span class="dv">₹12,400 &middot; Amazon Pay</span><span class="dd">Aug 23</span></div>
+          <div class="due-row"><span class="dv">₹38,500 &middot; Regalia Gold</span><span class="dd">Aug 25</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
