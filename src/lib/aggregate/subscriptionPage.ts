@@ -1,5 +1,5 @@
 import { CYCLE_STEP_MONTHS, addMonthsUTC } from "./recurring";
-import { monthOf, monthRange } from "./cardSpend";
+import { monthOf, monthRange, type MonthKey } from "./cardSpend";
 import { monthlyEquivalent } from "./subscriptions";
 import {
   PRICE_CHANGE_THRESHOLD,
@@ -124,33 +124,39 @@ export interface AllFacts {
   next: Renewal | null;
   /** This month: paid so far, and the renewals still to come at the plan's price. */
   month: { from: string; to: string; paid: number; toCome: number; fraction: number };
-  /** Charged payments this year, January to this month, and how many. */
-  yearPaid: number;
-  yearPayments: number;
+  /** Charged payments in the period's months so far (this year, January to this month, by default), and how many. */
+  periodPaid: number;
+  periodPayments: number;
   /**
-   * Active subscriptions whose price went up this year, and how much more a month that adds
-   * up to. Net over the year (decided with Prathik 2026-10-21): the last charge before this
-   * year against the latest one this year (or the first this year, for one that started
-   * this year), counted when it ended up 2% or more higher. So a promo that ends, putting
-   * the price back where it was, isn't a rise.
+   * Active subscriptions whose price went up in the period (this year by default), and how
+   * much more a month that adds up to. Net over the period (decided with Prathik
+   * 2026-10-21): the last charge before it against the latest one in it (or the first in it,
+   * for one that started in it), counted when it ended up 2% or more higher. So a promo that
+   * ends, putting the price back where it was, isn't a rise.
    */
   rises: { count: number; monthlyMore: number };
 }
 
-export function allFacts(subscriptions: Subscription[], payments: SubscriptionPayment[], today: string): AllFacts {
+/**
+ * `window` is the months the paid and price-rise figures cover (the Subscriptions page's
+ * period, up to this month); left out, it's this year so far. Everything else is today's.
+ */
+export function allFacts(subscriptions: Subscription[], payments: SubscriptionPayment[], today: string, window?: { from: MonthKey; to: MonthKey }): AllFacts {
   const active = subscriptions.filter((s) => s.status === "Active");
   const nexts = active.flatMap((s) => nextRenewal(s, payments, today) ?? []).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.subscriptionId.localeCompare(b.subscriptionId)));
   const nowMonth = monthOf(today);
   const [month] = monthlySpendSeries(subscriptions, payments, nowMonth, nowMonth, today);
-  const yearMonths = new Set(monthRange(`${today.slice(0, 4)}-01`, nowMonth));
-  const thisYear = payments.filter((p) => isCharged(p) && yearMonths.has(monthOf(p.paymentDate)));
+  const { from: periodFrom, to: periodTo } = window ?? { from: `${today.slice(0, 4)}-01`, to: nowMonth };
+  const periodMonths = new Set(monthRange(periodFrom, periodTo));
+  const inPeriod = payments.filter((p) => isCharged(p) && periodMonths.has(monthOf(p.paymentDate)));
   let count = 0;
   let monthlyMore = 0;
   for (const s of active) {
     const charged = payments.filter((p) => p.subscriptionId === s.id && isCharged(p) && monthOf(p.paymentDate) <= nowMonth).sort(byDate);
-    const inYear = charged.filter((p) => yearMonths.has(monthOf(p.paymentDate)));
+    const inYear = charged.filter((p) => periodMonths.has(monthOf(p.paymentDate)));
     const latest = inYear.at(-1);
-    const before = charged.filter((p) => !yearMonths.has(monthOf(p.paymentDate))).at(-1) ?? inYear[0];
+    // The last charge before the period (not after it: a past period's rise is over by today).
+    const before = charged.filter((p) => monthOf(p.paymentDate) < periodFrom).at(-1) ?? inYear[0];
     if (!latest || !before || latest === before) continue;
     const rise = latest.amount - before.amount;
     if (rise / before.amount >= PRICE_CHANGE_THRESHOLD) {
@@ -166,8 +172,8 @@ export function allFacts(subscriptions: Subscription[], payments: SubscriptionPa
     yearly: monthly * 12,
     next: nexts[0] ?? null,
     month: { from: `${nowMonth}-01`, to: monthEnd(nowMonth), paid: month.paid, toCome: month.expected, fraction: month.total > 0 ? month.paid / month.total : 0 },
-    yearPaid: thisYear.reduce((t, p) => t + p.amount, 0),
-    yearPayments: thisYear.length,
+    periodPaid: inPeriod.reduce((t, p) => t + p.amount, 0),
+    periodPayments: inPeriod.length,
     rises: { count, monthlyMore },
   };
 }
@@ -181,19 +187,23 @@ export interface PaymentRow {
 /**
  * The latest payments, newest first, for one subscription or for all of them, each
  * with its change from the one before (the price-change rule: 2% or more). `count`
- * and `paid` are over every payment in the filter, not just the ones shown.
+ * and `paid` are over every payment in the filter, not just the ones shown. `within` keeps
+ * only the payments made in those months (the page's period); a change is still worked out
+ * against the payment before it, even one made before them.
  */
-export function latestPayments(payments: SubscriptionPayment[], limit: number, subscriptionId?: string): { rows: PaymentRow[]; count: number; paid: number } {
-  const own = payments.filter((p) => !subscriptionId || p.subscriptionId === subscriptionId);
+export function latestPayments(payments: SubscriptionPayment[], limit: number, subscriptionId?: string, within?: { from: MonthKey; to: MonthKey }): { rows: PaymentRow[]; count: number; paid: number } {
+  const every = payments.filter((p) => !subscriptionId || p.subscriptionId === subscriptionId);
   const changes = new Map<SubscriptionPayment, number>();
   const bySub = new Map<string, SubscriptionPayment[]>();
-  for (const p of own.filter(isCharged).sort(byDate)) (bySub.get(p.subscriptionId) ?? bySub.set(p.subscriptionId, []).get(p.subscriptionId)!).push(p);
+  for (const p of every.filter(isCharged).sort(byDate)) (bySub.get(p.subscriptionId) ?? bySub.set(p.subscriptionId, []).get(p.subscriptionId)!).push(p);
   for (const list of bySub.values()) {
     for (let i = 1; i < list.length; i++) {
       const diff = list[i].amount - list[i - 1].amount;
       if (Math.abs(diff) / list[i - 1].amount >= PRICE_CHANGE_THRESHOLD) changes.set(list[i], diff);
     }
   }
+  // Changes are against the payment before, even one before the window; only the rows and totals are the window's.
+  const own = within ? every.filter((p) => monthOf(p.paymentDate) >= within.from && monthOf(p.paymentDate) <= within.to) : every;
   const newest = [...own].sort((a, b) => byDate(b, a) || a.subscriptionId.localeCompare(b.subscriptionId));
   return {
     rows: newest.slice(0, limit).map((payment) => ({ payment, change: changes.get(payment) ?? null })),

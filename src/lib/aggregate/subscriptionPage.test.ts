@@ -104,8 +104,8 @@ describe("allFacts", () => {
 
   it("counts this year's payments, and the price rises this year as more a month", () => {
     const facts = allFacts([netflix, prime, paused], payments, TODAY);
-    expect(facts.yearPaid).toBe(499 + 649 + 649 + 299);
-    expect(facts.yearPayments).toBe(4);
+    expect(facts.periodPaid).toBe(499 + 649 + 649 + 299);
+    expect(facts.periodPayments).toBe(4);
     expect(facts.rises).toEqual({ count: 1, monthlyMore: 150 });
   });
 
@@ -130,7 +130,7 @@ describe("allFacts", () => {
   });
 
   it("is all zeros with nothing yet", () => {
-    expect(allFacts([], [], TODAY)).toMatchObject({ active: 0, monthly: 0, next: null, yearPaid: 0, rises: { count: 0, monthlyMore: 0 }, month: { paid: 0, toCome: 0, fraction: 0 } });
+    expect(allFacts([], [], TODAY)).toMatchObject({ active: 0, monthly: 0, next: null, periodPaid: 0, rises: { count: 0, monthlyMore: 0 }, month: { paid: 0, toCome: 0, fraction: 0 } });
   });
 });
 
@@ -186,5 +186,45 @@ describe("chargedToSplit", () => {
       { kind: "account", id: "acc-1", monthly: 400, count: 1 },
       { kind: "none", id: null, monthly: 99, count: 1 },
     ]);
+  });
+});
+
+describe("allFacts over a period's months", () => {
+  const netflix = sub();
+  const payments = [pay("2026-07-23", 499), pay("2026-08-23", 499), pay("2026-09-23", 649)];
+
+  it("counts what was paid in the months given, and how many payments", () => {
+    const facts = allFacts([netflix], payments, TODAY, { from: "2026-08", to: "2026-09" });
+    expect(facts.periodPaid).toBe(499 + 649);
+    expect(facts.periodPayments).toBe(2);
+    expect(allFacts([netflix], payments, TODAY, { from: "2026-01", to: "2026-06" })).toMatchObject({ periodPaid: 0, periodPayments: 0 });
+  });
+
+  it("counts a price rise inside the period against the last charge before it, and none after it", () => {
+    // Aug 499 -> Sep 649 is a rise from Aug 1 to Sep 30: the last charge before Aug (Jul) against Sep's.
+    expect(allFacts([netflix], payments, TODAY, { from: "2026-08", to: "2026-09" }).rises).toEqual({ count: 1, monthlyMore: 150 });
+    // A period over before the rise doesn't see it.
+    expect(allFacts([netflix], payments, TODAY, { from: "2026-07", to: "2026-08" }).rises).toEqual({ count: 0, monthlyMore: 0 });
+  });
+
+  it("is this year so far when no months are given", () => {
+    expect(allFacts([netflix], payments, TODAY)).toMatchObject({ periodPaid: 499 + 499 + 649, periodPayments: 3 });
+  });
+});
+
+describe("latestPayments within a period's months", () => {
+  const payments = [pay("2026-06-23", 499), pay("2026-07-23", 649), pay("2026-08-23", 649), pay("2026-09-23", 649)];
+
+  it("keeps the rows, the count and the total to the months", () => {
+    const { rows, count, paid } = latestPayments(payments, 10, undefined, { from: "2026-07", to: "2026-08" });
+    expect(rows.map((r) => r.payment.paymentDate)).toEqual(["2026-08-23", "2026-07-23"]);
+    expect(count).toBe(2);
+    expect(paid).toBe(649 * 2);
+  });
+
+  it("still works out a change against the payment before the period", () => {
+    const { rows } = latestPayments(payments, 10, undefined, { from: "2026-07", to: "2026-08" });
+    expect(rows.find((r) => r.payment.paymentDate === "2026-07-23")?.change).toBe(150);
+    expect(rows.find((r) => r.payment.paymentDate === "2026-08-23")?.change).toBeNull();
   });
 });

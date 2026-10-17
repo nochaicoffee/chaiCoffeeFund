@@ -1,5 +1,7 @@
-import { daysBetween, monthOf } from "@/lib/aggregate/cardSpend";
-import { MARK_PAID_DAYS_BEFORE, renewalsFor, yearSummary } from "@/lib/aggregate/subscriptionRenewals";
+import { daysBetween, monthOf, monthRange, type MonthKey, type SpendPeriod } from "@/lib/aggregate/cardSpend";
+import { isPastPeriod, paidPhrase, periodPhrase, thisYear } from "@/lib/aggregate/period";
+import { MARK_PAID_DAYS_BEFORE, isCharged, periodSummary, renewalsFor } from "@/lib/aggregate/subscriptionRenewals";
+import { paidWindow, paymentsIn } from "@/lib/aggregate/subscriptionPeriod";
 import { monthlyEquivalent } from "@/lib/aggregate/subscriptions";
 import { nextRenewalsFrom, nextStatementCharges } from "@/lib/aggregate/subscriptionNextCharges";
 import {
@@ -26,7 +28,13 @@ import type { SentencePart } from "../cards/summarySentence";
  * client components as plain data, in the design's words (docs/design/subscriptions.md).
  * Every pick's hero, payments and price history is here at once, so turning the
  * carousel never waits on the server. The numbers come from lib/aggregate.
+ *
+ * The period pill (`?period=`, as on the Renewals page) decides what was paid: the
+ * greeting, the hero's paid figures, the payments table and the chart. What a month costs
+ * now, the map and Charged to, are today's plans and never follow it. This year is the
+ * default, so a page with no period reads as it always has.
  */
+
 
 export { ALL };
 
@@ -100,6 +108,8 @@ export interface PaymentRowView {
 
 export interface PaymentsView {
   rows: PaymentRowView[];
+  /** What the table says when it has no rows: nothing recorded at all, or nothing in the period. */
+  empty: string;
   /** Under the table; empty when there are no payments. */
   footer: string;
   /**
@@ -191,7 +201,7 @@ const dayDate = (iso: string, today: string) => (iso.slice(0, 4) === today.slice
 /** A money stat's value, with its amount to roll (2A). */
 const money = (amount: number, prefix = "") => ({ value: `${prefix}${formatInr(amount)}`, money: { amount, prefix } });
 
-function allPick(facts: AllFacts, byId: Map<string, Subscription>, today: string): PickView {
+function allPick(facts: AllFacts, byId: Map<string, Subscription>, today: string, period: SpendPeriod): PickView {
   const nextSub = facts.next && byId.get(facts.next.subscriptionId);
   const middle = facts.next && nextSub ? `Next is ${nextSub.alias}, ${dayDate(facts.next.date, today)}` : "Nothing renews this month";
   return {
@@ -210,10 +220,10 @@ function allPick(facts: AllFacts, byId: Map<string, Subscription>, today: string
     stats: [
       { label: "A month", ...money(facts.monthly), sub: `${facts.active} active` },
       { label: "Renews next", value: nextSub?.alias ?? "Nothing yet", sub: facts.next ? dayDate(facts.next.date, today) : "" },
-      { label: "Paid this year", ...money(facts.yearPaid), sub: plural(facts.yearPayments, "payment") },
+      { label: `Paid ${paidPhrase(period, today)}`, ...money(facts.periodPaid), sub: plural(facts.periodPayments, "payment") },
       facts.rises.count
         ? { label: "Prices", value: `${facts.rises.count} went up`, sub: `${formatInr(facts.rises.monthlyMore)} more a month` }
-        : { label: "Prices", value: "No rises", sub: "this year" },
+        : { label: "Prices", value: "No rises", sub: paidPhrase(period, today) },
     ],
     dueSoon: false,
     dueIn: null,
@@ -251,7 +261,13 @@ function cycleRead(s: Subscription, f: SubscriptionFacts, data: SubscriptionData
   return { from, to, today, withYear, start: (atStart && START[atStart.status]) ?? "", end: renews, label: `${s.alias}'s cycle, ${date(from)} to ${date(to)}` };
 }
 
-function subscriptionPick(s: Subscription, f: SubscriptionFacts, data: SubscriptionData, today: string): PickView {
+/** What a subscription was paid in the period: for its "Paid" stat. */
+interface PeriodPaid {
+  paid: number;
+  payments: number;
+}
+
+function subscriptionPick(s: Subscription, f: SubscriptionFacts, data: SubscriptionData, today: string, period: SpendPeriod, inPeriod: PeriodPaid): PickView {
   const active = s.status === "Active";
   let middle: string;
   if (s.status === "Paused") middle = f.lastCharged ? `Paused · last paid ${formatShortDate(f.lastCharged.paymentDate)}` : "Paused";
@@ -289,7 +305,7 @@ function subscriptionPick(s: Subscription, f: SubscriptionFacts, data: Subscript
       active && f.next
         ? { label: "Renews", value: dayDate(f.next.date, today), sub: whenFrom(today, f.next.date) }
         : { label: "Status", value: s.status, sub: middle },
-      { label: "Paid so far", ...money(f.paid), sub: plural(f.payments, "payment") },
+      { label: `Paid ${paidPhrase(period, today)}`, ...money(inPeriod.paid), sub: plural(inPeriod.payments, "payment") },
       change
         ? { label: "Price", ...money(Math.abs(change.to - change.from), change.to > change.from ? "↑ " : "↓ "), sub: `${formatInr(change.from)} → ${formatInr(change.to)} on ${formatShortDate(change.date)}` }
         : { label: "Price", value: "Same", sub: "Never changed" },
@@ -353,11 +369,13 @@ function blockCard(s: Subscription, f: SubscriptionFacts, total: number, data: S
 /** Price history spells out this many changes, the latest. */
 const CHANGES_SHOWN = 3;
 
-function paymentsView(data: SubscriptionData, today: string, s?: Subscription): PaymentsView {
+function paymentsView(data: SubscriptionData, today: string, period: SpendPeriod, within: { from: MonthKey; to: MonthKey }, s?: Subscription): PaymentsView {
   const byId = new Map(data.subscriptions.map((x) => [x.id, x]));
   const shown = 6;
-  const { rows, count, paid } = latestPayments(data.payments, shown, s?.id);
+  const { rows, count, paid } = latestPayments(data.payments, shown, s?.id, within);
+  const when = period.kind === "all" ? "" : ` ${paidPhrase(period, today)}`;
   const view: PaymentsView = {
+    empty: period.kind === "all" ? "No payments recorded yet." : `No payments${when}.`,
     rows: rows.map(({ payment, change }) => {
       const owner = byId.get(payment.subscriptionId);
       const kind = payment.paidFromCardId ? "card" : payment.paidFromAccountId ? "account" : null;
@@ -373,7 +391,7 @@ function paymentsView(data: SubscriptionData, today: string, s?: Subscription): 
       };
     }),
     // Nothing under an empty table, which already says there are no payments.
-    footer: !count ? "" : s ? `Showing ${Math.min(shown, count)} of ${count} · ${formatInr(paid)} paid since ${smartDate(s.startDate, today)}` : `The ${Math.min(shown, count)} most recent of ${count}`,
+    footer: !count ? "" : s ? `Showing ${Math.min(shown, count)} of ${count} · ${formatInr(paid)} paid ${period.kind === "all" ? `since ${smartDate(s.startDate, today)}` : paidPhrase(period, today)}` : `The ${Math.min(shown, count)} most recent of ${count}${when}`,
     history: null,
   };
   if (s) {
@@ -386,12 +404,18 @@ function paymentsView(data: SubscriptionData, today: string, s?: Subscription): 
   return view;
 }
 
-export function subscriptionsPageView(sheetData: SubscriptionData, today: string): SubscriptionsPageView {
+export function subscriptionsPageView(sheetData: SubscriptionData, today: string, period: SpendPeriod = thisYear(today)): SubscriptionsPageView {
   const data = usableSubscriptionData(sheetData);
+  const window = paidWindow(period, today, data.subscriptions, data.payments);
+  const periodPayments = paymentsIn(data.payments, window).filter(isCharged);
+  const paidIn = (id: string): PeriodPaid => {
+    const own = periodPayments.filter((p) => p.subscriptionId === id);
+    return { paid: own.reduce((t, p) => t + p.amount, 0), payments: own.length };
+  };
   const byId = new Map(data.subscriptions.map((s) => [s.id, s]));
   const facts = new Map(data.subscriptions.map((s) => [s.id, subscriptionFacts(s, data.payments, today)]));
   const order = carouselOrder(data.subscriptions, data.payments, today);
-  const all = allFacts(data.subscriptions, data.payments, today);
+  const all = allFacts(data.subscriptions, data.payments, today, window);
   const total = all.monthly;
   const active = order.filter((s) => s.status === "Active");
 
@@ -418,8 +442,8 @@ export function subscriptionsPageView(sheetData: SubscriptionData, today: string
   const biggest = Math.max(0, ...split.map((p) => p.monthly));
 
   return {
-    picks: [allPick(all, byId, today), ...order.map((s) => subscriptionPick(s, facts.get(s.id)!, data, today))],
-    payments: Object.fromEntries([[ALL, paymentsView(data, today)], ...data.subscriptions.map((s) => [s.id, paymentsView(data, today, s)])]),
+    picks: [allPick(all, byId, today, period), ...order.map((s) => subscriptionPick(s, facts.get(s.id)!, data, today, period, paidIn(s.id)))],
+    payments: Object.fromEntries([[ALL, paymentsView(data, today, period, window)], ...data.subscriptions.map((s) => [s.id, paymentsView(data, today, period, window, s)])]),
     blocks,
     stopped: order
       .filter((s) => s.status !== "Active")
@@ -438,34 +462,41 @@ export function subscriptionsPageView(sheetData: SubscriptionData, today: string
       };
     }),
     monthlyTotal: total,
-    chart: chartView(data, today),
+    chart: chartView(data, today, period),
   };
 }
 
+/** The period's months so far, and the summary over them. */
+function summaryOf(data: SubscriptionData, period: SpendPeriod, today: string) {
+  const window = paidWindow(period, today, data.subscriptions, data.payments);
+  return { window, summary: periodSummary(data.subscriptions, data.payments, monthRange(window.from, window.to), today) };
+}
+
 /**
- * The sentence under the greeting, as in the design: paid so far this year, the monthly
- * average, the biggest month, and the renewals in the next 30 days.
+ * The sentence under the greeting, as in the design: paid in the period (this year so far
+ * by default), the monthly average, the biggest month, and the renewals in the next 30
+ * days, which the period never changes. A period of one month leaves out the average and
+ * the biggest month, which would only repeat its total, as on the Cards page.
  */
-export function summarySentence(sheetData: SubscriptionData, today: string): SentencePart[] {
+export function summarySentence(sheetData: SubscriptionData, today: string, period: SpendPeriod = thisYear(today)): SentencePart[] {
   const data = usableSubscriptionData(sheetData);
-  const year = today.slice(0, 4);
   if (data.subscriptions.length === 0) return [{ text: "No subscriptions yet. Add one and it shows up here, with what it costs and when it renews." }];
-  const summary = yearSummary(data.subscriptions, data.payments, today);
+  const { window, summary } = summaryOf(data, period, today);
+  const when = periodPhrase(period, today, window.from);
+  const single = period.kind === "range" && summary.months.length <= 1;
   const parts: SentencePart[] = [];
   if (summary.paid > 0) {
-    parts.push(
-      { text: "You've paid " },
-      { text: formatInr(summary.paid), strong: true, point: "paid" },
-      { text: ` for subscriptions so far in ${year}, about ` },
-      { text: formatInr(summary.monthlyAverage), strong: true, point: "average" },
-      { text: " a month. " },
-    );
-    if (summary.biggestMonth) {
-      const { month, paid } = summary.biggestMonth;
-      parts.push({ text: `${formatMonthShort(month)} ${month.slice(0, 4)}`, strong: true, point: "biggest" }, { text: " was the biggest month at " }, { text: formatInr(paid), strong: true, point: "biggest" }, { text: ". " });
+    parts.push({ text: isPastPeriod(period, today) ? "You paid " : "You've paid " }, { text: formatInr(summary.paid), strong: true, point: "paid" });
+    if (single) parts.push({ text: ` for subscriptions ${when}. ` });
+    else {
+      parts.push({ text: ` for subscriptions ${when}, about ` }, { text: formatInr(summary.monthlyAverage), strong: true, point: "average" }, { text: " a month. " });
+      if (summary.biggestMonth) {
+        const { month, paid } = summary.biggestMonth;
+        parts.push({ text: `${formatMonthShort(month)} ${month.slice(0, 4)}`, strong: true, point: "biggest" }, { text: " was the biggest month at " }, { text: formatInr(paid), strong: true, point: "biggest" }, { text: ". " });
+      }
     }
   } else {
-    parts.push({ text: `Nothing paid for subscriptions yet in ${year}. ` });
+    parts.push({ text: `Nothing paid for subscriptions ${when}. ` });
   }
   const { count, total } = summary.next30;
   if (count === 0) parts.push({ text: "No renewals come up in the next 30 days." });
@@ -473,7 +504,7 @@ export function summarySentence(sheetData: SubscriptionData, today: string): Sen
   return parts;
 }
 
-/** A month in a greeting card's strip of the year: what was paid, and whether the card is pointing at it. */
+/** A month in a greeting card's strip of the period: what was paid, and whether the card is pointing at it. */
 export interface StripMonth {
   key: string;
   /** "J", "F", … */
@@ -491,32 +522,47 @@ export interface GreetingCards {
   next?: { title: string; total: string; rows: { key: string; mark: Mark; date: string; amount: string; note: string }[] };
 }
 
+/** "January to October", with the years when the months are in different ones. */
+function monthSpan(first: MonthKey, last: MonthKey): string {
+  const name = (m: MonthKey) => formatMonthYear(m).split(" ")[0];
+  return first.slice(0, 4) === last.slice(0, 4) ? `${name(first)} to ${name(last)}` : `${formatMonthYear(first)} to ${formatMonthYear(last)}`;
+}
+
+/** The strip shows at most this many months: the latest of a longer period. */
+const STRIP_MONTHS = 12;
+
 /**
- * The cards behind the greeting's figures (7A): the year's months with what was paid, the
- * average across them, what made up the biggest month, and the renewals in the next 30
- * days. Built from the same summary as the sentence, so they always agree with it.
+ * The cards behind the greeting's figures (7A): the period's months with what was paid
+ * (a year's twelve, or at most the latest 12 of a longer one), the average across them,
+ * what made up the biggest month, and the renewals in the next 30 days. Built from the
+ * same summary as the sentence, so they always agree with it.
  */
-export function greetingView(sheetData: SubscriptionData, today: string): GreetingCards {
+export function greetingView(sheetData: SubscriptionData, today: string, period: SpendPeriod = thisYear(today)): GreetingCards {
   const data = usableSubscriptionData(sheetData);
   if (data.subscriptions.length === 0) return {};
-  const year = today.slice(0, 4);
-  const summary = yearSummary(data.subscriptions, data.payments, today);
+  const { summary } = summaryOf(data, period, today);
   const byId = new Map(data.subscriptions.map((s) => [s.id, s]));
   const paidIn = new Map(summary.months.map((m) => [m.month, m.paid]));
+  // A year shows all twelve months, those still to come dashed; any other period its own, ending at this month at the latest.
+  const stripKeys = period.kind === "year" ? monthRange(`${period.year}-01`, `${period.year}-12`) : summary.months.map((m) => m.month).slice(-STRIP_MONTHS);
   const strip = (lit: (key: string) => boolean): StripMonth[] =>
-    Array.from({ length: 12 }, (_, i) => {
-      const key = `${year}-${String(i + 1).padStart(2, "0")}`;
+    stripKeys.map((key) => {
       const future = !paidIn.has(key);
       return { key, initial: formatMonthShort(key)[0], paid: paidIn.get(key) ?? 0, future, lit: !future && lit(key) };
     });
   const so = summary.months.length;
   const cards: GreetingCards = {};
   if (summary.paid > 0) {
-    const thisMonth = formatMonthYear(monthOf(today)).split(" ")[0];
-    cards.paid = { title: `Paid in ${year}`, total: formatInr(summary.paid), months: strip(() => true), note: so === 1 ? `${thisMonth} so far` : `${plural(so, "month")} so far, January to ${thisMonth}` };
-    cards.average = { title: "A month, on average", total: formatInr(summary.monthlyAverage), months: strip(() => false), average: summary.monthlyAverage, note: `${formatInr(summary.paid)} over ${plural(so, "month")}` };
+    const first = summary.months[0].month;
+    const last = summary.months[so - 1].month;
+    const upToNow = last === monthOf(today);
+    const named = so === 1 ? (upToNow ? `${formatMonthYear(first).split(" ")[0]} so far` : formatMonthYear(first)) : `${plural(so, "month")}${upToNow ? " so far" : ""}, ${monthSpan(first, last)}`;
+    const note = so > STRIP_MONTHS ? `${named}. The bars show the last ${STRIP_MONTHS}` : named;
+    cards.paid = { title: period.kind === "year" ? `Paid in ${period.year}` : `Paid ${paidPhrase(period, today)}`, total: formatInr(summary.paid), months: strip(() => true), note };
+    // A period of one month has no average or biggest month to explain: the sentence leaves them out.
+    if (!(period.kind === "range" && so <= 1)) cards.average = { title: "A month, on average", total: formatInr(summary.monthlyAverage), months: strip(() => false), average: summary.monthlyAverage, note: `${formatInr(summary.paid)} over ${plural(so, "month")}` };
   }
-  if (summary.biggestMonth) {
+  if (summary.biggestMonth && !(period.kind === "range" && so <= 1)) {
     const { month, paid } = summary.biggestMonth;
     const parts = new Map<string, number>();
     for (const p of data.payments) if (p.status === "Paid" && p.amount > 0 && monthOf(p.paymentDate) === month) parts.set(p.subscriptionId, (parts.get(p.subscriptionId) ?? 0) + p.amount);

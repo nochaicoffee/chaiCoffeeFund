@@ -136,13 +136,20 @@ function monthParts(subscriptions: Subscription[], payments: SubscriptionPayment
 
 /**
  * The Day by day window on a phone, which fits five months: from two months before this
- * one, but never starting before January or ending after December (Aug–Dec in October).
+ * one, but never starting before the grid's first month or ending after its last
+ * (Aug–Dec in October, for this year's grid). A period that doesn't include this month
+ * shows its own last five.
  */
-export function phoneDayWindow(today: string): { from: MonthKey; to: MonthKey } {
+export function phoneDayWindow(today: string, grid?: { from: MonthKey; to: MonthKey }): { from: MonthKey; to: MonthKey } {
   const year = today.slice(0, 4);
+  const { from: first, to: last } = grid ?? { from: `${year}-01`, to: `${year}-12` };
   const now = monthOf(today);
-  const from = [addMonths(now, -2), `${year}-01`, `${year}-08`].sort()[1];
-  return { from, to: addMonths(from, 4) };
+  const around = [first, now, last].sort()[1];
+  const latestStart = addMonths(last, -4);
+  // A grid shorter than five months is shown whole.
+  const start = latestStart <= first ? first : [first, addMonths(around, -2), latestStart].sort()[1];
+  const end = addMonths(start, 4);
+  return { from: start, to: end < last ? end : last };
 }
 
 export interface TrendMonth {
@@ -163,11 +170,14 @@ export interface Trend {
   peak: MonthKey | null;
 }
 
-/** The Payment trend: the last `past` months up to this one, and the next `ahead`. */
-export function paymentTrend(subscriptions: Subscription[], payments: SubscriptionPayment[], today: string, past = 12, ahead = 6): Trend {
+/**
+ * The Payment trend over `window`'s months; left out, the last 12 months up to this one and
+ * the next 6. Months after this one are expected, at today's plan prices.
+ */
+export function paymentTrend(subscriptions: Subscription[], payments: SubscriptionPayment[], today: string, window?: { from: MonthKey; to: MonthKey }): Trend {
   const nowMonth = monthOf(today);
-  const from = addMonths(nowMonth, -(past - 1));
-  const to = addMonths(nowMonth, ahead);
+  const from = window?.from ?? addMonths(nowMonth, -11);
+  const to = window?.to ?? addMonths(nowMonth, 6);
   const all = monthlySpendSeries(subscriptions, payments, from, to, today);
   const parts = monthParts(subscriptions, payments, from, to, today);
   const renewals = allRenewals(subscriptions, payments, `${from}-01`, monthEnd(to), today).filter((r) => r.status !== "wont-renew");
@@ -230,29 +240,32 @@ export interface RunningMonth {
 }
 
 export interface RunningTotal {
-  year: string;
+  /** The months it runs over, first and last. */
+  from: MonthKey;
+  to: MonthKey;
   months: RunningMonth[];
   /**
-   * Where the year is heading (decided with Prathik 2026-10-21): what's been paid this
-   * year, plus the renewals still due before the year ends at each plan's current price.
+   * Where the period is heading (decided with Prathik 2026-10-21, for the year): what's been
+   * paid in it, plus the renewals still due before it ends at each plan's current price.
    * A renewal that passed without being recorded isn't counted, and a paused or
    * cancelled subscription adds nothing more than it's already been paid.
    */
-  yearTotal: number;
+  total: number;
 }
 
 /**
- * This year's running total, for the Payment trend's line (6B): each month's spend
- * added up from January. Every month is counted as the trend counts it (the payments
- * made in it, plus, from this month on, the active renewals still to come), so the line
- * ends at the year figure and a renewal marked paid ahead counts once. Given a
- * subscription, only its own.
+ * The running total over the trend's months (6B): each month's spend added up from the
+ * first month. Every month is counted as the trend counts it (the payments made in it,
+ * plus, from this month on, the active renewals still to come), so the line ends at the
+ * period's figure and a renewal marked paid ahead counts once. Given a subscription, only
+ * its own. `window` is the trend's months; left out, it's this year, January to December.
  */
-export function runningTotal(subscriptions: Subscription[], payments: SubscriptionPayment[], today: string, subscriptionId?: string): RunningTotal {
+export function runningTotal(subscriptions: Subscription[], payments: SubscriptionPayment[], today: string, subscriptionId?: string, window?: { from: MonthKey; to: MonthKey }): RunningTotal {
   const year = today.slice(0, 4);
+  const { from, to } = window ?? { from: `${year}-01`, to: `${year}-12` };
   let cumulative = 0;
-  const months = monthlySpendSeries(subscriptions, payments, `${year}-01`, `${year}-12`, today, subscriptionId).map((m) => ({ month: m.month, total: m.total, expected: m.expected, cumulative: (cumulative += m.total) }));
-  return { year, months, yearTotal: cumulative };
+  const months = monthlySpendSeries(subscriptions, payments, from, to, today, subscriptionId).map((m) => ({ month: m.month, total: m.total, expected: m.expected, cumulative: (cumulative += m.total) }));
+  return { from, to, months, total: cumulative };
 }
 
 /**

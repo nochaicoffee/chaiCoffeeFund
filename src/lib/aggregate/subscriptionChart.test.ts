@@ -180,58 +180,58 @@ describe("runningTotal", () => {
   it("is what's been paid this year when nothing is left to renew before it ends", () => {
     const m365 = sub({ id: "m365", amount: 6199, billingCycle: "Yearly", billingAnchorDate: "2025-03-03", startDate: "2025-03-03" });
     const payments = [pay("2025-03-03", 5999, { subscriptionId: "m365" }), pay("2026-03-03", 6199, { subscriptionId: "m365" })];
-    expect(runningTotal([m365], payments, today).yearTotal).toBe(6199);
-    expect(runningTotal([m365], payments, today).yearTotal).toBe(yearSummary([m365], payments, today).paid);
+    expect(runningTotal([m365], payments, today).total).toBe(6199);
+    expect(runningTotal([m365], payments, today).total).toBe(yearSummary([m365], payments, today).paid);
   });
 
   it("adds the renewals still due before the year ends, at the plan's price", () => {
-    expect(runningTotal([sub()], paidJulToSep, today).yearTotal).toBe(649 * 3 + 649 * 3);
+    expect(runningTotal([sub()], paidJulToSep, today).total).toBe(649 * 3 + 649 * 3);
   });
 
   it("doesn't count a renewal that passed without being recorded, and recording it adds exactly its payment", () => {
     // Sep 23 isn't recorded: Jul and Aug paid, plus Oct, Nov and Dec to come.
     const missingSep = paidJulToSep.filter((p) => p.paymentDate !== "2026-09-23");
-    expect(runningTotal([sub()], missingSep, today).yearTotal).toBe(649 * 5);
-    expect(runningTotal([sub()], [...missingSep, pay("2026-09-25", 649)], today).yearTotal).toBe(649 * 6);
+    expect(runningTotal([sub()], missingSep, today).total).toBe(649 * 5);
+    expect(runningTotal([sub()], [...missingSep, pay("2026-09-25", 649)], today).total).toBe(649 * 6);
   });
 
   it("adds nothing more for a paused or cancelled subscription than it's been paid", () => {
-    expect(runningTotal([sub({ status: "Paused" })], paidJulToSep, today).yearTotal).toBe(649 * 3);
-    expect(runningTotal([sub({ status: "Cancelled", endDate: "2026-10-10" })], paidJulToSep, today).yearTotal).toBe(649 * 3);
+    expect(runningTotal([sub({ status: "Paused" })], paidJulToSep, today).total).toBe(649 * 3);
+    expect(runningTotal([sub({ status: "Cancelled", endDate: "2026-10-10" })], paidJulToSep, today).total).toBe(649 * 3);
     // Cancelled from Dec 10: Oct 23 and Nov 23 are still in its schedule, and still add nothing.
-    expect(runningTotal([sub({ status: "Cancelled", endDate: "2026-12-10" })], paidJulToSep, today).yearTotal).toBe(649 * 3);
+    expect(runningTotal([sub({ status: "Cancelled", endDate: "2026-12-10" })], paidJulToSep, today).total).toBe(649 * 3);
   });
 
   it("counts what's still due at the plan's current price, after a price change", () => {
     const old = [pay("2026-07-23", 499), pay("2026-08-23", 499), pay("2026-09-23", 499)];
-    expect(runningTotal([sub()], old, today).yearTotal).toBe(499 * 3 + 649 * 3);
+    expect(runningTotal([sub()], old, today).total).toBe(499 * 3 + 649 * 3);
   });
 
   it("counts a renewal marked paid ahead once, and one due today as still due", () => {
     const ahead = [...paidJulToSep, pay("2026-10-23", 649)];
-    expect(runningTotal([sub()], ahead, today).yearTotal).toBe(runningTotal([sub()], paidJulToSep, today).yearTotal);
-    expect(runningTotal([sub()], paidJulToSep, "2026-10-23").yearTotal).toBe(649 * 6);
+    expect(runningTotal([sub()], ahead, today).total).toBe(runningTotal([sub()], paidJulToSep, today).total);
+    expect(runningTotal([sub()], paidJulToSep, "2026-10-23").total).toBe(649 * 6);
   });
 
   it("adds up month by month from January to the year figure", () => {
     const data = demoSubscriptionData("2026-10-20");
     const all = runningTotal(data.subscriptions, data.payments, "2026-10-20");
-    expect(all.year).toBe("2026");
+    expect([all.from, all.to]).toEqual(["2026-01", "2026-12"]);
     expect(all.months.map((m) => m.month)).toEqual(Array.from({ length: 12 }, (_, i) => `2026-${String(i + 1).padStart(2, "0")}`));
     expect(all.months[0].cumulative).toBe(all.months[0].total);
     expect(all.months.filter((m) => m.expected > 0).map((m) => m.month)).toEqual(["2026-10", "2026-11", "2026-12"]);
     for (let i = 1; i < 12; i++) expect(all.months[i].cumulative).toBeCloseTo(all.months[i - 1].cumulative + all.months[i].total, 6);
-    expect(all.months.at(-1)!.cumulative).toBe(all.yearTotal);
+    expect(all.months.at(-1)!.cumulative).toBe(all.total);
     // Paid so far this year (the greeting's ₹57,163) plus Oct's last four renewals, Nov and Dec.
     expect(yearSummary(data.subscriptions, data.payments, "2026-10-20").paid).toBe(57163);
-    expect(all.yearTotal).toBe(57163 + 2186 + 3135 + 5183);
+    expect(all.total).toBe(57163 + 2186 + 3135 + 5183);
   });
 
   it("follows the pick: each subscription's own, which add up to All's", () => {
     const data = demoSubscriptionData("2026-10-20");
-    const each = data.subscriptions.map((s) => runningTotal(data.subscriptions, data.payments, "2026-10-20", s.id).yearTotal);
-    expect(each.reduce((t, v) => t + v, 0)).toBeCloseTo(runningTotal(data.subscriptions, data.payments, "2026-10-20").yearTotal, 6);
-    expect(runningTotal(data.subscriptions, data.payments, "2026-10-20", "demo-cult").yearTotal).toBe(4500 * 4);
+    const each = data.subscriptions.map((s) => runningTotal(data.subscriptions, data.payments, "2026-10-20", s.id).total);
+    expect(each.reduce((t, v) => t + v, 0)).toBeCloseTo(runningTotal(data.subscriptions, data.payments, "2026-10-20").total, 6);
+    expect(runningTotal(data.subscriptions, data.payments, "2026-10-20", "demo-cult").total).toBe(4500 * 4);
   });
 });
 
@@ -260,5 +260,33 @@ describe("paidByYear", () => {
     }
     // Prime, yearly since Dec 2022: one payment a year.
     expect(paidByYear(data.payments, "demo-prime").map((y) => y.year)).toEqual(["2022", "2023", "2024", "2025"]);
+  });
+});
+
+describe("the chart over a period's months", () => {
+  it("shows a phone five months of the grid, around this month, and a shorter grid whole", () => {
+    expect(phoneDayWindow("2026-10-21", { from: "2026-01", to: "2026-12" })).toEqual({ from: "2026-08", to: "2026-12" });
+    // A rolling 12 months ending this month: the last five.
+    expect(phoneDayWindow("2026-10-21", { from: "2025-11", to: "2026-10" })).toEqual({ from: "2026-06", to: "2026-10" });
+    // A past period doesn't include this month: its own last five.
+    expect(phoneDayWindow("2026-10-21", { from: "2025-01", to: "2025-12" })).toEqual({ from: "2025-08", to: "2025-12" });
+    expect(phoneDayWindow("2026-10-21", { from: "2026-03", to: "2026-04" })).toEqual({ from: "2026-03", to: "2026-04" });
+  });
+
+  it("draws the trend over the months given, a past year with nothing still to come", () => {
+    const data = demoSubscriptionData("2026-10-20");
+    const trend = paymentTrend(data.subscriptions, data.payments, "2026-10-20", { from: "2025-01", to: "2025-12" });
+    expect(trend.months.map((m) => m.month)).toEqual(Array.from({ length: 12 }, (_, i) => `2025-${String(i + 1).padStart(2, "0")}`));
+    expect(trend.months.some((m) => m.future)).toBe(false);
+    expect(trend.months.every((m) => m.expected === 0)).toBe(true);
+  });
+
+  it("adds up the running total over the months given, ending at their figure", () => {
+    const data = demoSubscriptionData("2026-10-20");
+    const window = { from: "2026-03", to: "2026-05" };
+    const total = runningTotal(data.subscriptions, data.payments, "2026-10-20", undefined, window);
+    expect([total.from, total.to]).toEqual(["2026-03", "2026-05"]);
+    expect(total.months.map((m) => m.month)).toEqual(["2026-03", "2026-04", "2026-05"]);
+    expect(total.total).toBe(yearSummary(data.subscriptions, data.payments, "2026-10-20").months.filter((m) => m.month >= "2026-03" && m.month <= "2026-05").reduce((t, m) => t + m.paid, 0));
   });
 });

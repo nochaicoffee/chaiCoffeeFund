@@ -65,7 +65,7 @@ export function scheduleDates(subscription: Pick<Subscription, "billingAnchorDat
   return dates;
 }
 
-const isCharged = (p: SubscriptionPayment) => p.status === "Paid" && p.amount > 0;
+export const isCharged = (p: SubscriptionPayment) => p.status === "Paid" && p.amount > 0;
 
 /**
  * A subscription's renewals from `from` to `to`, each matched to its payment. Each
@@ -293,26 +293,33 @@ export function chargedOffPlan(subscription: Subscription, payments: Subscriptio
 // ---------- The greeting ----------
 
 export interface YearSummary {
-  /** Charged payments so far this year. */
+  /** Charged payments in the period's months so far (this year, for yearSummary). */
   paid: number;
-  /** paid ÷ every month so far this year (January to the current month), as on the Cards page. */
+  /** paid ÷ the period's months so far (for this year, January to the current month), as on the Cards page. */
   monthlyAverage: number;
-  /** The month with the most paid so far this year, or null before any payment. */
+  /** The month with the most paid in the period, or null before any payment. */
   biggestMonth: { month: MonthKey; paid: number } | null;
   /**
    * Renewals in the next 30 days (today included) and what they cost: the ones still to
    * come at the plan's price, and any already marked paid ahead at what was paid.
    */
   next30: { count: number; total: number };
-  /** What was paid in each month so far this year, January first, for the greeting's cards (7A). */
+  /** What was paid in each of the period's months so far, earliest first, for the greeting's cards (7A). */
   months: { month: MonthKey; paid: number }[];
   /** The renewals counted in next30, soonest first. */
   soon: Renewal[];
 }
 
 export function yearSummary(subscriptions: Subscription[], payments: SubscriptionPayment[], today: string): YearSummary {
-  const year = today.slice(0, 4);
-  const months = monthRange(`${year}-01`, monthOf(today));
+  return periodSummary(subscriptions, payments, monthRange(`${today.slice(0, 4)}-01`, monthOf(today)), today);
+}
+
+/**
+ * The greeting's figures for any period (the Subscriptions page's period pill): what was
+ * paid across `months`, averaged over them, and the biggest of them. The months are the
+ * period's whole months up to this one; the next 30 days never follow the period.
+ */
+export function periodSummary(subscriptions: Subscription[], payments: SubscriptionPayment[], months: MonthKey[], today: string): YearSummary {
   const paid = paidByMonth(payments);
   const total = months.reduce((t, m) => t + (paid.get(m) ?? 0), 0);
   let biggest: { month: MonthKey; paid: number } | null = null;
@@ -323,7 +330,7 @@ export function yearSummary(subscriptions: Subscription[], payments: Subscriptio
   const soon = allRenewals(subscriptions.filter((s) => s.status === "Active"), payments, today, addDays(today, 29), today).filter((r) => r.status === "upcoming" || r.status === "paid" || r.status === "pending");
   return {
     paid: total,
-    monthlyAverage: total / months.length,
+    monthlyAverage: months.length ? total / months.length : 0,
     biggestMonth: biggest,
     next30: { count: soon.length, total: soon.reduce((t, r) => t + r.amount, 0) },
     months: months.map((m) => ({ month: m, paid: paid.get(m) ?? 0 })),

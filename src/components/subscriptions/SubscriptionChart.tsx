@@ -21,10 +21,11 @@ import { useSize } from "./useSize";
 
 type View = "days" | "trend" | "lifetime";
 
-const VIEWS: { value: View; label: string; short: string; note: string }[] = [
-  { value: "days", label: "Day by day", short: "Day by day", note: "Every renewal on its day · darker costs more · the pick lights up · drag across days to add them up." },
-  { value: "trend", label: "Payment trend", short: "Trend", note: "The last 12 months paid and the next 6 expected · the pick is drawn in its colour · this year's months add up as you go." },
-  { value: "lifetime", label: "Lifetime cost", short: "Lifetime", note: "Everything you've paid each one, since it started · open a row for each year." },
+/** The three views, worded for the page's period (chart.copy): the third is "Lifetime cost" for all time, otherwise what was paid in it. */
+const views = ({ copy }: ChartView): { value: View; label: string; short: string; note: string }[] => [
+  { value: "days", label: "Day by day", short: "Day by day", note: copy.days },
+  { value: "trend", label: "Payment trend", short: "Trend", note: copy.trend },
+  { value: "lifetime", label: copy.lifetimeLabel, short: copy.lifetimeShort, note: copy.lifetime },
 ];
 
 /** The design's ease-out, for motion set from script (the Lifetime rows' slide). */
@@ -108,9 +109,8 @@ function TrendCard({ month, running, lineColor }: { month: TrendMonthView; runni
 }
 
 /**
- * This year's running total over the trend (6B): a faint line through all of this
- * year's months shown, and the line drawn up to the hovered one, which draws itself
- * again each time. It has its own scale, the year's figure at the top, since it adds
+ * The running total over the trend (6B): a faint line through all of the months shown, and the line drawn up to the hovered one, which draws itself
+ * again each time. It has its own scale, the period's figure at the top, since it adds
  * up far past any one month; the card says what it's at.
  */
 function RunningLine({ points, upTo, color, width, height }: { points: [number, number][]; upTo: number; color: string; width: number; height: number }) {
@@ -131,7 +131,8 @@ function Trend({ chart, pick }: { chart: ChartView; pick: PickView }) {
   const [box, size, measured] = useSize<HTMLDivElement>({ w: 1300, h: 0 });
   const [hovered, setHovered] = useState<number | null>(null);
   const phone = size.w < PHONE;
-  const months = phone ? chart.trend.months.slice(6) : chart.trend.months;
+  // A phone fits the latest twelve months.
+  const months = phone ? chart.trend.months.slice(-12) : chart.trend.months;
   const h = phone ? 200 : 330;
   const left = phone ? 0 : 50;
   // Room above the tallest bar for its label and, on a desktop, the Peak tag over it.
@@ -148,10 +149,10 @@ function Trend({ chart, pick }: { chart: ChartView; pick: PickView }) {
   const radius = phone ? "7px 7px 3px 3px" : "13px 13px 5px 5px";
   const usual = chart.usual[pick.id] ?? 0;
   const lineColor = all ? "var(--accent-text)" : `var(--card-${pick.color})`;
-  // This year's running total (6B), through this year's months shown, on its own scale.
+  // The running total (6B), through the months shown, on its own scale.
   const running = chart.running[pick.id] ?? chart.running[ALL];
   const yearMonths = months.map((m, i) => ({ m, i })).filter(({ m }) => running.months[m.month]);
-  const points = yearMonths.map(({ m, i }): [number, number] => [left + i * (bw + gap) + bw / 2, h - bottom - (running.months[m.month].cumulative / running.yearTotal) * plot]);
+  const points = yearMonths.map(({ m, i }): [number, number] => [left + i * (bw + gap) + bw / 2, h - bottom - (running.months[m.month].cumulative / running.total) * plot]);
   const upTo = hovered === null ? -1 : yearMonths.findIndex(({ i }) => i === hovered);
 
   return (
@@ -401,6 +402,7 @@ function Lifetime({ chart, pick }: { chart: ChartView; pick: PickView }) {
 
 export function SubscriptionChart({ chart, pick, empty }: { chart: ChartView; pick: PickView; empty: boolean }) {
   const [view, setView] = useState<View>("days");
+  const VIEWS = views(chart);
   const current = VIEWS.find((v) => v.value === view)!;
   return (
     <section aria-labelledby="chart-title" className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-4 shadow-[var(--card-shadow)] md:p-[22px]">

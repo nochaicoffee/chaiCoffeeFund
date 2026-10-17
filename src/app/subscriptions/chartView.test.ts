@@ -1,11 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { demoSubscriptionData } from "@/lib/demo/subscriptionsDemo";
 import { ALL } from "@/lib/format/subscriptionLabels";
+import { lastMonths } from "@/lib/aggregate/period";
+import type { SpendPeriod } from "@/lib/aggregate/cardSpend";
 import { chartView } from "./chartView";
 
 // The design's "today", so the figures are the design's (the chart at the end of SubsFinal.dc.html).
 const TODAY = "2026-10-20";
 const chart = chartView(demoSubscriptionData(TODAY), TODAY);
+// All time, where Lifetime cost is everything ever paid.
+const everything = chartView(demoSubscriptionData(TODAY), TODAY, { kind: "all" });
 
 describe("Day by day", () => {
   it("totals each month as the design's grid does", () => {
@@ -31,7 +35,9 @@ describe("Day by day", () => {
 
 describe("Payment trend", () => {
   it("names the months, marks the peak, and words each month's hover card", () => {
-    expect(chart.trend.months.map((m) => m.name).slice(0, 3)).toEqual(["Nov", "Dec", "Jan ’26"]);
+    // This year's pill: January to December, the rest of the year expected.
+    expect(chart.trend.months.map((m) => m.name).slice(0, 3)).toEqual(["Jan ’26", "Feb", "Mar"]);
+    expect(chart.trend.months).toHaveLength(12);
     expect(chart.trend.peak).toBe("2026-03");
     const march = chart.trend.months.find((m) => m.month === "2026-03")!;
     expect(march.card).toMatchObject({ title: "March 2026", pill: "Paid", total: "₹10,032", diff: { text: "₹4,473 more than a usual month", up: true } });
@@ -78,14 +84,14 @@ describe("hover card rows", () => {
 
 describe("Lifetime cost", () => {
   it("lists everything paid to each one, biggest first, with its caption", () => {
-    expect(chart.lifetime.rows[0]).toMatchObject({ id: "demo-chatgpt", fraction: 1, detail: "17 payments · since Jun 2025" });
-    expect(chart.lifetime.rows.find((r) => r.id === "demo-headspace")?.detail).toBe("9 payments · since Nov 2025 · paused");
-    expect(chart.lifetime.captions[ALL]).toMatch(/^You've paid ₹[\d,]+ across 12 subscriptions since Dec 2022\. ChatGPT is the biggest at ₹33,983\.$/);
-    expect(chart.lifetime.captions["demo-netflix"]).toMatch(/^Netflix: ₹16,418 over 32 payments since Feb 23, 2024, \d+% of everything you've paid for subscriptions\.$/);
+    expect(everything.lifetime.rows[0]).toMatchObject({ id: "demo-chatgpt", fraction: 1, detail: "17 payments · since Jun 2025" });
+    expect(everything.lifetime.rows.find((r) => r.id === "demo-headspace")?.detail).toBe("9 payments · since Nov 2025 · paused");
+    expect(everything.lifetime.captions[ALL]).toMatch(/^You've paid ₹[\d,]+ across 12 subscriptions since Dec 2022\. ChatGPT is the biggest at ₹33,983\.$/);
+    expect(everything.lifetime.captions["demo-netflix"]).toMatch(/^Netflix: ₹16,418 over 32 payments since Feb 23, 2024, \d+% of everything you've paid for subscriptions\.$/);
   });
 
   it("says so when nothing's been paid", () => {
-    const empty = chartView({ subscriptions: [], payments: [], cards: [], accounts: [] }, TODAY);
+    const empty = chartView({ subscriptions: [], payments: [], cards: [], accounts: [] }, TODAY, { kind: "all" });
     expect(empty.lifetime.rows).toEqual([]);
     expect(empty.lifetime.captions[ALL]).toMatch(/^Nothing paid yet/);
     expect(empty.trend.peak).toBeNull();
@@ -142,12 +148,12 @@ describe("the chart's interactions (#149)", () => {
 
   it("words this year's running total for each month, and where the year is heading", () => {
     const all = chart.running[ALL];
-    expect(all.yearTotal).toBe(67667);
+    expect(all.total).toBe(67667);
     expect(all.months["2026-08"]).toEqual({ cumulative: 47030, label: "₹47,030 by the end of Aug", note: "paid · on course for ₹67,667 in 2026" });
     expect(all.months["2026-10"].note).toBe("paid and still due · on course for ₹67,667 in 2026");
     expect(all.months["2026-11"].note).toBe("expected · on course for ₹67,667 in 2026");
     expect(all.months["2026-12"]).toMatchObject({ cumulative: 67667, note: "expected · what 2026 is on course for" });
-    expect(chart.running["demo-netflix"].months["2026-12"].cumulative).toBe(chart.running["demo-netflix"].yearTotal);
+    expect(chart.running["demo-netflix"].months["2026-12"].cumulative).toBe(chart.running["demo-netflix"].total);
     // Cult.fit renewed on Oct 10 and isn't due again this month, so October is simply paid.
     expect(chart.running["demo-cult"].months["2026-10"].note).toMatch(/^paid · /);
   });
@@ -155,11 +161,11 @@ describe("the chart's interactions (#149)", () => {
   it("draws no running total for a pick with nothing paid or due this year", () => {
     const sub = { id: "old", name: "Old", alias: "Old", category: "Streaming" as const, amount: 99, billingCycle: "Monthly" as const, billingAnchorDate: "2025-01-05", startDate: "2025-01-05", status: "Cancelled" as const, endDate: "2025-06-01" };
     const old = chartView({ subscriptions: [sub], payments: [{ id: "p", subscriptionId: "old", paymentDate: "2025-01-05", amount: 99, status: "Paid" }], cards: [], accounts: [] }, TODAY);
-    expect(old.running.old).toEqual({ yearTotal: 0, months: {} });
+    expect(old.running.old).toEqual({ total: 0, months: {} });
   });
 
   it("sorts Lifetime cost three ways, and gives each row what it cost each year", () => {
-    const { order, rows } = chart.lifetime;
+    const { order, rows } = everything.lifetime;
     expect(order.paid).toEqual(rows.map((r) => r.id));
     // Longest held: Prime started Dec 2022, then Spotify Jun 2023; Cult.fit, from Jan 2026, is the newest.
     expect(order.held.slice(0, 2)).toEqual(["demo-prime", "demo-spotify"]);
@@ -169,5 +175,81 @@ describe("the chart's interactions (#149)", () => {
     expect(prime.years.map((y) => `${y.year} ${y.amount}`)).toEqual(["2022 ₹1.5k", "2023 ₹1.5k", "2024 ₹1.5k", "2025 ₹1.5k"]);
     expect(prime.each).toMatch(/^4 payments · about ₹[\d,]+ each$/);
     for (const r of rows) expect(r.years.reduce((t, y) => t + y.paid, 0)).toBeCloseTo(r.paid, 6);
+  });
+});
+
+describe("the chart over the period pill", () => {
+  const data = demoSubscriptionData(TODAY);
+  const range = (from: string, to: string): SpendPeriod => ({ kind: "range", from, to });
+  const paidIn = (from: string, to: string, id?: string) =>
+    data.payments.filter((p) => p.status === "Paid" && p.amount > 0 && (!id || p.subscriptionId === id) && p.paymentDate.slice(0, 7) >= from && p.paymentDate.slice(0, 7) <= to).reduce((t, p) => t + p.amount, 0);
+
+  it("opens on this year, with each view worded for it", () => {
+    expect(chart.span).toBe("Jan – Dec 2026");
+    expect(chart.copy).toMatchObject({ lifetimeLabel: "Total paid", lifetimeShort: "Paid", lifetime: "What you paid each one this year · open a row for each year." });
+    expect(chart.copy.trend).toBe("Jan – Dec 2026, paid so far and the rest expected · the pick is drawn in its colour · the months add up as you go.");
+    expect(everything.copy).toMatchObject({ lifetimeLabel: "Lifetime cost", lifetimeShort: "Lifetime", lifetime: "Everything you've paid each one, since it started · open a row for each year." });
+  });
+
+  it("draws the last 6 months as six months of days and six bars, none still to come", () => {
+    const six = chartView(data, TODAY, lastMonths(6, TODAY));
+    expect(six.desktopGrid.months.map((m) => m.name)).toEqual(["May", "Jun", "Jul", "Aug", "Sep", "Oct"]);
+    expect(six.desktopGrid.months.map((m) => m.total)).toEqual(chart.desktopGrid.months.slice(4, 10).map((m) => m.total));
+    expect(six.trend.months.map((m) => m.month)).toEqual(["2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10"]);
+    expect(six.span).toBe("May – Oct 2026");
+    expect(six.copy.trend).toMatch(/^May – Oct 2026, paid · /);
+  });
+
+  it("totals a month the same whichever period shows it", () => {
+    const six = chartView(data, TODAY, lastMonths(6, TODAY));
+    expect(six.trend.months.find((m) => m.month === "2026-09")?.total).toBe(chart.trend.months.find((m) => m.month === "2026-09")?.total);
+  });
+
+  it("draws a past year whole, none of it expected", () => {
+    const past = chartView(data, TODAY, { kind: "year", year: 2025 });
+    expect(past.span).toBe("Jan – Dec 2025");
+    expect(past.desktopGrid.months).toHaveLength(12);
+    expect(past.desktopGrid.months.some((m) => m.future || m.current)).toBe(false);
+    expect(past.trend.months.some((m) => m.future)).toBe(false);
+    expect(past.copy.trend).toMatch(/^Jan – Dec 2025, paid · /);
+  });
+
+  it("draws the latest 12 months of all time for Day by day and the latest 24 of the trend, and says so", () => {
+    expect(everything.desktopGrid.months).toHaveLength(12);
+    expect(everything.trend.months).toHaveLength(24);
+    expect(everything.copy.days).toMatch(/Showing the latest 12 months, Jan – Dec 2026\.$/);
+    expect(everything.copy.trend).toMatch(/^The latest 24 months, Jan 2025 – Dec 2026, paid so far/);
+  });
+
+  it("adds up the third view to what was paid in the period, per subscription and in all", () => {
+    const six = chartView(data, TODAY, lastMonths(6, TODAY));
+    expect(six.lifetime.rows.reduce((t, r) => t + r.paid, 0)).toBe(paidIn("2026-05", "2026-10"));
+    for (const r of six.lifetime.rows) expect(r.paid).toBe(paidIn("2026-05", "2026-10", r.id));
+    expect(six.lifetime.captions[ALL]).toMatch(/^You've paid ₹[\d,]+ across 12 subscriptions in the last 6 months\. /);
+    expect(six.lifetime.captions["demo-netflix"]).toMatch(/^Netflix: ₹2,945 over 5 payments in the last 6 months, \d+% of everything you've paid for subscriptions in the last 6 months\.$/);
+    // A year in the middle of a subscription's life has its own years in the opened row.
+    for (const r of chartView(data, TODAY, { kind: "year", year: 2025 }).lifetime.rows) expect(r.years.every((y) => y.year === "2025")).toBe(true);
+  });
+
+  it("says when nothing was paid in the period", () => {
+    const none = chartView(data, TODAY, range("2022-01", "2022-06"));
+    expect(none.lifetime.captions[ALL]).toMatch(/^Nothing paid in Jan – Jun 2022\./);
+    expect(none.running[ALL]).toEqual({ total: 0, months: {} });
+  });
+
+  it("runs the total over the months drawn, ending at the period's figure", () => {
+    const six = chartView(data, TODAY, lastMonths(6, TODAY));
+    const months = Object.keys(six.running[ALL].months);
+    expect(months).toEqual(six.trend.months.map((m) => m.month));
+    expect(six.running[ALL].total).toBe(six.trend.months.reduce((t, m) => t + m.total, 0));
+    // October still has renewals due, so it's where the six months are heading; a year that's over has nothing due and says what it came to.
+    expect(six.running[ALL].months["2026-10"].note).toBe("paid and still due · what May – Oct 2026 is on course for");
+    expect(six.running[ALL].months["2026-08"].note).toMatch(/^paid · on course for ₹[\d,]+ over May – Oct 2026$/);
+    const past = chartView(data, TODAY, { kind: "year", year: 2025 }).running[ALL];
+    expect(past.months["2025-12"].note).toBe("paid · the total for 2025");
+    expect(past.months["2025-03"].note).toMatch(/^paid · adds up to ₹[\d,]+ in 2025$/);
+    // This year's still says what it's on course for, as it always did.
+    expect(chart.running[ALL].months["2026-12"].note).toBe("expected · what 2026 is on course for");
+    expect(chart.running[ALL].months["2026-03"].note).toMatch(/^paid · on course for ₹[\d,]+ in 2026$/);
   });
 });

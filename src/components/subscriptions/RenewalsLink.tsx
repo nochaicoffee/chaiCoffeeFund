@@ -5,12 +5,14 @@ import { useSearchParams } from "next/navigation";
 
 /**
  * "All renewals →" under the payments (#130): with a subscription picked, its whole
- * history on the Renewals page (`?sub=<id>`, all time); with All, every renewal this
- * year. Sample data stays sample data.
+ * history on the Renewals page (`?sub=<id>`, all time); with All, every renewal in the
+ * period this page is showing (this year by default). Sample data stays sample data.
  */
 export function RenewalsLink({ subscriptionId }: { subscriptionId?: string }) {
-  const demo = useSearchParams().has("demo");
-  const query = [subscriptionId && `sub=${encodeURIComponent(subscriptionId)}&period=all`, demo && "demo"].filter(Boolean).join("&");
+  const params = useSearchParams();
+  const demo = params.has("demo");
+  const period = params.get("period");
+  const query = [subscriptionId ? `sub=${encodeURIComponent(subscriptionId)}&period=all` : period && `period=${encodeURIComponent(period)}`, demo && "demo"].filter(Boolean).join("&");
   return (
     <Link
       href={`/subscriptions/renewals${query ? `?${query}` : ""}`}
