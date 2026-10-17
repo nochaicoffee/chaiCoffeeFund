@@ -24,6 +24,10 @@ export async function createCard(formData: FormData): Promise<void> {
     statementAnchorDate: str(formData, "statementAnchorDate"),
     dueAnchorDate: str(formData, "dueAnchorDate"),
     status: str(formData, "status"),
+    last4: str(formData, "last4"),
+    color: str(formData, "color"),
+    statementPdfPassword: optionalStr(formData, "statementPdfPassword"),
+    emailMatchKeywords: optionalStr(formData, "emailMatchKeywords"),
   });
   await cardsRepository.create(input);
   updateTag(CACHE_TAGS.cards);

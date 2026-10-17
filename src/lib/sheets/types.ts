@@ -28,6 +28,10 @@ export type RecurrenceCycle = "Monthly" | "Quarterly" | "Yearly";
 // --- Cards ---
 
 export type CardStatus = "Active" | "Inactive" | "Closed";
+
+/** Tile colours a card can be given. Each maps to the --card-<colour> tokens in globals.css; emerald is kept for All Cards. */
+export const CARD_COLORS = ["Sapphire", "Ruby", "Onyx", "Violet", "Teal", "Copper"] as const;
+export type CardColor = (typeof CARD_COLORS)[number];
 export type StatementStatus = "Pending" | "Paid";
 
 export interface Card {
@@ -43,6 +47,10 @@ export interface Card {
   statementPdfPassword?: string;
   /** Comma-separated extra keywords for matching a statement email to this card, beyond name/alias. */
   emailMatchKeywords?: string;
+  /** Last 4 digits of the card number, shown on its tile ("•••• 7042"). Text, so a leading zero survives. */
+  last4?: string;
+  /** The card's tile colour. Optional only for rows created before it existed. */
+  color?: CardColor;
 }
 
 export interface Statement {

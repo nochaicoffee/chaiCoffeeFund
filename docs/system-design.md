@@ -94,6 +94,16 @@ Every tab above is built as a Google Sheets **Table** (the structured-table feat
 - **Default to a Table for every tab; drop to a plain range + standard Data Validation only where a Table genuinely can't express something.** The one case already anticipated: the `Prices` support tab is a handful of `GOOGLEFINANCE` lookup formulas (symbol → live price), not row-based data entry — it doesn't gain anything from Table structure and is a plain range by default, not an exception discovered later.
 - **Open technical risk to verify during implementation, not assumed now**: when the backend appends a new row via the Sheets API (`googleapis`), confirm it lands *inside* the Table's range and inherits its column types/dropdowns, rather than landing as a plain row just below the Table. If the API's append behavior doesn't cooperate with Tables for a given tab, that tab is where we'd fall back to a plain range — this is exactly the kind of "only when Table is unusable" case to resolve empirically, not guess at now.
 
+### Writing to Sheets (found 2026-10-17, #45)
+
+Writes use `valueInputOption: "USER_ENTERED"`, which parses each value the way typing it into a cell would. Every field goes through `toUserEnteredCell` in `lib/sheets/cellValues.ts`:
+
+- **Dates go as ISO text** (`"2026-08-05"`), so Sheets stores a real date and the Table's DATE column shows it as one. The original code sent date serial numbers instead. The Sheet then showed them as bare numbers like `46239`, while the app still read them back correctly, so nobody noticed until a real round trip looked at the displayed values.
+- **All other text gets a leading apostrophe**, which tells Sheets to keep it literally. Without it, USER_ENTERED turned `"0425"` (a card's last 4) or a digits-only PDF password into a number that lost its leading zero, and would have turned text starting with `=` into a formula. The apostrophe isn't stored, and reads return the plain text.
+- **Numbers go as numbers.** NaN and Infinity are refused, because JSON would turn them into `null` and silently clear the cell.
+- **`RAW` was tried and rejected.** It keeps text right, but stores dates as bare serial numbers, which brings the original display bug back.
+- **Reads aren't validated yet.** A blank cell comes back as `""`, and a number typed as text comes back as a string. Validating rows at the read boundary is #63; until then, aggregates such as `cardSpend.ts` defend themselves.
+
 ## Backend architecture
 
 Next.js (App Router), TypeScript:

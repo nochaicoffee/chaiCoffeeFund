@@ -1,5 +1,6 @@
 import "server-only";
 import { randomUUID } from "crypto";
+import { toUserEnteredCell } from "./cellValues";
 import { getSheetsClient, getSpreadsheetId } from "./client";
 
 export class NotFoundError extends Error {
@@ -25,23 +26,13 @@ function serialToIsoDate(serial: number): string {
     .slice(0, 10);
 }
 
-function isoDateToSerial(iso: string): number {
-  const ms = Date.parse(`${iso}T00:00:00Z`);
-  return Math.round((ms - SHEETS_DATE_EPOCH_UTC_MS) / MS_PER_DAY);
-}
-
 function columnLetter(index: number): string {
   return String.fromCharCode(65 + index);
 }
 
 function toRowValues<T>(record: T, columns: (keyof T)[], dateColumns: Set<keyof T>): unknown[] {
   return columns.map((col) => {
-    const value = record[col];
-    if (value === undefined || value === null || value === "") return "";
-    if (dateColumns.has(col) && typeof value === "string") {
-      return isoDateToSerial(value);
-    }
-    return value;
+    return toUserEnteredCell(record[col], dateColumns.has(col));
   });
 }
 
@@ -130,6 +121,8 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     if (inputs.length === 0) return [];
     const records = inputs.map((input) => ({ ...input, id: randomUUID() }) as T);
     const sheets = getSheetsClient();
+    // USER_ENTERED so ISO dates become real dates in the Table's DATE columns;
+    // every other text value is marked literal (see cellValues.ts).
     await sheets.spreadsheets.values.append({
       spreadsheetId: getSpreadsheetId(),
       range: dataRange,
