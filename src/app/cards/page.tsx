@@ -5,6 +5,7 @@ import { loadCardData } from "./loadCardData";
 import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, periodYears, statementsQuery } from "./params";
 import { summarySentence } from "./summarySentence";
 import { RefreshButton } from "@/components/RefreshButton";
+import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { AddCardTile, CardTile } from "@/components/cards/CardTile";
 import { DetailsCard } from "@/components/cards/DetailsCard";
 import { StatementsPanel } from "@/components/cards/StatementsPanel";
@@ -48,7 +49,7 @@ function dueLabel(dueDate: string, daysUntilDue: number): string {
 export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
   const params = await searchParams;
   const today = todayIso();
-  const { demo, data } = await loadCardData(params, today);
+  const { demo, data, skipped } = await loadCardData(params, today);
 
   const period = parsePeriod(params, today);
   const currentYear = Number(today.slice(0, 4));
@@ -113,6 +114,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
             Sample data. Nothing here is from your Sheet.
           </p>
         )}
+        <SkippedRowsNotice tabs={skipped} />
       </PageHeader>
 
       <div

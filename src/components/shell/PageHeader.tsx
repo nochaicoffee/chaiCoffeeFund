@@ -32,7 +32,7 @@ export async function PageHeader({
         <h1 className="text-[26px] leading-tight font-extrabold text-balance text-fg md:text-[30px]">{title}</h1>
         {children}
       </div>
-      {actions && <div className="flex shrink-0 flex-wrap items-center gap-2.5 md:mt-1">{actions}</div>}
+      {actions && <div className="flex max-w-full shrink-0 flex-wrap items-center gap-2.5 md:mt-1">{actions}</div>}
     </header>
   );
 }

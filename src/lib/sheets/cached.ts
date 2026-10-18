@@ -1,5 +1,7 @@
 import "server-only";
 import { unstable_cache } from "next/cache";
+import type { Repository } from "./repository";
+import type { SkippedRows } from "./rowReading";
 import { accountsRepository } from "./accounts";
 import { balanceSnapshotsRepository } from "./balanceSnapshots";
 import { cardsRepository } from "./cards";
@@ -47,9 +49,34 @@ export const CACHE_TAGS = {
 
 const REVALIDATE_SECONDS = 900;
 
-/** Wraps a repository's list() in unstable_cache, tagged for on-demand invalidation. */
-function cachedList<T>(list: () => Promise<T[]>, tag: string): () => Promise<T[]> {
-  return unstable_cache(list, [tag], { tags: [tag], revalidate: REVALIDATE_SECONDS });
+/** One tab as the pages read it: the valid records, and the rows it left out. */
+export interface CachedTab<T> {
+  records: T[];
+  skipped: SkippedRows;
+}
+
+/**
+ * Wraps a repository's readAll() in unstable_cache, tagged for on-demand
+ * invalidation, so a page gets a tab's records and its skipped rows from the
+ * same Sheets read and the same cache entry: refreshing the data refreshes the
+ * skipped rows too. Skipped rows keep only their row number and problems,
+ * never their cells, because a Cards row holds a PDF password.
+ */
+function cachedTab<T extends { id: string }>(repository: Pick<Repository<T>, "sheetName" | "readAll">, tag: string): () => Promise<CachedTab<T>> {
+  return unstable_cache(
+    async () => {
+      const { records, invalid } = await repository.readAll();
+      const rows = invalid.map(({ rowNumber, problems }) => ({ rowNumber, problems }));
+      return { records, skipped: { tab: repository.sheetName, rows } };
+    },
+    [tag],
+    { tags: [tag], revalidate: REVALIDATE_SECONDS },
+  );
+}
+
+/** Just the valid records of a cached tab, from the same cache entry. */
+function cachedList<T>(tab: () => Promise<CachedTab<T>>): () => Promise<T[]> {
+  return async () => (await tab()).records;
 }
 
 /**
@@ -62,50 +89,50 @@ function cachedGetById<T extends { id: string }>(list: () => Promise<T[]>) {
   return async (id: string): Promise<T | null> => (await list()).find((item) => item.id === id) ?? null;
 }
 
-export const getCachedAccounts = cachedList(() => accountsRepository.list(), CACHE_TAGS.accounts);
+export const getCachedAccountsTab = cachedTab(accountsRepository, CACHE_TAGS.accounts);
+export const getCachedAccounts = cachedList(getCachedAccountsTab);
 export const getCachedAccountById = cachedGetById(getCachedAccounts);
 
-export const getCachedBalanceSnapshots = cachedList(
-  () => balanceSnapshotsRepository.list(),
-  CACHE_TAGS.balanceSnapshots,
-);
+export const getCachedBalanceSnapshotsTab = cachedTab(balanceSnapshotsRepository, CACHE_TAGS.balanceSnapshots);
+export const getCachedBalanceSnapshots = cachedList(getCachedBalanceSnapshotsTab);
 export const getCachedBalanceSnapshotById = cachedGetById(getCachedBalanceSnapshots);
 
-export const getCachedCards = cachedList(() => cardsRepository.list(), CACHE_TAGS.cards);
+export const getCachedCardsTab = cachedTab(cardsRepository, CACHE_TAGS.cards);
+export const getCachedCards = cachedList(getCachedCardsTab);
 export const getCachedCardById = cachedGetById(getCachedCards);
 
-export const getCachedStatements = cachedList(() => statementsRepository.list(), CACHE_TAGS.statements);
+export const getCachedStatementsTab = cachedTab(statementsRepository, CACHE_TAGS.statements);
+export const getCachedStatements = cachedList(getCachedStatementsTab);
 export const getCachedStatementById = cachedGetById(getCachedStatements);
 
-export const getCachedSubscriptions = cachedList(() => subscriptionsRepository.list(), CACHE_TAGS.subscriptions);
+export const getCachedSubscriptionsTab = cachedTab(subscriptionsRepository, CACHE_TAGS.subscriptions);
+export const getCachedSubscriptions = cachedList(getCachedSubscriptionsTab);
 export const getCachedSubscriptionById = cachedGetById(getCachedSubscriptions);
 
-export const getCachedSubscriptionPayments = cachedList(
-  () => subscriptionPaymentsRepository.list(),
-  CACHE_TAGS.subscriptionPayments,
-);
+export const getCachedSubscriptionPaymentsTab = cachedTab(subscriptionPaymentsRepository, CACHE_TAGS.subscriptionPayments);
+export const getCachedSubscriptionPayments = cachedList(getCachedSubscriptionPaymentsTab);
 export const getCachedSubscriptionPaymentById = cachedGetById(getCachedSubscriptionPayments);
 
-export const getCachedIncomeSources = cachedList(() => incomeSourcesRepository.list(), CACHE_TAGS.incomeSources);
+export const getCachedIncomeSourcesTab = cachedTab(incomeSourcesRepository, CACHE_TAGS.incomeSources);
+export const getCachedIncomeSources = cachedList(getCachedIncomeSourcesTab);
 export const getCachedIncomeSourceById = cachedGetById(getCachedIncomeSources);
 
-export const getCachedIncomeEntries = cachedList(() => incomeEntriesRepository.list(), CACHE_TAGS.incomeEntries);
+export const getCachedIncomeEntriesTab = cachedTab(incomeEntriesRepository, CACHE_TAGS.incomeEntries);
+export const getCachedIncomeEntries = cachedList(getCachedIncomeEntriesTab);
 export const getCachedIncomeEntryById = cachedGetById(getCachedIncomeEntries);
 
-export const getCachedLoans = cachedList(() => loansRepository.list(), CACHE_TAGS.loans);
+export const getCachedLoansTab = cachedTab(loansRepository, CACHE_TAGS.loans);
+export const getCachedLoans = cachedList(getCachedLoansTab);
 export const getCachedLoanById = cachedGetById(getCachedLoans);
 
-export const getCachedLoanInstallments = cachedList(
-  () => loanInstallmentsRepository.list(),
-  CACHE_TAGS.loanInstallments,
-);
+export const getCachedLoanInstallmentsTab = cachedTab(loanInstallmentsRepository, CACHE_TAGS.loanInstallments);
+export const getCachedLoanInstallments = cachedList(getCachedLoanInstallmentsTab);
 export const getCachedLoanInstallmentById = cachedGetById(getCachedLoanInstallments);
 
-export const getCachedInvestmentTransactions = cachedList(
-  () => investmentTransactionsRepository.list(),
-  CACHE_TAGS.investmentTransactions,
-);
+export const getCachedInvestmentTransactionsTab = cachedTab(investmentTransactionsRepository, CACHE_TAGS.investmentTransactions);
+export const getCachedInvestmentTransactions = cachedList(getCachedInvestmentTransactionsTab);
 export const getCachedInvestmentTransactionById = cachedGetById(getCachedInvestmentTransactions);
 
-export const getCachedFixedDeposits = cachedList(() => fixedDepositsRepository.list(), CACHE_TAGS.fixedDeposits);
+export const getCachedFixedDepositsTab = cachedTab(fixedDepositsRepository, CACHE_TAGS.fixedDeposits);
+export const getCachedFixedDeposits = cachedList(getCachedFixedDepositsTab);
 export const getCachedFixedDepositById = cachedGetById(getCachedFixedDeposits);
