@@ -112,6 +112,7 @@ export function Segmented<T extends string>({
   value,
   onChange,
   required,
+  help,
   error,
 }: {
   name: string;
@@ -120,10 +121,11 @@ export function Segmented<T extends string>({
   value: T | "";
   onChange: (value: T) => void;
   required?: boolean;
+  help?: ReactNode;
   error?: string;
 }) {
   return (
-    <fieldset className="flex min-w-0 flex-col gap-1.5" aria-describedby={error ? `${name}-error` : undefined}>
+    <fieldset className="flex min-w-0 flex-col gap-1.5" aria-describedby={error ? `${name}-error` : help ? `${name}-help` : undefined}>
       <legend className="mb-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
         {legend}
         {required && (
@@ -150,11 +152,18 @@ export function Segmented<T extends string>({
           </label>
         ))}
       </div>
-      {error && (
+      {error ? (
         <p id={`${name}-error`} className="flex items-start gap-1.5 text-[11px] font-semibold text-negative">
           <AlertIcon />
           {error}
         </p>
+      ) : (
+        help && (
+          <p id={`${name}-help`} className="flex items-start gap-1.5 text-[11px] font-medium text-muted">
+            <InfoIcon />
+            <span>{help}</span>
+          </p>
+        )
       )}
     </fieldset>
   );

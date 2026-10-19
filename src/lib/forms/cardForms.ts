@@ -1,4 +1,5 @@
-import { CARD_COLORS, CARD_ISSUERS, CARD_TYPES, type CardColor, type CardIssuer, type CardStatus, type CardType, type Statement } from "../sheets/types";
+import { isShort } from "../aggregate/cardStatements";
+import { CARD_COLORS, CARD_ISSUERS, CARD_TYPES, type CardColor, type CardIssuer, type CardStatus, type CardType, type Statement, type StatementStatus } from "../sheets/types";
 import { FieldReader, readPaidFrom, type FormFields, type FormResult } from "./fields";
 
 /**
@@ -112,25 +113,49 @@ export function readStatementForm(fields: FormFields, known: Pick<Known, "cardId
 }
 
 export interface MarkPaidInput {
+  /** The total paid on the bill so far, not just the latest payment: one amount per statement. */
   amountPaid: number;
+  /** The latest payment's date. */
   paidDate: string;
+  /** Paid once the total is covered or nothing more will be paid; Pending while the rest is still to pay (#84). */
+  status: StatementStatus;
   paidFromAccountId?: string;
   paidFromCardId?: string;
 }
 
 /**
- * Mark paid: the amount (the form starts it at the total due), the date (starts
- * at today, never in the future or before the statement), and where it came
- * from: a bank account or another card, never both.
+ * When a payment is short of the total due, the dialog asks about the rest:
+ * "later" (I'll pay the rest, so the bill stays Pending) or "final" (that's all,
+ * so it's Paid and shows as underpaid). Decided with Prathik 2026-10-19 (#84).
  */
-export function readMarkPaidForm(fields: FormFields, statement: Pick<Statement, "cardId" | "statementDate">, known: Known, today: string): FormResult<MarkPaidInput> {
+export const REST_OF_BILL = ["later", "final"] as const;
+export type RestOfBill = (typeof REST_OF_BILL)[number];
+
+/** The status a payment saves: Paid once the total is covered, otherwise Pending unless it's the final payment. */
+export function paymentStatus(totalAmountDue: number, amountPaid: number, rest: RestOfBill): StatementStatus {
+  return isShort(totalAmountDue, amountPaid) && rest === "later" ? "Pending" : "Paid";
+}
+
+/**
+ * Mark paid and Edit payment. The amount is the total paid on the bill (Mark
+ * paid starts it at the total due, Edit payment at what's saved), so a second
+ * payment is recorded by raising it. The date is the latest payment's (starts
+ * at today, never in the future or before the statement). Paid from is a bank
+ * account or another card, never both. Short of the total due, `rest` says
+ * whether the bill stays Pending, and a bill that stays Pending needs something
+ * paid on it.
+ */
+export function readMarkPaidForm(fields: FormFields, statement: Pick<Statement, "cardId" | "statementDate" | "totalAmountDue">, known: Known, today: string): FormResult<MarkPaidInput> {
   const f = new FieldReader(fields);
   const amountPaid = f.amount("amountPaid", { required: "Enter the amount you paid", label: "amount paid" });
+  const short = amountPaid !== undefined && isShort(statement.totalAmountDue, amountPaid);
+  const rest = short ? f.choice("rest", REST_OF_BILL, "Choose whether you'll pay the rest") : "final";
+  if (amountPaid === 0 && rest === "later") f.fail("amountPaid", "Enter what you've paid so far");
   const paidDate = f.date("paidDate", "Choose the date you paid");
   if (paidDate && paidDate > today) f.fail("paidDate", "The payment date can't be in the future");
   else if (paidDate && paidDate < statement.statementDate) f.fail("paidDate", "The payment date can't be before the statement date");
   const paidFrom = readPaidFrom(f, "paidFrom", known, statement.cardId);
-  return f.result({ amountPaid: amountPaid!, paidDate: paidDate!, ...paidFrom });
+  return f.result({ amountPaid: amountPaid!, paidDate: paidDate!, status: paymentStatus(statement.totalAmountDue, amountPaid!, rest!), ...paidFrom });
 }
 
 /** A statement already on record for the same card and statement date: almost certainly a duplicate. */

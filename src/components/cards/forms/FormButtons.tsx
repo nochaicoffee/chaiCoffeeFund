@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import type { PaymentPreview } from "@/lib/aggregate/cardEntry";
+import type { PaymentContext } from "@/lib/aggregate/cardEntry";
 import type { ClientCard } from "@/lib/forms/clientCard";
 import { cardName } from "@/lib/format/labels";
 import { formatDate } from "@/lib/format/date";
@@ -135,12 +135,13 @@ export function AddStatementButton({
   );
 }
 
+/** Mark paid on a pending statement, Edit payment on a paid one (#84). Both open the Mark paid dialog. */
 export function MarkPaidButton({
   statement,
   card,
   cards,
   accounts,
-  after,
+  context,
   today,
   disabledReason,
 }: {
@@ -148,17 +149,19 @@ export function MarkPaidButton({
   card: ClientCard;
   cards: ClientCard[];
   accounts: AccountOption[];
-  after: PaymentPreview;
+  context: PaymentContext;
   today: string;
   disabledReason?: string;
 }) {
   const [open, setOpen] = useState(false);
+  const editing = statement.status === "Paid";
+  const statementName = `${cardName(card)}'s ${formatDate(statement.statementDate)} statement`;
   return (
     <>
-      <Trigger className={SMALL} disabledReason={disabledReason} label={`Mark ${cardName(card)}'s ${formatDate(statement.statementDate)} statement paid`} onOpen={() => setOpen(true)}>
-        Mark paid
+      <Trigger className={SMALL} disabledReason={disabledReason} label={editing ? `Edit the payment on ${statementName}` : `Mark ${statementName} paid`} onOpen={() => setOpen(true)}>
+        {editing ? "Edit payment" : "Mark paid"}
       </Trigger>
-      {open && <MarkPaidDialog statement={statement} card={card} cards={cards} accounts={accounts} after={after} today={today} onClose={() => setOpen(false)} />}
+      {open && <MarkPaidDialog statement={statement} card={card} cards={cards} accounts={accounts} context={context} today={today} onClose={() => setOpen(false)} />}
     </>
   );
 }

@@ -1,6 +1,7 @@
 import Form from "next/form";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { remainingDue } from "@/lib/aggregate/cardSpend";
 import { dueLabel, paymentVariance, type FilterCounts, type MonthGroup, type Page, type StatusFilter } from "@/lib/aggregate/cardStatements";
 import type { StatementsListState } from "@/app/cards/params";
 import type { Account, Card, Statement } from "@/lib/sheets/types";
@@ -40,7 +41,9 @@ function Cell({ label, className = "", children }: { label?: string; className?:
   );
 }
 
-function VarianceValue({ statement }: { statement: Statement }) {
+function VarianceValue({ statement, partPaid }: { statement: Statement; partPaid: boolean }) {
+  // A part-paid pending bill shows what's left to pay instead (#84).
+  if (partPaid) return <span className="font-bold whitespace-nowrap text-muted">{formatInrExact(remainingDue(statement))} left</span>;
   const variance = paymentVariance(statement);
   if (variance.kind === "none") return NONE;
   if (variance.kind === "full") {
@@ -65,18 +68,19 @@ function StatementRow({
   card,
   paidFrom,
   today,
-  markPaid,
+  action,
 }: {
   statement: Statement;
   card: Card | undefined;
   paidFrom: string | undefined;
   today: string;
-  /** Mark paid for a pending row, built by the page. */
-  markPaid?: ReactNode;
+  /** Mark paid on a pending row, Edit payment on a paid one, built by the page. */
+  action: ReactNode;
 }) {
   const paid = statement.status === "Paid";
   // A pending bill can already be part-paid; its totals elsewhere count only what's left.
-  const amountPaid = paid || (statement.amountPaid ?? 0) > 0 ? statement.amountPaid ?? 0 : undefined;
+  const partPaid = !paid && (statement.amountPaid ?? 0) > 0;
+  const amountPaid = paid || partPaid ? statement.amountPaid ?? 0 : undefined;
   const paidOn = statement.paidDate ? (ISO_DATE_PATTERN.test(statement.paidDate) ? formatDate(statement.paidDate) : statement.paidDate) : undefined;
   // On a phone, blank payment fields (all of them, on an unpaid pending row) are left out.
   const shownOnPhone = (value: unknown) => (value === undefined ? "max-lg:hidden" : "");
@@ -116,12 +120,10 @@ function StatementRow({
       <Cell label="Paid from" className={`truncate ${shownOnPhone(paidFrom)}`}>
         <span title={paidFrom}>{paidFrom ?? NONE}</span>
       </Cell>
-      <Cell label="Variance" className={paid ? "" : "max-lg:hidden"}>
-        <VarianceValue statement={statement} />
+      <Cell label="Variance" className={paid || partPaid ? "" : "max-lg:hidden"}>
+        <VarianceValue statement={statement} partPaid={partPaid} />
       </Cell>
-      <Cell className={`flex justify-end max-lg:col-span-2 ${paid ? "max-lg:hidden" : "max-lg:[&>*]:w-full"}`}>
-        {!paid && markPaid}
-      </Cell>
+      <Cell className={`flex justify-end max-lg:col-span-2 ${paid ? "" : "max-lg:[&>*]:w-full"}`}>{action}</Cell>
     </div>
   );
 }
@@ -145,8 +147,9 @@ function PageLink({ href, label, disabled, children }: { href: string; label: st
 /**
  * The Statements page's list (StatementsList.dc.html): status and card filters
  * with counts, a search and sort, then statements grouped by month with their
- * payment details and variance, and Mark paid on pending rows. Every control is
- * a link or a GET form, so it all works before (or without) client JavaScript.
+ * payment details and variance, Mark paid on pending rows and Edit payment on
+ * paid ones. Every list control is a link or a GET form, so it all works before
+ * (or without) client JavaScript.
  */
 export function StatementsList({
   state,
@@ -160,7 +163,7 @@ export function StatementsList({
   periodText,
   periodTotal,
   addStatement,
-  markPaidFor,
+  paymentFor,
 }: {
   state: StatementsListState;
   /** A link to this page with some choices changed, back on page 1 unless a page is given. */
@@ -177,8 +180,8 @@ export function StatementsList({
   periodTotal: number;
   /** The empty state's Add a statement button. */
   addStatement: ReactNode;
-  /** Mark paid for a pending statement. */
-  markPaidFor: (statement: Statement) => ReactNode;
+  /** Mark paid for a pending statement, Edit payment for a paid one. */
+  paymentFor: (statement: Statement) => ReactNode;
 }) {
   const status = state.status ?? "all";
   const cardsById = new Map(cards.map((c) => [c.id, c]));
@@ -314,7 +317,7 @@ export function StatementsList({
                 </div>
               </div>
               {group.statements.map((s) => (
-                <StatementRow key={s.id} statement={s} card={cardsById.get(s.cardId)} paidFrom={paidFromName(s)} today={today} markPaid={s.status === "Pending" ? markPaidFor(s) : undefined} />
+                <StatementRow key={s.id} statement={s} card={cardsById.get(s.cardId)} paidFrom={paidFromName(s)} today={today} action={paymentFor(s)} />
               ))}
             </div>
           ))}
@@ -330,7 +333,7 @@ export function StatementsList({
             {blanksShown && (
               <>
                 {" "}
-                <b className="text-fg">Paid on</b> and <b className="text-fg">Paid from</b> are blank where they weren&rsquo;t recorded. They fill in when you mark a statement paid.
+                <b className="text-fg">Paid on</b> and <b className="text-fg">Paid from</b> are blank where they weren&rsquo;t recorded. They fill in when you mark a statement paid, or with Edit payment.
               </>
             )}
             {paidShown.length > 0 && " Variance compares the amount paid with the total due."}

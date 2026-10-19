@@ -69,7 +69,7 @@ function spendOf(statement: Statement): number {
 }
 
 /** What's still due on a statement: total minus anything paid, never below ₹0. Blank amounts count as ₹0. */
-export function remainingDue(statement: Statement): number {
+export function remainingDue(statement: Pick<Statement, "totalAmountDue" | "amountPaid">): number {
   return Math.max(0, (toAmount(statement.totalAmountDue) ?? 0) - (toAmount(statement.amountPaid) ?? 0));
 }
 

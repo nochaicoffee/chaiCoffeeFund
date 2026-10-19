@@ -85,16 +85,25 @@ export async function saveStatement(_previous: FormState, formData: FormData): P
   return { status: "saved", at: Date.now() };
 }
 
-/** Mark paid: the amount, the date and where it came from (a bank account or a card, never both). */
+/**
+ * Mark paid and Edit payment: the total paid on the bill, the latest payment's
+ * date and where it came from (a bank account or a card, never both). A payment
+ * short of the total due leaves the bill Pending when the rest is still to pay,
+ * so this can also reopen a paid bill (#84).
+ */
 export async function markPaid(_previous: FormState, formData: FormData): Promise<FormState> {
   const id = formData.get("id");
   if (typeof id !== "string" || id === "") return { status: "invalid", errors: { form: "This statement couldn't be found. Refresh and try again." } };
   const [statement, accounts, cards] = await Promise.all([statementsRepository.get(id), getCachedAccounts(), getCachedCards()]);
   if (!statement) return { status: "invalid", errors: { form: "This statement couldn't be found. Refresh and try again." } };
   const result = readMarkPaidForm(fields(formData), statement, { accountIds: accounts.map((a) => a.id), cardIds: cards.map((c) => c.id) }, todayIso());
-  if (!result.ok) return { status: "invalid", errors: result.errors };
+  if (!result.ok) {
+    // The dialog only asks about the rest when it sees the payment as short. If it didn't ask, the Sheet's total has changed since the page loaded.
+    if (result.errors.rest && !formData.has("rest")) return { status: "invalid", errors: { form: "This statement's total due has changed. Close this and refresh." } };
+    return { status: "invalid", errors: result.errors };
+  }
   try {
-    const patch = updateStatementSchema.parse({ status: "Paid", amountPaid: result.input.amountPaid, paidDate: result.input.paidDate });
+    const patch = updateStatementSchema.parse({ status: result.input.status, amountPaid: result.input.amountPaid, paidDate: result.input.paidDate });
     // Both payment sources are written, so switching from an account to a card clears the other.
     await statementsRepository.update(id, { ...patch, paidFromAccountId: result.input.paidFromAccountId, paidFromCardId: result.input.paidFromCardId });
   } catch (error) {

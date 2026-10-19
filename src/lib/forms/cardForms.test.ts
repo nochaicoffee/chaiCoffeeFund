@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findDuplicateStatement, normalizeKeywords, readCardForm, readMarkPaidForm, readStatementForm } from "./cardForms";
+import { findDuplicateStatement, normalizeKeywords, paymentStatus, readCardForm, readMarkPaidForm, readStatementForm } from "./cardForms";
 
 const TODAY = "2026-10-19";
 const known = { cardIds: ["regalia", "amazon"], accountIds: ["savings"] };
@@ -124,21 +124,44 @@ describe("readStatementForm", () => {
 });
 
 describe("readMarkPaidForm", () => {
-  const pending = { cardId: "regalia", statementDate: "2026-09-16" };
+  const pending = { cardId: "regalia", statementDate: "2026-09-16", totalAmountDue: 41200 };
 
   it("reads the amount, date and where it was paid from: an account or another card", () => {
     expect(readMarkPaidForm({ amountPaid: "41,200", paidDate: "2026-10-01", paidFrom: "account:savings" }, pending, known, TODAY)).toEqual({
       ok: true,
-      input: { amountPaid: 41200, paidDate: "2026-10-01", paidFromAccountId: "savings" },
+      input: { amountPaid: 41200, paidDate: "2026-10-01", status: "Paid", paidFromAccountId: "savings" },
     });
     expect(readMarkPaidForm({ amountPaid: "41200", paidDate: "2026-10-01", paidFrom: "card:amazon" }, pending, known, TODAY)).toEqual({
       ok: true,
-      input: { amountPaid: 41200, paidDate: "2026-10-01", paidFromCardId: "amazon" },
+      input: { amountPaid: 41200, paidDate: "2026-10-01", status: "Paid", paidFromCardId: "amazon" },
     });
   });
 
   it("leaves paid from out when it isn't recorded", () => {
-    expect(readMarkPaidForm({ amountPaid: "41200", paidDate: "2026-10-01", paidFrom: "" }, pending, known, TODAY)).toEqual({ ok: true, input: { amountPaid: 41200, paidDate: "2026-10-01" } });
+    expect(readMarkPaidForm({ amountPaid: "41200", paidDate: "2026-10-01", paidFrom: "" }, pending, known, TODAY)).toEqual({ ok: true, input: { amountPaid: 41200, paidDate: "2026-10-01", status: "Paid" } });
+  });
+
+  it("keeps a short payment Pending when the rest is to be paid later, and Paid (underpaid) when it's final", () => {
+    const short = { amountPaid: "4,120", paidDate: "2026-10-01" };
+    expect(readMarkPaidForm({ ...short, rest: "later" }, pending, known, TODAY)).toEqual({ ok: true, input: { amountPaid: 4120, paidDate: "2026-10-01", status: "Pending" } });
+    expect(readMarkPaidForm({ ...short, rest: "final" }, pending, known, TODAY)).toEqual({ ok: true, input: { amountPaid: 4120, paidDate: "2026-10-01", status: "Paid" } });
+    expect(readMarkPaidForm(short, pending, known, TODAY)).toEqual({ ok: false, errors: { rest: "Choose whether you'll pay the rest" } });
+  });
+
+  it("closes the bill at or above the total due whatever the choice says, as when a second payment raises it", () => {
+    // The HDFC Regalia Gold January 2026 bill, paid twice.
+    const january = { cardId: "regalia", statementDate: "2026-01-16", totalAmountDue: 16098 };
+    expect(readMarkPaidForm({ amountPaid: "32,196", paidDate: "2026-02-05", rest: "later" }, january, known, TODAY)).toEqual({ ok: true, input: { amountPaid: 32196, paidDate: "2026-02-05", status: "Paid" } });
+    expect(readMarkPaidForm({ amountPaid: "41200", paidDate: "2026-10-01", rest: "later" }, pending, known, TODAY)).toMatchObject({ ok: true, input: { status: "Paid" } });
+  });
+
+  it("needs something paid on a bill that stays Pending", () => {
+    expect(readMarkPaidForm({ amountPaid: "0", paidDate: "2026-10-01", rest: "later" }, pending, known, TODAY)).toEqual({ ok: false, errors: { amountPaid: "Enter what you've paid so far" } });
+    expect(readMarkPaidForm({ amountPaid: "0", paidDate: "2026-10-01", rest: "final" }, pending, known, TODAY)).toMatchObject({ ok: true, input: { amountPaid: 0, status: "Paid" } });
+  });
+
+  it("owes nothing on a credit balance, so any amount closes it", () => {
+    expect(readMarkPaidForm({ amountPaid: "0", paidDate: "2026-10-01", rest: "later" }, { ...pending, totalAmountDue: -500 }, known, TODAY)).toMatchObject({ ok: true, input: { status: "Paid" } });
   });
 
   it("needs the date, between the statement date and today", () => {
@@ -153,10 +176,18 @@ describe("readMarkPaidForm", () => {
       ok: false,
       errors: { amountPaid: "The amount paid can't be negative", paidFrom: "Choose the account or card it was paid from" },
     });
-    expect(readMarkPaidForm({ amountPaid: "1", paidDate: "2026-10-01", paidFrom: "card:regalia" }, pending, known, TODAY)).toEqual({
+    expect(readMarkPaidForm({ amountPaid: "41200", paidDate: "2026-10-01", paidFrom: "card:regalia" }, pending, known, TODAY)).toEqual({
       ok: false,
       errors: { paidFrom: "A card can't pay its own bill: choose the account or card it was paid from" },
     });
+  });
+});
+
+describe("paymentStatus", () => {
+  it("is Pending only when short and the rest is to be paid later", () => {
+    expect(paymentStatus(38500, 3850, "later")).toBe("Pending");
+    expect(paymentStatus(38500, 3850, "final")).toBe("Paid");
+    expect(paymentStatus(38500, 38500, "later")).toBe("Paid");
   });
 });
 

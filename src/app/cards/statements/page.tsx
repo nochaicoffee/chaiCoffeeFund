@@ -14,7 +14,7 @@ import { pendingSummary, statementYears } from "@/lib/aggregate/cardSpend";
 import { filterCounts, filterStatements, groupByMonth, minimumDueNow, paginate, paidSummary, periodOverview } from "@/lib/aggregate/cardStatements";
 import { formatShortDate, todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
-import { afterPayment } from "@/lib/aggregate/cardEntry";
+import { paymentContext } from "@/lib/aggregate/cardEntry";
 import { toClientCard } from "@/lib/forms/clientCard";
 import type { Statement } from "@/lib/sheets/types";
 
@@ -56,11 +56,14 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
   const addStatement = (variant: "primary" | "link") => (
     <AddStatementButton cards={clientCards} statements={data.statements} today={today} initialCardId={state.cardId} disabledReason={disabledReason} variant={variant} />
   );
-  const markPaidFor = (statement: Statement) => {
+  // Mark paid on a pending row, Edit payment on a paid one (#84).
+  const paymentFor = (statement: Statement) => {
     const card = clientCardsById.get(statement.cardId);
-    return card ? (
-      <MarkPaidButton statement={statement} card={card} cards={clientCards} accounts={accountOptions} after={afterPayment(data, today, statement.id)} today={today} disabledReason={disabledReason} />
-    ) : null;
+    if (!card) return null;
+    // A payment saved from an account that's no longer active keeps it as a choice, so editing the payment doesn't drop it.
+    const savedAccount = accounts.find((a) => a.id === statement.paidFromAccountId && a.status !== "Active");
+    const options = savedAccount ? [...accountOptions, { id: savedAccount.id, name: savedAccount.name }] : accountOptions;
+    return <MarkPaidButton statement={statement} card={card} cards={clientCards} accounts={options} context={paymentContext(data, today, statement.id)} today={today} disabledReason={disabledReason} />;
   };
 
   return (
@@ -150,7 +153,7 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
         periodText={periodText}
         periodTotal={overview.count}
         addStatement={addStatement("link")}
-        markPaidFor={markPaidFor}
+        paymentFor={paymentFor}
       />
     </div>
   );
