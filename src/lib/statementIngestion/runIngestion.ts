@@ -234,10 +234,12 @@ async function processMessage(
   }
 
   const parsed = parseStatement(decrypted.text);
-  const fields = toStatementFields(parsed);
-  if (!fields) {
-    return { ...email, outcome: "skipped", reason: "incomplete or unparseable statement fields" };
+  const read = toStatementFields(parsed);
+  // Says which field was missing or misread, never its value (#89).
+  if ("problem" in read) {
+    return { ...email, outcome: "skipped", reason: read.problem };
   }
+  const { fields } = read;
 
   const extractedCardName = extractCardNameFromSubject(subject);
   const matchResult = matchCard(extractedCardName, cards);

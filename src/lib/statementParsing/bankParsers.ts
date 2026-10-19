@@ -46,7 +46,7 @@ export function parseHdfc(text: string): ParsedStatementDetails {
     if (due) {
       details.dueDate = due[1];
     } else if (text.match(/DUE DATE\s*\n?\s*(Nil|N\/A|NA|-)/i)) {
-      details.dueDate = "N/A (Credit Balance)";
+      details.noDueDate = "nothing owed";
     }
   }
 
@@ -69,7 +69,8 @@ export function parseHdfc(text: string): ParsedStatementDetails {
     if (match) details.minimumAmountDue = cleanAmount(match[1]);
   }
 
-  if (!details.dueDate) {
+  // Not when the PDF says there's no due date: these would find a date elsewhere.
+  if (!details.dueDate && !details.noDueDate) {
     const match = firstMatch(text, [
       /Payment Due Date[:\s]*(\d{2}[/-]\d{2}[/-]\d{2,4})/i,
       /Due Date[:\s]*(\d{2}[/-]\d{2}[/-]\d{2,4})/i,
@@ -340,8 +341,9 @@ export function parseCsb(text: string): ParsedStatementDetails {
   // The due date is printed straight after the total, so it's only read from
   // there. A bill due at once says "Immediate" instead, and a closed card's last
   // bill has none: searching on found the statement period's start date (#56).
-  const due = text.match(/Rs\.?\s*[\d,]+\.?\d*\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4})?/);
+  const due = text.match(/Rs\.?\s*[\d,]+\.?\d*\s+(?:(\d{1,2}\s+[A-Za-z]+\s+\d{4})|(Immediate)\b)?/);
   if (due?.[1]) details.dueDate = due[1];
+  else if (due?.[2]) details.noDueDate = "due immediately";
 
   const stmt = text.match(/Rs\.?\s*[\d,]+\.?\d*\s+(\d{2}[/-]\d{2}[/-]\d{4})/);
   if (stmt) details.statementDate = stmt[1];
