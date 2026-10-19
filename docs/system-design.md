@@ -117,7 +117,7 @@ Reads use `UNFORMATTED_VALUE` with `SERIAL_NUMBER` dates, so cells arrive as the
   - A date serial's time of day is dropped, never rounded, so an evening time can't move the date.
 - **Then the row is checked against the entity's row schema**: its create schema plus `id`, in the entity's own file next to the create and update schemas.
   - `createRepository` checks at load that the columns match the schema, and that the date columns are exactly the `isoDate` fields. A mismatch would fail every row of the tab, so it throws instead. `entities.test.ts` loads every repository, so a mismatch also fails CI.
-  - A few fields are looser than on create, where old or real data needs it. A card's last 4 and colour may be blank on rows from before those columns existed. A statement's total due may be negative, for a credit balance.
+  - A card's last 4 and colour are looser than on create: they may be blank on rows from before those columns existed. A statement's total due may be negative on create and read alike, for a credit balance (#51).
 - **A row that fails is left out of `list()` and `get()`, and logged once** (`[sheets] CardStatements row 7 (id …) was left out: totalAmountDue is blank`).
   - The log has only field names and rule messages, never cell values, because a Cards row holds a PDF password.
   - A row with every cell blank is skipped without a report. A row with data but no id is reported.
@@ -167,6 +167,13 @@ Next.js (App Router), TypeScript:
 - `/investments` — Stock/RSU/ESPP holdings (IND + US, with INR-converted total using today's rate; cost basis using each trade's frozen `fxRateToInr`), gain/loss per holding, transaction history; add-transaction form logs a buy/sell to `InvestmentTransactions` (positions recompute automatically, nothing to keep in sync by hand). Plus Fixed Deposits: principal, maturity date/value, and an estimated current value for net worth.
 - Shared layout: sidebar/topbar nav across these pages, consistent stat-tile + chart components reused across pages.
 - Charting: Recharts or Tremor (dashboard-oriented, both fit a Next.js app cleanly) for trends/breakdowns.
+- **Forms (#51, `src/components/cards/forms/`, designed in `docs/design/cards-forms.md`).** Add card / Edit card, Add statement and Mark paid share one shell, and work like this:
+  - **The shell** is a native modal `<dialog>`, which traps focus, closes on Esc and returns focus to its opener. It's a two-column dialog on desktop, with the live preview on the left. Below 768px it's a full-screen sheet with the primary button pinned. A trigger button mounts its dialog only while it's open.
+  - **Validation:** the pure readers in `lib/forms/` give plain-word errors by field. They run in the browser on blur and on submit, and the server action (`src/app/cards/actions.ts`, used with `useActionState`) runs them again, then the zod schema, before writing.
+  - **Previews:** the numbers come from `lib/aggregate/cardEntry.ts`. Mark paid's before/after doesn't depend on what's typed, so the server works it out per pending row and only the variance is computed live.
+  - **Saving:** a failed write returns `failed`, and the dialog keeps every value and offers Try again. A statement that matches an existing card and statement date warns and offers "Save anyway"; it isn't blocked.
+  - **Cards in the browser** are `ClientCard` (`lib/forms/clientCard.ts`): the PDF password is removed before any card reaches a client component, and only `hasPdfPassword` remains. Edit card shows "Saved" with Change and Remove. Leaving it alone keeps the password, because a blank password is never written.
+  - **Names:** the app shows a card's short name (`cardName`: the alias, or the full name without one).
 - Every category page ships with an "add new" form for **both** its master/definition entity (a new Card, Account, Subscription, Loan, IncomeSource, FixedDeposit) **and** its log tab (a statement, a payment, an income entry) — not log tabs only. This is a firm requirement, not a nice-to-have: the explicit point of the app is that adding data never again requires opening the Sheet directly. Full inline editing of historical rows is still fine to land incrementally per page — that's about correcting existing data, a different (lower-priority) concern from being able to add new data at all.
 
 ## Secrets & auth

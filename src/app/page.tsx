@@ -6,6 +6,7 @@ import { todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import { balanceTrend } from "@/lib/aggregate/accounts";
 import { computeCardSummaries } from "@/lib/aggregate/cards";
+import { cardName } from "@/lib/format/labels";
 import { totalEstimatedFixedDepositValue } from "@/lib/aggregate/fixedDeposits";
 import { totalPendingForMonth } from "@/lib/aggregate/income";
 import { totalCostBasisInr } from "@/lib/aggregate/investments";
@@ -80,7 +81,7 @@ export default async function OverviewPage() {
   for (const summary of cardSummaries) {
     if (summary.card.status === "Active" && summary.outstandingBalance > 0) {
       attention.push({
-        label: `${summary.card.name} statement due`,
+        label: `${cardName(summary.card)} statement due`,
         detail: `${formatInr(summary.outstandingBalance)} — next statement ~${summary.nextStatementDate}`,
       });
     }

@@ -356,21 +356,29 @@ export interface CardTileData {
  * The cards shown as tiles, in Sheet order: every card that isn't closed, plus
  * closed cards while they still have a bill to pay.
  */
+function toTile(card: Card, pending: DueItem[], today: string): CardTileData {
+  const own = pending.filter((d) => d.statement.cardId === card.id);
+  const outstanding = own.reduce((sum, d) => sum + d.remaining, 0);
+  return {
+    card,
+    outstanding,
+    utilization: card.creditLimit > 0 ? outstanding / card.creditLimit : null,
+    nextDue: own[0] ?? null,
+    nextStatementDate: nextStatementDate(card, today),
+  };
+}
+
+const owes = (card: Card, pending: DueItem[]) => pending.some((d) => d.statement.cardId === card.id);
+
 export function tileCards(data: CardData, today: string): CardTileData[] {
   const pending = pendingStatements(data, today);
-  return data.cards
-    .filter((card) => card.status !== "Closed" || pending.some((d) => d.statement.cardId === card.id))
-    .map((card) => {
-      const own = pending.filter((d) => d.statement.cardId === card.id);
-      const outstanding = own.reduce((sum, d) => sum + d.remaining, 0);
-      return {
-        card,
-        outstanding,
-        utilization: card.creditLimit > 0 ? outstanding / card.creditLimit : null,
-        nextDue: own[0] ?? null,
-        nextStatementDate: nextStatementDate(card, today),
-      };
-    });
+  return data.cards.filter((card) => card.status !== "Closed" || owes(card, pending)).map((card) => toTile(card, pending, today));
+}
+
+/** Closed cards with nothing left to pay: the tiles the card row folds away behind the "N closed cards" tile. */
+export function closedCardTiles(data: CardData, today: string): CardTileData[] {
+  const pending = pendingStatements(data, today);
+  return data.cards.filter((card) => card.status === "Closed" && !owes(card, pending)).map((card) => toTile(card, pending, today));
 }
 
 export interface CardDetails {

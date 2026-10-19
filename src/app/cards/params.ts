@@ -43,9 +43,14 @@ function queryString(values: [string, string | undefined][], demo: boolean): str
   return text ? `?${text}` : "?";
 }
 
-/** The query string for a Cards page link, keeping the other choices (period, panel, sample data). */
+/** `?closed=1` opens the closed cards folded away at the end of the card row. */
+export function parseShowClosed(params: SearchParams): boolean {
+  return first(params.closed) === "1";
+}
+
+/** The query string for a Cards page link, keeping the other choices (period, panel, closed cards, sample data). */
 export function cardsQuery(
-  current: { period: SpendPeriod; cardId?: string; panel?: PanelView; demo: boolean },
+  current: { period: SpendPeriod; cardId?: string; panel?: PanelView; showClosed?: boolean; demo: boolean },
   today: string,
 ): string {
   return queryString(
@@ -53,6 +58,7 @@ export function cardsQuery(
       ["card", current.cardId],
       ["period", periodValue(current.period, today)],
       ["panel", current.panel === "range" ? "range" : undefined],
+      ["closed", current.showClosed ? "1" : undefined],
     ],
     current.demo,
   );

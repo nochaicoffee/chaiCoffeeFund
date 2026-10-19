@@ -209,7 +209,7 @@ export function paymentVariance(s: Statement): Variance {
 }
 
 /** The line under a due date: "in 7 days", "due today", "3 days overdue", or "closed" once paid. */
-export function dueLabel(s: Statement, today: string): string {
+export function dueLabel(s: Pick<Statement, "status" | "dueDate">, today: string): string {
   if (s.status === "Paid") return "closed";
   const days = daysBetween(today, s.dueDate);
   const plural = (n: number) => `${n} ${n === 1 ? "day" : "days"}`;

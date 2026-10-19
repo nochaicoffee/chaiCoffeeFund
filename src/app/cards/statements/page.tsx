@@ -3,6 +3,8 @@ import Link from "next/link";
 import { loadCardData } from "../loadCardData";
 import { cardsQuery, parsePage, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodYears, statementsQuery, type StatementsListState } from "../params";
 import { RefreshButton } from "@/components/RefreshButton";
+import { SyncStatementsButton } from "@/components/SyncStatementsButton";
+import { AddStatementButton, EditCardButton, MarkPaidButton } from "@/components/cards/forms/FormButtons";
 import { PeriodSelect } from "@/components/cards/PeriodSelect";
 import { StatementsList } from "@/components/cards/StatementsList";
 import { StatementsSummary } from "@/components/cards/StatementsSummary";
@@ -12,6 +14,9 @@ import { pendingSummary, statementYears } from "@/lib/aggregate/cardSpend";
 import { filterCounts, filterStatements, groupByMonth, minimumDueNow, paginate, paidSummary, periodOverview } from "@/lib/aggregate/cardStatements";
 import { formatShortDate, todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
+import { afterPayment } from "@/lib/aggregate/cardEntry";
+import { toClientCard } from "@/lib/forms/clientCard";
+import type { Statement } from "@/lib/sheets/types";
 
 export const metadata: Metadata = { title: "Statements" };
 
@@ -43,8 +48,20 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
   // Due now is every pending bill, whatever the period, like the dashboard's pending line (PRD §8).
   const due = pendingSummary(data, today);
   const paid = paidSummary(data, period);
-  // Sample data never reaches the real forms, so it can't write to the Sheet.
-  const addStatementHref = "/cards#add-statement";
+  // Sample data never reaches the Sheet: the form buttons show disabled.
+  const disabledReason = demo ? "Sample data can't be changed" : undefined;
+  const clientCards = data.cards.map(toClientCard);
+  const clientCardsById = new Map(clientCards.map((c) => [c.id, c]));
+  const accountOptions = accounts.filter((a) => a.status === "Active").map((a) => ({ id: a.id, name: a.name }));
+  const addStatement = (variant: "primary" | "link") => (
+    <AddStatementButton cards={clientCards} statements={data.statements} today={today} initialCardId={state.cardId} disabledReason={disabledReason} variant={variant} />
+  );
+  const markPaidFor = (statement: Statement) => {
+    const card = clientCardsById.get(statement.cardId);
+    return card ? (
+      <MarkPaidButton statement={statement} card={card} cards={clientCards} accounts={accountOptions} after={afterPayment(data, today, statement.id)} today={today} disabledReason={disabledReason} />
+    ) : null;
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -64,16 +81,18 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
           <>
             <PeriodSelect years={periodYears(statementYears(data, today), period)} currentYear={currentYear} value={period.kind === "all" ? "all" : String(period.year)} />
             <RefreshButton iconOnly />
-            <Link
-              href={addStatementHref}
-              className="flex min-h-11 items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:min-h-0"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              Add statement
-            </Link>
+            {/* Every card has a chip here, closed ones included, so this is how a card without a tile is edited. */}
+            {state.cardId && clientCardsById.has(state.cardId) && (
+              <EditCardButton
+                card={clientCardsById.get(state.cardId)!}
+                accounts={accountOptions}
+                usedColors={data.cards.flatMap((c) => (c.color ? [c.color] : []))}
+                disabledReason={disabledReason}
+                tone="surface"
+              />
+            )}
+            {!demo && <SyncStatementsButton />}
+            {addStatement("primary")}
           </>
         }
       >
@@ -130,7 +149,8 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
         today={today}
         periodText={periodText}
         periodTotal={overview.count}
-        addStatementHref={addStatementHref}
+        addStatement={addStatement("link")}
+        markPaidFor={markPaidFor}
       />
     </div>
   );
