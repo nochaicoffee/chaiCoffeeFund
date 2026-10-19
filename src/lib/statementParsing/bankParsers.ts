@@ -1,5 +1,5 @@
 import { cleanAmount } from "./normalize";
-import type { ParsedStatementDetails } from "./types";
+import type { KnownBank, ParsedStatementDetails } from "./types";
 
 /** Returns the first regex in `patterns` that matches `text`, or null. */
 function firstMatch(text: string, patterns: RegExp[]): RegExpMatchArray | null {
@@ -390,7 +390,7 @@ export function parseGeneric(text: string): ParsedStatementDetails {
   return details;
 }
 
-export const BANK_PARSERS: Record<Exclude<import("./types").Bank, "unknown">, (text: string) => ParsedStatementDetails> = {
+export const BANK_PARSERS: Record<KnownBank, (text: string) => ParsedStatementDetails> = {
   hdfc: parseHdfc,
   icici: parseIcici,
   axis: parseAxis,

@@ -1,4 +1,6 @@
 export type Bank = "hdfc" | "icici" | "axis" | "sbi" | "yes" | "kotak" | "amex" | "csb" | "unknown";
+/** A bank this app has a parser for. */
+export type KnownBank = Exclude<Bank, "unknown">;
 
 /**
  * Raw, string-typed extraction straight off PDF text — deliberately not yet
