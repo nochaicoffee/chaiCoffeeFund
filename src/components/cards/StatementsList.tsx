@@ -5,6 +5,7 @@ import { dueLabel, paymentVariance, type FilterCounts, type MonthGroup, type Pag
 import type { StatementsListState } from "@/app/cards/params";
 import type { Account, Card, Statement } from "@/lib/sheets/types";
 import { ISO_DATE_PATTERN, formatDate, formatMonthYear } from "@/lib/format/date";
+import { optionLabel } from "@/lib/format/labels";
 import { formatInr, formatInrExact } from "@/lib/format/money";
 import { cardGradient, cardSwatch } from "./CardTile";
 import { MarkPaidButton } from "./MarkPaidButton";
@@ -91,7 +92,7 @@ function StatementRow({
         <div className="min-w-0 leading-tight">
           <div className="truncate font-bold">{card?.name ?? "Unknown card"}</div>
           <div className="truncate text-[11px] font-semibold text-muted">
-            {card?.issuer}
+            {card && optionLabel(card.issuer)}
             {card?.last4 && ` ·· ${card.last4}`}
           </div>
         </div>

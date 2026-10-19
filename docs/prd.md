@@ -1,8 +1,8 @@
 # chaiCoffeeFund: Product Requirements
 
-- **Status:** Approved v1.2 (v1.0 plus M1 clarifications). Scope changes go into v2.
+- **Status:** Approved v1.3 (v1.0 plus M1 clarifications). Scope changes go into v2.
 - **Owner:** Prathik
-- **Last updated:** 2026-10-16
+- **Last updated:** 2026-10-19
 - **Related:** [system-design.md](system-design.md) (how it works) · [adr/](adr/) (why) · [process.md](process.md) (how we build) · [`design/dashboards/`](../design/dashboards/) (what it looks like)
 
 ## 1. Summary
@@ -156,7 +156,12 @@ Following standard practice, acceptance criteria are written in full only for th
 
 ### F-CC-01 and F-CC-02: Cards and statements
 *As Prathik, I want to add my cards and their statements in the app, so that I never type them into the Sheet.*
-- [ ] I can add a card with a name, alias, issuer, last 4 digits, colour, credit limit, statement date and due date, plus an optional statement PDF password and email keywords. It appears straight away, with no manual refresh.
+- [ ] I can add a card with these fields, and it appears straight away with no manual refresh (fields decided 2026-10-19, #75):
+  - a name, alias, issuer and card type (Reward Points or Cashback);
+  - the last 4 digits, a colour and the credit limit;
+  - the statement day of the month, and how many days after it the bill is due;
+  - optionally, the statement PDF password, email keywords and the account it's usually paid from.
+  - Each statement's own due date comes from its PDF. The card's schedule only predicts the next statement and prefills a new one.
 - [ ] I can add a statement to a card with a statement date, due date, total due and minimum due.
 - [ ] I can mark a statement paid with an amount, a date and the account it was paid from. The card's outstanding balance and utilization update.
 - [ ] Paying more or less than the total due shows as overpaid or underpaid by the exact difference.
@@ -261,3 +266,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.0 | 2026-10-16 | Approved by Prathik as written, including the priorities, success metrics, out-of-scope list and release plan. Further changes go into v2. |
 | 1.1 | 2026-10-17 | Clarifications for M1, no scope change. Answers to Q3, Q5, Q6 and Q7. §8 updated to the final Cards design (a separate Statements page, and `last4` and colour on cards). Card-spend definitions added (statement-date month, average over every month so far, all pending bills). Undesigned pieces get designed in code. |
 | 1.2 | 2026-10-17 | More card-spend rules confirmed while building the math (#44): highest and lowest month use months with statements; a credit balance counts as ₹0; outstanding includes closed cards (in net worth too) and always equals the pending total; utilization uses active cards only; statements on deleted cards are left out. |
+| 1.3 | 2026-10-19 | Card setup matches the old sheet (#75): a card type (Reward Points or Cashback), and the schedule as a statement day plus a due-day buffer instead of two full dates. Also adds issuer and colour dropdowns and an optional default payment account. |

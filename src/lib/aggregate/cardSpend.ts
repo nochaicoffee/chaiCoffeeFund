@@ -1,6 +1,6 @@
 import { ISO_DATE_PATTERN } from "../format/date";
 import type { Card, Statement } from "../sheets/types";
-import { nextOccurrence } from "./recurring";
+import { nextStatementDate } from "./cardSchedule";
 
 /**
  * Card spending math behind the Cards dashboard. Definitions are PRD §8
@@ -368,7 +368,7 @@ export function tileCards(data: CardData, today: string): CardTileData[] {
         outstanding,
         utilization: card.creditLimit > 0 ? outstanding / card.creditLimit : null,
         nextDue: own[0] ?? null,
-        nextStatementDate: nextOccurrence(card.statementAnchorDate, "Monthly", today),
+        nextStatementDate: nextStatementDate(card, today),
       };
     });
 }

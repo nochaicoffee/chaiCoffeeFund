@@ -1,6 +1,7 @@
 import type { CardDetails, MonthAmount } from "@/lib/aggregate/cardSpend";
 import type { Card } from "@/lib/sheets/types";
 import { formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
+import { optionLabel } from "@/lib/format/labels";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import { cardGradient, cardSwatch } from "./CardTile";
 
@@ -52,7 +53,7 @@ export function DetailsCard({
   const month = (m: MonthAmount | null) => (m ? (singleYear ? formatMonthShort(m.month) : formatMonthYear(m.month)) : undefined);
   const dueTotal = details.due.reduce((sum, d) => sum + d.remaining, 0);
   const label = card
-    ? `${card.issuer}${card.last4 ? ` · •••• ${card.last4}` : ""}`
+    ? `${optionLabel(card.issuer)}${card.last4 ? ` · •••• ${card.last4}` : ""}`
     : `All Cards · ${cardCount} ${cardCount === 1 ? "card" : "cards"}`;
 
   return (

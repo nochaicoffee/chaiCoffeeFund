@@ -1,5 +1,5 @@
 import { remainingDue } from "./cardSpend";
-import { nextOccurrence } from "./recurring";
+import { nextStatementDate } from "./cardSchedule";
 import type { Card, Statement } from "../sheets/types";
 
 export interface CardSummary {
@@ -33,7 +33,7 @@ export function computeCardSummaries(cards: Card[], statements: Statement[], fro
       card,
       outstandingBalance,
       utilization: card.creditLimit > 0 ? outstandingBalance / card.creditLimit : null,
-      nextStatementDate: nextOccurrence(card.statementAnchorDate, "Monthly", from),
+      nextStatementDate: nextStatementDate(card, from),
     };
   });
 }

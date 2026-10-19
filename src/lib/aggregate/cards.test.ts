@@ -6,10 +6,11 @@ const card = (overrides: Partial<Card> = {}): Card => ({
   id: "card-1",
   name: "Test Card",
   alias: "TC",
-  issuer: "Test Bank",
+  issuer: "Other",
+  cardType: "Cashback",
   creditLimit: 100000,
-  statementAnchorDate: "2026-08-15",
-  dueAnchorDate: "2026-09-04",
+  statementDay: 15,
+  dueDayBuffer: 20,
   status: "Active",
   ...overrides,
 });
@@ -66,9 +67,9 @@ describe("computeCardSummaries", () => {
     expect(summary.utilization).toBeCloseTo(0.25, 5);
   });
 
-  it("predicts the next statement date from the anchor date", () => {
-    // 2026-08-15 has already passed relative to "from", so it should step to September.
-    const [summary] = computeCardSummaries([card({ statementAnchorDate: "2026-07-15" })], [], "2026-08-25");
+  it("predicts the next statement date from the statement day", () => {
+    // The 15th has already passed relative to "from", so it should step to September.
+    const [summary] = computeCardSummaries([card({ statementDay: 15 })], [], "2026-08-25");
     expect(summary.nextStatementDate).toBe("2026-09-15");
   });
 });

@@ -29,10 +29,11 @@ const card = (overrides: Partial<Card>): Card => ({
   id: "card",
   name: "Card",
   alias: "C",
-  issuer: "Bank",
+  issuer: "Other",
+  cardType: "Reward-Points",
   creditLimit: 100000,
-  statementAnchorDate: "2026-01-05",
-  dueAnchorDate: "2026-01-25",
+  statementDay: 5,
+  dueDayBuffer: 20,
   status: "Active",
   ...overrides,
 });
@@ -400,7 +401,7 @@ describe("tileCards", () => {
   });
 
   it("knows when each card's next statement is due", () => {
-    const [tile] = tileCards({ cards: [card({ id: "c", statementAnchorDate: "2026-01-05" })], statements: [] }, "2026-10-17");
+    const [tile] = tileCards({ cards: [card({ id: "c", statementDay: 5 })], statements: [] }, "2026-10-17");
     expect(tile.nextStatementDate).toBe("2026-11-05");
   });
 });

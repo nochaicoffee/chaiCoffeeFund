@@ -20,14 +20,16 @@ export async function createCard(formData: FormData): Promise<void> {
     name: str(formData, "name"),
     alias: str(formData, "alias"),
     issuer: str(formData, "issuer"),
+    cardType: str(formData, "cardType"),
     creditLimit: Number(str(formData, "creditLimit")),
-    statementAnchorDate: str(formData, "statementAnchorDate"),
-    dueAnchorDate: str(formData, "dueAnchorDate"),
+    statementDay: Number(str(formData, "statementDay")),
+    dueDayBuffer: Number(str(formData, "dueDayBuffer")),
     status: str(formData, "status"),
     last4: str(formData, "last4"),
     color: str(formData, "color"),
     statementPdfPassword: optionalStr(formData, "statementPdfPassword"),
     emailMatchKeywords: optionalStr(formData, "emailMatchKeywords"),
+    defaultPaidFromAccountId: optionalStr(formData, "defaultPaidFromAccountId"),
   });
   await cardsRepository.create(input);
   updateTag(CACHE_TAGS.cards);

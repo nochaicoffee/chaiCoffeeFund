@@ -19,7 +19,7 @@ describe("computeNetWorth", () => {
     const balanceSnapshots: BalanceSnapshot[] = [{ id: "s1", accountId: "acc-1", date: "2026-08-01", balance: 200000 }];
 
     const cards: Card[] = [
-      { id: "card-1", name: "C", alias: "C", issuer: "I", creditLimit: 100000, statementAnchorDate: "2026-08-01", dueAnchorDate: "2026-08-20", status: "Active" },
+      { id: "card-1", name: "C", alias: "C", issuer: "Other", cardType: "Cashback", creditLimit: 100000, statementDay: 1, dueDayBuffer: 19, status: "Active" },
     ];
     const statements: Statement[] = [
       { id: "stmt-1", cardId: "card-1", statementDate: "2026-08-01", dueDate: "2026-08-20", totalAmountDue: 15000, minimumAmountDue: 500, status: "Pending" },
