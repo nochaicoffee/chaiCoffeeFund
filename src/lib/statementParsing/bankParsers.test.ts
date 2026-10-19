@@ -10,6 +10,7 @@ import {
   parseSbi,
   parseYes,
 } from "./bankParsers";
+import { parseStatement } from "./parseStatement";
 
 describe("parseHdfc", () => {
   it("parses the tabular format", () => {
@@ -35,6 +36,26 @@ describe("parseHdfc", () => {
     const text = "TOTAL AMOUNT DUE\nC-14,238.61\nMINIMUM DUE\nC0.00\nDUE DATE\nNil";
     expect(parseHdfc(text).dueDate).toBe("N/A (Credit Balance)");
     expect(parseHdfc(text).totalAmountDue).toBe("-14238.61");
+  });
+
+  // Made-up numbers, laid out the way pdf.js extracts a real statement: its text
+  // pieces joined by spaces, with the "C" glyph a piece of its own (#56).
+  it("reads pdf.js's text, where a space follows the C glyph", () => {
+    const text =
+      "TOTAL AMOUNT DUE  C 12,345.00  MINIMUM DUE  C 620.00  DUE DATE  21 Mar, 2026  Reward Points  1,000 " +
+      "Your Card Control Setting   As on : 01 Mar, 2026 Domestic Transaction " +
+      "CURRENT DUES  C 619.50  MINIMUM DUES  C 999.00  PREVIOUS STATEMENT DUES   PAYMENTS/CREDITS RECEIVED  C 4,000.00   C 4,000.00";
+    expect(parseHdfc(text)).toMatchObject({
+      totalAmountDue: "12345.00",
+      minimumAmountDue: "620.00",
+      dueDate: "21 Mar, 2026",
+      statementDate: "01 Mar, 2026",
+    });
+  });
+
+  it("reads a credit balance from pdf.js's text", () => {
+    const text = "TOTAL AMOUNT DUE  C -1,234.50  MINIMUM DUE  C 0.00  DUE DATE  Nil  Reward Points  1,000";
+    expect(parseHdfc(text)).toMatchObject({ totalAmountDue: "-1234.50", minimumAmountDue: "0.00", dueDate: "N/A (Credit Balance)" });
   });
 
   it("falls back to the standard key-value patterns", () => {
@@ -65,6 +86,30 @@ describe("parseIcici", () => {
   });
 });
 
+describe("parseIcici, on pdf.js's text", () => {
+  // Made-up numbers, in the order pdf.js extracts a real statement (#56): the
+  // labels come first, then the two amounts behind the backtick rupee glyph.
+  // A later page has a worked example of how the minimum due is worked out.
+  const text =
+    "STATEMENT DATE CREDIT SUMMARY PAYMENT DUE DATE STATEMENT DATE  STATEMENT SUMMARY = Total Amount due Minimum Amount due  " +
+    "Interest will be charged if your total amount due is not paid  EARNINGS  Earned  120   120  ` 150.00  ` 2,999.10 SPENDS OVERVIEW  " +
+    "January 5, 2026 January 23, 2026  Statement period : December 6, 2025 to January 5, 2026 ` 4,000.00 ` 2,999.10 ` 0.00 `4,000.00\n" +
+    "k) 5% on remaining Balance   1,000.00 l) Total Minimum Amount Due   4,321.00   Minimum Amount Due*   4,330.00";
+
+  it("takes the backtick-glyph amounts, minimum first, and the two word-dates", () => {
+    expect(parseIcici(text)).toMatchObject({
+      minimumAmountDue: "150.00",
+      totalAmountDue: "2999.10",
+      statementDate: "January 5, 2026",
+      dueDate: "January 23, 2026",
+    });
+  });
+
+  it("isn't filled in from the worked example", () => {
+    expect(parseStatement(`ICICI Bank ${text}`)).toMatchObject({ bank: "icici", minimumAmountDue: "150.00", totalAmountDue: "2999.10" });
+  });
+});
+
 describe("parseAxis", () => {
   it("parses the tabular period/due/generation dates and the two Dr-delimited amounts", () => {
     const text = [
@@ -79,6 +124,29 @@ describe("parseAxis", () => {
       totalAmountDue: "26903.66",
       minimumAmountDue: "539.00",
     });
+  });
+});
+
+describe("parseAxis, on pdf.js's text", () => {
+  // Made-up numbers, laid out the way pdf.js extracts a real statement (#56).
+  const summary =
+    "PAYMENT SUMMARY  Total Payment Due   Minimum Payment Due   Statement Period   Payment Due Date   Statement Generation Date " +
+    "20/05/2026 - 19/06/2026   09/07/2026   19/06/2026 12,345.67   Dr   1,234.00   Dr Credit Card Number   Credit Limit ";
+  const accountSummary =
+    "Previous Balance - Payments - Credits + Purchase + Cash Advance + Other Debit&Charges =Total Payment Due " +
+    "9,999.99 Dr   9,999.99   100.00   12,345.67   0.00   100.00   12,245.67   Dr  Account Summary";
+
+  it("reads the payment summary row", () => {
+    expect(parseAxis(summary + accountSummary)).toMatchObject({
+      dueDate: "09/07/2026",
+      statementDate: "19/06/2026",
+      totalAmountDue: "12345.67",
+      minimumAmountDue: "1234.00",
+    });
+  });
+
+  it("never takes the previous balance after the account summary's '=Total Payment Due' for the total", () => {
+    expect(parseAxis(accountSummary).totalAmountDue).toBeUndefined();
   });
 });
 
@@ -145,6 +213,29 @@ describe("parseCsb", () => {
       dueDate: "11 Sep 2025",
       statementDate: "27/08/2025",
     });
+  });
+});
+
+describe("parseCsb, on pdf.js's text", () => {
+  // Made-up numbers, laid out the way pdf.js extracts a real statement (#56):
+  // total and due date, minimum and generation date, then the summary and the
+  // statement period.
+  const tail = " Rs. 50,000   Rs. 48,800   Pay your bill now  10/01/2026   Rs. 400.00 Rs. 1,200.00 Rs. 0.00 Rs. 1,200.00 10 JAN 2026 - 09 FEB 2026  Page 1 of 4";
+
+  it("reads the due date after the total", () => {
+    const text = `XXXX XXXX XXXX 1111  Rs. 1,200.00   02 MAR 2026  Rs. 200.00   10/02/2026${tail}`;
+    expect(parseCsb(text)).toMatchObject({ totalAmountDue: "1200.00", minimumAmountDue: "200.00", dueDate: "02 MAR 2026", statementDate: "10/02/2026" });
+  });
+
+  it("finds no due date when the bill is due 'Immediate', rather than the statement period's start", () => {
+    const text = `XXXX XXXX XXXX 1111  Rs. 1,200.00   Immediate  Rs. 200.00   10/02/2026${tail}`;
+    expect(parseCsb(text)).toMatchObject({ totalAmountDue: "1200.00", minimumAmountDue: "200.00", statementDate: "10/02/2026" });
+    expect(parseStatement(`CSB Bank ${text}`).dueDate).toBeUndefined();
+  });
+
+  it("finds no due date on a closed card's last bill, which has none", () => {
+    const text = `XXXX XXXX XXXX 1111  Rs. 0.00  Rs. 0.00   10/03/2026${tail}`;
+    expect(parseCsb(text).dueDate).toBeUndefined();
   });
 });
 

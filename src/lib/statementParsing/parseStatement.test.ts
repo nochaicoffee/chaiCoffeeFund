@@ -16,7 +16,7 @@ describe("parseStatement", () => {
   });
 
   it("fills gaps left by a bank-specific parser using the generic fallback", () => {
-    // ICICI's parser only looks for the Á glyph and word-dates — give it a
+    // ICICI's parser only looks for its rupee glyph and word-dates — give it a
     // statement date in the generic key-value format instead, which its own
     // parser won't find but the generic fallback will.
     const text = "ICICI Bank\nÁ420.00\nÁ7,118.46\nStatement Date: 12/08/2025";

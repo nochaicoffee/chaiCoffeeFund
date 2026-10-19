@@ -39,4 +39,23 @@ describe("toStatementFields", () => {
     });
     expect(result).toBeNull();
   });
+
+  // The Add statement form's rules (readStatementForm): no real statement breaks them,
+  // so a parse that does read the wrong date or number (#56).
+  const fields = { bank: "csb" as const, statementDate: "10/02/2026", dueDate: "02/03/2026", totalAmountDue: "1200.00", minimumAmountDue: "200.00" };
+
+  it("returns null when the due date isn't after the statement date", () => {
+    expect(toStatementFields({ ...fields, dueDate: "10 JAN 2026" })).toBeNull();
+    expect(toStatementFields({ ...fields, dueDate: "10/02/2026" })).toBeNull();
+  });
+
+  it("returns null when the minimum due is more than the total", () => {
+    expect(toStatementFields({ ...fields, minimumAmountDue: "1200.01" })).toBeNull();
+    expect(toStatementFields({ ...fields, totalAmountDue: "-50.00", minimumAmountDue: "10.00" })).toBeNull();
+  });
+
+  it("accepts a minimum equal to the total, and a credit balance with a ₹0 minimum", () => {
+    expect(toStatementFields({ ...fields, minimumAmountDue: "1200.00" })).toMatchObject({ totalAmountDue: 1200, minimumAmountDue: 1200 });
+    expect(toStatementFields({ ...fields, totalAmountDue: "-50.00", minimumAmountDue: "0.00" })).toMatchObject({ totalAmountDue: -50, minimumAmountDue: 0 });
+  });
 });
