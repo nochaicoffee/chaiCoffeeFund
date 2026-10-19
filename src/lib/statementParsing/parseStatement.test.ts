@@ -3,10 +3,10 @@ import { parseStatement } from "./parseStatement";
 
 describe("parseStatement", () => {
   it("auto-detects the bank and routes to its parser", () => {
-    const text = "HDFC Bank\nTOTAL AMOUNT DUE\nC16,098.00\nMINIMUM DUE\nC430.00\nDUE DATE\n04 Feb 2026\nAs on : 15 Jan, 2026";
+    const text = "HDFC Bank\nTOTAL AMOUNT DUE\nC18,264.00\nMINIMUM DUE\nC915.00\nDUE DATE\n23 Jun 2025\nAs on : 03 Jun, 2025";
     const details = parseStatement(text);
     expect(details.bank).toBe("hdfc");
-    expect(details.totalAmountDue).toBe("16098.00");
+    expect(details.totalAmountDue).toBe("18264.00");
   });
 
   it("respects an explicitly given bank instead of detecting", () => {
@@ -19,11 +19,11 @@ describe("parseStatement", () => {
     // ICICI's parser only looks for its rupee glyph and word-dates — give it a
     // statement date in the generic key-value format instead, which its own
     // parser won't find but the generic fallback will.
-    const text = "ICICI Bank\nÁ420.00\nÁ7,118.46\nStatement Date: 12/08/2025";
+    const text = "ICICI Bank\nÁ365.00\nÁ5,742.30\nStatement Date: 03/11/2025";
     const details = parseStatement(text);
     expect(details.bank).toBe("icici");
-    expect(details.minimumAmountDue).toBe("420.00");
-    expect(details.statementDate).toBe("12/08/2025");
+    expect(details.minimumAmountDue).toBe("365.00");
+    expect(details.statementDate).toBe("03/11/2025");
   });
 
   it("falls back to the generic parser entirely for an unrecognized bank", () => {

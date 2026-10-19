@@ -3,7 +3,7 @@
  * the reference `extract_card_name_from_subject`.
  *
  * Examples:
- *   "Your 17 Dec 2025 - 16 Jan 2026 Edge CSB Bank RuPay Credit Card Statement"
+ *   "Your 5 Mar 2025 - 4 Apr 2025 Edge CSB Bank RuPay Credit Card Statement"
  *     -> "Edge CSB Bank Credit Card"
  *   "Your HDFC Bank - Regalia Gold Credit Card Statement - January 2026"
  *     -> "HDFC Bank - Regalia Gold Credit Card"

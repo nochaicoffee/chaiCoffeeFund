@@ -14,28 +14,28 @@ import { parseStatement } from "./parseStatement";
 
 describe("parseHdfc", () => {
   it("parses the tabular format", () => {
-    const text = "Payment Due Date Total Dues Minimum Amount Due\n04/09/2025 8,596.00 430.00";
+    const text = "Payment Due Date Total Dues Minimum Amount Due\n07/11/2025 6,482.00 330.00";
     expect(parseHdfc(text)).toMatchObject({
-      dueDate: "04/09/2025",
-      totalAmountDue: "8596.00",
-      minimumAmountDue: "430.00",
+      dueDate: "07/11/2025",
+      totalAmountDue: "6482.00",
+      minimumAmountDue: "330.00",
     });
   });
 
   it("parses the 2025+ vertical format with the C currency glyph", () => {
-    const text = "TOTAL AMOUNT DUE\nC16,098.00\nMINIMUM DUE\nC430.00\nDUE DATE\n04 Feb 2026\nAs on : 15 Jan, 2026";
+    const text = "TOTAL AMOUNT DUE\nC18,264.00\nMINIMUM DUE\nC915.00\nDUE DATE\n23 Jun 2025\nAs on : 03 Jun, 2025";
     expect(parseHdfc(text)).toMatchObject({
-      totalAmountDue: "16098.00",
-      minimumAmountDue: "430.00",
-      dueDate: "04 Feb 2026",
-      statementDate: "15 Jan, 2026",
+      totalAmountDue: "18264.00",
+      minimumAmountDue: "915.00",
+      dueDate: "23 Jun 2025",
+      statementDate: "03 Jun, 2025",
     });
   });
 
   it("reports a credit balance as N/A rather than a missing due date", () => {
-    const text = "TOTAL AMOUNT DUE\nC-14,238.61\nMINIMUM DUE\nC0.00\nDUE DATE\nNil";
+    const text = "TOTAL AMOUNT DUE\nC-3,871.25\nMINIMUM DUE\nC0.00\nDUE DATE\nNil";
     expect(parseHdfc(text).dueDate).toBe("N/A (Credit Balance)");
-    expect(parseHdfc(text).totalAmountDue).toBe("-14238.61");
+    expect(parseHdfc(text).totalAmountDue).toBe("-3871.25");
   });
 
   // Made-up numbers, laid out the way pdf.js extracts a real statement: its text
@@ -70,19 +70,19 @@ describe("parseHdfc", () => {
 
 describe("parseIcici", () => {
   it("parses the Á-glyph amounts (min first, total second) and the two word-dates", () => {
-    const text = "Á420.00\nÁ7,118.46\nAugust 12, 2025\nAugust 30, 2025";
+    const text = "Á365.00\nÁ5,742.30\nNovember 3, 2025\nNovember 21, 2025";
     expect(parseIcici(text)).toMatchObject({
-      minimumAmountDue: "420.00",
-      totalAmountDue: "7118.46",
-      statementDate: "August 12, 2025",
-      dueDate: "August 30, 2025",
+      minimumAmountDue: "365.00",
+      totalAmountDue: "5742.30",
+      statementDate: "November 3, 2025",
+      dueDate: "November 21, 2025",
     });
   });
 
   it("prefers the statement-period end date over the first word-date when present", () => {
     const text =
-      "Á420.00\nÁ7,118.46\nStatement period : July 13, 2025 to August 12, 2025\nAugust 30, 2025 due";
-    expect(parseIcici(text).statementDate).toBe("August 12, 2025");
+      "Á365.00\nÁ5,742.30\nStatement period : October 4, 2025 to November 3, 2025\nNovember 21, 2025 due";
+    expect(parseIcici(text).statementDate).toBe("November 3, 2025");
   });
 });
 
@@ -113,16 +113,16 @@ describe("parseIcici, on pdf.js's text", () => {
 describe("parseAxis", () => {
   it("parses the tabular period/due/generation dates and the two Dr-delimited amounts", () => {
     const text = [
-      "13/12/2025 - 12/01/2026 30/01/2026 13/01/2026",
-      "13/01/2026 26,903.66 Dr 539.00 Dr",
+      "08/09/2025 - 07/10/2025 27/10/2025 08/10/2025",
+      "08/10/2025 18,450.40 Dr 922.00 Dr",
       "Previous Balance - Payments - Credits + Purchase + Cash Advance + Other Debit&Charges =Total Payment Due",
-      "3,317.00 Dr 3,317.00 0.00 26,733.66 0.00 170.00 26,903.66 Dr",
+      "2,100.00 Dr 2,100.00 0.00 18,300.40 0.00 150.00 18,450.40 Dr",
     ].join("\n");
     expect(parseAxis(text)).toMatchObject({
-      dueDate: "30/01/2026",
-      statementDate: "13/01/2026",
-      totalAmountDue: "26903.66",
-      minimumAmountDue: "539.00",
+      dueDate: "27/10/2025",
+      statementDate: "08/10/2025",
+      totalAmountDue: "18450.40",
+      minimumAmountDue: "922.00",
     });
   });
 });
@@ -165,12 +165,12 @@ describe("parseSbi", () => {
 describe("parseYes", () => {
   it("parses the label-then-newline-then-amount layout", () => {
     const text =
-      "Total Amount Due:\nRs. 1,925.90\nMinimum Amount Due:\nRs. 200.00\nPayment Due Date: 04/10/2025\nStatement Date : 14/09/2025";
+      "Total Amount Due:\nRs. 2,736.40\nMinimum Amount Due:\nRs. 150.00\nPayment Due Date: 21/12/2025\nStatement Date : 01/12/2025";
     expect(parseYes(text)).toMatchObject({
-      totalAmountDue: "1925.90",
-      minimumAmountDue: "200.00",
-      dueDate: "04/10/2025",
-      statementDate: "14/09/2025",
+      totalAmountDue: "2736.40",
+      minimumAmountDue: "150.00",
+      dueDate: "21/12/2025",
+      statementDate: "01/12/2025",
     });
   });
 });
@@ -206,12 +206,12 @@ describe("parseAmex", () => {
 
 describe("parseCsb", () => {
   it("takes the first two Rs. amounts as total/min and reads the trailing dates", () => {
-    const text = "Some spaced text\nRs. 14,031.83 11 Sep 2025\nRs. 710.00 27/08/2025";
+    const text = "Some spaced text\nRs. 9,614.20 19 Dec 2025\nRs. 480.00 29/11/2025";
     expect(parseCsb(text)).toMatchObject({
-      totalAmountDue: "14031.83",
-      minimumAmountDue: "710.00",
-      dueDate: "11 Sep 2025",
-      statementDate: "27/08/2025",
+      totalAmountDue: "9614.20",
+      minimumAmountDue: "480.00",
+      dueDate: "19 Dec 2025",
+      statementDate: "29/11/2025",
     });
   });
 });
