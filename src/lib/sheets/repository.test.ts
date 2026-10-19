@@ -6,6 +6,8 @@ import { isoDate, nonEmptyString } from "./validation";
 const sheet = vi.hoisted(() => ({
   rows: {} as Record<string, unknown[][]>,
   updates: [] as { range: string; values: unknown[][] }[],
+  /** Each values.batchUpdate call, as the updates it carried. */
+  batches: [] as { range: string; values: unknown[][] }[][],
   deletes: [] as { startIndex: number; endIndex: number }[],
 }));
 
@@ -18,6 +20,10 @@ vi.mock("./client", () => ({
         get: async ({ range }: { range: string }) => ({ data: { values: sheet.rows[range] ?? [] } }),
         update: async ({ range, requestBody }: { range: string; requestBody: { values: unknown[][] } }) => {
           sheet.updates.push({ range, values: requestBody.values });
+          return { data: {} };
+        },
+        batchUpdate: async ({ requestBody }: { requestBody: { data: { range: string; values: unknown[][] }[] } }) => {
+          sheet.batches.push(requestBody.data);
           return { data: {} };
         },
       },
@@ -51,6 +57,7 @@ const AUG_5 = 46239;
 let warn: ReturnType<typeof vi.spyOn>;
 beforeEach(() => {
   sheet.updates = [];
+  sheet.batches = [];
   sheet.deletes = [];
   warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 });
@@ -118,6 +125,41 @@ describe("writing to an invalid row", () => {
     await things.update("b", { amount: 5 });
     await things.remove("b");
     expect(warn).not.toHaveBeenCalled();
+  });
+});
+
+describe("updateMany", () => {
+  beforeEach(() => {
+    sheet.rows["Things!A2:D"] = [
+      ["a", "Alpha", 100, AUG_5],
+      ["b", "Bravo", "", AUG_5],
+      ["c", "Charlie", 12, AUG_5],
+    ];
+  });
+
+  it("writes every row in one request, invalid ones repaired from their cleaned cells", async () => {
+    const updated = await things.updateMany([
+      { id: "c", patch: { amount: 13 } },
+      { id: "b", patch: { amount: 5 } },
+    ]);
+    expect(sheet.batches).toEqual([
+      [
+        { range: "Things!A4:D4", values: [["'c", "'Charlie", 13, "2026-08-05"]] },
+        { range: "Things!A3:D3", values: [["'b", "'Bravo", 5, "2026-08-05"]] },
+      ],
+    ]);
+    expect(updated.map((t) => t.amount)).toEqual([13, 5]);
+  });
+
+  it("clears a field patched to undefined", async () => {
+    await things.updateMany([{ id: "a", patch: { name: undefined } }]);
+    expect(sheet.batches[0][0].values).toEqual([["'a", "", 100, "2026-08-05"]]);
+  });
+
+  it("writes nothing when an id is missing, or when there's nothing to update", async () => {
+    await expect(things.updateMany([{ id: "a", patch: { amount: 1 } }, { id: "zz", patch: { amount: 2 } }])).rejects.toThrow("Things: no record found for id zz");
+    await things.updateMany([]);
+    expect(sheet.batches).toEqual([]);
   });
 });
 

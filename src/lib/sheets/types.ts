@@ -106,6 +106,53 @@ export interface Statement {
   paidDate?: string;
 }
 
+// --- Statement sync (#82) ---
+
+/** What happened to one statement email: its statement was added, was already in the Sheet, or couldn't be read. */
+export const STATEMENT_EMAIL_RESULTS = ["Imported", "Duplicate", "Failed"] as const;
+export type StatementEmailResult = (typeof STATEMENT_EMAIL_RESULTS)[number];
+
+/** One statement email the Gmail sync has looked at, so the next sync knows what to skip. */
+export interface StatementEmail {
+  id: string;
+  messageId: string;
+  /** The email's date. Blank only when the email itself couldn't be read. */
+  receivedDate?: string;
+  subject?: string;
+  cardId?: string;
+  result: StatementEmailResult;
+  /** Why it failed, or anything else the import did, like filling in the card's last 4. */
+  details?: string;
+  /** The statement it added, or the one already in the Sheet. */
+  statementId?: string;
+  attempts: number;
+  /** An ISO timestamp, like every *At field. */
+  lastTriedAt: string;
+}
+
+export const SYNC_TRIGGERS = ["Manual", "Scheduled"] as const;
+export type SyncTrigger = (typeof SYNC_TRIGGERS)[number];
+
+/** Skipped: another sync was already running, so this one did nothing. */
+export const SYNC_RUN_STATUSES = ["Running", "Done", "Failed", "Skipped"] as const;
+export type SyncRunStatus = (typeof SYNC_RUN_STATUSES)[number];
+
+/** One run of the Gmail sync: how it was started and what it did. */
+export interface SyncRun {
+  id: string;
+  trigger: SyncTrigger;
+  status: SyncRunStatus;
+  startedAt: string;
+  finishedAt?: string;
+  imported?: number;
+  duplicates?: number;
+  failed?: number;
+  /** New emails left for the next sync, when this one ran out of time. */
+  remaining?: number;
+  /** Why it failed or was skipped. */
+  details?: string;
+}
+
 // --- Subscriptions ---
 
 export type SubscriptionStatus = "Active" | "Paused";
