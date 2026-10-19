@@ -4,11 +4,14 @@ import type { Card, Statement, StatementEmail, SyncRun } from "../sheets/types";
 /**
  * The sync with Gmail, the PDF reader, the statement parser and the Sheets
  * repositories faked. Each fake email carries its subject and its PDF's text;
- * the parser reads the statement date from it. The SyncRuns and
+ * the parser reads the statement date from it. The bank is detected from the
+ * text for real, so a fake HDFC statement names HDFC Bank. The SyncRuns and
  * StatementEmails tabs are kept in memory, so a second sync sees the first's.
  */
 const fake = vi.hoisted(() => ({
-  emails: [] as { id: string; subject: string; text: string; hangs?: boolean }[],
+  emails: [] as { id: string; subject: string; text: string; hangs?: boolean; noPdf?: boolean; pdfFailure?: string }[],
+  /** The bank each parse was asked to read the text as. */
+  parsedAs: [] as (string | undefined)[],
   cards: [] as Card[],
   statements: [] as Statement[],
   cardUpdates: [] as { id: string; patch: Partial<Card> }[],
@@ -28,16 +31,22 @@ vi.mock("@/lib/gmail/messages", () => ({
   // 1792368000000 is 00:00 on 2026-10-19 UTC, and 05:30 that day in India.
   getMessage: async (_gmail: unknown, id: string) => ({ id, internalDate: "1792368000000" }),
   getSubjectHeader: (message: { id: string }) => fake.emails.find((e) => e.id === message.id)!.subject,
-  downloadPdfAttachment: async (_gmail: unknown, message: { id: string }) => new TextEncoder().encode(message.id),
+  downloadPdfAttachment: async (_gmail: unknown, message: { id: string }) => (fake.emails.find((e) => e.id === message.id)!.noPdf ? null : new TextEncoder().encode(message.id)),
 }));
 vi.mock("@/lib/pdf/decryptAndExtractText", () => ({
   decryptAndExtractText: async (bytes: Uint8Array) => {
     const email = fake.emails.find((e) => e.id === new TextDecoder().decode(bytes))!;
     if (email.hangs) await new Promise(() => {});
+    if (email.pdfFailure) return { failure: email.pdfFailure };
     return { text: email.text, passwordUsed: null };
   },
 }));
-vi.mock("@/lib/statementParsing/parseStatement", () => ({ parseStatement: (text: string) => ({ bank: "unknown", text }) }));
+vi.mock("@/lib/statementParsing/parseStatement", () => ({
+  parseStatement: (text: string, bank?: string) => {
+    fake.parsedAs.push(bank);
+    return { bank, text };
+  },
+}));
 vi.mock("@/lib/statementParsing/toStatementFields", () => ({
   toStatementFields: (details: { text: string }) => {
     const date = details.text.match(/date (\S+)/)?.[1];
@@ -111,7 +120,7 @@ const regalia = (last4?: string): Card => ({
   ...(last4 && { last4 }),
 });
 const SUBJECT = "Your HDFC Bank - Regalia Gold Credit Card Statement - October-2026";
-const email = (id: string, statementDate: string, extra: Partial<(typeof fake.emails)[number]> = {}) => ({ id, subject: SUBJECT, text: `date ${statementDate} XXXX XXXX XXXX 1234`, ...extra });
+const email = (id: string, statementDate: string, extra: Partial<(typeof fake.emails)[number]> = {}) => ({ id, subject: SUBJECT, text: `HDFC Bank date ${statementDate} XXXX XXXX XXXX 1234`, ...extra });
 
 async function sync(options: Partial<Parameters<typeof runStatementIngestion>[0]> = {}) {
   const result = await runStatementIngestion({ trigger: "Manual", ...options });
@@ -121,6 +130,7 @@ async function sync(options: Partial<Parameters<typeof runStatementIngestion>[0]
 
 beforeEach(() => {
   fake.emails = [];
+  fake.parsedAs = [];
   fake.cards = [regalia("1234")];
   fake.statements = [];
   fake.cardUpdates = [];
@@ -133,12 +143,72 @@ beforeEach(() => {
   fake.nextId = 0;
 });
 
+describe("reading each email", () => {
+  it("checks the PDF, the card, its bank, the fields, the last 4, then for a duplicate, and gives the first reason that applies", async () => {
+    fake.statements = [{ id: "typed-in", cardId: "regalia", statementDate: "2026-10-16", dueDate: "2026-11-05", totalAmountDue: 38500, minimumAmountDue: 3850, status: "Pending" }];
+    // Each one fails the checks after its own too.
+    const other = { subject: "Your account summary", text: "YES BANK, no statement here XXXX 8821" };
+    fake.emails = [
+      { id: "no-pdf", ...other, noPdf: true },
+      { id: "locked", ...other, pdfFailure: "no_password_matched" },
+      { id: "no-card", ...other },
+      { id: "other-bank", subject: SUBJECT, text: other.text },
+      { id: "no-date", subject: SUBJECT, text: "HDFC Bank, no statement here XXXX 8821" },
+      { id: "other-number", subject: SUBJECT, text: "HDFC Bank date 2026-10-16 XXXX 8821" },
+      email("duplicate", "2026-10-16"),
+    ];
+    const { outcomes } = await sync();
+    expect(outcomes.map((o) => [o.messageId, o.outcome, o.cardId, o.reason])).toEqual([
+      ["no-pdf", "skipped", undefined, "no PDF attachment found"],
+      ["locked", "skipped", undefined, "no_password_matched"],
+      ["no-card", "skipped", undefined, 'no card matched "Your account summary"'],
+      ["other-bank", "skipped", "regalia", expect.stringContaining("the PDF looks like it's from YES Bank")],
+      ["no-date", "skipped", "regalia", "couldn't read the statement date from the PDF"],
+      ["other-number", "skipped", "regalia", expect.stringContaining("the PDF shows a card ending 8821")],
+      ["duplicate", "duplicate", "regalia", undefined],
+    ]);
+  });
+
+  it("reads a statement with the parser for its card's issuer", async () => {
+    fake.emails = [email("m1", "2026-10-16")];
+    const [outcome] = (await sync()).outcomes;
+    expect(outcome.outcome).toBe("created");
+    expect(fake.parsedAs).toEqual(["hdfc"]);
+  });
+
+  it("skips a statement whose PDF looks like another bank's, without reading it", async () => {
+    fake.emails = [email("m1", "2026-10-16", { text: "Axis Bank date 2026-10-16 XXXX XXXX XXXX 1234" })];
+    const [outcome] = (await sync()).outcomes;
+    expect(outcome).toMatchObject({
+      outcome: "skipped",
+      cardId: "regalia",
+      reason: "the PDF looks like it's from Axis Bank and doesn't mention HDFC Bank, HDFC Bank Regalia Gold Credit Card's issuer, so it's probably another card's statement. If that's the wrong issuer, change it in the Cards tab",
+    });
+    expect(fake.parsedAs).toEqual([]);
+    expect(fake.statementWrites).toEqual([]);
+    expect(fake.log[0]).toMatchObject({ result: "Failed", cardId: "regalia" });
+  });
+
+  it("skips a statement for a card whose issuer has no parser, rather than guess with the generic patterns", async () => {
+    fake.cards = [{ ...regalia("1234"), issuer: "Other" }];
+    fake.emails = [email("m1", "2026-10-16")];
+    const [outcome] = (await sync()).outcomes;
+    expect(outcome).toMatchObject({
+      outcome: "skipped",
+      cardId: "regalia",
+      reason: "the app can't read statements from HDFC Bank Regalia Gold Credit Card's issuer, Other. If that's the wrong issuer, change it in the Cards tab",
+    });
+    expect(fake.parsedAs).toEqual([]);
+    expect(fake.statementWrites).toEqual([]);
+  });
+});
+
 describe("the card number (#78)", () => {
   it("fills in a card's missing last 4 from its statement, once, and says so", async () => {
     fake.cards = [regalia()];
     fake.emails = [
-      { id: "m1", subject: SUBJECT, text: "date 2026-10-16 Card No 4386 24XX XXXX 1234" },
-      { id: "m2", subject: SUBJECT, text: "date 2026-09-16 Card No 4386 24XX XXXX 1234" },
+      { id: "m1", subject: SUBJECT, text: "HDFC Bank date 2026-10-16 Card No 4386 24XX XXXX 1234" },
+      { id: "m2", subject: SUBJECT, text: "HDFC Bank date 2026-09-16 Card No 4386 24XX XXXX 1234" },
     ];
     const { outcomes } = await sync();
     expect(outcomes.map((o) => o.outcome)).toEqual(["created", "created"]);
@@ -148,7 +218,7 @@ describe("the card number (#78)", () => {
   });
 
   it("skips a statement whose card number doesn't match its card, and says what to do", async () => {
-    fake.emails = [{ id: "m1", subject: SUBJECT, text: "date 2026-10-16 Card No 4386 24XX XXXX 8821" }];
+    fake.emails = [{ id: "m1", subject: SUBJECT, text: "HDFC Bank date 2026-10-16 Card No 4386 24XX XXXX 8821" }];
     const [outcome] = (await sync()).outcomes;
     expect(outcome.outcome).toBe("skipped");
     expect(outcome.reason).toContain("the PDF shows a card ending 8821, but HDFC Bank Regalia Gold Credit Card ends 1234");
@@ -177,11 +247,11 @@ describe("writing what it read", () => {
   });
 
   it("logs every email it read, with its date, result and statement", async () => {
-    fake.emails = [email("m1", "2026-10-16"), { id: "m2", subject: "Something else", text: "no statement here" }];
+    fake.emails = [email("m1", "2026-10-16"), { id: "m2", subject: SUBJECT, text: "HDFC Bank, but no statement here" }];
     await sync({ now: () => new Date("2026-10-19T10:00:00.000Z") });
     expect(fake.log).toEqual([
       expect.objectContaining({ messageId: "m1", receivedDate: "2026-10-19", subject: SUBJECT, cardId: "regalia", result: "Imported", statementId: fake.statements[0].id, attempts: 1, lastTriedAt: "2026-10-19T10:00:00.000Z" }),
-      expect.objectContaining({ messageId: "m2", result: "Failed", details: "couldn't read the statement date from the PDF", attempts: 1 }),
+      expect.objectContaining({ messageId: "m2", cardId: "regalia", result: "Failed", details: "couldn't read the statement date from the PDF", attempts: 1 }),
     ]);
   });
 

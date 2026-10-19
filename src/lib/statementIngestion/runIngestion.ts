@@ -5,6 +5,7 @@ import { downloadPdfAttachment, getMessage, getSubjectHeader, listMessagesWithLa
 import { decryptAndExtractText } from "@/lib/pdf/decryptAndExtractText";
 import { checkCardLast4, findCardLast4s } from "@/lib/statementParsing/extractCardLast4";
 import { extractCardNameFromSubject } from "@/lib/statementParsing/extractCardNameFromSubject";
+import { checkStatementBank } from "@/lib/statementParsing/issuerBank";
 import { matchCard } from "@/lib/statementParsing/matchCard";
 import { parseStatement } from "@/lib/statementParsing/parseStatement";
 import { toStatementFields } from "@/lib/statementParsing/toStatementFields";
@@ -233,14 +234,8 @@ async function processMessage(
     return { ...email, outcome: "skipped", reason: decrypted.failure };
   }
 
-  const parsed = parseStatement(decrypted.text);
-  const read = toStatementFields(parsed);
-  // Says which field was missing or misread, never its value (#89).
-  if ("problem" in read) {
-    return { ...email, outcome: "skipped", reason: read.problem };
-  }
-  const { fields } = read;
-
+  // The card comes first, so its statement is read by its issuer's parser,
+  // not by the parser of whichever bank the PDF's text happens to name first (#92).
   const extractedCardName = extractCardNameFromSubject(subject);
   const matchResult = matchCard(extractedCardName, cards);
   if ("noMatch" in matchResult) {
@@ -256,6 +251,17 @@ async function processMessage(
   }
 
   const card = matchResult.card;
+  const reader = checkStatementBank(card, decrypted.text);
+  if ("problem" in reader) {
+    return { ...email, outcome: "skipped", cardId: card.id, reason: reader.problem };
+  }
+  const read = toStatementFields(parseStatement(decrypted.text, reader.bank));
+  // Says which field was missing or misread, never its value (#89).
+  if ("problem" in read) {
+    return { ...email, outcome: "skipped", cardId: card.id, reason: read.problem };
+  }
+  const { fields } = read;
+
   // The PDF's masked card number confirms the match, and fills in a card's missing last 4 (#78).
   const last4 = checkCardLast4(card, findCardLast4s(decrypted.text));
   if (last4.kind === "mismatch") {

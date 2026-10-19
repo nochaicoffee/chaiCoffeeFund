@@ -5,7 +5,8 @@ import type { Bank, ParsedStatementDetails } from "./types";
 /**
  * Main entry point — auto-detects the bank if not given. A known bank is read
  * by its own parser alone, and the generic patterns are only for a bank this
- * app doesn't recognise.
+ * app doesn't recognise. The statement import always gives the bank: the
+ * matched card's issuer's (`checkStatementBank`), so it never uses them.
  *
  * The reference `parse_statement` router also filled a known bank's gaps from
  * the generic patterns. They search the whole text, so when ICICI's own pattern
