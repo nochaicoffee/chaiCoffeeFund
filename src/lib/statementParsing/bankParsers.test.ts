@@ -32,10 +32,16 @@ describe("parseHdfc", () => {
     });
   });
 
-  it("reports a credit balance as N/A rather than a missing due date", () => {
+  it("says a credit balance has no due date, rather than leaving it missing", () => {
     const text = "TOTAL AMOUNT DUE\nC-3,871.25\nMINIMUM DUE\nC0.00\nDUE DATE\nNil";
-    expect(parseHdfc(text).dueDate).toBe("N/A (Credit Balance)");
-    expect(parseHdfc(text).totalAmountDue).toBe("-3871.25");
+    expect(parseHdfc(text)).toMatchObject({ noDueDate: "nothing owed", totalAmountDue: "-3871.25" });
+    expect(parseHdfc(text).dueDate).toBeUndefined();
+  });
+
+  it("doesn't look for a due date elsewhere once the PDF says there's none", () => {
+    const text = "TOTAL AMOUNT DUE  C 0.00  MINIMUM DUE  C 0.00  DUE DATE  -  Reward Points  0  Pay by 12/03/2026 to avoid charges";
+    expect(parseHdfc(text)).toMatchObject({ noDueDate: "nothing owed" });
+    expect(parseHdfc(text).dueDate).toBeUndefined();
   });
 
   // Made-up numbers, laid out the way pdf.js extracts a real statement: its text
@@ -55,7 +61,7 @@ describe("parseHdfc", () => {
 
   it("reads a credit balance from pdf.js's text", () => {
     const text = "TOTAL AMOUNT DUE  C -1,234.50  MINIMUM DUE  C 0.00  DUE DATE  Nil  Reward Points  1,000";
-    expect(parseHdfc(text)).toMatchObject({ totalAmountDue: "-1234.50", minimumAmountDue: "0.00", dueDate: "N/A (Credit Balance)" });
+    expect(parseHdfc(text)).toMatchObject({ totalAmountDue: "-1234.50", minimumAmountDue: "0.00", noDueDate: "nothing owed" });
   });
 
   it("falls back to the standard key-value patterns", () => {
@@ -227,15 +233,16 @@ describe("parseCsb, on pdf.js's text", () => {
     expect(parseCsb(text)).toMatchObject({ totalAmountDue: "1200.00", minimumAmountDue: "200.00", dueDate: "02 MAR 2026", statementDate: "10/02/2026" });
   });
 
-  it("finds no due date when the bill is due 'Immediate', rather than the statement period's start", () => {
+  it("says a bill due 'Immediate' has no due date, rather than taking the statement period's start", () => {
     const text = `XXXX XXXX XXXX 1111  Rs. 1,200.00   Immediate  Rs. 200.00   10/02/2026${tail}`;
-    expect(parseCsb(text)).toMatchObject({ totalAmountDue: "1200.00", minimumAmountDue: "200.00", statementDate: "10/02/2026" });
+    expect(parseCsb(text)).toMatchObject({ totalAmountDue: "1200.00", minimumAmountDue: "200.00", statementDate: "10/02/2026", noDueDate: "due immediately" });
     expect(parseStatement(`CSB Bank ${text}`).dueDate).toBeUndefined();
   });
 
   it("finds no due date on a closed card's last bill, which has none", () => {
     const text = `XXXX XXXX XXXX 1111  Rs. 0.00  Rs. 0.00   10/03/2026${tail}`;
     expect(parseCsb(text).dueDate).toBeUndefined();
+    expect(parseCsb(text).noDueDate).toBeUndefined();
   });
 });
 

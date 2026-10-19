@@ -20,7 +20,7 @@ export function fieldLabel(field: string): string {
 }
 
 /** "a", "a and b", "a, b and c". */
-function listOf(items: string[]): string {
+export function listOf(items: string[]): string {
   return items.length <= 1 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
 }
 

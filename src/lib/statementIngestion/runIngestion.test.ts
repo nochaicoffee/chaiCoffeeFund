@@ -41,7 +41,7 @@ vi.mock("@/lib/statementParsing/parseStatement", () => ({ parseStatement: (text:
 vi.mock("@/lib/statementParsing/toStatementFields", () => ({
   toStatementFields: (details: { text: string }) => {
     const date = details.text.match(/date (\S+)/)?.[1];
-    return date ? { statementDate: date, dueDate: "2026-11-05", totalAmountDue: 38500, minimumAmountDue: 3850 } : null;
+    return date ? { fields: { statementDate: date, dueDate: "2026-11-05", totalAmountDue: 38500, minimumAmountDue: 3850 } } : { problem: "couldn't read the statement date from the PDF" };
   },
 }));
 vi.mock("@/lib/sheets/cards", () => ({
@@ -181,7 +181,7 @@ describe("writing what it read", () => {
     await sync({ now: () => new Date("2026-10-19T10:00:00.000Z") });
     expect(fake.log).toEqual([
       expect.objectContaining({ messageId: "m1", receivedDate: "2026-10-19", subject: SUBJECT, cardId: "regalia", result: "Imported", statementId: fake.statements[0].id, attempts: 1, lastTriedAt: "2026-10-19T10:00:00.000Z" }),
-      expect.objectContaining({ messageId: "m2", result: "Failed", details: "incomplete or unparseable statement fields", attempts: 1 }),
+      expect.objectContaining({ messageId: "m2", result: "Failed", details: "couldn't read the statement date from the PDF", attempts: 1 }),
     ]);
   });
 

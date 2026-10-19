@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { parseGeneric } from "./bankParsers";
 import { parseStatement } from "./parseStatement";
 
 describe("parseStatement", () => {
@@ -15,15 +16,14 @@ describe("parseStatement", () => {
     expect(details.bank).toBe("sbi");
   });
 
-  it("fills gaps left by a bank-specific parser using the generic fallback", () => {
-    // ICICI's parser only looks for its rupee glyph and word-dates — give it a
-    // statement date in the generic key-value format instead, which its own
-    // parser won't find but the generic fallback will.
-    const text = "ICICI Bank\nÁ365.00\nÁ5,742.30\nStatement Date: 03/11/2025";
+  it("never fills a known bank's gaps from the generic patterns (#89)", () => {
+    // ICICI's own parser finds the amounts, but none of these wordings for the
+    // dates; the generic patterns would. They search the whole text, so a gap
+    // filled from them can come from anywhere, like a worked example (#86).
+    const text = "ICICI Bank\nÁ365.00\nÁ5,742.30\nBill Date: 03/11/2025\nPay By: 21/11/2025";
     const details = parseStatement(text);
-    expect(details.bank).toBe("icici");
-    expect(details.minimumAmountDue).toBe("365.00");
-    expect(details.statementDate).toBe("03/11/2025");
+    expect(details).toEqual({ bank: "icici", minimumAmountDue: "365.00", totalAmountDue: "5742.30" });
+    expect(parseGeneric(text)).toMatchObject({ statementDate: "03/11/2025", dueDate: "21/11/2025" });
   });
 
   it("falls back to the generic parser entirely for an unrecognized bank", () => {
