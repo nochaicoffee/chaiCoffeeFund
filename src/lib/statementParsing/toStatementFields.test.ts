@@ -5,25 +5,25 @@ describe("toStatementFields", () => {
   it("converts a complete parsed statement to typed fields", () => {
     const result = toStatementFields({
       bank: "hdfc",
-      statementDate: "15 Jan, 2026",
-      dueDate: "04 Feb 2026",
-      totalAmountDue: "16,098.00",
-      minimumAmountDue: "430.00",
+      statementDate: "03 Jun, 2025",
+      dueDate: "23 Jun 2025",
+      totalAmountDue: "18,264.00",
+      minimumAmountDue: "915.00",
     });
     expect(result).toEqual({
-      statementDate: "2026-01-15",
-      dueDate: "2026-02-04",
-      totalAmountDue: 16098,
-      minimumAmountDue: 430,
+      statementDate: "2025-06-03",
+      dueDate: "2025-06-23",
+      totalAmountDue: 18264,
+      minimumAmountDue: 915,
     });
   });
 
   it("returns null when the due date is a credit-balance sentinel rather than a date", () => {
     const result = toStatementFields({
       bank: "hdfc",
-      statementDate: "15 Jan, 2026",
+      statementDate: "03 Jun, 2025",
       dueDate: "N/A (Credit Balance)",
-      totalAmountDue: "-14238.61",
+      totalAmountDue: "-3871.25",
       minimumAmountDue: "0.00",
     });
     expect(result).toBeNull();

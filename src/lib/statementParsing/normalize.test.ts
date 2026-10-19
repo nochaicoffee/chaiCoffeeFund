@@ -3,7 +3,7 @@ import { cleanAmount, cleanAmountToNumber, parseFlexibleDateToIso } from "./norm
 
 describe("cleanAmount", () => {
   it("strips commas and spaces", () => {
-    expect(cleanAmount("16,098.00")).toBe("16098.00");
+    expect(cleanAmount("18,264.00")).toBe("18264.00");
   });
 
   it("strips a leading Rs./INR marker", () => {
@@ -12,13 +12,13 @@ describe("cleanAmount", () => {
   });
 
   it("preserves a leading minus sign (credit balance)", () => {
-    expect(cleanAmount("-14,238.61")).toBe("-14238.61");
+    expect(cleanAmount("-3,871.25")).toBe("-3871.25");
   });
 });
 
 describe("cleanAmountToNumber", () => {
   it("converts a cleaned amount to a number", () => {
-    expect(cleanAmountToNumber("16,098.00")).toBe(16098);
+    expect(cleanAmountToNumber("18,264.00")).toBe(18264);
   });
 
   it("returns null for undefined or unparsable input", () => {
@@ -29,25 +29,25 @@ describe("cleanAmountToNumber", () => {
 
 describe("parseFlexibleDateToIso", () => {
   it("parses DD/MM/YYYY as day-first, not month-first", () => {
-    expect(parseFlexibleDateToIso("04/09/2025")).toBe("2025-09-04");
+    expect(parseFlexibleDateToIso("07/11/2025")).toBe("2025-11-07");
   });
 
   it("parses DD-MM-YYYY", () => {
-    expect(parseFlexibleDateToIso("13-01-2026")).toBe("2026-01-13");
+    expect(parseFlexibleDateToIso("19-08-2025")).toBe("2025-08-19");
   });
 
   it('parses "DD Mon YYYY" and "DD Mon, YYYY"', () => {
-    expect(parseFlexibleDateToIso("04 Feb 2026")).toBe("2026-02-04");
-    expect(parseFlexibleDateToIso("15 Jan, 2026")).toBe("2026-01-15");
+    expect(parseFlexibleDateToIso("23 Jun 2025")).toBe("2025-06-23");
+    expect(parseFlexibleDateToIso("03 Jun, 2025")).toBe("2025-06-03");
   });
 
   it('parses "Month DD, YYYY"', () => {
-    expect(parseFlexibleDateToIso("February 04, 2026")).toBe("2026-02-04");
-    expect(parseFlexibleDateToIso("August 12, 2026")).toBe("2026-08-12");
+    expect(parseFlexibleDateToIso("June 09, 2025")).toBe("2025-06-09");
+    expect(parseFlexibleDateToIso("November 3, 2025")).toBe("2025-11-03");
   });
 
   it("passes through an already-ISO date", () => {
-    expect(parseFlexibleDateToIso("2026-02-04")).toBe("2026-02-04");
+    expect(parseFlexibleDateToIso("2025-06-23")).toBe("2025-06-23");
   });
 
   it("returns null for missing or unparsable input", () => {
