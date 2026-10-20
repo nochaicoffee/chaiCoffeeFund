@@ -297,6 +297,7 @@ export function StatementsPanel({
   viewAllHref,
   addStatement,
   quickPay,
+  averageLabel = "year avg",
 }: {
   view: PanelView;
   hrefFor: (v: PanelView) => string;
@@ -311,10 +312,12 @@ export function StatementsPanel({
   addStatement?: ReactNode;
   /** One-click Mark paid on pending rows (#103). Off for the sample data. */
   quickPay?: boolean;
+  /** What the Spend range's marker is: each year's average, or for a range of months the average of its months in that year. */
+  averageLabel?: string;
 }) {
   const monthName = formatMonthYear(today.slice(0, 7)).split(" ")[0];
-  // Only promise "where this month sits" when this month's year is actually shown.
-  const showsCurrentYear = range.rows.some((r) => r.year === Number(today.slice(0, 4)));
+  // Only promise "where this month sits" when the period includes this month.
+  const showsCurrentMonth = range.showsCurrentMonth;
   return (
     <section aria-labelledby="panel-heading" className="flex min-h-full flex-col gap-3 rounded-[24px] border border-surface-line bg-surface p-[22px] shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
@@ -329,9 +332,9 @@ export function StatementsPanel({
             </>
           ) : (
             <>
-              {showsCurrentYear ? `Where ${monthName} sits` : `Spend range in ${periodLabel}`}{" "}
+              {showsCurrentMonth ? `Where ${monthName} sits` : `Spend range in ${periodLabel}`}{" "}
               <span className="text-xs font-semibold text-muted">
-                · <span className="inline-block h-3 w-0.5 bg-fg align-middle opacity-50" aria-hidden="true" /> year avg
+                · <span className="inline-block h-3 w-0.5 bg-fg align-middle opacity-50" aria-hidden="true" /> {averageLabel}
               </span>
             </>
           )}

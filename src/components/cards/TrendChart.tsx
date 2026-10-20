@@ -25,7 +25,7 @@ import {
   type BarShapeProps,
 } from "recharts";
 import { heatLevel, type MonthDetail } from "@/lib/aggregate/cardSpend";
-import { trendWindow, type TrendPoint, type TrendRange } from "@/lib/aggregate/cardTrend";
+import { trendSummary, type TrendPoint } from "@/lib/aggregate/cardTrend";
 import type { CardColor } from "@/lib/sheets/types";
 import { formatMonthShort, formatMonthYear } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
@@ -39,7 +39,6 @@ export interface TrendCard {
   color?: CardColor;
 }
 
-const RANGES: TrendRange[] = ["All", "1Y", "6M", "3M"];
 // The design's bars: 14px top corners and 5px bottom ones, rounding a whole stack as one bar in By card.
 const BAR_RADIUS: [number, number, number, number] = [14, 14, 5, 5];
 // By card, the design leaves a 2px gap between one card's segment and the one above it.
@@ -329,16 +328,13 @@ export function TrendChart({
   const reducedMotion = usePrefersReducedMotion();
   const [bars, setBars] = useState(true);
   const [line, setLine] = useState(false);
-  const [range, setRange] = useState<TrendRange>("1Y");
   const uid = useId().replace(/[^\w-]/g, "");
   const ids: TrendIds = { sheen: `trend-sheen-${uid}`, stripes: `trend-stripes-${uid}`, shadow: `trend-shadow-${uid}` };
 
-  const { points: shown, average, peak } = trendWindow(points, range);
-  // Says which months the average covers, so it isn't mistaken for the greeting's year-to-date average.
-  const averageLabel =
-    range === "All"
-      ? `Average since ${formatMonthYear(shown[0]?.month ?? currentMonth)}`
-      : `${{ "3M": "3-month", "6M": "6-month", "1Y": "12-month" }[range]} average`;
+  // The chart shows the page's period, so its average is the greeting's monthly average (#113).
+  const shown = points;
+  const { average, peak } = trendSummary(points);
+  const averageLabel = "Monthly average";
   const max = Math.max(0, ...shown.map((p) => p.total));
   const spansYears = new Set(shown.map((p) => p.month.slice(0, 4))).size > 1;
   const latest = shown.at(-1);
@@ -415,26 +411,11 @@ export function TrendChart({
               </svg>
             </Toggle>
           </div>
-          <div className="flex items-center gap-0.5" role="group" aria-label="Range">
-            {RANGES.map((r) => (
-              <button
-                key={r}
-                type="button"
-                aria-pressed={range === r}
-                onClick={() => setRange(r)}
-                className={`rounded-full px-[13px] py-1.5 text-xs font-bold focus-visible:outline-2 focus-visible:outline-accent max-md:py-2.5 ${
-                  range === r ? "bg-accent-tint text-accent-text" : "text-muted hover:text-fg"
-                }`}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 
       {max === 0 ? (
-        <p className="py-12 text-center text-sm text-muted">No spending in this range yet.</p>
+        <p className="py-12 text-center text-sm text-muted">No spending in this period yet.</p>
       ) : (
         <div className="h-[280px] w-full" role="img" aria-label={`Monthly statement totals, ${shown.map((p) => `${formatMonthYear(p.month)} ${p.hasStatements ? formatInr(p.total) : "no statements"}`).join(", ")}`}>
           <ResponsiveContainer width="100%" height="100%">
@@ -459,7 +440,7 @@ export function TrendChart({
               </defs>
               {/*
                * Keeps both layers registered for the chart's lifetime. Recharts drops a custom layer's
-               * element when every mark in it remounts at once (on switching the line, mode or range),
+               * element when every mark in it remounts at once (on switching the line, mode or period),
                * and the marks then draw nowhere.
                */}
               <ZIndexLayer zIndex={UNDER_BARS} />

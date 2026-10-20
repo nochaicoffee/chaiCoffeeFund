@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { loadCardData } from "../loadCardData";
-import { cardsQuery, parsePage, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodMenu, periodValue, statementsQuery, type StatementsListState } from "../params";
+import { cardsQuery, parsePage, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodMenu, periodMenuValue, rangePickerStart, statementsQuery, type StatementsListState } from "../params";
+import { periodLabel, periodPhrase } from "@/lib/aggregate/period";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SyncStatementsButton } from "@/components/SyncStatementsButton";
 import { SyncProvider } from "@/components/sync/SyncContext";
@@ -46,7 +47,8 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
   const list = filterStatements(data, state);
   const { items, ...pageInfo } = paginate(list, parsePage(params), PAGE_SIZE);
 
-  const periodText = period.kind === "all" ? "so far" : `in ${period.year}`;
+  // "5 in 2026 across 2 cards"; a range reads "5 in the last 6 months" or "5 from March to August 2026".
+  const periodText = period.kind === "all" ? "so far" : period.kind === "year" ? `in ${period.year}` : periodPhrase(period, today);
   const overview = periodOverview(data, period);
   // Due now is every pending bill, whatever the period, like the dashboard's pending line (PRD §8).
   const due = pendingSummary(data, today);
@@ -89,7 +91,7 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
           title="Statements"
           actions={
             <>
-              <PeriodSelect options={periodMenu(data, period, today, state.cardId)} value={periodValue(period, today) ?? ""} />
+              <PeriodSelect options={periodMenu(data, period, today, state.cardId)} value={periodMenuValue(period, today)} start={rangePickerStart(data, period, today, state.cardId)} currentMonth={today.slice(0, 7)} />
               <RefreshButton iconOnly />
               {/* Every card has a chip here, closed ones included, so this is how a card without a tile is edited. */}
               {state.cardId && clientCardsById.has(state.cardId) && (
@@ -135,7 +137,14 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
           },
           { label: "Minimum due", value: formatInr(minimumDueNow(data)), caption: due.count === 0 ? "nothing pending" : "if you pay only the minimums" },
           {
-            label: period.kind === "all" ? "Paid so far" : period.year === currentYear ? "Paid this year" : `Paid in ${period.year}`,
+            label:
+              period.kind === "all"
+                ? "Paid so far"
+                : period.kind === "year"
+                  ? period.year === currentYear
+                    ? "Paid this year"
+                    : `Paid in ${period.year}`
+                  : `Paid in ${period.last ? "the " : ""}${periodLabel(period, today)}`,
             value: formatInr(paid.total),
             caption: `${paid.count} ${paid.count === 1 ? "statement" : "statements"}`,
           },

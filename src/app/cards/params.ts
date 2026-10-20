@@ -1,5 +1,6 @@
-import { spendSummary, statementYears, type CardData, type SpendPeriod } from "@/lib/aggregate/cardSpend";
+import { addMonths, monthOf, monthsSoFar, spendSummary, statementYears, type CardData, type MonthKey, type SpendPeriod } from "@/lib/aggregate/cardSpend";
 import type { SortOrder, StatementQuery, StatusFilter } from "@/lib/aggregate/cardStatements";
+import { lastMonths, monthSpanName, parsePeriodParam, periodName, periodParam, QUICK_RANGES } from "@/lib/aggregate/period";
 import { formatInrCompact } from "@/lib/format/money";
 import type { SelectOption } from "@/components/Select";
 
@@ -11,12 +12,9 @@ function first(value: string | string[] | undefined): string | undefined {
   return Array.isArray(value) ? value[0] : value;
 }
 
-/** `?period=all` or `?period=2025`; anything else (or nothing) is this year. */
+/** `?period=`: all, a year, the last 3, 6 or 12 months, or a range of months (parsePeriodParam); anything else, or nothing, is this year. */
 export function parsePeriod(params: SearchParams, today: string): SpendPeriod {
-  const value = first(params.period);
-  if (value === "all") return { kind: "all" };
-  if (value && /^\d{4}$/.test(value)) return { kind: "year", year: Number(value) };
-  return { kind: "year", year: Number(today.slice(0, 4)) };
+  return parsePeriodParam(first(params.period), today);
 }
 
 /** `?card=<id>` when it names a real card; otherwise undefined, meaning All Cards. */
@@ -28,12 +26,6 @@ export function parseSelectedCard(params: SearchParams, data: CardData): string 
 /** `?panel=range` shows the Spend range view beside the details card; anything else is the Statements view. */
 export function parsePanel(params: SearchParams): PanelView {
   return first(params.panel) === "range" ? "range" : "statements";
-}
-
-/** `?period=` for a link: left out for this year, the default. */
-export function periodValue(period: SpendPeriod, today: string): string | undefined {
-  if (period.kind === "all") return "all";
-  return period.year === Number(today.slice(0, 4)) ? undefined : String(period.year);
 }
 
 /** A query string from the values that are set, in order, with sample data as a bare `demo`. */
@@ -58,7 +50,7 @@ export function cardsQuery(
   return queryString(
     [
       ["card", current.cardId],
-      ["period", periodValue(current.period, today)],
+      ["period", periodParam(current.period, today)],
       ["panel", current.panel === "range" ? "range" : undefined],
       ["closed", current.showClosed ? "1" : undefined],
     ],
@@ -99,7 +91,7 @@ export function statementsQuery(current: StatementsListState, today: string): st
   return queryString(
     [
       ["card", current.cardId],
-      ["period", periodValue(current.period, today)],
+      ["period", periodParam(current.period, today)],
       ["status", current.status === "all" ? undefined : current.status],
       ["q", current.search],
       ["sort", current.sort === "oldest" ? "oldest" : undefined],
@@ -116,17 +108,47 @@ export function periodYears(yearsWithStatements: number[], period: SpendPeriod):
   return [...years].sort((a, b) => b - a);
 }
 
+/** The menu's value for "Custom range…", which opens the month picker instead of choosing a period. */
+export const CUSTOM_PERIOD = "custom";
+
+/** A custom range of months, as opposed to this year, a year, all time or a quick range. */
+const isCustom = (period: SpendPeriod) => period.kind === "range" && !period.last;
+
 /**
- * The period menu's options: this year, every other year with statements, then
- * all time, each with what was spent in it (on the selected card, as the page
- * shows). Each option's value is its `?period=`, blank for this year.
+ * The period menu (#113, option C with A from design/cards-dropdowns): the last
+ * 3, 6 and 12 months, then this year, every other year with statements and all
+ * time, each with what was spent in it (on the selected card, as the page
+ * shows), then "Custom range…". Each option's value is its `?period=`, blank for
+ * this year. While a custom range is shown, its option is the chosen one and
+ * names the range.
  */
 export function periodMenu(data: CardData, period: SpendPeriod, today: string, cardId?: string): SelectOption[] {
-  const currentYear = Number(today.slice(0, 4));
-  const periods: SpendPeriod[] = [...periodYears(statementYears(data, today), period).map((year): SpendPeriod => ({ kind: "year", year })), { kind: "all" }];
-  return periods.map((p) => ({
-    value: periodValue(p, today) ?? "",
-    label: p.kind === "all" ? "All time" : p.year === currentYear ? "This year" : String(p.year),
-    meta: formatInrCompact(spendSummary(data, p, today, cardId).total),
-  }));
+  const spent = (p: SpendPeriod) => formatInrCompact(spendSummary(data, p, today, cardId).total);
+  const option = (p: SpendPeriod): SelectOption => ({ value: periodParam(p, today) ?? "", label: periodName(p, today), meta: spent(p) });
+  const quick = QUICK_RANGES.map((n, i) => ({ ...option(lastMonths(n, today)), group: i === 0 ? "Quick ranges" : undefined }));
+  const years = periodYears(statementYears(data, today), period).map((year, i) => ({ ...option({ kind: "year", year }), divider: i === 0 }));
+  const custom: SelectOption =
+    period.kind === "range" && !period.last
+      ? { value: CUSTOM_PERIOD, label: "Custom range", meta: monthSpanName(period.from, period.to), display: periodName(period, today), action: true, divider: true }
+      : { value: CUSTOM_PERIOD, label: "Custom range…", action: true, divider: true };
+  return [...quick, ...years, option({ kind: "all" }), custom];
+}
+
+/** The period menu's chosen value: the period's `?period=` (blank for this year), or the custom option for a custom range. */
+export function periodMenuValue(period: SpendPeriod, today: string): string {
+  return isCustom(period) ? CUSTOM_PERIOD : (periodParam(period, today) ?? "");
+}
+
+/**
+ * What the month picker opens on: the months the period shows (for a future
+ * year with none yet, the last 6 months), and the earliest month it offers,
+ * January of the first statement's year.
+ */
+export function rangePickerStart(data: CardData, period: SpendPeriod, today: string, cardId?: string): { from: MonthKey; to: MonthKey; earliest: MonthKey } {
+  const months = monthsSoFar(period, today, data, cardId);
+  const current = monthOf(today);
+  const first = monthsSoFar({ kind: "all" }, today, data)[0] ?? current;
+  const earliest = `${first.slice(0, 4)}-01`;
+  if (months.length === 0) return { from: addMonths(current, -5), to: current, earliest };
+  return { from: months[0], to: months[months.length - 1], earliest: months[0] < earliest ? months[0] : earliest };
 }

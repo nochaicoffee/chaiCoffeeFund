@@ -2,6 +2,7 @@ import Form from "next/form";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { remainingDue } from "@/lib/aggregate/cardSpend";
+import { periodParam } from "@/lib/aggregate/period";
 import { dueLabel, paymentVariance, type FilterCounts, type MonthGroup, type Page, type StatusFilter } from "@/lib/aggregate/cardStatements";
 import type { StatementsListState } from "@/app/cards/params";
 import type { Account, Card, Statement } from "@/lib/sheets/types";
@@ -240,11 +241,7 @@ export function StatementsList({
         <div className="flex w-full items-center gap-2 md:w-auto">
           <Form action="/cards/statements" scroll={false} role="search" className="min-w-0 flex-1 md:w-60 md:flex-none">
             {state.cardId && <input type="hidden" name="card" value={state.cardId} />}
-            {state.period.kind === "all" ? (
-              <input type="hidden" name="period" value="all" />
-            ) : (
-              state.period.year !== Number(today.slice(0, 4)) && <input type="hidden" name="period" value={state.period.year} />
-            )}
+            {periodParam(state.period, today) && <input type="hidden" name="period" value={periodParam(state.period, today)} />}
             {status !== "all" && <input type="hidden" name="status" value={status} />}
             {state.sort === "oldest" && <input type="hidden" name="sort" value="oldest" />}
             {state.demo && <input type="hidden" name="demo" value="" />}

@@ -16,6 +16,10 @@ function Swatch({ style, className = "" }: { style?: CSSProperties; className?: 
 
 function Cell({ cell, isPeak, isCurrent }: { cell: HeatCell; isPeak: boolean; isCurrent: boolean }) {
   const label = formatMonthYear(cell.month);
+  // A month outside the page's range is left blank (#113), keeping its place so the columns still line up.
+  if (cell.state === "outside") {
+    return <div role="cell" aria-label={`${label}: outside the period`} className="h-[52px]" />;
+  }
   if (cell.state === "upcoming") {
     return <div role="cell" aria-label={`${label}: upcoming`} className="h-[52px] rounded-control border-[1.5px] border-dashed border-heat-upcoming" />;
   }
@@ -80,6 +84,7 @@ export function SpendHeatmap({
   currentMonth,
   details,
   cards,
+  totalsLabel = "Year",
 }: {
   title: string;
   rows: HeatRow[];
@@ -89,10 +94,13 @@ export function SpendHeatmap({
   /** Each month's split by card and paid status, for the month card (#104). */
   details: Record<MonthKey, MonthDetail>;
   cards: Record<string, HeatmapCardInfo>;
+  /** The right-hand column's heading: "Year", or "Total" when a range's rows total only its months. */
+  totalsLabel?: string;
 }) {
   const totals = new Map(yearTotals.map((t) => [t.year, t]));
   const currentMonthNumber = currentMonth.slice(5, 7);
-  const showsCurrentYear = rows.some((r) => String(r.year) === currentMonth.slice(0, 4));
+  // The current month's column is marked only while its cell is shown, not when a range leaves it out.
+  const showsCurrentYear = rows.some((r) => r.cells.some((c) => c.month === currentMonth && c.state !== "outside"));
 
   return (
     <section aria-labelledby="heatmap-heading" className="flex flex-col gap-3 rounded-[24px] border border-surface-line bg-surface p-[22px] shadow-soft">
@@ -138,7 +146,7 @@ export function SpendHeatmap({
                   );
                 })}
                 <span role="columnheader" className="text-right text-[10px] font-bold tracking-[0.02em] text-muted uppercase">
-                  Year
+                  {totalsLabel}
                 </span>
               </div>
               {rows.map((row) => {

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { cardsQuery, parsePage, parseShowClosed, parsePanel, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodMenu, periodYears, statementsQuery } from "./params";
+import { cardsQuery, parsePage, parseShowClosed, parsePanel, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodMenu, periodMenuValue, periodYears, rangePickerStart, statementsQuery } from "./params";
+import { lastMonths } from "@/lib/aggregate/period";
 import type { Card, Statement } from "@/lib/sheets/types";
 
 const TODAY = "2026-10-17";
@@ -94,20 +95,41 @@ describe("periodMenu", () => {
     statements: [statement("a", "regalia", "2026-03-04", 41000), statement("b", "amazon", "2026-03-12", 9000), statement("c", "regalia", "2024-11-04", 240000)],
   };
 
-  it("offers this year, every other year with statements and all time, each with its spend, newest first", () => {
+  it("offers the quick ranges, this year, every other year with statements, all time and a custom range, each with its spend", () => {
     expect(periodMenu(spend, { kind: "year", year: 2026 }, TODAY)).toEqual([
-      { value: "", label: "This year", meta: "₹50.0k" },
-      { value: "2024", label: "2024", meta: "₹2.4L" },
+      { value: "last-3m", label: "Last 3 months", meta: "₹0", group: "Quick ranges" },
+      { value: "last-6m", label: "Last 6 months", meta: "₹0", group: undefined },
+      { value: "last-12m", label: "Last 12 months", meta: "₹50.0k", group: undefined },
+      { value: "", label: "This year", meta: "₹50.0k", divider: true },
+      { value: "2024", label: "2024", meta: "₹2.4L", divider: false },
       { value: "all", label: "All time", meta: "₹2.9L" },
+      { value: "custom", label: "Custom range…", action: true, divider: true },
     ]);
+    expect(periodMenuValue({ kind: "year", year: 2026 }, TODAY)).toBe("");
+    expect(periodMenuValue(lastMonths(6, TODAY), TODAY)).toBe("last-6m");
   });
 
   it("totals the selected card only, and keeps a year without statements when it's the one shown", () => {
-    expect(periodMenu(spend, { kind: "year", year: 2025 }, TODAY, "amazon")).toEqual([
-      { value: "", label: "This year", meta: "₹9.0k" },
-      { value: "2025", label: "2025", meta: "₹0" },
-      { value: "2024", label: "2024", meta: "₹0" },
-      { value: "all", label: "All time", meta: "₹9.0k" },
-    ]);
+    const years = periodMenu(spend, { kind: "year", year: 2025 }, TODAY, "amazon").filter((o) => /^\d{4}$|^$|^all$/.test(o.value));
+    expect(years.map((o) => [o.label, o.meta])).toEqual([["This year", "₹9.0k"], ["2025", "₹0"], ["2024", "₹0"], ["All time", "₹9.0k"]]);
+  });
+
+  it("chooses the custom option while a custom range is shown, and names the range on it", () => {
+    const range = { kind: "range" as const, from: "2026-02", to: "2026-04" };
+    expect(periodMenu(spend, range, TODAY).at(-1)).toEqual({ value: "custom", label: "Custom range", meta: "Feb – Apr 2026", display: "Feb – Apr 2026", action: true, divider: true });
+    expect(periodMenuValue(range, TODAY)).toBe("custom");
+  });
+});
+
+describe("rangePickerStart", () => {
+  it("opens on the months the page shows, from January of the first statement's year", () => {
+    const spend = { cards: [{ id: "regalia" } as Card], statements: [{ id: "a", cardId: "regalia", statementDate: "2024-11-04", dueDate: "2024-11-24", totalAmountDue: 1, minimumAmountDue: 0, amountPaid: 0, status: "Paid" } as Statement] };
+    expect(rangePickerStart(spend, { kind: "year", year: 2026 }, TODAY)).toEqual({ from: "2026-01", to: "2026-10", earliest: "2024-01" });
+    expect(rangePickerStart(spend, { kind: "year", year: 2025 }, TODAY)).toEqual({ from: "2025-01", to: "2025-12", earliest: "2024-01" });
+  });
+
+  it("opens on the last 6 months when the period has none yet, and reaches back to a period older than any statement", () => {
+    expect(rangePickerStart(data, { kind: "year", year: 2027 }, TODAY)).toEqual({ from: "2026-05", to: "2026-10", earliest: "2026-01" });
+    expect(rangePickerStart(data, { kind: "year", year: 2023 }, TODAY)).toEqual({ from: "2023-01", to: "2023-12", earliest: "2023-01" });
   });
 });
