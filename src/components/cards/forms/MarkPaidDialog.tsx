@@ -242,23 +242,25 @@ export function MarkPaidDialog({
             ))}
           </div>
           {source === "account" ? (
-            <SelectInput aria-label="Bank account" value={accountId} onChange={(e) => setAccountId(e.target.value)} disabled={accounts.length === 0} invalid={Boolean(errors.paidFrom)}>
-              <option value="">{accounts.length === 0 ? "No accounts yet" : "Choose account"}</option>
-              {accounts.map((a) => (
-                <option key={a.id} value={a.id}>
-                  {a.name}
-                </option>
-              ))}
-            </SelectInput>
+            <SelectInput
+              aria-label="Bank account"
+              value={accountId}
+              onChange={setAccountId}
+              disabled={accounts.length === 0}
+              placeholder={accounts.length === 0 ? "No accounts yet" : "Choose account"}
+              options={accounts.length === 0 ? [] : [{ value: "", label: "Not set", display: "Choose account", quiet: true }, ...accounts.map((a) => ({ value: a.id, label: a.name }))]}
+              invalid={Boolean(errors.paidFrom)}
+            />
           ) : (
-            <SelectInput aria-label="Credit card" value={otherCardId} onChange={(e) => setOtherCardId(e.target.value)} disabled={otherCards.length === 0} invalid={Boolean(errors.paidFrom)}>
-              <option value="">{otherCards.length === 0 ? "No other cards" : "Choose card"}</option>
-              {otherCards.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {cardName(c)}
-                </option>
-              ))}
-            </SelectInput>
+            <SelectInput
+              aria-label="Credit card"
+              value={otherCardId}
+              onChange={setOtherCardId}
+              disabled={otherCards.length === 0}
+              placeholder={otherCards.length === 0 ? "No other cards" : "Choose card"}
+              options={otherCards.length === 0 ? [] : [{ value: "", label: "Not set", display: "Choose card", quiet: true }, ...otherCards.map((c) => ({ value: c.id, label: cardName(c) }))]}
+              invalid={Boolean(errors.paidFrom)}
+            />
           )}
         </div>
         {errors.paidFrom ? (

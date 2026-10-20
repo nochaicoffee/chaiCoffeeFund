@@ -1,0 +1,980 @@
+<title>Cards Dropdowns</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+  /* Layout: three numbered areas. 1 is the one dropdown design, shown where the app uses dropdowns today.
+     2 is three ways to pick a custom range, side by side when there's room. 3 is a shared preview of how the
+     chosen range reads on the Cards page, plus the questions to settle. Tokens are the app's own
+     (src/app/globals.css). Light only, like the app today (the dark palette is #57). */
+  :root {
+    color-scheme: light;
+    --page: oklch(0.965 0.004 90);
+    --surface: oklch(0.995 0 0);
+    --surface-line: oklch(0 0 0 / 0.07);
+    --fg: oklch(0.19 0.008 260);
+    --muted: oklch(0.52 0.012 260);
+    --fill: oklch(0 0 0 / 0.055);
+    --fill-strong: oklch(0 0 0 / 0.09);
+    --divider: oklch(0 0 0 / 0.08);
+    --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+    --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+    --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+    --accent: oklch(0.72 0.19 145);
+    --accent-tint: oklch(0.93 0.06 145);
+    --accent-text: oklch(0.42 0.14 145);
+    --accent-ring: oklch(0.72 0.19 145 / 0.25);
+    --accent-edge: oklch(0.72 0.19 145 / 0.45);
+    --on-accent: oklch(0.99 0 0);
+    --ink: oklch(0.16 0.008 260);
+    --on-ink: oklch(0.99 0 0);
+    --negative: oklch(0.55 0.16 25);
+    --negative-ring: oklch(0.55 0.16 25 / 0.15);
+    --heat-1: oklch(0.95 0.03 150);
+    --heat-2: oklch(0.87 0.07 150);
+    --heat-3: oklch(0.76 0.11 151);
+    --heat-4: oklch(0.6 0.12 153);
+    --heat-5: oklch(0.42 0.1 156);
+    --heat-ink: oklch(0.24 0.05 152);
+    --heat-no-data: oklch(0 0 0 / 0.04);
+    --heat-upcoming: oklch(0 0 0 / 0.13);
+    --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { background: var(--page); color: var(--fg); }
+  body {
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
+    padding-block: 28px 96px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+  .intro { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+  h1 { margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800; text-wrap: balance; }
+  .intro p { margin: 0; font-size: 15px; font-weight: 500; color: var(--muted); }
+  .keys { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; font-weight: 600; color: var(--muted); }
+  kbd { font-family: var(--font); font-size: 11px; font-weight: 800; color: var(--fg); background: var(--surface); border: 1px solid var(--surface-line); border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px; }
+  .jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .jump a { text-decoration: none; color: var(--fg); background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 700; }
+  .jump a:hover { background: var(--accent-tint); color: var(--accent-text); }
+  .sample { width: fit-content; border-radius: 999px; background: var(--accent-tint); color: var(--accent-text); padding: 4px 12px; font-size: 12px; font-weight: 700; }
+
+  .area { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 16px; }
+  .area-head { display: flex; flex-direction: column; gap: 4px; max-width: 760px; }
+  .area-head h2 { margin: 0; font-size: 21px; font-weight: 800; text-wrap: balance; }
+  .area-head p { margin: 0; color: var(--muted); font-weight: 500; }
+  .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 360px), 1fr)); gap: 18px; align-items: start; }
+  .options.two { grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); }
+  .option { min-width: 0; display: flex; flex-direction: column; gap: 14px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); border-radius: 24px; padding: 20px; }
+  .opt-head { display: flex; gap: 12px; align-items: flex-start; }
+  .tag { flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 13px; }
+  .opt-head h3 { margin: 0; font-size: 15px; font-weight: 800; }
+  .opt-head p { margin: 2px 0 0; color: var(--muted); font-size: 13px; font-weight: 500; }
+  .hint { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .spec { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 13px; font-weight: 500; color: var(--muted); }
+  .spec li { display: flex; gap: 8px; }
+  .spec li::before { content: ""; flex-shrink: 0; width: 6px; height: 6px; margin-top: 7px; border-radius: 50%; background: var(--accent); }
+  .spec b { color: var(--fg); font-weight: 700; }
+  /* Room under a picker for its menu or panel, so an open one doesn't cover the next card. */
+  .stage { position: relative; min-height: 500px; border-radius: 18px; background: var(--page); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .stage.short { min-height: 230px; }
+  .readout { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 14px; background: var(--surface); border: 1px solid var(--surface-line); font-size: 12px; font-weight: 600; color: var(--muted); }
+  .readout code { font-family: var(--mono); font-size: 12px; color: var(--fg); word-break: break-all; }
+
+  /* ---------- The dropdown: trigger, menu, options ---------- */
+  .sel { position: relative; width: fit-content; max-width: 100%; }
+  .sel--field { width: 100%; }
+  .sel-trigger { position: relative; display: flex; align-items: center; gap: 8px; border: 1px solid var(--surface-line); background: var(--surface); cursor: pointer; text-align: left; max-width: 100%; }
+  .sel-trigger:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sel-value { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sel-chev { flex-shrink: 0; color: var(--muted); }
+  @media (prefers-reduced-motion: no-preference) {
+    .sel-chev { transition: transform 160ms var(--ease-out); }
+  }
+  .sel-trigger[aria-expanded="true"] .sel-chev { transform: rotate(180deg); }
+
+  /* The header pill, as on the Cards page now. */
+  .sel--pill .sel-trigger { min-height: 40px; border-radius: 999px; box-shadow: var(--soft-shadow); padding: 9px 15px 9px 15px; font-size: 13px; font-weight: 700; }
+  .sel--pill .sel-trigger[aria-expanded="true"] { border-color: var(--accent-edge); }
+  .sel-icon { display: flex; color: var(--muted); }
+
+  /* The form field, as inputClass in fields.tsx: 40px, 12px corners, accent border and ring when open or focused. */
+  .sel--field .sel-trigger { width: 100%; height: 40px; border-radius: 12px; padding: 0 12px 0 14px; font-size: 14px; font-weight: 600; }
+  .sel--field .sel-trigger:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+  .sel--field .sel-trigger[aria-expanded="true"] { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+  .sel--field .sel-trigger[aria-invalid="true"] { border-color: var(--negative); box-shadow: 0 0 0 3px var(--negative-ring); }
+  .sel--field .sel-trigger:disabled { cursor: default; background: var(--page); color: var(--muted); box-shadow: none; }
+  .sel-trigger .is-placeholder { color: var(--muted); font-weight: 500; }
+  @media (max-width: 767px) {
+    .sel--pill .sel-trigger { min-height: 44px; }
+    .sel--field .sel-trigger { height: 44px; }
+  }
+
+  .pop { position: absolute; z-index: 20; top: calc(100% + 8px); left: 0; background: var(--surface); border: 1px solid var(--surface-line); border-radius: 16px; box-shadow: var(--pop-shadow); padding: 6px; transform-origin: top left; max-width: calc(100vw - 32px); }
+  .pop.align-end { left: auto; right: 0; transform-origin: top right; }
+  .pop.flip { top: auto; bottom: calc(100% + 8px); transform-origin: bottom left; }
+  .pop.flip.align-end { transform-origin: bottom right; }
+  @media (prefers-reduced-motion: no-preference) {
+    .pop.opening { animation: pop-in 150ms var(--ease-out) both; }
+  }
+  @keyframes pop-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+  .flip.opening { animation-name: pop-in-up; }
+  @keyframes pop-in-up { from { opacity: 0; transform: translateY(4px) scale(0.98); } }
+
+  .lb { min-width: 200px; max-height: 296px; overflow-y: auto; overscroll-behavior: contain; outline: none; scrollbar-width: thin; }
+  .sel--field .lb { min-width: 0; }
+  .lb-group { padding: 8px 12px 4px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .lb-divider { height: 1px; margin: 6px 8px; background: var(--divider); }
+  .opt { display: flex; align-items: center; gap: 12px; min-height: 36px; padding: 0 10px 0 12px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--fg); cursor: pointer; user-select: none; scroll-margin: 6px; }
+  .sel--field .opt { font-size: 14px; font-weight: 600; }
+  .opt-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .opt-meta { flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .opt-check { flex-shrink: 0; width: 14px; color: var(--accent-text); visibility: hidden; }
+  .opt-go { flex-shrink: 0; width: 14px; color: var(--muted); }
+  .opt[data-active] { background: var(--fill); }
+  .opt[aria-selected="true"] { background: var(--accent-tint); color: var(--accent-text); }
+  .opt[aria-selected="true"] .opt-meta { color: var(--accent-text); }
+  .opt[aria-selected="true"] .opt-check { visibility: visible; }
+  .opt[aria-selected="true"][data-active] { box-shadow: inset 0 0 0 1.5px var(--accent-edge); }
+  .opt[aria-disabled="true"] { color: var(--muted); cursor: default; opacity: 0.55; }
+  @media (max-width: 767px), (pointer: coarse) {
+    .opt { min-height: 44px; }
+  }
+
+  /* ---------- Range panels (a small dialog that opens from "Custom range…") ---------- */
+  .panel { width: 316px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .panel-title { font-size: 13px; font-weight: 800; }
+  .nav { display: flex; align-items: center; gap: 4px; }
+  .nav span { min-width: 84px; text-align: center; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .icon-btn { width: 32px; height: 32px; border: 0; border-radius: 10px; background: transparent; display: grid; place-items: center; cursor: pointer; color: var(--muted); }
+  .icon-btn:hover { background: var(--fill); color: var(--fg); }
+  .icon-btn:disabled { opacity: 0.35; cursor: default; background: transparent; }
+  .mgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; }
+  .dgrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+  .dgrid .wd { text-align: center; font-size: 10px; font-weight: 800; color: var(--muted); padding: 4px 0; letter-spacing: 0.03em; }
+  .cell { height: 40px; border: 0; border-radius: 10px; background: transparent; font-size: 13px; font-weight: 700; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .dgrid .cell { height: 36px; border-radius: 9px; font-size: 12px; }
+  .cell:hover { background: var(--fill); }
+  .cell.now { box-shadow: inset 0 0 0 1.5px var(--accent-edge); }
+  .cell.in { background: var(--accent-tint); color: var(--accent-text); border-radius: 0; }
+  .cell.start, .cell.end { background: var(--accent); color: var(--on-accent); }
+  .cell.start { border-radius: 10px 0 0 10px; }
+  .cell.end { border-radius: 0 10px 10px 0; }
+  .cell.start.end { border-radius: 10px; }
+  .cell.preview { background: var(--fill); border-radius: 0; }
+  .cell:disabled { color: var(--muted); opacity: 0.4; cursor: default; background: transparent; }
+  .cell.blank { visibility: hidden; }
+  @media (pointer: coarse) { .cell { height: 44px; } .dgrid .cell { height: 40px; } }
+  .ends { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .end-box { border: 1px solid var(--surface-line); border-radius: 12px; padding: 7px 11px; display: flex; flex-direction: column; gap: 1px; }
+  .end-box small { font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .end-box span { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .end-box.picking { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+  .panel-foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; border-top: 1px solid var(--divider); padding-top: 12px; }
+  .panel-foot .what { font-size: 12px; font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .panel-foot .what b { color: var(--fg); font-weight: 800; }
+  .btns { display: flex; gap: 6px; flex-shrink: 0; }
+  .btn { height: 34px; padding: 0 14px; border-radius: 999px; border: 0; font-size: 12px; font-weight: 800; cursor: pointer; }
+  .btn.ghost { background: var(--fill); }
+  .btn.primary { background: var(--ink); color: var(--on-ink); }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+  @media (pointer: coarse) { .btn { height: 40px; } }
+
+  /* ---------- Mini page header (area 1) ---------- */
+  .mini-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 14px 20px; }
+  .mini-head .who { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1 1 280px; }
+  .mini-head .who small { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+  .mini-head .who strong { font-size: 22px; font-weight: 800; }
+  .sentence { margin: 0; font-size: 14px; line-height: 1.7; font-weight: 500; color: var(--muted); }
+  .sentence b { color: var(--fg); font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .round { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--surface-line); background: var(--surface); box-shadow: var(--soft-shadow); display: grid; place-items: center; color: var(--muted); }
+  .ink-pill { height: 40px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--ink); color: var(--on-ink); font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+  .toggle { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; color: var(--muted); cursor: pointer; width: fit-content; }
+  .toggle input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+
+  /* ---------- Mini form (area 1) ---------- */
+  .form { display: flex; flex-direction: column; gap: 16px; }
+  .form-title { font-size: 17px; font-weight: 800; }
+  .row2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 16px 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .field-label { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+  .field-label .req { color: var(--negative); }
+  .field-label .optl { margin-left: 6px; font-size: 10px; font-weight: 600; letter-spacing: 0.02em; opacity: 0.8; }
+  .field-help { font-size: 11px; font-weight: 500; color: var(--muted); margin: 0; }
+  .field-err { font-size: 11px; font-weight: 600; color: var(--negative); margin: 0; }
+
+  /* ---------- Shared page preview (area 3) ---------- */
+  .preview { display: flex; flex-direction: column; gap: 16px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); border-radius: 24px; padding: 20px; }
+  .preview-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; border: 1px solid var(--surface-line); background: var(--surface); box-shadow: var(--soft-shadow); padding: 8px 14px; font-size: 13px; font-weight: 700; }
+  .from { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .seg { display: flex; padding: 3px; border-radius: 999px; background: var(--fill); width: fit-content; }
+  .seg button { height: 28px; padding: 0 12px; border-radius: 999px; border: 0; background: transparent; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--accent-tint); color: var(--accent-text); }
+  .facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; }
+  .fact { border-radius: 16px; background: var(--page); padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .fact small { font-size: 11px; font-weight: 700; color: var(--muted); }
+  .fact span { font-size: 18px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .fact em { font-style: normal; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .heat-scroll { overflow-x: auto; scrollbar-width: none; margin: 0 -4px; padding: 0 4px; }
+  .heat-scroll::-webkit-scrollbar { display: none; }
+  .heat { display: grid; grid-template-columns: 40px repeat(12, minmax(34px, 1fr)); gap: 5px; min-width: 520px; align-items: center; }
+  .heat .m { text-align: center; font-size: 10px; font-weight: 700; color: var(--muted); }
+  .heat .yr { font-size: 12px; font-weight: 800; }
+  .hc { height: 34px; border-radius: 9px; display: grid; place-items: center; font-size: 10px; font-weight: 800; color: var(--heat-ink); font-variant-numeric: tabular-nums; }
+  @media (prefers-reduced-motion: no-preference) { .hc { transition: opacity 220ms var(--ease-out), background-color 220ms var(--ease-out); } }
+  .hc.l1 { background: var(--heat-1); } .hc.l2 { background: var(--heat-2); } .hc.l3 { background: var(--heat-3); }
+  .hc.l4 { background: var(--heat-4); color: var(--on-accent); } .hc.l5 { background: var(--heat-5); color: var(--on-accent); }
+  .hc.nodata { background: var(--heat-no-data); }
+  .hc.upcoming { background: transparent; border: 1.5px dashed var(--heat-upcoming); }
+  .hc.out { opacity: 0.28; }
+  .hc.gone { visibility: hidden; }
+  .questions { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-weight: 500; max-width: 760px; }
+  .questions b { font-weight: 800; }
+  .questions span { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <span class="eyebrow">Cards · Mockups · 20 Oct 2026</span>
+    <h1>Dropdowns in the app's own style, and a custom range</h1>
+    <p>Today the period picker and the form dropdowns open the browser's grey macOS menu. These use the app's own surfaces instead: the hover cards' border and shadow, and the green tint the 1Y / 6M / 3M buttons use for what's selected.</p>
+    <div class="keys">Try them with a mouse, a finger or the keyboard: <kbd>↑</kbd><kbd>↓</kbd> move, <kbd>Home</kbd><kbd>End</kbd> jump, type a letter to find it, <kbd>Enter</kbd> picks, <kbd>Esc</kbd> closes.</div>
+    <nav class="jump" aria-label="Sections">
+      <a href="#dropdown">1 · The dropdown</a>
+      <a href="#range">2 · A custom range</a>
+      <a href="#reads">3 · How a range reads</a>
+    </nav>
+    <span class="sample">Sample data. Today is 20 Oct 2026.</span>
+  </header>
+
+  <!-- 1 -->
+  <section class="area" id="dropdown" aria-labelledby="h-dd">
+    <div class="area-head">
+      <h2 id="h-dd">1 · The dropdown</h2>
+      <p>One design, used for every dropdown in the app: the period pill and each select in the forms.</p>
+    </div>
+    <div class="options two">
+      <article class="option">
+        <div class="opt-head"><span class="tag">1</span><div><h3>In the page header</h3><p>The period pill keeps its look. Its menu is a light card under it, aligned to its right edge when there's no room on the left.</p></div></div>
+        <div class="stage short">
+          <div class="mini-head">
+            <div class="who">
+              <small>Cards · Today</small>
+              <strong>Good evening, Prathik</strong>
+            </div>
+            <div class="actions">
+              <div id="dd-period"></div>
+              <span class="round" aria-hidden="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.4"/><polyline points="21 3 21 9 15 9"/></svg></span>
+              <span class="ink-pill" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add card</span>
+            </div>
+          </div>
+          <p class="sentence" id="dd-sentence"></p>
+        </div>
+        <label class="toggle"><input type="checkbox" id="dd-totals" checked> Show each period's spend in the menu</label>
+        <ul class="spec">
+          <li><span><b>Card:</b> surface, hairline border, the hover cards' shadow, 16px corners.</span></li>
+          <li><span><b>Selected:</b> green tint and a tick, like the 1Y / 6M / 3M buttons. <b>Under the pointer or arrow keys:</b> a grey fill.</span></li>
+          <li><span><b>Motion:</b> a 150ms fade and lift, and the chevron turns. Nothing moves with reduced motion on.</span></li>
+        </ul>
+      </article>
+
+      <article class="option">
+        <div class="opt-head"><span class="tag">2</span><div><h3>In a form</h3><p>The Add card fields. The menu is as wide as the field and scrolls past about eight rows, so the 31 statement days fit.</p></div></div>
+        <div class="stage">
+          <div class="form">
+            <span class="form-title">Add card</span>
+            <div class="row2">
+              <div class="field">
+                <span class="field-label" id="lbl-issuer">Issuer <span class="req" aria-hidden="true">*</span></span>
+                <div id="dd-issuer"></div>
+                <p class="field-err" id="err-issuer" hidden>Choose the bank that issued the card.</p>
+              </div>
+              <div class="field">
+                <span class="field-label" id="lbl-day">Statement day <span class="req" aria-hidden="true">*</span></span>
+                <div id="dd-day"></div>
+                <p class="field-help" id="help-day">Day of the month it's generated.</p>
+              </div>
+            </div>
+            <div class="field">
+              <span class="field-label" id="lbl-acct">Usually paid from <span class="optl">Optional</span></span>
+              <div id="dd-account"></div>
+              <p class="field-help">Mark paid starts with this account.</p>
+            </div>
+            <div class="field">
+              <span class="field-label" id="lbl-none">Paid from (no accounts yet)</span>
+              <div id="dd-disabled"></div>
+            </div>
+          </div>
+        </div>
+        <p class="hint">Leave Issuer without choosing and its error shows, as the forms do on blur now. The same menu replaces Mark paid's bank account and credit card selects.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="area" id="range" aria-labelledby="h-range">
+    <div class="area-head">
+      <h2 id="h-range">2 · A custom range</h2>
+      <p>Three ways to pick one. Each opens from the same period pill. Apply a range in any of them and area 3 shows how the page would read.</p>
+    </div>
+    <div class="options">
+      <article class="option">
+        <div class="opt-head"><span class="tag">A</span><div><h3>Month range</h3><p>"Custom range…" opens a year of months. Tap the first month, then the last. Every number on the page is by month already, so this fits them exactly.</p></div></div>
+        <div class="stage"><div id="ra-period"></div></div>
+        <div class="readout">Label and link<code id="ra-url"></code></div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">B</span><div><h3>Exact dates</h3><p>A calendar for a from and a to day. Statements count when their statement date falls between them, so a range can start or end mid-month.</p></div></div>
+        <div class="stage"><div id="rb-period"></div></div>
+        <div class="readout">Label and link<code id="rb-url"></code></div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">C</span><div><h3>Quick ranges, then custom</h3><p>The menu itself offers the last 3, 6 and 12 months (up to this month, like the trend's buttons), with A's month picker under "Custom range…".</p></div></div>
+        <div class="stage"><div id="rc-period"></div></div>
+        <div class="readout">Label and link<code id="rc-url"></code></div>
+      </article>
+    </div>
+    <p class="hint">These combine: C's quick ranges work with A's months or B's days.</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="area" id="reads" aria-labelledby="h-reads">
+    <div class="area-head">
+      <h2 id="h-reads">3 · How a range reads on the page</h2>
+      <p>Whichever range was applied last in area 2. The summary, the details card, the heatmap and the Statements panel all follow it, as they follow the year today.</p>
+    </div>
+    <div class="preview">
+      <div class="preview-top">
+        <span class="chip" id="pv-chip"></span>
+        <span class="from" id="pv-from"></span>
+      </div>
+      <p class="sentence" id="pv-sentence"></p>
+      <div class="facts">
+        <div class="fact"><small>Details card · Average a month</small><span id="pv-avg"></span><em id="pv-avg-sub"></em></div>
+        <div class="fact"><small>Statements panel</small><span id="pv-count"></span><em id="pv-count-sub"></em></div>
+        <div class="fact"><small>Highest month</small><span id="pv-high"></span><em id="pv-high-sub"></em></div>
+      </div>
+      <div class="preview-top">
+        <span class="from">Heatmap: months outside the range</span>
+        <div class="seg" role="group" aria-label="Months outside the range">
+          <button type="button" id="hm-fade" aria-pressed="true">Fade</button>
+          <button type="button" id="hm-hide" aria-pressed="false">Leave blank</button>
+        </div>
+      </div>
+      <div class="heat-scroll"><div class="heat" id="pv-heat"></div></div>
+    </div>
+    <div class="area-head">
+      <h2>To settle before building</h2>
+    </div>
+    <ol class="questions">
+      <li><b>Which picker:</b> A, B or C, or C with A? <span>Recommended: C with A.</span></li>
+      <li><b>Months or exact days.</b> <span>With days, a range that starts mid-month still divides by that whole month for "averaging … a month".</span></li>
+      <li><b>What a range counts:</b> statements whose statement date falls in it, as the years do now? <span>The alternative is by due date.</span></li>
+      <li><b>The heatmap:</b> fade the months outside the range, or leave them blank?</li>
+      <li><b>The trend chart:</b> end at the range's last month, as it ends at a past year's December now? <span>Its 1Y / 6M / 3M buttons stay its own.</span></li>
+      <li><b>Each period's spend in the menu:</b> keep it, or just the names?</li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(() => {
+  /* ---------- Sample data: three cards, one statement each a month ---------- */
+  const TODAY = "2026-10-20";
+  const NOW = TODAY.slice(0, 7);
+  const CARDS = [
+    { name: "Regalia Gold", day: 4, share: 0.46 },
+    { name: "Amazon Pay", day: 12, share: 0.34 },
+    { name: "Flipkart Axis", day: 22, share: 0.2 },
+  ];
+  const TOTALS = {
+    "2025-01": 41200, "2025-02": 38900, "2025-03": 52300, "2025-04": 47800, "2025-05": 61200, "2025-06": 44100,
+    "2025-07": 39800, "2025-08": 58600, "2025-09": 49300, "2025-10": 71200, "2025-11": 66400, "2025-12": 82100,
+    "2026-01": 54100, "2026-02": 47300, "2026-03": 62800, "2026-04": 58400, "2026-05": 71900, "2026-06": 66200,
+    "2026-07": 88400, "2026-08": 79300, "2026-09": 73600, "2026-10": 70300,
+  };
+  const STATEMENTS = [];
+  for (const [month, total] of Object.entries(TOTALS)) {
+    for (const card of CARDS) {
+      const date = `${month}-${String(card.day).padStart(2, "0")}`;
+      if (date > TODAY) continue;
+      STATEMENTS.push({ card: card.name, date, amount: Math.round((total * card.share) / 10) * 10 });
+    }
+  }
+  const FIRST = STATEMENTS.map((s) => s.date.slice(0, 7)).sort()[0];
+  const YEAR = Number(NOW.slice(0, 4));
+
+  /* ---------- Month and money helpers, as in lib/aggregate ---------- */
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const MONTHS_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const addMonths = (m, n) => { const [y, mm] = m.split("-").map(Number); const i = y * 12 + mm - 1 + n; return `${Math.floor(i / 12)}-${String((i % 12) + 1).padStart(2, "0")}`; };
+  const monthRange = (a, b) => { const out = []; for (let m = a; m <= b; m = addMonths(m, 1)) out.push(m); return out; };
+  const mi = (m) => Number(m.slice(5, 7)) - 1;
+  const longMonth = (m) => `${MONTHS_LONG[mi(m)]} ${m.slice(0, 4)}`;
+  const inr = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+  const money = (n) => inr.format(n);
+  const lakh = (n) => (n >= 100000 ? `₹${(n / 100000).toFixed(2).replace(/\.?0+$/, "")}L` : `₹${Math.round(n / 1000)}k`);
+  const dayLabel = (d, withYear = true) => `${Number(d.slice(8, 10))} ${MONTHS[mi(d.slice(0, 7))]}${withYear ? ` ${d.slice(0, 4)}` : ""}`;
+  const lastDay = (m) => { const [y, mm] = m.split("-").map(Number); return new Date(Date.UTC(y, mm, 0)).getUTCDate(); };
+
+  /* ---------- Periods: a year, all time, months, the last n months, or days ---------- */
+  function bounds(p) {
+    if (p.kind === "year") return { from: `${p.year}-01-01`, to: `${p.year}-12-31`, first: `${p.year}-01`, last: `${p.year}-12` };
+    if (p.kind === "all") return { from: `${FIRST}-01`, to: TODAY, first: FIRST, last: NOW };
+    if (p.kind === "months") return { from: `${p.from}-01`, to: `${p.to}-${lastDay(p.to)}`, first: p.from, last: p.to };
+    if (p.kind === "last") { const first = addMonths(NOW, -(p.n - 1)); return { from: `${first}-01`, to: TODAY, first, last: NOW }; }
+    return { from: p.from, to: p.to, first: p.from.slice(0, 7), last: p.to.slice(0, 7) };
+  }
+  function summarize(p) {
+    const b = bounds(p);
+    const shown = STATEMENTS.filter((s) => s.date >= b.from && s.date <= b.to);
+    const byMonth = new Map();
+    for (const s of shown) byMonth.set(s.date.slice(0, 7), (byMonth.get(s.date.slice(0, 7)) ?? 0) + s.amount);
+    const months = monthRange(b.first, b.last < NOW ? b.last : NOW);
+    const total = shown.reduce((sum, s) => sum + s.amount, 0);
+    let highest = null;
+    for (const [month, amount] of byMonth) if (!highest || amount > highest.amount) highest = { month, amount };
+    return { b, shown, byMonth, months, total, average: months.length ? total / months.length : 0, highest };
+  }
+  function label(p) {
+    if (p.kind === "year") return p.year === YEAR ? "This year" : String(p.year);
+    if (p.kind === "all") return "All time";
+    if (p.kind === "last") return `Last ${p.n} months`;
+    if (p.kind === "months") {
+      if (p.from === p.to) return `${MONTHS[mi(p.from)]} ${p.from.slice(0, 4)}`;
+      return p.from.slice(0, 4) === p.to.slice(0, 4)
+        ? `${MONTHS[mi(p.from)]} – ${MONTHS[mi(p.to)]} ${p.to.slice(0, 4)}`
+        : `${MONTHS[mi(p.from)]} ${p.from.slice(0, 4)} – ${MONTHS[mi(p.to)]} ${p.to.slice(0, 4)}`;
+    }
+    return p.from.slice(0, 4) === p.to.slice(0, 4) ? `${dayLabel(p.from, false)} – ${dayLabel(p.to)}` : `${dayLabel(p.from)} – ${dayLabel(p.to)}`;
+  }
+  function query(p) {
+    if (p.kind === "year") return p.year === YEAR ? "/cards" : `/cards?period=${p.year}`;
+    if (p.kind === "all") return "/cards?period=all";
+    if (p.kind === "last") return `/cards?period=last-${p.n}m`;
+    return `/cards?period=${p.from}..${p.to}`;
+  }
+  /* The summary sentence, worded as summarySentence.ts words the years. */
+  function sentence(p) {
+    const s = summarize(p);
+    const b = s.b;
+    const ongoing = b.last >= NOW;
+    let when;
+    if (p.kind === "year") when = p.year === YEAR ? `so far in ${p.year}` : `in ${p.year}`;
+    else if (p.kind === "all") when = `since ${longMonth(FIRST)}`;
+    else if (p.kind === "last") when = `in the last ${p.n} months`;
+    else if (p.kind === "months") {
+      if (p.from === p.to) when = `in ${longMonth(p.from)}`;
+      else if (ongoing) when = `since ${longMonth(p.from)}`;
+      else when = p.from.slice(0, 4) === p.to.slice(0, 4) ? `from ${MONTHS_LONG[mi(p.from)]} to ${longMonth(p.to)}` : `from ${longMonth(p.from)} to ${longMonth(p.to)}`;
+    } else when = `from ${dayLabel(p.from)} to ${dayLabel(p.to)}`;
+    const single = s.months.length === 1;
+    const parts = [];
+    if (s.shown.length === 0) parts.push(`No statements ${when.replace("so far ", "")}. `);
+    else {
+      parts.push(`${ongoing ? "You've spent" : "You spent"} <b>${money(s.total)}</b> ${when}`);
+      parts.push(single ? ". " : `, averaging <b>${money(s.average)}</b> a month. `);
+      if (s.highest && !single) parts.push(`<b>${longMonth(s.highest.month)}</b> ${ongoing ? "has been" : "was"} your highest month at <b>${money(s.highest.amount)}</b>. `);
+    }
+    parts.push(`<b>2 bills</b> are pending, totalling <b>${money(50900)}</b>, next due 24 Oct.`);
+    return parts.join("");
+  }
+
+  /* ---------- Icons ---------- */
+  const ICON_CAL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>`;
+  const CHEV = `<svg class="sel-chev" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>`;
+  const CHECK = `<svg class="opt-check" viewBox="0 0 24 24" height="14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>`;
+  const GO = `<svg class="opt-go" viewBox="0 0 24 24" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>`;
+  const PREV = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 6 9 12 15 18"/></svg>`;
+  const NEXT = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>`;
+  const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+
+  /* ---------- Placing a menu or panel: under the trigger, right-aligned or above when there's no room ---------- */
+  function place(pop, trigger) {
+    pop.classList.remove("align-end", "flip");
+    pop.style.left = "";
+    const t = trigger.getBoundingClientRect();
+    const r = pop.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth;
+    if (t.left + r.width > vw - 16) {
+      // Right-aligned when that fits; otherwise slid left just enough to stay 16px inside the window.
+      if (t.right - r.width >= 16) pop.classList.add("align-end");
+      else pop.style.left = `${Math.max(16 - t.left, vw - 16 - r.width - t.left)}px`;
+    }
+    // Above only when it doesn't fit below, there's more room above, and the trigger is on screen.
+    const below = window.innerHeight - t.bottom - 16;
+    if (r.height > below && t.top - 16 > below && t.bottom <= window.innerHeight) pop.classList.add("flip");
+  }
+  function animateOpen(pop) {
+    pop.classList.remove("opening");
+    void pop.offsetWidth;
+    pop.classList.add("opening");
+  }
+
+  /* ---------- The dropdown: a select-only combobox (WAI-ARIA APG). Focus stays on the trigger;
+     aria-activedescendant points at the highlighted option. ---------- */
+  let uid = 0;
+  function Select(host, o) {
+    const id = `sel${++uid}`;
+    let options = o.options;
+    let value = o.value ?? "";
+    let open = false;
+    let active = -1;
+    let typed = "";
+    let typedAt = 0;
+    host.className = `sel sel--${o.variant}`;
+    host.innerHTML = `
+      <button type="button" class="sel-trigger" role="combobox" id="${id}" aria-haspopup="listbox" aria-expanded="false" aria-controls="${id}-list" ${o.labelledBy ? `aria-labelledby="${o.labelledBy}"` : `aria-label="${esc(o.label)}"`} ${o.describedBy ? `aria-describedby="${o.describedBy}"` : ""} ${o.disabled ? "disabled" : ""}>
+        ${o.icon ? `<span class="sel-icon">${o.icon}</span>` : ""}<span class="sel-value"></span>${CHEV}
+      </button>
+      <div class="pop" hidden><div class="lb" role="listbox" id="${id}-list" ${o.labelledBy ? `aria-labelledby="${o.labelledBy}"` : `aria-label="${esc(o.label)}"`}></div></div>`;
+    const trigger = host.querySelector(".sel-trigger");
+    const pop = host.querySelector(".pop");
+    const list = host.querySelector(".lb");
+    const valueEl = host.querySelector(".sel-value");
+
+    const enabled = () => options.map((opt, i) => (opt.disabled ? -1 : i)).filter((i) => i >= 0);
+    const selectedIndex = () => options.findIndex((opt) => opt.value === value);
+
+    function renderValue() {
+      const opt = options[selectedIndex()];
+      valueEl.innerHTML = opt ? esc(opt.display ?? opt.label) : `<span class="is-placeholder">${esc(o.placeholder ?? "Choose")}</span>`;
+    }
+    function renderList() {
+      list.innerHTML = "";
+      options.forEach((opt, i) => {
+        if (opt.divider) list.insertAdjacentHTML("beforeend", `<div class="lb-divider" role="presentation"></div>`);
+        if (opt.group) list.insertAdjacentHTML("beforeend", `<div class="lb-group" role="presentation">${esc(opt.group)}</div>`);
+        const meta = typeof opt.meta === "function" ? opt.meta() : opt.meta;
+        list.insertAdjacentHTML(
+          "beforeend",
+          `<div class="opt" role="option" id="${id}-o${i}" data-i="${i}" aria-selected="${opt.value === value}" ${opt.disabled ? `aria-disabled="true"` : ""}>
+            <span class="opt-label">${esc(opt.label)}</span>${meta ? `<span class="opt-meta">${esc(meta)}</span>` : ""}${opt.action && opt.value !== value ? GO : CHECK}
+          </div>`,
+        );
+      });
+    }
+    function highlight(i, scroll = true) {
+      active = i;
+      list.querySelectorAll(".opt[data-active]").forEach((el) => el.removeAttribute("data-active"));
+      const el = list.querySelector(`[data-i="${i}"]`);
+      if (el) {
+        el.setAttribute("data-active", "");
+        trigger.setAttribute("aria-activedescendant", el.id);
+        if (scroll) el.scrollIntoView({ block: "nearest" });
+      } else trigger.removeAttribute("aria-activedescendant");
+    }
+    function show(start) {
+      if (open || trigger.disabled) return;
+      open = true;
+      renderList();
+      pop.hidden = false;
+      trigger.setAttribute("aria-expanded", "true");
+      place(pop, trigger);
+      animateOpen(pop);
+      const ids = enabled();
+      const sel = selectedIndex();
+      highlight(start === "first" ? ids[0] : start === "last" ? ids[ids.length - 1] : sel >= 0 ? sel : ids[0]);
+      o.onOpen?.();
+    }
+    function hide() {
+      if (!open) return;
+      open = false;
+      pop.hidden = true;
+      pop.classList.remove("opening");
+      trigger.setAttribute("aria-expanded", "false");
+      trigger.removeAttribute("aria-activedescendant");
+    }
+    function choose(i) {
+      const opt = options[i];
+      if (!opt || opt.disabled) return;
+      hide();
+      if (opt.action) return o.onAction?.(opt);
+      if (opt.value !== value) {
+        value = opt.value;
+        renderValue();
+        o.onChange?.(value);
+      }
+    }
+    function move(step) {
+      const ids = enabled();
+      const at = ids.indexOf(active);
+      highlight(ids[Math.min(ids.length - 1, Math.max(0, (at < 0 ? 0 : at) + step))]);
+    }
+    /* Type-ahead: letters typed within half a second build one search; the same letter again steps through matches. */
+    function typeahead(ch) {
+      const now = Date.now();
+      typed = now - typedAt > 500 ? ch : typed + ch;
+      typedAt = now;
+      const ids = enabled();
+      const same = typed.split("").every((c) => c === typed[0]);
+      const term = same ? typed[0] : typed;
+      const at = ids.indexOf(active);
+      const order = same ? [...ids.slice(at + 1), ...ids.slice(0, at + 1)] : [...ids.slice(at), ...ids.slice(0, at)];
+      const hit = order.find((i) => options[i].label.toLowerCase().startsWith(term.toLowerCase()));
+      if (hit !== undefined) highlight(hit);
+    }
+
+    trigger.addEventListener("click", () => (open ? hide() : show()));
+    trigger.addEventListener("keydown", (e) => {
+      const k = e.key;
+      if (!open) {
+        if (k === "ArrowDown" || k === "ArrowUp" || k === "Enter" || k === " ") { e.preventDefault(); show(); }
+        else if (k === "Home") { e.preventDefault(); show("first"); }
+        else if (k === "End") { e.preventDefault(); show("last"); }
+        else if (k.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) { show(); typeahead(k); }
+        return;
+      }
+      if (k === "ArrowDown") { e.preventDefault(); if (e.altKey) return; move(1); }
+      else if (k === "ArrowUp") { e.preventDefault(); if (e.altKey) return choose(active); move(-1); }
+      else if (k === "Home") { e.preventDefault(); highlight(enabled()[0]); }
+      else if (k === "End") { e.preventDefault(); const ids = enabled(); highlight(ids[ids.length - 1]); }
+      else if (k === "PageDown") { e.preventDefault(); move(8); }
+      else if (k === "PageUp") { e.preventDefault(); move(-8); }
+      else if (k === "Enter" || (k === " " && Date.now() - typedAt > 500)) { e.preventDefault(); choose(active); }
+      else if (k === "Escape") { e.preventDefault(); hide(); }
+      else if (k === "Tab") hide();
+      else if (k.length === 1 && !e.metaKey && !e.ctrlKey) { e.preventDefault(); typeahead(k); }
+    });
+    trigger.addEventListener("blur", () => { hide(); o.onBlur?.(value); });
+    // The menu never takes focus: pressing on it keeps focus on the trigger.
+    pop.addEventListener("mousedown", (e) => e.preventDefault());
+    list.addEventListener("pointermove", (e) => { const el = e.target.closest(".opt"); if (el && !el.hasAttribute("aria-disabled") && Number(el.dataset.i) !== active) highlight(Number(el.dataset.i), false); });
+    list.addEventListener("click", (e) => { const el = e.target.closest(".opt"); if (el) choose(Number(el.dataset.i)); });
+    document.addEventListener("pointerdown", (e) => { if (open && !host.contains(e.target)) hide(); });
+
+    renderValue();
+    return {
+      trigger,
+      host,
+      get value() { return value; },
+      set(next) { value = next; renderValue(); if (open) renderList(); },
+      setOptions(next) { options = next; renderValue(); if (open) renderList(); },
+      refresh() { renderValue(); if (open) { renderList(); highlight(active, false); } },
+      setInvalid(on) { on ? trigger.setAttribute("aria-invalid", "true") : trigger.removeAttribute("aria-invalid"); },
+    };
+  }
+
+  /* ---------- A small non-modal dialog under the pill, for picking a range. Esc or a click outside closes it,
+     and focus goes back to the pill. ---------- */
+  function Panel(sel, title, build) {
+    const panel = document.createElement("div");
+    panel.className = "pop panel";
+    panel.setAttribute("role", "dialog");
+    panel.setAttribute("aria-label", title);
+    panel.hidden = true;
+    sel.host.append(panel);
+    let isOpen = false;
+    function close(returnFocus = true) {
+      if (!isOpen) return;
+      isOpen = false;
+      panel.hidden = true;
+      panel.classList.remove("opening");
+      if (returnFocus) sel.trigger.focus();
+    }
+    function open(period, { animate = true, focus = true } = {}) {
+      isOpen = true;
+      panel.innerHTML = "";
+      build(panel, period, close);
+      panel.hidden = false;
+      place(panel, sel.trigger);
+      if (animate) animateOpen(panel);
+      if (focus) (panel.querySelector("[data-focus]") ?? panel.querySelector("button:not(:disabled)"))?.focus();
+    }
+    panel.addEventListener("keydown", (e) => { if (e.key === "Escape") { e.preventDefault(); close(); } });
+    document.addEventListener("pointerdown", (e) => { if (isOpen && !sel.host.contains(e.target)) close(false); });
+    panel.addEventListener("focusout", (e) => { if (isOpen && e.relatedTarget && !sel.host.contains(e.relatedTarget)) close(false); });
+    return { open, close };
+  }
+
+  /* Arrow keys move between a grid's cells (roving focus); `cols` cells to a row. */
+  function gridKeys(grid, cols, edge) {
+    grid.addEventListener("keydown", (e) => {
+      const cells = [...grid.querySelectorAll(".cell:not(.blank)")];
+      const at = cells.indexOf(document.activeElement);
+      if (at < 0) return;
+      const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: cols, ArrowUp: -cols }[e.key];
+      if (step === undefined) return;
+      e.preventDefault();
+      const to = at + step;
+      if (to < 0 || to >= cells.length) return edge(step, at);
+      if (!cells[to].disabled) cells[to].focus();
+    });
+  }
+
+  /* ---------- A: months ---------- */
+  function monthPicker(panel, period, close, apply, { title = "Custom range" } = {}) {
+    const start = period.kind === "months" ? period : period.kind === "last" ? { from: addMonths(NOW, -(period.n - 1)), to: NOW } : period.kind === "year" ? { from: `${period.year}-01`, to: `${period.year}-12` < NOW ? `${period.year}-12` : NOW } : { from: addMonths(NOW, -5), to: NOW };
+    let from = start.from, to = start.to, anchor = null, hover = null;
+    let year = Number(to.slice(0, 4));
+    let focusMonth = to;
+    panel.innerHTML = `
+      <div class="panel-head"><span class="panel-title">${title}</span>
+        <div class="nav"><button type="button" class="icon-btn" data-prev aria-label="Previous year">${PREV}</button><span aria-live="polite"></span><button type="button" class="icon-btn" data-next aria-label="Next year">${NEXT}</button></div></div>
+      <div class="mgrid" role="group" aria-label="Months"></div>
+      <div class="panel-foot"><span class="what" aria-live="polite"></span><div class="btns"><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="button" class="btn primary" data-apply>Apply</button></div></div>`;
+    const grid = panel.querySelector(".mgrid");
+    const yearEl = panel.querySelector(".nav span");
+    const what = panel.querySelector(".what");
+    const applyBtn = panel.querySelector("[data-apply]");
+    function render(focusIt) {
+      focusIt = focusIt || grid.contains(document.activeElement);
+      yearEl.textContent = year;
+      panel.querySelector("[data-prev]").disabled = year <= Number(FIRST.slice(0, 4)) - 1;
+      panel.querySelector("[data-next]").disabled = year >= YEAR;
+      const lo = anchor && hover ? (anchor < hover ? anchor : hover) : from;
+      const hi = anchor && hover ? (anchor < hover ? hover : anchor) : to;
+      grid.innerHTML = MONTHS.map((name, i) => {
+        const m = `${year}-${String(i + 1).padStart(2, "0")}`;
+        const cls = ["cell"];
+        if (m === NOW) cls.push("now");
+        if (anchor && hover) { if (m >= lo && m <= hi) cls.push(m === anchor ? (anchor <= hover ? "start" : "end") : "preview"); }
+        else if (anchor) { if (m === anchor) cls.push("start", "end"); }
+        else if (m >= from && m <= to) cls.push(m === from ? "start" : "", m === to ? "end" : "", m !== from && m !== to ? "in" : "");
+        const chosen = !anchor && m >= from && m <= to;
+        return `<button type="button" class="${cls.filter(Boolean).join(" ")}" data-m="${m}" ${m > NOW ? "disabled" : ""} tabindex="${m === focusMonth ? 0 : -1}" aria-pressed="${chosen}" aria-label="${longMonth(m)}">${name}</button>`;
+      }).join("");
+      if (!grid.querySelector('[tabindex="0"]')) grid.querySelector(".cell:not(:disabled)")?.setAttribute("tabindex", "0");
+      const count = monthRange(from, to).length;
+      what.innerHTML = anchor ? `From <b>${MONTHS[mi(anchor)]} ${anchor.slice(0, 4)}</b>. Now the last month.` : `<b>${label({ kind: "months", from, to })}</b> · ${count} ${count === 1 ? "month" : "months"}`;
+      applyBtn.disabled = Boolean(anchor);
+      if (focusIt) grid.querySelector(`[data-m="${focusMonth}"]`)?.focus();
+    }
+    grid.addEventListener("click", (e) => {
+      const b = e.target.closest(".cell");
+      if (!b || b.disabled) return;
+      const m = b.dataset.m;
+      focusMonth = m;
+      if (!anchor) { anchor = m; hover = null; from = to = m; }
+      else { from = anchor < m ? anchor : m; to = anchor < m ? m : anchor; anchor = null; hover = null; }
+      render(true);
+    });
+    grid.addEventListener("pointerover", (e) => { const b = e.target.closest(".cell"); if (anchor && b && !b.disabled && b.dataset.m !== hover) { hover = b.dataset.m; render(false); } });
+    grid.addEventListener("focusin", (e) => { const b = e.target.closest(".cell"); if (b) { focusMonth = b.dataset.m; if (anchor && hover !== b.dataset.m) { hover = b.dataset.m; render(true); } } });
+    gridKeys(grid, 3, (step) => {
+      const target = addMonths(focusMonth, step);
+      if (target > NOW || target < `${Number(FIRST.slice(0, 4)) - 1}-01`) return;
+      year = Number(target.slice(0, 4));
+      focusMonth = target;
+      render(true);
+    });
+    panel.querySelector("[data-prev]").addEventListener("click", () => { year--; render(false); });
+    panel.querySelector("[data-next]").addEventListener("click", () => { year++; render(false); });
+    panel.querySelector("[data-cancel]").addEventListener("click", () => close());
+    applyBtn.addEventListener("click", () => { apply({ kind: "months", from, to }); close(); });
+    render(false);
+    grid.querySelector('[tabindex="0"]')?.setAttribute("data-focus", "");
+  }
+
+  /* ---------- B: days ---------- */
+  function dayPicker(panel, period, close, apply) {
+    let from = period.kind === "days" ? period.from : "2026-08-03";
+    let to = period.kind === "days" ? period.to : "2026-09-18";
+    let anchor = null, hover = null;
+    let month = to.slice(0, 7);
+    let focusDay = to;
+    panel.innerHTML = `
+      <div class="ends"><div class="end-box" data-end="from"><small>From</small><span></span></div><div class="end-box" data-end="to"><small>To</small><span></span></div></div>
+      <div class="panel-head"><span class="panel-title" aria-live="polite"></span>
+        <div class="nav"><button type="button" class="icon-btn" data-prev aria-label="Previous month">${PREV}</button><button type="button" class="icon-btn" data-next aria-label="Next month">${NEXT}</button></div></div>
+      <div class="dgrid" role="group" aria-label="Days"></div>
+      <div class="panel-foot"><span class="what" aria-live="polite"></span><div class="btns"><button type="button" class="btn ghost" data-cancel>Cancel</button><button type="button" class="btn primary" data-apply>Apply</button></div></div>`;
+    const grid = panel.querySelector(".dgrid");
+    const what = panel.querySelector(".what");
+    const applyBtn = panel.querySelector("[data-apply]");
+    const iso = (m, d) => `${m}-${String(d).padStart(2, "0")}`;
+    function render(focusIt) {
+      focusIt = focusIt || grid.contains(document.activeElement);
+      panel.querySelector(".panel-title").textContent = longMonth(month);
+      panel.querySelector("[data-next]").disabled = month >= NOW;
+      panel.querySelector("[data-prev]").disabled = month <= FIRST;
+      const [fromBox, toBox] = panel.querySelectorAll(".end-box");
+      fromBox.querySelector("span").textContent = dayLabel(anchor ?? from);
+      toBox.querySelector("span").textContent = anchor ? "Pick a day" : dayLabel(to);
+      fromBox.classList.toggle("picking", false);
+      toBox.classList.toggle("picking", Boolean(anchor));
+      const lo = anchor && hover ? (anchor < hover ? anchor : hover) : from;
+      const hi = anchor && hover ? (anchor < hover ? hover : anchor) : to;
+      const [y, mm] = month.split("-").map(Number);
+      const lead = new Date(Date.UTC(y, mm - 1, 1)).getUTCDay();
+      let html = ["S", "M", "T", "W", "T", "F", "S"].map((d) => `<span class="wd" aria-hidden="true">${d}</span>`).join("");
+      for (let i = 0; i < lead; i++) html += `<span class="cell blank" aria-hidden="true"></span>`;
+      for (let d = 1; d <= lastDay(month); d++) {
+        const day = iso(month, d);
+        const cls = ["cell"];
+        if (day === TODAY) cls.push("now");
+        if (anchor && hover) { if (day >= lo && day <= hi) cls.push(day === anchor ? (anchor <= hover ? "start" : "end") : "preview"); }
+        else if (anchor) { if (day === anchor) cls.push("start", "end"); }
+        else if (day >= from && day <= to) cls.push(day === from ? "start" : "", day === to ? "end" : "", day !== from && day !== to ? "in" : "");
+        html += `<button type="button" class="${cls.filter(Boolean).join(" ")}" data-d="${day}" ${day > TODAY ? "disabled" : ""} tabindex="${day === focusDay ? 0 : -1}" aria-pressed="${!anchor && day >= from && day <= to}" aria-label="${dayLabel(day)}">${d}</button>`;
+      }
+      grid.innerHTML = html;
+      if (!grid.querySelector('[tabindex="0"]')) grid.querySelector(".cell:not(.blank):not(:disabled)")?.setAttribute("tabindex", "0");
+      const s = summarize({ kind: "days", from, to });
+      what.innerHTML = anchor ? "Now the last day." : `<b>${s.shown.length}</b> statements`;
+      applyBtn.disabled = Boolean(anchor);
+      if (focusIt) grid.querySelector(`[data-d="${focusDay}"]`)?.focus();
+    }
+    grid.addEventListener("click", (e) => {
+      const b = e.target.closest(".cell");
+      if (!b || b.disabled || b.classList.contains("blank")) return;
+      const d = b.dataset.d;
+      focusDay = d;
+      if (!anchor) { anchor = d; hover = null; from = to = d; }
+      else { from = anchor < d ? anchor : d; to = anchor < d ? d : anchor; anchor = null; hover = null; }
+      render(true);
+    });
+    grid.addEventListener("pointerover", (e) => { const b = e.target.closest(".cell"); if (anchor && b && b.dataset.d && !b.disabled && b.dataset.d !== hover) { hover = b.dataset.d; render(false); } });
+    gridKeys(grid, 7, (step) => {
+      const [y, mm, dd] = focusDay.split("-").map(Number);
+      const next = new Date(Date.UTC(y, mm - 1, dd + step)).toISOString().slice(0, 10);
+      if (next > TODAY || next < `${FIRST}-01`) return;
+      month = next.slice(0, 7);
+      focusDay = next;
+      render(true);
+    });
+    panel.querySelector("[data-prev]").addEventListener("click", () => { month = addMonths(month, -1); render(false); });
+    panel.querySelector("[data-next]").addEventListener("click", () => { month = addMonths(month, 1); render(false); });
+    panel.querySelector("[data-cancel]").addEventListener("click", () => close());
+    applyBtn.addEventListener("click", () => { apply({ kind: "days", from, to }); close(); });
+    render(false);
+    grid.querySelector('[tabindex="0"]')?.setAttribute("data-focus", "");
+  }
+
+  /* ---------- The period pickers ---------- */
+  const totalFor = (p) => lakh(summarize(p).total);
+  const yearOptions = (withTotals) => [
+    { value: `y${YEAR}`, label: "This year", period: { kind: "year", year: YEAR }, meta: withTotals ? () => totalFor({ kind: "year", year: YEAR }) : null },
+    { value: `y${YEAR - 1}`, label: String(YEAR - 1), period: { kind: "year", year: YEAR - 1 }, meta: withTotals ? () => totalFor({ kind: "year", year: YEAR - 1 }) : null },
+    { value: "all", label: "All time", period: { kind: "all" }, meta: withTotals ? () => totalFor({ kind: "all" }) : null },
+  ];
+  const keyOf = (p) => (p.kind === "year" ? `y${p.year}` : p.kind === "all" ? "all" : p.kind === "last" ? `last${p.n}` : "custom");
+
+  // Area 1: the plain period picker.
+  let ddPeriod = { kind: "year", year: YEAR };
+  const totalsBox = document.getElementById("dd-totals");
+  const dd = Select(document.getElementById("dd-period"), {
+    variant: "pill", label: "Period", icon: ICON_CAL, value: keyOf(ddPeriod),
+    options: yearOptions(true),
+    onChange: (v) => { ddPeriod = yearOptions(false).find((x) => x.value === v).period; document.getElementById("dd-sentence").innerHTML = sentence(ddPeriod); },
+  });
+  totalsBox.addEventListener("change", () => dd.setOptions(yearOptions(totalsBox.checked)));
+  document.getElementById("dd-sentence").innerHTML = sentence(ddPeriod);
+
+  // Area 1: the form selects.
+  const ISSUERS = ["HDFC Bank", "ICICI Bank", "Axis Bank", "SBI Card", "Kotak Mahindra Bank", "YES Bank", "IDFC FIRST Bank", "IndusInd Bank", "AU Small Finance Bank", "RBL Bank", "Federal Bank", "CSB Bank", "HSBC", "Standard Chartered", "American Express", "Other"];
+  const issuer = Select(document.getElementById("dd-issuer"), {
+    variant: "field", labelledBy: "lbl-issuer", placeholder: "Choose bank", value: "",
+    options: ISSUERS.map((i) => ({ value: i, label: i })),
+    onChange: () => { issuer.setInvalid(false); document.getElementById("err-issuer").hidden = true; },
+    onBlur: (v) => { if (!v) { issuer.setInvalid(true); document.getElementById("err-issuer").hidden = false; issuer.trigger.setAttribute("aria-describedby", "err-issuer"); } },
+  });
+  const ordinal = (d) => `${d}${d % 10 === 1 && d !== 11 ? "st" : d % 10 === 2 && d !== 12 ? "nd" : d % 10 === 3 && d !== 13 ? "rd" : "th"}`;
+  Select(document.getElementById("dd-day"), {
+    variant: "field", labelledBy: "lbl-day", describedBy: "help-day", placeholder: "Choose day", value: "4",
+    options: Array.from({ length: 31 }, (_, i) => ({ value: String(i + 1), label: ordinal(i + 1) })),
+  });
+  Select(document.getElementById("dd-account"), {
+    variant: "field", labelledBy: "lbl-acct", value: "",
+    options: [{ value: "", label: "Not set" }, { value: "hdfc", label: "HDFC Savings" }, { value: "icici", label: "ICICI Salary" }, { value: "axis", label: "Axis Savings" }],
+  });
+  Select(document.getElementById("dd-disabled"), { variant: "field", labelledBy: "lbl-none", placeholder: "No accounts yet", value: "", disabled: true, options: [] });
+
+  // Area 3: the shared preview.
+  let preview = { period: { kind: "months", from: "2026-03", to: "2026-08" }, from: "A · Month range" };
+  let outside = "fade";
+  function renderPreview() {
+    const p = preview.period;
+    const s = summarize(p);
+    document.getElementById("pv-chip").innerHTML = `${ICON_CAL}<span>${esc(label(p))}</span>`;
+    document.getElementById("pv-from").textContent = `From ${preview.from} · ${query(p)}`;
+    document.getElementById("pv-sentence").innerHTML = sentence(p);
+    document.getElementById("pv-avg").textContent = money(s.average);
+    document.getElementById("pv-avg-sub").textContent = `${money(s.total)} ÷ ${s.months.length} ${s.months.length === 1 ? "month" : "months"}`;
+    document.getElementById("pv-count").textContent = `${s.shown.length} statements`;
+    document.getElementById("pv-count-sub").textContent = `Statements · ${label(p)}`;
+    document.getElementById("pv-high").textContent = s.highest ? money(s.highest.amount) : "–";
+    document.getElementById("pv-high-sub").textContent = s.highest ? longMonth(s.highest.month) : "No statements";
+    const b = s.b;
+    const years = [];
+    for (let y = Number(b.first.slice(0, 4)); y <= Number(b.last.slice(0, 4)); y++) years.push(y);
+    const max = Math.max(1, ...s.byMonth.values());
+    let html = `<span></span>${MONTHS.map((m) => `<span class="m">${m}</span>`).join("")}`;
+    for (const y of years) {
+      html += `<span class="yr">${y}</span>`;
+      for (let i = 0; i < 12; i++) {
+        const m = `${y}-${String(i + 1).padStart(2, "0")}`;
+        const inRange = m >= b.first && m <= b.last;
+        const amount = inRange ? s.byMonth.get(m) : TOTALS[m];
+        let cls = "hc";
+        if (m > NOW) cls += " upcoming";
+        else if (!inRange) cls += ` l${Math.max(1, Math.min(5, Math.ceil(((TOTALS[m] ?? 0) / max) * 5)))} ${outside === "fade" ? "out" : "gone"}`;
+        else if (amount === undefined) cls += " nodata";
+        else cls += ` l${Math.max(1, Math.min(5, Math.ceil((amount / max) * 5)))}`;
+        const text = m <= NOW && amount !== undefined && (inRange || outside === "fade") ? lakh(amount).replace("₹", "") : "";
+        html += `<span class="${cls}" title="${longMonth(m)}">${text}</span>`;
+      }
+    }
+    document.getElementById("pv-heat").innerHTML = html;
+  }
+  for (const [btn, mode] of [["hm-fade", "fade"], ["hm-hide", "hide"]]) {
+    document.getElementById(btn).addEventListener("click", () => {
+      outside = mode;
+      document.getElementById("hm-fade").setAttribute("aria-pressed", String(mode === "fade"));
+      document.getElementById("hm-hide").setAttribute("aria-pressed", String(mode === "hide"));
+      renderPreview();
+    });
+  }
+
+  // Area 2: three range pickers, each a period pill with "Custom range…" at the end of its menu.
+  function rangePicker(hostId, urlId, tag, picker, extra, initial, openAtRest) {
+    let period = initial;
+    const custom = () => ({ value: "custom", label: period.kind === "months" || period.kind === "days" ? `Custom · ${label(period)}` : "Custom range…", action: true, divider: true });
+    const opts = () => [...extra, ...yearOptions(false).map((x, i) => (extra.length && i === 0 ? { ...x, divider: true } : x)), custom()];
+    const sel = Select(document.getElementById(hostId), {
+      variant: "pill", label: "Period", icon: ICON_CAL, value: keyOf(period), options: opts(),
+      onChange: (v) => { period = opts().find((x) => x.value === v).period; update(); },
+      onAction: () => panel.open(period),
+      onOpen: () => panel.close(false),
+    });
+    const panel = Panel(sel, "Custom range", (el, p, close) => picker(el, p, close, (next) => { period = next; update(); }));
+    function update() {
+      sel.setOptions(opts());
+      sel.set(keyOf(period));
+      // The pill shows the range itself while one is chosen.
+      if (keyOf(period) === "custom") sel.host.querySelector(".sel-value").textContent = label(period);
+      document.getElementById(urlId).textContent = `${label(period)} · ${query(period)}`;
+      preview = { period, from: tag };
+      renderPreview();
+    }
+    sel.setOptions(opts());
+    if (keyOf(period) === "custom") sel.host.querySelector(".sel-value").textContent = label(period);
+    document.getElementById(urlId).textContent = `${label(period)} · ${query(period)}`;
+    if (openAtRest) panel.open(period, { animate: false, focus: false });
+    return sel;
+  }
+  const quick = [3, 6, 12].map((n, i) => ({ value: `last${n}`, label: `Last ${n} months`, period: { kind: "last", n }, group: i === 0 ? "Quick ranges" : undefined }));
+  rangePicker("ra-period", "ra-url", "A · Month range", monthPicker, [], { kind: "months", from: "2026-03", to: "2026-08" }, true);
+  rangePicker("rb-period", "rb-url", "B · Exact dates", dayPicker, [], { kind: "days", from: "2026-08-03", to: "2026-09-18" }, true);
+  const rc = rangePicker("rc-period", "rc-url", "C · Quick ranges", monthPicker, quick, { kind: "last", n: 6 }, false);
+  // Area 1's menu and C's rest open, so the menu and C's quick ranges show without a click.
+  requestAnimationFrame(() => { dd.trigger.click(); rc.trigger.click(); });
+  renderPreview();
+})();
+</script>

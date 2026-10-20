@@ -2,6 +2,7 @@
 
 import type { ComponentProps, ReactNode } from "react";
 import { RingTexture } from "../../RingTexture";
+import { Select, type SelectOption } from "../../Select";
 import { AlertIcon, InfoIcon } from "./icons";
 
 /**
@@ -35,7 +36,7 @@ export function Field({
 }) {
   return (
     <div className={`flex min-w-0 flex-col gap-1.5 ${className}`}>
-      <label htmlFor={id} className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+      <label id={`${id}-label`} htmlFor={id} className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
         {label}
         {required ? (
           <span className="text-negative" aria-hidden="true">
@@ -89,16 +90,51 @@ export function MoneyInput({ invalid, ...props }: ComponentProps<"input"> & { in
   );
 }
 
-export function SelectInput({ invalid, children, ...props }: ComponentProps<"select"> & { invalid: boolean }) {
+/**
+ * A form field's dropdown: the app's Select (src/components/Select.tsx) with the
+ * input look, and a menu as wide as the field. It's named by its Field's label
+ * unless it's given an aria-label, and `name` submits its value with the form.
+ */
+export function SelectInput({
+  id,
+  invalid,
+  options,
+  value,
+  onChange,
+  onBlur,
+  placeholder,
+  name,
+  disabled,
+  ...aria
+}: {
+  id?: string;
+  invalid: boolean;
+  options: readonly SelectOption[];
+  value: string;
+  onChange: (value: string) => void;
+  onBlur?: () => void;
+  placeholder?: string;
+  name?: string;
+  disabled?: boolean;
+  "aria-label"?: string;
+  "aria-invalid"?: boolean;
+  "aria-describedby"?: string;
+}) {
   return (
-    <div className="relative">
-      <select {...props} className={`${inputClass(invalid)} cursor-pointer appearance-none pr-9`}>
-        {children}
-      </select>
-      <svg className="pointer-events-none absolute top-1/2 right-3.5 -translate-y-1/2 text-muted" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <polyline points="6 9 12 15 18 9" />
-      </svg>
-    </div>
+    <Select
+      id={id}
+      variant="field"
+      options={options}
+      value={value}
+      onChange={onChange}
+      onBlur={onBlur}
+      placeholder={placeholder}
+      name={name}
+      disabled={disabled}
+      aria-labelledby={aria["aria-label"] || !id ? undefined : `${id}-label`}
+      {...aria}
+      className={`${inputClass(invalid)} flex cursor-pointer items-center gap-2 pr-3.5 text-left aria-expanded:border-accent aria-expanded:ring-[3px] aria-expanded:ring-accent/25 disabled:cursor-default disabled:bg-page disabled:text-muted`}
+    />
   );
 }
 
