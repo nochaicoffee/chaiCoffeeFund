@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { cardsQuery, parsePage, parseShowClosed, parsePanel, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodYears, statementsQuery } from "./params";
-import type { Card } from "@/lib/sheets/types";
+import { cardsQuery, parsePage, parseShowClosed, parsePanel, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodMenu, periodYears, statementsQuery } from "./params";
+import type { Card, Statement } from "@/lib/sheets/types";
 
 const TODAY = "2026-10-17";
 const data = { cards: [{ id: "regalia" } as Card], statements: [] };
@@ -82,5 +82,32 @@ describe("closed cards in the card row", () => {
     expect(parseShowClosed({ closed: "1" })).toBe(true);
     expect(parseShowClosed({})).toBe(false);
     expect(cardsQuery({ period: { kind: "year", year: 2026 }, cardId: "edge", showClosed: true, demo: false }, TODAY)).toBe("?card=edge&closed=1");
+  });
+});
+
+describe("periodMenu", () => {
+  const card = (id: string) => ({ id }) as Card;
+  const statement = (id: string, cardId: string, statementDate: string, totalAmountDue: number) =>
+    ({ id, cardId, statementDate, dueDate: statementDate, totalAmountDue, minimumAmountDue: 0, amountPaid: 0, status: "Paid" }) as Statement;
+  const spend = {
+    cards: [card("regalia"), card("amazon")],
+    statements: [statement("a", "regalia", "2026-03-04", 41000), statement("b", "amazon", "2026-03-12", 9000), statement("c", "regalia", "2024-11-04", 240000)],
+  };
+
+  it("offers this year, every other year with statements and all time, each with its spend, newest first", () => {
+    expect(periodMenu(spend, { kind: "year", year: 2026 }, TODAY)).toEqual([
+      { value: "", label: "This year", meta: "₹50.0k" },
+      { value: "2024", label: "2024", meta: "₹2.4L" },
+      { value: "all", label: "All time", meta: "₹2.9L" },
+    ]);
+  });
+
+  it("totals the selected card only, and keeps a year without statements when it's the one shown", () => {
+    expect(periodMenu(spend, { kind: "year", year: 2025 }, TODAY, "amazon")).toEqual([
+      { value: "", label: "This year", meta: "₹9.0k" },
+      { value: "2025", label: "2025", meta: "₹0" },
+      { value: "2024", label: "2024", meta: "₹0" },
+      { value: "all", label: "All time", meta: "₹9.0k" },
+    ]);
   });
 });
