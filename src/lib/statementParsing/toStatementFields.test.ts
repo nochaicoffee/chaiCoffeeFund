@@ -22,9 +22,10 @@ describe("toStatementFields", () => {
 
   it("says when the PDF itself has no due date, rather than that it couldn't be read", () => {
     const owed = { bank: "hdfc" as const, statementDate: "03 Jun, 2025", totalAmountDue: "-3871.25", minimumAmountDue: "0.00" };
-    expect(toStatementFields({ ...owed, noDueDate: "nothing owed" })).toEqual({ problem: "the PDF shows no due date, as nothing is owed on it" });
+    expect(toStatementFields({ ...owed, noDueDate: "nothing owed" })).toEqual({ problem: "the PDF shows no due date, as nothing is owed on it", statementDate: "2025-06-03" });
     expect(toStatementFields({ ...owed, totalAmountDue: "1200.00", noDueDate: "due immediately" })).toEqual({
       problem: "the PDF shows no due date: it says the bill is due immediately",
+      statementDate: "2025-06-03",
     });
   });
 

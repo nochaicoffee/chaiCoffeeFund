@@ -143,7 +143,7 @@ async function syncEmails(startedAt: number, timeBudgetMs: number, emailTimeoutM
     const outcome = await withTimeout<IngestionOutcome>(
       (signal) => processMessageSafely(gmail, messageId, cards, statements, newStatements, candidatePasswords, signal),
       emailTimeoutMs,
-      () => ({ messageId, subject: "", outcome: "skipped", reason: `took over ${emailTimeoutMs / 1000}s to read, so it was left for the next sync` }),
+      () => ({ messageId, subject: "", outcome: "skipped", problem: "timeout", reason: `took over ${emailTimeoutMs / 1000}s to read, so it was left for the next sync` }),
     );
     read.push({ outcome, logged });
   }
@@ -204,6 +204,7 @@ async function processMessageSafely(
       messageId,
       subject: "",
       outcome: "skipped",
+      problem: "error",
       reason: error instanceof Error ? error.message : String(error),
     };
   }
@@ -223,44 +224,49 @@ async function processMessage(
   // internalDate is when Gmail received it, in milliseconds; the date is taken in the app's time zone.
   const receivedDate = message.internalDate ? todayIso(new Date(Number(message.internalDate))) : undefined;
   const email = { messageId, subject, ...(receivedDate && { receivedDate }) };
+  // Matched from the subject alone, so an email whose PDF can't be opened is still reported by card (#54).
+  // It's only acted on after the PDF checks, which keep their place in the order.
+  const extractedCardName = extractCardNameFromSubject(subject);
+  const matchResult = matchCard(extractedCardName, cards);
+  const subjectCard = "card" in matchResult ? { cardId: matchResult.card.id } : {};
 
   const pdfBytes = await downloadPdfAttachment(gmail, message);
   if (!pdfBytes) {
-    return { ...email, outcome: "skipped", reason: "no PDF attachment found" };
+    return { ...email, ...subjectCard, outcome: "skipped", problem: "no-pdf", reason: "no PDF attachment found" };
   }
 
   const decrypted = await decryptAndExtractText(pdfBytes, candidatePasswords);
   if ("failure" in decrypted) {
-    return { ...email, outcome: "skipped", reason: decrypted.failure };
+    return decrypted.failure === "no_password_matched"
+      ? { ...email, ...subjectCard, outcome: "skipped", problem: "locked", reason: "none of the saved PDF passwords opens it" }
+      : { ...email, ...subjectCard, outcome: "skipped", problem: "no-text", reason: "the PDF has no text to read, so it may be a scanned image" };
   }
 
   // The card comes first, so its statement is read by its issuer's parser,
   // not by the parser of whichever bank the PDF's text happens to name first (#92).
-  const extractedCardName = extractCardNameFromSubject(subject);
-  const matchResult = matchCard(extractedCardName, cards);
   if ("noMatch" in matchResult) {
-    return { ...email, outcome: "skipped", reason: `no card matched "${extractedCardName}"` };
+    return { ...email, outcome: "skipped", problem: "no-card", reason: `no card matched "${extractedCardName}"` };
   }
   if ("ambiguous" in matchResult) {
-    const ids = matchResult.ambiguous.map((c) => c.id).join(", ");
-    return {
-      ...email,
-      outcome: "skipped",
-      reason: `ambiguous card match for "${extractedCardName}" (candidates: ${ids})`,
-    };
+    const names = matchResult.ambiguous.map((c) => c.name).join(", ");
+    return { ...email, outcome: "skipped", problem: "several-cards", reason: `more than one card matched "${extractedCardName}": ${names}` };
   }
 
   const card = matchResult.card;
   const reader = checkStatementBank(card, decrypted.text);
   if ("problem" in reader) {
-    return { ...email, outcome: "skipped", cardId: card.id, reason: reader.problem };
+    return { ...email, outcome: "skipped", problem: "wrong-bank", cardId: card.id, reason: reader.problem };
   }
   const read = toStatementFields(parseStatement(decrypted.text, reader.bank));
   // Says which field was missing or misread, never its value (#89).
   if ("problem" in read) {
-    return { ...email, outcome: "skipped", cardId: card.id, reason: read.problem };
+    // A statement whose PDF gives no due date may be in the Sheet already, added by hand: then this email is done (#54).
+    const added = read.statementDate && existingStatements.find((s) => s.cardId === card.id && s.statementDate === read.statementDate);
+    if (added) return duplicateOf(added, { ...email, cardId: card.id });
+    return { ...email, outcome: "skipped", problem: "unreadable", cardId: card.id, reason: read.problem };
   }
   const { fields } = read;
+  const statement = { statementDate: fields.statementDate, dueDate: fields.dueDate, totalAmountDue: fields.totalAmountDue };
 
   // The PDF's masked card number confirms the match, and fills in a card's missing last 4 (#78).
   const last4 = checkCardLast4(card, findCardLast4s(decrypted.text));
@@ -268,27 +274,18 @@ async function processMessage(
     return {
       ...email,
       outcome: "skipped",
+      problem: "card-number",
       cardId: card.id,
-      reason: `the PDF shows a card ending ${last4.found.join(" or ")}, but ${card.name} ends ${card.last4}, so it's probably another card's statement. If the card was reissued with a new number, update its last 4 in the Cards tab`,
+      reason: `the PDF shows a card ending ${last4.found.join(" or ")}, but ${card.name} ends ${card.last4}, so it's probably another card's statement. If the card was reissued with a new number, update its last 4 in Edit card`,
     };
   }
   // Given up on (withTimeout): change nothing.
-  if (signal.aborted) return { ...email, outcome: "skipped", reason: "given up on" };
-  const notes = last4.kind === "fill" ? [await fillLast4(card, last4.last4)] : [];
+  if (signal.aborted) return { ...email, outcome: "skipped", problem: "timeout", reason: "given up on" };
+  const filled = last4.kind === "fill" ? await fillLast4(card, last4.last4) : null;
+  const extra = { statement, ...(filled?.saved && { filledLast4: filled.last4 }), ...(filled && { notes: [filled.note] }) };
 
   const duplicate = existingStatements.find((s) => s.cardId === card.id && s.statementDate === fields.statementDate);
-  if (duplicate) {
-    const outcome: IngestionOutcome = {
-      ...email,
-      outcome: "duplicate",
-      statementId: typeof duplicate.id === "string" ? duplicate.id : undefined,
-      cardId: card.id,
-      ...(notes.length > 0 && { notes }),
-    };
-    // A statement read earlier this sync has no id until it's written; it gets passed on then.
-    duplicate.added?.outcomes.push(outcome);
-    return outcome;
-  }
+  if (duplicate) return duplicateOf(duplicate, { ...email, cardId: card.id, ...extra });
 
   const input = createStatementSchema.parse({
     cardId: card.id,
@@ -298,12 +295,20 @@ async function processMessage(
     minimumAmountDue: fields.minimumAmountDue,
     status: "Pending",
   });
-  if (signal.aborted) return { ...email, outcome: "skipped", reason: "given up on" };
-  const outcome: IngestionOutcome = { ...email, outcome: "created", cardId: card.id, ...(notes.length > 0 && { notes }) };
+  if (signal.aborted) return { ...email, outcome: "skipped", problem: "timeout", reason: "given up on" };
+  const outcome: IngestionOutcome = { ...email, outcome: "created", cardId: card.id, ...extra };
   const added: NewStatement = { input, outcomes: [outcome] };
   newStatements.push(added);
   // Counted from now on, so a second email for the same statement in this run is a duplicate too.
   existingStatements.push({ cardId: input.cardId, statementDate: input.statementDate, added });
+  return outcome;
+}
+
+/** An email whose statement is already in the Sheet, or was read earlier this sync. */
+function duplicateOf(existing: ExistingStatement, base: Omit<IngestionOutcome, "outcome">): IngestionOutcome {
+  const outcome: IngestionOutcome = { ...base, outcome: "duplicate", statementId: typeof existing.id === "string" ? existing.id : undefined };
+  // A statement read earlier this sync has no id until it's written; it gets passed on then.
+  existing.added?.outcomes.push(outcome);
   return outcome;
 }
 
@@ -312,12 +317,12 @@ async function processMessage(
  * card too, so the rest of the run checks against it. A failed save is only
  * noted: the statement itself still imports.
  */
-async function fillLast4(card: Card, last4: string): Promise<string> {
+async function fillLast4(card: Card, last4: string): Promise<{ saved: boolean; last4: string; note: string }> {
   try {
     await cardsRepository.update(card.id, { last4 });
     card.last4 = last4;
-    return `filled in ${card.name}'s last 4 (${last4}) from the statement`;
+    return { saved: true, last4, note: `filled in ${card.name}'s last 4 (${last4}) from the statement` };
   } catch (error) {
-    return `couldn't save ${card.name}'s last 4 (${last4}): ${error instanceof Error ? error.message : String(error)}`;
+    return { saved: false, last4, note: `couldn't save ${card.name}'s last 4 (${last4}): ${error instanceof Error ? error.message : String(error)}` };
   }
 }

@@ -9,8 +9,12 @@ export interface StatementFields {
   minimumAmountDue: number;
 }
 
-/** The fields, or why the statement can't be imported: the sync's reason for skipping it (#89). */
-export type StatementFieldsResult = { fields: StatementFields } | { problem: string };
+/**
+ * The fields, or why the statement can't be imported: the sync's reason for skipping it (#89).
+ * A statement with no due date still has its statement date, so the sync can tell whether
+ * it's already in the Sheet, added by hand (#54).
+ */
+export type StatementFieldsResult = { fields: StatementFields } | { problem: string; statementDate?: string };
 
 /**
  * Converts a raw, string-typed extraction into the typed fields a
@@ -39,7 +43,8 @@ export function toStatementFields(details: ParsedStatementDetails): StatementFie
   if (unread.length > 0) return { problem: `couldn't read the ${listOf(unread)} from the PDF` };
   if (statementDate === null || dueDate === null || totalAmountDue === null || minimumAmountDue === null) {
     // Only the due date can be missing here, and the PDF says why.
-    return { problem: details.noDueDate === "due immediately" ? "the PDF shows no due date: it says the bill is due immediately" : "the PDF shows no due date, as nothing is owed on it" };
+    const problem = details.noDueDate === "due immediately" ? "the PDF shows no due date: it says the bill is due immediately" : "the PDF shows no due date, as nothing is owed on it";
+    return { problem, ...(statementDate !== null && { statementDate }) };
   }
   if (dueDate <= statementDate) return { problem: "the due date read from the PDF isn't after its statement date, so one of them was misread" };
   if (minimumAmountDue > Math.max(0, totalAmountDue)) {

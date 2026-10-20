@@ -4,6 +4,8 @@ import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, parseShowClosed
 import { summarySentence } from "./summarySentence";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SyncStatementsButton } from "@/components/SyncStatementsButton";
+import { SyncProvider } from "@/components/sync/SyncContext";
+import { SyncReportPanel } from "@/components/sync/SyncReportPanel";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { CardTile, ClosedCardsTile } from "@/components/cards/CardTile";
 import { AddCardButton, AddStatementButton, EditCardButton } from "@/components/cards/forms/FormButtons";
@@ -112,43 +114,49 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
     </div>
   );
 
+  // For the sync report, which names cards by their short name.
+  const syncCardNames = Object.fromEntries(data.cards.map((c) => [c.id, cardName(c)]));
+
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        section="Cards"
-        title={`${greetingFor()}, ${appConfig.ownerName}`}
-        actions={
-          <>
-            <PeriodSelect
-              years={periodYears(statementYears(data, today), period)}
-              currentYear={currentYear}
-              value={period.kind === "all" ? "all" : String(period.year)}
-            />
-            <RefreshButton iconOnly />
-            {!demo && <SyncStatementsButton />}
-            <AddStatementButton cards={clientCards} statements={data.statements} today={today} initialCardId={cardId} disabledReason={disabledReason} variant="ghost" />
-            <AddCardButton accounts={accountOptions} usedColors={usedColors} disabledReason={disabledReason} variant="header" />
-          </>
-        }
-      >
-        <p className="max-w-[960px] text-base leading-[1.7] font-medium text-muted">
-          {summarySentence({ summary, pending, period, today, cardName: selectedCard && cardName(selectedCard) }).map((part, i) =>
-            part.strong ? (
-              <span key={i} className="font-bold whitespace-nowrap text-fg tabular-nums">
-                {part.text}
-              </span>
-            ) : (
-              <span key={i}>{part.text}</span>
-            ),
-          )}
-        </p>
-        {demo && (
-          <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">
-            Sample data. Nothing here is from your Sheet.
+      <SyncProvider cardNames={syncCardNames}>
+        <PageHeader
+          section="Cards"
+          title={`${greetingFor()}, ${appConfig.ownerName}`}
+          actions={
+            <>
+              <PeriodSelect
+                years={periodYears(statementYears(data, today), period)}
+                currentYear={currentYear}
+                value={period.kind === "all" ? "all" : String(period.year)}
+              />
+              <RefreshButton iconOnly />
+              {!demo && <SyncStatementsButton />}
+              <AddStatementButton cards={clientCards} statements={data.statements} today={today} initialCardId={cardId} disabledReason={disabledReason} variant="ghost" />
+              <AddCardButton accounts={accountOptions} usedColors={usedColors} disabledReason={disabledReason} variant="header" />
+            </>
+          }
+        >
+          <p className="max-w-[960px] text-base leading-[1.7] font-medium text-muted">
+            {summarySentence({ summary, pending, period, today, cardName: selectedCard && cardName(selectedCard) }).map((part, i) =>
+              part.strong ? (
+                <span key={i} className="font-bold whitespace-nowrap text-fg tabular-nums">
+                  {part.text}
+                </span>
+              ) : (
+                <span key={i}>{part.text}</span>
+              ),
+            )}
           </p>
-        )}
-        <SkippedRowsNotice tabs={skipped} />
-      </PageHeader>
+          {demo && (
+            <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">
+              Sample data. Nothing here is from your Sheet.
+            </p>
+          )}
+          {!demo && <SyncReportPanel />}
+          <SkippedRowsNotice tabs={skipped} />
+        </PageHeader>
+      </SyncProvider>
 
       <div
         role="list"

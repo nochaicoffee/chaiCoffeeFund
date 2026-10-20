@@ -4,11 +4,14 @@ import { loadCardData } from "../loadCardData";
 import { cardsQuery, parsePage, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodYears, statementsQuery, type StatementsListState } from "../params";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SyncStatementsButton } from "@/components/SyncStatementsButton";
+import { SyncProvider } from "@/components/sync/SyncContext";
+import { SyncReportPanel } from "@/components/sync/SyncReportPanel";
 import { AddStatementButton, EditCardButton, MarkPaidButton } from "@/components/cards/forms/FormButtons";
 import { PeriodSelect } from "@/components/cards/PeriodSelect";
 import { StatementsList } from "@/components/cards/StatementsList";
 import { StatementsSummary } from "@/components/cards/StatementsSummary";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { cardName } from "@/lib/format/labels";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { pendingSummary, statementYears } from "@/lib/aggregate/cardSpend";
 import { filterCounts, filterStatements, groupByMonth, minimumDueNow, paginate, paidSummary, periodOverview } from "@/lib/aggregate/cardStatements";
@@ -66,53 +69,59 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
     return <MarkPaidButton statement={statement} card={card} cards={clientCards} accounts={options} context={paymentContext(data, today, statement.id)} today={today} disabledReason={disabledReason} />;
   };
 
+  // For the sync report, which names cards by their short name.
+  const syncCardNames = Object.fromEntries(data.cards.map((c) => [c.id, cardName(c)]));
+
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader
-        section="Cards"
-        eyebrow={
-          <Link href={`/cards${cardsQuery({ period, cardId: state.cardId, demo }, today)}`} className="inline-flex min-h-11 items-center gap-1.5 hover:text-fg focus-visible:outline-2 focus-visible:outline-accent md:min-h-0">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="11 6 5 12 11 18" />
-            </svg>
-            Cards · Statements
-          </Link>
-        }
-        title="Statements"
-        actions={
-          <>
-            <PeriodSelect years={periodYears(statementYears(data, today), period)} currentYear={currentYear} value={period.kind === "all" ? "all" : String(period.year)} />
-            <RefreshButton iconOnly />
-            {/* Every card has a chip here, closed ones included, so this is how a card without a tile is edited. */}
-            {state.cardId && clientCardsById.has(state.cardId) && (
-              <EditCardButton
-                card={clientCardsById.get(state.cardId)!}
-                accounts={accountOptions}
-                usedColors={data.cards.flatMap((c) => (c.color ? [c.color] : []))}
-                disabledReason={disabledReason}
-                tone="surface"
-              />
-            )}
-            {!demo && <SyncStatementsButton />}
-            {addStatement("primary")}
-          </>
-        }
-      >
-        <p className="text-[15px] leading-relaxed font-medium text-muted">
-          Every card statement in one place —{" "}
-          {overview.count === 0 ? (
-            `none ${periodText} yet.`
-          ) : (
+      <SyncProvider cardNames={syncCardNames}>
+        <PageHeader
+          section="Cards"
+          eyebrow={
+            <Link href={`/cards${cardsQuery({ period, cardId: state.cardId, demo }, today)}`} className="inline-flex min-h-11 items-center gap-1.5 hover:text-fg focus-visible:outline-2 focus-visible:outline-accent md:min-h-0">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="11 6 5 12 11 18" />
+              </svg>
+              Cards · Statements
+            </Link>
+          }
+          title="Statements"
+          actions={
             <>
-              {overview.count} {periodText} across {overview.cardCount} {overview.cardCount === 1 ? "card" : "cards"},{" "}
-              {overview.pending > 0 ? <span className="font-bold text-fg">{overview.pending} pending</span> : "all paid"}.
+              <PeriodSelect years={periodYears(statementYears(data, today), period)} currentYear={currentYear} value={period.kind === "all" ? "all" : String(period.year)} />
+              <RefreshButton iconOnly />
+              {/* Every card has a chip here, closed ones included, so this is how a card without a tile is edited. */}
+              {state.cardId && clientCardsById.has(state.cardId) && (
+                <EditCardButton
+                  card={clientCardsById.get(state.cardId)!}
+                  accounts={accountOptions}
+                  usedColors={data.cards.flatMap((c) => (c.color ? [c.color] : []))}
+                  disabledReason={disabledReason}
+                  tone="surface"
+                />
+              )}
+              {!demo && <SyncStatementsButton />}
+              {addStatement("primary")}
             </>
-          )}
-        </p>
-        {demo && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
-        <SkippedRowsNotice tabs={skipped} />
-      </PageHeader>
+          }
+        >
+          <p className="text-[15px] leading-relaxed font-medium text-muted">
+            Every card statement in one place —{" "}
+            {overview.count === 0 ? (
+              `none ${periodText} yet.`
+            ) : (
+              <>
+                {overview.count} {periodText} across {overview.cardCount} {overview.cardCount === 1 ? "card" : "cards"},{" "}
+                {overview.pending > 0 ? <span className="font-bold text-fg">{overview.pending} pending</span> : "all paid"}.
+              </>
+            )}
+          </p>
+          {demo && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
+          {!demo && <SyncReportPanel />}
+          <SkippedRowsNotice tabs={skipped} />
+        </PageHeader>
+      </SyncProvider>
 
       <StatementsSummary
         tiles={[
