@@ -7,6 +7,7 @@ import type { FormState } from "@/lib/forms/formState";
 import { canUndo, completePayment, payInFull, paymentFields, type PaymentFields } from "@/lib/forms/quickPay";
 import { CACHE_TAGS, getCachedAccounts, getCachedCards, getCachedStatements } from "@/lib/sheets/cached";
 import { cardsRepository, createCardSchema, updateCardSchema } from "@/lib/sheets/cards";
+import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
 import { NotFoundError } from "@/lib/sheets/repository";
 import { createStatementSchema, statementsRepository, updateStatementSchema } from "@/lib/sheets/statements";
 
@@ -22,10 +23,13 @@ function fields(formData: FormData) {
   return Object.fromEntries(formData.entries());
 }
 
-/** Logs a failed Sheet write without the form's values, which can include a PDF password. */
+/**
+ * Logs a failed Sheet read or write without the form's values, which can include a PDF password.
+ * A used-up quota says so, so the dialog can say to wait a minute (lib/sheets/errors.ts).
+ */
 function failed(action: string, error: unknown): FormState {
   console.error(`[cards] ${action} failed:`, error instanceof Error ? error.message : String(error));
-  return { status: "failed" };
+  return isQuotaError(error) ? { status: "failed", message: sheetsFailureMessage(error) } : { status: "failed" };
 }
 
 /**
@@ -34,7 +38,12 @@ function failed(action: string, error: unknown): FormState {
  * last 4, keywords or the usual account clears them.
  */
 export async function saveCard(_previous: FormState, formData: FormData): Promise<FormState> {
-  const accounts = await getCachedAccounts();
+  let accounts: Awaited<ReturnType<typeof getCachedAccounts>>;
+  try {
+    accounts = await getCachedAccounts();
+  } catch (error) {
+    return failed("saveCard", error);
+  }
   const result = readCardForm(fields(formData), { accountIds: accounts.map((a) => a.id) });
   if (!result.ok) return { status: "invalid", errors: result.errors };
   const id = formData.get("id");
@@ -66,7 +75,12 @@ export async function saveCard(_previous: FormState, formData: FormData): Promis
  * it doesn't block).
  */
 export async function saveStatement(_previous: FormState, formData: FormData): Promise<FormState> {
-  const [cards, statements] = await Promise.all([getCachedCards(), getCachedStatements()]);
+  let cards: Awaited<ReturnType<typeof getCachedCards>>, statements: Awaited<ReturnType<typeof getCachedStatements>>;
+  try {
+    [cards, statements] = await Promise.all([getCachedCards(), getCachedStatements()]);
+  } catch (error) {
+    return failed("saveStatement", error);
+  }
   const result = readStatementForm(fields(formData), { cardIds: cards.map((c) => c.id) });
   if (!result.ok) return { status: "invalid", errors: result.errors };
   const duplicate = findDuplicateStatement(statements, result.input.cardId, result.input.statementDate);
@@ -95,7 +109,13 @@ export async function saveStatement(_previous: FormState, formData: FormData): P
 export async function markPaid(_previous: FormState, formData: FormData): Promise<FormState> {
   const id = formData.get("id");
   if (typeof id !== "string" || id === "") return { status: "invalid", errors: { form: "This statement couldn't be found. Refresh and try again." } };
-  const [statement, accounts, cards] = await Promise.all([statementsRepository.get(id), getCachedAccounts(), getCachedCards()]);
+  let loaded: [Awaited<ReturnType<typeof statementsRepository.get>>, Awaited<ReturnType<typeof getCachedAccounts>>, Awaited<ReturnType<typeof getCachedCards>>];
+  try {
+    loaded = await Promise.all([statementsRepository.get(id), getCachedAccounts(), getCachedCards()]);
+  } catch (error) {
+    return failed("markPaid", error);
+  }
+  const [statement, accounts, cards] = loaded;
   if (!statement) return { status: "invalid", errors: { form: "This statement couldn't be found. Refresh and try again." } };
   const result = readMarkPaidForm(fields(formData), statement, { accountIds: accounts.map((a) => a.id), cardIds: cards.map((c) => c.id) }, todayIso());
   if (!result.ok) {
@@ -120,6 +140,12 @@ export type QuickPayResult = { ok: true; written: PaymentFields; before: Payment
 
 const NOT_FOUND = "This statement couldn't be found. Refresh and try again.";
 
+/** A one-click payment that couldn't reach the Sheet: logged without values, told in words (lib/sheets/errors.ts). */
+function quickPayFailed(action: string, error: unknown): QuickPayResult {
+  console.error(`[cards] ${action} failed:`, error instanceof Error ? error.message : String(error));
+  return { ok: false, message: sheetsFailureMessage(error) };
+}
+
 /**
  * Writes a statement's payment fields, all of them, so a blank one is cleared
  * rather than left as it was. completePayment puts back the blanks a server
@@ -137,7 +163,12 @@ async function writePayment(id: string, payment: PaymentFields): Promise<void> {
  * other accounts still go through the Mark paid form.
  */
 export async function payStatementInFull(id: string): Promise<QuickPayResult> {
-  const [statement, cards] = await Promise.all([statementsRepository.get(id), getCachedCards()]);
+  let statement: Awaited<ReturnType<typeof statementsRepository.get>>, cards: Awaited<ReturnType<typeof getCachedCards>>;
+  try {
+    [statement, cards] = await Promise.all([statementsRepository.get(id), getCachedCards()]);
+  } catch (error) {
+    return quickPayFailed("payStatementInFull", error);
+  }
   if (!statement) return { ok: false, message: NOT_FOUND };
   if (statement.status !== "Pending") return { ok: false, message: "This bill is already marked paid. Refresh to see it." };
   const before = paymentFields(statement);
@@ -146,8 +177,7 @@ export async function payStatementInFull(id: string): Promise<QuickPayResult> {
     await writePayment(id, written);
   } catch (error) {
     if (error instanceof NotFoundError) return { ok: false, message: NOT_FOUND };
-    console.error(`[cards] payStatementInFull failed: ${error instanceof Error ? error.name : "error"}`);
-    return { ok: false, message: "Couldn't save that to the Sheet. Try again." };
+    return quickPayFailed("payStatementInFull", error);
   }
   updateTag(CACHE_TAGS.statements);
   return { ok: true, written, before };
@@ -155,15 +185,19 @@ export async function payStatementInFull(id: string): Promise<QuickPayResult> {
 
 /** Undo for payStatementInFull: puts the payment back as it was, unless the bill has been changed since (canUndo). */
 export async function undoStatementPayment(id: string, written: PaymentFields, before: PaymentFields): Promise<QuickPayResult> {
-  const statement = await statementsRepository.get(id);
+  let statement: Awaited<ReturnType<typeof statementsRepository.get>>;
+  try {
+    statement = await statementsRepository.get(id);
+  } catch (error) {
+    return quickPayFailed("undoStatementPayment", error);
+  }
   if (!statement) return { ok: false, message: NOT_FOUND };
   if (!canUndo(statement, completePayment(written))) return { ok: false, message: "This bill has changed since, so it wasn't put back. Edit its payment on the Statements page." };
   try {
     await writePayment(id, before);
   } catch (error) {
     if (error instanceof NotFoundError) return { ok: false, message: NOT_FOUND };
-    console.error(`[cards] undoStatementPayment failed: ${error instanceof Error ? error.name : "error"}`);
-    return { ok: false, message: "Couldn't put it back in the Sheet. Try again." };
+    return quickPayFailed("undoStatementPayment", error);
   }
   updateTag(CACHE_TAGS.statements);
   return { ok: true, written: before, before: written };

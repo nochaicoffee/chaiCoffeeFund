@@ -27,6 +27,7 @@ export function FormDialog({
   pending,
   errorCount,
   saveFailed,
+  failMessage,
   close,
   onClose,
   formProps,
@@ -42,6 +43,8 @@ export function FormDialog({
   /** Fields that need fixing; two or more show the summary line. */
   errorCount: number;
   saveFailed: boolean;
+  /** Why the save failed, when it's known, such as the Sheets quota for the minute being used up. */
+  failMessage?: string;
   /** Set to true to close the dialog (after a save). */
   close: boolean;
   onClose: () => void;
@@ -98,7 +101,9 @@ export function FormDialog({
           <div role="alert" className="mx-7 mt-4 flex items-start gap-2 rounded-[14px] bg-negative-tint px-4 py-3 text-xs font-semibold text-negative max-md:mx-4">
             <AlertIcon />
             {saveFailed
-              ? "Couldn't save to the Sheet, so nothing was written. Everything you entered is still here: try again."
+              ? failMessage
+                ? `${failMessage} Everything you entered is still here.`
+                : "Couldn't save to the Sheet, so nothing was written. Everything you entered is still here: try again."
               : `${COUNT_WORDS[errorCount] ?? errorCount} fields need fixing before this can be saved.`}
           </div>
         )}

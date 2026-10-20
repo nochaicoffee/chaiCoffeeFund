@@ -15,6 +15,7 @@ import { StatusPill } from "./StatusPill";
  */
 
 const TOAST_MS = 6000;
+const UNREACHABLE = "Couldn't reach the app, so nothing was saved. Check the connection and try again.";
 
 type Toast =
   | { kind: "paid"; id: string; message: string; written: PaymentFields; before: PaymentFields; key: number }
@@ -37,7 +38,8 @@ export function QuickPayProvider({ children }: { children: ReactNode }) {
   const pay = useCallback((id: string, what: string) => {
     setSaving(id);
     startTransition(async () => {
-      const result = await payStatementInFull(id);
+      // The action reports Sheet failures itself; this catches the app being unreachable, so the button never just stops.
+      const result = await payStatementInFull(id).catch(() => ({ ok: false as const, message: UNREACHABLE }));
       setSaving(null);
       if (!result.ok) {
         setToast({ kind: "error", message: result.message, key: Date.now() });
@@ -53,7 +55,7 @@ export function QuickPayProvider({ children }: { children: ReactNode }) {
     const { id, written, before } = toast;
     setToast(null);
     startTransition(async () => {
-      const result = await undoStatementPayment(id, written, before);
+      const result = await undoStatementPayment(id, written, before).catch(() => ({ ok: false as const, message: UNREACHABLE }));
       setJustPaid(null);
       setToast({ kind: result.ok ? "done" : "error", message: result.ok ? "Put back as it was." : result.message, key: Date.now() });
     });
