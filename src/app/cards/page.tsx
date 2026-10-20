@@ -229,6 +229,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
           range={spendRange(data, period, today, cardId)}
           viewAllHref={`/cards/statements${statementsQuery({ period, cardId, demo }, today)}`}
           addStatement={<AddStatementButton cards={clientCards} statements={data.statements} today={today} initialCardId={cardId} disabledReason={disabledReason} variant="link" />}
+          quickPay={!demo}
         />
       </div>
 

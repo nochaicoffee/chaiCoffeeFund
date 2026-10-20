@@ -8,9 +8,15 @@ import { cardName } from "@/lib/format/labels";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import { RingTexture } from "../RingTexture";
 import { cardSwatch } from "./CardTile";
+import { QuickPayProvider, QuickPayStatus } from "./QuickPay";
 import { StatusPill } from "./StatusPill";
 import type { PanelView } from "@/app/cards/params";
 
+
+/** One-click Mark paid (#103) needs its provider, for the toast with Undo; the sample data can't be changed, so it goes without. */
+function MaybeQuickPay({ on, children }: { on?: boolean; children: ReactNode }) {
+  return on ? <QuickPayProvider>{children}</QuickPayProvider> : <>{children}</>;
+}
 
 /** How many years the range view shows before folding the rest away. */
 const VISIBLE_YEARS = 3;
@@ -46,6 +52,7 @@ function StatementsView({
   counts,
   viewAllHref,
   addStatement,
+  quickPay,
 }: {
   statements: Statement[];
   cardsById: Map<string, Card>;
@@ -53,6 +60,7 @@ function StatementsView({
   counts: StatementCounts;
   viewAllHref?: string;
   addStatement?: ReactNode;
+  quickPay?: boolean;
 }) {
   if (statements.length === 0) {
     return (
@@ -65,47 +73,53 @@ function StatementsView({
   return (
     <>
       <div className="-mx-[22px] overflow-x-auto px-[22px]">
-        <table className="w-full min-w-[440px] text-left text-[13px]">
-          <thead>
-            <tr className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase">
-              <th className="py-2 pr-3 font-bold">Card</th>
-              <th className="py-2 pr-3 font-bold">Statement</th>
-              <th className="py-2 pr-3 font-bold">Due</th>
-              <th className="py-2 pr-3 text-right font-bold">Total due</th>
-              <th className="py-2 text-right font-bold">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {statements.map((s) => {
-              const card = cardsById.get(s.cardId);
-              const days = daysBetween(today, s.dueDate);
-              return (
-                <tr key={s.id} className="h-11 border-t border-divider">
-                  <td className="pr-3 font-bold">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="size-[9px] shrink-0 rounded-[3px]" style={{ background: cardSwatch(card?.color) }} aria-hidden="true" />
-                      {card ? cardName(card) : "Unknown card"}
-                    </span>
-                  </td>
-                  <td className="pr-3 text-muted tabular-nums">{formatShortDate(s.statementDate)}</td>
-                  <td className="pr-3 whitespace-nowrap tabular-nums">
-                    {formatShortDate(s.dueDate)}
-                    {s.status === "Pending" && (
-                      <span className={`text-[11px] font-semibold ${days < 0 ? "text-negative" : "text-muted"}`}>
-                        {" "}
-                        · {days < 0 ? `${-days}d overdue` : days === 0 ? "today" : `in ${days}d`}
+        <MaybeQuickPay on={quickPay}>
+          <table className="w-full min-w-[440px] text-left text-[13px]">
+            <thead>
+              <tr className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase">
+                <th className="py-2 pr-3 font-bold">Card</th>
+                <th className="py-2 pr-3 font-bold">Statement</th>
+                <th className="py-2 pr-3 font-bold">Due</th>
+                <th className="py-2 pr-3 text-right font-bold">Total due</th>
+                <th className="py-2 text-right font-bold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {statements.map((s) => {
+                const card = cardsById.get(s.cardId);
+                const days = daysBetween(today, s.dueDate);
+                return (
+                  <tr key={s.id} className="group/row h-11 border-t border-divider">
+                    <td className="pr-3 font-bold">
+                      <span className="inline-flex items-center gap-2">
+                        <span className="size-[9px] shrink-0 rounded-[3px]" style={{ background: cardSwatch(card?.color) }} aria-hidden="true" />
+                        {card ? cardName(card) : "Unknown card"}
                       </span>
-                    )}
-                  </td>
-                  <td className="pr-3 text-right font-bold tabular-nums">{formatInr(s.totalAmountDue)}</td>
-                  <td className="text-right">
-                    <StatusPill status={s.status} />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="pr-3 text-muted tabular-nums">{formatShortDate(s.statementDate)}</td>
+                    <td className="pr-3 whitespace-nowrap tabular-nums">
+                      {formatShortDate(s.dueDate)}
+                      {s.status === "Pending" && (
+                        <span className={`text-[11px] font-semibold ${days < 0 ? "text-negative" : "text-muted"}`}>
+                          {" "}
+                          · {days < 0 ? `${-days}d overdue` : days === 0 ? "today" : `in ${days}d`}
+                        </span>
+                      )}
+                    </td>
+                    <td className="pr-3 text-right font-bold tabular-nums">{formatInr(s.totalAmountDue)}</td>
+                    <td className="text-right">
+                      {quickPay ? (
+                        <QuickPayStatus id={s.id} status={s.status} what={`${card ? cardName(card) : "This card"}'s ${formatShortDate(s.statementDate)} bill`} />
+                      ) : (
+                        <StatusPill status={s.status} />
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </MaybeQuickPay>
       </div>
       <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3">
         <span className="text-[11px] font-semibold text-muted">
@@ -282,6 +296,7 @@ export function StatementsPanel({
   range,
   viewAllHref,
   addStatement,
+  quickPay,
 }: {
   view: PanelView;
   hrefFor: (v: PanelView) => string;
@@ -294,6 +309,8 @@ export function StatementsPanel({
   viewAllHref?: string;
   /** The Add statement link, which lives here on the Cards page rather than in its header. */
   addStatement?: ReactNode;
+  /** One-click Mark paid on pending rows (#103). Off for the sample data. */
+  quickPay?: boolean;
 }) {
   const monthName = formatMonthYear(today.slice(0, 7)).split(" ")[0];
   // Only promise "where this month sits" when this month's year is actually shown.
@@ -322,7 +339,7 @@ export function StatementsPanel({
         <Segmented view={view} hrefFor={hrefFor} />
       </div>
       {view === "statements" ? (
-        <StatementsView statements={statements} cardsById={cardsById} today={today} counts={counts} viewAllHref={viewAllHref} addStatement={addStatement} />
+        <StatementsView statements={statements} cardsById={cardsById} today={today} counts={counts} viewAllHref={viewAllHref} addStatement={addStatement} quickPay={quickPay} />
       ) : (
         <RangeView range={range} monthName={monthName} />
       )}
