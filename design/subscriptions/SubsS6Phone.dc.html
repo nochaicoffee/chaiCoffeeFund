@@ -1,0 +1,409 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Manrope:wght@500;600;700;800&display=swap">
+  <style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.chai-app {
+  --page: oklch(0.965 0.004 90); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06); --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+  --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+  --accent: oklch(0.72 0.19 145); --accent-tint: oklch(0.93 0.06 145); --accent-text: oklch(0.42 0.14 145); --on-accent: oklch(0.99 0 0);
+  --accent-edge: oklch(0.72 0.19 145 / 0.45); --accent-ring: oklch(0.72 0.19 145 / 0.22); --negative-ring: oklch(0.55 0.16 25 / 0.18);
+  --ink: oklch(0.16 0.008 260); --on-ink: oklch(0.99 0 0);
+  --positive: oklch(0.42 0.14 145); --warning: oklch(0.72 0.14 75); --warning-text: oklch(0.47 0.1 70); --warning-tint: oklch(0.95 0.05 85);
+  --negative: oklch(0.55 0.16 25); --negative-tint: oklch(0.95 0.035 40);
+  --feature-tile: oklch(0.935 0.052 148); --feature-tile-line: oklch(0.62 0.15 150 / 0.24); --feature-tile-glow: oklch(1 0 0 / 0.55);
+  --rings-ink: oklch(0.42 0.1 152); --rings-light: oklch(1 0 0); --bar-glow: oklch(1 0 0 / 0.26);
+  --heat-1: oklch(0.95 0.03 150); --heat-2: oklch(0.87 0.07 150); --heat-3: oklch(0.76 0.11 151); --heat-4: oklch(0.6 0.12 153); --heat-5: oklch(0.42 0.1 156);
+  --heat-ink: oklch(0.24 0.05 152); --heat-no-data: oklch(0 0 0 / 0.04); --heat-upcoming: oklch(0 0 0 / 0.13); --trend-no-data: oklch(0 0 0 / 0.1); --trend-peak-shadow: oklch(0.3 0.09 155 / 0.26);
+  --card-emerald-from: oklch(0.42 0.11 155); --card-emerald-to: oklch(0.24 0.07 162); --card-emerald: oklch(0.6 0.12 153);
+  --card-sapphire-from: oklch(0.32 0.09 258); --card-sapphire-to: oklch(0.16 0.05 258); --card-sapphire: oklch(0.48 0.1 258);
+  --card-ruby-from: oklch(0.3 0.11 20); --card-ruby-to: oklch(0.15 0.07 20); --card-ruby: oklch(0.57 0.13 22);
+  --card-onyx-from: oklch(0.28 0.02 75); --card-onyx-to: oklch(0.15 0.01 75); --card-onyx: oklch(0.56 0.04 75);
+  --card-violet-from: oklch(0.31 0.1 300); --card-violet-to: oklch(0.16 0.06 300); --card-violet: oklch(0.53 0.13 300);
+  --card-teal-from: oklch(0.32 0.07 200); --card-teal-to: oklch(0.16 0.04 200); --card-teal: oklch(0.56 0.09 200);
+  --card-copper-from: oklch(0.33 0.09 50); --card-copper-to: oklch(0.16 0.05 50); --card-copper: oklch(0.6 0.12 50);
+  --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
+  --on-card: oklch(0.95 0.004 260); --on-card-muted: oklch(1 0 0 / 0.6); --on-card-faint: oklch(1 0 0 / 0.5); --on-card-fill: oklch(1 0 0 / 0.16); --on-card-line: oklch(1 0 0 / 0.12); --on-card-line-top: oklch(1 0 0 / 0.22); --on-card-lime: oklch(0.88 0.17 138);
+  --card-chip: oklch(0.8 0.13 80); --card-chip-mid: oklch(0.68 0.13 80); --card-chip-deep: oklch(0.55 0.1 80);
+  --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
+  --tile-shadow-selected: 0 10px 26px oklch(0.3 0.09 155 / 0.35), 0 0 0 4px oklch(1 0 0 / 0.08), 0 0 18px oklch(1 0 0 / 0.2);
+  --due-pulse-ring: oklch(0.82 0.12 40 / 0.2); --due-pulse-fill: oklch(0.7 0.14 35 / 0.55);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative; overflow: hidden; font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; background: var(--page); color: var(--fg);
+  font-size: 13px; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+}
+.chai-app h1, .chai-app h2, .chai-app h3, .chai-app p { margin: 0; }
+.glass { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); }
+.glass-strong { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); }
+.muted { color: var(--muted); }
+.strong { color: var(--fg); font-weight: 800; }
+.row { display: flex; align-items: center; gap: 10px; }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.grow { flex: 1; min-width: 0; }
+
+/* ---- Shell ---- */
+.desk { display: flex; gap: 20px; padding: 24px; }
+.rail { width: 64px; flex-shrink: 0; border-radius: 999px; display: flex; flex-direction: column; align-items: center; padding: 18px 0; gap: 10px; }
+.rail-item { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; color: var(--muted); }
+.rail-item.active { background: var(--ink); color: var(--on-ink); }
+.rail-me { margin-top: auto; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+.main { flex: 1; min-width: 0; border-radius: 36px; padding: 26px; display: flex; flex-direction: column; gap: 20px; }
+.ph { display: flex; flex-direction: column; border-radius: 34px; border: 1px solid var(--fill-strong); }
+.ph-status { height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; font-size: 14px; font-weight: 700; }
+.ph-icons { display: flex; gap: 4px; } .ph-icons i { width: 16px; height: 9px; border-radius: 3px; background: var(--fg); opacity: 0.85; }
+.ph-bar { height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 16px; border-bottom: 1px solid var(--divider); font-size: 16px; font-weight: 800; }
+.ph-menu { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.ph-body { flex: 1; min-height: 0; padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ---- Header ---- */
+.pg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.pg-text { display: flex; flex-direction: column; gap: 10px; max-width: 980px; }
+.eyebrow { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.pg-head h1 { font-size: 30px; font-weight: 800; line-height: 1.15; }
+.lede { font-size: 16px; font-weight: 500; line-height: 1.7; color: var(--muted); text-wrap: pretty; }
+.lede b { color: var(--fg); font-weight: 700; }
+.pg-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-top: 4px; }
+.ph-head { flex-direction: column; gap: 14px; }
+.ph-head h1 { font-size: 26px; }
+.ph-head .lede { font-size: 15px; line-height: 1.6; }
+.ph-head .pg-actions { flex-wrap: wrap; margin-top: 0; }
+
+/* ---- Buttons, pills, segmented, chips ---- */
+.btn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 18px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; user-select: none; }
+.btn-primary { background: var(--ink); color: var(--on-ink); position: relative; overflow: hidden; }
+.btn-primary::after { content: ""; position: absolute; top: -60%; left: -30%; width: 46%; height: 220%; background: linear-gradient(100deg, transparent, oklch(1 0 0 / 0.25), transparent); transform: rotate(14deg); pointer-events: none; }
+.btn-ghost { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--fg); }
+.btn-soft { background: var(--fill); color: var(--fg); }
+.btn-accent { background: var(--accent-tint); color: var(--accent-text); }
+.btn-danger { background: var(--negative-tint); color: var(--negative); }
+.btn-icon { width: 40px; padding: 0; justify-content: center; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--muted); }
+.btn-sm { min-height: 30px; padding: 0 12px; font-size: 12px; gap: 6px; }
+.btn-xs { min-height: 26px; padding: 0 10px; font-size: 11px; gap: 5px; }
+.ph .btn { min-height: 44px; }
+.ph .btn-sm { min-height: 36px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.pill-on { background: var(--accent-tint); color: var(--accent-text); }
+.pill-off { background: var(--fill); color: var(--muted); }
+.pill-soon { background: var(--warning-tint); color: var(--warning-text); }
+.pill-due { background: var(--negative-tint); color: var(--negative); animation: due-pulse 2.2s ease-in-out infinite; }
+.pill-warn { background: var(--warning-tint); color: var(--warning-text); }
+.pill-ink { background: var(--ink); color: var(--on-ink); }
+@keyframes due-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px var(--due-pulse-ring); } }
+@media (prefers-reduced-motion: reduce) { .pill-due { animation: none; } }
+.chg { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.chg-up { color: var(--negative); } .chg-down { color: var(--positive); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--fill); gap: 2px; }
+.seg-i { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.seg-i em { font-style: normal; font-size: 11px; color: var(--muted); font-weight: 700; }
+.seg-i.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--fill); color: var(--fg); white-space: nowrap; }
+.chip.on { background: var(--ink); color: var(--on-ink); }
+.chip i { width: 8px; height: 8px; border-radius: 3px; display: inline-block; }
+.chip em { font-style: normal; color: var(--muted); font-size: 11px; }
+.chip.on em { color: oklch(1 0 0 / 0.6); }
+.sample { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--warning-tint); color: var(--warning-text); font-size: 11px; font-weight: 800; letter-spacing: 0.01em; white-space: nowrap; }
+.sample::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--warning); }
+.tag-new { display: inline-flex; padding: 2px 7px; border-radius: 999px; font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: oklch(0.93 0.05 258); color: oklch(0.42 0.1 258); vertical-align: 1px; }
+
+/* ---- Monograms, card chips ---- */
+.mono { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--on-card); font-weight: 800; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18), 0 2px 6px oklch(0 0 0 / 0.18); }
+.mono-off { filter: grayscale(1); opacity: 0.55; }
+.via { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--fg); white-space: nowrap; }
+.minitile { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2); }
+.minibank { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--fill-strong); color: var(--muted); }
+
+/* ---- Cards (surfaces) ---- */
+.card { border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.card-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.card-t { font-size: 15px; font-weight: 800; }
+.card-t small { font-size: 12px; font-weight: 600; color: var(--muted); margin-left: 8px; }
+.card-note { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.55; }
+.link { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--accent-text); white-space: nowrap; }
+.tex { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; z-index: -1; pointer-events: none; }
+.tex svg, .tex .sheen { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.textured { position: relative; isolation: isolate; }
+
+/* Summary tiles, as on the Statements page: one feature tile in mint with rings. */
+.tiles { display: grid; gap: 16px; }
+.stile { position: relative; isolation: isolate; border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.stile .k { font-size: 12px; font-weight: 600; color: var(--muted); }
+.stile .v { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+.stile .v small { font-size: 14px; font-weight: 700; color: var(--muted); letter-spacing: 0; }
+.stile .s { font-size: 12px; color: var(--muted); font-weight: 500; }
+.stile .s b { color: var(--fg); font-weight: 700; }
+.feature { background: var(--feature-tile); border: 1px solid var(--feature-tile-line); }
+.feature .k, .feature .s { color: oklch(0.38 0.06 152); }
+
+/* Dark tiles, like the card tiles */
+.dtile { position: relative; isolation: isolate; flex-shrink: 0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow); }
+.dtile .dt-muted { color: var(--on-card-muted); font-size: 11px; font-weight: 600; }
+.dtile .dt-faint { color: var(--on-card-faint); font-size: 10px; font-weight: 600; }
+.dtile.sel { border: 1.5px solid var(--accent); box-shadow: var(--tile-shadow-selected); }
+.dtile .dt-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--on-card-fill); white-space: nowrap; }
+.dtile .dt-pill.due { background: oklch(0.7 0.14 35 / 0.55); animation: due-pulse 2.2s ease-in-out infinite; }
+.dtile .dt-pill.soon { background: oklch(0.8 0.13 80 / 0.35); }
+.dtile.off { filter: grayscale(0.85); opacity: 0.6; box-shadow: none; }
+.dtile .tick { display: none; } .dtile.sel .tick { display: flex; }
+.tick { position: absolute; top: -9px; right: -9px; width: 21px; height: 21px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px oklch(0 0 0 / 0.4); }
+.addtile { flex-shrink: 0; border-radius: 22px; border: 1.5px dashed var(--fill-strong); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 700; }
+
+/* ---- Fitting neatly: rows of cards end level, and content fills the card ---- */
+.stack-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.stack-col > :last-child { flex: 1 1 auto; }
+.spread { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+.foot { margin-top: auto; }
+.card > .tmap { flex: 1 1 auto; }
+
+/* ---- Tables ---- */
+.th { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.tgroup { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 8px; border-bottom: 1px solid var(--divider); font-size: 13px; font-weight: 800; }
+.tgroup span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.cell-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cell-name b { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cell-name small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+.num { font-weight: 800; }
+.sub2 { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+
+/* ---- Bars ---- */
+.track { height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.track > span { display: block; height: 100%; border-radius: inherit; }
+.stack { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; }
+.stack > span { display: block; height: 100%; position: relative; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.legend b { color: var(--fg); font-weight: 700; }
+
+/* ---- Notice ---- */
+.notice { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); color: var(--warning-text); font-size: 13px; font-weight: 600; }
+.notice b { color: oklch(0.36 0.08 65); font-weight: 800; }
+.notice .grow { color: oklch(0.4 0.08 68); }
+.notice svg { flex-shrink: 0; }
+
+/* ---- Dropdown (the app's own, #112) ---- */
+.sel { position: relative; display: inline-block; }
+.sel > summary { list-style: none; } .sel > summary::-webkit-details-marker { display: none; }
+.sel-trigger { position: relative; display: flex; align-items: center; gap: 8px; border: 1px solid var(--surface-line); background: var(--surface); cursor: pointer; text-align: left; max-width: 100%; }
+.sel-value { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sel-chev { flex-shrink: 0; color: var(--muted); display: flex; transition: transform 160ms var(--ease-out); }
+.sel[open] .sel-chev { transform: rotate(180deg); }
+.sel-icon { display: flex; color: var(--muted); }
+.sel--pill .sel-trigger { min-height: 40px; border-radius: 999px; box-shadow: var(--soft-shadow); padding: 9px 15px; font-size: 13px; font-weight: 700; }
+.sel--pill[open] .sel-trigger { border-color: var(--accent-edge); }
+.sel--small .sel-trigger { min-height: 34px; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; background: var(--fill); border-color: transparent; }
+.sel--field { display: block; }
+.sel--field .sel-trigger { width: 100%; height: 40px; border-radius: 12px; padding: 0 12px 0 14px; font-size: 14px; font-weight: 600; }
+.sel--field[open] .sel-trigger { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.ph .sel--field .sel-trigger { height: 44px; } .ph .sel--pill .sel-trigger { min-height: 44px; }
+.is-placeholder { color: var(--muted); font-weight: 500; }
+.pop { position: absolute; z-index: 20; top: calc(100% + 8px); left: 0; background: var(--surface); border: 1px solid var(--surface-line); border-radius: 16px; box-shadow: var(--pop-shadow); padding: 6px; min-width: 100%; }
+.pop.align-end { left: auto; right: 0; }
+.sel[open] .pop { animation: pop-in 150ms var(--ease-out) both; }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@media (prefers-reduced-motion: reduce) { .sel[open] .pop { animation: none; } .sel-chev { transition: none; } }
+.lb { min-width: 210px; max-height: 300px; overflow-y: auto; }
+.sel--field .lb { min-width: 0; }
+.lb-group { padding: 8px 12px 4px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.lb-divider { height: 1px; margin: 6px 8px; background: var(--divider); }
+.opt { display: flex; align-items: center; gap: 12px; min-height: 36px; padding: 0 10px 0 12px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--fg); cursor: pointer; }
+.sel--field .opt { font-size: 14px; font-weight: 600; }
+.opt:hover { background: var(--fill); }
+.opt-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.opt-meta { flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+.opt-check { flex-shrink: 0; width: 14px; color: var(--accent-text); visibility: hidden; display: flex; }
+.opt[aria-selected="true"] { background: var(--accent-tint); color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-meta { color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-check { visibility: visible; }
+.ph .opt { min-height: 44px; }
+
+/* ---- Light hover card (#104/#105) ---- */
+.hc { width: 250px; border-radius: 16px; padding: 14px; background: var(--surface); color: var(--fg); box-shadow: var(--pop-shadow); border: 1px solid var(--surface-line); }
+.hc .h { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.hc .t { font-size: 22px; font-weight: 800; line-height: 1.25; margin-top: 2px; }
+.hc .d { font-size: 12px; font-weight: 700; margin-top: 2px; color: var(--muted); }
+.hc ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.hc li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+.hc li .nm { flex: 1; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc li b { font-weight: 800; }
+.hc .f { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--divider); font-size: 11px; font-weight: 600; color: var(--muted); }
+.hc-arrow { position: absolute; width: 12px; height: 12px; background: var(--surface); border: 1px solid var(--surface-line); border-top: none; border-left: none; transform: rotate(45deg); }
+.hov { position: relative; }
+.hov > .hc-wrap { position: absolute; z-index: 30; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 160ms ease, transform 240ms var(--ease-out); }
+.hov:hover > .hc-wrap, .hov.is-open > .hc-wrap { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .hov > .hc-wrap { transition: none; transform: none; } }
+
+/* ---- Heatmap ---- */
+.heat { display: grid; gap: 8px; align-items: center; }
+.heat-m { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.heat-m.now { color: var(--fg); }
+.hcell { position: relative; isolation: isolate; height: 54px; border-radius: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.ph .hcell .cap { display: none; }
+.hcell .cap { font-size: 9px; font-weight: 600; opacity: 0.85; margin-top: 1px; white-space: nowrap; }
+.hcell.up { border: 1.5px dashed var(--heat-upcoming); color: var(--muted); background: transparent; }
+.hcell.up.big { border-color: oklch(0.6 0.12 153 / 0.6); color: var(--heat-ink); background: oklch(0.95 0.03 150 / 0.5); }
+.hcell.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); }
+.hcell.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* ---- Forms (as docs/design/cards-forms.md) ---- */
+.dlg { position: relative; background: var(--surface); border-radius: 28px; box-shadow: var(--pop-shadow); display: flex; flex-direction: column; }
+.dlg-h { display: flex; align-items: flex-start; gap: 14px; padding: 26px 28px 0; }
+.dlg-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-tint); color: var(--accent-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dlg-h h3 { font-size: 18px; font-weight: 800; } .dlg-h p { font-size: 13px; color: var(--muted); font-weight: 500; margin-top: 3px; }
+.dlg-x { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--fg); flex-shrink: 0; }
+.dlg-b { display: grid; grid-template-columns: 320px 1fr; gap: 24px; padding: 20px 28px; }
+.dlg-f { display: flex; align-items: center; gap: 10px; padding: 16px 28px 22px; border-top: 1px solid var(--divider); }
+.dlg-f .note { flex: 1; font-size: 12px; color: var(--muted); font-weight: 500; }
+.preview { position: relative; isolation: isolate; border-radius: 20px; background: var(--feature-tile); border: 1px solid var(--feature-tile-line); padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.pv-k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: oklch(0.38 0.1 150); }
+.pv-box { background: oklch(1 0 0 / 0.72); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
+.pv-box .between span:first-child { color: var(--muted); font-weight: 600; }
+.pv-box .between span:last-child { font-weight: 700; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 14px; align-content: start; }
+.fld { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.fld.full { grid-column: 1 / -1; }
+.lbl { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.lbl .req { color: var(--negative); margin-left: 2px; }
+.lbl .opt-tag { font-size: 10px; font-weight: 700; color: var(--muted); opacity: 0.8; margin-left: 6px; letter-spacing: 0.04em; }
+.inp { height: 40px; border-radius: 12px; border: 1px solid var(--surface-line); background: var(--surface); box-shadow: inset 0 1px 1px oklch(0 0 0 / 0.02); padding: 0 14px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.ph .inp { height: 44px; }
+.inp .pre { color: var(--muted); font-weight: 600; } .inp .suf { color: var(--muted); font-weight: 500; font-size: 13px; }
+.inp.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.inp.err { border-color: var(--negative); box-shadow: 0 0 0 3px var(--negative-ring); }
+.inp .ph-text { color: var(--muted); font-weight: 500; }
+.help { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.45; }
+.help svg { flex-shrink: 0; margin-top: 2px; }
+.help.err { color: var(--negative); font-weight: 600; }
+.help.warn { color: var(--warning-text); font-weight: 600; }
+.fseg { display: flex; padding: 3px; border-radius: 13px; background: var(--fill); gap: 2px; }
+.fseg span { flex: 1; text-align: center; padding: 9px 8px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.fseg span.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.ph .fseg span { padding: 11px 6px; }
+.checkrow { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); font-size: 13px; color: oklch(0.36 0.08 65); font-weight: 600; line-height: 1.45; }
+.box { width: 18px; height: 18px; border-radius: 6px; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.box.off { background: var(--surface); border: 1.5px solid var(--fill-strong); }
+.scrim { position: absolute; inset: 0; background: oklch(0.16 0.008 260 / 0.38); }
+
+/* ---- Canvas furniture (labels on the boards themselves) ---- */
+.board { padding: 48px; display: flex; flex-direction: column; gap: 36px; }
+.board-h h2 { font-size: 28px; font-weight: 800; }
+.board-h p { font-size: 14px; color: var(--muted); font-weight: 500; line-height: 1.6; margin-top: 8px; max-width: 1100px; }
+.board-h p b { color: var(--fg); }
+.sec-h { display: flex; gap: 12px; align-items: flex-start; }
+.sec-n { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sec-h h3 { font-size: 16px; font-weight: 800; }
+.sec-h p { font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.55; margin-top: 3px; max-width: 980px; }
+.frame-l { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+.stage { position: relative; border-radius: 28px; background: oklch(0.9 0.005 90); overflow: hidden; }
+.callout { position: absolute; z-index: 40; display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: oklch(0.55 0.2 300); color: white; font-size: 11px; font-weight: 800; box-shadow: 0 4px 12px oklch(0.3 0.15 300 / 0.35); white-space: nowrap; }
+.callout::before { content: attr(data-n); width: 16px; height: 16px; border-radius: 50%; background: white; color: oklch(0.45 0.2 300); display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+</style>
+</helmet>
+<div class="chai-app ph" style="width:390px;height:2300px"><div class="ph-status"><span>9:41</span><span class="ph-icons"><i></i><i></i><i></i></span></div><header class="ph-bar"><span>chaiCoffeeFund</span><span class="ph-menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></header><div class="ph-body"><style>.cnav { display: none; }</style><style>@keyframes band-in { from { opacity: 0.35; transform: scale(0.995); } } .cband { animation: band-in 480ms var(--ease-out); } @media (prefers-reduced-motion: reduce) { .cband { animation: none; } }</style><style>.phsel-s6 .sx-all { transform: translate(-50%, -50%) rotate(-90deg) translateX(128px) rotate(90deg) scale(1.25) !important; z-index: 50 !important; opacity: 1 !important; }
+.phsel-s6 .sx-netflix { transform: translate(-50%, -50%) rotate(-62.30769230769231deg) translateX(128px) rotate(62.30769230769231deg) scale(1) !important; z-index: 49 !important; opacity: 1 !important; }
+.phsel-s6 .sx-icloud { transform: translate(-50%, -50%) rotate(-34.61538461538461deg) translateX(128px) rotate(34.61538461538461deg) scale(1) !important; z-index: 48 !important; opacity: 1 !important; }
+.phsel-s6 .sx-spotify { transform: translate(-50%, -50%) rotate(-6.92307692307692deg) translateX(128px) rotate(6.92307692307692deg) scale(1) !important; z-index: 47 !important; opacity: 1 !important; }
+.phsel-s6 .sx-timesprime { transform: translate(-50%, -50%) rotate(20.769230769230774deg) translateX(128px) rotate(-20.769230769230774deg) scale(1) !important; z-index: 46 !important; opacity: 1 !important; }
+.phsel-s6 .sx-youtube { transform: translate(-50%, -50%) rotate(48.46153846153845deg) translateX(128px) rotate(-48.46153846153845deg) scale(1) !important; z-index: 45 !important; opacity: 1 !important; }
+.phsel-s6 .sx-chatgpt { transform: translate(-50%, -50%) rotate(76.15384615384616deg) translateX(128px) rotate(-76.15384615384616deg) scale(1) !important; z-index: 44 !important; opacity: 1 !important; }
+.phsel-s6 .sx-swiggy { transform: translate(-50%, -50%) rotate(-256.1538461538462deg) translateX(128px) rotate(256.1538461538462deg) scale(1) !important; z-index: 44 !important; opacity: 1 !important; }
+.phsel-s6 .sx-prime { transform: translate(-50%, -50%) rotate(-228.46153846153845deg) translateX(128px) rotate(228.46153846153845deg) scale(1) !important; z-index: 45 !important; opacity: 1 !important; }
+.phsel-s6 .sx-cult { transform: translate(-50%, -50%) rotate(-200.76923076923077deg) translateX(128px) rotate(200.76923076923077deg) scale(1) !important; z-index: 46 !important; opacity: 1 !important; }
+.phsel-s6 .sx-m365 { transform: translate(-50%, -50%) rotate(-173.0769230769231deg) translateX(128px) rotate(173.0769230769231deg) scale(1) !important; z-index: 47 !important; opacity: 1 !important; }
+.phsel-s6 .sx-headspace { transform: translate(-50%, -50%) rotate(-145.3846153846154deg) translateX(128px) rotate(145.3846153846154deg) scale(1) !important; z-index: 48 !important; opacity: 1 !important; }
+.phsel-s6 .sx-sonyliv { transform: translate(-50%, -50%) rotate(-117.6923076923077deg) translateX(128px) rotate(117.6923076923077deg) scale(1) !important; z-index: 49 !important; opacity: 1 !important; }
+.phsel-s6 .cnav-all { display: flex !important; }
+.phsel-s6 .sx-all .hal { box-shadow: 0 0 0 3px var(--surface), 0 0 0 6px var(--accent) !important; } .phsel-s6 .sx-all .hal-lb { opacity: 1 !important; }
+.phsel-s6 .hpf.hp-all { display: flex !important; flex-direction: column !important; }</style><div class="phsel-s6" style="display:flex;flex-direction:column;gap:16px"><header class="pg-head ph-head"><div class="pg-text"><div class="eyebrow">Subscriptions · Today</div><h1>Good morning, Prathik</h1><p class="lede">You've paid <b>₹57,163</b> for subscriptions so far in 2026, about <b>₹5,716</b> a month. <b>Mar 2026</b> was the biggest month at <b>₹10,032</b>. <b>6 renewals</b> come up in the next 30 days, totalling <b>₹4,334</b>.</p></div><div class="pg-actions"><span class="btn btn-primary "><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add subscription</span><span class="btn btn-ghost ">Record payment</span></div></header><section class="card glass" style="padding:20px 14px;align-items:center"><div style="position:relative;width:320px;height:320px;flex-shrink:0;max-width:100%">
+    <div style="position:absolute;left:32px;top:32px;width:256px;height:256px;border-radius:50%;border:1.5px dashed var(--fill-strong)"></div>
+    <div style="position:absolute;left:75.52px;top:75.52px;width:168.96px;height:168.96px;border-radius:50%;background:radial-gradient(closest-side, oklch(0.93 0.06 145 / 0.6), transparent)"></div>
+    <span style="position:absolute;left:160px;top:-12px;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid var(--accent);z-index:90"></span>
+    <div style="position:absolute;left:160px;top:160px;transform:translate(-50%,-50%);width:153.6px"><div style="display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center"><span class="eyebrow">Everything</span><b style="font-size:18px;font-weight:800;line-height:1.15">All subscriptions</b><b style="font-size:30px;font-weight:800;line-height:1.05;margin-top:4px">₹5,559</b><span class="muted" style="font-size:12.5px;font-weight:700">a month · next Netflix</span></div></div>
+    <div style="position:absolute;left:160px;top:160px;width:0;height:0"><span class="sx sx-all " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono" style="width:38px;height:38px;border-radius:11px;background:linear-gradient(150deg,var(--card-emerald-from),var(--card-emerald-to))"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 22l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></span></span></span><span class="sx sx-netflix " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono" style="width:38px;height:38px;border-radius:11px;font-size:17px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))">N</span></span></span><span class="sx sx-icloud " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono" style="width:38px;height:38px;border-radius:11px;font-size:17px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))">i</span></span></span><span class="sx sx-spotify " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono" style="width:38px;height:38px;border-radius:11px;font-size:17px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to))">S</span></span></span><span class="sx sx-timesprime " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono" style="width:38px;height:38px;border-radius:11px;font-size:17px;background:linear-gradient(155deg,var(--card-onyx-from),var(--card-onyx-to))">T</span></span></span><span class="sx sx-youtube " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono" style="width:38px;height:38px;border-radius:11px;font-size:17px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))">Y</span></span></span><span class="sx sx-chatgpt " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono" style="width:38px;height:38px;border-radius:11px;font-size:17px;background:linear-gradient(155deg,var(--card-sapphire-from),var(--card-sapphire-to))">C</span></span></span><span class="sx sx-swiggy " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono" style="width:38px;height:38px;border-radius:11px;font-size:17px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to))">S</span></span></span><span class="sx sx-prime " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono" style="width:38px;height:38px;border-radius:11px;font-size:17px;background:linear-gradient(155deg,var(--card-onyx-from),var(--card-onyx-to))">P</span></span></span><span class="sx sx-cult " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono" style="width:38px;height:38px;border-radius:11px;font-size:17px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))">C</span></span></span><span class="sx sx-m365 " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono" style="width:38px;height:38px;border-radius:11px;font-size:17px;background:linear-gradient(155deg,var(--card-sapphire-from),var(--card-sapphire-to))">M</span></span></span><span class="sx sx-headspace " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono mono-off" style="width:38px;height:38px;border-radius:11px;font-size:17px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))">H</span></span></span><span class="sx sx-sonyliv " style="position:absolute;left:0;top:0;transition: transform 700ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 450ms, filter 450ms;"><span class="hal" style="display:flex;border-radius:11px;transition:box-shadow 200ms"><span class="mono mono-off" style="width:38px;height:38px;border-radius:11px;font-size:17px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))">S</span></span></span></div></div></section><div class="cband textured" style="border-radius:22px;padding:16px 18px;color:var(--on-card);background:radial-gradient(circle at 92% 0%, var(--card-emerald-glow), transparent 40%),linear-gradient(150deg,var(--card-emerald-from),var(--card-emerald-to));box-shadow:var(--tile-shadow);display:flex;flex-direction:column;gap:8px;"><span class="tex" aria-hidden="true"><svg viewBox="0 0 1400 170" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.07" stroke-width="1"><circle cx="1410" cy="190" r="60"></circle><circle cx="1410" cy="190" r="94"></circle><circle cx="1410" cy="190" r="128"></circle><circle cx="1410" cy="190" r="162"></circle><circle cx="1410" cy="190" r="196"></circle><circle cx="1410" cy="190" r="230"></circle><circle cx="1410" cy="190" r="264"></circle><circle cx="1410" cy="190" r="298"></circle><circle cx="1410" cy="190" r="332"></circle><circle cx="1410" cy="190" r="366"></circle><circle cx="1410" cy="190" r="400"></circle><circle cx="1410" cy="190" r="434"></circle><circle cx="1410" cy="190" r="468"></circle><circle cx="1410" cy="190" r="502"></circle><circle cx="1410" cy="190" r="536"></circle><circle cx="1410" cy="190" r="570"></circle><circle cx="1410" cy="190" r="604"></circle><circle cx="1410" cy="190" r="638"></circle><circle cx="1410" cy="190" r="672"></circle><circle cx="1410" cy="190" r="706"></circle><circle cx="1410" cy="190" r="740"></circle><circle cx="1410" cy="190" r="774"></circle><circle cx="1410" cy="190" r="808"></circle><circle cx="1410" cy="190" r="842"></circle><circle cx="1410" cy="190" r="876"></circle><circle cx="1410" cy="190" r="910"></circle><circle cx="1410" cy="190" r="944"></circle><circle cx="1410" cy="190" r="978"></circle><circle cx="1410" cy="190" r="1012"></circle><circle cx="1410" cy="190" r="1046"></circle><circle cx="1410" cy="190" r="1080"></circle><circle cx="1410" cy="190" r="1114"></circle><circle cx="1410" cy="190" r="1148"></circle><circle cx="1410" cy="190" r="1182"></circle><circle cx="1410" cy="190" r="1216"></circle><circle cx="1410" cy="190" r="1250"></circle><circle cx="1410" cy="190" r="1284"></circle><circle cx="1410" cy="190" r="1318"></circle><circle cx="1410" cy="190" r="1352"></circle><circle cx="1410" cy="190" r="1386"></circle><circle cx="1410" cy="190" r="1420"></circle></g></svg></span>
+    <div class="between" style="gap:12px"><span class="row" style="gap:10px;font-size:13px;font-weight:700;color:var(--on-card-muted)"><span style="width:22px;height:22px;border-radius:7px;background:var(--on-card-fill);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--on-card)"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 22l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></span>All subscriptions</span></div>
+    <div class="row" style="gap:10px;align-items:baseline;flex-wrap:wrap"><b style="font-size:32px;font-weight:800;line-height:1;letter-spacing:-0.01em">₹5,559</b><span style="font-size:13px;font-weight:600;color:var(--on-card-muted)">a month · 10 active</span></div>
+    <div><div style="height:8px;border-radius:999px;background:var(--on-card-fill);overflow:hidden"><div style="width:75.25469775865973%;height:100%;border-radius:inherit;background:var(--on-card-lime)"></div></div><span style="display:block;margin-top:6px;font-size:11.5px;font-weight:700;color:var(--on-card-muted)">₹6,648 of ₹8,834 paid in October</span></div></div><section class="card glass" style="padding:16px"><div style="display:flex;flex-direction:column;gap:12px;height:100%"><div class="spread" style="gap:0"><div class="between" style="padding:10px 0;border-bottom:1px solid var(--divider);font-size:13.5px"><span class="muted" style="font-weight:600">Renews next</span><b style="text-align:right">Netflix · Fri, Oct 23</b></div><div class="between" style="padding:10px 0;border-bottom:1px solid var(--divider);font-size:13.5px"><span class="muted" style="font-weight:600">A year</span><b style="text-align:right">₹66,713</b></div><div class="between" style="padding:10px 0;border-bottom:1px solid var(--divider);font-size:13.5px"><span class="muted" style="font-weight:600">Paid this year</span><b style="text-align:right">₹57,163 · 61 payments</b></div><div class="between" style="padding:10px 0;border-bottom:1px solid var(--divider);font-size:13.5px"><span class="muted" style="font-weight:600">Prices</span><b style="text-align:right">3 prices went up this year</b></div><div class="between" style="padding:10px 0;border-bottom:1px solid var(--divider);font-size:13.5px"><span class="muted" style="font-weight:600">Charged to</span><b style="text-align:right">4 cards and accounts</b></div></div><div class="row" style="gap:8px"><span class="btn btn-primary btn-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>Record payment</span><span class="btn btn-soft btn-sm"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add subscription</span></div></div></section></div><section class="card glass" style="gap:10px"><div class="card-h"><span class="card-t">2026 against 2025<small></small></span></div><svg viewBox="0 0 330 220" width="100%" height="220" style="display:block;overflow:visible" aria-label="Paid so far this year against last year">
+    <line x1="50" x2="310" y1="190" y2="190" stroke="var(--divider)" ></line><text x="42" y="194" text-anchor="end" font-size="10.5" font-weight="700" fill="var(--muted)">₹0</text><line x1="50" x2="310" y1="150" y2="150" stroke="var(--divider)" stroke-dasharray="3 5"></line><text x="42" y="154" text-anchor="end" font-size="10.5" font-weight="700" fill="var(--muted)">₹17.5k</text><line x1="50" x2="310" y1="110" y2="110" stroke="var(--divider)" stroke-dasharray="3 5"></line><text x="42" y="114" text-anchor="end" font-size="10.5" font-weight="700" fill="var(--muted)">₹35.0k</text><line x1="50" x2="310" y1="70" y2="70" stroke="var(--divider)" stroke-dasharray="3 5"></line><text x="42" y="74" text-anchor="end" font-size="10.5" font-weight="700" fill="var(--muted)">₹52.5k</text><line x1="50" x2="310" y1="30" y2="30" stroke="var(--divider)" stroke-dasharray="3 5"></line><text x="42" y="34" text-anchor="end" font-size="10.5" font-weight="700" fill="var(--muted)">₹70.0k</text>
+    <path d="M50.0,190.0 L52.1,189.7 L54.3,189.7 L56.4,189.7 L58.6,189.7 L60.7,189.7 L62.9,189.7 L65.0,189.7 L67.1,188.6 L69.3,188.3 L71.4,188.3 L73.6,188.0 L75.7,188.0 L77.9,188.0 L80.0,188.0 L82.1,188.0 L84.3,188.0 L86.4,188.0 L88.6,186.9 L90.7,186.9 L92.9,186.3 L95.0,172.1 L97.1,172.1 L99.3,172.1 L101.4,172.1 L103.6,172.1 L105.7,172.1 L107.9,171.0 L110.0,171.0 L112.1,170.7 L114.3,170.7 L116.4,170.4 L118.6,170.4 L120.7,170.4 L122.9,170.4 L125.0,170.4 L127.1,170.4 L129.3,170.4 L131.4,168.8 L133.6,168.5 L135.7,168.5 L137.9,168.2 L140.0,168.2 L142.1,168.2 L144.3,168.2 L146.4,168.2 L148.6,168.2 L150.7,168.2 L152.9,166.6 L155.0,166.3 L157.1,166.3 L159.3,166.0 L161.4,166.0 L163.6,161.4 L165.7,161.4 L167.9,161.4 L170.0,161.4 L172.1,161.4 L174.3,159.8 L176.4,159.8 L178.6,159.5 L180.7,159.2 L182.9,159.2 L185.0,154.7 L187.1,154.7 L189.3,154.7 L191.4,154.7 L193.6,154.7 L195.7,153.0 L197.9,153.0 L200.0,152.7 L202.1,152.4 L204.3,152.4 L206.4,147.9 L208.6,147.9 L210.7,147.9 L212.9,147.9 L215.0,147.9 L217.1,146.7 L219.3,146.2 L221.4,146.0 L223.6,144.7 L225.7,144.4 L227.9,144.4 L230.0,139.8 L232.1,139.8 L234.3,139.8 L236.4,139.8 L238.6,139.8 L240.7,138.2 L242.9,137.9 L245.0,137.9 L247.1,137.6 L249.3,137.6 L251.4,133.1 L253.6,133.1 L255.7,133.1 L257.9,133.1 L260.0,133.1 L262.1,131.4 L264.3,131.2 L266.4,128.4 L268.6,125.8 L270.7,125.8 L272.9,121.3 L275.0,120.6 L277.1,120.6 L279.3,120.6 L281.4,120.6 L283.6,118.9 L285.7,118.9 L287.9,118.7 L290.0,117.1 L292.1,117.1 L294.3,112.5 L296.4,111.9 L298.6,108.4 L300.7,108.4 L302.9,108.4 L305.0,106.8 L307.1,106.8 L309.3,106.5" fill="none" stroke="var(--fill-strong)" stroke-width="2.5"></path><text x="306" y="98.52571428571429" text-anchor="end" font-size="11.5" font-weight="800" fill="var(--muted)">2025 · ₹36,520</text>
+    <path d="M50.0,190.0 L52.1,189.7 L54.3,189.7 L56.4,174.9 L58.6,174.2 L60.7,174.2 L62.9,174.2 L65.0,174.2 L67.1,172.5 L69.3,172.3 L71.4,172.3 L73.6,172.0 L75.7,172.0 L77.9,167.4 L80.0,166.7 L82.1,166.7 L84.3,166.7 L86.4,166.7 L88.6,165.1 L90.7,165.1 L92.9,163.2 L95.0,149.0 L97.1,144.5 L99.3,144.5 L101.4,143.8 L103.6,143.8 L105.7,143.8 L107.9,142.6 L110.0,142.1 L112.1,141.9 L114.3,141.9 L116.4,141.5 L118.6,141.5 L120.7,126.7 L122.9,126.0 L125.0,126.0 L127.1,126.0 L129.3,126.0 L131.4,124.3 L133.6,124.1 L135.7,124.1 L137.9,123.7 L140.0,123.7 L142.1,119.2 L144.3,118.5 L146.4,118.5 L148.6,118.5 L150.7,118.5 L152.9,116.8 L155.0,116.6 L157.1,116.6 L159.3,115.0 L161.4,115.0 L163.6,110.4 L165.7,109.7 L167.9,109.7 L170.0,109.7 L172.1,109.7 L174.3,108.1 L176.4,108.1 L178.6,107.8 L180.7,107.5 L182.9,107.5 L185.0,102.9 L187.1,91.9 L189.3,91.9 L191.4,91.9 L193.6,91.9 L195.7,89.9 L197.9,89.9 L200.0,89.7 L202.1,89.3 L204.3,89.3 L206.4,84.8 L208.6,84.8 L210.7,84.8 L212.9,84.8 L215.0,84.8 L217.1,83.3 L219.3,82.8 L221.4,82.5 L223.6,81.2 L225.7,80.9 L227.9,80.9 L230.0,76.3 L232.1,76.3 L234.3,76.3 L236.4,76.3 L238.6,76.3 L240.7,74.9 L242.9,74.5 L245.0,74.5 L247.1,74.2 L249.3,74.2 L251.4,59.3 L253.6,59.3 L255.7,59.3 L257.9,59.3 L258.57142857142856,190 L50,190 Z" fill="oklch(0.72 0.19 145 / 0.12)"></path><path d="M50.0,190.0 L52.1,189.7 L54.3,189.7 L56.4,174.9 L58.6,174.2 L60.7,174.2 L62.9,174.2 L65.0,174.2 L67.1,172.5 L69.3,172.3 L71.4,172.3 L73.6,172.0 L75.7,172.0 L77.9,167.4 L80.0,166.7 L82.1,166.7 L84.3,166.7 L86.4,166.7 L88.6,165.1 L90.7,165.1 L92.9,163.2 L95.0,149.0 L97.1,144.5 L99.3,144.5 L101.4,143.8 L103.6,143.8 L105.7,143.8 L107.9,142.6 L110.0,142.1 L112.1,141.9 L114.3,141.9 L116.4,141.5 L118.6,141.5 L120.7,126.7 L122.9,126.0 L125.0,126.0 L127.1,126.0 L129.3,126.0 L131.4,124.3 L133.6,124.1 L135.7,124.1 L137.9,123.7 L140.0,123.7 L142.1,119.2 L144.3,118.5 L146.4,118.5 L148.6,118.5 L150.7,118.5 L152.9,116.8 L155.0,116.6 L157.1,116.6 L159.3,115.0 L161.4,115.0 L163.6,110.4 L165.7,109.7 L167.9,109.7 L170.0,109.7 L172.1,109.7 L174.3,108.1 L176.4,108.1 L178.6,107.8 L180.7,107.5 L182.9,107.5 L185.0,102.9 L187.1,91.9 L189.3,91.9 L191.4,91.9 L193.6,91.9 L195.7,89.9 L197.9,89.9 L200.0,89.7 L202.1,89.3 L204.3,89.3 L206.4,84.8 L208.6,84.8 L210.7,84.8 L212.9,84.8 L215.0,84.8 L217.1,83.3 L219.3,82.8 L221.4,82.5 L223.6,81.2 L225.7,80.9 L227.9,80.9 L230.0,76.3 L232.1,76.3 L234.3,76.3 L236.4,76.3 L238.6,76.3 L240.7,74.9 L242.9,74.5 L245.0,74.5 L247.1,74.2 L249.3,74.2 L251.4,59.3 L253.6,59.3 L255.7,59.3 L257.9,59.3" fill="none" stroke="var(--accent-text)" stroke-width="3"></path><path d="M258.6,59.3 L260.7,57.9 L262.9,57.4 L265.0,57.1 L267.1,54.3 L269.3,54.0 L271.4,54.0 L273.6,49.4 L275.7,49.4 L277.9,49.4 L280.0,49.4 L282.1,49.4 L284.3,47.5 L286.4,47.2 L288.6,45.9 L290.7,45.6 L292.9,45.6 L295.0,41.0 L297.1,41.0 L299.3,37.6 L301.4,37.6 L303.6,37.6 L305.7,35.6 L307.9,35.3 L310.0,35.3" fill="none" stroke="var(--accent-text)" stroke-width="2.5" stroke-dasharray="6 6"></path>
+    <text x="306" y="27.332571428571413" text-anchor="end" font-size="11.5" font-weight="800" fill="var(--accent-text)">2026 · ₹67,667 expected</text>
+    
+    <line x1="258.57142857142856" x2="258.57142857142856" y1="59.34171428571429" y2="133.06514285714286" stroke="var(--negative)" stroke-width="2"></line><circle cx="258.57142857142856" cy="59.34171428571429" r="5.5" fill="var(--accent-text)" stroke="var(--surface)" stroke-width="2"></circle>
+    <g transform="translate(126.57142857142856,90.20342857142857)"><rect x="0" y="-14" width="120" height="36" rx="10" fill="var(--surface)" stroke="var(--surface-line)"></rect><text x="10" y="2" font-size="10.5" font-weight="800" fill="var(--negative)">+₹32,254 on last year</text><text x="10" y="16" font-size="9.5" font-weight="600" fill="var(--muted)">by today</text></g>
+    <text x="50" y="212" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)">Jan</text><text x="93.57142857142857" y="212" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)">Mar</text><text x="137.14285714285714" y="212" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)">May</text><text x="180.71428571428572" y="212" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)">Jul</text><text x="224.28571428571428" y="212" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)">Sep</text><text x="267.8571428571429" y="212" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)">Nov</text></svg></section><section class="card glass" style="padding:14px;gap:12px"><div class="between"><span class="card-t">What each one costs</span><span class="seg "><span class="seg-i on">Month</span><span class="seg-i">Year</span></span></div><div class="tmap" style="position:relative;width:330px;height:360px"><div class="hov tm tm-chatgpt" style="display:block;position:absolute;left:2px;top:2px;width:184.53100885967422px;height:222.57772847870726px">
+      <div class="dtile" style="width:100%;height:100%;overflow:hidden;padding:16px;border-radius:18px;background:linear-gradient(155deg,var(--card-sapphire-from),var(--card-sapphire-to));box-shadow:none;cursor:pointer"><span class="tex" aria-hidden="true"><svg viewBox="0 0 185 223" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.05" stroke-width="1"><circle cx="195" cy="242" r="40"></circle><circle cx="195" cy="242" r="64"></circle><circle cx="195" cy="242" r="88"></circle><circle cx="195" cy="242" r="112"></circle><circle cx="195" cy="242" r="136"></circle><circle cx="195" cy="242" r="160"></circle><circle cx="195" cy="242" r="184"></circle><circle cx="195" cy="242" r="208"></circle><circle cx="195" cy="242" r="232"></circle></g></svg></span>
+        <div class="between" style="align-items:flex-start"><div style="min-width:0"><div style="font-size:17px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">ChatGPT</div><div class="dt-muted" style="margin-top:3px;font-size:12px">Software · Monthly</div></div><span class="dt-faint">36%</span></div>
+        <div><div style="font-size:26px;font-weight:800;line-height:1.1">₹1,999<span class="dt-muted" style="font-size:12px"> a month</span></div><div class="between" style="margin-top:8px"><span class="dt-faint">Renews Nov 8</span></div></div>
+      </div>
+      
+      
+    </div><div class="hov tm tm-cult" style="display:block;position:absolute;left:190.53100885967422px;top:2px;width:137.4689911403258px;height:222.57772847870726px">
+      <div class="dtile" style="width:100%;height:100%;overflow:hidden;padding:10px;border-radius:12px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to));box-shadow:none;cursor:pointer"><span class="tex" aria-hidden="true"><svg viewBox="0 0 137 223" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.05" stroke-width="1"><circle cx="147" cy="242" r="40"></circle><circle cx="147" cy="242" r="64"></circle><circle cx="147" cy="242" r="88"></circle><circle cx="147" cy="242" r="112"></circle><circle cx="147" cy="242" r="136"></circle><circle cx="147" cy="242" r="160"></circle><circle cx="147" cy="242" r="184"></circle><circle cx="147" cy="242" r="208"></circle><circle cx="147" cy="242" r="232"></circle></g></svg></span>
+        <div class="between" style="align-items:flex-start"><div style="min-width:0"><div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Cult.fit</div><div class="dt-muted" style="margin-top:3px;font-size:10.5px">Quarterly</div></div></div>
+        <div><div style="font-size:13px;font-weight:800;line-height:1.1">₹1,500</div></div>
+      </div>
+      
+      
+    </div><div class="hov tm tm-netflix" style="display:block;position:absolute;left:2px;top:228.57772847870726px;width:99.94499494438823px;height:129.42227152129274px">
+      <div class="dtile" style="width:100%;height:100%;overflow:hidden;padding:10px;border-radius:12px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to));box-shadow:none;cursor:pointer"><span class="tex" aria-hidden="true"><svg viewBox="0 0 100 129" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.05" stroke-width="1"><circle cx="110" cy="148" r="40"></circle><circle cx="110" cy="148" r="64"></circle><circle cx="110" cy="148" r="88"></circle><circle cx="110" cy="148" r="112"></circle><circle cx="110" cy="148" r="136"></circle><circle cx="110" cy="148" r="160"></circle><circle cx="110" cy="148" r="184"></circle></g></svg></span>
+        <div class="between" style="align-items:flex-start"><div style="min-width:0"><div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Netflix</div><div class="dt-muted" style="margin-top:3px;font-size:10.5px">Monthly</div></div></div>
+        <div><div style="font-size:13px;font-weight:800;line-height:1.1">₹649</div><div style="margin-top:5px"><span class="dt-pill due">Oct 23 · 3d</span></div></div>
+      </div>
+      
+      
+    </div><div class="hov tm tm-m365" style="display:block;position:absolute;left:105.94499494438823px;top:228.57772847870726px;width:78.73690596562183px;height:129.42227152129274px">
+      <div class="dtile" style="width:100%;height:100%;overflow:hidden;padding:10px;border-radius:12px;background:linear-gradient(155deg,var(--card-sapphire-from),var(--card-sapphire-to));box-shadow:none;cursor:pointer"><span class="tex" aria-hidden="true"><svg viewBox="0 0 79 129" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.05" stroke-width="1"><circle cx="89" cy="148" r="40"></circle><circle cx="89" cy="148" r="64"></circle><circle cx="89" cy="148" r="88"></circle><circle cx="89" cy="148" r="112"></circle><circle cx="89" cy="148" r="136"></circle><circle cx="89" cy="148" r="160"></circle></g></svg></span>
+        <div class="between" style="align-items:flex-start"><div style="min-width:0"><div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Microsoft 365</div></div></div>
+        <div><div style="font-size:13px;font-weight:800;line-height:1.1">₹517</div></div>
+      </div>
+      
+      
+    </div><div class="hov tm tm-icloud" style="display:block;position:absolute;left:188.68190091001006px;top:228.57772847870726px;width:60.38503538928208px;height:68.68526732130127px">
+      <div class="dtile" style="width:100%;height:100%;overflow:hidden;padding:6px;border-radius:12px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to));box-shadow:none;cursor:pointer;align-items:center;justify-content:center"><span class="tex" aria-hidden="true"><svg viewBox="0 0 60 69" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.05" stroke-width="1"><circle cx="70" cy="88" r="40"></circle><circle cx="70" cy="88" r="64"></circle><circle cx="70" cy="88" r="88"></circle><circle cx="70" cy="88" r="112"></circle></g></svg></span>
+        <div style="text-align:center;line-height:1.15"><b style="font-size:13px">i</b><div style="font-size:10px;font-weight:800">₹219</div></div>
+      </div>
+      
+      
+    </div><div class="hov tm tm-swiggy" style="display:block;position:absolute;left:188.68190091001006px;top:301.2629958000085px;width:60.38503538928208px;height:56.73700419999147px">
+      <div class="dtile" style="width:100%;height:100%;overflow:hidden;padding:6px;border-radius:12px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to));box-shadow:none;cursor:pointer;align-items:center;justify-content:center"><span class="tex" aria-hidden="true"><svg viewBox="0 0 60 57" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.05" stroke-width="1"><circle cx="70" cy="76" r="40"></circle><circle cx="70" cy="76" r="64"></circle><circle cx="70" cy="76" r="88"></circle></g></svg></span>
+        <div style="text-align:center;line-height:1.15"><b style="font-size:13px">S</b><div style="font-size:10px;font-weight:800">₹183</div></div>
+      </div>
+      
+      
+    </div><div class="hov tm tm-youtube" style="display:block;position:absolute;left:253.06693629929214px;top:228.57772847870726px;width:74.93306370070789px;height:36.33801513021153px">
+      <div class="dtile" style="width:100%;height:100%;overflow:hidden;padding:6px;border-radius:12px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to));box-shadow:none;cursor:pointer;align-items:center;justify-content:center"><span class="tex" aria-hidden="true"><svg viewBox="0 0 75 36" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.05" stroke-width="1"><circle cx="85" cy="55" r="40"></circle><circle cx="85" cy="55" r="64"></circle><circle cx="85" cy="55" r="88"></circle></g></svg></span>
+        <div style="text-align:center;line-height:1.15"><b style="font-size:13px">Y</b></div>
+      </div>
+      
+      
+    </div><div class="hov tm tm-prime" style="display:block;position:absolute;left:253.06693629929214px;top:268.9157436089188px;width:36.42386829086476px;height:62.03432342624673px">
+      <div class="dtile" style="width:100%;height:100%;overflow:hidden;padding:6px;border-radius:12px;background:linear-gradient(155deg,var(--card-onyx-from),var(--card-onyx-to));box-shadow:none;cursor:pointer;align-items:center;justify-content:center"><span class="tex" aria-hidden="true"><svg viewBox="0 0 36 62" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.05" stroke-width="1"><circle cx="46" cy="81" r="40"></circle><circle cx="46" cy="81" r="64"></circle><circle cx="46" cy="81" r="88"></circle></g></svg></span>
+        <div style="text-align:center;line-height:1.15"><b style="font-size:13px">P</b></div>
+      </div>
+      
+      
+    </div><div class="hov tm tm-spotify" style="display:block;position:absolute;left:293.4908045901569px;top:268.9157436089188px;width:34.509195409843144px;height:62.03432342624673px">
+      <div class="dtile" style="width:100%;height:100%;overflow:hidden;padding:6px;border-radius:12px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to));box-shadow:none;cursor:pointer;align-items:center;justify-content:center"><span class="tex" aria-hidden="true"><svg viewBox="0 0 35 62" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.05" stroke-width="1"><circle cx="45" cy="81" r="40"></circle><circle cx="45" cy="81" r="64"></circle><circle cx="45" cy="81" r="88"></circle></g></svg></span>
+        <div style="text-align:center;line-height:1.15"><b style="font-size:13px">S</b></div>
+      </div>
+      
+      
+    </div><div class="hov tm tm-timesprime" style="display:block;position:absolute;left:253.06693629929214px;top:334.9500670351655px;width:74.9330637007072px;height:23.049932964834486px">
+      <div class="dtile" style="width:100%;height:100%;overflow:hidden;padding:6px;border-radius:12px;background:linear-gradient(155deg,var(--card-onyx-from),var(--card-onyx-to));box-shadow:none;cursor:pointer;align-items:center;justify-content:center"><span class="tex" aria-hidden="true"><svg viewBox="0 0 75 23" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.05" stroke-width="1"><circle cx="85" cy="42" r="40"></circle><circle cx="85" cy="42" r="64"></circle><circle cx="85" cy="42" r="88"></circle></g></svg></span>
+        <div style="text-align:center;line-height:1.15"><b style="font-size:13px">T</b></div>
+      </div>
+      
+      
+    </div></div><span class="card-note">Tap a block for its payments.</span></section><section class="card glass" style="padding:16px;gap:4px"><div class="between"><span class="card-t">Latest payments</span><span class="link" style="font-size:12px">All renewals <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="13 6 19 12 13 18"></polyline></svg></span></div><div class="row" style="gap:10px;padding:9px 0;border-bottom:1px solid var(--divider);font-size:13px"><span class="mono" style="width:26px;height:26px;border-radius:8px;font-size:11px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))">C</span><b class="grow" style="font-weight:700">Cult.fit</b><span class="muted" style="font-weight:600">Oct 10</span><b class="num">₹4,500</b></div><div class="row" style="gap:10px;padding:9px 0;border-bottom:1px solid var(--divider);font-size:13px"><span class="mono" style="width:26px;height:26px;border-radius:8px;font-size:11px;background:linear-gradient(155deg,var(--card-sapphire-from),var(--card-sapphire-to))">C</span><b class="grow" style="font-weight:700">ChatGPT</b><span class="muted" style="font-weight:600">Oct 8</span><b class="num">₹1,999</b></div><div class="row" style="gap:10px;padding:9px 0;border-bottom:1px solid var(--divider);font-size:13px"><span class="mono" style="width:26px;height:26px;border-radius:8px;font-size:11px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))">Y</span><b class="grow" style="font-weight:700">YouTube</b><span class="muted" style="font-weight:600">Oct 2</span><b class="num">₹149</b></div><div class="row" style="gap:10px;padding:9px 0;border-bottom:1px solid var(--divider);font-size:13px"><span class="mono" style="width:26px;height:26px;border-radius:8px;font-size:11px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to))">S</span><b class="grow" style="font-weight:700">Spotify</b><span class="muted" style="font-weight:600">Sep 28</span><b class="num">₹139</b></div><div class="row" style="gap:10px;padding:9px 0;border-bottom:1px solid var(--divider);font-size:13px"><span class="mono" style="width:26px;height:26px;border-radius:8px;font-size:11px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))">N</span><b class="grow" style="font-weight:700">Netflix</b><span class="muted" style="font-weight:600">Sep 23</span><b class="num">₹649</b></div></section></div></div>
+</x-dc>
+</body>
+</html>
