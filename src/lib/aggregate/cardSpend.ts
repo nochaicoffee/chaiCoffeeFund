@@ -431,6 +431,8 @@ export interface CardDetails {
   total: number;
   highest: MonthAmount | null;
   lowest: MonthAmount | null;
+  /** Every month so far in the period, the same months as the average, for the chart under the figures (#117). */
+  months: MonthAmount[];
   /** Pending bills, soonest first, for the Next due bar. */
   due: DueItem[];
 }
@@ -463,6 +465,7 @@ export function cardDetails(data: CardData, period: SpendPeriod, today: string, 
     total: summary.total,
     highest: summary.highest,
     lowest: summary.lowest,
+    months: summary.months,
     due,
   };
 }
