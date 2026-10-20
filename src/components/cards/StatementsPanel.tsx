@@ -5,6 +5,7 @@ import type { Card, Statement } from "@/lib/sheets/types";
 import { formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
 import { cardName } from "@/lib/format/labels";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
+import { RingTexture } from "../RingTexture";
 import { cardSwatch } from "./CardTile";
 import { StatusPill } from "./StatusPill";
 import type { PanelView } from "@/app/cards/params";
@@ -127,13 +128,25 @@ function RangeRowView({ row, range, singleYear }: { row: RangeRow; range: SpendR
         <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-fill" />
         {row.lowest && row.highest && (
           <div
-            className="absolute top-1/2 h-6 -translate-y-1/2 rounded-full"
+            className="absolute top-1/2 isolate h-6 -translate-y-1/2 rounded-full"
             style={{
               left: `calc(${at(row.lowest.amount)} - 8px)`,
               width: `calc(${at(row.highest.amount)} - ${at(row.lowest.amount)} + 16px)`,
               background: "linear-gradient(90deg, var(--heat-2), var(--heat-4))",
             }}
-          />
+          >
+            <RingTexture
+              width={420}
+              height={24}
+              dx={-20}
+              dy={36}
+              first={9}
+              step={9}
+              stroke="var(--rings-ink)"
+              opacity={0.12}
+              sheen="radial-gradient(circle at 90% 6%, var(--range-glow), transparent 55%)"
+            />
+          </div>
         )}
         {row.months.length > 0 && (
           <div className="absolute top-1/2 h-8 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fg opacity-50" style={{ left: at(row.average) }} />

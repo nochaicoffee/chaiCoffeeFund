@@ -1,12 +1,28 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
-import { Bar, CartesianGrid, Cell, ComposedChart, Line, ReferenceDot, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useId, useState, type ReactNode } from "react";
+import {
+  Bar,
+  BarStack,
+  CartesianGrid,
+  Cell,
+  ComposedChart,
+  Line,
+  ReferenceDot,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  type BarShapeProps,
+} from "recharts";
 import { heatLevel } from "@/lib/aggregate/cardSpend";
 import { trendWindow, type TrendPoint, type TrendRange } from "@/lib/aggregate/cardTrend";
 import type { CardColor } from "@/lib/sheets/types";
 import { formatMonthShort, formatMonthYear } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
+import { RingCircles } from "../RingTexture";
+import { ringRadii } from "../rings";
 import { cardSwatch } from "./CardTile";
 
 export interface TrendCard {
@@ -16,6 +32,41 @@ export interface TrendCard {
 }
 
 const RANGES: TrendRange[] = ["All", "1Y", "6M", "3M"];
+// The design's bars: 14px top corners and 5px bottom ones, rounding a whole stack as one bar in By card.
+const BAR_RADIUS: [number, number, number, number] = [14, 14, 5, 5];
+// By card, the design leaves a 2px gap between one card's segment and the one above it.
+const SEGMENT_GAP = 2;
+
+/**
+ * One bar, or one card's segment of a stacked bar, with the design's texture:
+ * a sheen in the bar's top-right corner, and faint rings centred just past its
+ * bottom-right. Both are laid out on the whole stack and clipped to the
+ * segment, so they run on across the segments as if the stack were one bar.
+ */
+function TrendBar({ bar, rings, sheenId, gapAbove }: { bar: BarShapeProps; rings: string; sheenId: string; gapAbove: boolean }) {
+  const { x, width, fill } = bar;
+  const [low, high] = Array.isArray(bar.value) ? bar.value : [0, bar.value];
+  // The gap never takes a thin segment's last pixel, so a small amount still shows.
+  const top = bar.y + (gapAbove ? Math.min(SEGMENT_GAP, Math.max(0, bar.height - 1)) : 0);
+  const height = bar.y + bar.height - top;
+  if (!(width > 0 && height > 0 && high > low)) return <g />;
+  // The stack's base and top, in pixels: the base from Recharts, and the top from this segment's pixels per rupee.
+  const base = bar.stackedBarStart;
+  const stackHeight = ((bar.payload as TrendPoint).total * bar.height) / (high - low);
+  const stackTop = base - stackHeight;
+  const cx = x + width + 12;
+  const cy = base + 14;
+  return (
+    <g>
+      <rect x={x} y={top} width={width} height={height} fill={fill} />
+      <svg x={x} y={top} width={width} height={height} viewBox={`${x} ${top} ${width} ${height}`} aria-hidden="true">
+        {/* As the design's radial-gradient(circle at 90% 6%, …, transparent 55%): 55% of the way to the far corner. */}
+        <circle cx={x + 0.9 * width} cy={stackTop + 0.06 * stackHeight} r={0.55 * Math.hypot(0.9 * width, 0.94 * stackHeight)} fill={`url(#${sheenId})`} />
+        <RingCircles cx={cx} cy={cy} radii={ringRadii(cx, cy, { x, y: top, width, height }, { first: 12, step: 12 })} stroke={rings} opacity={0.1} />
+      </svg>
+    </g>
+  );
+}
 
 function Toggle({ pressed, onClick, children, label }: { pressed: boolean; onClick: () => void; children: ReactNode; label?: string }) {
   return (
@@ -44,6 +95,7 @@ export function TrendChart({ points, cards, currentMonth }: { points: TrendPoint
   const [bars, setBars] = useState(true);
   const [line, setLine] = useState(false);
   const [range, setRange] = useState<TrendRange>("1Y");
+  const sheenId = `trend-sheen-${useId().replace(/[^\w-]/g, "")}`;
 
   const { points: shown, average, peak } = trendWindow(points, range);
   // Says which months the average covers, so it isn't mistaken for the greeting's year-to-date average.
@@ -140,6 +192,12 @@ export function TrendChart({ points, cards, currentMonth }: { points: TrendPoint
         <div className="h-[280px] w-full" role="img" aria-label={`Monthly statement totals, ${shown.map((p) => `${formatMonthYear(p.month)} ${formatInr(p.total)}`).join(", ")}`}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={shown} margin={{ top: 28, right: 28, bottom: 0, left: 0 }}>
+              <defs>
+                <radialGradient id={sheenId}>
+                  <stop offset="0" style={{ stopColor: "var(--bar-glow)" }} />
+                  <stop offset="1" style={{ stopColor: "var(--bar-glow)", stopOpacity: 0 }} />
+                </radialGradient>
+              </defs>
               <CartesianGrid vertical={false} stroke="var(--divider)" />
               <XAxis
                 dataKey="month"
@@ -169,27 +227,50 @@ export function TrendChart({ points, cards, currentMonth }: { points: TrendPoint
                 labelFormatter={(m) => formatMonthYear(String(m))}
                 formatter={(value, name) => [formatInr(Number(value)), String(name)]}
               />
-              {bars &&
-                (mode === "total" ? (
-                  <Bar dataKey="total" name="Total" radius={[8, 8, 0, 0]} maxBarSize={56} isAnimationActive={false}>
-                    {shown.map((p) => (
-                      <Cell key={p.month} fill={p.total > 0 ? `var(--heat-${heatLevel(p.total, max)})` : "transparent"} />
-                    ))}
-                  </Bar>
-                ) : (
-                  shownCards.map((c, i) => (
+              {bars && (
+                <BarStack radius={BAR_RADIUS}>
+                  {mode === "total" ? (
                     <Bar
-                      key={c.id}
-                      dataKey={(p: TrendPoint) => p.byCard[c.id] ?? 0}
-                      name={c.name}
-                      stackId="cards"
-                      fill={cardSwatch(c.color)}
-                      radius={i === shownCards.length - 1 ? [8, 8, 0, 0] : [0, 0, 0, 0]}
+                      dataKey="total"
+                      name="Total"
                       maxBarSize={56}
                       isAnimationActive={false}
-                    />
-                  ))
-                ))}
+                      // Ink rings on the light shades (1–3) and light ones on the dark (4–5), as the heatmap's text.
+                      shape={(bar: BarShapeProps) => (
+                        <TrendBar
+                          bar={bar}
+                          rings={heatLevel((bar.payload as TrendPoint).total, max) >= 4 ? "var(--rings-light)" : "var(--rings-ink)"}
+                          sheenId={sheenId}
+                          gapAbove={false}
+                        />
+                      )}
+                    >
+                      {shown.map((p) => (
+                        <Cell key={p.month} fill={p.total > 0 ? `var(--heat-${heatLevel(p.total, max)})` : "transparent"} />
+                      ))}
+                    </Bar>
+                  ) : (
+                    shownCards.map((c, i) => (
+                      <Bar
+                        key={c.id}
+                        dataKey={(p: TrendPoint) => p.byCard[c.id] ?? 0}
+                        name={c.name}
+                        fill={cardSwatch(c.color)}
+                        maxBarSize={56}
+                        isAnimationActive={false}
+                        shape={(bar: BarShapeProps) => (
+                          <TrendBar
+                            bar={bar}
+                            rings="var(--rings-light)"
+                            sheenId={sheenId}
+                            gapAbove={shownCards.slice(i + 1).some((above) => ((bar.payload as TrendPoint).byCard[above.id] ?? 0) > 0)}
+                          />
+                        )}
+                      />
+                    ))
+                  )}
+                </BarStack>
+              )}
               {line && (
                 <Line type="monotone" dataKey="total" name="Total" tooltipType={bars ? "none" : undefined} stroke="var(--accent-text)" strokeWidth={2} dot={{ r: 3, fill: "var(--surface)", strokeWidth: 2 }} isAnimationActive={false} />
               )}

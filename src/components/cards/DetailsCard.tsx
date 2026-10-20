@@ -4,11 +4,14 @@ import type { Card } from "@/lib/sheets/types";
 import { formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
 import { cardName, formatPercent, optionLabel } from "@/lib/format/labels";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
+import { RingTexture } from "../RingTexture";
 import { cardGradient, cardSwatch } from "./CardTile";
 
 const ALL_CARDS_BACKGROUND =
   "radial-gradient(circle at 92% 6%, var(--card-emerald-glow), transparent 42%), linear-gradient(150deg, var(--card-emerald-from), var(--card-emerald-to))";
 
+// The Next due bar's width in the design, less its gap. Each segment's rings are drawn at its share of it.
+const DUE_BAR_WIDTH = 547;
 
 function Stat({ label, value, marker, suffix }: { label: string; value: string; marker?: "up" | "down"; suffix?: string }) {
   return (
@@ -60,9 +63,10 @@ export function DetailsCard({
   return (
     <section aria-label={`${card ? cardName(card) : "All Cards"} details`} className="flex flex-col gap-4 rounded-[24px] border border-surface-line bg-surface p-[22px] shadow-soft">
       <div
-        className="-mx-3 -mt-3 flex flex-col gap-4 rounded-[18px] border border-on-card-line px-3 pt-3 pb-3.5 text-on-card shadow-tile"
+        className="relative isolate -mx-3 -mt-3 flex flex-col gap-4 rounded-[18px] border border-on-card-line px-3 pt-3 pb-3.5 text-on-card shadow-tile"
         style={{ background: card ? cardGradient(card.color) : ALL_CARDS_BACKGROUND }}
       >
+        <RingTexture width={596} height={200} dx={20} dy={44} first={26} step={26} stroke="var(--rings-light)" opacity={0.07} />
         <div className="flex items-center justify-between gap-3">
           <span className="min-w-0 truncate text-xs font-semibold text-on-card-muted">{card ? `${cardName(card)} · ${label}` : label}</span>
           {action}
@@ -123,9 +127,20 @@ export function DetailsCard({
                 return (
                   <div
                     key={d.statement.id}
-                    className="flex items-center overflow-hidden pl-[9px] text-[11px] font-extrabold whitespace-nowrap text-on-accent"
+                    className="relative isolate flex items-center overflow-hidden pl-[9px] text-[11px] font-extrabold whitespace-nowrap text-on-accent"
                     style={{ width: `${share * 100}%`, background: cardSwatch(cardsById.get(d.statement.cardId)?.color) }}
                   >
+                    <RingTexture
+                      width={Math.max(1, share * DUE_BAR_WIDTH)}
+                      height={26}
+                      dx={10}
+                      dy={30}
+                      first={8}
+                      step={8}
+                      stroke="var(--rings-light)"
+                      opacity={0.17}
+                      sheen="radial-gradient(circle at 90% 0%, var(--due-glow), transparent 60%)"
+                    />
                     {share >= 0.14 && formatInrCompact(d.remaining)}
                   </div>
                 );
