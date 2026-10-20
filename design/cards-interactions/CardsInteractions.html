@@ -288,6 +288,33 @@
   .blabel.show { opacity: 1; }
   .blabel .upv { color: oklch(0.82 0.12 40); } .blabel .dnv { color: var(--on-card-lime); }
 
+  /* ---------- 5 · Hover card colour ---------- */
+  .swatches { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 18px; }
+  .swatch-opt { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .swatch-opt h3 { margin: 0; font-size: 14px; font-weight: 800; display: flex; align-items: center; gap: 8px; }
+  .swatch-opt p { margin: 0; font-size: 12.5px; color: var(--muted); font-weight: 500; }
+  .stage { position: relative; isolation: isolate; overflow: hidden; border-radius: 18px; background: var(--surface); border: 1px solid var(--surface-line); padding: 22px 16px; display: grid; place-items: center; min-height: 290px; }
+  .stage .bars { position: absolute; inset: auto 16px 18px 16px; height: 150px; display: flex; align-items: flex-end; gap: 8px; z-index: -1; }
+  .stage .bars i { flex: 1; border-radius: 8px 8px 3px 3px; background: var(--heat-3); opacity: 0.45; }
+  .hc { width: 248px; border-radius: 16px; padding: 14px; background: var(--hc-bg); color: var(--hc-fg); box-shadow: var(--hc-shadow); border: 1px solid var(--hc-border); backdrop-filter: var(--hc-blur, none); -webkit-backdrop-filter: var(--hc-blur, none); }
+  .hc .h { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; color: var(--hc-muted); }
+  .hc .chipx { border-radius: 99px; padding: 2px 8px; font-size: 10px; font-weight: 800; background: var(--hc-chip-bg); color: var(--hc-chip-fg); }
+  .hc .t { font-size: 24px; font-weight: 800; line-height: 1.2; margin-top: 2px; }
+  .hc .d { font-size: 12px; font-weight: 700; margin-top: 2px; color: var(--hc-up); }
+  .hc ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 5px; }
+  .hc li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+  .hc li .sq { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+  .hc li .nm { flex: 1; color: var(--hc-muted); }
+  .hc li .mb { width: 50px; height: 5px; border-radius: 99px; background: var(--hc-fill); overflow: hidden; flex-shrink: 0; }
+  .hc li .mb span { display: block; height: 100%; border-radius: inherit; }
+  .hc li b { font-weight: 800; min-width: 62px; text-align: right; }
+  .hc .f { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--hc-line); font-size: 11px; font-weight: 600; color: var(--hc-muted); }
+  .v-ink { --hc-bg: var(--ink); --hc-fg: var(--on-ink); --hc-muted: oklch(1 0 0 / 0.62); --hc-fill: oklch(1 0 0 / 0.14); --hc-line: oklch(1 0 0 / 0.12); --hc-up: oklch(0.82 0.12 40); --hc-chip-bg: oklch(1 0 0 / 0.14); --hc-chip-fg: var(--on-ink); --hc-shadow: var(--pop-shadow); --hc-border: transparent; }
+  .v-forest { --hc-bg: linear-gradient(150deg, oklch(0.38 0.09 155), oklch(0.27 0.07 160)); --hc-fg: oklch(0.98 0.01 145); --hc-muted: oklch(1 0 0 / 0.68); --hc-fill: oklch(1 0 0 / 0.16); --hc-line: oklch(1 0 0 / 0.14); --hc-up: oklch(0.86 0.1 60); --hc-chip-bg: oklch(1 0 0 / 0.16); --hc-chip-fg: oklch(0.98 0.01 145); --hc-shadow: 0 2px 6px oklch(0.3 0.09 155 / 0.18), 0 18px 40px oklch(0.3 0.09 155 / 0.28); --hc-border: oklch(1 0 0 / 0.12); }
+  .v-graphite { --hc-bg: oklch(0.31 0.012 260 / 0.9); --hc-blur: blur(12px) saturate(1.2); --hc-fg: oklch(0.98 0 0); --hc-muted: oklch(1 0 0 / 0.66); --hc-fill: oklch(1 0 0 / 0.15); --hc-line: oklch(1 0 0 / 0.13); --hc-up: oklch(0.84 0.11 50); --hc-chip-bg: oklch(1 0 0 / 0.15); --hc-chip-fg: oklch(0.98 0 0); --hc-shadow: var(--pop-shadow); --hc-border: oklch(1 0 0 / 0.1); }
+  .v-light { --hc-bg: var(--surface); --hc-fg: var(--fg); --hc-muted: var(--muted); --hc-fill: var(--fill); --hc-line: var(--divider); --hc-up: var(--negative); --hc-chip-bg: var(--accent-tint); --hc-chip-fg: var(--accent-text); --hc-shadow: var(--pop-shadow); --hc-border: var(--surface-line); }
+  .v-mint { --hc-bg: oklch(0.935 0.052 148); --hc-fg: oklch(0.22 0.04 152); --hc-muted: oklch(0.42 0.05 152); --hc-fill: oklch(0.42 0.1 152 / 0.12); --hc-line: oklch(0.42 0.1 152 / 0.16); --hc-up: oklch(0.5 0.15 30); --hc-chip-bg: oklch(1 0 0 / 0.7); --hc-chip-fg: var(--accent-text); --hc-shadow: 0 2px 6px oklch(0.3 0.09 155 / 0.1), 0 18px 40px oklch(0.3 0.09 155 / 0.18); --hc-border: oklch(0.62 0.15 150 / 0.24); }
+
   footer.end { max-width: 760px; color: var(--muted); font-weight: 500; font-size: 13px; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -306,6 +333,7 @@
       <a href="#statements">2 · Mark paid</a>
       <a href="#cards">3 · Card tiles</a>
       <a href="#trend">4 · Trend hover</a>
+      <a href="#colour">5 · Hover card colour</a>
     </nav>
   </header>
 
@@ -388,6 +416,15 @@
         <div class="tr" id="trB"></div>
       </article>
     </div>
+  </section>
+
+  <section class="area" id="colour" aria-labelledby="h-colour">
+    <div class="area-head">
+      <span class="eyebrow">5 · Hover card colour</span>
+      <h2 id="h-colour">A lighter touch for the hover cards</h2>
+      <p>The heatmap and trend hover cards in five colours, each over a few bars so you can see how it sits on the page. They show the trimmed trend card: what was spent and on which card, with the comparisons on the chart itself.</p>
+    </div>
+    <div class="swatches" id="swatches"></div>
   </section>
 
   <footer class="end">Reply with a letter for each area, for example “1A, 2A, 3 all but C, 4A”. I'll build those into the real Cards page.</footer>
@@ -810,6 +847,31 @@
     host.addEventListener("pointerleave", off);
     host.addEventListener("focusout", (e) => { if (!host.contains(e.relatedTarget)) off(); });
   }
+  // ===== 5 · Hover card colour =====
+  const VARIANTS = [
+    ["ink", "Ink", "Today's. Strong contrast, but the heaviest thing on a light page."],
+    ["forest", "Forest", "The All Cards tile's green. Ties the card to the brand and is a shade lighter than ink."],
+    ["graphite", "Graphite", "A softer charcoal with a frosted edge. Still dark, but it lets the page show through."],
+    ["light", "Light", "White, like the page's other cards, lifted with a shadow. The quietest option."],
+    ["mint", "Mint", "The light green of the Due now tile and the forms' preview. Light and on-brand."],
+  ];
+  const jul = SPEND26[6], julTotal = T26[6];
+  document.getElementById("swatches").innerHTML = VARIANTS.map(([key, name, note]) => `
+    <div class="swatch-opt">
+      <h3><span class="tag">${name[0]}</span>${name}</h3>
+      <p>${note}</p>
+      <div class="stage">
+        <div class="bars" aria-hidden="true">${T26.map((v) => `<i style="height:${(v / Math.max(...T26)) * 100}%"></i>`).join("")}</div>
+        <div class="hc v-${key}">
+          <div class="h"><span>July 2026</span><span class="chipx">Peak</span></div>
+          <div class="t num">${fmt(julTotal)}</div>
+          <div class="d">▲ ${pct((julTotal - AVG26) / AVG26)} above your 2026 average</div>
+          <ul>${jul.map((v, k) => ({ v, c: CARDS[k] })).filter((r) => r.v > 0).sort((a, b) => b.v - a.v).map(({ v, c }) => `<li><span class="sq" style="background:${swatch(c.color)}"></span><span class="nm">${c.name}</span><span class="mb"><span style="width:${(v / Math.max(...jul)) * 100}%;background:${swatch(c.color)}"></span></span><b class="num">${fmt(v)}</b></li>`).join("")}</ul>
+          <div class="f">3 statements · all paid</div>
+        </div>
+      </div>
+    </div>`).join("");
+
   trendChart(document.getElementById("trA"), "a");
   trendChart(document.getElementById("trB"), "b");
 })();

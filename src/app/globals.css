@@ -68,7 +68,6 @@
   --heat-no-data: oklch(0 0 0 / 0.04);
   --heat-upcoming: oklch(0 0 0 / 0.13);
   --heat-glow: oklch(1 0 0 / 0.26);
-  --heat-peak-shadow: 0 8px 18px oklch(0.3 0.09 155 / 0.28);
 
   /*
    * Card colours. Each is a 155° gradient (from, to) for the tile, plus a
@@ -118,9 +117,8 @@
   --due-pulse-ring: oklch(0.82 0.12 40 / 0.2);
   --due-pulse-fill: oklch(0.7 0.14 35 / 0.55);
 
-  /* On the dark hover cards (#104, #105): spending above average, and below it. */
-  --tip-up: oklch(0.82 0.12 40);
-  --tip-down: oklch(0.88 0.17 138);
+  /* The hover cards on the heatmap and trend (#104, #105), which float over the chart. */
+  --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
 }
 
 @theme inline {
@@ -167,7 +165,7 @@
   --shadow-soft: var(--soft-shadow);
   --shadow-tile: var(--tile-shadow);
   --shadow-tile-selected: var(--tile-shadow-selected);
-  --shadow-heat-peak: var(--heat-peak-shadow);
+  --shadow-pop: var(--pop-shadow);
 }
 
 @theme {
