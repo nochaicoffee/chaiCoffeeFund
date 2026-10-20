@@ -158,10 +158,11 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
         </PageHeader>
       </SyncProvider>
 
+      {/* Scrolls sideways by trackpad, touch, shift-scroll or keyboard (a focused tile scrolls into view), with no scrollbar drawn under it. */}
       <div
         role="list"
         aria-label="Cards"
-        className="-mx-4 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pt-3 pb-4 md:-mx-[26px] md:scroll-px-[26px] md:px-[26px]"
+        className="-mx-4 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pt-3 pb-4 [scrollbar-width:none] md:-mx-[26px] md:scroll-px-[26px] md:px-[26px] [&::-webkit-scrollbar]:hidden"
       >
         <div role="listitem">
           <CardTile
