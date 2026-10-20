@@ -1,6 +1,7 @@
 "use client";
 
 import type { ComponentProps, ReactNode } from "react";
+import { DatePicker } from "../../DatePicker";
 import { RingTexture } from "../../RingTexture";
 import { Select, type SelectOption } from "../../Select";
 import { AlertIcon, InfoIcon } from "./icons";
@@ -136,6 +137,15 @@ export function SelectInput({
       className={`${inputClass(invalid)} flex cursor-pointer items-center gap-2 pr-3.5 text-left aria-expanded:border-accent aria-expanded:ring-[3px] aria-expanded:ring-accent/25 disabled:cursor-default disabled:bg-page disabled:text-muted`}
     />
   );
+}
+
+/**
+ * A form field's date: the app's DatePicker (src/components/DatePicker.tsx) with
+ * the input look, named by its Field's <label>. `name` submits the date, or what
+ * was typed when it isn't one, so the form's reader can say so.
+ */
+export function DateInput({ invalid, ...props }: Omit<ComponentProps<typeof DatePicker>, "className"> & { invalid: boolean }) {
+  return <DatePicker {...props} className={`${inputClass(invalid)} pr-10 aria-expanded:border-accent aria-expanded:ring-[3px] aria-expanded:ring-accent/25`} />;
 }
 
 /**
