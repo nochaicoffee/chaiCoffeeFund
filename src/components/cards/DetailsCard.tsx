@@ -2,8 +2,10 @@ import type { ReactNode } from "react";
 import type { CardDetails, MonthAmount } from "@/lib/aggregate/cardSpend";
 import type { Card } from "@/lib/sheets/types";
 import { formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
-import { cardName, formatPercent, optionLabel } from "@/lib/format/labels";
+import { cardName, optionLabel } from "@/lib/format/labels";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
+import { CountUp } from "../motion/CountUp";
+import { CrossfadeBackground } from "../motion/CrossfadeBackground";
 import { RingTexture } from "../RingTexture";
 import { cardGradient, cardSwatch } from "./CardTile";
 
@@ -13,7 +15,7 @@ const ALL_CARDS_BACKGROUND =
 // The Next due bar's width in the design, less its gap. Each segment's rings are drawn at its share of it.
 const DUE_BAR_WIDTH = 547;
 
-function Stat({ label, value, marker, suffix }: { label: string; value: string; marker?: "up" | "down"; suffix?: string }) {
+function Stat({ label, value, marker, suffix }: { label: string; value: ReactNode; marker?: "up" | "down"; suffix?: string }) {
   return (
     <div className="flex min-w-0 items-center justify-between gap-3">
       <span className="text-xs font-semibold whitespace-nowrap text-muted">
@@ -59,57 +61,64 @@ export function DetailsCard({
   const label = card
     ? `${optionLabel(card.issuer)}${card.last4 ? ` · •••• ${card.last4}` : ""}`
     : `All Cards · ${cardCount} ${cardCount === 1 ? "card" : "cards"}`;
+  const background = card ? cardGradient(card.color) : ALL_CARDS_BACKGROUND;
 
   return (
     <section aria-label={`${card ? cardName(card) : "All Cards"} details`} className="flex flex-col gap-4 rounded-[24px] border border-surface-line bg-surface p-[22px] shadow-soft">
       <div
         className="relative isolate -mx-3 -mt-3 flex flex-col gap-4 rounded-[18px] border border-on-card-line px-3 pt-3 pb-3.5 text-on-card shadow-tile"
-        style={{ background: card ? cardGradient(card.color) : ALL_CARDS_BACKGROUND }}
+        style={{ background }}
       >
+        {/* Selecting another card fades this one's colour into the next, and its numbers count to theirs (#102). */}
+        <CrossfadeBackground background={background} />
         <RingTexture width={596} height={200} dx={20} dy={44} first={26} step={26} stroke="var(--rings-light)" opacity={0.07} />
         <div className="flex items-center justify-between gap-3">
           <span className="min-w-0 truncate text-xs font-semibold text-on-card-muted">{card ? `${cardName(card)} · ${label}` : label}</span>
           {action}
         </div>
         <div className="text-[26px] leading-none font-extrabold tabular-nums">
-          {formatInr(details.outstanding)}{" "}
-          <span className="text-xs font-bold text-on-card-muted">outstanding · {details.utilization === null ? "no limit" : formatPercent(details.utilization)}</span>
+          <CountUp value={details.outstanding} format="inr" />{" "}
+          <span className="text-xs font-bold text-on-card-muted">
+            outstanding · {details.utilization === null ? "no limit" : <CountUp value={details.utilization} format="percent" />}
+          </span>
         </div>
         {details.limit > 0 && (
           <div>
             <div className="relative h-[50px]">
               {details.averageOnLimit !== null && details.average > 0 && (
                 <div
-                  className="absolute top-0 flex -translate-x-1/2 flex-col items-center"
+                  className="absolute top-0 flex -translate-x-1/2 flex-col items-center ease-out motion-safe:transition-[left] motion-safe:duration-700"
                   style={{ left: `${Math.min(92, Math.max(8, details.averageOnLimit * 100))}%` }}
                 >
                   <span className="rounded-full bg-on-card-fill px-[9px] py-[3px] text-[10px] font-bold whitespace-nowrap tabular-nums">
-                    Avg · {formatInr(details.average)}
+                    Avg · <CountUp value={details.average} format="inr" />
                   </span>
                   <span className="mt-0.5 h-3 w-px bg-on-card opacity-50" aria-hidden="true" />
                 </div>
               )}
               <div className="absolute inset-x-0 top-9 h-3.5 overflow-hidden rounded-full bg-on-card-fill" aria-hidden="true">
                 <div
-                  className={`h-full rounded-full ${card ? "bg-on-card" : "bg-on-card-lime"}`}
+                  className={`h-full rounded-full ${card ? "bg-on-card" : "bg-on-card-lime"} ease-out motion-safe:transition-[width] motion-safe:duration-700`}
                   style={{ width: `${Math.min(100, (details.utilization ?? 0) * 100)}%` }}
                 />
               </div>
             </div>
             <div className="mt-1.5 flex items-center justify-between text-[11px] text-on-card-muted tabular-nums">
               <span>₹0</span>
-              <span>{formatInr(details.limit)} limit</span>
+              <span>
+                <CountUp value={details.limit} format="inr" /> limit
+              </span>
             </div>
           </div>
         )}
       </div>
 
       <div className="grid grid-cols-1 gap-x-[18px] gap-y-2.5 sm:grid-cols-[1fr_1px_1fr]">
-        <Stat label="Available" value={formatInr(details.available)} />
+        <Stat label="Available" value={<CountUp value={details.available} format="inr" />} />
         <div className="hidden bg-divider sm:row-span-2 sm:block" aria-hidden="true" />
-        <Stat label="Highest month" marker="up" value={details.highest ? formatInr(details.highest.amount) : "—"} suffix={month(details.highest)} />
-        <Stat label={`Total spent (${periodLabel})`} value={formatInr(details.total)} />
-        <Stat label="Lowest month" marker="down" value={details.lowest ? formatInr(details.lowest.amount) : "—"} suffix={month(details.lowest)} />
+        <Stat label="Highest month" marker="up" value={details.highest ? <CountUp value={details.highest.amount} format="inr" /> : "—"} suffix={month(details.highest)} />
+        <Stat label={`Total spent (${periodLabel})`} value={<CountUp value={details.total} format="inr" />} />
+        <Stat label="Lowest month" marker="down" value={details.lowest ? <CountUp value={details.lowest.amount} format="inr" /> : "—"} suffix={month(details.lowest)} />
       </div>
 
       <div className="mt-auto flex flex-col justify-center gap-2 rounded-[14px] bg-fill px-3.5 py-3">
@@ -117,7 +126,9 @@ export function DetailsCard({
           <span className="text-[11px] text-muted">
             Next due · {details.due.length === 0 ? "nothing pending" : `${details.due.length} pending`}
           </span>
-          <span className="text-[15px] font-extrabold tabular-nums">{formatInr(dueTotal)}</span>
+          <span className="text-[15px] font-extrabold tabular-nums">
+            <CountUp value={dueTotal} format="inr" />
+          </span>
         </div>
         {details.due.length > 0 && (
           <>

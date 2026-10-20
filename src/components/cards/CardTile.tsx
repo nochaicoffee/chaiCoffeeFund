@@ -20,7 +20,7 @@ const ALL_CARDS_BACKGROUND =
 /** The gold chip on a single card's tile. */
 function ChipIcon() {
   return (
-    <svg width="22" height="17" viewBox="0 0 24 18" aria-hidden="true">
+    <svg width="22" height="17" viewBox="0 0 24 18" aria-hidden="true" className="block">
       <rect x="1" y="1" width="22" height="16" rx="3" fill="var(--card-chip)" />
       <path d="M1 6h7M1 12h7M16 6h7M16 12h7M8 1v16M16 1v16" stroke="var(--card-chip-deep)" strokeWidth="1" fill="none" />
     </svg>
@@ -72,6 +72,10 @@ export interface CardTileProps {
   footnote: ReactNode;
   /** A closed card's tile: faded until it's selected. */
   dimmed?: boolean;
+  /** The pill is for a bill due within 3 days, or overdue: it breathes gently (#102). */
+  pillUrgent?: boolean;
+  /** When to start filling the bar from empty as the page opens, in ms, so the row fills one tile after another (#102). */
+  fillDelay?: number;
 }
 
 /**
@@ -98,9 +102,16 @@ export function CardTile(props: CardTileProps) {
       scroll={false}
       aria-current={props.selected ? "true" : undefined}
       aria-label={`${props.title}: ${props.balance}${props.utilizationLabel ? `, ${props.utilizationLabel} used` : ""}`}
-      className={`${className} transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent`}
+      // Tilts towards the pointer (CardRow sets the angles), easing back when it leaves (#102).
+      data-tilt
+      className={`${className} group/tile [transform:perspective(900px)_rotateX(var(--tilt-x,0deg))_rotateY(var(--tilt-y,0deg))] transition-transform duration-500 ease-out hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent data-tilting:duration-75`}
       style={style}
     >
+      {/* The light that follows the pointer while the tile tilts. */}
+      <span
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 -z-[5] rounded-[inherit] opacity-0 mix-blend-soft-light transition-opacity duration-300 [background:radial-gradient(circle_at_var(--glare-x,50%)_var(--glare-y,0%),var(--tile-glare),transparent_55%)] group-data-tilting/tile:opacity-100"
+      />
       {face}
     </Link>
   );
@@ -114,7 +125,14 @@ function TileFace(props: CardTileProps & { isAll: boolean }) {
       {isAll && <RingTexture width={300} height={196} dx={10} dy={19} first={45} step={26} count={10} stroke="var(--rings-light)" opacity={0.07} />}
       {props.selected && <SelectedBadge />}
       <div className="flex items-start justify-between">
-        {isAll ? <StackIcon /> : <ChipIcon />}
+        {isAll ? (
+          <StackIcon />
+        ) : (
+          // A glint crosses the chip when the pointer arrives on the tile.
+          <span className="relative block overflow-hidden rounded-[3px] after:pointer-events-none after:absolute after:inset-y-[-50%] after:left-[-60%] after:w-[40%] after:-skew-x-12 after:bg-[linear-gradient(100deg,transparent,var(--chip-glint),transparent)] after:content-[''] motion-safe:group-hover/tile:after:animate-glint">
+            <ChipIcon />
+          </span>
+        )}
         <span className="text-[10px] font-semibold text-on-card-faint">{props.corner}</span>
       </div>
       <div>
@@ -128,13 +146,13 @@ function TileFace(props: CardTileProps & { isAll: boolean }) {
         </div>
         <div className="mt-1.5 h-[5px] w-full overflow-hidden rounded-full bg-on-card-fill" aria-hidden="true">
           <div
-            className={`h-full ${isAll ? "bg-on-card-lime" : "bg-on-card"}`}
-            style={{ width: `${Math.min(100, Math.max(0, props.utilization * 100))}%` }}
+            className={`h-full ${isAll ? "bg-on-card-lime" : "bg-on-card"} ${props.fillDelay !== undefined ? "motion-safe:animate-bar-fill" : ""}`}
+            style={{ width: `${Math.min(100, Math.max(0, props.utilization * 100))}%`, animationDelay: props.fillDelay !== undefined ? `${props.fillDelay}ms` : undefined }}
           />
         </div>
         <div className="mt-[9px] flex min-h-[22px] items-center justify-between gap-2">
           {props.pill ? (
-            <span className="rounded-full bg-on-card-fill px-[9px] py-[3px] text-[10px] font-bold whitespace-nowrap">{props.pill}</span>
+            <span className={`rounded-full bg-on-card-fill px-[9px] py-[3px] text-[10px] font-bold whitespace-nowrap ${props.pillUrgent ? "motion-safe:animate-due-pulse" : ""}`}>{props.pill}</span>
           ) : (
             <span />
           )}

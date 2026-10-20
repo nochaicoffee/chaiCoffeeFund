@@ -1,0 +1,816 @@
+<title>Cards Interactions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+  /* Layout: four numbered areas (the four asks), each showing its options side by side when there's room and stacked on a phone.
+     Tokens are the app's own (src/app/globals.css), so each mockup looks like the real Cards page. Light only, like the app today. */
+  :root {
+    color-scheme: light;
+    --page: oklch(0.965 0.004 90);
+    --surface: oklch(0.995 0 0);
+    --surface-line: oklch(0 0 0 / 0.07);
+    --fg: oklch(0.19 0.008 260);
+    --muted: oklch(0.52 0.012 260);
+    --fill: oklch(0 0 0 / 0.055);
+    --fill-strong: oklch(0 0 0 / 0.09);
+    --divider: oklch(0 0 0 / 0.08);
+    --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+    --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+    --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+    --accent: oklch(0.72 0.19 145);
+    --accent-tint: oklch(0.93 0.06 145);
+    --accent-text: oklch(0.42 0.14 145);
+    --on-accent: oklch(0.99 0 0);
+    --ink: oklch(0.16 0.008 260);
+    --on-ink: oklch(0.99 0 0);
+    --ink-muted: oklch(1 0 0 / 0.62);
+    --negative: oklch(0.55 0.16 25);
+    --negative-tint: oklch(0.95 0.035 40);
+    --warning: oklch(0.72 0.14 75);
+    --heat-1: oklch(0.95 0.03 150);
+    --heat-2: oklch(0.87 0.07 150);
+    --heat-3: oklch(0.76 0.11 151);
+    --heat-4: oklch(0.6 0.12 153);
+    --heat-5: oklch(0.42 0.1 156);
+    --heat-ink: oklch(0.24 0.05 152);
+    --heat-upcoming: oklch(0 0 0 / 0.13);
+    --rings-ink: oklch(0.42 0.1 152);
+    --rings-light: oklch(1 0 0);
+    --card-emerald-from: oklch(0.42 0.11 155);
+    --card-emerald-to: oklch(0.24 0.07 162);
+    --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
+    --card-sapphire-from: oklch(0.32 0.09 258);
+    --card-sapphire-to: oklch(0.16 0.05 258);
+    --card-sapphire: oklch(0.48 0.1 258);
+    --card-ruby-from: oklch(0.3 0.11 20);
+    --card-ruby-to: oklch(0.15 0.07 20);
+    --card-ruby: oklch(0.57 0.13 22);
+    --card-teal-from: oklch(0.32 0.07 200);
+    --card-teal-to: oklch(0.16 0.04 200);
+    --card-teal: oklch(0.56 0.09 200);
+    --on-card: oklch(0.95 0.004 260);
+    --on-card-muted: oklch(1 0 0 / 0.6);
+    --on-card-faint: oklch(1 0 0 / 0.5);
+    --on-card-fill: oklch(1 0 0 / 0.16);
+    --on-card-line: oklch(1 0 0 / 0.12);
+    --on-card-lime: oklch(0.88 0.17 138);
+    --card-chip: oklch(0.8 0.13 80);
+    --card-chip-deep: oklch(0.55 0.1 80);
+    --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
+    --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { background: var(--page); color: var(--fg); }
+  body {
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
+    padding-block: 28px 72px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
+
+  .intro { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+  h1 { margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800; text-wrap: balance; }
+  .intro p { margin: 0; font-size: 15px; font-weight: 500; color: var(--muted); }
+  .jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .jump a { text-decoration: none; color: var(--fg); background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 700; }
+  .jump a:hover { background: var(--accent-tint); color: var(--accent-text); }
+  .sample { width: fit-content; border-radius: 999px; background: var(--accent-tint); color: var(--accent-text); padding: 4px 12px; font-size: 12px; font-weight: 700; }
+
+  .area { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 16px; }
+  .area-head { display: flex; flex-direction: column; gap: 4px; max-width: 760px; }
+  .area-head h2 { margin: 0; font-size: 21px; font-weight: 800; text-wrap: balance; }
+  .area-head p { margin: 0; color: var(--muted); font-weight: 500; }
+  .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 540px), 1fr)); gap: 18px; }
+  /* The heatmap needs the full width for its 12 months, so its two options stack. */
+  .options.stacked { grid-template-columns: minmax(0, 1fr); }
+  .option { min-width: 0; display: flex; flex-direction: column; gap: 14px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); border-radius: 24px; padding: 20px; }
+  .opt-head { display: flex; gap: 12px; align-items: flex-start; }
+  .tag { flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 13px; }
+  .opt-head h3 { margin: 0; font-size: 15px; font-weight: 800; }
+  .opt-head p { margin: 2px 0 0; color: var(--muted); font-size: 13px; font-weight: 500; }
+  .hint { font-size: 12px; font-weight: 600; color: var(--muted); }
+
+  /* Rings: the app's texture, drawn by rings() into any .tex layer. */
+  .tex { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; z-index: -1; pointer-events: none; }
+  .tex svg { position: absolute; inset: 0; width: 100%; height: 100%; transform-origin: 100% 100%; transition: transform 700ms var(--ease-out), opacity 700ms var(--ease-out); }
+
+  /* ---------- 1 · Heatmap ---------- */
+  .heat { position: relative; }
+  .heat-scroll { overflow-x: auto; margin: -6px -8px; padding: 6px 8px 10px; scrollbar-width: none; }
+  .heat-scroll::-webkit-scrollbar { display: none; }
+  .heat-grid { display: grid; grid-template-columns: 38px repeat(12, minmax(40px, 1fr)) 74px; gap: 6px; min-width: 640px; align-items: center; }
+  .heat-grid .m { text-align: center; font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 0.03em; }
+  .heat-grid .m.now { color: var(--fg); }
+  .heat-grid .yr { font-size: 12px; font-weight: 800; }
+  .heat-grid .tot { text-align: right; font-size: 12px; font-weight: 800; line-height: 1.25; }
+  .heat-grid .tot small { display: block; font-size: 10px; font-weight: 600; color: var(--muted); }
+  .cell { position: relative; isolation: isolate; height: 46px; border: 0; border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--heat-ink); transition: transform 220ms var(--ease-out), box-shadow 220ms var(--ease-out), opacity 260ms var(--ease-out), filter 260ms; }
+  .cell small { font-size: 9px; font-weight: 600; opacity: 0.85; }
+  .cell.l3, .cell.l4, .cell.l5 { color: var(--on-accent); }
+  .cell.l1 { background: var(--heat-1); } .cell.l2 { background: var(--heat-2); } .cell.l3 { background: var(--heat-3); } .cell.l4 { background: var(--heat-4); } .cell.l5 { background: var(--heat-5); }
+  .cell.peak { box-shadow: 0 8px 18px oklch(0.3 0.09 155 / 0.28); }
+  .cell.now { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .cell.up { background: transparent; border: 1.5px dashed var(--heat-upcoming); cursor: default; }
+  .cell:not(.up):hover, .cell:not(.up):focus-visible, .cell.on { transform: translateY(-3px); box-shadow: var(--pop-shadow); }
+  .cell:not(.up):hover .tex svg, .cell.on .tex svg { transform: scale(1.18); }
+  .heat.spot .cell:not(.on):not(.twin):not(.up) { opacity: 0.32; filter: saturate(0.6); }
+  .cell.twin { outline: 2px dashed var(--heat-4); outline-offset: 2px; }
+
+  .tip { position: absolute; left: 0; top: 0; z-index: 20; width: 248px; pointer-events: none; background: var(--ink); color: var(--on-ink); border-radius: 16px; padding: 14px; box-shadow: var(--pop-shadow); opacity: 0; transform: translate(var(--x, 0px), var(--y, 0px)) scale(0.96); transform-origin: 50% 100%; transition: transform 240ms var(--ease-out), opacity 160ms ease; }
+  .tip.show { opacity: 1; transform: translate(var(--x, 0px), var(--y, 0px)) scale(1); }
+  .tip .tm { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; color: var(--ink-muted); }
+  .tip .ta { font-size: 24px; font-weight: 800; line-height: 1.2; margin-top: 2px; }
+  .tip .td { font-size: 12px; font-weight: 600; margin-top: 2px; }
+  .tip .td.upv { color: oklch(0.82 0.12 40); } .tip .td.dnv { color: var(--on-card-lime); }
+  .tip .bar { display: flex; height: 8px; border-radius: 99px; overflow: hidden; gap: 2px; margin-top: 12px; }
+  .tip .bar i { display: block; height: 100%; transition: flex-grow 300ms var(--ease-out); }
+  .tip ul { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+  .tip li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+  .tip li i { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+  .tip li span { flex: 1; color: var(--ink-muted); }
+  .tip li b { font-weight: 800; }
+  .tip .tf { margin-top: 10px; padding-top: 9px; border-top: 1px solid oklch(1 0 0 / 0.12); font-size: 11px; font-weight: 600; color: var(--ink-muted); }
+  .chip-peak { border-radius: 99px; padding: 2px 8px; font-size: 10px; font-weight: 800; background: var(--accent); color: var(--ink); }
+  .chip-now { border-radius: 99px; padding: 2px 8px; font-size: 10px; font-weight: 800; background: oklch(1 0 0 / 0.14); color: var(--on-ink); }
+  .tip::after { content: ""; position: absolute; left: var(--arrow, 50%); bottom: -6px; width: 12px; height: 12px; background: var(--ink); transform: translateX(-50%) rotate(45deg); border-radius: 2px; }
+  .tip.below::after { bottom: auto; top: -6px; }
+
+  .caption { min-height: 46px; display: flex; align-items: center; gap: 10px; border-radius: 14px; background: var(--fill); padding: 10px 14px; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .caption b { color: var(--fg); }
+  .caption .swap { animation: rise 320ms var(--ease-out); }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ---------- 2 · Statements ---------- */
+  .st { position: relative; overflow: hidden; border-radius: 16px; }
+  .st-scroll { overflow-x: auto; }
+  .st table { width: 100%; min-width: 470px; border-collapse: collapse; font-size: 13px; }
+  .st th { text-align: left; font-size: 10px; letter-spacing: 0.03em; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 6px 10px 8px 0; }
+  .st th:nth-child(4), .st td:nth-child(4) { text-align: right; }
+  .st th:last-child, .st td:last-child { text-align: right; padding-right: 0; }
+  .st td { position: relative; height: 48px; padding: 0 10px 0 0; border-top: 1px solid var(--divider); white-space: nowrap; }
+  .st tr.row { transition: background 200ms; }
+  .st tr.row:hover, .st tr.row:focus-within { background: oklch(0 0 0 / 0.02); }
+  .sw { display: inline-block; width: 9px; height: 9px; border-radius: 3px; margin-right: 8px; vertical-align: 0; }
+  .cardname { font-weight: 800; }
+  .dim { color: var(--muted); }
+  .soon { font-size: 11px; font-weight: 700; color: var(--muted); }
+  .soon.hot { color: var(--negative); }
+  .pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 99px; padding: 4px 11px; font-size: 10px; font-weight: 800; border: 0; }
+  .pill.pending { background: var(--fill); color: var(--muted); }
+  .pill.paid { background: var(--accent-tint); color: var(--accent-text); }
+  .pill.part { background: oklch(0.95 0.05 80); color: oklch(0.45 0.09 70); }
+  .pop { animation: pop 420ms var(--ease-spring); }
+  @keyframes pop { 0% { transform: scale(0.6); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+  .status { display: inline-grid; justify-items: end; align-items: center; }
+  .status > * { grid-area: 1 / 1; }
+  .paybtn { display: inline-flex; align-items: center; gap: 6px; height: 30px; border-radius: 99px; border: 0; padding: 0 12px; background: var(--ink); color: var(--on-ink); font-size: 12px; font-weight: 800; cursor: pointer; opacity: 0; transform: translateX(8px) scale(0.96); pointer-events: none; transition: opacity 180ms, transform 220ms var(--ease-out), background 200ms, width 240ms; white-space: nowrap; }
+  .st.a tr.row:hover .paybtn, .st.a tr.row:focus-within .paybtn, .paybtn.busy, .paybtn.done { opacity: 1; transform: none; pointer-events: auto; }
+  .st.a tr.row:hover .status .pill, .st.a tr.row:focus-within .status .pill { opacity: 0; }
+  .status .pill { transition: opacity 160ms; }
+  .paybtn.busy { background: var(--accent-text); }
+  .paybtn.done { background: var(--accent); color: var(--ink); }
+  .spin { width: 12px; height: 12px; border-radius: 50%; border: 2px solid oklch(1 0 0 / 0.35); border-top-color: var(--on-ink); animation: turn 700ms linear infinite; }
+  @keyframes turn { to { transform: rotate(360deg); } }
+  /* A paid row: a green light passes across it once. */
+  .st tr.sweep { background-image: linear-gradient(90deg, transparent, oklch(0.93 0.06 145 / 0.95), transparent); background-repeat: no-repeat; background-size: 50% 100%; animation: sweep 1000ms var(--ease-out) forwards; }
+  @keyframes sweep { from { background-position: -100% 0; } to { background-position: 200% 0; } }
+  .toast { position: absolute; left: 50%; bottom: 12px; z-index: 5; display: flex; align-items: center; gap: 12px; max-width: calc(100% - 24px); background: var(--ink); color: var(--on-ink); border-radius: 14px; padding: 10px 10px 10px 14px; font-size: 12.5px; font-weight: 600; box-shadow: var(--pop-shadow); transform: translate(-50%, 140%); opacity: 0; transition: transform 320ms var(--ease-out), opacity 200ms; }
+  .toast.show { transform: translate(-50%, 0); opacity: 1; }
+  .toast button { border: 0; border-radius: 9px; padding: 6px 10px; background: oklch(1 0 0 / 0.14); color: var(--on-ink); font-weight: 800; cursor: pointer; }
+  .toast .bar { position: absolute; left: 10px; right: 10px; bottom: 4px; height: 2px; border-radius: 2px; background: oklch(1 0 0 / 0.25); transform-origin: left; }
+  .toast.show .bar { animation: drain 6s linear forwards; }
+  @keyframes drain { to { transform: scaleX(0); } }
+  .pendbtn { cursor: pointer; }
+  .pendbtn:hover { background: var(--fill-strong); color: var(--fg); }
+  tr.editor td { height: auto; padding: 0; border-top: 0; white-space: normal; }
+  .ed { overflow: hidden; display: grid; grid-template-rows: 0fr; transition: grid-template-rows 320ms var(--ease-out); }
+  .ed.open { grid-template-rows: 1fr; }
+  .ed > div { min-height: 0; }
+  .ed-in { margin: 0 0 12px; padding: 14px; border-radius: 14px; background: var(--fill); display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+  .ed-in .lbl { width: 100%; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+  .choice { border: 1.5px solid var(--surface-line); background: var(--surface); border-radius: 12px; padding: 7px 12px; font-size: 12px; font-weight: 700; cursor: pointer; text-align: left; line-height: 1.25; }
+  .choice small { display: block; font-size: 10px; color: var(--muted); font-weight: 600; }
+  .choice[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-tint); color: var(--accent-text); }
+  .ed-in input { width: 110px; height: 36px; border-radius: 10px; border: 1.5px solid var(--surface-line); padding: 0 10px; font: inherit; font-weight: 700; background: var(--surface); }
+  .ed-in .meta { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .ed-in .save { margin-left: auto; height: 36px; border: 0; border-radius: 99px; padding: 0 16px; background: var(--ink); color: var(--on-ink); font-weight: 800; cursor: pointer; }
+
+  /* ---------- 3 · Hero cards ---------- */
+  .toggles { display: flex; flex-wrap: wrap; gap: 8px; }
+  .toggle { display: inline-flex; align-items: center; gap: 8px; border: 1.5px solid var(--surface-line); border-radius: 99px; padding: 6px 12px 6px 8px; font-size: 12.5px; font-weight: 700; cursor: pointer; background: var(--surface); user-select: none; }
+  .toggle input { appearance: none; width: 30px; height: 18px; border-radius: 99px; background: var(--fill-strong); position: relative; margin: 0; cursor: pointer; transition: background 200ms; }
+  .toggle input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 2px oklch(0 0 0 / 0.2); transition: transform 220ms var(--ease-out); }
+  .toggle input:checked { background: var(--accent); }
+  .toggle input:checked::after { transform: translateX(12px); }
+  .replay { border: 0; background: var(--fill); border-radius: 99px; padding: 7px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+  .replay:hover { background: var(--fill-strong); }
+  .tiles { display: flex; gap: 14px; overflow-x: auto; padding: 14px 4px 34px; margin: -6px -4px -20px; scrollbar-width: none; perspective: 1000px; }
+  .tiles::-webkit-scrollbar { display: none; }
+  .tile { --rx: 0deg; --ry: 0deg; --gx: 50%; --gy: 0%; --glare: 0; position: relative; isolation: isolate; flex-shrink: 0; width: 248px; height: 162px; border-radius: 20px; padding: 15px; border: 1px solid var(--on-card-line); color: var(--on-card); box-shadow: var(--tile-shadow); display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; transform: rotateX(var(--rx)) rotateY(var(--ry)); transition: transform 500ms var(--ease-out), box-shadow 300ms; text-align: left; font: inherit; }
+  .tile.moving { transition: transform 80ms linear, box-shadow 300ms; }
+  .tile[aria-pressed="true"] { border: 1.5px solid var(--accent); box-shadow: 0 10px 26px oklch(0.3 0.09 155 / 0.35), 0 0 0 4px oklch(1 0 0 / 0.08), 0 0 18px oklch(1 0 0 / 0.2); }
+  .tile .glare { position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: radial-gradient(circle at var(--gx) var(--gy), oklch(1 0 0 / 0.32), transparent 55%); opacity: var(--glare); transition: opacity 300ms; mix-blend-mode: soft-light; }
+  .tile .top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .tile .iss { font-size: 10px; font-weight: 600; color: var(--on-card-faint); }
+  .tile .nm { font-size: 15px; font-weight: 800; }
+  .tile .no { font-size: 11px; letter-spacing: 0.14em; color: var(--on-card-faint); margin-top: 4px; }
+  .tile .bal { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--on-card-muted); margin-top: 6px; }
+  .tile .track { height: 5px; border-radius: 99px; background: var(--on-card-fill); overflow: hidden; margin-top: 5px; }
+  .tile .track i { display: block; height: 100%; width: var(--w); background: var(--on-card); border-radius: inherit; transition: width 900ms var(--ease-out); }
+  .tile.all .track i { background: var(--on-card-lime); }
+  .tile .ft { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 10px; color: var(--on-card-faint); }
+  .tile .due { border-radius: 99px; background: var(--on-card-fill); padding: 3px 9px; font-weight: 700; color: var(--on-card); white-space: nowrap; }
+  .pulse .due.soon-due { animation: breathe 2.2s ease-in-out infinite; }
+  @keyframes breathe { 0%, 100% { box-shadow: 0 0 0 0 oklch(0.82 0.12 40 / 0.0); background: var(--on-card-fill); } 50% { box-shadow: 0 0 0 5px oklch(0.82 0.12 40 / 0.18); background: oklch(0.7 0.14 35 / 0.55); } }
+  .chip { position: relative; overflow: hidden; width: 22px; height: 17px; border-radius: 3px; background: var(--card-chip); }
+  .chip::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 6px, var(--card-chip-deep) 6px 7px), linear-gradient(0deg, transparent 5px, var(--card-chip-deep) 5px 6px, transparent 6px 11px, var(--card-chip-deep) 11px 12px, transparent 12px); opacity: 0.55; }
+  .chip::after { content: ""; position: absolute; top: -50%; bottom: -50%; width: 40%; left: -60%; background: linear-gradient(100deg, transparent, oklch(1 0 0 / 0.75), transparent); transform: skewX(-12deg); }
+  .tilt .tile:hover .chip::after { animation: glint 900ms var(--ease-out); }
+  @keyframes glint { to { left: 130%; } }
+  .stack { display: grid; width: 24px; height: 20px; }
+  .stack i { grid-area: 1 / 1; width: 18px; height: 13px; border-radius: 2.5px; }
+
+  .details { position: relative; isolation: isolate; overflow: hidden; border-radius: 20px; padding: 18px; color: var(--on-card); display: grid; gap: 12px; }
+  .details .bg { position: absolute; inset: 0; z-index: -2; transition: opacity 600ms var(--ease-out); }
+  .details .big { font-size: 30px; font-weight: 800; line-height: 1.1; }
+  .details .big span { font-size: 13px; font-weight: 600; color: var(--on-card-muted); margin-left: 6px; }
+  .details .track { height: 8px; border-radius: 99px; background: var(--on-card-fill); overflow: hidden; }
+  .details .track i { display: block; height: 100%; border-radius: inherit; background: var(--on-card-lime); width: 0; transition: width 700ms var(--ease-out); }
+  .details .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+  .details .stat { border-radius: 12px; background: oklch(1 0 0 / 0.08); padding: 9px 11px; }
+  .details .stat small { display: block; font-size: 10.5px; color: var(--on-card-muted); font-weight: 600; }
+  .details .stat b { font-size: 15px; font-weight: 800; }
+  .details .lbl { font-size: 11px; font-weight: 700; color: var(--on-card-muted); }
+
+  /* ---------- 4 · Trend ---------- */
+  .tr { position: relative; }
+  .tr-scroll { overflow-x: auto; scrollbar-width: none; margin: 0 -6px; padding: 0 6px; }
+  .tr-scroll::-webkit-scrollbar { display: none; }
+  .plot { position: relative; height: 250px; min-width: 520px; display: flex; align-items: flex-end; gap: 10px; padding: 34px 0 26px 42px; }
+  .plot .grid { position: absolute; left: 42px; right: 0; border-top: 1px dashed var(--divider); }
+  .plot .ylab { position: absolute; left: 0; width: 36px; text-align: right; font-size: 10px; font-weight: 600; color: var(--muted); transform: translateY(-50%); }
+  .plot .avg { position: absolute; left: 42px; right: 0; border-top: 1.5px dashed oklch(0.6 0.12 153 / 0.65); z-index: 2; pointer-events: none; transition: top 300ms; }
+  .plot .avg span { position: absolute; left: 0; top: -22px; font-size: 10.5px; font-weight: 700; color: var(--accent-text); background: var(--surface); padding: 2px 8px; border-radius: 99px; box-shadow: var(--soft-shadow); transition: color 200ms; white-space: nowrap; }
+  .barcol { position: relative; flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; cursor: pointer; border: 0; background: none; padding: 0; }
+  .barcol .b { position: relative; isolation: isolate; width: 100%; max-width: 44px; border-radius: 10px 10px 4px 4px; transition: opacity 240ms, transform 240ms var(--ease-out), filter 240ms, box-shadow 240ms; }
+  .barcol .b.l1 { background: var(--heat-2); } .barcol .b.l2 { background: var(--heat-2); } .barcol .b.l3 { background: var(--heat-3); } .barcol .b.l4 { background: var(--heat-4); } .barcol .b.l5 { background: var(--heat-5); }
+  .barcol .b.now { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .barcol .ml { position: absolute; bottom: -22px; font-size: 11px; font-weight: 700; color: var(--muted); }
+  .barcol .vl { position: absolute; font-size: 10.5px; font-weight: 800; color: var(--fg); opacity: 0; transform: translateY(4px); transition: opacity 200ms, transform 200ms; white-space: nowrap; }
+  .tr.hovering .barcol:not(.on) .b { opacity: 0.38; filter: saturate(0.5); }
+  .barcol.on .b { transform: translateY(-3px); box-shadow: var(--pop-shadow); }
+  .barcol.on .ml { color: var(--fg); }
+  .barcol.on .vl { opacity: 1; transform: none; }
+  .tr .tip { width: 268px; }
+  .tip .cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 10px; }
+  .tip .cmp div { border-radius: 10px; background: oklch(1 0 0 / 0.08); padding: 7px 9px; font-size: 10.5px; font-weight: 600; color: var(--ink-muted); }
+  .tip .cmp b { display: block; font-size: 13px; color: var(--on-ink); }
+  .tip li .mini { display: block; flex-shrink: 0; width: 54px; height: 5px; border-radius: 99px; background: oklch(1 0 0 / 0.12); overflow: hidden; }
+  .tip li .mini i { display: block; height: 100%; border-radius: inherit; width: auto; }
+  .bracket { position: absolute; inset: 0; pointer-events: none; z-index: 3; overflow: visible; }
+  .bracket path { fill: none; stroke: var(--fg); stroke-width: 1.5; stroke-linecap: round; stroke-dasharray: 400; stroke-dashoffset: 400; transition: stroke-dashoffset 500ms var(--ease-out); }
+  .bracket.show path { stroke-dashoffset: 0; }
+  .blabel { position: absolute; z-index: 4; transform: translate(-50%, -100%); background: var(--ink); color: var(--on-ink); border-radius: 99px; padding: 4px 10px; font-size: 11px; font-weight: 800; white-space: nowrap; opacity: 0; transition: opacity 200ms, left 260ms var(--ease-out), top 260ms var(--ease-out); pointer-events: none; }
+  .blabel.show { opacity: 1; }
+  .blabel .upv { color: oklch(0.82 0.12 40); } .blabel .dnv { color: var(--on-card-lime); }
+
+  footer.end { max-width: 760px; color: var(--muted); font-weight: 500; font-size: 13px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <span class="eyebrow">chaiCoffeeFund · Cards dashboard</span>
+    <h1>Cards interactions</h1>
+    <p>Four places on the Cards page, with options for each. Hover, click or tap the mockups, then tell me which option you want for each one. Some can be combined.</p>
+    <span class="sample">Sample data. These figures are made up.</span>
+    <nav class="jump" aria-label="Areas">
+      <a href="#heatmap">1 · Heatmap hover</a>
+      <a href="#statements">2 · Mark paid</a>
+      <a href="#cards">3 · Card tiles</a>
+      <a href="#trend">4 · Trend hover</a>
+    </nav>
+  </header>
+
+  <section class="area" id="heatmap" aria-labelledby="h-heat">
+    <div class="area-head">
+      <span class="eyebrow">1 · Spending heatmap</span>
+      <h2 id="h-heat">Hovering a month</h2>
+      <p>Today a cell only shows its total. Both options show where the month's money went, how it compares and whether it's paid. The cell lifts and its rings ripple outward under the pointer.</p>
+    </div>
+    <div class="options stacked">
+      <article class="option">
+        <div class="opt-head"><span class="tag">A</span><div><h3>Month card</h3><p>A dark card glides from cell to cell as you move along the row. It shows the total, how it compares with your average, a split by card, and whether the month's bills are paid.</p></div></div>
+        <div class="heat" id="heatA"></div>
+        <span class="hint">Move along the row: the card slides rather than popping in and out. On a phone, tap a month.</span>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">B</span><div><h3>Spotlight and story</h3><p>The other months fade back, the same month last year is outlined, and one plain sentence under the grid says what stands out.</p></div></div>
+        <div class="heat" id="heatB"></div>
+        <div class="caption" id="capB"><span class="swap">Hover a month to compare it with your average and with the same month last year.</span></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="area" id="statements" aria-labelledby="h-st">
+    <div class="area-head">
+      <span class="eyebrow">2 · Statements panel</span>
+      <h2 id="h-st">Marking a bill paid from the dashboard</h2>
+      <p>Pending rows get a way to close the bill without opening the Statements page. Paid rows stay as they are.</p>
+    </div>
+    <div class="options">
+      <article class="option">
+        <div class="opt-head"><span class="tag">A</span><div><h3>One click, with undo</h3><p>Hovering a pending row swaps its pill for <b>Mark paid</b>. One click records it as paid in full today, with a toast to undo it. Part payments and other accounts still go through the full Mark paid form.</p></div></div>
+        <div class="st a" id="stA"></div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">B</span><div><h3>Pay inline</h3><p>Click a <b>Pending</b> pill and the row opens to quick amount choices: total, minimum or another amount. Paying less keeps the bill pending and shows what's left, the way part payments work now.</p></div></div>
+        <div class="st b" id="stB"></div>
+      </article>
+    </div>
+  </section>
+
+  <section class="area" id="cards" aria-labelledby="h-cards">
+    <div class="area-head">
+      <span class="eyebrow">3 · Card tiles and details card</span>
+      <h2 id="h-cards">Making the hero section feel alive</h2>
+      <p>These can be mixed: switch each one on or off and try it on the tiles. All of them stay still for anyone who's asked their device for reduced motion.</p>
+    </div>
+    <article class="option">
+      <div class="toggles" role="group" aria-label="Effects">
+        <label class="toggle"><input type="checkbox" id="optTilt" checked> A · Tilt and sheen</label>
+        <label class="toggle"><input type="checkbox" id="optCount" checked> B · Count-up on select</label>
+        <label class="toggle"><input type="checkbox" id="optPulse" checked> C · Due-soon pulse</label>
+        <label class="toggle"><input type="checkbox" id="optFill" checked> D · Bars fill on load</label>
+        <button class="replay" id="replay" type="button">Replay load</button>
+      </div>
+      <ul class="hint" style="margin:0;padding-left:18px;display:grid;gap:3px">
+        <li><b>A</b> The tile tilts towards the pointer like a real card, with a light that follows it and a glint across the chip.</li>
+        <li><b>B</b> Selecting a tile fades the details card to that card's colour and counts its numbers to their new values.</li>
+        <li><b>C</b> A bill due within 3 days breathes gently, so it catches the eye without an alarm.</li>
+        <li><b>D</b> Utilization bars fill from zero when the page opens.</li>
+      </ul>
+      <div class="tiles" id="tiles"></div>
+      <div class="details" id="details" aria-live="polite"></div>
+    </article>
+  </section>
+
+  <section class="area" id="trend" aria-labelledby="h-trend">
+    <div class="area-head">
+      <span class="eyebrow">4 · Statement trend</span>
+      <h2 id="h-trend">Hovering a month in the trend</h2>
+      <p>Today the tooltip shows the amount only. Both options focus the hovered bar and dim the rest.</p>
+    </div>
+    <div class="options">
+      <article class="option">
+        <div class="opt-head"><span class="tag">A</span><div><h3>Breakdown card</h3><p>A tooltip with the change from last month, the gap to your average, a split by card with bars, and how much of the month is paid.</p></div></div>
+        <div class="tr" id="trA"></div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">B</span><div><h3>Compare bracket</h3><p>A bracket draws itself from last month's bar to this one, with the change on it. The average line says how far above or below the month is.</p></div></div>
+        <div class="tr" id="trB"></div>
+      </article>
+    </div>
+  </section>
+
+  <footer class="end">Reply with a letter for each area, for example “1A, 2A, 3 all but C, 4A”. I'll build those into the real Cards page.</footer>
+</div>
+
+<script>
+(() => {
+  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // ----- Sample data (made up) -----
+  const CARDS = [
+    { id: "regalia", name: "Regalia Gold", issuer: "HDFC Bank", color: "sapphire", last4: "4417", limit: 500000, outstanding: 38500, due: "Nov 4", dueIn: 15, min: 1925, statementDay: 15 },
+    { id: "amazon", name: "Amazon Pay", issuer: "ICICI Bank", color: "ruby", last4: "7781", limit: 200000, outstanding: 12400, due: "Oct 22", dueIn: 2, min: 620, statementDay: 12 },
+    { id: "millennia", name: "Millennia", issuer: "HDFC Bank", color: "teal", last4: "3029", limit: 150000, outstanding: 0, nextStatement: "Nov 18", statementDay: 18 },
+  ];
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  // Spend per card for each month of 2026, Jan to Oct (index 9 is this month).
+  const SPEND26 = [
+    [18200, 9400, 4100], [15600, 8100, 3900], [22400, 11200, 5600], [19800, 12300, 8900], [21200, 10500, 8700],
+    [27400, 14500, 8200], [35600, 15200, 6500], [30800, 12400, 7700], [26100, 11000, 9400], [38500, 12400, 0],
+  ];
+  const SPEND25 = [21800, 24300, 19900, 26400, 31200, 35800, 45200, 39400, 33100, 36900, 41700, 48300];
+  const NOW = 9;
+  const total = (m) => m.reduce((a, b) => a + b, 0);
+  const T26 = SPEND26.map(total);
+  const AVG26 = T26.reduce((a, b) => a + b, 0) / T26.length;
+  const PEAK = T26.indexOf(Math.max(...T26));
+
+  const inr = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+  const fmt = (v) => inr.format(Math.round(v));
+  const compact = (v) => (v >= 100000 ? `₹${(v / 100000).toFixed(1)}L` : `₹${(v / 1000).toFixed(1)}k`);
+  const pct = (v) => `${Math.round(Math.abs(v) * 100)}%`;
+  const swatch = (c) => `var(--card-${c})`;
+  const level = (v, max) => (v <= 0 ? 1 : Math.min(5, Math.max(1, Math.ceil((v / max) * 5))));
+
+  // ----- Rings: the app's texture (circles centred past the bottom-right corner) -----
+  function rings(w, h, { dx = 10, dy = 12, start = 10, step = 11, stroke = "var(--rings-ink)", opacity = 0.11 } = {}) {
+    const cx = w + dx, cy = h + dy, far = Math.hypot(cx, cy);
+    let circles = "";
+    for (let r = start, n = 0; r <= far + step && n < 40; r += step, n++) circles += `<circle cx="${cx}" cy="${cy}" r="${r}"/>`;
+    return `<div class="tex"><svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="${stroke}" stroke-opacity="${opacity}" stroke-width="1">${circles}</g></svg></div>`;
+  }
+  const ringsFor = (lvl) => (lvl >= 3 ? { stroke: "var(--rings-light)", opacity: 0.1 } : { stroke: "var(--rings-ink)", opacity: 0.11 });
+
+  // ----- Shared gliding tooltip -----
+  function placeTip(tip, host, target, { prefer = "above" } = {}) {
+    const hr = host.getBoundingClientRect(), tr = target.getBoundingClientRect();
+    const w = tip.offsetWidth, h = tip.offsetHeight;
+    // The first time it opens it appears in place; after that it glides from cell to cell.
+    const first = !tip.classList.contains("show");
+    if (first) tip.style.transition = "opacity 160ms ease";
+    const cx = tr.left - hr.left + tr.width / 2;
+    let x = Math.min(Math.max(cx - w / 2, 0), hr.width - w);
+    let y = tr.top - hr.top - h - 12;
+    let below = false;
+    if (prefer === "below" || y < -hr.top + 8) { y = tr.bottom - hr.top + 12; below = true; }
+    tip.classList.toggle("below", below);
+    tip.style.setProperty("--x", `${x}px`);
+    tip.style.setProperty("--y", `${y}px`);
+    tip.style.setProperty("--arrow", `${Math.min(Math.max(cx - x, 16), w - 16)}px`);
+    if (first) { void tip.offsetWidth; tip.style.transition = ""; }
+  }
+
+  function cardRows(values, max) {
+    return values.map((v, i) => ({ v, c: CARDS[i] })).filter((r) => r.v > 0).sort((a, b) => b.v - a.v)
+      .map(({ v, c }) => `<li><i style="background:${swatch(c.color)}"></i><span>${c.name}</span>${max ? `<em class="mini"><i style="width:${(v / max) * 100}%;background:${swatch(c.color)}"></i></em>` : ""}<b class="num">${fmt(v)}</b></li>`).join("");
+  }
+  function statusLine(i) {
+    if (i === NOW) return `2 bills pending · ${fmt(T26[i])} due by Nov 4`;
+    return `${SPEND26[i].filter((v) => v > 0).length} statements · all paid in full`;
+  }
+
+  // ===== 1 · Heatmap =====
+  function heatCells(values, year, opts = {}) {
+    const max = Math.max(...T26, ...SPEND25);
+    return MONTHS.map((m, i) => {
+      const v = values[i];
+      if (v === undefined) return `<div class="cell up" aria-hidden="true"></div>`;
+      const lvl = level(v, max);
+      const isNow = year === 2026 && i === NOW, isPeak = year === 2026 && i === PEAK;
+      const label = isPeak ? "<small>Peak</small>" : isNow ? "<small>This month</small>" : "";
+      return `<button type="button" class="cell l${lvl}${isNow ? " now" : ""}${isPeak ? " peak" : ""}" data-i="${i}" data-y="${year}" aria-label="${LONG[i]} ${year}: ${fmt(v)}">${rings(97.2, 52, { ...ringsFor(lvl) })}<span class="num">${compact(v)}</span>${label}</button>`;
+    }).join("");
+  }
+  function heatGrid(withLastYear) {
+    const head = `<span></span>${MONTHS.map((m, i) => `<span class="m${i === NOW ? " now" : ""}">${m.toUpperCase()}</span>`).join("")}<span class="m" style="text-align:right">YEAR</span>`;
+    const row26 = `<span class="yr">2026</span>${heatCells(T26, 2026)}<span class="tot num">${compact(T26.reduce((a, b) => a + b))}<small>avg ${compact(AVG26)}</small></span>`;
+    const row25 = withLastYear ? `<span class="yr">2025</span>${heatCells(SPEND25, 2025)}<span class="tot num">${compact(SPEND25.reduce((a, b) => a + b))}<small>avg ${compact(SPEND25.reduce((a, b) => a + b) / 12)}</small></span>` : "";
+    return `<div class="heat-scroll"><div class="heat-grid">${head}${row25}${row26}</div></div>`;
+  }
+
+  // A · Month card
+  const heatA = document.getElementById("heatA");
+  heatA.innerHTML = heatGrid(false) + `<div class="tip" role="tooltip"></div>`;
+  const tipA = heatA.querySelector(".tip");
+  function showHeatA(cell) {
+    const i = +cell.dataset.i, v = T26[i], diff = (v - AVG26) / AVG26;
+    const chip = i === PEAK ? `<span class="chip-peak">Peak</span>` : i === NOW ? `<span class="chip-now">This month</span>` : "";
+    tipA.innerHTML = `
+      <div class="tm"><span>${LONG[i]} 2026</span>${chip}</div>
+      <div class="ta num">${fmt(v)}</div>
+      <div class="td ${diff >= 0 ? "upv" : "dnv"}">${diff >= 0 ? "▲" : "▼"} ${pct(diff)} ${diff >= 0 ? "above" : "below"} your ${compact(AVG26)} average</div>
+      <div class="bar">${SPEND26[i].map((x, k) => (x > 0 ? `<i style="flex-grow:${x};background:${swatch(CARDS[k].color)}"></i>` : "")).join("")}</div>
+      <ul>${cardRows(SPEND26[i])}</ul>
+      <div class="tf">${statusLine(i)}</div>`;
+    heatA.querySelectorAll(".cell.on").forEach((c) => c !== cell && c.classList.remove("on"));
+    cell.classList.add("on");
+    placeTip(tipA, heatA, cell);
+    tipA.classList.add("show");
+  }
+  function hideHeatA() { tipA.classList.remove("show"); heatA.querySelectorAll(".cell.on").forEach((c) => c.classList.remove("on")); }
+  heatA.addEventListener("pointerover", (e) => { const c = e.target.closest(".cell:not(.up)"); if (c && !c.classList.contains("on")) showHeatA(c); });
+  heatA.addEventListener("focusin", (e) => { const c = e.target.closest(".cell:not(.up)"); if (c) showHeatA(c); });
+  heatA.addEventListener("pointerleave", hideHeatA);
+  heatA.addEventListener("focusout", (e) => { if (!heatA.contains(e.relatedTarget)) hideHeatA(); });
+
+  // B · Spotlight and story
+  const heatB = document.getElementById("heatB"), capB = document.getElementById("capB");
+  heatB.innerHTML = heatGrid(true);
+  const DEFAULT_CAP = capB.innerHTML;
+  function storyFor(i, year) {
+    if (year === 2025) {
+      const v = SPEND25[i], now = T26[i];
+      const later = now === undefined ? "2026 hasn't reached it yet." : `In ${LONG[i]} 2026 you spent ${fmt(now)}, ${now >= v ? `${fmt(now - v)} more` : `${fmt(v - now)} less`}.`;
+      return `<b>${LONG[i]} 2025</b>: ${fmt(v)}. ${later}`;
+    }
+    const v = T26[i], diff = (v - AVG26) / AVG26, last = SPEND25[i];
+    const top = SPEND26[i].map((x, k) => ({ x, k })).sort((a, b) => b.x - a.x)[0];
+    const vsLast = last ? ` and ${v >= last ? `${fmt(v - last)} more` : `${fmt(last - v)} less`} than ${LONG[i]} 2025` : "";
+    return `<b>${LONG[i]} 2026</b>: ${fmt(v)}, ${pct(diff)} ${diff >= 0 ? "above" : "below"} your 2026 average${vsLast}. <b>${CARDS[top.k].name}</b> made up ${pct(top.x / v)} of it.`;
+  }
+  function spot(cell) {
+    const i = +cell.dataset.i, y = +cell.dataset.y;
+    heatB.classList.add("spot");
+    heatB.querySelectorAll(".cell").forEach((c) => {
+      c.classList.toggle("on", c === cell);
+      c.classList.toggle("twin", c !== cell && +c.dataset.i === i && !c.classList.contains("up"));
+    });
+    capB.innerHTML = `<span class="swap">${storyFor(i, y)}</span>`;
+  }
+  function unspot() { heatB.classList.remove("spot"); heatB.querySelectorAll(".cell").forEach((c) => c.classList.remove("on", "twin")); capB.innerHTML = DEFAULT_CAP; }
+  heatB.addEventListener("pointerover", (e) => { const c = e.target.closest(".cell:not(.up)"); if (c && !c.classList.contains("on")) spot(c); });
+  heatB.addEventListener("focusin", (e) => { const c = e.target.closest(".cell:not(.up)"); if (c) spot(c); });
+  heatB.addEventListener("pointerleave", unspot);
+  heatB.addEventListener("focusout", (e) => { if (!heatB.contains(e.relatedTarget)) unspot(); });
+
+  // ===== 2 · Statements =====
+  const STATEMENTS = () => [
+    { id: "s1", card: 0, statement: "Oct 15", due: "Nov 4", soon: "in 15d", total: 38500, min: 1925, status: "Pending" },
+    { id: "s2", card: 1, statement: "Oct 12", due: "Oct 22", soon: "in 2d", hot: true, total: 12400, min: 620, status: "Pending" },
+    { id: "s3", card: 2, statement: "Sep 18", due: "Oct 8", total: 9400, min: 470, status: "Paid" },
+    { id: "s4", card: 0, statement: "Sep 15", due: "Oct 5", total: 26100, min: 1305, status: "Paid" },
+    { id: "s5", card: 1, statement: "Sep 12", due: "Sep 30", total: 11000, min: 550, status: "Paid" },
+  ];
+  function stTable(host, rows, statusCell) {
+    host.innerHTML = `<div class="st-scroll"><table><thead><tr><th>Card</th><th>Statement</th><th>Due</th><th>Total due</th><th>Status</th></tr></thead><tbody>${rows.map((s) => `
+      <tr class="row" data-id="${s.id}">
+        <td><span class="sw" style="background:${swatch(CARDS[s.card].color)}"></span><span class="cardname">${CARDS[s.card].name}</span></td>
+        <td class="dim num">${s.statement}</td>
+        <td class="num">${s.due}${s.status === "Pending" ? ` <span class="soon${s.hot ? " hot" : ""}">· ${s.soon}</span>` : ""}</td>
+        <td class="num"><b>${fmt(s.total)}</b></td>
+        <td>${statusCell(s)}</td>
+      </tr>${host.classList.contains("b") ? `<tr class="editor" data-for="${s.id}"><td colspan="5"><div class="ed"><div></div></div></td></tr>` : ""}`).join("")}</tbody></table></div>`;
+  }
+  const pill = (s) => s.status === "Paid" ? `<span class="pill paid">Paid</span>` : s.left ? `<span class="pill part">${compact(s.left)} left</span>` : `<span class="pill pending">Pending</span>`;
+
+  // A · One click, with undo
+  const stA = document.getElementById("stA");
+  let rowsA = STATEMENTS(), undo = null, toastTimer = 0;
+  const statusA = (s) => `<span class="status">${pill(s)}${s.status === "Pending" ? `<button type="button" class="paybtn" data-pay="${s.id}" aria-label="Mark ${CARDS[s.card].name} ${s.statement} paid in full">Mark paid</button>` : ""}</span>`;
+  function renderA() {
+    stTable(stA, rowsA, statusA);
+    stA.insertAdjacentHTML("beforeend", `<div class="toast" role="status"><span class="msg"></span><button type="button" class="undo">Undo</button><span class="bar"></span></div>`);
+  }
+  renderA();
+  function toast(msg, onUndo) {
+    const t = stA.querySelector(".toast");
+    t.querySelector(".msg").innerHTML = msg;
+    undo = onUndo;
+    t.classList.remove("show"); void t.offsetWidth; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 6000);
+  }
+  stA.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-pay]");
+    if (b) {
+      const s = rowsA.find((r) => r.id === b.dataset.pay);
+      b.classList.add("busy"); b.innerHTML = `<span class="spin"></span>Saving`;
+      setTimeout(() => {
+        b.classList.remove("busy"); b.classList.add("done"); b.innerHTML = `✓ Paid`;
+        setTimeout(() => {
+          s.status = "Paid";
+          renderA();
+          const row = stA.querySelector(`tr[data-id="${s.id}"]`);
+          row.classList.add("sweep");
+          row.querySelector(".pill").classList.add("pop");
+          toast(`<b>${CARDS[s.card].name}</b> marked paid · ${fmt(s.total)} in full, today`, () => { s.status = "Pending"; renderA(); });
+        }, 380);
+      }, 520);
+      return;
+    }
+    if (e.target.closest(".undo") && undo) { const u = undo; undo = null; stA.querySelector(".toast").classList.remove("show"); u(); }
+  });
+
+  // B · Pay inline
+  const stB = document.getElementById("stB");
+  let rowsB = STATEMENTS();
+  const statusB = (s) => s.status === "Paid" ? pill(s) : `<button type="button" class="pill ${s.left ? "part" : "pending"} pendbtn" data-open="${s.id}" aria-expanded="false">${s.left ? `${compact(s.left)} left` : "Pending"} ▾</button>`;
+  function renderB() { stTable(stB, rowsB, statusB); }
+  renderB();
+  function openEditor(id) {
+    const s = rowsB.find((r) => r.id === id), owed = s.left ?? s.total;
+    stB.querySelectorAll(".ed.open").forEach((d) => d.classList.remove("open"));
+    stB.querySelectorAll("[data-open]").forEach((b) => b.setAttribute("aria-expanded", "false"));
+    const ed = stB.querySelector(`tr[data-for="${id}"] .ed`);
+    ed.firstElementChild.innerHTML = `<div class="ed-in" data-ed="${id}">
+      <span class="lbl">How much did you pay?</span>
+      <button type="button" class="choice" aria-pressed="true" data-amt="${owed}">${s.left ? "The rest" : "Total due"}<small class="num">${fmt(owed)}</small></button>
+      ${s.left ? "" : `<button type="button" class="choice" aria-pressed="false" data-amt="${s.min}">Minimum<small class="num">${fmt(s.min)}</small></button>`}
+      <button type="button" class="choice" aria-pressed="false" data-amt="other">Other<small>type it</small></button>
+      <input type="text" inputmode="decimal" aria-label="Amount paid" placeholder="₹ amount" hidden>
+      <span class="meta">Paid today · from HDFC Savings</span>
+      <button type="button" class="save">Save</button></div>`;
+    stB.querySelector(`[data-open="${id}"]`).setAttribute("aria-expanded", "true");
+    requestAnimationFrame(() => ed.classList.add("open"));
+  }
+  stB.addEventListener("click", (e) => {
+    const o = e.target.closest("[data-open]");
+    if (o) { const isOpen = o.getAttribute("aria-expanded") === "true"; if (isOpen) { stB.querySelector(`tr[data-for="${o.dataset.open}"] .ed`).classList.remove("open"); o.setAttribute("aria-expanded", "false"); } else openEditor(o.dataset.open); return; }
+    const c = e.target.closest(".choice");
+    if (c) {
+      const box = c.closest(".ed-in");
+      box.querySelectorAll(".choice").forEach((x) => x.setAttribute("aria-pressed", String(x === c)));
+      const input = box.querySelector("input"); input.hidden = c.dataset.amt !== "other"; if (!input.hidden) input.focus();
+      return;
+    }
+    const sv = e.target.closest(".save");
+    if (sv) {
+      const box = sv.closest(".ed-in"), s = rowsB.find((r) => r.id === box.dataset.ed), owed = s.left ?? s.total;
+      const chosen = box.querySelector('.choice[aria-pressed="true"]');
+      let amt = chosen.dataset.amt === "other" ? Number(box.querySelector("input").value.replace(/[^0-9.]/g, "")) : Number(chosen.dataset.amt);
+      if (!amt) { box.querySelector("input").hidden = false; box.querySelector("input").focus(); return; }
+      if (amt >= owed) { s.status = "Paid"; delete s.left; } else { s.left = owed - amt; }
+      stB.querySelector(`tr[data-for="${s.id}"] .ed`).classList.remove("open");
+      setTimeout(() => { renderB(); const row = stB.querySelector(`tr[data-id="${s.id}"]`); row.classList.add("sweep"); row.querySelector(".pill").classList.add("pop"); }, 300);
+    }
+  });
+
+  // ===== 3 · Hero cards =====
+  const tilesEl = document.getElementById("tiles"), details = document.getElementById("details");
+  const opt = (id) => document.getElementById(id).checked;
+  const ALL = { id: "all", name: "All Cards", outstanding: CARDS.reduce((a, c) => a + c.outstanding, 0), limit: CARDS.reduce((a, c) => a + c.limit, 0) };
+  const util = (c) => c.outstanding / c.limit;
+  let selected = "all";
+  const gradient = (c) => c.id === "all"
+    ? "radial-gradient(circle at 92% 6%, var(--card-emerald-glow), transparent 42%), linear-gradient(150deg, var(--card-emerald-from), var(--card-emerald-to))"
+    : `linear-gradient(155deg, var(--card-${c.color}-from), var(--card-${c.color}-to))`;
+  function tileHtml(c) {
+    const isAll = c.id === "all", u = util(c);
+    const icon = isAll
+      ? `<span class="stack"><i style="background:var(--card-chip-deep);transform:translate(0,6px)"></i><i style="background:oklch(0.68 0.13 80);transform:translate(3px,3px)"></i><i style="background:var(--card-chip);transform:translate(6px,0)"></i></span>`
+      : `<span class="chip"></span>`;
+    const pillText = isAll ? `2 pending` : c.dueIn !== undefined ? `Due ${c.due} · ${c.dueIn}d` : "";
+    const foot = isAll ? `Next Oct 22` : c.dueIn !== undefined ? `Min ${fmt(c.min)}` : `Next statement ${c.nextStatement}`;
+    return `<button type="button" class="tile${isAll ? " all" : ""}" data-id="${c.id}" aria-pressed="${c.id === selected}" style="background:${gradient(c)}">
+      ${isAll ? rings(300, 196, { dx: 10, dy: 19, start: 45, step: 26, stroke: "var(--rings-light)", opacity: 0.07 }) : ""}
+      <span class="glare"></span>
+      <span class="top">${icon}<span class="iss">${isAll ? "3 cards" : c.issuer}</span></span>
+      <span>
+        <span class="nm" style="display:block">${c.name}</span>
+        ${isAll ? "" : `<span class="no num" style="display:block">•••• •••• •••• ${c.last4}</span>`}
+        <span class="bal num"><span>${fmt(c.outstanding)} / ${fmt(c.limit)}</span><b>${(u * 100).toFixed(u < 0.1 ? 1 : 0)}%</b></span>
+        <span class="track" style="display:block"><i style="--w:${Math.max(u * 100, c.outstanding ? 2 : 0)}%"></i></span>
+        <span class="ft">${pillText ? `<span class="due${c.dueIn !== undefined && c.dueIn <= 3 ? " soon-due" : ""}">${pillText}</span>` : "<span></span>"}<span>${foot}</span></span>
+      </span>
+    </button>`;
+  }
+  function renderTiles() {
+    tilesEl.innerHTML = [ALL, ...CARDS].map(tileHtml).join("");
+    tilesEl.classList.toggle("tilt", opt("optTilt"));
+    tilesEl.classList.toggle("pulse", opt("optPulse"));
+  }
+  function fillBars(fromZero) {
+    const bars = tilesEl.querySelectorAll(".track i");
+    if (!fromZero || reduced) { bars.forEach((b) => (b.style.width = "var(--w)")); return; }
+    bars.forEach((b) => { b.style.transition = "none"; b.style.width = "0"; });
+    void tilesEl.offsetWidth;
+    bars.forEach((b, k) => { b.style.transition = ""; setTimeout(() => (b.style.width = "var(--w)"), 120 + k * 90); });
+  }
+  // Details card: numbers tween between the old and new card when B is on.
+  let shown = null;
+  function detailsFor(id) {
+    const c = id === "all" ? ALL : CARDS.find((x) => x.id === id);
+    return { c, outstanding: c.outstanding, available: c.limit - c.outstanding, util: util(c), next: id === "all" ? "Amazon Pay · Oct 22" : c.dueIn !== undefined ? `${c.due} · min ${fmt(c.min)}` : "Nothing due" };
+  }
+  function paintDetails(d, layers) {
+    details.innerHTML = `
+      ${layers.map((g, k) => `<div class="bg" style="background:${g};opacity:${k === layers.length - 1 ? 0 : 1}"></div>`).join("")}
+      ${rings(596, 200, { dx: 20, dy: 44, start: 26, step: 26, stroke: "var(--rings-light)", opacity: 0.07 })}
+      <span class="lbl">${d.c.name}</span>
+      <div class="big num"><b data-k="outstanding">${fmt(d.outstanding)}</b><span>outstanding · <b data-k="util">${Math.round(d.util * 100)}%</b></span></div>
+      <div class="track"><i style="width:${d.util * 100}%"></i></div>
+      <div class="stats">
+        <div class="stat"><small>Available</small><b class="num" data-k="available">${fmt(d.available)}</b></div>
+        <div class="stat"><small>Limit</small><b class="num">${fmt(d.c.limit)}</b></div>
+        <div class="stat"><small>Next due</small><b>${d.next}</b></div>
+      </div>`;
+    const top = details.querySelectorAll(".bg");
+    requestAnimationFrame(() => top[top.length - 1].style.opacity = 1);
+  }
+  function tween(el, from, to, format, ms = 650) {
+    if (reduced || !opt("optCount")) { el.textContent = format(to); return; }
+    const t0 = performance.now();
+    const step = (t) => { const k = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - k, 3); el.textContent = format(from + (to - from) * e); if (k < 1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  }
+  function select(id) {
+    const prev = shown, next = detailsFor(id);
+    selected = id;
+    tilesEl.querySelectorAll(".tile").forEach((t) => t.setAttribute("aria-pressed", String(t.dataset.id === id)));
+    const layers = prev && opt("optCount") ? [gradient(prev.c), gradient(next.c)] : [gradient(next.c), gradient(next.c)];
+    paintDetails(next, layers);
+    if (prev) {
+      const bar = details.querySelector(".track i");
+      if (opt("optCount") && !reduced) { bar.style.transition = "none"; bar.style.width = `${prev.util * 100}%`; void bar.offsetWidth; bar.style.transition = ""; bar.style.width = `${next.util * 100}%`; }
+      tween(details.querySelector('[data-k="outstanding"]'), prev.outstanding, next.outstanding, fmt);
+      tween(details.querySelector('[data-k="available"]'), prev.available, next.available, fmt);
+      tween(details.querySelector('[data-k="util"]'), prev.util * 100, next.util * 100, (v) => `${Math.round(v)}%`);
+    }
+    shown = next;
+  }
+  tilesEl.addEventListener("click", (e) => { const t = e.target.closest(".tile"); if (t) select(t.dataset.id); });
+  tilesEl.addEventListener("pointermove", (e) => {
+    const t = e.target.closest(".tile");
+    if (!t || !opt("optTilt") || reduced || e.pointerType === "touch") return;
+    const r = t.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+    t.classList.add("moving");
+    t.style.setProperty("--ry", `${(x - 0.5) * 12}deg`);
+    t.style.setProperty("--rx", `${(0.5 - y) * 10}deg`);
+    t.style.setProperty("--gx", `${x * 100}%`);
+    t.style.setProperty("--gy", `${y * 100}%`);
+    t.style.setProperty("--glare", "1");
+  });
+  tilesEl.addEventListener("pointerout", (e) => {
+    const t = e.target.closest(".tile");
+    if (!t || t.contains(e.relatedTarget)) return;
+    t.classList.remove("moving");
+    ["--rx", "--ry"].forEach((p) => t.style.setProperty(p, "0deg"));
+    t.style.setProperty("--glare", "0");
+  });
+  ["optTilt", "optPulse"].forEach((id) => document.getElementById(id).addEventListener("change", renderTiles));
+  document.getElementById("optFill").addEventListener("change", () => fillBars(opt("optFill")));
+  document.getElementById("replay").addEventListener("click", () => { renderTiles(); fillBars(opt("optFill")); shown = null; select(selected); });
+  renderTiles(); fillBars(opt("optFill")); select("all");
+
+  // ===== 4 · Trend =====
+  function trendChart(host, variant) {
+    const max = Math.max(...T26) * 1.15, H = 250, top = 34, bottom = 26, plotH = H - top - bottom;
+    const yOf = (v) => top + plotH * (1 - v / max);
+    const ticks = [0, 20000, 40000, 60000];
+    host.innerHTML = `<div class="tr-scroll"><div class="plot">
+      ${ticks.map((v) => `<div class="grid" style="top:${yOf(v)}px"></div><div class="ylab num" style="top:${yOf(v)}px">${v ? compact(v) : "₹0"}</div>`).join("")}
+      <div class="avg" style="top:${yOf(AVG26)}px"><span>Average ${compact(AVG26)}</span></div>
+      ${T26.map((v, i) => {
+        const lvl = level(v, Math.max(...T26)), h = plotH * (v / max);
+        return `<button type="button" class="barcol" data-i="${i}" aria-label="${LONG[i]} 2026: ${fmt(v)}">
+          <span class="vl num" style="bottom:${h + 8}px">${compact(v)}</span>
+          <span class="b l${lvl}${i === NOW ? " now" : ""}" style="height:${h}px">${rings(76, Math.max(1, Math.round((h * 76) / 44)), { dx: 12, dy: 14, start: 12, step: 12, ...ringsFor(lvl), opacity: 0.1 })}</span>
+          <span class="ml">${MONTHS[i]}</span></button>`;
+      }).join("")}
+      ${variant === "b" ? `<svg class="bracket" aria-hidden="true"><path d=""/></svg><div class="blabel"></div>` : ""}
+    </div></div>${variant === "a" ? `<div class="tip" role="tooltip"></div>` : ""}`;
+    const plot = host.querySelector(".plot"), avgLabel = host.querySelector(".avg span"), defaultAvg = avgLabel.textContent;
+
+    function on(col) {
+      const i = +col.dataset.i, v = T26[i];
+      host.classList.add("hovering");
+      host.querySelectorAll(".barcol").forEach((c) => c.classList.toggle("on", c === col));
+      const gap = v - AVG26;
+      avgLabel.textContent = `${compact(Math.abs(gap))} ${gap >= 0 ? "above" : "below"} average`;
+      if (variant === "a") {
+        const tip = host.querySelector(".tip"), prev = i > 0 ? T26[i - 1] : null, ch = prev ? (v - prev) / prev : 0;
+        const chip = i === PEAK ? `<span class="chip-peak">Peak</span>` : i === NOW ? `<span class="chip-now">This month</span>` : "";
+        tip.innerHTML = `
+          <div class="tm"><span>${LONG[i]} 2026</span>${chip}</div>
+          <div class="ta num">${fmt(v)}</div>
+          <div class="cmp">
+            <div>vs ${prev ? MONTHS[i - 1] : "last month"}<b class="num">${prev ? `${ch >= 0 ? "▲" : "▼"} ${pct(ch)}` : "–"}</b></div>
+            <div>vs average<b class="num">${gap >= 0 ? "+" : "−"}${compact(Math.abs(gap))}</b></div>
+          </div>
+          <ul>${cardRows(SPEND26[i], Math.max(...SPEND26[i]))}</ul>
+          <div class="tf">${statusLine(i)}</div>`;
+        placeTip(tip, host, col.querySelector(".b"));
+        tip.classList.add("show");
+      } else {
+        const svg = host.querySelector(".bracket"), path = svg.querySelector("path"), lab = host.querySelector(".blabel");
+        if (i === 0) { svg.classList.remove("show"); lab.classList.remove("show"); return; }
+        const pr = plot.getBoundingClientRect(), a = host.querySelectorAll(".barcol .b")[i - 1].getBoundingClientRect(), b = col.querySelector(".b").getBoundingClientRect();
+        const ax = a.left - pr.left + a.width / 2, bx = b.left - pr.left + b.width / 2, ay = a.top - pr.top - 6, by = b.top - pr.top - 6;
+        const y = Math.min(ay, by) - 22;
+        path.setAttribute("d", `M${ax},${ay} L${ax},${y} L${bx},${y} L${bx},${by}`);
+        svg.setAttribute("viewBox", `0 0 ${pr.width} ${pr.height}`); svg.setAttribute("width", pr.width); svg.setAttribute("height", pr.height);
+        svg.classList.remove("show"); void svg.getBoundingClientRect(); svg.classList.add("show");
+        const diff = v - T26[i - 1], ch = diff / T26[i - 1];
+        lab.innerHTML = `<span class="${diff >= 0 ? "upv" : "dnv"}">${diff >= 0 ? "▲" : "▼"} ${compact(Math.abs(diff))}</span> · ${pct(ch)} vs ${MONTHS[i - 1]}`;
+        lab.style.left = `${(ax + bx) / 2}px`; lab.style.top = `${y - 4}px`;
+        lab.classList.add("show");
+      }
+    }
+    function off() {
+      host.classList.remove("hovering");
+      host.querySelectorAll(".barcol.on").forEach((c) => c.classList.remove("on"));
+      avgLabel.textContent = defaultAvg;
+      host.querySelector(".tip")?.classList.remove("show");
+      host.querySelector(".bracket")?.classList.remove("show");
+      host.querySelector(".blabel")?.classList.remove("show");
+    }
+    host.addEventListener("pointerover", (e) => { const c = e.target.closest(".barcol"); if (c && !c.classList.contains("on")) on(c); });
+    host.addEventListener("focusin", (e) => { const c = e.target.closest(".barcol"); if (c) on(c); });
+    host.addEventListener("pointerleave", off);
+    host.addEventListener("focusout", (e) => { if (!host.contains(e.relatedTarget)) off(); });
+  }
+  trendChart(document.getElementById("trA"), "a");
+  trendChart(document.getElementById("trB"), "b");
+})();
+</script>
