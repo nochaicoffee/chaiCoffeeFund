@@ -26,6 +26,7 @@ export function RingTexture({
   stroke,
   opacity,
   sheen,
+  ringsClassName = "",
   ...spacing
 }: RingSpacing & {
   width: number;
@@ -37,13 +38,15 @@ export function RingTexture({
   opacity?: number;
   /** A CSS background, such as a radial-gradient, drawn under the circles. */
   sheen?: string;
+  /** Classes for the circles' layer, such as a scale on hover so the rings ripple outward (#104). */
+  ringsClassName?: string;
 }) {
   const cx = width + dx;
   const cy = height + dy;
   return (
     <span aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-[inherit]">
       {sheen && <span className="absolute inset-0" style={{ background: sheen }} />}
-      <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className="absolute inset-0 size-full">
+      <svg viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" className={`absolute inset-0 size-full ${ringsClassName}`}>
         <RingCircles cx={cx} cy={cy} radii={ringRadii(cx, cy, { x: 0, y: 0, width, height }, spacing)} stroke={stroke} opacity={opacity} />
       </svg>
     </span>

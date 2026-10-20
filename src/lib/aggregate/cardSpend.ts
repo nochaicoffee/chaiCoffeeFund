@@ -323,6 +323,41 @@ export function heatmapPeak(rows: HeatRow[]): MonthAmount | null {
   return peak;
 }
 
+export interface MonthDetail {
+  /** The month's spend: the same figure as its heatmap cell. */
+  total: number;
+  /** Spend per card that month, largest first. A credit balance counts as ₹0, as everywhere. */
+  byCard: { cardId: string; amount: number }[];
+  statements: number;
+  pending: number;
+  /** What's still owed on that month's pending bills. */
+  pendingAmount: number;
+}
+
+/**
+ * What the heatmap's month card shows (#104), for each month with statements:
+ * where the month's spend went by card, and whether its bills are paid. Months
+ * go by statement date, as the heatmap's cells do.
+ */
+export function heatmapMonthDetails(data: CardData, cardId?: string): Record<MonthKey, MonthDetail> {
+  const details: Record<MonthKey, MonthDetail> = {};
+  for (const statement of usableStatements(data, cardId)) {
+    const detail = (details[monthOf(statement.statementDate)] ??= { total: 0, byCard: [], statements: 0, pending: 0, pendingAmount: 0 });
+    const amount = spendOf(statement);
+    detail.total += amount;
+    const card = detail.byCard.find((c) => c.cardId === statement.cardId);
+    if (card) card.amount += amount;
+    else detail.byCard.push({ cardId: statement.cardId, amount });
+    detail.statements += 1;
+    if (statement.status === "Pending") {
+      detail.pending += 1;
+      detail.pendingAmount += remainingDue(statement);
+    }
+  }
+  for (const detail of Object.values(details)) detail.byCard.sort((a, b) => b.amount - a.amount);
+  return details;
+}
+
 export interface SeriesPoint {
   month: MonthKey;
   /** The sum of byCard, so stacked bars always add up to it. */

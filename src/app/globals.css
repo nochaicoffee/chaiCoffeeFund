@@ -117,6 +117,10 @@
   --chip-glint: oklch(1 0 0 / 0.75);
   --due-pulse-ring: oklch(0.82 0.12 40 / 0.2);
   --due-pulse-fill: oklch(0.7 0.14 35 / 0.55);
+
+  /* On the dark hover cards (#104, #105): spending above average, and below it. */
+  --tip-up: oklch(0.82 0.12 40);
+  --tip-down: oklch(0.88 0.17 138);
 }
 
 @theme inline {

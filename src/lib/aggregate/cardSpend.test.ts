@@ -5,6 +5,7 @@ import {
   cardDetails,
   daysBetween,
   heatLevel,
+  heatmapMonthDetails,
   heatmapPeak,
   heatmapYearTotals,
   heatmapRows,
@@ -274,6 +275,36 @@ describe("allCardsUtilization", () => {
 
   it("is null without any active credit limit", () => {
     expect(allCardsUtilization({ cards: [], statements: [] }).utilization).toBeNull();
+  });
+});
+
+describe("heatmapMonthDetails", () => {
+  it("splits each month's spend by card, largest first, matching its heatmap cell", () => {
+    const details = heatmapMonthDetails(DESIGN);
+    expect(details["2026-07"]).toEqual({
+      total: 57300,
+      byCard: [
+        { cardId: "regalia", amount: 42100 },
+        { cardId: "amazon", amount: 15200 },
+      ],
+      statements: 2,
+      pending: 0,
+      pendingAmount: 0,
+    });
+    const [row] = heatmapRows(DESIGN, { kind: "year", year: 2026 }, TODAY);
+    for (const cell of row.cells.filter((c) => c.state === "data")) expect(details[cell.month].total).toBe(cell.amount);
+  });
+
+  it("says what's still owed on a month's pending bills", () => {
+    expect(heatmapMonthDetails(DESIGN)["2026-08"]).toMatchObject({ pending: 2, pendingAmount: 50900 });
+    const partPaid = withCards([statement({ statementDate: "2026-03-05", totalAmountDue: 1000, amountPaid: 400, status: "Pending" })]);
+    expect(heatmapMonthDetails(partPaid)["2026-03"]).toMatchObject({ total: 1000, pending: 1, pendingAmount: 600 });
+  });
+
+  it("counts a credit balance as ₹0 spend but still as a statement, and keeps to one card when asked", () => {
+    const credit = withCards([statement({ cardId: "a", statementDate: "2026-02-05", totalAmountDue: -4708.5, minimumAmountDue: 0 }), statement({ cardId: "b", statementDate: "2026-02-07", totalAmountDue: 300 })]);
+    expect(heatmapMonthDetails(credit)["2026-02"]).toMatchObject({ total: 300, statements: 2 });
+    expect(heatmapMonthDetails(DESIGN, "amazon")["2026-07"]).toMatchObject({ total: 15200, byCard: [{ cardId: "amazon", amount: 15200 }] });
   });
 });
 
