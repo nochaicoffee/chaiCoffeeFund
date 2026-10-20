@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useState, useSyncExternalStore, type ReactNode } from "react";
 import {
   Bar,
   BarStack,
@@ -17,9 +17,14 @@ import {
   XAxis,
   YAxis,
   ZIndexLayer,
+  useActiveTooltipCoordinate,
+  useActiveTooltipLabel,
+  useChartWidth,
+  useXAxisScale,
+  useYAxisScale,
   type BarShapeProps,
 } from "recharts";
-import { heatLevel } from "@/lib/aggregate/cardSpend";
+import { heatLevel, type MonthDetail } from "@/lib/aggregate/cardSpend";
 import { trendWindow, type TrendPoint, type TrendRange } from "@/lib/aggregate/cardTrend";
 import type { CardColor } from "@/lib/sheets/types";
 import { formatMonthShort, formatMonthYear } from "@/lib/format/date";
@@ -61,6 +66,8 @@ interface BarMarks {
   stub: boolean;
   peak: boolean;
   current: boolean;
+  /** Another month is hovered, so this one steps back (#105). */
+  dim: boolean;
 }
 
 /**
@@ -105,12 +112,14 @@ function TrendBar({ bar, rings, ids, gapAbove, showBar, marks }: { bar: BarShape
           <Rectangle x={x} y={stackTop} width={width} height={stackHeight} radius={BAR_RADIUS} fill="black" filter={`url(#${ids.shadow})`} aria-hidden="true" />
         </ZIndexLayer>
       )}
-      <rect x={x} y={top} width={width} height={height} fill={fill} />
-      <svg x={x} y={top} width={width} height={height} viewBox={`${x} ${top} ${width} ${height}`} aria-hidden="true">
-        {/* As the design's radial-gradient(circle at 90% 6%, …, transparent 55%): 55% of the way to the far corner. */}
-        <circle cx={x + 0.9 * width} cy={stackTop + 0.06 * stackHeight} r={0.55 * Math.hypot(0.9 * width, 0.94 * stackHeight)} fill={`url(#${ids.sheen})`} />
-        <RingCircles cx={cx} cy={cy} radii={ringRadii(cx, cy, { x, y: top, width, height }, { first: 12, step: 12 })} stroke={rings} opacity={0.1} />
-      </svg>
+      <g style={{ opacity: marks.dim ? 0.38 : 1 }} className="motion-safe:transition-opacity motion-safe:duration-200">
+        <rect x={x} y={top} width={width} height={height} fill={fill} />
+        <svg x={x} y={top} width={width} height={height} viewBox={`${x} ${top} ${width} ${height}`} aria-hidden="true">
+          {/* As the design's radial-gradient(circle at 90% 6%, …, transparent 55%): 55% of the way to the far corner. */}
+          <circle cx={x + 0.9 * width} cy={stackTop + 0.06 * stackHeight} r={0.55 * Math.hypot(0.9 * width, 0.94 * stackHeight)} fill={`url(#${ids.sheen})`} />
+          <RingCircles cx={cx} cy={cy} radii={ringRadii(cx, cy, { x, y: top, width, height }, { first: 12, step: 12 })} stroke={rings} opacity={0.1} />
+        </svg>
+      </g>
       {isTop && marks.current && (
         // As the design's box-shadow: 0 0 0 2px card background, 0 0 0 4px accent.
         <ZIndexLayer zIndex={OVER_BARS}>
@@ -141,13 +150,183 @@ function Toggle({ pressed, onClick, children, label }: { pressed: boolean; onCli
   );
 }
 
+/** Whether the viewer has asked for reduced motion, for the parts Recharts animates itself. */
+function usePrefersReducedMotion(): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+      query.addEventListener("change", onChange);
+      return () => query.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    () => false,
+  );
+}
+
+/** The hovered or focused month, and which half of the chart its bar is in, so the breakdown card can sit on the other side. */
+interface TrendHover {
+  month: string;
+  side: "left" | "right";
+  width: number;
+}
+
+/** Tells the chart which month is hovered or focused (Recharts' own keyboard navigation included), so the rest can follow it. */
+function ActiveHover({ onChange }: { onChange: (hover: TrendHover | null) => void }) {
+  const label = useActiveTooltipLabel();
+  const coordinate = useActiveTooltipCoordinate();
+  const width = useChartWidth() ?? 0;
+  const month = label === undefined || label === null ? null : String(label);
+  const side = coordinate && width > 0 && coordinate.x > width / 2 ? "left" : "right";
+  useEffect(() => onChange(month ? { month, side, width } : null), [month, side, width, onChange]);
+  return null;
+}
+
+/** The breakdown card's width, and the Y axis's, so the card can be pinned beside them. */
+const HOVER_CARD_WIDTH = 268;
+const Y_AXIS_WIDTH = 56;
+
+const percentOf = (part: number) => `${Math.round(Math.abs(part) * 100)}%`;
+
+/**
+ * The hovered month's breakdown (#105, option A): its total, its split by
+ * card, and whether it's paid. How it compares sits on the chart itself, on
+ * the bracket and the average line (option B), so the card doesn't repeat it.
+ */
+function TrendHoverCard({
+  month,
+  shown,
+  cards,
+  peak,
+  currentMonth,
+  detail,
+}: {
+  month: string;
+  shown: TrendPoint[];
+  cards: TrendCard[];
+  peak: string | null;
+  currentMonth: string;
+  detail: MonthDetail | undefined;
+}) {
+  const point = shown.find((p) => p.month === month);
+  if (!point) return null;
+  const split = cards
+    .map((c) => ({ card: c, amount: point.byCard[c.id] ?? 0 }))
+    .filter((c) => c.amount > 0)
+    .sort((a, b) => b.amount - a.amount);
+  const largest = split[0]?.amount ?? 0;
+  return (
+    <div className="rounded-[16px] border border-surface-line bg-surface p-3.5 text-fg shadow-pop" style={{ width: HOVER_CARD_WIDTH }}>
+      <div className="flex items-center justify-between gap-2 text-xs font-bold text-muted">
+        <span>{formatMonthYear(month)}</span>
+        {month === peak ? (
+          <span className="rounded-full bg-accent-tint px-2 py-0.5 text-[10px] font-extrabold text-accent-text">Peak</span>
+        ) : month === currentMonth ? (
+          <span className="rounded-full bg-fill px-2 py-0.5 text-[10px] font-extrabold">This month</span>
+        ) : null}
+      </div>
+      <div className="mt-0.5 text-2xl leading-tight font-extrabold tabular-nums">{point.hasStatements ? formatInr(point.total) : "No statements"}</div>
+      {split.length > 0 && (
+        <ul className="mt-2.5 flex flex-col gap-1">
+          {split.map(({ card, amount }) => (
+            <li key={card.id} className="flex items-center gap-2 text-xs font-semibold">
+              <span aria-hidden="true" className="size-2 shrink-0 rounded-[3px]" style={{ background: cardSwatch(card.color) }} />
+              <span className="min-w-0 flex-1 truncate text-muted">{card.name}</span>
+              <span aria-hidden="true" className="h-[5px] w-[54px] shrink-0 overflow-hidden rounded-full bg-fill">
+                <span className="block h-full rounded-full" style={{ width: `${(amount / largest) * 100}%`, background: cardSwatch(card.color) }} />
+              </span>
+              <span className="w-[64px] shrink-0 text-right font-extrabold tabular-nums">{formatInr(amount)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {detail && (
+        <div className="mt-2.5 border-t border-divider pt-2 text-[11px] font-semibold text-muted">
+          {detail.pending === 0
+            ? `${detail.statements} ${detail.statements === 1 ? "statement" : "statements"} · all paid`
+            : `${detail.pending} ${detail.pending === 1 ? "bill" : "bills"} pending · ${formatInr(detail.pendingAmount)} left to pay`}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * The compare bracket (#105, option B): from the month before's bar to the
+ * hovered one's, drawing itself, with the change on it. The hovered bar's centre
+ * comes from the tooltip, and the one before's is the same distance along the
+ * axis as their positions on it, so it holds however the band scale reports them.
+ */
+function CompareBracket({ shown }: { shown: TrendPoint[] }) {
+  const label = useActiveTooltipLabel();
+  const coordinate = useActiveTooltipCoordinate();
+  const xScale = useXAxisScale();
+  const yScale = useYAxisScale();
+  if (label === undefined || label === null || !coordinate || !xScale || !yScale) return null;
+  const index = shown.findIndex((p) => p.month === String(label));
+  const current = shown[index];
+  const previous = shown[index - 1];
+  if (!current || !previous || !current.hasStatements || !previous.hasStatements) return null;
+  const [xNow, xBefore, yNow, yBefore] = [xScale(current.month), xScale(previous.month), yScale(current.total), yScale(previous.total)];
+  if ([xNow, xBefore, yNow, yBefore].some((v) => typeof v !== "number" || !Number.isFinite(v))) return null;
+  const bx = coordinate.x;
+  const ax = bx + (Number(xBefore) - Number(xNow));
+  const ay = Number(yBefore) - 6;
+  const by = Number(yNow) - 6;
+  const top = Math.min(ay, by) - 20;
+  const diff = current.total - previous.total;
+  const change = previous.total > 0 ? diff / previous.total : null;
+  return (
+    <ZIndexLayer zIndex={OVER_BARS}>
+      <g key={current.month} aria-hidden="true">
+        <path
+          d={`M${ax},${ay} L${ax},${top} L${bx},${top} L${bx},${by}`}
+          fill="none"
+          stroke="var(--fg)"
+          strokeWidth={1.5}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          pathLength={1}
+          strokeDasharray={1}
+          className="motion-safe:animate-draw"
+        />
+        <foreignObject x={(ax + bx) / 2 - 100} y={top - 30} width={200} height={26}>
+          <div className="flex h-full items-center justify-center">
+            <span className="rounded-full border border-surface-line bg-surface px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap text-fg tabular-nums">
+              <span className={diff >= 0 ? "text-negative" : "text-positive"}>
+                {diff >= 0 ? "▲" : "▼"} {formatInrCompact(Math.abs(diff))}
+              </span>
+              {change !== null && ` · ${percentOf(change)}`} vs {formatMonthShort(previous.month)}
+            </span>
+          </div>
+        </foreignObject>
+      </g>
+    </ZIndexLayer>
+  );
+}
+
 /**
  * The design's statement trend: monthly statement totals as bars and/or a line,
  * by card (stacked in card colours) or in total (shaded like the heatmap), with
  * the average, the peak and the current month marked.
  */
-export function TrendChart({ points, cards, currentMonth }: { points: TrendPoint[]; cards: TrendCard[]; currentMonth: string }) {
+export function TrendChart({
+  points,
+  cards,
+  currentMonth,
+  monthDetails,
+}: {
+  points: TrendPoint[];
+  cards: TrendCard[];
+  currentMonth: string;
+  /** Each month's paid status, for the hover card (#105). */
+  monthDetails: Record<string, MonthDetail>;
+}) {
   const [mode, setMode] = useState<"card" | "total">("total");
+  // The hovered or focused month, which the bars, the average line, the peak's label and the breakdown card follow (#105).
+  const [hover, setHover] = useState<TrendHover | null>(null);
+  const onHover = useCallback((next: TrendHover | null) => setHover(next), []);
+  const activeMonth = hover?.month ?? null;
+  const reducedMotion = usePrefersReducedMotion();
   const [bars, setBars] = useState(true);
   const [line, setLine] = useState(false);
   const [range, setRange] = useState<TrendRange>("1Y");
@@ -168,7 +347,13 @@ export function TrendChart({ points, cards, currentMonth }: { points: TrendPoint
     stub: firstSeries && !p.hasStatements,
     peak: p.month === peak?.month,
     current: p.month === currentMonth,
+    dim: activeMonth !== null && p.month !== activeMonth,
   });
+  const activeIndex = activeMonth ? shown.findIndex((p) => p.month === activeMonth) : -1;
+  const activePoint = activeIndex >= 0 ? shown[activeIndex] : undefined;
+  const averageGap = activePoint?.hasStatements ? activePoint.total - average : null;
+  // The bracket runs up from the hovered bar and the one before, so the peak's label steps aside when either is the peak.
+  const bracketMeetsPeak = !!peak && activeIndex > 0 && (shown[activeIndex].month === peak.month || shown[activeIndex - 1].month === peak.month);
 
   // At least one of bars and line stays on, so the chart never goes blank.
   const toggleBars = () => setBars((on) => (on && !line ? on : !on));
@@ -299,15 +484,28 @@ export function TrendChart({ points, cards, currentMonth }: { points: TrendPoint
                 interval="preserveStartEnd"
                 minTickGap={8}
               />
-              <YAxis tickFormatter={(v: number) => formatInrCompact(v)} tick={{ fill: "var(--muted)", fontSize: 11 }} axisLine={false} tickLine={false} width={56} />
+              <YAxis tickFormatter={(v: number) => formatInrCompact(v)} tick={{ fill: "var(--muted)", fontSize: 11 }} axisLine={false} tickLine={false} width={Y_AXIS_WIDTH} />
               <Tooltip
                 cursor={{ fill: "var(--fill)" }}
-                contentStyle={{ background: "var(--surface)", border: "1px solid var(--surface-line)", borderRadius: 12, boxShadow: "var(--soft-shadow)", fontSize: 12 }}
-                labelStyle={{ color: "var(--fg)", fontWeight: 700 }}
-                itemStyle={{ color: "var(--fg)" }}
-                labelFormatter={(m) => formatMonthYear(String(m))}
-                formatter={(value, name) => [formatInr(Number(value)), String(name)]}
+                // Pinned to the top, on the side away from the hovered bar, so it never covers the bracket between it and the month before.
+                position={hover ? { x: hover.side === "left" ? Y_AXIS_WIDTH + 8 : Math.max(Y_AXIS_WIDTH + 8, hover.width - HOVER_CARD_WIDTH - 12), y: 0 } : undefined}
+                isAnimationActive={!reducedMotion}
+                animationDuration={220}
+                wrapperStyle={{ outline: "none", zIndex: 30 }}
+                content={({ active, label }) =>
+                  active && label !== undefined ? (
+                    <TrendHoverCard
+                      month={String(label)}
+                      shown={shown}
+                      cards={shownCards}
+                      peak={peak?.month ?? null}
+                      currentMonth={currentMonth}
+                      detail={monthDetails[String(label)]}
+                    />
+                  ) : null
+                }
               />
+              <ActiveHover onChange={onHover} />
               {/* With the line alone the bars stay, drawing only the no-data stubs, as the design has them in every view. */}
               <BarStack radius={BAR_RADIUS}>
                 {mode === "total" ? (
@@ -360,14 +558,27 @@ export function TrendChart({ points, cards, currentMonth }: { points: TrendPoint
               {line && (
                 <Line type="monotone" dataKey="total" name="Total" tooltipType={bars ? "none" : undefined} stroke="var(--accent-text)" strokeWidth={2} dot={{ r: 3, fill: "var(--surface)", strokeWidth: 2 }} isAnimationActive={false} />
               )}
-              <ReferenceLine y={average} stroke="var(--heat-4)" strokeOpacity={0.6} strokeDasharray="5 4" ifOverflow="extendDomain" />
+              <ReferenceLine
+                y={average}
+                stroke="var(--heat-4)"
+                strokeOpacity={0.6}
+                strokeDasharray="5 4"
+                ifOverflow="extendDomain"
+                // While a month is hovered, the average line says how far above or below it the month is (#105), at the end away from the breakdown card.
+                label={
+                  averageGap === null
+                    ? undefined
+                    : { value: `${formatInrCompact(Math.abs(averageGap))} ${averageGap >= 0 ? "above" : "below"} average`, position: hover?.side === "right" ? "insideTopLeft" : "insideTopRight", fill: "var(--accent-text)", fontSize: 11, fontWeight: 800 }
+                }
+              />
+              <CompareBracket shown={shown} />
               {peak && (
                 <ReferenceDot
                   x={peak.month}
                   y={peak.amount}
                   r={0}
                   // 8px up, as the design's labels, so it clears the current month's ring when the peak is this month.
-                  label={{ value: `Peak ${formatInrCompact(peak.amount)}`, position: "top", offset: 8, fill: "var(--fg)", fontSize: 11, fontWeight: 800 }}
+                  label={bracketMeetsPeak ? undefined : { value: `Peak ${formatInrCompact(peak.amount)}`, position: "top", offset: 8, fill: "var(--fg)", fontSize: 11, fontWeight: 800 }}
                 />
               )}
             </ComposedChart>

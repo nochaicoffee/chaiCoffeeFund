@@ -119,6 +119,8 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
     </div>
   );
 
+  // Each month's split by card and paid status, for the heatmap's month card and the trend's hover card (#104, #105).
+  const monthDetails = heatmapMonthDetails(data, cardId);
   // For the sync report, which names cards by their short name.
   const syncCardNames = Object.fromEntries(data.cards.map((c) => [c.id, cardName(c)]));
 
@@ -203,7 +205,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
         yearTotals={yearTotals}
         peak={heatmapPeak(heatRows)}
         currentMonth={monthOf(today)}
-        details={heatmapMonthDetails(data, cardId)}
+        details={monthDetails}
         cards={Object.fromEntries(data.cards.map((c) => [c.id, { name: cardName(c), swatch: cardSwatch(c.color) }]))}
       />
 
@@ -240,6 +242,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
         points={trendPoints(data, today, period, cardId)}
         cards={(selectedCard ? [selectedCard] : data.cards).map((c) => ({ id: c.id, name: cardName(c), color: c.color }))}
         currentMonth={monthOf(today)}
+        monthDetails={monthDetails}
       />
 
     </div>
