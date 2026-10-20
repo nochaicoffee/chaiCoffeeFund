@@ -1,4 +1,4 @@
-import { addMonths, monthOf, monthRange, monthsSoFar, spendSeries, type CardData, type MonthAmount, type MonthKey, type SpendPeriod } from "./cardSpend";
+import { addMonths, monthlySpend, monthOf, monthRange, monthsSoFar, spendSeries, type CardData, type MonthAmount, type MonthKey, type SpendPeriod } from "./cardSpend";
 
 /** The statement trend chart's ranges: the last 3, 6 or 12 months, or everything. */
 export type TrendRange = "3M" | "6M" | "1Y" | "All";
@@ -11,6 +11,11 @@ export interface TrendPoint {
   total: number;
   /** Spend per card id, for stacking (just the selected card when one is selected). */
   byCard: Record<string, number>;
+  /**
+   * Whether the month has a statement (the selected card's, when one is selected).
+   * A month without one is "no data", as in the heatmap; one whose statements total ₹0 isn't.
+   */
+  hasStatements: boolean;
 }
 
 /**
@@ -25,10 +30,13 @@ export function trendPoints(data: CardData, today: string, period: SpendPeriod, 
   const firstStatement = monthsSoFar({ kind: "all" }, today, data, cardId)[0] ?? null;
   const yearBack = addMonths(end, -11);
   const start = firstStatement !== null && firstStatement < yearBack ? firstStatement : yearBack;
+  // Only months with statements appear in monthlySpend, ₹0 ones included.
+  const withStatements = monthlySpend(data, cardId);
   return spendSeries(data, monthRange(start, end)).map((point) => {
-    if (cardId === undefined) return point;
+    const hasStatements = withStatements.has(point.month);
+    if (cardId === undefined) return { ...point, hasStatements };
     const amount = point.byCard[cardId] ?? 0;
-    return { month: point.month, total: amount, byCard: { [cardId]: amount } };
+    return { month: point.month, total: amount, byCard: { [cardId]: amount }, hasStatements };
   });
 }
 

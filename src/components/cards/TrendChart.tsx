@@ -7,13 +7,16 @@ import {
   CartesianGrid,
   Cell,
   ComposedChart,
+  DefaultZIndexes,
   Line,
+  Rectangle,
   ReferenceDot,
   ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
+  ZIndexLayer,
   type BarShapeProps,
 } from "recharts";
 import { heatLevel } from "@/lib/aggregate/cardSpend";
@@ -36,34 +39,87 @@ const RANGES: TrendRange[] = ["All", "1Y", "6M", "3M"];
 const BAR_RADIUS: [number, number, number, number] = [14, 14, 5, 5];
 // By card, the design leaves a 2px gap between one card's segment and the one above it.
 const SEGMENT_GAP = 2;
+// A month with no statements gets a 6px striped stub on the baseline, as wide as a bar.
+const STUB_HEIGHT = 6;
+// BarStack clips each stack to its rounded outline, so the marks around a bar are drawn in their own layers:
+// the stubs and the peak's shadow above the hover band and under the bars, and the current month's ring
+// over the bars but under the line and the average.
+const UNDER_BARS = (DefaultZIndexes.cursorRectangle + DefaultZIndexes.bar) / 2;
+const OVER_BARS = (DefaultZIndexes.bar + DefaultZIndexes.line) / 2;
+
+/** The bar's corner radii grown by `by`, for a ring that follows its corners `by` px outside it. */
+const grow = (by: number) => BAR_RADIUS.map((r) => r + by) as [number, number, number, number];
+
+interface TrendIds {
+  sheen: string;
+  stripes: string;
+  shadow: string;
+}
+
+interface BarMarks {
+  /** Draw the no-data stub (once per month, by its first series). */
+  stub: boolean;
+  peak: boolean;
+  current: boolean;
+}
 
 /**
  * One bar, or one card's segment of a stacked bar, with the design's texture:
  * a sheen in the bar's top-right corner, and faint rings centred just past its
  * bottom-right. Both are laid out on the whole stack and clipped to the
  * segment, so they run on across the segments as if the stack were one bar.
+ *
+ * It also draws the design's marks: a striped stub for a month with no
+ * statements, and the peak's shadow and the current month's ring around the
+ * whole stack, from its top segment. With `showBar` off (the line alone), only
+ * the stub is drawn.
  */
-function TrendBar({ bar, rings, sheenId, gapAbove }: { bar: BarShapeProps; rings: string; sheenId: string; gapAbove: boolean }) {
+function TrendBar({ bar, rings, ids, gapAbove, showBar, marks }: { bar: BarShapeProps; rings: string; ids: TrendIds; gapAbove: boolean; showBar: boolean; marks: BarMarks }) {
   const { x, width, fill } = bar;
   const [low, high] = Array.isArray(bar.value) ? bar.value : [0, bar.value];
+  const base = bar.stackedBarStart;
+  const stub =
+    marks.stub && width > 0 ? (
+      <ZIndexLayer zIndex={UNDER_BARS}>
+        <rect x={x} y={base - STUB_HEIGHT} width={width} height={STUB_HEIGHT} rx={STUB_HEIGHT / 2} fill={`url(#${ids.stripes})`} aria-hidden="true" />
+      </ZIndexLayer>
+    ) : null;
   // The gap never takes a thin segment's last pixel, so a small amount still shows.
   const top = bar.y + (gapAbove ? Math.min(SEGMENT_GAP, Math.max(0, bar.height - 1)) : 0);
   const height = bar.y + bar.height - top;
-  if (!(width > 0 && height > 0 && high > low)) return <g />;
-  // The stack's base and top, in pixels: the base from Recharts, and the top from this segment's pixels per rupee.
-  const base = bar.stackedBarStart;
+  if (!showBar || !(width > 0 && height > 0 && high > low)) return <g>{stub}</g>;
+  // The stack's top, in pixels, from this segment's pixels per rupee.
   const stackHeight = ((bar.payload as TrendPoint).total * bar.height) / (high - low);
   const stackTop = base - stackHeight;
   const cx = x + width + 12;
   const cy = base + 14;
+  // The segment with nothing above it is the stack's top, so it marks the whole stack.
+  const isTop = !gapAbove;
   return (
     <g>
+      {stub}
+      {isTop && marks.peak && (
+        // As the design's box-shadow: 0 10px 22px. The filter paints only the shadow, outside the stack, so the fill
+        // never shows and the By card gaps stay clear.
+        <ZIndexLayer zIndex={UNDER_BARS}>
+          <Rectangle x={x} y={stackTop} width={width} height={stackHeight} radius={BAR_RADIUS} fill="black" filter={`url(#${ids.shadow})`} aria-hidden="true" />
+        </ZIndexLayer>
+      )}
       <rect x={x} y={top} width={width} height={height} fill={fill} />
       <svg x={x} y={top} width={width} height={height} viewBox={`${x} ${top} ${width} ${height}`} aria-hidden="true">
         {/* As the design's radial-gradient(circle at 90% 6%, …, transparent 55%): 55% of the way to the far corner. */}
-        <circle cx={x + 0.9 * width} cy={stackTop + 0.06 * stackHeight} r={0.55 * Math.hypot(0.9 * width, 0.94 * stackHeight)} fill={`url(#${sheenId})`} />
+        <circle cx={x + 0.9 * width} cy={stackTop + 0.06 * stackHeight} r={0.55 * Math.hypot(0.9 * width, 0.94 * stackHeight)} fill={`url(#${ids.sheen})`} />
         <RingCircles cx={cx} cy={cy} radii={ringRadii(cx, cy, { x, y: top, width, height }, { first: 12, step: 12 })} stroke={rings} opacity={0.1} />
       </svg>
+      {isTop && marks.current && (
+        // As the design's box-shadow: 0 0 0 2px card background, 0 0 0 4px accent.
+        <ZIndexLayer zIndex={OVER_BARS}>
+          <g fill="none" strokeWidth={2} aria-hidden="true">
+            <Rectangle x={x - 1} y={stackTop - 1} width={width + 2} height={stackHeight + 2} radius={grow(1)} fill="none" stroke="var(--surface)" />
+            <Rectangle x={x - 3} y={stackTop - 3} width={width + 6} height={stackHeight + 6} radius={grow(3)} fill="none" stroke="var(--accent)" />
+          </g>
+        </ZIndexLayer>
+      )}
     </g>
   );
 }
@@ -95,7 +151,8 @@ export function TrendChart({ points, cards, currentMonth }: { points: TrendPoint
   const [bars, setBars] = useState(true);
   const [line, setLine] = useState(false);
   const [range, setRange] = useState<TrendRange>("1Y");
-  const sheenId = `trend-sheen-${useId().replace(/[^\w-]/g, "")}`;
+  const uid = useId().replace(/[^\w-]/g, "");
+  const ids: TrendIds = { sheen: `trend-sheen-${uid}`, stripes: `trend-stripes-${uid}`, shadow: `trend-shadow-${uid}` };
 
   const { points: shown, average, peak } = trendWindow(points, range);
   // Says which months the average covers, so it isn't mistaken for the greeting's year-to-date average.
@@ -107,6 +164,11 @@ export function TrendChart({ points, cards, currentMonth }: { points: TrendPoint
   const spansYears = new Set(shown.map((p) => p.month.slice(0, 4))).size > 1;
   const latest = shown.at(-1);
   const shownCards = cards.filter((c) => shown.some((p) => (p.byCard[c.id] ?? 0) > 0) || cards.length === 1);
+  const marksFor = (p: TrendPoint, firstSeries: boolean): BarMarks => ({
+    stub: firstSeries && !p.hasStatements,
+    peak: p.month === peak?.month,
+    current: p.month === currentMonth,
+  });
 
   // At least one of bars and line stays on, so the chart never goes blank.
   const toggleBars = () => setBars((on) => (on && !line ? on : !on));
@@ -189,15 +251,34 @@ export function TrendChart({ points, cards, currentMonth }: { points: TrendPoint
       {max === 0 ? (
         <p className="py-12 text-center text-sm text-muted">No spending in this range yet.</p>
       ) : (
-        <div className="h-[280px] w-full" role="img" aria-label={`Monthly statement totals, ${shown.map((p) => `${formatMonthYear(p.month)} ${formatInr(p.total)}`).join(", ")}`}>
+        <div className="h-[280px] w-full" role="img" aria-label={`Monthly statement totals, ${shown.map((p) => `${formatMonthYear(p.month)} ${p.hasStatements ? formatInr(p.total) : "no statements"}`).join(", ")}`}>
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={shown} margin={{ top: 28, right: 28, bottom: 0, left: 0 }}>
               <defs>
-                <radialGradient id={sheenId}>
+                <radialGradient id={ids.sheen}>
                   <stop offset="0" style={{ stopColor: "var(--bar-glow)" }} />
                   <stop offset="1" style={{ stopColor: "var(--bar-glow)", stopOpacity: 0 }} />
                 </radialGradient>
+                {/* As the design's repeating-linear-gradient(135deg, … 0 3px, transparent 3px 6px). */}
+                <pattern id={ids.stripes} width={6} height={6} patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+                  <rect width={3} height={6} style={{ fill: "var(--trend-no-data)" }} />
+                </pattern>
+                {/* A 22px blur is a Gaussian of 11. The last step keeps only what falls outside the bar. */}
+                <filter id={ids.shadow} filterUnits="userSpaceOnUse" x="0" y="0" width="100%" height="100%">
+                  <feGaussianBlur in="SourceAlpha" stdDeviation={11} />
+                  <feOffset dy={10} result="blur" />
+                  <feFlood style={{ floodColor: "var(--trend-peak-shadow)" }} />
+                  <feComposite in2="blur" operator="in" />
+                  <feComposite in2="SourceAlpha" operator="out" />
+                </filter>
               </defs>
+              {/*
+               * Keeps both layers registered for the chart's lifetime. Recharts drops a custom layer's
+               * element when every mark in it remounts at once (on switching the line, mode or range),
+               * and the marks then draw nowhere.
+               */}
+              <ZIndexLayer zIndex={UNDER_BARS} />
+              <ZIndexLayer zIndex={OVER_BARS} />
               <CartesianGrid vertical={false} stroke="var(--divider)" />
               <XAxis
                 dataKey="month"
@@ -227,50 +308,55 @@ export function TrendChart({ points, cards, currentMonth }: { points: TrendPoint
                 labelFormatter={(m) => formatMonthYear(String(m))}
                 formatter={(value, name) => [formatInr(Number(value)), String(name)]}
               />
-              {bars && (
-                <BarStack radius={BAR_RADIUS}>
-                  {mode === "total" ? (
+              {/* With the line alone the bars stay, drawing only the no-data stubs, as the design has them in every view. */}
+              <BarStack radius={BAR_RADIUS}>
+                {mode === "total" ? (
+                  <Bar
+                    dataKey="total"
+                    name="Total"
+                    maxBarSize={56}
+                    isAnimationActive={false}
+                    tooltipType={bars ? undefined : "none"}
+                    // Ink rings on the light shades (1–3) and light ones on the dark (4–5), as the heatmap's text.
+                    shape={(bar: BarShapeProps) => (
+                      <TrendBar
+                        bar={bar}
+                        rings={heatLevel((bar.payload as TrendPoint).total, max) >= 4 ? "var(--rings-light)" : "var(--rings-ink)"}
+                        ids={ids}
+                        gapAbove={false}
+                        showBar={bars}
+                        marks={marksFor(bar.payload as TrendPoint, true)}
+                      />
+                    )}
+                  >
+                    {shown.map((p) => (
+                      <Cell key={p.month} fill={p.total > 0 ? `var(--heat-${heatLevel(p.total, max)})` : "transparent"} />
+                    ))}
+                  </Bar>
+                ) : (
+                  shownCards.map((c, i) => (
                     <Bar
-                      dataKey="total"
-                      name="Total"
+                      key={c.id}
+                      dataKey={(p: TrendPoint) => p.byCard[c.id] ?? 0}
+                      name={c.name}
+                      fill={cardSwatch(c.color)}
                       maxBarSize={56}
                       isAnimationActive={false}
-                      // Ink rings on the light shades (1–3) and light ones on the dark (4–5), as the heatmap's text.
+                      tooltipType={bars ? undefined : "none"}
                       shape={(bar: BarShapeProps) => (
                         <TrendBar
                           bar={bar}
-                          rings={heatLevel((bar.payload as TrendPoint).total, max) >= 4 ? "var(--rings-light)" : "var(--rings-ink)"}
-                          sheenId={sheenId}
-                          gapAbove={false}
+                          rings="var(--rings-light)"
+                          ids={ids}
+                          gapAbove={shownCards.slice(i + 1).some((above) => ((bar.payload as TrendPoint).byCard[above.id] ?? 0) > 0)}
+                          showBar={bars}
+                          marks={marksFor(bar.payload as TrendPoint, i === 0)}
                         />
                       )}
-                    >
-                      {shown.map((p) => (
-                        <Cell key={p.month} fill={p.total > 0 ? `var(--heat-${heatLevel(p.total, max)})` : "transparent"} />
-                      ))}
-                    </Bar>
-                  ) : (
-                    shownCards.map((c, i) => (
-                      <Bar
-                        key={c.id}
-                        dataKey={(p: TrendPoint) => p.byCard[c.id] ?? 0}
-                        name={c.name}
-                        fill={cardSwatch(c.color)}
-                        maxBarSize={56}
-                        isAnimationActive={false}
-                        shape={(bar: BarShapeProps) => (
-                          <TrendBar
-                            bar={bar}
-                            rings="var(--rings-light)"
-                            sheenId={sheenId}
-                            gapAbove={shownCards.slice(i + 1).some((above) => ((bar.payload as TrendPoint).byCard[above.id] ?? 0) > 0)}
-                          />
-                        )}
-                      />
-                    ))
-                  )}
-                </BarStack>
-              )}
+                    />
+                  ))
+                )}
+              </BarStack>
               {line && (
                 <Line type="monotone" dataKey="total" name="Total" tooltipType={bars ? "none" : undefined} stroke="var(--accent-text)" strokeWidth={2} dot={{ r: 3, fill: "var(--surface)", strokeWidth: 2 }} isAnimationActive={false} />
               )}
@@ -280,7 +366,8 @@ export function TrendChart({ points, cards, currentMonth }: { points: TrendPoint
                   x={peak.month}
                   y={peak.amount}
                   r={0}
-                  label={{ value: `Peak ${formatInrCompact(peak.amount)}`, position: "top", fill: "var(--fg)", fontSize: 11, fontWeight: 800 }}
+                  // 8px up, as the design's labels, so it clears the current month's ring when the peak is this month.
+                  label={{ value: `Peak ${formatInrCompact(peak.amount)}`, position: "top", offset: 8, fill: "var(--fg)", fontSize: 11, fontWeight: 800 }}
                 />
               )}
             </ComposedChart>
