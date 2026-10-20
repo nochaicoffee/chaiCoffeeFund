@@ -57,6 +57,10 @@
   --range-glow: oklch(1 0 0 / 0.55);
   --due-glow: oklch(1 0 0 / 0.3);
 
+  /* Statement trend: the stripes on a month with no statements, and the peak bar's shadow. */
+  --trend-no-data: oklch(0 0 0 / 0.1);
+  --trend-peak-shadow: oklch(0.3 0.09 155 / 0.26);
+
   /* Spend heatmap, low to high. */
   --heat-1: oklch(0.95 0.03 150);
   --heat-2: oklch(0.87 0.07 150);

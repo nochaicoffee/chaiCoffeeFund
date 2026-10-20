@@ -32,8 +32,35 @@ describe("trendPoints", () => {
 
   it("splits each month by card, and narrows to one card when selected", () => {
     const aug = trendPoints(data, TODAY, THIS_YEAR).at(-1);
-    expect(aug).toEqual({ month: "2026-08", total: 50900, byCard: { "demo-regalia": 38500, "demo-amazon": 12400, "demo-gold": 0 } });
-    expect(trendPoints(data, TODAY, THIS_YEAR, "demo-amazon").at(-1)).toEqual({ month: "2026-08", total: 12400, byCard: { "demo-amazon": 12400 } });
+    expect(aug).toEqual({ month: "2026-08", total: 50900, byCard: { "demo-regalia": 38500, "demo-amazon": 12400, "demo-gold": 0 }, hasStatements: true });
+    expect(trendPoints(data, TODAY, THIS_YEAR, "demo-amazon").at(-1)).toEqual({ month: "2026-08", total: 12400, byCard: { "demo-amazon": 12400 }, hasStatements: true });
+  });
+
+  it("marks the months that have no statements, so the chart can draw them as no data", () => {
+    const points = trendPoints(data, TODAY, THIS_YEAR);
+    expect(points.filter((p) => !p.hasStatements).map((p) => p.month)).toEqual(["2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03"]);
+    expect(points.filter((p) => p.hasStatements).map((p) => p.month)).toEqual(["2026-04", "2026-05", "2026-06", "2026-07", "2026-08"]);
+  });
+
+  it("counts a month whose statements total ₹0 (or a credit balance) as having statements", () => {
+    const zero = { ...data.statements[0], id: "zero", statementDate: "2026-02-05", dueDate: "2026-02-25", totalAmountDue: 0 };
+    const credit = { ...data.statements[0], id: "credit", statementDate: "2026-03-05", dueDate: "2026-03-25", totalAmountDue: -1200 };
+    const points = trendPoints({ ...data, statements: [...data.statements, zero, credit] }, TODAY, THIS_YEAR);
+    expect(points.find((p) => p.month === "2026-02")).toMatchObject({ total: 0, hasStatements: true });
+    expect(points.find((p) => p.month === "2026-03")).toMatchObject({ total: 0, hasStatements: true });
+    expect(points.find((p) => p.month === "2026-01")).toMatchObject({ total: 0, hasStatements: false });
+  });
+
+  it("only counts the selected card's statements", () => {
+    expect(trendPoints(data, TODAY, THIS_YEAR, "demo-gold").every((p) => !p.hasStatements)).toBe(true);
+    const amazonOnly = { ...data, statements: data.statements.filter((s) => !(s.cardId === "demo-regalia" && s.statementDate.startsWith("2026-05"))) };
+    expect(trendPoints(amazonOnly, TODAY, THIS_YEAR, "demo-regalia").find((p) => p.month === "2026-05")?.hasStatements).toBe(false);
+    expect(trendPoints(amazonOnly, TODAY, THIS_YEAR).find((p) => p.month === "2026-05")?.hasStatements).toBe(true);
+  });
+
+  it("doesn't count a statement whose card no longer exists", () => {
+    const orphan = { ...data.statements[0], id: "orphan", cardId: "deleted-card", statementDate: "2026-01-05", dueDate: "2026-01-25" };
+    expect(trendPoints({ ...data, statements: [...data.statements, orphan] }, TODAY, THIS_YEAR).find((p) => p.month === "2026-01")?.hasStatements).toBe(false);
   });
 });
 
