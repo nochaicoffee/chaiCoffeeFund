@@ -1,12 +1,14 @@
 import { NextResponse } from "next/server";
 import { handleRouteErrors } from "@/lib/api/createCrudRoutes";
 import { getSheetsClient, getSpreadsheetId } from "@/lib/sheets/client";
+import { SUBSCRIPTION_PAYMENT_COLUMNS, subscriptionPaymentRowSchema } from "@/lib/sheets/subscriptionPayments";
 import { SUBSCRIPTION_COLUMNS, subscriptionRowSchema } from "@/lib/sheets/subscriptions";
 import { columnSpecs, planTableColumns } from "@/lib/sheets/tableColumns";
 
 /** The tabs this can bring in line with their repository. Add one here when its columns change. */
 const TABS = {
   Subscriptions: () => columnSpecs(SUBSCRIPTION_COLUMNS as string[], subscriptionRowSchema),
+  SubscriptionPayments: () => columnSpecs(SUBSCRIPTION_PAYMENT_COLUMNS as string[], subscriptionPaymentRowSchema),
 };
 
 type Plan = { error: string } | ({ tab: string; spreadsheetId: string; table: { rows: number; columns: string[] } } & ReturnType<typeof planTableColumns>);

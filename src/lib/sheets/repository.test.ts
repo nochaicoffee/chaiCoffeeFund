@@ -163,6 +163,31 @@ describe("updateMany", () => {
   });
 });
 
+describe("a whole-row check", () => {
+  const checked = createRepository<Thing>({
+    sheetName: "Things",
+    columns: ["id", "name", "amount", "date"],
+    dateColumns: ["date"],
+    schema: z.object({ id: nonEmptyString, name: nonEmptyString, amount: z.number(), date: isoDate }),
+    check: (row) => (row.name === "Free" && row.amount !== 0 ? "A free thing costs nothing" : null),
+  });
+  beforeEach(() => {
+    sheet.rows["Things!A2:D"] = [["a", "Free", 0, AUG_5]];
+  });
+
+  it("runs on the row an update is merged over, and writes nothing when it's broken", async () => {
+    await expect(checked.update("a", { amount: 5 })).rejects.toThrow("A free thing costs nothing");
+    await expect(checked.updateMany([{ id: "a", patch: { amount: 5 } }])).rejects.toThrow("A free thing costs nothing");
+    expect(sheet.updates).toEqual([]);
+    expect(sheet.batches).toEqual([]);
+  });
+
+  it("lets a merged row that keeps the rule through", async () => {
+    await checked.update("a", { name: "Paid", amount: 5 });
+    expect(sheet.updates).toHaveLength(1);
+  });
+});
+
 describe("deleteLoanWithSchedule", () => {
   const installment = (id: string, loanId: string, totalDue: unknown) => [id, loanId, 1, AUG_5, 100000, 8000, 1000, totalDue, "Pending"];
 

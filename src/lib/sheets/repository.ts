@@ -12,6 +12,14 @@ export class NotFoundError extends Error {
   }
 }
 
+/** A write that would leave a row breaking its entity's `check`. Nothing was written. */
+export class InvalidRowError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidRowError";
+  }
+}
+
 export interface RepositoryConfig<T extends { id: string }> {
   sheetName: string;
   columns: (keyof T)[];
@@ -19,6 +27,13 @@ export interface RepositoryConfig<T extends { id: string }> {
   dateColumns?: (keyof T)[];
   /** What a valid row looks like, id included. Every row read is checked against it (see rowReading.ts). */
   schema: z.ZodType<T>;
+  /**
+   * A rule across fields that a whole row must keep, such as "a card or an account, not
+   * both", as a message when it's broken. A partial update can't check it from its own
+   * fields, so it runs on the row after the update is merged over the stored one (and on
+   * each new row). A broken rule writes nothing and throws InvalidRowError.
+   */
+  check?: (record: T) => string | null;
 }
 
 /** A row that failed its schema: left out of list() and get(), but still visible to readAll(). */
@@ -52,7 +67,7 @@ function toRowValues<T>(record: T, columns: (keyof T)[], dateColumns: Set<keyof 
  * a row that still fails is logged and left out instead of reaching the pages.
  */
 export function createRepository<T extends { id: string }>(config: RepositoryConfig<T>) {
-  const { sheetName, columns, schema } = config;
+  const { sheetName, columns, schema, check } = config;
   assertColumnsMatchSchema(sheetName, columns as string[], (config.dateColumns ?? []) as string[], schema);
   const dateColumns = new Set(config.dateColumns ?? []);
   const kinds = columnKinds(schema);
@@ -140,6 +155,11 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     return found?.record ?? null;
   }
 
+  function assertValid(record: T) {
+    const problem = check?.(record);
+    if (problem) throw new InvalidRowError(problem);
+  }
+
   async function create(input: Omit<T, "id">): Promise<T> {
     const [record] = await createMany([input]);
     return record;
@@ -148,6 +168,7 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
   async function createMany(inputs: Omit<T, "id">[]): Promise<T[]> {
     if (inputs.length === 0) return [];
     const records = inputs.map((input) => ({ ...input, id: randomUUID() }) as T);
+    records.forEach(assertValid);
     const sheets = getSheetsClient();
     // USER_ENTERED so ISO dates become real dates in the Table's DATE columns;
     // every other text value is marked literal (see cellValues.ts).
@@ -168,6 +189,7 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     }
     // Starts from the cleaned cells, so an update also rewrites a number stored as text as a number.
     const updated = { ...found.values, ...patch } as T;
+    assertValid(updated);
     const sheets = getSheetsClient();
     await sheets.spreadsheets.values.update({
       spreadsheetId: getSpreadsheetId(),
@@ -191,6 +213,7 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
       if (!row) throw new NotFoundError(`${sheetName}: no record found for id ${id}`);
       return { rowNumber: row.rowNumber, updated: { ...row.values, ...patch } as T };
     });
+    found.forEach(({ updated }) => assertValid(updated));
     await getSheetsClient().spreadsheets.values.batchUpdate({
       spreadsheetId: getSpreadsheetId(),
       requestBody: {

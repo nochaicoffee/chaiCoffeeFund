@@ -19,11 +19,16 @@ const subscriptionFields = z.object({
   defaultPaidFromCardId: nonEmptyString.optional(),
 });
 
+const BOTH_PLACES = "Charge it to a card or a bank account, not both";
+
 /** Charged to a card or to a bank account, never both (the payment-source principle in docs/system-design.md). */
 function chargedToOnePlace(value: { defaultPaidFromAccountId?: string; defaultPaidFromCardId?: string }, ctx: z.RefinementCtx) {
-  if (value.defaultPaidFromAccountId && value.defaultPaidFromCardId) {
-    ctx.addIssue({ code: "custom", path: ["defaultPaidFromCardId"], message: "Charge it to a card or a bank account, not both" });
-  }
+  if (value.defaultPaidFromAccountId && value.defaultPaidFromCardId) ctx.addIssue({ code: "custom", path: ["defaultPaidFromCardId"], message: BOTH_PLACES });
+}
+
+/** The same rule on a whole row, which the repository runs after an update is merged over the stored one (#125). */
+export function checkSubscription(row: Pick<Subscription, "defaultPaidFromAccountId" | "defaultPaidFromCardId">): string | null {
+  return row.defaultPaidFromAccountId && row.defaultPaidFromCardId ? BOTH_PLACES : null;
 }
 
 export const createSubscriptionSchema = subscriptionFields.superRefine(chargedToOnePlace);
@@ -74,4 +79,5 @@ export const subscriptionsRepository = createRepository<Subscription>({
   columns: SUBSCRIPTION_COLUMNS,
   dateColumns: ["billingAnchorDate", "startDate", "endDate"],
   schema: subscriptionRowSchema,
+  check: checkSubscription,
 });

@@ -157,7 +157,12 @@ export interface SyncRun {
 
 /** Paused and cancelled subscriptions are left out of every total. A cancelled one keeps its payments (#124). */
 export type SubscriptionStatus = "Active" | "Paused" | "Cancelled";
-export type SubscriptionPaymentStatus = "Pending" | "Paid";
+/**
+ * Skipped is a renewal that didn't charge, stored as a ₹0 payment (#125). Nothing in the
+ * app writes Pending, since upcoming renewals are computed from the schedule; it stays
+ * so a row that has it still reads.
+ */
+export type SubscriptionPaymentStatus = "Pending" | "Paid" | "Skipped";
 
 /**
  * What a subscription is for, as the Subscriptions tab's category dropdown lists

@@ -2,7 +2,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import type { z } from "zod";
-import { NotFoundError } from "@/lib/sheets/repository";
+import { InvalidRowError, NotFoundError } from "@/lib/sheets/repository";
 
 interface Repository<T extends { id: string }> {
   list: () => Promise<T[]>;
@@ -22,8 +22,9 @@ function invalidate(tag: string) {
 }
 
 /**
- * Wraps a route handler body so a NotFoundError becomes a clean 404 and any
- * other thrown error becomes a 500 with its message — instead of every
+ * Wraps a route handler body so a NotFoundError becomes a clean 404, an
+ * InvalidRowError (a row that would break its entity's check) a 400, and any
+ * other thrown error a 500 with its message — instead of every
  * route needing its own try/catch. Exported for routes that can't use
  * createListRoute/createItemRoute directly (e.g. loans, whose POST also
  * has to create the installment schedule) but still want the same
@@ -35,6 +36,9 @@ export async function handleRouteErrors(fn: () => Promise<NextResponse>): Promis
   } catch (error) {
     if (error instanceof NotFoundError) {
       return NextResponse.json({ error: error.message }, { status: 404 });
+    }
+    if (error instanceof InvalidRowError) {
+      return NextResponse.json({ error: error.message }, { status: 400 });
     }
     const message = error instanceof Error ? error.message : "Unexpected error";
     return NextResponse.json({ error: message }, { status: 500 });
