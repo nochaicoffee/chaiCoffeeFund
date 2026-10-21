@@ -150,6 +150,14 @@ Settled while building it:
 - **"All renewals →"** under a subscription's payments opens `?sub=<id>&period=all`, its whole history with the strip above the table. With All picked it's "View all renewals →", this year.
 - **Narrower than 1280px** the eight columns don't fit, so each row is the phone's two lines. Between 768px and 1280px, rows keep the ⋯ menu; on a phone there's none, as in the design.
 
+## Built: the map's hover card (2026-10-21)
+
+Prathik found the map missing a hover card, and its blocks moving whenever another subscription was picked.
+- **The hover card** (`CostMapHover`) is the Cards page's light card: surface, a hairline border and `--pop-shadow`. A block's card has its name, what it costs a month or a year (following the toggle), its plan's own price, its share of the monthly total with a bar in its colour, when it renews, where it's charged, what's been paid, and its latest price change. A category's card lists its subscriptions, biggest first, with a bar split between them.
+- **It follows the pointer** on whichever side has room, and glides as it goes. Over the gaps between blocks it stays rather than blinking. A focused block or category (by keyboard) gets it above, or else below, or over its top edge only when neither fits; Esc closes it. It keeps its content while it fades out, and closes if its block goes (switching Each and By category from the keyboard, or a refresh). On touch there's none, since a tap picks.
+- **The hovered block lifts 3px and its rings ripple outward**, as the heatmap's cells do (#104). The others step back to 75% and lose some colour. They were faded to 55% at first, which washed the dark blocks out against the page.
+- **The blocks stay put.** The map is as tall as the column beside it, and lays its blocks out at that height. The Payments card used to change height with the pick (one row for a yearly plan, six for Netflix, plus the "All subscriptions" line), so every pick moved the blocks. At xl the card now keeps room for six rows in either view, and the line under them is always there. For All it says to pick a block. Its header stays on one line, so a long name truncates rather than wrapping the toggle, and Price history spells out only the latest three price changes ("and 2 earlier changes"), so neither can make it taller.
+
 ## How it got here
 
 The canvas keeps everything explored, newest first: A–K (layouts), L–P (heroes), Q–Z (selectors), S1–S6 (circular carousels) and S7–S16 (the cover flow refined, each with a different full-width chart). Prathik kept these from them: F's greeting, D's cost map, C's payments table, S's cover flow with All at the centre, scrolling in a circle, S9's coloured stage, S9's Day by day chart, S7's Payment trend and S14's Lifetime cost. Along the way he asked that no section be added just to fill space (a separate colour band was dropped), and that cards side by side end level. A layout check measured this across every pick.

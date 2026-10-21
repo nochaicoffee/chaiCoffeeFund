@@ -5,6 +5,7 @@ import type { CategoryBlock, MapBlock, SubscriptionsPageView } from "@/app/subsc
 import { formatInr } from "@/lib/format/money";
 import { colorGradient } from "@/lib/format/subscriptionLabels";
 import { RingTexture } from "../RingTexture";
+import { CostMapHover } from "./CostMapHover";
 import { CheckIcon } from "./icons";
 import { Mono, Segmented } from "./parts";
 import { squarify, type TreemapRect } from "./treemap";
@@ -14,9 +15,16 @@ import { useSize } from "./useSize";
  * "What each one costs" (#126): a treemap of active subscriptions sized by what they
  * cost, each in its own colour (By category: each category in its colour), with A month
  * / A year and Each / By category.
- * A block, or a chip for a paused or cancelled one, picks that subscription. The map
- * fills whatever height the card has, so it ends level with the cards beside it.
+ * A block, or a chip for a paused or cancelled one, picks that subscription. Hovering or
+ * focusing a block or a category shows its card (CostMapHover). The map fills whatever
+ * height the card has, so it ends level with the cards beside it; that column keeps one
+ * height whatever's picked (PaymentsCard), so the blocks stay where they are.
  */
+
+/** The rings ripple outward on the active block, as on the Cards page's heatmap (#104). */
+const RIPPLE = "origin-bottom-right motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out group-data-active:scale-[1.18]";
+/** While one is hovered or focused, the rest step back: greyer and a little faded, not washed out to the page. */
+const DIM = "motion-safe:transition-[opacity,translate,filter] motion-safe:duration-200 group-data-hovering/map:not-data-active:opacity-75 group-data-hovering/map:not-data-active:saturate-[.55]";
 
 const GAP = 6;
 
@@ -34,17 +42,18 @@ function Block({ rect, block, per, picked, onPick }: { rect: TreemapRect; block:
       type="button"
       aria-pressed={picked}
       aria-label={`${block.alias}, ${value} a ${per}`}
+      data-map-key={block.id}
       onClick={onPick}
-      className="group absolute block focus-visible:outline-none"
+      className={`group absolute block focus-visible:outline-none data-active:-translate-y-[3px] ${DIM}`}
       style={{ left: rect.x + GAP / 2, top: rect.y + GAP / 2, width: w, height: h }}
     >
       <span
-        className={`relative isolate flex size-full flex-col justify-between overflow-hidden border border-on-card-line border-t-on-card-line-top text-left text-on-card transition-[transform,box-shadow] duration-150 ease-out group-hover:-translate-y-0.5 group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-accent ${
+        className={`relative isolate flex size-full flex-col justify-between overflow-hidden border border-on-card-line border-t-on-card-line-top text-left text-on-card group-focus-visible:outline-2 group-focus-visible:outline-offset-2 group-focus-visible:outline-accent ${
           big ? "rounded-[18px] p-4" : tiny ? "items-center justify-center rounded-xl p-1.5" : "rounded-xl p-2.5"
         }`}
         style={{ background: colorGradient(block.color), boxShadow: picked ? "0 0 0 2.5px var(--surface), 0 0 0 5px var(--accent)" : "none" }}
       >
-        <RingTexture width={Math.max(1, Math.round(w))} height={Math.max(1, Math.round(h))} dx={10} dy={19} first={40} step={24} count={9} stroke="var(--rings-light)" opacity={0.05} />
+        <RingTexture width={Math.max(1, Math.round(w))} height={Math.max(1, Math.round(h))} dx={10} dy={19} first={40} step={24} count={9} stroke="var(--rings-light)" opacity={0.05} ringsClassName={RIPPLE} />
         {tiny ? (
           <span className="text-center leading-[1.15]">
             <b className="text-[13px]">{block.initial}</b>
@@ -98,17 +107,23 @@ function CategoryTile({ rect, category, per }: { rect: TreemapRect; category: Ca
   const w = rect.w - GAP;
   const h = rect.h - GAP;
   const roomy = w > 110 && h > 70;
+  const value = formatInr(per === "year" ? category.monthly * 12 : category.monthly);
   return (
+    // Focusable only for its hover card: a category isn't something to pick.
     <div
-      className="absolute isolate flex flex-col justify-between overflow-hidden rounded-xl border border-on-card-line border-t-on-card-line-top p-2.5 text-on-card"
+      tabIndex={0}
+      role="group"
+      aria-label={`${category.label}, ${value} a ${per}`}
+      data-map-key={category.key}
+      className={`group absolute isolate flex flex-col justify-between overflow-hidden rounded-xl border border-on-card-line border-t-on-card-line-top p-2.5 text-on-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent data-active:-translate-y-[3px] ${DIM}`}
       style={{ left: rect.x + GAP / 2, top: rect.y + GAP / 2, width: w, height: h, background: colorGradient(category.color) }}
     >
-      <RingTexture width={Math.max(1, Math.round(w))} height={Math.max(1, Math.round(h))} dx={10} dy={19} first={40} step={24} count={9} stroke="var(--rings-light)" opacity={0.05} />
+      <RingTexture width={Math.max(1, Math.round(w))} height={Math.max(1, Math.round(h))} dx={10} dy={19} first={40} step={24} count={9} stroke="var(--rings-light)" opacity={0.05} ringsClassName={RIPPLE} />
       <span className="min-w-0">
         <span className={`block truncate font-extrabold ${roomy ? "text-[15px]" : "text-xs"}`}>{category.label}</span>
         {roomy && <span className="mt-[3px] block truncate text-[11px] font-semibold text-on-card-muted">{category.aliases.join(", ")}</span>}
       </span>
-      <span className={`font-extrabold tabular-nums ${roomy ? "text-xl" : "text-[13px]"}`}>{formatInr(per === "year" ? category.monthly * 12 : category.monthly)}</span>
+      <span className={`font-extrabold tabular-nums ${roomy ? "text-xl" : "text-[13px]"}`}>{value}</span>
     </div>
   );
 }
@@ -138,17 +153,19 @@ export function CostMapCard({ view, picked, onPick }: { view: SubscriptionsPageV
         </span>
       </div>
 
-      <div ref={box} className="relative min-h-[360px] flex-1 md:min-h-[440px]">
-        {rects.length === 0 ? (
-          <p className="absolute inset-0 flex items-center justify-center rounded-[18px] border-[1.5px] border-dashed border-divider px-6 text-center text-[13px] font-medium text-muted">
-            Each active subscription becomes a block here, sized by what it costs.
-          </p>
-        ) : by === "each" ? (
-          rects.map((r) => <Block key={r.key} rect={r} block={blocks.get(r.key)!} per={per} picked={picked === r.key} onPick={() => onPick(r.key)} />)
-        ) : (
-          rects.map((r) => <CategoryTile key={r.key} rect={r} category={categories.get(r.key)!} per={per} />)
-        )}
-      </div>
+      <CostMapHover blocks={blocks} categories={categories} per={per} picked={picked}>
+        <div ref={box} className="relative min-h-[360px] flex-1 md:min-h-[440px]">
+          {rects.length === 0 ? (
+            <p className="absolute inset-0 flex items-center justify-center rounded-[18px] border-[1.5px] border-dashed border-divider px-6 text-center text-[13px] font-medium text-muted">
+              Each active subscription becomes a block here, sized by what it costs.
+            </p>
+          ) : by === "each" ? (
+            rects.map((r) => <Block key={r.key} rect={r} block={blocks.get(r.key)!} per={per} picked={picked === r.key} onPick={() => onPick(r.key)} />)
+          ) : (
+            rects.map((r) => <CategoryTile key={r.key} rect={r} category={categories.get(r.key)!} per={per} />)
+          )}
+        </div>
+      </CostMapHover>
 
       {/* The category legend belongs to By category: in Each, every block is in its own subscription's colour. */}
       {by === "category" && view.categories.length > 0 && (
