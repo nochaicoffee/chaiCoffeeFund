@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { demoSubscriptionData } from "@/lib/demo/subscriptionsDemo";
+import { formatInr } from "@/lib/format/money";
 import { sentenceText } from "../cards/summarySentence";
+import type { SubscriptionData } from "@/lib/aggregate/subscriptionPage";
 import type { Subscription, SubscriptionPayment } from "@/lib/sheets/types";
 import { ALL, greetingView, subscriptionsPageView, summarySentence } from "./views";
 
@@ -89,6 +91,63 @@ describe("the carousel and hero", () => {
     const ahead = subscriptionsPageView({ subscriptions: [yearly], payments: [paid("2025-10-23"), paid("2026-10-19")], cards: [], accounts: [] }, "2026-10-21");
     expect(ahead.picks[1].bar).toMatchObject({ start: "Oct 23, 2026", middle: "Paid Oct 19 · next Sat, Oct 23, 2027", end: "Oct 23, 2027", fraction: 0 });
     expect(ahead.picks[1].stats[1]).toEqual({ label: "Renews", value: "Sat, Oct 23, 2027", sub: "in 12 months" });
+  });
+
+  it("gives the money stats their amounts, so they roll to the next pick's", () => {
+    // A month is the plans' monthly shares added up, so it isn't whole; the digits show it rounded, as the value does.
+    expect(pick(ALL).stats.map((s) => s.money ?? null)).toEqual([{ amount: 66713 / 12, prefix: "" }, null, { amount: 57163, prefix: "" }, null]);
+    expect(pick("demo-netflix").stats.map((s) => s.money ?? null)).toEqual([{ amount: 649, prefix: "" }, null, { amount: 16418, prefix: "" }, { amount: 150, prefix: "↑ " }]);
+    // The value is the same text the rolling digits draw.
+    for (const p of view.picks) for (const s of p.stats) if (s.money) expect(s.value).toBe(`${s.money.prefix}${formatInr(s.money.amount)}`);
+  });
+
+  it("says on each cover what a peek at it shows, and which ones renew within 3 days", () => {
+    expect(pick("demo-netflix").cover.next).toBe("Renews Oct 23 · in 3 days");
+    expect(pick("demo-timesprime").cover.next).toBe("Renews Oct 30 · in 10 days");
+    expect(pick("demo-headspace").cover.next).toBe("Paused · last paid Jul 12");
+    expect(pick(ALL).cover.next).toBe("Next is Netflix, Fri, Oct 23");
+    expect(view.picks.filter((p) => p.dueIn !== null).map((p) => `${p.alias} ${p.dueIn}`)).toEqual(["Netflix 3"]);
+    const onTheDay = subscriptionsPageView(data, "2026-10-23");
+    expect(onTheDay.picks.find((p) => p.id === "demo-netflix")).toMatchObject({ dueIn: 0, cover: { next: "Renews Oct 23 · today" } });
+  });
+
+  it("says what the cycle bar reads at its ends: what started it, and what the renewal will charge and where", () => {
+    expect(pick("demo-netflix").cycle).toEqual({
+      from: "2026-09-23",
+      to: "2026-10-23",
+      today: TODAY,
+      withYear: false,
+      start: "paid ₹649",
+      end: "renews ₹649 on the Millennia card",
+      label: "Netflix's cycle, Sep 23 to Oct 23",
+    });
+    expect(pick("demo-timesprime").cycle).toMatchObject({ withYear: true, label: "Times Prime's cycle, Oct 30, 2025 to Oct 30, 2026" });
+    expect(pick(ALL).cycle).toBeNull();
+    expect(pick("demo-headspace").cycle).toBeNull();
+  });
+
+  it("reads a cycle paid ahead from the renewal it paid, and one that started unrecorded or skipped as such", () => {
+    const plan = { id: "m", name: "Monthly Plan", alias: "Plan", category: "Software" as const, amount: 300, billingCycle: "Monthly" as const, billingAnchorDate: "2026-08-23", startDate: "2026-08-23", status: "Active" as const, defaultPaidFromAccountId: "acc" };
+    const accounts = [{ id: "acc", name: "Kotak Savings" }] as SubscriptionData["accounts"];
+    const pay = (paymentDate: string, status: SubscriptionPayment["status"] = "Paid", amount = 300) => ({ id: paymentDate, subscriptionId: "m", paymentDate, amount, status });
+    const at = (payments: SubscriptionPayment[], today: string) => subscriptionsPageView({ subscriptions: [plan], payments, cards: [], accounts }, today).picks[1];
+    // Paid ahead on Oct 21 for Oct 23: the bar is the next cycle, starting with that payment.
+    expect(at([pay("2026-08-23"), pay("2026-09-23"), pay("2026-10-21")], "2026-10-21")).toMatchObject({ dueIn: null, cycle: { from: "2026-10-23", to: "2026-11-23", start: "paid ₹300", end: "renews ₹300 from Kotak Savings" } });
+    expect(at([pay("2026-08-23")], "2026-10-01").cycle).toMatchObject({ from: "2026-09-23", start: "not recorded" });
+    expect(at([pay("2026-08-23"), pay("2026-09-23", "Skipped", 0)], "2026-10-01").cycle).toMatchObject({ start: "didn't charge" });
+    expect(at([pay("2026-08-23"), pay("2026-09-23", "Pending")], "2026-10-01").cycle).toMatchObject({ start: "₹300 pending" });
+    // On the renewal day, before it's paid, the cycle it starts is due.
+    expect(at([pay("2026-08-23"), pay("2026-09-23")], "2026-10-23")).toMatchObject({ dueIn: 0, cycle: { from: "2026-10-23", start: "renews ₹300 from Kotak Savings" } });
+    // Charged nowhere in particular: the renewal says only what it costs.
+    const nowhere = subscriptionsPageView({ subscriptions: [{ ...plan, defaultPaidFromAccountId: undefined }], payments: [pay("2026-08-23")], cards: [], accounts }, "2026-10-01");
+    expect(nowhere.picks[1].cycle).toMatchObject({ end: "renews ₹300" });
+  });
+
+  it("rolls a price drop with its down arrow", () => {
+    const plan = { id: "d", name: "Dropped", alias: "Drop", category: "Music" as const, amount: 250, billingCycle: "Monthly" as const, billingAnchorDate: "2026-08-05", startDate: "2026-08-05", status: "Active" as const };
+    const pay = (paymentDate: string, amount: number) => ({ id: paymentDate, subscriptionId: "d", paymentDate, amount, status: "Paid" as const });
+    const drop = subscriptionsPageView({ subscriptions: [plan], payments: [pay("2026-08-05", 300), pay("2026-09-05", 250)], cards: [], accounts: [] }, "2026-10-01");
+    expect(drop.picks[1].stats[3]).toMatchObject({ label: "Price", value: "↓ ₹50", money: { amount: 50, prefix: "↓ " } });
   });
 
   it("shows paused and cancelled ones with no cycle bar", () => {

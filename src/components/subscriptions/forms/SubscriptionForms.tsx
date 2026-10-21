@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, useTransition, type ReactNode, type Ref } from "react";
 import { changeSubscriptionStatus, deletePayment, deleteSubscription, markRenewalPaid, markRenewalSkipped, undoMarkPaid, type MarkPaidResult, type WrittenPayment } from "@/app/subscriptions/actions";
 import type { FormsData, PaymentRef } from "@/app/subscriptions/formsView";
 import { formatShortDate } from "@/lib/format/date";
@@ -29,7 +29,9 @@ type Open =
   | { kind: "edit-payment"; payment: PaymentRef }
   | { kind: "delete-payment"; payment: PaymentRef };
 
-type Toast = { kind: "paid"; paymentId: string; written: WrittenPayment; message: string; key: number } | { kind: "done" | "error"; message: string; key: number };
+type Toast =
+  | { kind: "paid"; paymentId: string; written: WrittenPayment; message: string; key: number; markedPaid?: string }
+  | { kind: "done" | "error"; message: string; key: number };
 
 interface Controls {
   forms: FormsData;
@@ -41,6 +43,12 @@ interface Controls {
   skip: (subscriptionId: string, renewalDate: string) => void;
   /** What's saving: a subscription's id for Mark paid, or "<id>:<date>" for It didn't charge. */
   saving: string | null;
+  /** The subscription Mark paid just paid, while its Undo is offered (#148, 4B): the hero's button shows it paid. */
+  justPaid: string | null;
+  /** The subscription whose Mark paid is being undone, until the Sheet has it back as it was. */
+  undoing: string | null;
+  /** Undo the one-click write the toast offers to undo. */
+  undo: () => void;
 }
 
 const FormsContext = createContext<Controls | null>(null);
@@ -58,6 +66,7 @@ export function SubscriptionFormsProvider({ forms, children }: { forms: FormsDat
   const [open, setOpen] = useState<Open | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
   const [saving, setSaving] = useState<string | null>(null);
+  const [undoing, setUndoing] = useState<string | null>(null);
   const [, startTransition] = useTransition();
   const disabledReason = forms.demo ? "Sample data can't be changed" : undefined;
   // The button that opened the form, so focus goes back to it on close, even after Edit → Delete
@@ -70,20 +79,21 @@ export function SubscriptionFormsProvider({ forms, children }: { forms: FormsDat
   };
 
   // A one-click write (Mark paid, It didn't charge), with its toast and Undo.
-  const quick = useCallback((key: string, run: () => Promise<MarkPaidResult>) => {
+  // `markedPaid` is the subscription Mark paid paid, for the hero's button (#148, 4B).
+  const quick = useCallback((key: string, run: () => Promise<MarkPaidResult>, markedPaid?: string) => {
     setSaving(key);
     startTransition(async () => {
       // The action reports Sheet failures itself; this catches the app being unreachable, so the button never just stops.
       const result = await run().catch(() => ({ ok: false as const, message: UNREACHABLE }));
       setSaving(null);
-      setToast(result.ok ? { kind: "paid", paymentId: result.paymentId, written: result.written, message: result.message, key: Date.now() } : { kind: "error", message: result.message, key: Date.now() });
+      setToast(result.ok ? { kind: "paid", paymentId: result.paymentId, written: result.written, message: result.message, key: Date.now(), markedPaid } : { kind: "error", message: result.message, key: Date.now() });
     });
   }, []);
 
   const markPaid = useCallback(
     (subscriptionId: string) => {
       const date = forms.context[subscriptionId]?.markPaid;
-      if (date) quick(subscriptionId, () => markRenewalPaid(subscriptionId, date));
+      if (date) quick(subscriptionId, () => markRenewalPaid(subscriptionId, date), subscriptionId);
     },
     [forms.context, quick],
   );
@@ -91,11 +101,16 @@ export function SubscriptionFormsProvider({ forms, children }: { forms: FormsDat
 
   function undo() {
     if (toast?.kind !== "paid") return;
-    const { paymentId, written } = toast;
+    const { paymentId, written, markedPaid } = toast;
     setToast(null);
+    setUndoing(markedPaid ?? null);
     startTransition(async () => {
       const result = await undoMarkPaid(paymentId, written).catch(() => ({ ok: false, message: UNREACHABLE }));
-      setToast({ kind: result.ok ? "done" : "error", message: result.message, key: Date.now() });
+      // In the transition, so the hero's button changes with the data the undo brings back, not before it.
+      startTransition(() => {
+        setUndoing(null);
+        setToast({ kind: result.ok ? "done" : "error", message: result.message, key: Date.now() });
+      });
     });
   }
 
@@ -116,7 +131,19 @@ export function SubscriptionFormsProvider({ forms, children }: { forms: FormsDat
   const payments = context ? `${context.rows} ${context.rows === 1 ? "payment" : "payments"}` : "payments";
 
   return (
-    <FormsContext.Provider value={{ forms, disabledReason, open: (o) => !disabledReason && show(o), markPaid: (id) => !disabledReason && markPaid(id), skip: (id, date) => !disabledReason && skip(id, date), saving }}>
+    <FormsContext.Provider
+      value={{
+        forms,
+        disabledReason,
+        open: (o) => !disabledReason && show(o),
+        markPaid: (id) => !disabledReason && markPaid(id),
+        skip: (id, date) => !disabledReason && skip(id, date),
+        saving,
+        justPaid: toast?.kind === "paid" ? (toast.markedPaid ?? null) : null,
+        undoing,
+        undo,
+      }}
+    >
       {children}
       {open?.kind === "add" && <SubscriptionFormDialog forms={forms} onClose={close} />}
       {open?.kind === "edit" && subscription && <SubscriptionFormDialog subscription={subscription} forms={forms} onDelete={() => setOpen({ kind: "delete", id: subscription.id })} onClose={close} />}
@@ -205,14 +232,34 @@ function statusDialog(change: StatusChange, alias: string, payments: string, nex
 /**
  * A button that opens a form or runs Mark paid. With sample data it stays focusable but
  * disabled (aria-disabled), with the reason as a tooltip, as the Cards forms' buttons do.
+ * `done` shows it as done (the hero's Paid, #148): focusable, but it does nothing.
  */
-export function FormTrigger({ className, label, icon, onClick, iconOnly = false, busy = false }: { className: string; label: string; icon?: ReactNode; onClick: () => void; iconOnly?: boolean; busy?: boolean }) {
+export function FormTrigger({
+  className,
+  label,
+  icon,
+  onClick,
+  iconOnly = false,
+  busy = false,
+  done = false,
+  ref,
+}: {
+  className: string;
+  label: string;
+  icon?: ReactNode;
+  onClick: () => void;
+  iconOnly?: boolean;
+  busy?: boolean;
+  done?: boolean;
+  ref?: Ref<HTMLButtonElement>;
+}) {
   const { disabledReason } = useSubscriptionForms();
   return (
     <button
+      ref={ref}
       type="button"
-      onClick={disabledReason || busy ? undefined : onClick}
-      aria-disabled={disabledReason ? true : undefined}
+      onClick={disabledReason || busy || done ? undefined : onClick}
+      aria-disabled={disabledReason || done ? true : undefined}
       aria-label={iconOnly ? label : undefined}
       title={disabledReason}
       className={`${className} ${disabledReason ? "cursor-not-allowed opacity-60" : ""}`}
