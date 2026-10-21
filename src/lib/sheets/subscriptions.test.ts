@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createSubscriptionSchema, subscriptionRowSchema, updateSubscriptionSchema } from "./subscriptions";
+import { checkSubscription, createSubscriptionSchema, subscriptionRowSchema, updateSubscriptionSchema } from "./subscriptions";
 
 const valid = {
   name: "Netflix Premium",
@@ -73,5 +73,12 @@ describe("updateSubscriptionSchema clearing fields", () => {
 
   it("leaves an update that doesn't touch where it's charged alone", () => {
     expect(updateSubscriptionSchema.parse({ amount: 799 })).toEqual({ amount: 799 });
+  });
+});
+
+describe("checkSubscription", () => {
+  it("catches a whole row charged to both a card and an account", () => {
+    expect(checkSubscription({ defaultPaidFromAccountId: "acc-1", defaultPaidFromCardId: "card-1" })).toBe("Charge it to a card or a bank account, not both");
+    expect(checkSubscription({ defaultPaidFromCardId: "card-1" })).toBeNull();
   });
 });

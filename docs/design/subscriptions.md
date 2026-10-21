@@ -9,7 +9,7 @@ Final design, picked by Prathik on 2026-10-21. Mockups: [`design/subscriptions/`
 | `SubsFinalStates.dc.html` | No subscriptions, a renewal due soon, after Mark paid, paused, cancelled, and every pick's colour |
 | `SubsForms.dc.html` | Add / Edit subscription, Record payment, Pause and Cancel, phone sheets |
 | `SubsRenewals.dc.html`, `SubsRenewalsPhone`, `SubsRenewalsStates` | The Renewals page, layout R1 (picked 2026-10-21); R2 and R3 were the other options |
-| `SubsReadme.dc.html` | Every direction explored, how picks were made, and the open decisions |
+| `SubsReadme.dc.html` | Every direction explored, how picks were made, and the decisions that were open when it was picked (decided below) |
 
 Every name, price and date in the mockups is made up. "Today" is Oct 20, 2026.
 
@@ -54,8 +54,8 @@ The artboards and `canvas.json` are built by [`design/subscriptions/generator/`]
 ## Numbers (definitions)
 
 - **A month** for a subscription is its price divided by the months in its cycle (`monthlyEquivalent`); a year is that × 12. Paused and cancelled ones are left out of every total.
-- **A month's spend** in the chart: the payments recorded in that month, for past months. For this month, those plus the renewals still to come. For future months, the renewals expected at today's plan prices.
-- **Renewals** come from `nextOccurrence` (`lib/aggregate/recurring.ts`), stepping from the billing anchor date. A renewal is **paid** when a payment matches it, **not recorded** when its date has passed with none, and **upcoming** otherwise. The matching rule is an open decision below.
+- **A month's spend** in the chart: the payments recorded in that month, for past months. For this month, those plus the renewals still to come. For future months, the renewals expected at today's plan prices, plus any already marked paid ahead.
+- **Renewals** come from the schedule (`lib/aggregate/subscriptionRenewals.ts`), stepping from the billing anchor date. A renewal is **paid** when a payment within half a cycle matches it, **skipped** when that payment is a ₹0 Skipped one, **not recorded** when its date has passed with none, and **upcoming** otherwise. After a cancellation the next one is **won't renew**.
 - **Lifetime cost** is the sum of a subscription's recorded payments.
 - New computations for the build (renewal rows, monthly spend by day and month, lifetime cost) belong in `lib/aggregate/` as pure functions with tests, per CLAUDE.md.
 
@@ -82,13 +82,15 @@ The same order: greeting, the hero (smaller covers, a two-column caption), the c
 - **The Sheet:** these columns and dropdowns are added through the Sheets API, and `Quaterly` is fixed to `Quarterly`.
 - **Card-charged subscriptions count once, by context.** The Subscriptions page counts every payment. The Overview's monthly obligations counts a card-charged one only inside its card's bill, never again on top.
 
-## Open decisions
+## Decided for the build (2026-10-21, #125)
 
-1. **"It didn't charge"** needs somewhere to be stored, such as a ₹0 payment with status `Skipped`, or the button is left out.
-2. **Mark paid timing:** offered from 3 days before the renewal, or only on or after it?
-3. **When a renewal counts as not recorded:** proposed, a payment within half a cycle of the renewal date counts for it.
-4. **What counts as a price change:** any change, or ignore small ones (say under 2%) on dollar-billed charges?
-5. **Pending payments:** upcoming renewals are computed, so the form never writes `Pending`. Keep it in the model or drop it?
+The rules are in [`docs/system-design.md`](../system-design.md) under Subscription, and in `lib/aggregate/subscriptionRenewals.ts`.
+
+1. **"It didn't charge"** records a ₹0 payment with status `Skipped`. The renewal shows as skipped, not as not recorded.
+2. **Mark paid** is offered from 3 days before the renewal, today included.
+3. **A payment within half a cycle** of a renewal, either side, counts for it. Renewals are settled in date order, each by the earliest payment in its window.
+4. **A price change** is a payment 2% or more different from the one before it; smaller moves are ignored.
+5. **Pending** stays in the model, but the app never writes it: upcoming renewals are computed.
 
 ## How it got here
 
