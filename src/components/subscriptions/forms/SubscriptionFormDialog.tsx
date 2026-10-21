@@ -6,10 +6,10 @@ import type { FormsData } from "@/app/subscriptions/formsView";
 import { CYCLE_STEP_MONTHS, addMonthsUTC } from "@/lib/aggregate/recurring";
 import { formatDate, formatShortDate } from "@/lib/format/date";
 import { formatInr, parseAmountText } from "@/lib/format/money";
-import { categoryColor, categoryLabel, colorGradient, cycleWord } from "@/lib/format/subscriptionLabels";
+import { categoryColor, categoryLabel, colorGradient, colorName, cycleWord, subscriptionColor } from "@/lib/format/subscriptionLabels";
 import { IDLE } from "@/lib/forms/formState";
-import { chargedToValue, readSubscriptionForm } from "@/lib/forms/subscriptionForms";
-import { SUBSCRIPTION_CATEGORIES, type RecurrenceCycle, type Subscription, type SubscriptionCategory } from "@/lib/sheets/types";
+import { chargedToValue, freeColor, readSubscriptionForm } from "@/lib/forms/subscriptionForms";
+import { SUBSCRIPTION_CATEGORIES, SUBSCRIPTION_COLORS, type RecurrenceCycle, type Subscription, type SubscriptionColor } from "@/lib/sheets/types";
 import { RingTexture } from "../../RingTexture";
 import { DateInput, Field, MoneyInput, PreviewPanel, Segmented, SelectInput, TextInput, describedBy } from "../../cards/forms/fields";
 import { FormDialog } from "../../cards/forms/FormDialog";
@@ -71,8 +71,10 @@ export function SubscriptionFormDialog({
   const endDateOptional = subscription?.status === "Cancelled" && !subscription.endDate;
   const [endDate, setEndDate] = useState(subscription?.endDate ?? (endDateOptional ? "" : forms.today));
   const [chargedTo, setChargedTo] = useState(subscription ? chargedToValue(subscription) : "");
+  // Its own colour: what it has (a row from before colours keeps its category's), or for a new one the first no other subscription uses.
+  const [color, setColor] = useState<SubscriptionColor>(subscription ? colorName(subscriptionColor(subscription)) : freeColor(forms.subscriptions.map((s) => colorName(subscriptionColor(s)))));
 
-  const values = { name, alias, category, amount, billingCycle, nextRenewal, startDate, status, endDate, chargedTo };
+  const values = { name, alias, category, amount, billingCycle, nextRenewal, startDate, status, endDate, chargedTo, color };
   const known = { cardIds: forms.cards.map((c) => c.id), accountIds: forms.accounts.map((a) => a.id) };
   const check = readSubscriptionForm(values, known, editing, { endDateOptional });
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
@@ -90,7 +92,7 @@ export function SubscriptionFormDialog({
   const price = parseAmountText(amount);
   const cycle = billingCycle || "Monthly";
   const monthly = price !== null ? price / CYCLE_STEP_MONTHS[cycle] : null;
-  const color = category ? categoryColor(category as SubscriptionCategory) : "onyx";
+  const colorKey = color.toLowerCase() as Lowercase<SubscriptionColor>;
   const shortName = (alias || name).trim() || "Name";
   const card = forms.cards.find((c) => chargedTo === `card:${c.id}`);
   const account = forms.accounts.find((a) => chargedTo === `account:${a.id}`);
@@ -102,7 +104,7 @@ export function SubscriptionFormDialog({
 
   const preview = (
     <PreviewPanel caption={editing ? undefined : "A yearly or quarterly price is spread over its months for these totals."}>
-      <div className="relative isolate flex h-[156px] flex-col justify-between overflow-hidden rounded-[18px] border border-on-card-line border-t-on-card-line-top px-4 py-3.5 text-on-card shadow-[var(--tile-shadow)] max-md:h-[120px]" style={{ background: colorGradient(color), filter: counted ? undefined : "grayscale(0.8)" }}>
+      <div className="relative isolate flex h-[156px] flex-col justify-between overflow-hidden rounded-[18px] border border-on-card-line border-t-on-card-line-top px-4 py-3.5 text-on-card shadow-[var(--tile-shadow)] max-md:h-[120px]" style={{ background: colorGradient(colorKey), filter: counted ? undefined : "grayscale(0.8)" }}>
         <RingTexture width={280} height={156} dx={10} dy={20} first={40} step={26} count={8} stroke="var(--rings-light)" opacity={0.07} />
         <span className="flex items-center justify-between">
           <span className="flex size-[30px] items-center justify-center rounded-[9px] bg-on-card-fill text-[13px] font-extrabold">{shortName.trim()[0]?.toUpperCase() ?? <RenewIcon />}</span>
@@ -131,6 +133,31 @@ export function SubscriptionFormDialog({
       <div className="flex flex-col gap-1.5 rounded-[14px] bg-surface/80 px-3.5 py-3">
         <Row label="You pay a month" value={`${formatInr(before)} → ${formatInr(after)}`} />
       </div>
+      {/* The colour radios sit in the preview panel, inside the form, so they submit with it (as in Add card). */}
+      <fieldset aria-describedby={errors.color ? "color-error" : undefined}>
+        <legend className="mb-2 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+          Colour<span className="text-negative" aria-hidden="true"> *</span>
+        </legend>
+        <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+          {SUBSCRIPTION_COLORS.map((c) => (
+            <label key={c} className="relative flex cursor-pointer flex-col items-center" title={c}>
+              <input type="radio" name="color" value={c} checked={color === c} onChange={() => setColor(c)} aria-label={c} className="peer sr-only" />
+              <span
+                aria-hidden="true"
+                className="aspect-square w-full max-w-9 rounded-[9px] shadow-[0_2px_5px_oklch(0_0_0/0.18)] ring-offset-2 ring-offset-feature-tile peer-checked:ring-2 peer-checked:ring-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-accent"
+                style={{ background: colorGradient(c.toLowerCase() as Lowercase<SubscriptionColor>) }}
+              />
+            </label>
+          ))}
+        </div>
+        <p className="mt-1.5 text-[11px] font-semibold text-muted">{errors.color ? (
+            <span id="color-error" className="text-negative">
+              {errors.color}
+            </span>
+          ) : (
+            color
+          )}</p>
+      </fieldset>
     </PreviewPanel>
   );
 
@@ -177,7 +204,7 @@ export function SubscriptionFormDialog({
         <Field id="alias" label="Short name" help="Shown on tiles and lists. Blank uses the name." error={errors.alias}>
           <TextInput {...describedBy("alias", errors.alias, true)} name="alias" value={alias} onChange={(e) => setAlias(e.target.value)} placeholder={name || "e.g. Netflix"} invalid={Boolean(errors.alias)} />
         </Field>
-        <Field id="category" label="Category" required help="Picks the colour it's shown in." error={errors.category}>
+        <Field id="category" label="Category" required help="Groups it in the cost map's By category view." error={errors.category}>
           <SelectInput
             {...describedBy("category", errors.category, true)}
             name="category"

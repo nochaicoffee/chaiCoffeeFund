@@ -7,7 +7,7 @@ import { CYCLE_STEP_MONTHS } from "@/lib/aggregate/recurring";
 import { firstRenewalAfter } from "@/lib/aggregate/subscriptionRenewals";
 import { formatDayDate, formatShortDate } from "@/lib/format/date";
 import { formatInr, parseAmountText } from "@/lib/format/money";
-import { categoryColor, cycleWord } from "@/lib/format/subscriptionLabels";
+import { cycleWord, subscriptionColor } from "@/lib/format/subscriptionLabels";
 import { IDLE } from "@/lib/forms/formState";
 import { chargedToValue, offPlan, readPaymentForm } from "@/lib/forms/subscriptionForms";
 import { DateInput, Field, MoneyInput, PreviewPanel, SelectInput, describedBy } from "../../cards/forms/fields";
@@ -140,7 +140,7 @@ export function PaymentFormDialog({ subscriptionId, renewalDate, forms, onClose 
           onChange={choose}
           onBlur={() => reveal("subscriptionId")}
           placeholder="Choose subscription"
-          options={recordable.map((x) => ({ value: x.id, label: x.alias, meta: `${formatInr(x.amount)} / ${cycleWord(x.billingCycle)}`, swatch: { background: `var(--card-${categoryColor(x.category)})` } }))}
+          options={recordable.map((x) => ({ value: x.id, label: x.alias, meta: `${formatInr(x.amount)} / ${cycleWord(x.billingCycle)}`, swatch: { background: `var(--card-${subscriptionColor(x)})` } }))}
           invalid={Boolean(errors.subscriptionId)}
         />
       </Field>

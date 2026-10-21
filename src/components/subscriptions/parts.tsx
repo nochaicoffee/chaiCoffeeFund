@@ -2,7 +2,7 @@ import type { ChargedToChip, Mark } from "@/app/subscriptions/views";
 import { colorGradient } from "@/lib/format/subscriptionLabels";
 import { BankIcon, RenewIcon } from "./icons";
 
-/** The square that stands in for a subscription's logo: its initial on its category's colour. All gets the renew icon on emerald. */
+/** The square that stands in for a subscription's logo: its initial on its colour. All gets the renew icon on emerald. */
 export function Mono({ mark, size = 24 }: { mark: Mark; size?: number }) {
   return (
     <span

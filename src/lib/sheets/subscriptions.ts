@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { createRepository } from "./repository";
 import { clearable, isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
-import { SUBSCRIPTION_CATEGORIES, type Subscription } from "./types";
+import { SUBSCRIPTION_CATEGORIES, SUBSCRIPTION_COLORS, type Subscription } from "./types";
 
 /** A subscription's fields. The repository reads column types from a plain object, so the cross-field check is added below. */
 const subscriptionFields = z.object({
@@ -18,6 +18,7 @@ const subscriptionFields = z.object({
   defaultPaidFromAccountId: nonEmptyString.optional(),
   defaultPaidFromCardId: nonEmptyString.optional(),
   resumedOn: isoDate.optional(),
+  color: z.enum(SUBSCRIPTION_COLORS).optional(),
 });
 
 const BOTH_PLACES = "Charge it to a card or a bank account, not both";
@@ -60,7 +61,7 @@ export const updateSubscriptionSchema = subscriptionFields
 /** A row as read back from the Sheet: a valid create, plus its id. */
 export const subscriptionRowSchema = subscriptionFields.extend({ id: nonEmptyString });
 
-/** The Subscriptions tab's columns, in order. endDate and the two charged-to columns were added on the end (#124), and resumedOn after them (#128). */
+/** The Subscriptions tab's columns, in order. endDate and the two charged-to columns were added on the end (#124), resumedOn after them (#128), then color. */
 export const SUBSCRIPTION_COLUMNS: (keyof Subscription)[] = [
   "id",
   "name",
@@ -75,6 +76,7 @@ export const SUBSCRIPTION_COLUMNS: (keyof Subscription)[] = [
   "defaultPaidFromAccountId",
   "defaultPaidFromCardId",
   "resumedOn",
+  "color",
 ];
 
 export const subscriptionsRepository = createRepository<Subscription>({

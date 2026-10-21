@@ -82,3 +82,10 @@ describe("checkSubscription", () => {
     expect(checkSubscription({ defaultPaidFromCardId: "card-1" })).toBeNull();
   });
 });
+
+describe("updateSubscriptionSchema and colour", () => {
+  it("keeps the colour an edit sets, through the charged-to transform", () => {
+    expect(updateSubscriptionSchema.parse({ color: "Plum", defaultPaidFromCardId: "card-1" })).toEqual({ color: "Plum", defaultPaidFromCardId: "card-1", defaultPaidFromAccountId: "" });
+    expect(updateSubscriptionSchema.safeParse({ color: "Turquoise" }).success).toBe(false);
+  });
+});

@@ -34,7 +34,7 @@ The artboards and `canvas.json` are built by [`design/subscriptions/generator/`]
 
 ## The hero follows the pick
 
-- **The card's colour is the pick's**: its card gradient (`--card-<colour>-from` → `-to`), crossfading over 650ms. All is emerald. A subscription's colour comes from its category, so a subscription needs no colour field.
+- **The card's colour is the pick's**: its card gradient (`--card-<colour>-from` → `-to`), crossfading over 650ms. All is emerald. A subscription's colour is the one picked for it in Add or Edit (see "Colour" under Built: the forms); one saved before colours could be picked shows its category's.
 - **Everything in the card follows**, nothing stays green: the progress bar, the primary button and the ring round the picked cover use `--pick-soft`, the pick's colour mixed 46% with white; text on them uses `--pick-ink`, the colour's deep shade.
 - **The caption:**
   - **All:** "Everything / All subscriptions", the month so far from Oct 1 to Oct 31 ("Next is Netflix, Fri, Oct 23"), then A month, Renews next, Paid this year and Prices, with Record payment and Add subscription.
@@ -127,6 +127,7 @@ The forms open from the header (Record payment, Add subscription) and from the h
 - **Mark paid** is one click from 3 days before a renewal (Record payment otherwise, or to catch up on one not recorded). It records the plan's price on the renewal date, to where it's usually charged, with Undo for 6 seconds.
 - **Pause, Resume, Cancel and Restart** each ask first. Cancel asks for its date. Resume and Restart ask when it starts again (today by default) and store it as `resumedOn`, a new column (decided with Prathik 2026-10-21). The renewals between its last payment and that date weren't due, so they're never flagged. Only the latest restart is kept.
 - **Editing a paused or cancelled one back to Active** starts it again today, the same as Resume.
+- **Colour (Prathik, 2026-10-21):** a subscription's colour is picked freely in Add and Edit, not from its category. There are 14, in `SUBSCRIPTION_COLORS`: the card palette and All's emerald, plus Amber, Rose, Indigo, Forest, Plum, Ocean and Slate, each a token set in `globals.css`. A new subscription starts on the first colour no other one uses. The colour is stored in the `color` column, whose dropdown holds exactly those names. A row from before it shows its category's colour until it's edited. Categories keep their colours for the cost map's By category view, which is now the only view that shows the category legend: in Each, every block is in its own subscription's colour.
 
 ## Built: the Renewals page (2026-10-21, #130)
 

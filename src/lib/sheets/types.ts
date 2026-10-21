@@ -172,6 +172,15 @@ export type SubscriptionPaymentStatus = "Pending" | "Paid" | "Skipped";
 export const SUBSCRIPTION_CATEGORIES = ["Streaming", "Music", "Software", "Cloud-Storage", "Fitness", "Food", "Shopping", "News", "Other"] as const;
 export type SubscriptionCategory = (typeof SUBSCRIPTION_CATEGORIES)[number];
 
+/**
+ * The colours a subscription can be given (Prathik, 2026-10-21): picked freely in Add and
+ * Edit, not from its category. The card palette and All's emerald, plus seven more in the
+ * same deep-gradient style. Each is a token set in globals.css (--card-<name>-from/-to and
+ * a swatch). A row from before this column has none, and shows its category's colour.
+ */
+export const SUBSCRIPTION_COLORS = ["Emerald", "Sapphire", "Ruby", "Onyx", "Violet", "Teal", "Copper", "Amber", "Rose", "Indigo", "Forest", "Plum", "Ocean", "Slate"] as const;
+export type SubscriptionColor = (typeof SUBSCRIPTION_COLORS)[number];
+
 export interface Subscription {
   id: string;
   name: string;
@@ -190,6 +199,8 @@ export interface Subscription {
    * never flagged as not recorded.
    */
   resumedOn?: string;
+  /** Its colour, chosen in Add and Edit. */
+  color?: SubscriptionColor;
   /**
    * Where it's usually charged, at most one set, as on payments: a bank account, or a card.
    * New payments start from it. A card-charged subscription is already inside that card's

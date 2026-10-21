@@ -12,7 +12,8 @@ import { useSize } from "./useSize";
 
 /**
  * "What each one costs" (#126): a treemap of active subscriptions sized by what they
- * cost, in their category's colour, with A month / A year and Each / By category.
+ * cost, each in its own colour (By category: each category in its colour), with A month
+ * / A year and Each / By category.
  * A block, or a chip for a paused or cancelled one, picks that subscription. The map
  * fills whatever height the card has, so it ends level with the cards beside it.
  */
@@ -149,7 +150,8 @@ export function CostMapCard({ view, picked, onPick }: { view: SubscriptionsPageV
         )}
       </div>
 
-      {view.categories.length > 0 && (
+      {/* The category legend belongs to By category: in Each, every block is in its own subscription's colour. */}
+      {by === "category" && view.categories.length > 0 && (
         <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-muted">
           {view.categories.map((c) => (
             <span key={c.key} className="inline-flex items-center gap-1.5">
