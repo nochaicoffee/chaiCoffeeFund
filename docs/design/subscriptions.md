@@ -200,6 +200,29 @@ He left out 1C (blocks fill up to renewal) and 3C (the price change drawn in its
   - The cards come from the same `yearSummary` as the sentence (`greetingView`), so they always agree. The card glides between figures and closes on Esc. On a touch screen a tap opens it and another closes it.
 - **7D, toggles that slide:** every `Segmented` on the page (A month or A year, Each or By category, Payments or Price history, and the chart's views) slides its white pill to the chosen option with a small spring. Until it's been measured, and on the server, the chosen button carries the pill itself. It lives in `Segmented.tsx` (client), and `parts.tsx` re-exports it.
 
+## Built: the hero's interactions (2A–C, 4A, 4B, #148)
+
+Prathik's picks from sections 2 and 4 of `design/subscriptions-interactions/SubscriptionsInteractions.html`: 2A, 2B, 2C (changed as he asked), 4A and 4B. All the motion sits behind `motion-safe:` or a reduced-motion check, and the page is complete before anything moves.
+- **2A · Rolling digits.** Every money figure in the caption rolls to the next pick's with `RollingNumber`, as on the Cards page's details card, while the colour crossfades: the price, A month, Paid this year, Paid so far and the price change ("↑ ₹150"). `Stat.money` carries the amount. The stats are kept by place, so a figure rolls where it stands. Words (dates, "Same", a name) change at once.
+- **2B · Reading the cycle bar** (`CycleBar`). A mouse or pen moving along the bar, or a finger while it's down, shows the date at that point and how far it is from today, in a light pill above the bar.
+  - **Snaps:** within 10px it snaps to today ("Today · 2 days to go") and to the renewal ("Oct 23 · renews ₹649 on the Millennia card", or "from Kotak Savings" for an account).
+  - **The start** says what the renewal that began the cycle came to: paid ₹649, didn't charge, not recorded or pending. On a renewal day it's today, and says what's due.
+  - **It's a slider.** ← → step a day, Page Up and Page Down a week, and Home and End go to the ends. Screen readers hear each date and what's there.
+  - **Touch:** a finger's reading stays after it lifts, until a tap somewhere else.
+  - **The area that reads it** is 28px tall (44px on a phone) and runs a little past the bar's ends, without moving anything round it.
+  - **All's bar isn't read.** It's the month's spend so far, not a cycle, so a date along it wouldn't match its fill.
+  - **After a renewal paid ahead**, the bar is the next cycle, which starts after today. So there's no today on it, and its start says paid.
+- **2C · Peek, changed from the mockup.** In the mockup, the small label under a hovered side cover wasn't legible. Prathik asked for the cover itself to come out instead.
+  - **How it peeks:** hovering a cover that isn't in front slides its face 40px outwards and up, turns it most of the way towards you, and lifts it over the covers beside it, the front one included. It only overlaps the front cover's edge, and the carousel doesn't turn.
+  - **What it shows:** its name and price move up to make room for its next renewal, "Renews Oct 24 · in 3 days". Paused and cancelled ones say why they don't renew.
+  - **Picking and turning:** clicking it still picks it. A drag doesn't peek the covers it passes, and touch has no hover.
+  - **Keyboard and screen readers:** the covers aren't focusable on their own, since the carousel is one focus stop that the arrow keys turn. So each cover's name includes its next renewal.
+- **4A · A renewal getting close.** A cover renewing within 3 days breathes: a soft ring in its own colour mixed with white swells every 2.6s, and every 1.5s the day before, with a Tomorrow pill. On the day the ring holds still and the pill says Due today. The picked cover's ring starts outside its white one. With reduced motion, the ring holds still at half strength.
+- **4B · Paid, with a sweep.** When Mark paid succeeds, its button turns green with a tick ("Paid"), and Undo appears beside it while the toast offers it, for 6 seconds. Then the button settles to Record payment for the next renewal.
+  - **The rest follows the data the payment's `updateTag` brings back; nothing is faked.** The bar sweeps back to the start of the next cycle (empty, with its new ends), Paid so far rolls up by the amount, and "32 payments" becomes 33. All's Paid this year has the payment too, and rolls to it when All is turned to.
+  - **Undo** in the hero or the toast puts it all back. While it saves, the button says Saving…, rather than offering Record payment for a renewal that's about to be due again.
+  - **Focus** stays on the one button as it changes. When the hero's Undo goes with focus on it, used or timed out, focus goes back to that button.
+
 ## How it got here
 
 The canvas keeps everything explored, newest first: A–K (layouts), L–P (heroes), Q–Z (selectors), S1–S6 (circular carousels) and S7–S16 (the cover flow refined, each with a different full-width chart). Prathik kept these from them: F's greeting, D's cost map, C's payments table, S's cover flow with All at the centre, scrolling in a circle, S9's coloured stage, S9's Day by day chart, S7's Payment trend and S14's Lifetime cost. Along the way he asked that no section be added just to fill space (a separate colour band was dropped), and that cards side by side end level. A layout check measured this across every pick.

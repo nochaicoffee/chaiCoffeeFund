@@ -225,7 +225,19 @@
   --animate-days-next: days-next 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-days-prev: days-prev 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-tile-in: tile-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1) 260ms both;
+  --animate-breathe: breathe 2.6s ease-in-out infinite;
+  --animate-breathe-fast: breathe 1.5s ease-in-out infinite;
 
+  /* A subscription's cover renewing within 3 days (#148, 4A): a soft ring in its own colour (--cover-soft) swells and fades. */
+  @keyframes breathe {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+    50% {
+      box-shadow: 0 0 0 7px color-mix(in oklch, var(--cover-soft) 50%, transparent);
+    }
+  }
   @keyframes due-pulse {
     0%,
     100% {

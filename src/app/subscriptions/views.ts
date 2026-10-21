@@ -1,5 +1,5 @@
 import { daysBetween, monthOf } from "@/lib/aggregate/cardSpend";
-import { MARK_PAID_DAYS_BEFORE, yearSummary } from "@/lib/aggregate/subscriptionRenewals";
+import { MARK_PAID_DAYS_BEFORE, renewalsFor, yearSummary } from "@/lib/aggregate/subscriptionRenewals";
 import { monthlyEquivalent } from "@/lib/aggregate/subscriptions";
 import { nextRenewalsFrom, nextStatementCharges } from "@/lib/aggregate/subscriptionNextCharges";
 import {
@@ -36,20 +36,48 @@ export interface Stat {
   label: string;
   value: string;
   sub: string;
+  /** When the value is money: its amount, and the arrow before it if any, so it rolls to the next pick's (#148, 2A). */
+  money?: { amount: number; prefix: string };
+}
+
+/**
+ * What the cycle bar says when it's read (#148, 2B): the cycle's dates, and what happens
+ * at each end. Only an active subscription's bar is read; All's is the month's spend, not
+ * a cycle.
+ */
+export interface CycleRead {
+  from: string;
+  to: string;
+  today: string;
+  /** A cycle that spans two years dates its points with the year. */
+  withYear: boolean;
+  /** At its start, the renewal it began with: "paid ₹649", "didn't charge", "not recorded". */
+  start: string;
+  /** At the renewal: what it will charge and where, "renews ₹649 on the Millennia card". */
+  end: string;
+  /** The slider's name: "Netflix's cycle, Sep 23 to Oct 23". */
+  label: string;
 }
 
 export interface PickView extends Mark {
   id: string;
   name: string;
   status: "All" | Subscription["status"];
-  /** The cover: its corner ("10 active", "Monthly", "Paused") and its price line. */
-  cover: { corner: string; price: string };
+  /**
+   * The cover: its corner ("10 active", "Monthly", "Paused"), its price line, and the line
+   * a peek at it adds (#148, 2C): "Renews Oct 23 · in 3 days".
+   */
+  cover: { corner: string; price: string; next: string };
   eyebrow: string;
   /** The bar under the name: its two ends and the line over it. No fraction: an empty bar. */
   bar: { start: string; middle: string; end: string; fraction: number | null };
   stats: Stat[];
   /** Renews within 3 days: the renewal line leads. */
   dueSoon: boolean;
+  /** Days to its next renewal when that's within 3 (#148, 4A): its cover breathes, and on the day says Due today. */
+  dueIn: number | null;
+  /** What reading the cycle bar says (2B); null for All and for one with no cycle. */
+  cycle: CycleRead | null;
 }
 
 export interface ChargedToChip {
@@ -160,36 +188,70 @@ const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? o
 /** "Fri, Oct 23", with its year when that isn't this year: "Sat, Oct 23, 2027". */
 const dayDate = (iso: string, today: string) => (iso.slice(0, 4) === today.slice(0, 4) ? formatDayDate(iso) : `${formatDayDate(iso)}, ${iso.slice(0, 4)}`);
 
+/** A money stat's value, with its amount to roll (2A). */
+const money = (amount: number, prefix = "") => ({ value: `${prefix}${formatInr(amount)}`, money: { amount, prefix } });
+
 function allPick(facts: AllFacts, byId: Map<string, Subscription>, today: string): PickView {
   const nextSub = facts.next && byId.get(facts.next.subscriptionId);
+  const middle = facts.next && nextSub ? `Next is ${nextSub.alias}, ${dayDate(facts.next.date, today)}` : "Nothing renews this month";
   return {
     ...ALL_MARK,
     id: ALL,
     name: "All subscriptions",
     status: "All",
-    cover: { corner: `${facts.active} active`, price: `${formatInr(facts.monthly)} / month` },
+    cover: { corner: `${facts.active} active`, price: `${formatInr(facts.monthly)} / month`, next: middle },
     eyebrow: "Everything",
     bar: {
       start: formatShortDate(facts.month.from),
-      middle: facts.next && nextSub ? `Next is ${nextSub.alias}, ${dayDate(facts.next.date, today)}` : "Nothing renews this month",
+      middle,
       end: formatShortDate(facts.month.to),
       fraction: facts.month.fraction,
     },
     stats: [
-      { label: "A month", value: formatInr(facts.monthly), sub: `${facts.active} active` },
+      { label: "A month", ...money(facts.monthly), sub: `${facts.active} active` },
       { label: "Renews next", value: nextSub?.alias ?? "Nothing yet", sub: facts.next ? dayDate(facts.next.date, today) : "" },
-      { label: "Paid this year", value: formatInr(facts.yearPaid), sub: plural(facts.yearPayments, "payment") },
+      { label: "Paid this year", ...money(facts.yearPaid), sub: plural(facts.yearPayments, "payment") },
       facts.rises.count
         ? { label: "Prices", value: `${facts.rises.count} went up`, sub: `${formatInr(facts.rises.monthlyMore)} more a month` }
         : { label: "Prices", value: "No rises", sub: "this year" },
     ],
     dueSoon: false,
+    dueIn: null,
+    cycle: null,
   };
 }
 
 const smartDate = (iso: string, today: string) => (iso.slice(0, 4) === today.slice(0, 4) ? formatShortDate(iso) : formatDate(iso));
 
-function subscriptionPick(s: Subscription, f: SubscriptionFacts, today: string): PickView {
+/** Where a renewal charges, as the cycle bar's readout says it: " on the Millennia card", " from Kotak Savings", or nothing when it isn't set. */
+function chargedWhere(s: Subscription, data: SubscriptionData): string {
+  const card = s.defaultPaidFromCardId ? data.cards.find((c) => c.id === s.defaultPaidFromCardId) : undefined;
+  if (card) return ` on the ${card.alias || card.name} card`;
+  const account = s.defaultPaidFromAccountId ? data.accounts.find((a) => a.id === s.defaultPaidFromAccountId) : undefined;
+  return account ? ` from ${account.name}` : "";
+}
+
+/** What an active subscription's cycle bar says when it's read (2B). */
+function cycleRead(s: Subscription, f: SubscriptionFacts, data: SubscriptionData, today: string): CycleRead | null {
+  if (s.status !== "Active" || !f.bar) return null;
+  const { from, to } = f.bar;
+  const withYear = from.slice(0, 4) !== to.slice(0, 4);
+  const renews = `renews ${formatInr(s.amount)}${chargedWhere(s, data)}`;
+  // The renewal the cycle began with: the one paid ahead, or the schedule's at its start.
+  const atStart = f.bar.settledAhead ?? renewalsFor(s, data.payments, from, from, today)[0];
+  const START: Record<string, string> = {
+    paid: `paid ${formatInr(atStart?.amount ?? 0)}`,
+    skipped: "didn't charge",
+    pending: `${formatInr(atStart?.amount ?? 0)} pending`,
+    missing: "not recorded",
+    // It renews today and isn't paid yet.
+    upcoming: renews,
+  };
+  const date = withYear ? formatDate : formatShortDate;
+  return { from, to, today, withYear, start: (atStart && START[atStart.status]) ?? "", end: renews, label: `${s.alias}'s cycle, ${date(from)} to ${date(to)}` };
+}
+
+function subscriptionPick(s: Subscription, f: SubscriptionFacts, data: SubscriptionData, today: string): PickView {
   const active = s.status === "Active";
   let middle: string;
   if (s.status === "Paused") middle = f.lastCharged ? `Paused · last paid ${formatShortDate(f.lastCharged.paymentDate)}` : "Paused";
@@ -202,6 +264,7 @@ function subscriptionPick(s: Subscription, f: SubscriptionFacts, today: string):
   } else if (f.next) middle = `Renews ${dayDate(f.next.date, today)} · ${whenFrom(today, f.next.date)}`;
   else middle = `Starts ${dayDate(s.startDate, today)}`;
   const change = f.lastChange;
+  const dueIn = active && f.next ? daysBetween(today, f.next.date) : null;
   // A yearly plan's cycle runs across two years, so both ends say which.
   const end = (iso: string) => (f.bar && f.bar.from.slice(0, 4) !== f.bar.to.slice(0, 4) ? formatDate(iso) : formatShortDate(iso));
   return {
@@ -209,7 +272,11 @@ function subscriptionPick(s: Subscription, f: SubscriptionFacts, today: string):
     id: s.id,
     name: s.name,
     status: s.status,
-    cover: { corner: active ? s.billingCycle : s.status, price: `${formatInr(s.amount)} / ${cycleWord(s.billingCycle)}` },
+    cover: {
+      corner: active ? s.billingCycle : s.status,
+      price: `${formatInr(s.amount)} / ${cycleWord(s.billingCycle)}`,
+      next: active && f.next ? `Renews ${smartDate(f.next.date, today)} · ${whenFrom(today, f.next.date)}` : middle,
+    },
     eyebrow: `${categoryLabel(s.category)} · since ${formatDate(s.startDate)}`,
     bar: {
       start: active && f.bar ? end(f.bar.from) : "",
@@ -218,16 +285,18 @@ function subscriptionPick(s: Subscription, f: SubscriptionFacts, today: string):
       fraction: active && f.bar ? f.bar.fraction : null,
     },
     stats: [
-      { label: s.billingCycle, value: formatInr(s.amount), sub: `${formatInr(f.monthly)} a month` },
+      { label: s.billingCycle, ...money(s.amount), sub: `${formatInr(f.monthly)} a month` },
       active && f.next
         ? { label: "Renews", value: dayDate(f.next.date, today), sub: whenFrom(today, f.next.date) }
         : { label: "Status", value: s.status, sub: middle },
-      { label: "Paid so far", value: formatInr(f.paid), sub: plural(f.payments, "payment") },
+      { label: "Paid so far", ...money(f.paid), sub: plural(f.payments, "payment") },
       change
-        ? { label: "Price", value: `${change.to > change.from ? "↑" : "↓"} ${formatInr(Math.abs(change.to - change.from))}`, sub: `${formatInr(change.from)} → ${formatInr(change.to)} on ${formatShortDate(change.date)}` }
+        ? { label: "Price", ...money(Math.abs(change.to - change.from), change.to > change.from ? "↑ " : "↓ "), sub: `${formatInr(change.from)} → ${formatInr(change.to)} on ${formatShortDate(change.date)}` }
         : { label: "Price", value: "Same", sub: "Never changed" },
     ],
-    dueSoon: active && !!f.next && daysBetween(today, f.next.date) <= MARK_PAID_DAYS_BEFORE,
+    dueSoon: dueIn !== null && dueIn <= MARK_PAID_DAYS_BEFORE,
+    dueIn: dueIn !== null && dueIn <= MARK_PAID_DAYS_BEFORE ? dueIn : null,
+    cycle: cycleRead(s, f, data, today),
   };
 }
 
@@ -349,7 +418,7 @@ export function subscriptionsPageView(sheetData: SubscriptionData, today: string
   const biggest = Math.max(0, ...split.map((p) => p.monthly));
 
   return {
-    picks: [allPick(all, byId, today), ...order.map((s) => subscriptionPick(s, facts.get(s.id)!, today))],
+    picks: [allPick(all, byId, today), ...order.map((s) => subscriptionPick(s, facts.get(s.id)!, data, today))],
     payments: Object.fromEntries([[ALL, paymentsView(data, today)], ...data.subscriptions.map((s) => [s.id, paymentsView(data, today, s)])]),
     blocks,
     stopped: order

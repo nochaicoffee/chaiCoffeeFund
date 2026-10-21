@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent, type RefObject } from "react";
 import type { PickView } from "@/app/subscriptions/views";
 import { ALL, colorGradient, type ColorKey } from "@/lib/format/subscriptionLabels";
+import { RollingNumber } from "../motion/RollingNumber";
 import { RingTexture } from "../RingTexture";
+import { CycleBar } from "./CycleBar";
 import { FormTrigger, useSubscriptionForms } from "./forms/SubscriptionForms";
 import { CheckIcon, ChevronIcon, EditIcon, MoreIcon, PlayIcon, PlusIcon, RenewIcon } from "./icons";
 
@@ -16,6 +18,12 @@ import { CheckIcon, ChevronIcon, EditIcon, MoreIcon, PlayIcon, PlusIcon, RenewIc
  * Turning: click a cover or an arrow; a wheel or trackpad movement of 40px steps once
  * (at most every 90ms); a drag or swipe steps once per 56px, and the click that ends
  * a drag doesn't pick; arrow keys step while it has focus. It wraps round.
+ *
+ * Its interactions (#148, sections 2 and 4 of design/subscriptions-interactions/):
+ * the numbers roll to the next pick's (2A), the cycle bar can be read (2B, CycleBar),
+ * hovering a cover that isn't in front slides it out to face you with its next renewal
+ * (2C), a cover renewing within 3 days breathes in its own colour (4A), and Mark paid
+ * turns to Paid while the data the payment brings sweeps the bar on (4B).
  */
 
 /** The coloured card's own tokens, as the design's dark stage sets them, so text and fills read on any pick's colour. */
@@ -48,36 +56,81 @@ function placement(d: number): CSSProperties {
   const sign = Math.sign(d);
   return {
     transform: `translateX(calc(-50% + ${sign} * (var(--near) + ${a - 1} * var(--step)))) rotateY(calc(${-sign} * var(--rot))) scale(0.84)`,
+    // Which side it's on, for its peek (2C) to slide outwards and turn towards you.
+    "--side": sign,
     zIndex: 50 - a,
     opacity: a >= 6 ? 0 : 1,
     pointerEvents: a >= 6 ? "none" : undefined,
-  };
+  } as CSSProperties;
 }
 
+// preserve-3d, so a peeking cover's face turns in the cover flow's space rather than flat against the cover.
 const COVER_CLASS =
-  "absolute top-3.5 left-1/2 h-[106px] w-[150px] rounded-[14px] text-left transition-[transform,opacity,filter] duration-[520ms,380ms,380ms] ease-[cubic-bezier(0.22,0.8,0.2,1)] [-webkit-user-drag:none] focus-visible:outline-none motion-reduce:transition-none md:top-6 md:h-[156px] md:w-[220px] md:rounded-[18px]";
+  "absolute top-3.5 left-1/2 h-[106px] w-[150px] rounded-[14px] text-left [transform-style:preserve-3d] transition-[transform,opacity,filter] duration-[520ms,380ms,380ms] ease-[cubic-bezier(0.22,0.8,0.2,1)] [-webkit-user-drag:none] focus-visible:outline-none motion-reduce:transition-none md:top-6 md:h-[156px] md:w-[220px] md:rounded-[18px]";
 
-function Cover({ pick, picked, style, onClick }: { pick: PickView; picked: boolean; style: CSSProperties; onClick: () => void }) {
+/**
+ * 2C · Peek: hovering a cover that isn't in front slides its face out a little and turns
+ * it towards you, over the covers beside it and the front one, so its name, price and
+ * next renewal read plainly, and the carousel doesn't turn. Only the face moves; the
+ * cover stays put under the pointer, so the hover can't flicker off as the face slides
+ * away from it.
+ */
+const PEEK = {
+  cover: "hover:z-[60]!",
+  face: "group-hover/cover:[transform:translateX(calc(var(--side)*40px))_translateY(-10px)_rotateY(calc(var(--side)*36deg))]",
+  // The name and price lift to make room for the next renewal under them.
+  text: "group-hover/cover:-translate-y-[15px] md:group-hover/cover:-translate-y-[18px]",
+};
+
+/** 4A · Due: a cover renewing within 3 days breathes in its own colour, faster the day before; on the day the ring holds. */
+function DueRing({ days, picked }: { days: number; picked: boolean }) {
+  const look = days === 0 ? "shadow-[0_0_0_3px_var(--cover-soft)]" : `${days === 1 ? "motion-safe:animate-breathe-fast" : "motion-safe:animate-breathe"} motion-reduce:shadow-[0_0_0_3px_color-mix(in_oklch,var(--cover-soft)_45%,transparent)]`;
+  // The picked cover's own ring is 5.5px wide, so this one starts outside it.
+  return <span aria-hidden="true" className={`pointer-events-none absolute -z-20 ${picked ? "-inset-[5.5px] rounded-[19.5px] md:rounded-[23.5px]" : "inset-0 rounded-[inherit]"} ${look}`} />;
+}
+
+function Cover({ pick, picked, peekable, style, onClick }: { pick: PickView; picked: boolean; peekable: boolean; style: CSSProperties; onClick: () => void }) {
+  const due = pick.dueIn;
+  const colors = { "--cover-soft": `color-mix(in oklch, var(--card-${pick.color}) 46%, white)`, "--cover-ink": `var(--card-${pick.color}-to)` } as CSSProperties;
   return (
-    <button id={`cover-${pick.id}`} type="button" role="radio" aria-checked={picked} aria-label={`${pick.name}, ${pick.cover.price}`} tabIndex={-1} onClick={onClick} className={COVER_CLASS} style={style}>
+    <button
+      id={`cover-${pick.id}`}
+      type="button"
+      role="radio"
+      aria-checked={picked}
+      aria-label={`${pick.name}, ${pick.cover.price}, ${pick.cover.next}`}
+      tabIndex={-1}
+      onClick={onClick}
+      className={`group/cover ${COVER_CLASS} ${peekable ? PEEK.cover : ""}`}
+      style={{ ...style, ...colors }}
+    >
       <span
-        className="relative isolate flex size-full flex-col justify-between rounded-[inherit] px-3 py-2.5 text-on-card md:px-4 md:py-3.5"
+        className={`relative isolate flex size-full flex-col justify-between rounded-[inherit] px-3 py-2.5 text-on-card transition-[box-shadow,transform] duration-[500ms,380ms] ease-[ease,cubic-bezier(0.22,0.8,0.2,1)] motion-reduce:transition-none md:px-4 md:py-3.5 ${peekable ? PEEK.face : ""}`}
         style={{
           background: coverBackground(pick),
           boxShadow: picked ? "0 0 0 3px var(--surface), 0 0 0 5.5px var(--pick-soft), 0 24px 40px oklch(0 0 0 / 0.35)" : "0 18px 30px oklch(0 0 0 / 0.28)",
           WebkitBoxReflect: "below 6px linear-gradient(transparent 62%, oklch(1 0 0 / 0.22))",
           filter: pick.muted ? "grayscale(0.8)" : undefined,
-          transition: "box-shadow 500ms",
         }}
       >
+        {due !== null && <DueRing days={due} picked={picked} />}
         <RingTexture width={220} height={156} dx={10} dy={20} first={40} step={26} count={8} stroke="var(--rings-light)" opacity={0.07} />
-        <span className="flex items-center justify-between">
-          <span className="flex size-6 items-center justify-center rounded-[9px] bg-on-card-fill text-[11px] font-extrabold md:size-[30px] md:text-[13px]">{pick.initial || <RenewIcon size={13} />}</span>
-          <span className="text-[10px] font-bold text-on-card-faint">{pick.cover.corner}</span>
+        <span className="flex items-center justify-between gap-1.5">
+          <span className="flex size-6 shrink-0 items-center justify-center rounded-[9px] bg-on-card-fill text-[11px] font-extrabold md:size-[30px] md:text-[13px]">{pick.initial || <RenewIcon size={13} />}</span>
+          {due === 0 || due === 1 ? (
+            <span className="truncate rounded-full bg-[var(--cover-soft)] px-2 py-px text-[10px] font-extrabold text-[var(--cover-ink)] md:text-[11px]">{due === 0 ? "Due today" : "Tomorrow"}</span>
+          ) : (
+            <span className="truncate text-[10px] font-bold text-on-card-faint">{pick.cover.corner}</span>
+          )}
         </span>
-        <span className="min-w-0">
+        <span className={`relative min-w-0 ease-[cubic-bezier(0.22,0.8,0.2,1)] motion-safe:transition-transform motion-safe:duration-[380ms] ${peekable ? PEEK.text : ""}`}>
           <b className="block truncate text-[13.5px] font-bold md:text-lg">{pick.alias}</b>
-          <span className="text-[11px] font-semibold text-on-card-muted md:text-xs">{pick.cover.price}</span>
+          <span className={`block truncate text-[11px] font-semibold text-on-card-muted md:text-xs ${peekable ? "group-hover/cover:text-on-card" : ""}`}>{pick.cover.price}</span>
+          {peekable && (
+            <span aria-hidden="true" className="absolute inset-x-0 top-full truncate text-[10.5px] font-bold text-on-card opacity-0 group-hover/cover:opacity-100 motion-safe:transition-opacity motion-safe:duration-200 md:text-[11.5px]">
+              {pick.cover.next}
+            </span>
+          )}
         </span>
       </span>
     </button>
@@ -86,6 +139,8 @@ function Cover({ pick, picked, style, onClick }: { pick: PickView; picked: boole
 
 const LOOK = {
   primary: "bg-[var(--pick-soft)] px-3 text-[var(--pick-ink)] transition-[background-color,color] duration-500 hover:brightness-105",
+  // 4B: Mark paid turns green, the way the pick's colour is mixed with white, and springs a little larger.
+  paid: "scale-[1.04] cursor-default bg-[color-mix(in_oklch,var(--accent)_46%,white)] px-3 text-[oklch(0.32_0.1_145)] motion-safe:transition-[background-color,color,scale] motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.34,1.56,0.64,1)]",
   soft: "bg-[oklch(1_0_0/0.14)] px-3 text-fg hover:bg-[oklch(1_0_0/0.22)]",
   icon: "w-[30px] justify-center bg-[oklch(1_0_0/0.14)] text-fg hover:bg-[oklch(1_0_0/0.22)]",
 };
@@ -166,8 +221,27 @@ function MoreMenu({ id }: { id: string }) {
   );
 }
 
+/** 4B's Undo beside Paid. When it goes (used, or its 6 seconds are up) while it has focus, focus goes back to the button beside it. */
+function UndoButton({ back, onClick }: { back: RefObject<HTMLButtonElement | null>; onClick: () => void }) {
+  const self = useRef<HTMLButtonElement>(null);
+  useLayoutEffect(() => {
+    // The button beside it is the same element whatever it says, so it's taken now.
+    const button = self.current;
+    const to = back.current;
+    return () => {
+      if (button && button === document.activeElement) to?.focus();
+    };
+  }, [back]);
+  return (
+    <button ref={self} type="button" onClick={onClick} className={`${BUTTON} ${LOOK.soft} motion-safe:animate-pop-in`}>
+      Undo
+    </button>
+  );
+}
+
 function Actions({ pick }: { pick: PickView }) {
-  const { forms, open, markPaid, saving } = useSubscriptionForms();
+  const { forms, open, markPaid, saving, justPaid, undoing, undo } = useSubscriptionForms();
+  const primary = useRef<HTMLButtonElement>(null);
   if (pick.status === "All")
     return (
       <>
@@ -179,13 +253,19 @@ function Actions({ pick }: { pick: PickView }) {
   if (pick.status === "Active") {
     // Mark paid is one click from 3 days before a renewal; otherwise Record payment opens the form.
     const due = forms.context[pick.id]?.markPaid;
+    // Just paid with Mark paid (4B): Paid, with Undo beside it while the toast offers it, and
+    // Saving… while it's undone. One button throughout, so focus stays on it as it changes.
+    const paid = justPaid === pick.id || undoing === pick.id;
     return (
       <>
-        {due ? (
-          <FormTrigger className={`${BUTTON} ${LOOK.primary}`} icon={<CheckIcon />} label="Mark paid" busy={saving === pick.id} onClick={() => markPaid(pick.id)} />
+        {paid ? (
+          <FormTrigger ref={primary} className={`${BUTTON} ${LOOK.paid}`} icon={<CheckIcon />} label="Paid" done busy={undoing === pick.id} onClick={() => {}} />
+        ) : due ? (
+          <FormTrigger ref={primary} className={`${BUTTON} ${LOOK.primary}`} icon={<CheckIcon />} label="Mark paid" busy={saving === pick.id} onClick={() => markPaid(pick.id)} />
         ) : (
-          <FormTrigger className={`${BUTTON} ${LOOK.primary}`} icon={<CheckIcon />} label="Record payment" onClick={() => open({ kind: "record", id: pick.id })} />
+          <FormTrigger ref={primary} className={`${BUTTON} ${LOOK.primary}`} icon={<CheckIcon />} label="Record payment" onClick={() => open({ kind: "record", id: pick.id })} />
         )}
+        {justPaid === pick.id && <UndoButton back={primary} onClick={undo} />}
         {edit}
         <MoreMenu id={pick.id} />
       </>
@@ -222,18 +302,24 @@ function Caption({ pick }: { pick: PickView }) {
           )}
           <span className="min-w-12 text-right">{bar.end}</span>
         </div>
-        <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-fill">
-          <span
-            className="block h-full rounded-[inherit] bg-[var(--pick-soft)] transition-[width,background-color] duration-500 motion-reduce:transition-none"
-            style={{ width: `${(bar.fraction ?? 0) * 100}%` }}
-          />
-        </div>
+        <CycleBar pickId={pick.id} fraction={bar.fraction} cycle={pick.cycle} />
       </div>
       <div className="grid w-full grid-cols-2 gap-3.5 text-left md:w-auto md:grid-cols-[repeat(4,minmax(0,170px))] md:justify-center md:gap-0">
         {pick.stats.map((s, i) => (
-          <div key={s.label + i} className={`flex min-w-0 flex-col gap-[3px] md:px-5 ${i ? "md:border-l md:border-divider" : ""}`}>
+          // Kept by place, so a money figure rolls to the next pick's in the same place (2A), and Paid so far rolls up when a payment lands (4B).
+          <div key={i} className={`flex min-w-0 flex-col gap-[3px] md:px-5 ${i ? "md:border-l md:border-divider" : ""}`}>
             <span className="text-[11px] font-extrabold tracking-[0.04em] text-muted uppercase">{s.label}</span>
-            <b className="truncate text-[17px] font-extrabold whitespace-nowrap text-fg">{s.value}</b>
+            <b className="truncate text-[17px] font-extrabold whitespace-nowrap text-fg">
+              {s.money ? (
+                // Tabular, as every RollingNumber is: each digit's slot is a 0 wide.
+                <span className="tabular-nums">
+                  {s.money.prefix}
+                  <RollingNumber value={s.money.amount} format="inr" />
+                </span>
+              ) : (
+                s.value
+              )}
+            </b>
             {s.sub && <span className="truncate text-xs font-semibold whitespace-nowrap text-muted">{s.sub}</span>}
           </div>
         ))}
@@ -297,6 +383,8 @@ export function SubscriptionHero({ picks, index, onIndex }: { picks: PickView[];
   }, [empty]);
 
   const drag = useRef<{ x: number; moved: boolean } | null>(null);
+  // While a drag turns the carousel, covers don't peek (2C) as they pass under the pointer.
+  const [turning, setTurning] = useState(false);
   function down(e: PointerEvent<HTMLDivElement>) {
     if (e.button > 0 || empty) return;
     drag.current = { x: e.clientX, moved: false };
@@ -307,6 +395,7 @@ export function SubscriptionHero({ picks, index, onIndex }: { picks: PickView[];
     // Released somewhere the stage didn't hear it (before the drag captured the pointer): it's over.
     if (e.pointerType === "mouse" && e.buttons === 0) {
       drag.current = null;
+      setTurning(false);
       return;
     }
     const dx = e.clientX - d.x;
@@ -322,6 +411,7 @@ export function SubscriptionHero({ picks, index, onIndex }: { picks: PickView[];
       step(dx < 0 ? 1 : -1);
       d.x = e.clientX;
       d.moved = true;
+      setTurning(true);
     }
   }
   function up() {
@@ -335,6 +425,7 @@ export function SubscriptionHero({ picks, index, onIndex }: { picks: PickView[];
       setTimeout(() => document.removeEventListener("click", stop, { capture: true }), 350);
     }
     drag.current = null;
+    setTurning(false);
   }
   function key(e: KeyboardEvent<HTMLDivElement>) {
     if (empty) return;
@@ -376,7 +467,10 @@ export function SubscriptionHero({ picks, index, onIndex }: { picks: PickView[];
         onPointerDown={down}
         onPointerMove={move}
         onPointerUp={up}
-        onPointerCancel={() => (drag.current = null)}
+        onPointerCancel={() => {
+          drag.current = null;
+          setTurning(false);
+        }}
         onPointerLeave={() => {
           // Leaving before it turned ends the drag; once it's turning, the pointer is captured and doesn't leave.
           if (!drag.current?.moved) drag.current = null;
@@ -385,7 +479,7 @@ export function SubscriptionHero({ picks, index, onIndex }: { picks: PickView[];
         className={`relative -mx-4 h-[196px] touch-pan-y overflow-hidden rounded-[18px] outline-none select-none [perspective:900px] [--near:110px] [--rot:58deg] [--step:46px] focus-visible:shadow-[inset_0_0_0_2px_var(--pick-soft)] md:-mx-[22px] md:h-[270px] md:[perspective:1300px] md:[--near:160px] md:[--rot:55deg] md:[--step:80px] ${empty ? "" : "cursor-grab active:cursor-grabbing"}`}
       >
         {picks.map((p, i) => (
-          <Cover key={p.id} pick={p} picked={i === index} style={empty ? { transform: "translateX(calc(-100% - 8px))" } : placement(offset(i, index, n))} onClick={() => onIndex(i)} />
+          <Cover key={p.id} pick={p} picked={i === index} peekable={!empty && i !== index && !turning} style={empty ? { transform: "translateX(calc(-100% - 8px))" } : placement(offset(i, index, n))} onClick={() => onIndex(i)} />
         ))}
         {empty && (
           <span
