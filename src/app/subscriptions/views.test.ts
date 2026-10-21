@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { demoSubscriptionData } from "@/lib/demo/subscriptionsDemo";
 import { sentenceText } from "../cards/summarySentence";
+import type { Subscription, SubscriptionPayment } from "@/lib/sheets/types";
 import { ALL, subscriptionsPageView, summarySentence } from "./views";
 
 // The design's "today", so the figures are the design's (design/subscriptions/SubsFinal.dc.html).
@@ -71,6 +72,32 @@ describe("the map, payments and charged to", () => {
     expect(view.stopped.map((s) => `${s.alias} ${s.label}`)).toEqual(["Headspace paused", "SonyLIV cancelled"]);
   });
 
+  it("gives each block a hover card: its price, its share of the total, its next renewal, where it's charged and what's been paid", () => {
+    expect(view.blocks.find((b) => b.id === "demo-netflix")!.card).toEqual({
+      name: "Netflix Premium",
+      price: "₹649 a month",
+      share: "12% of your ₹5,559 a month",
+      renews: "Oct 23 · in 3 days",
+      chargedTo: { kind: "card", name: "Millennia", color: expect.any(String) },
+      paid: "₹16,418 · 32 payments",
+      change: { text: "₹150 more since Jul 23", up: true },
+    });
+    const icloud = view.blocks.find((b) => b.id === "demo-icloud")!.card;
+    expect(icloud).toMatchObject({ price: "₹219 a month", share: "4% of your ₹5,559 a month", change: null });
+  });
+
+  it("lists each category's subscriptions for its hover card, biggest first", () => {
+    const software = view.categories.find((c) => c.label === "Software")!;
+    expect(software.members.map((m) => m.alias)).toEqual(software.aliases.slice().sort((a, b) => software.members.find((m) => m.alias === b)!.monthly - software.members.find((m) => m.alias === a)!.monthly));
+    expect(software.members.reduce((t, m) => t + m.monthly, 0)).toBeCloseTo(software.monthly, 9);
+    for (let i = 1; i < software.members.length; i++) expect(software.members[i - 1].monthly).toBeGreaterThanOrEqual(software.members[i].monthly);
+  });
+
+  it("gives each category's hover card its count and its share of the total", () => {
+    const software = view.categories.find((c) => c.label === "Software")!;
+    expect(software.card).toEqual({ count: `${software.members.length} subscriptions`, share: `${Math.round(software.share * 100)}% of your ₹5,559 a month` });
+  });
+
   it("lists the legend's categories as the design does", () => {
     expect(view.categories.map((c) => `${c.label} ${Math.round(c.monthly)}`)).toEqual(["Software 2516", "Fitness 1500", "Streaming 798", "Shopping 225", "Cloud storage 219", "Food 183", "Music 119"]);
   });
@@ -87,5 +114,56 @@ describe("the map, payments and charged to", () => {
   it("splits the monthly total by where it's charged, as the design does", () => {
     expect(view.chargedTo.map((c) => `${c.chip.name} ${c.count} ${Math.round(c.monthly)}`)).toEqual(["Coral 3 2224", "Kotak Savings 2 1683", "Millennia 3 1285", "Ace 2 368"]);
     expect(view.chargedTo[0].fraction).toBe(1);
+  });
+});
+
+describe("the map's hover cards, at the edges", () => {
+  const sub = (over: Partial<Subscription> & Pick<Subscription, "id">): Subscription => ({
+    name: over.id,
+    alias: over.id,
+    category: "Software",
+    amount: 100,
+    billingCycle: "Monthly",
+    billingAnchorDate: "2026-01-05",
+    startDate: "2026-01-05",
+    status: "Active",
+    color: "Ruby",
+    ...over,
+  });
+  const paid = (subscriptionId: string, paymentDate: string, amount: number): SubscriptionPayment => ({ id: `${subscriptionId}-${paymentDate}`, subscriptionId, paymentDate, amount, status: "Paid" });
+  const edges = subscriptionsPageView(
+    {
+      subscriptions: [sub({ id: "Big", amount: 50000 }), sub({ id: "Tiny", name: "Tiny Plan", category: "Music" }), sub({ id: "Cheaper", amount: 1000 })],
+      payments: [paid("Cheaper", "2026-08-05", 1200), paid("Cheaper", "2026-09-05", 1000), paid("Cheaper", "2026-10-05", 1000)],
+      cards: [],
+      accounts: [],
+    },
+    TODAY,
+  );
+  const card = (id: string) => edges.blocks.find((b) => b.id === id)!.card;
+
+  it("says Under 1% for a sliver of the total, rather than rounding it to 0", () => {
+    expect(card("Tiny").share).toBe("Under 1% of your ₹51,100 a month");
+    expect(edges.categories.find((c) => c.key === "Music")!.card).toEqual({ count: "1 subscription", share: "Under 1% of your ₹51,100 a month" });
+  });
+
+  it("says Nothing yet before the first payment, and where it isn't charged", () => {
+    expect(card("Tiny")).toMatchObject({ name: "Tiny Plan", paid: "Nothing yet", chargedTo: { kind: "none" } });
+  });
+
+  it("shows a price that went down as less", () => {
+    expect(card("Cheaper")).toMatchObject({ paid: "₹3,200 · 3 payments", change: { text: "₹200 less since Sep 5", up: false } });
+  });
+
+  it("spells out only the latest three price changes, and counts the rest", () => {
+    const steps = subscriptionsPageView(
+      { subscriptions: [sub({ id: "Steps", amount: 600 })], payments: [100, 200, 300, 400, 500, 600].map((a, i) => paid("Steps", `2026-0${i + 4}-05`, a)), cards: [], accounts: [] },
+      TODAY,
+    );
+    expect(steps.payments.Steps.history).toMatchObject({
+      changes: ["₹300 → ₹400 on Jul 5, 2026", "₹400 → ₹500 on Aug 5, 2026", "₹500 → ₹600 on Sep 5, 2026"],
+      earlier: "and 2 earlier changes",
+    });
+    expect(view.payments["demo-netflix"].history?.earlier).toBeNull();
   });
 });

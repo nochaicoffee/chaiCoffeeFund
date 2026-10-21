@@ -13,6 +13,10 @@ import { useSize } from "./useSize";
  * Payments for the pick (#126): the latest six, with what changed from the one before
  * and where each was charged, or with All picked the latest across every subscription.
  * Price history draws what each payment cost.
+ *
+ * At xl the map beside this column is as tall as it, and lays its blocks out at that
+ * height, so the card keeps one height whatever's picked or shown: room for six rows in
+ * either view, and the line under them. Otherwise the map moved its blocks on every pick.
  */
 
 const STATUS_PILL: Record<PaymentRowView["status"], string> = {
@@ -34,6 +38,21 @@ function Change({ change }: { change: PaymentRowView["change"] }) {
     </span>
   );
 }
+
+/** Six rows as tall as real ones, laid out unseen under the table to hold its height. */
+const SPACER: PaymentsView = {
+  rows: Array.from({ length: 6 }, (_, i) => ({
+    key: `spacer-${i}`,
+    mark: { alias: "—", initial: "—", color: "onyx", muted: false },
+    date: "—",
+    amount: "—",
+    change: { text: "—", up: true },
+    chargedTo: { kind: "card", name: "—", color: "onyx" },
+    status: "Paid",
+  })),
+  footer: "",
+  history: null,
+};
 
 const ALL_COLUMNS = "md:grid-cols-[1.6fr_1fr_1fr_1.2fr_0.8fr]";
 const ONE_COLUMNS = "md:grid-cols-[1.1fr_1fr_1fr_1.2fr_0.8fr]";
@@ -127,7 +146,8 @@ export function PaymentsCard({ pick, payments, onAll }: { pick: PickView; paymen
   const all = pick.status === "All";
   return (
     <section aria-labelledby="payments-title" className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-4 shadow-[var(--card-shadow)] md:p-[22px]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      {/* On one line at xl, where a long name truncates instead of wrapping the toggle onto a second line, which would change the card's height. */}
+      <div className="flex flex-wrap items-center justify-between gap-3 xl:flex-nowrap">
         <h2 id="payments-title" className="flex min-w-0 items-center gap-2.5 text-[15px] font-extrabold text-fg">
           Payments <span className="font-semibold text-muted">·</span>
           {all ? (
@@ -143,26 +163,35 @@ export function PaymentsCard({ pick, payments, onAll }: { pick: PickView; paymen
       </div>
 
       <div className="flex flex-1 flex-col">
-        {view === "payments" ? (
-          <Table payments={payments} all={all} />
-        ) : all || !payments.history ? (
-          <p className="py-10 text-center text-xs font-medium text-muted">Pick a subscription to see what each of its payments cost.</p>
-        ) : (
-          <div className="flex flex-col gap-3 pt-1.5">
-            <PriceLine points={payments.history.points} color={`var(--card-${pick.color})`} />
-            <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-muted">
-              {payments.history.points.length === 0 ? null : payments.history.changes.length ? (
-                payments.history.changes.map((c, i) => (
-                  <b key={i} className="font-bold text-fg">
-                    {c}
-                  </b>
-                ))
-              ) : (
-                <span>The price hasn&apos;t changed.</span>
-              )}
-            </div>
+        {/* One column that can be narrower than its content, so Price history measures the card's width rather than its own. */}
+        <div className="grid grid-cols-[minmax(0,1fr)] *:[grid-area:1/1]">
+          <div aria-hidden="true" inert className="invisible max-xl:hidden">
+            <Table payments={SPACER} all={all} />
           </div>
-        )}
+          <div>
+            {view === "payments" ? (
+              <Table payments={payments} all={all} />
+            ) : all || !payments.history ? (
+              <p className="py-10 text-center text-xs font-medium text-muted">Pick a subscription to see what each of its payments cost.</p>
+            ) : (
+              <div className="flex flex-col gap-3 pt-1.5">
+                <PriceLine points={payments.history.points} color={`var(--card-${pick.color})`} />
+                <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs font-semibold text-muted">
+                  {payments.history.points.length === 0 ? null : payments.history.changes.length ? (
+                    payments.history.changes.map((c, i) => (
+                      <b key={i} className="font-bold text-fg">
+                        {c}
+                      </b>
+                    ))
+                  ) : (
+                    <span>The price hasn&apos;t changed.</span>
+                  )}
+                  {payments.history.earlier && <span>{payments.history.earlier}</span>}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
         <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 pt-3">
           {payments.footer && <p className="text-xs font-medium text-muted">{payments.footer}</p>}
           <span className="ml-auto">
@@ -171,15 +200,20 @@ export function PaymentsCard({ pick, payments, onAll }: { pick: PickView; paymen
         </div>
       </div>
 
-      {!all && (
-        <div className="flex items-center gap-2 max-md:hidden">
-          <button type="button" onClick={onAll} className="inline-flex items-center gap-1.5 rounded-full bg-fill px-3 py-1.5 text-xs font-bold whitespace-nowrap text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
-            <RenewIcon size={11} />
-            All subscriptions
-          </button>
-          <span className="text-xs font-medium text-muted">or pick a block in the map</span>
-        </div>
-      )}
+      {/* Always there, as tall as the button, so picking one doesn't change the card's height. */}
+      <div className="flex min-h-7 items-center gap-2 max-md:hidden">
+        {all ? (
+          <span className="text-xs font-medium text-muted">Pick a block in the map for one subscription&apos;s payments</span>
+        ) : (
+          <>
+            <button type="button" onClick={onAll} className="inline-flex items-center gap-1.5 rounded-full bg-fill px-3 py-1.5 text-xs font-bold whitespace-nowrap text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
+              <RenewIcon size={11} />
+              All subscriptions
+            </button>
+            <span className="text-xs font-medium text-muted">or pick a block in the map</span>
+          </>
+        )}
+      </div>
     </section>
   );
 }

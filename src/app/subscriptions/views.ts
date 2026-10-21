@@ -71,8 +71,11 @@ export interface PaymentsView {
   rows: PaymentRowView[];
   /** Under the table; empty when there are no payments. */
   footer: string;
-  /** What each payment cost, for Price history; null for All. */
-  history: { points: { date: string; amount: number }[]; changes: string[] } | null;
+  /**
+   * What each payment cost, for Price history; null for All. Only the latest few changes
+   * are spelled out, so the card keeps its height (PaymentsCard); `earlier` counts the rest.
+   */
+  history: { points: { date: string; amount: number }[]; changes: string[]; earlier: string | null } | null;
 }
 
 export interface MapBlock extends Mark {
@@ -85,6 +88,24 @@ export interface MapBlock extends Mark {
   footnote: string;
   /** Renews within 7 days: "Oct 23 · 3d", urgent within 3. */
   pill: { text: string; due: boolean } | null;
+  /** What its hover card says. */
+  card: BlockCard;
+}
+
+/** A block's hover card in the map: what it is, what it costs against the total, and where it stands. */
+export interface BlockCard {
+  name: string;
+  /** What the plan charges: "₹3,999 a year". */
+  price: string;
+  /** "31% of your ₹1,865 a month". */
+  share: string;
+  /** "Nov 2 · in 12 days", or "Feb 26, 2027 · in 4 months"; null when nothing is due. */
+  renews: string | null;
+  chargedTo: ChargedToChip;
+  /** "₹20,440 · 35 payments", or "Nothing yet". */
+  paid: string;
+  /** Its latest price change: "₹100 more since Mar 14". */
+  change: { text: string; up: boolean } | null;
 }
 
 export interface CategoryBlock {
@@ -94,6 +115,10 @@ export interface CategoryBlock {
   monthly: number;
   share: number;
   aliases: string[];
+  /** Its subscriptions, biggest first, for its hover card. */
+  members: (Mark & { id: string; monthly: number })[];
+  /** What its hover card says: "2 subscriptions", "49% of your ₹1,865 a month". */
+  card: { count: string; share: string };
 }
 
 export interface ChargedToRow {
@@ -204,6 +229,29 @@ function chipFor(kind: "card" | "account" | "none", id: string | null | undefine
   return { kind, name: "Not set", color: "onyx" };
 }
 
+/** A block's or a category's share of the monthly total, as its hover card says it. */
+function shareOfTotal(monthly: number, total: number): string {
+  const percent = total > 0 ? (monthly / total) * 100 : 0;
+  return `${percent > 0 && percent < 1 ? "Under 1" : Math.round(percent)}% of your ${formatInr(total)} a month`;
+}
+
+/** The hover card of an active subscription's block. */
+function blockCard(s: Subscription, f: SubscriptionFacts, total: number, data: SubscriptionData, today: string): BlockCard {
+  const change = f.lastChange;
+  const kind = s.defaultPaidFromCardId ? "card" : s.defaultPaidFromAccountId ? "account" : "none";
+  return {
+    name: s.name,
+    price: `${formatInr(s.amount)} a ${cycleWord(s.billingCycle)}`,
+    share: shareOfTotal(f.monthly, total),
+    renews: f.next ? `${smartDate(f.next.date, today)} · ${whenFrom(today, f.next.date)}` : null,
+    chargedTo: chipFor(kind, s.defaultPaidFromCardId ?? s.defaultPaidFromAccountId, data),
+    paid: f.payments ? `${formatInr(f.paid)} · ${plural(f.payments, "payment")}` : "Nothing yet",
+    change: change ? { text: `${formatInr(Math.abs(change.to - change.from))} ${change.to > change.from ? "more" : "less"} since ${smartDate(change.date, today)}`, up: change.to > change.from } : null,
+  };
+}
+
+/** Price history spells out this many changes, the latest. */
+const CHANGES_SHOWN = 3;
 
 function paymentsView(data: SubscriptionData, today: string, s?: Subscription): PaymentsView {
   const byId = new Map(data.subscriptions.map((x) => [x.id, x]));
@@ -230,10 +278,9 @@ function paymentsView(data: SubscriptionData, today: string, s?: Subscription): 
   if (s) {
     const points = priceHistory(data.payments, s.id);
     const steps = latestPayments(data.payments, Infinity, s.id).rows.filter((r) => r.change !== null).reverse();
-    view.history = {
-      points,
-      changes: steps.map((r) => `${formatInr(r.payment.amount - r.change!)} → ${formatInr(r.payment.amount)} on ${formatDate(r.payment.paymentDate)}`),
-    };
+    const changes = steps.map((r) => `${formatInr(r.payment.amount - r.change!)} → ${formatInr(r.payment.amount)} on ${formatDate(r.payment.paymentDate)}`);
+    const more = Math.max(0, changes.length - CHANGES_SHOWN);
+    view.history = { points, changes: changes.slice(-CHANGES_SHOWN), earlier: more ? `and ${plural(more, "earlier change")}` : null };
   }
   return view;
 }
@@ -259,6 +306,7 @@ export function subscriptionsPageView(sheetData: SubscriptionData, today: string
       share: total > 0 ? f.monthly / total : 0,
       footnote: f.next ? (s.billingCycle === "Monthly" ? `Renews ${formatShortDate(f.next.date)}` : `${formatInr(s.amount)} a ${cycleWord(s.billingCycle)}, next ${formatShortDate(f.next.date)}`) : "",
       pill: f.next && days !== null && days <= 7 ? { text: `${formatShortDate(f.next.date)} · ${days}d`, due: days <= MARK_PAID_DAYS_BEFORE } : null,
+      card: blockCard(s, f, total, data, today),
     };
   });
 
@@ -276,6 +324,11 @@ export function subscriptionsPageView(sheetData: SubscriptionData, today: string
       monthly: c.monthly,
       share: total > 0 ? c.monthly / total : 0,
       aliases: active.filter((s) => s.category === c.category).map((s) => s.alias),
+      members: active
+        .filter((s) => s.category === c.category)
+        .map((s) => ({ ...mark(s), id: s.id, monthly: facts.get(s.id)!.monthly }))
+        .sort((a, b) => b.monthly - a.monthly),
+      card: { count: plural(active.filter((s) => s.category === c.category).length, "subscription"), share: shareOfTotal(c.monthly, total) },
     })),
     stopped: order.filter((s) => s.status !== "Active").map((s) => ({ ...mark(s), id: s.id, label: s.status === "Paused" ? "paused" : "cancelled" })),
     chargedTo: split.map((p) => ({ key: `${p.kind}:${p.id}`, chip: chipFor(p.kind, p.id, data), count: p.count, monthly: p.monthly, fraction: biggest > 0 ? p.monthly / biggest : 0 })),
