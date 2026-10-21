@@ -1,0 +1,461 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Manrope:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500;1,6..72,600&display=swap">
+  <style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.chai-app {
+  --page: oklch(0.965 0.004 90); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06); --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+  --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+  --accent: oklch(0.72 0.19 145); --accent-tint: oklch(0.93 0.06 145); --accent-text: oklch(0.42 0.14 145); --on-accent: oklch(0.99 0 0);
+  --accent-edge: oklch(0.72 0.19 145 / 0.45); --accent-ring: oklch(0.72 0.19 145 / 0.22); --negative-ring: oklch(0.55 0.16 25 / 0.18);
+  --ink: oklch(0.16 0.008 260); --on-ink: oklch(0.99 0 0);
+  --positive: oklch(0.42 0.14 145); --warning: oklch(0.72 0.14 75); --warning-text: oklch(0.47 0.1 70); --warning-tint: oklch(0.95 0.05 85);
+  --negative: oklch(0.55 0.16 25); --negative-tint: oklch(0.95 0.035 40);
+  --feature-tile: oklch(0.935 0.052 148); --feature-tile-line: oklch(0.62 0.15 150 / 0.24); --feature-tile-glow: oklch(1 0 0 / 0.55);
+  --rings-ink: oklch(0.42 0.1 152); --rings-light: oklch(1 0 0); --bar-glow: oklch(1 0 0 / 0.26);
+  --heat-1: oklch(0.95 0.03 150); --heat-2: oklch(0.87 0.07 150); --heat-3: oklch(0.76 0.11 151); --heat-4: oklch(0.6 0.12 153); --heat-5: oklch(0.42 0.1 156);
+  --heat-ink: oklch(0.24 0.05 152); --heat-no-data: oklch(0 0 0 / 0.04); --heat-upcoming: oklch(0 0 0 / 0.13); --trend-no-data: oklch(0 0 0 / 0.1); --trend-peak-shadow: oklch(0.3 0.09 155 / 0.26);
+  --card-emerald-from: oklch(0.42 0.11 155); --card-emerald-to: oklch(0.24 0.07 162); --card-emerald: oklch(0.6 0.12 153);
+  --card-sapphire-from: oklch(0.32 0.09 258); --card-sapphire-to: oklch(0.16 0.05 258); --card-sapphire: oklch(0.48 0.1 258);
+  --card-ruby-from: oklch(0.3 0.11 20); --card-ruby-to: oklch(0.15 0.07 20); --card-ruby: oklch(0.57 0.13 22);
+  --card-onyx-from: oklch(0.28 0.02 75); --card-onyx-to: oklch(0.15 0.01 75); --card-onyx: oklch(0.56 0.04 75);
+  --card-violet-from: oklch(0.31 0.1 300); --card-violet-to: oklch(0.16 0.06 300); --card-violet: oklch(0.53 0.13 300);
+  --card-teal-from: oklch(0.32 0.07 200); --card-teal-to: oklch(0.16 0.04 200); --card-teal: oklch(0.56 0.09 200);
+  --card-copper-from: oklch(0.33 0.09 50); --card-copper-to: oklch(0.16 0.05 50); --card-copper: oklch(0.6 0.12 50);
+  --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
+  --on-card: oklch(0.95 0.004 260); --on-card-muted: oklch(1 0 0 / 0.6); --on-card-faint: oklch(1 0 0 / 0.5); --on-card-fill: oklch(1 0 0 / 0.16); --on-card-line: oklch(1 0 0 / 0.12); --on-card-line-top: oklch(1 0 0 / 0.22); --on-card-lime: oklch(0.88 0.17 138);
+  --card-chip: oklch(0.8 0.13 80); --card-chip-mid: oklch(0.68 0.13 80); --card-chip-deep: oklch(0.55 0.1 80);
+  --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
+  --tile-shadow-selected: 0 10px 26px oklch(0.3 0.09 155 / 0.35), 0 0 0 4px oklch(1 0 0 / 0.08), 0 0 18px oklch(1 0 0 / 0.2);
+  --due-pulse-ring: oklch(0.82 0.12 40 / 0.2); --due-pulse-fill: oklch(0.7 0.14 35 / 0.55);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative; overflow: hidden; font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; background: var(--page); color: var(--fg);
+  font-size: 13px; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+}
+.chai-app h1, .chai-app h2, .chai-app h3, .chai-app p { margin: 0; }
+.glass { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); }
+.glass-strong { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); }
+.muted { color: var(--muted); }
+.strong { color: var(--fg); font-weight: 800; }
+.row { display: flex; align-items: center; gap: 10px; }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.grow { flex: 1; min-width: 0; }
+
+/* ---- Shell ---- */
+.desk { display: flex; gap: 20px; padding: 24px; }
+.rail { width: 64px; flex-shrink: 0; border-radius: 999px; display: flex; flex-direction: column; align-items: center; padding: 18px 0; gap: 10px; }
+.rail-item { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; color: var(--muted); }
+.rail-item.active { background: var(--ink); color: var(--on-ink); }
+.rail-me { margin-top: auto; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+.main { flex: 1; min-width: 0; border-radius: 36px; padding: 26px; display: flex; flex-direction: column; gap: 20px; }
+.ph { display: flex; flex-direction: column; border-radius: 34px; border: 1px solid var(--fill-strong); }
+.ph-status { height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; font-size: 14px; font-weight: 700; }
+.ph-icons { display: flex; gap: 4px; } .ph-icons i { width: 16px; height: 9px; border-radius: 3px; background: var(--fg); opacity: 0.85; }
+.ph-bar { height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 16px; border-bottom: 1px solid var(--divider); font-size: 16px; font-weight: 800; }
+.ph-menu { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.ph-body { flex: 1; min-height: 0; padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ---- Header ---- */
+.pg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.pg-text { display: flex; flex-direction: column; gap: 10px; max-width: 980px; }
+.eyebrow { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.pg-head h1 { font-size: 30px; font-weight: 800; line-height: 1.15; }
+.lede { font-size: 16px; font-weight: 500; line-height: 1.7; color: var(--muted); text-wrap: pretty; }
+.lede b { color: var(--fg); font-weight: 700; }
+.pg-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-top: 4px; }
+.ph-head { flex-direction: column; gap: 14px; }
+.ph-head h1 { font-size: 26px; }
+.ph-head .lede { font-size: 15px; line-height: 1.6; }
+.ph-head .pg-actions { flex-wrap: wrap; margin-top: 0; }
+
+/* ---- Buttons, pills, segmented, chips ---- */
+.btn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 18px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; user-select: none; }
+.btn-primary { background: var(--ink); color: var(--on-ink); position: relative; overflow: hidden; }
+.btn-primary::after { content: ""; position: absolute; top: -60%; left: -30%; width: 46%; height: 220%; background: linear-gradient(100deg, transparent, oklch(1 0 0 / 0.25), transparent); transform: rotate(14deg); pointer-events: none; }
+.btn-ghost { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--fg); }
+.btn-soft { background: var(--fill); color: var(--fg); }
+.btn-accent { background: var(--accent-tint); color: var(--accent-text); }
+.btn-danger { background: var(--negative-tint); color: var(--negative); }
+.btn-icon { width: 40px; padding: 0; justify-content: center; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--muted); }
+.btn-sm { min-height: 30px; padding: 0 12px; font-size: 12px; gap: 6px; }
+.btn-xs { min-height: 26px; padding: 0 10px; font-size: 11px; gap: 5px; }
+.ph .btn { min-height: 44px; }
+.ph .btn-sm { min-height: 36px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.pill-on { background: var(--accent-tint); color: var(--accent-text); }
+.pill-off { background: var(--fill); color: var(--muted); }
+.pill-soon { background: var(--warning-tint); color: var(--warning-text); }
+.pill-due { background: var(--negative-tint); color: var(--negative); animation: due-pulse 2.2s ease-in-out infinite; }
+.pill-warn { background: var(--warning-tint); color: var(--warning-text); }
+.pill-ink { background: var(--ink); color: var(--on-ink); }
+@keyframes due-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px var(--due-pulse-ring); } }
+@media (prefers-reduced-motion: reduce) { .pill-due { animation: none; } }
+.chg { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.chg-up { color: var(--negative); } .chg-down { color: var(--positive); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--fill); gap: 2px; }
+.seg-i { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.seg-i em { font-style: normal; font-size: 11px; color: var(--muted); font-weight: 700; }
+.seg-i.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--fill); color: var(--fg); white-space: nowrap; }
+.chip.on { background: var(--ink); color: var(--on-ink); }
+.chip i { width: 8px; height: 8px; border-radius: 3px; display: inline-block; }
+.chip em { font-style: normal; color: var(--muted); font-size: 11px; }
+.chip.on em { color: oklch(1 0 0 / 0.6); }
+.sample { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--warning-tint); color: var(--warning-text); font-size: 11px; font-weight: 800; letter-spacing: 0.01em; white-space: nowrap; }
+.sample::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--warning); }
+.tag-new { display: inline-flex; padding: 2px 7px; border-radius: 999px; font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: oklch(0.93 0.05 258); color: oklch(0.42 0.1 258); vertical-align: 1px; }
+
+/* ---- Monograms, card chips ---- */
+.mono { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--on-card); font-weight: 800; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18), 0 2px 6px oklch(0 0 0 / 0.18); }
+.mono-off { filter: grayscale(1); opacity: 0.55; }
+.via { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--fg); white-space: nowrap; }
+.minitile { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2); }
+.minibank { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--fill-strong); color: var(--muted); }
+
+/* ---- Cards (surfaces) ---- */
+.card { border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.card-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.card-t { font-size: 15px; font-weight: 800; }
+.card-t small { font-size: 12px; font-weight: 600; color: var(--muted); margin-left: 8px; }
+.card-note { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.55; }
+.link { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--accent-text); white-space: nowrap; }
+.tex { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; z-index: -1; pointer-events: none; }
+.tex svg, .tex .sheen { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.textured { position: relative; isolation: isolate; }
+
+/* Summary tiles, as on the Statements page: one feature tile in mint with rings. */
+.tiles { display: grid; gap: 16px; }
+.stile { position: relative; isolation: isolate; border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.stile .k { font-size: 12px; font-weight: 600; color: var(--muted); }
+.stile .v { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+.stile .v small { font-size: 14px; font-weight: 700; color: var(--muted); letter-spacing: 0; }
+.stile .s { font-size: 12px; color: var(--muted); font-weight: 500; }
+.stile .s b { color: var(--fg); font-weight: 700; }
+.feature { background: var(--feature-tile); border: 1px solid var(--feature-tile-line); }
+.feature .k, .feature .s { color: oklch(0.38 0.06 152); }
+
+/* Dark tiles, like the card tiles */
+.dtile { position: relative; isolation: isolate; flex-shrink: 0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow); }
+.dtile .dt-muted { color: var(--on-card-muted); font-size: 11px; font-weight: 600; }
+.dtile .dt-faint { color: var(--on-card-faint); font-size: 10px; font-weight: 600; }
+.dtile.sel { border: 1.5px solid var(--accent); box-shadow: var(--tile-shadow-selected); }
+.dtile .dt-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--on-card-fill); white-space: nowrap; }
+.dtile .dt-pill.due { background: oklch(0.7 0.14 35 / 0.55); animation: due-pulse 2.2s ease-in-out infinite; }
+.dtile .dt-pill.soon { background: oklch(0.8 0.13 80 / 0.35); }
+.dtile.off { filter: grayscale(0.85); opacity: 0.6; box-shadow: none; }
+.dtile .tick { display: none; } .dtile.sel .tick { display: flex; }
+.tick { position: absolute; top: -9px; right: -9px; width: 21px; height: 21px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px oklch(0 0 0 / 0.4); }
+.addtile { flex-shrink: 0; border-radius: 22px; border: 1.5px dashed var(--fill-strong); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 700; }
+
+/* ---- Fitting neatly: rows of cards end level, and content fills the card ---- */
+.stack-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.stack-col > :last-child { flex: 1 1 auto; }
+.spread { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+.foot { margin-top: auto; }
+.card > .tmap { flex: 1 1 auto; }
+
+/* ---- Tables ---- */
+.th { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.tgroup { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 8px; border-bottom: 1px solid var(--divider); font-size: 13px; font-weight: 800; }
+.tgroup span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.cell-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cell-name b { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cell-name small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+.num { font-weight: 800; }
+.sub2 { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+
+/* ---- Bars ---- */
+.track { height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.track > span { display: block; height: 100%; border-radius: inherit; }
+.stack { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; }
+.stack > span { display: block; height: 100%; position: relative; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.legend b { color: var(--fg); font-weight: 700; }
+
+/* ---- Notice ---- */
+.notice { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); color: var(--warning-text); font-size: 13px; font-weight: 600; }
+.notice b { color: oklch(0.36 0.08 65); font-weight: 800; }
+.notice .grow { color: oklch(0.4 0.08 68); }
+.notice svg { flex-shrink: 0; }
+
+/* ---- Dropdown (the app's own, #112) ---- */
+.sel { position: relative; display: inline-block; }
+.sel > summary { list-style: none; } .sel > summary::-webkit-details-marker { display: none; }
+.sel-trigger { position: relative; display: flex; align-items: center; gap: 8px; border: 1px solid var(--surface-line); background: var(--surface); cursor: pointer; text-align: left; max-width: 100%; }
+.sel-value { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sel-chev { flex-shrink: 0; color: var(--muted); display: flex; transition: transform 160ms var(--ease-out); }
+.sel[open] .sel-chev { transform: rotate(180deg); }
+.sel-icon { display: flex; color: var(--muted); }
+.sel--pill .sel-trigger { min-height: 40px; border-radius: 999px; box-shadow: var(--soft-shadow); padding: 9px 15px; font-size: 13px; font-weight: 700; }
+.sel--pill[open] .sel-trigger { border-color: var(--accent-edge); }
+.sel--small .sel-trigger { min-height: 34px; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; background: var(--fill); border-color: transparent; }
+.sel--field { display: block; }
+.sel--field .sel-trigger { width: 100%; height: 40px; border-radius: 12px; padding: 0 12px 0 14px; font-size: 14px; font-weight: 600; }
+.sel--field[open] .sel-trigger { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.ph .sel--field .sel-trigger { height: 44px; } .ph .sel--pill .sel-trigger { min-height: 44px; }
+.is-placeholder { color: var(--muted); font-weight: 500; }
+.pop { position: absolute; z-index: 20; top: calc(100% + 8px); left: 0; background: var(--surface); border: 1px solid var(--surface-line); border-radius: 16px; box-shadow: var(--pop-shadow); padding: 6px; min-width: 100%; }
+.pop.align-end { left: auto; right: 0; }
+.sel[open] .pop { animation: pop-in 150ms var(--ease-out) both; }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@media (prefers-reduced-motion: reduce) { .sel[open] .pop { animation: none; } .sel-chev { transition: none; } }
+.lb { min-width: 210px; max-height: 300px; overflow-y: auto; }
+.sel--field .lb { min-width: 0; }
+.lb-group { padding: 8px 12px 4px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.lb-divider { height: 1px; margin: 6px 8px; background: var(--divider); }
+.opt { display: flex; align-items: center; gap: 12px; min-height: 36px; padding: 0 10px 0 12px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--fg); cursor: pointer; }
+.sel--field .opt { font-size: 14px; font-weight: 600; }
+.opt:hover { background: var(--fill); }
+.opt-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.opt-meta { flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+.opt-check { flex-shrink: 0; width: 14px; color: var(--accent-text); visibility: hidden; display: flex; }
+.opt[aria-selected="true"] { background: var(--accent-tint); color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-meta { color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-check { visibility: visible; }
+.ph .opt { min-height: 44px; }
+
+/* ---- Light hover card (#104/#105) ---- */
+.hc { width: 250px; border-radius: 16px; padding: 14px; background: var(--surface); color: var(--fg); box-shadow: var(--pop-shadow); border: 1px solid var(--surface-line); }
+.hc .h { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.hc .t { font-size: 22px; font-weight: 800; line-height: 1.25; margin-top: 2px; }
+.hc .d { font-size: 12px; font-weight: 700; margin-top: 2px; color: var(--muted); }
+.hc ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.hc li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+.hc li .nm { flex: 1; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc li b { font-weight: 800; }
+.hc .f { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--divider); font-size: 11px; font-weight: 600; color: var(--muted); }
+.hc-arrow { position: absolute; width: 12px; height: 12px; background: var(--surface); border: 1px solid var(--surface-line); border-top: none; border-left: none; transform: rotate(45deg); }
+.hov { position: relative; }
+.hov > .hc-wrap { position: absolute; z-index: 30; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 160ms ease, transform 240ms var(--ease-out); }
+.hov:hover > .hc-wrap, .hov.is-open > .hc-wrap { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .hov > .hc-wrap { transition: none; transform: none; } }
+
+/* ---- Heatmap ---- */
+.heat { display: grid; gap: 8px; align-items: center; }
+.heat-m { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.heat-m.now { color: var(--fg); }
+.hcell { position: relative; isolation: isolate; height: 54px; border-radius: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.ph .hcell .cap { display: none; }
+.hcell .cap { font-size: 9px; font-weight: 600; opacity: 0.85; margin-top: 1px; white-space: nowrap; }
+.hcell.up { border: 1.5px dashed var(--heat-upcoming); color: var(--muted); background: transparent; }
+.hcell.up.big { border-color: oklch(0.6 0.12 153 / 0.6); color: var(--heat-ink); background: oklch(0.95 0.03 150 / 0.5); }
+.hcell.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); }
+.hcell.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* ---- Forms (as docs/design/cards-forms.md) ---- */
+.dlg { position: relative; background: var(--surface); border-radius: 28px; box-shadow: var(--pop-shadow); display: flex; flex-direction: column; }
+.dlg-h { display: flex; align-items: flex-start; gap: 14px; padding: 26px 28px 0; }
+.dlg-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-tint); color: var(--accent-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dlg-h h3 { font-size: 18px; font-weight: 800; } .dlg-h p { font-size: 13px; color: var(--muted); font-weight: 500; margin-top: 3px; }
+.dlg-x { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--fg); flex-shrink: 0; }
+.dlg-b { display: grid; grid-template-columns: 320px 1fr; gap: 24px; padding: 20px 28px; }
+.dlg-f { display: flex; align-items: center; gap: 10px; padding: 16px 28px 22px; border-top: 1px solid var(--divider); }
+.dlg-f .note { flex: 1; font-size: 12px; color: var(--muted); font-weight: 500; }
+.preview { position: relative; isolation: isolate; border-radius: 20px; background: var(--feature-tile); border: 1px solid var(--feature-tile-line); padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.pv-k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: oklch(0.38 0.1 150); }
+.pv-box { background: oklch(1 0 0 / 0.72); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
+.pv-box .between span:first-child { color: var(--muted); font-weight: 600; }
+.pv-box .between span:last-child { font-weight: 700; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 14px; align-content: start; }
+.fld { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.fld.full { grid-column: 1 / -1; }
+.lbl { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.lbl .req { color: var(--negative); margin-left: 2px; }
+.lbl .opt-tag { font-size: 10px; font-weight: 700; color: var(--muted); opacity: 0.8; margin-left: 6px; letter-spacing: 0.04em; }
+.inp { height: 40px; border-radius: 12px; border: 1px solid var(--surface-line); background: var(--surface); box-shadow: inset 0 1px 1px oklch(0 0 0 / 0.02); padding: 0 14px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.ph .inp { height: 44px; }
+.inp .pre { color: var(--muted); font-weight: 600; } .inp .suf { color: var(--muted); font-weight: 500; font-size: 13px; }
+.inp.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.inp.err { border-color: var(--negative); box-shadow: 0 0 0 3px var(--negative-ring); }
+.inp .ph-text { color: var(--muted); font-weight: 500; }
+.help { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.45; }
+.help svg { flex-shrink: 0; margin-top: 2px; }
+.help.err { color: var(--negative); font-weight: 600; }
+.help.warn { color: var(--warning-text); font-weight: 600; }
+.fseg { display: flex; padding: 3px; border-radius: 13px; background: var(--fill); gap: 2px; }
+.fseg span { flex: 1; text-align: center; padding: 9px 8px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.fseg span.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.ph .fseg span { padding: 11px 6px; }
+.checkrow { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); font-size: 13px; color: oklch(0.36 0.08 65); font-weight: 600; line-height: 1.45; }
+.box { width: 18px; height: 18px; border-radius: 6px; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.box.off { background: var(--surface); border: 1.5px solid var(--fill-strong); }
+.scrim { position: absolute; inset: 0; background: oklch(0.16 0.008 260 / 0.38); }
+
+/* ---- Canvas furniture (labels on the boards themselves) ---- */
+.board { padding: 48px; display: flex; flex-direction: column; gap: 36px; }
+.board-h h2 { font-size: 28px; font-weight: 800; }
+.board-h p { font-size: 14px; color: var(--muted); font-weight: 500; line-height: 1.6; margin-top: 8px; max-width: 1100px; }
+.board-h p b { color: var(--fg); }
+.sec-h { display: flex; gap: 12px; align-items: flex-start; }
+.sec-n { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sec-h h3 { font-size: 16px; font-weight: 800; }
+.sec-h p { font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.55; margin-top: 3px; max-width: 980px; }
+.frame-l { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+.stage { position: relative; border-radius: 28px; background: oklch(0.9 0.005 90); overflow: hidden; }
+.callout { position: absolute; z-index: 40; display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: oklch(0.55 0.2 300); color: white; font-size: 11px; font-weight: 800; box-shadow: 0 4px 12px oklch(0.3 0.15 300 / 0.35); white-space: nowrap; }
+.callout::before { content: attr(data-n); width: 16px; height: 16px; border-radius: 50%; background: white; color: oklch(0.45 0.2 300); display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+
+/* ===================== Accounts additions ===================== */
+.pill-stale { background: var(--warning-tint); color: var(--warning-text); }
+.pill-stale.pulse { animation: stale-pulse 2.6s ease-in-out infinite; }
+@keyframes stale-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px oklch(0.72 0.14 75 / 0.22); } }
+.pill-derived { background: oklch(0.94 0.03 258); color: oklch(0.42 0.1 258); }
+.chg-up { color: var(--positive); } .chg-down { color: var(--negative); }
+.chg-out { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .pill-stale.pulse { animation: none; } }
+
+/* Hidden radios that hold the pick (All or an account) */
+.pk-in { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+label.pk, label.sx { cursor: pointer; }
+
+/* Cover flow (as the Subscriptions final design) */
+.cstage { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; outline: none; border-radius: 18px; }
+.cstage:active { cursor: grabbing; }
+.cstage:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.cstage .sx { transition: transform 520ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 380ms, filter 380ms !important; -webkit-user-drag: none; }
+.chint { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 70; display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; background: oklch(1 0 0 / 0.72); border: 1px solid var(--surface-line); font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); pointer-events: none; }
+.chint kbd { font: inherit; font-weight: 800; padding: 0 5px; border-radius: 5px; background: var(--fill); color: var(--fg); }
+.stg { position: absolute; inset: 0; border-radius: inherit; opacity: 0; z-index: -2; transition: opacity 650ms ease; pointer-events: none; }
+.stage-dark { --fg: oklch(0.97 0.004 260); --muted: oklch(1 0 0 / 0.62); --divider: oklch(1 0 0 / 0.14); --fill: oklch(1 0 0 / 0.12); --fill-strong: oklch(1 0 0 / 0.22); --accent-text: var(--on-card-lime); --surface: oklch(0.22 0.012 260); --surface-line: oklch(1 0 0 / 0.1); color: var(--fg); border-color: transparent !important; }
+.stage-dark .btn-soft { background: oklch(1 0 0 / 0.14); color: var(--fg); }
+.stage-dark .btn-icon { background: oklch(1 0 0 / 0.14); color: var(--fg); border-color: transparent; }
+.stage-dark .chint { background: oklch(0 0 0 / 0.35); border-color: oklch(1 0 0 / 0.12); }
+.stage-dark .pill-off { background: oklch(1 0 0 / 0.14); color: var(--fg); }
+.stage-dark .pill-stale { background: oklch(0.8 0.13 80 / 0.28); color: oklch(0.93 0.09 85); }
+.stage-deep .pk-bar { background: var(--pick-soft, var(--on-card-lime)) !important; transition: background 500ms; }
+.stage-deep .btn-primary { background: var(--pick-soft, var(--on-card-lime)); color: var(--pick-ink, var(--ink)); transition: background 500ms, color 500ms; }
+.stage-deep .chint kbd { background: var(--pick-soft, var(--fill)); color: var(--pick-ink, var(--fg)); }
+.cnav { display: none; }
+@media (prefers-reduced-motion: reduce) { .cstage .sx, .stg { transition: none !important; } }
+
+/* The hero panes: one per pick, only the picked one shows */
+.hp { display: none; }
+
+/* Hero stats */
+.hstat { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.hstat .k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.hstat .v { font-size: 17px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hstat .s { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Account tiles (the Cards tiles' grammar) */
+.atile { position: relative; isolation: isolate; flex-shrink: 0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow); overflow: hidden; }
+.atile .t-muted { color: var(--on-card-muted); font-size: 11px; font-weight: 600; }
+.atile .t-faint { color: var(--on-card-faint); font-size: 10.5px; font-weight: 600; }
+.atile .t-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--on-card-fill); white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.atile .t-pill.stale { background: oklch(0.8 0.13 80 / 0.38); color: oklch(0.97 0.05 90); animation: stale-pulse 2.6s ease-in-out infinite; }
+.atile.off { filter: grayscale(0.85); opacity: 0.62; box-shadow: none; }
+.atile .bank { width: 28px; height: 28px; border-radius: 9px; background: var(--on-card-fill); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+.tilewrap { position: relative; flex-shrink: 0; display: block; }
+.tilewrap .tick { display: none; }
+@media (prefers-reduced-motion: reduce) { .atile .t-pill.stale { animation: none; } }
+
+/* Treemap ("Where it sits") */
+.tmap { position: relative; }
+.tblock { position: absolute; border-radius: 14px; padding: 12px 14px; color: var(--on-card); overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; isolation: isolate; transition: transform 160ms var(--ease-out), opacity 240ms, filter 240ms; }
+.tblock b { font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tblock .tb-s { font-size: 11px; font-weight: 600; color: var(--on-card-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tblock .tb-v { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.tblock .tb-p { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 700; color: var(--on-card-faint); }
+label.tblock:hover { transform: translateY(-2px); }
+.tgroup-l { position: absolute; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+
+/* Charts */
+.chart { display: block; overflow: visible; }
+.chart text { font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; }
+.acm { transition: opacity 260ms ease, filter 260ms ease; }
+.axis-t { font-size: 10.5px; font-weight: 700; fill: var(--muted); }
+.axis-l { stroke: var(--divider); stroke-dasharray: 3 4; }
+.vlabel { font-size: 11px; font-weight: 800; fill: var(--fg); }
+.hatch-fill { fill: url(#hatch); }
+
+/* Snapshot calendar */
+.scal { display: grid; gap: 6px; align-items: center; }
+.scal .sc-h { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.scal .sc-h.now { color: var(--fg); }
+.scell { position: relative; height: 44px; border-radius: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 800; transition: opacity 240ms; }
+.scell small { font-size: 9px; font-weight: 700; opacity: 0.8; margin-top: 1px; }
+.scell.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); font-weight: 700; }
+.scell.stale { background: repeating-linear-gradient(135deg, oklch(0.95 0.05 85) 0 6px, oklch(0.98 0.02 85) 6px 12px); color: var(--warning-text); border: 1.5px dashed oklch(0.72 0.14 75 / 0.6); }
+.scell.closed { background: var(--fill); color: var(--muted); font-weight: 700; }
+.scell.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* Account rows (direction C) */
+.arow { display: grid; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--divider); }
+.arow:last-child { border-bottom: 0; }
+.qinp { height: 36px; border-radius: 11px; border: 1px solid var(--surface-line); background: var(--surface); padding: 0 12px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; box-shadow: inset 0 1px 1px oklch(0 0 0 / 0.02); }
+.qinp .pre { color: var(--muted); font-weight: 600; }
+.qinp.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.qinp.ghost { color: var(--muted); font-weight: 600; }
+
+/* Passbooks (direction D) */
+.pbook { position: relative; isolation: isolate; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; transition: transform 160ms var(--ease-out), box-shadow 200ms, opacity 240ms; }
+label.pbook:hover { transform: translateY(-2px); }
+.pbook .spine { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
+
+/* Paper laid on the green stage: back to the light tokens */
+.on-paper { --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --divider: oklch(0 0 0 / 0.08); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07); --accent-text: oklch(0.42 0.14 145); color: var(--fg); }
+.stage-dark .on-paper .btn-soft { background: var(--fill); color: var(--fg); }
+.stage-dark .on-paper .btn-icon { background: var(--surface); color: var(--muted); border-color: var(--surface-line); }
+.stage-dark .on-paper .pill-off { background: var(--fill); color: var(--muted); }
+.stage-dark .on-paper .pill-stale { background: var(--warning-tint); color: var(--warning-text); }
+</style>
+</helmet>
+<div class="chai-app ph" style="width:390px;height:1668px"><div class="ph-status"><span>9:41</span><span class="ph-icons"><i></i><i></i><i></i></span></div><header class="ph-bar"><span>chaiCoffeeFund</span><span class="ph-menu"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="20" y2="17"></line></svg></span></header><div class="ph-body"><svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="7" fill="oklch(0.95 0.05 85 / 0.55)"></rect><line x1="0" y1="0" x2="0" y2="7" stroke="oklch(0.72 0.14 75)" stroke-width="2.2" stroke-opacity="0.55"></line></pattern>
+  <pattern id="hatch-grey" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="var(--muted)" stroke-width="1.4" stroke-opacity="0.45"></line></pattern>
+  <filter id="glow" x="-10%" y="-40%" width="120%" height="180%"><feGaussianBlur stdDeviation="5" result="b"></feGaussianBlur><feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge></filter>
+  <linearGradient id="g-sapphire" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-sapphire) 88%, white)"></stop><stop offset="1" style="stop-color:var(--card-sapphire)"></stop></linearGradient><linearGradient id="a-sapphire" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--card-sapphire);stop-opacity:0.32"></stop><stop offset="1" style="stop-color:var(--card-sapphire);stop-opacity:0"></stop></linearGradient><linearGradient id="g-ruby" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-ruby) 88%, white)"></stop><stop offset="1" style="stop-color:var(--card-ruby)"></stop></linearGradient><linearGradient id="a-ruby" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--card-ruby);stop-opacity:0.32"></stop><stop offset="1" style="stop-color:var(--card-ruby);stop-opacity:0"></stop></linearGradient><linearGradient id="g-onyx" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-onyx) 88%, white)"></stop><stop offset="1" style="stop-color:var(--card-onyx)"></stop></linearGradient><linearGradient id="a-onyx" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--card-onyx);stop-opacity:0.32"></stop><stop offset="1" style="stop-color:var(--card-onyx);stop-opacity:0"></stop></linearGradient><linearGradient id="g-violet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-violet) 88%, white)"></stop><stop offset="1" style="stop-color:var(--card-violet)"></stop></linearGradient><linearGradient id="a-violet" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--card-violet);stop-opacity:0.32"></stop><stop offset="1" style="stop-color:var(--card-violet);stop-opacity:0"></stop></linearGradient><linearGradient id="g-teal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-teal) 88%, white)"></stop><stop offset="1" style="stop-color:var(--card-teal)"></stop></linearGradient><linearGradient id="a-teal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--card-teal);stop-opacity:0.32"></stop><stop offset="1" style="stop-color:var(--card-teal);stop-opacity:0"></stop></linearGradient><linearGradient id="g-copper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-copper) 88%, white)"></stop><stop offset="1" style="stop-color:var(--card-copper)"></stop></linearGradient><linearGradient id="a-copper" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--card-copper);stop-opacity:0.32"></stop><stop offset="1" style="stop-color:var(--card-copper);stop-opacity:0"></stop></linearGradient><linearGradient id="g-emerald" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-emerald) 88%, white)"></stop><stop offset="1" style="stop-color:var(--card-emerald)"></stop></linearGradient><linearGradient id="a-emerald" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--card-emerald);stop-opacity:0.32"></stop><stop offset="1" style="stop-color:var(--card-emerald);stop-opacity:0"></stop></linearGradient>
+  <pattern id="waves-ink" width="44" height="14" patternUnits="userSpaceOnUse"><path d="M0,7 C11,1 33,13 44,7" fill="none" stroke="oklch(0.4 0.06 210)" stroke-opacity="0.16" stroke-width="1.2"></path></pattern>
+  <pattern id="waves" width="44" height="14" patternUnits="userSpaceOnUse"><path d="M0,7 C11,1 33,13 44,7" fill="none" stroke="white" stroke-opacity="0.4" stroke-width="1.2"></path></pattern>
+  <radialGradient id="r-sapphire" cx="34%" cy="28%" r="78%"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-sapphire) 78%, white)"></stop><stop offset="0.55" style="stop-color:var(--card-sapphire-from)"></stop><stop offset="1" style="stop-color:var(--card-sapphire-to)"></stop></radialGradient><radialGradient id="r-ruby" cx="34%" cy="28%" r="78%"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-ruby) 78%, white)"></stop><stop offset="0.55" style="stop-color:var(--card-ruby-from)"></stop><stop offset="1" style="stop-color:var(--card-ruby-to)"></stop></radialGradient><radialGradient id="r-onyx" cx="34%" cy="28%" r="78%"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-onyx) 78%, white)"></stop><stop offset="0.55" style="stop-color:var(--card-onyx-from)"></stop><stop offset="1" style="stop-color:var(--card-onyx-to)"></stop></radialGradient><radialGradient id="r-violet" cx="34%" cy="28%" r="78%"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-violet) 78%, white)"></stop><stop offset="0.55" style="stop-color:var(--card-violet-from)"></stop><stop offset="1" style="stop-color:var(--card-violet-to)"></stop></radialGradient><radialGradient id="r-teal" cx="34%" cy="28%" r="78%"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-teal) 78%, white)"></stop><stop offset="0.55" style="stop-color:var(--card-teal-from)"></stop><stop offset="1" style="stop-color:var(--card-teal-to)"></stop></radialGradient><radialGradient id="r-copper" cx="34%" cy="28%" r="78%"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-copper) 78%, white)"></stop><stop offset="0.55" style="stop-color:var(--card-copper-from)"></stop><stop offset="1" style="stop-color:var(--card-copper-to)"></stop></radialGradient><radialGradient id="r-emerald" cx="34%" cy="28%" r="78%"><stop offset="0" style="stop-color:color-mix(in oklch, var(--card-emerald) 78%, white)"></stop><stop offset="0.55" style="stop-color:var(--card-emerald-from)"></stop><stop offset="1" style="stop-color:var(--card-emerald-to)"></stop></radialGradient>
+</defs></svg><style>
+    .npdir:has(#np-sel-all:checked) .hp-all { display: block; }
+    .npdir:has(#np-sel-all:checked) .hpf.hp-all { display: flex; }
+.npdir:has(#np-sel-sbi:checked) .hp-sbi { display: block; }
+    .npdir:has(#np-sel-sbi:checked) .hpf.hp-sbi { display: flex; }
+.npdir:has(#np-sel-icici:checked) .hp-icici { display: block; }
+    .npdir:has(#np-sel-icici:checked) .hpf.hp-icici { display: flex; }
+.npdir:has(#np-sel-hdfc:checked) .hp-hdfc { display: block; }
+    .npdir:has(#np-sel-hdfc:checked) .hpf.hp-hdfc { display: flex; }
+.npdir:has(#np-sel-kotak:checked) .hp-kotak { display: block; }
+    .npdir:has(#np-sel-kotak:checked) .hpf.hp-kotak { display: flex; }
+.npdir:has(#np-sel-axis:checked) .hp-axis { display: block; }
+    .npdir:has(#np-sel-axis:checked) .hpf.hp-axis { display: flex; }
+.npdir:has(#np-sel-yes:checked) .hp-yes { display: block; }
+    .npdir:has(#np-sel-yes:checked) .hpf.hp-yes { display: flex; }
+    .npdir:has(#np-sel-sbi:checked) .acm:not(.ac-sbi) { opacity: 0.14; }
+    .npdir:has(#np-sel-sbi:checked) .acm-all { opacity: 0 !important; }
+.npdir:has(#np-sel-icici:checked) .acm:not(.ac-icici) { opacity: 0.14; }
+    .npdir:has(#np-sel-icici:checked) .acm-all { opacity: 0 !important; }
+.npdir:has(#np-sel-hdfc:checked) .acm:not(.ac-hdfc) { opacity: 0.14; }
+    .npdir:has(#np-sel-hdfc:checked) .acm-all { opacity: 0 !important; }
+.npdir:has(#np-sel-kotak:checked) .acm:not(.ac-kotak) { opacity: 0.14; }
+    .npdir:has(#np-sel-kotak:checked) .acm-all { opacity: 0 !important; }
+.npdir:has(#np-sel-axis:checked) .acm:not(.ac-axis) { opacity: 0.14; }
+    .npdir:has(#np-sel-axis:checked) .acm-all { opacity: 0 !important; }
+.npdir:has(#np-sel-yes:checked) .acm:not(.ac-yes) { opacity: 0.14; }
+    .npdir:has(#np-sel-yes:checked) .acm-all { opacity: 0 !important; }
+    .npdir:has(#np-sel-all:checked) .acm-one { opacity: 0 !important; }
+    .npdir:has(#np-sel-all:checked) .sr-all { background: var(--accent-tint) !important; }
+.npdir:has(#np-sel-sbi:checked) .sr-sbi { background: var(--accent-tint) !important; }
+.npdir:has(#np-sel-icici:checked) .sr-icici { background: var(--accent-tint) !important; }
+.npdir:has(#np-sel-hdfc:checked) .sr-hdfc { background: var(--accent-tint) !important; }
+.npdir:has(#np-sel-kotak:checked) .sr-kotak { background: var(--accent-tint) !important; }
+.npdir:has(#np-sel-axis:checked) .sr-axis { background: var(--accent-tint) !important; }
+.npdir:has(#np-sel-yes:checked) .sr-yes { background: var(--accent-tint) !important; }
+  </style><div class="npdir" style="display:flex;flex-direction:column;gap:20px"><input type="radio" class="pk-in" name="np-sel" id="np-sel-all" checked aria-label="All accounts"><input type="radio" class="pk-in" name="np-sel" id="np-sel-sbi" aria-label="SBI Rainy Day"><input type="radio" class="pk-in" name="np-sel" id="np-sel-icici" aria-label="ICICI Invest"><input type="radio" class="pk-in" name="np-sel" id="np-sel-hdfc" aria-label="HDFC Salary"><input type="radio" class="pk-in" name="np-sel" id="np-sel-kotak" aria-label="Kotak Savings"><input type="radio" class="pk-in" name="np-sel" id="np-sel-axis" aria-label="Axis EMI"><input type="radio" class="pk-in" name="np-sel" id="np-sel-yes" aria-label="YES Old Salary"><header class="pg-head ph-head"><div class="pg-text"><div class="eyebrow">Bank accounts · Today</div><h1>Good morning, Prathik</h1><p class="lede">Your <b>5 accounts</b> hold <b>₹11,65,500</b>, up <b>₹74,850</b> since January. <b>March</b> was the high point at <b>₹12,52,900</b>. <b>SBI Rainy Day</b> was last updated on <b>Aug 9</b>.</p></div><div class="pg-actions"><span class="btn btn-primary "><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>Update balances</span><span class="btn btn-ghost "><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add account</span></div></header><section class="card glass" style="padding:14px;gap:6px"><div class="card-h"><span class="card-t">Stacks</span></div><svg class="chart" viewBox="0 0 330 307" width="100%" height="307" role="img" aria-label="Each month's balance as a stack, a row per account"><g class="acm ac-sbi"><polygon points="121.8,133.0 133.9,126.0 133.9,20.6 121.8,27.6" fill="var(--card-teal)" stroke="none"></polygon><polygon points="133.9,126.0 146.0,133.0 146.0,27.6 133.9,20.6" fill="var(--card-teal-from)" stroke="none"></polygon><polygon points="133.9,20.6 146.0,27.6 133.9,34.6 121.8,27.6" fill="color-mix(in srgb, var(--card-teal) 62%, white)" stroke="none"></polygon></g><g class="acm ac-sbi"><polygon points="138.3,142.5 150.4,135.5 150.4,29.4 138.3,36.4" fill="var(--card-teal)" stroke="none"></polygon><polygon points="150.4,135.5 162.5,142.5 162.5,36.4 150.4,29.4" fill="var(--card-teal-from)" stroke="none"></polygon><polygon points="150.4,29.4 162.5,36.4 150.4,43.4 138.3,36.4" fill="color-mix(in srgb, var(--card-teal) 62%, white)" stroke="none"></polygon></g><g class="acm ac-icici"><polygon points="104.5,143.0 116.6,136.0 116.6,104.5 104.5,111.5" fill="var(--card-violet)" stroke="none"></polygon><polygon points="116.6,136.0 128.7,143.0 128.7,111.5 116.6,104.5" fill="var(--card-violet-from)" stroke="none"></polygon><polygon points="116.6,104.5 128.7,111.5 116.6,118.5 104.5,111.5" fill="color-mix(in srgb, var(--card-violet) 62%, white)" stroke="none"></polygon></g><g class="acm ac-sbi"><polygon points="154.7,152.0 166.8,145.0 166.8,38.0 154.7,45.0" fill="var(--card-teal)" stroke="none"></polygon><polygon points="166.8,145.0 179.0,152.0 179.0,45.0 166.8,38.0" fill="var(--card-teal-from)" stroke="none"></polygon><polygon points="166.8,38.0 179.0,45.0 166.8,52.0 154.7,45.0" fill="color-mix(in srgb, var(--card-teal) 62%, white)" stroke="none"></polygon></g><g class="acm ac-icici"><polygon points="120.9,152.5 133.1,145.5 133.1,111.3 120.9,118.3" fill="var(--card-violet)" stroke="none"></polygon><polygon points="133.1,145.5 145.2,152.5 145.2,118.3 133.1,111.3" fill="var(--card-violet-from)" stroke="none"></polygon><polygon points="133.1,111.3 145.2,118.3 133.1,125.3 120.9,118.3" fill="color-mix(in srgb, var(--card-violet) 62%, white)" stroke="none"></polygon></g><g class="acm ac-hdfc"><polygon points="87.2,153.0 99.3,146.0 99.3,114.4 87.2,121.4" fill="var(--card-sapphire)" stroke="none"></polygon><polygon points="99.3,146.0 111.4,153.0 111.4,121.4 99.3,114.4" fill="var(--card-sapphire-from)" stroke="none"></polygon><polygon points="99.3,114.4 111.4,121.4 99.3,128.4 87.2,121.4" fill="color-mix(in srgb, var(--card-sapphire) 62%, white)" stroke="none"></polygon></g><g class="acm ac-sbi"><polygon points="171.2,161.5 183.3,154.5 183.3,46.7 171.2,53.7" fill="var(--card-teal)" stroke="none"></polygon><polygon points="183.3,154.5 195.4,161.5 195.4,53.7 183.3,46.7" fill="var(--card-teal-from)" stroke="none"></polygon><polygon points="183.3,46.7 195.4,53.7 183.3,60.7 171.2,53.7" fill="color-mix(in srgb, var(--card-teal) 62%, white)" stroke="none"></polygon></g><g class="acm ac-icici"><polygon points="137.4,162.0 149.5,155.0 149.5,122.0 137.4,129.0" fill="var(--card-violet)" stroke="none"></polygon><polygon points="149.5,155.0 161.6,162.0 161.6,129.0 149.5,122.0" fill="var(--card-violet-from)" stroke="none"></polygon><polygon points="149.5,122.0 161.6,129.0 149.5,136.0 137.4,129.0" fill="color-mix(in srgb, var(--card-violet) 62%, white)" stroke="none"></polygon></g><g class="acm ac-hdfc"><polygon points="103.6,162.5 115.7,155.5 115.7,123.0 103.6,130.0" fill="var(--card-sapphire)" stroke="none"></polygon><polygon points="115.7,155.5 127.9,162.5 127.9,130.0 115.7,123.0" fill="var(--card-sapphire-from)" stroke="none"></polygon><polygon points="115.7,123.0 127.9,130.0 115.7,137.0 103.6,130.0" fill="color-mix(in srgb, var(--card-sapphire) 62%, white)" stroke="none"></polygon></g><g class="acm ac-kotak"><polygon points="69.8,163.0 82.0,156.0 82.0,148.6 69.8,155.6" fill="var(--card-ruby)" stroke="none"></polygon><polygon points="82.0,156.0 94.1,163.0 94.1,155.6 82.0,148.6" fill="var(--card-ruby-from)" stroke="none"></polygon><polygon points="82.0,148.6 94.1,155.6 82.0,162.6 69.8,155.6" fill="color-mix(in srgb, var(--card-ruby) 62%, white)" stroke="none"></polygon></g><g class="acm ac-sbi"><polygon points="187.6,171.0 199.7,164.0 199.7,55.6 187.6,62.6" fill="var(--card-teal)" stroke="none"></polygon><polygon points="199.7,164.0 211.9,171.0 211.9,62.6 199.7,55.6" fill="var(--card-teal-from)" stroke="none"></polygon><polygon points="199.7,55.6 211.9,62.6 199.7,69.6 187.6,62.6" fill="color-mix(in srgb, var(--card-teal) 62%, white)" stroke="none"></polygon></g><g class="acm ac-icici"><polygon points="153.8,171.5 166.0,164.5 166.0,111.3 153.8,118.3" fill="var(--card-violet)" stroke="none"></polygon><polygon points="166.0,164.5 178.1,171.5 178.1,118.3 166.0,111.3" fill="var(--card-violet-from)" stroke="none"></polygon><polygon points="166.0,111.3 178.1,118.3 166.0,125.3 153.8,118.3" fill="color-mix(in srgb, var(--card-violet) 62%, white)" stroke="none"></polygon></g><g class="acm ac-hdfc"><polygon points="120.1,172.0 132.2,165.0 132.2,106.6 120.1,113.6" fill="var(--card-sapphire)" stroke="none"></polygon><polygon points="132.2,165.0 144.3,172.0 144.3,113.6 132.2,106.6" fill="var(--card-sapphire-from)" stroke="none"></polygon><polygon points="132.2,106.6 144.3,113.6 132.2,120.6 120.1,113.6" fill="color-mix(in srgb, var(--card-sapphire) 62%, white)" stroke="none"></polygon></g><g class="acm ac-kotak"><polygon points="86.3,172.5 98.4,165.5 98.4,157.0 86.3,164.0" fill="var(--card-ruby)" stroke="none"></polygon><polygon points="98.4,165.5 110.5,172.5 110.5,164.0 98.4,157.0" fill="var(--card-ruby-from)" stroke="none"></polygon><polygon points="98.4,157.0 110.5,164.0 98.4,171.0 86.3,164.0" fill="color-mix(in srgb, var(--card-ruby) 62%, white)" stroke="none"></polygon></g><g class="acm ac-axis"><polygon points="52.5,173.0 64.6,166.0 64.6,164.5 52.5,171.5" fill="var(--card-copper)" stroke="none"></polygon><polygon points="64.6,166.0 76.8,173.0 76.8,171.5 64.6,164.5" fill="var(--card-copper-from)" stroke="none"></polygon><polygon points="64.6,164.5 76.8,171.5 64.6,178.5 52.5,171.5" fill="color-mix(in srgb, var(--card-copper) 62%, white)" stroke="none"></polygon></g><g class="acm ac-sbi"><polygon points="204.1,180.5 216.2,173.5 216.2,64.4 204.1,71.4" fill="var(--card-teal)" stroke="none"></polygon><polygon points="216.2,173.5 228.3,180.5 228.3,71.4 216.2,64.4" fill="var(--card-teal-from)" stroke="none"></polygon><polygon points="216.2,64.4 228.3,71.4 216.2,78.4 204.1,71.4" fill="color-mix(in srgb, var(--card-teal) 62%, white)" stroke="none"></polygon></g><g class="acm ac-icici"><polygon points="170.3,181.0 182.4,174.0 182.4,127.7 170.3,134.7" fill="var(--card-violet)" stroke="none"></polygon><polygon points="182.4,174.0 194.5,181.0 194.5,134.7 182.4,127.7" fill="var(--card-violet-from)" stroke="none"></polygon><polygon points="182.4,127.7 194.5,134.7 182.4,141.7 170.3,134.7" fill="color-mix(in srgb, var(--card-violet) 62%, white)" stroke="none"></polygon></g><g class="acm ac-hdfc"><polygon points="136.5,181.5 148.6,174.5 148.6,140.8 136.5,147.8" fill="var(--card-sapphire)" stroke="none"></polygon><polygon points="148.6,174.5 160.8,181.5 160.8,147.8 148.6,140.8" fill="var(--card-sapphire-from)" stroke="none"></polygon><polygon points="148.6,140.8 160.8,147.8 148.6,154.8 136.5,147.8" fill="color-mix(in srgb, var(--card-sapphire) 62%, white)" stroke="none"></polygon></g><g class="acm ac-kotak"><polygon points="102.7,182.0 114.9,175.0 114.9,165.4 102.7,172.4" fill="var(--card-ruby)" stroke="none"></polygon><polygon points="114.9,175.0 127.0,182.0 127.0,172.4 114.9,165.4" fill="var(--card-ruby-from)" stroke="none"></polygon><polygon points="114.9,165.4 127.0,172.4 114.9,179.4 102.7,172.4" fill="color-mix(in srgb, var(--card-ruby) 62%, white)" stroke="none"></polygon></g><g class="acm ac-axis"><polygon points="69.0,182.5 81.1,175.5 81.1,174.0 69.0,181.0" fill="var(--card-copper)" stroke="none"></polygon><polygon points="81.1,175.5 93.2,182.5 93.2,181.0 81.1,174.0" fill="var(--card-copper-from)" stroke="none"></polygon><polygon points="81.1,174.0 93.2,181.0 81.1,188.0 69.0,181.0" fill="color-mix(in srgb, var(--card-copper) 62%, white)" stroke="none"></polygon></g><g class="acm ac-yes"><polygon points="35.2,183.0 47.3,176.0 47.3,174.5 35.2,181.5" fill="var(--card-onyx)" stroke="none"></polygon><polygon points="47.3,176.0 59.4,183.0 59.4,181.5 47.3,174.5" fill="var(--card-onyx-from)" stroke="none"></polygon><polygon points="47.3,174.5 59.4,181.5 47.3,188.5 35.2,181.5" fill="color-mix(in srgb, var(--card-onyx) 62%, white)" stroke="none"></polygon></g><g class="acm ac-sbi"><polygon points="220.5,190.0 232.6,183.0 232.6,73.4 220.5,80.4" fill="var(--card-teal)" stroke="none"></polygon><polygon points="232.6,183.0 244.8,190.0 244.8,80.4 232.6,73.4" fill="var(--card-teal-from)" stroke="none"></polygon><polygon points="232.6,73.4 244.8,80.4 232.6,87.4 220.5,80.4" fill="color-mix(in srgb, var(--card-teal) 62%, white)" stroke="none"></polygon></g><g class="acm ac-icici"><polygon points="186.7,190.5 198.9,183.5 198.9,139.7 186.7,146.7" fill="var(--card-violet)" stroke="none"></polygon><polygon points="198.9,183.5 211.0,190.5 211.0,146.7 198.9,139.7" fill="var(--card-violet-from)" stroke="none"></polygon><polygon points="198.9,139.7 211.0,146.7 198.9,153.7 186.7,146.7" fill="color-mix(in srgb, var(--card-violet) 62%, white)" stroke="none"></polygon></g><g class="acm ac-hdfc"><polygon points="153.0,191.0 165.1,184.0 165.1,152.3 153.0,159.3" fill="var(--card-sapphire)" stroke="none"></polygon><polygon points="165.1,184.0 177.2,191.0 177.2,159.3 165.1,152.3" fill="var(--card-sapphire-from)" stroke="none"></polygon><polygon points="165.1,152.3 177.2,159.3 165.1,166.3 153.0,159.3" fill="color-mix(in srgb, var(--card-sapphire) 62%, white)" stroke="none"></polygon></g><g class="acm ac-kotak"><polygon points="119.2,191.5 131.3,184.5 131.3,177.3 119.2,184.3" fill="var(--card-ruby)" stroke="none"></polygon><polygon points="131.3,184.5 143.4,191.5 143.4,184.3 131.3,177.3" fill="var(--card-ruby-from)" stroke="none"></polygon><polygon points="131.3,177.3 143.4,184.3 131.3,191.3 119.2,184.3" fill="color-mix(in srgb, var(--card-ruby) 62%, white)" stroke="none"></polygon></g><g class="acm ac-axis"><polygon points="85.4,192.0 97.5,185.0 97.5,183.5 85.4,190.5" fill="var(--card-copper)" stroke="none"></polygon><polygon points="97.5,185.0 109.7,192.0 109.7,190.5 97.5,183.5" fill="var(--card-copper-from)" stroke="none"></polygon><polygon points="97.5,183.5 109.7,190.5 97.5,197.5 85.4,190.5" fill="color-mix(in srgb, var(--card-copper) 62%, white)" stroke="none"></polygon></g><g class="acm ac-yes"><polygon points="51.7,192.5 63.8,185.5 63.8,184.0 51.7,191.0" fill="var(--card-onyx)" stroke="none"></polygon><polygon points="63.8,185.5 75.9,192.5 75.9,191.0 63.8,184.0" fill="var(--card-onyx-from)" stroke="none"></polygon><polygon points="63.8,184.0 75.9,191.0 63.8,198.0 51.7,191.0" fill="color-mix(in srgb, var(--card-onyx) 62%, white)" stroke="none"></polygon></g><g class="acm ac-sbi"><polygon points="237.0,199.5 249.1,192.5 249.1,82.5 237.0,89.5" fill="var(--card-teal)" stroke="none"></polygon><polygon points="249.1,192.5 261.2,199.5 261.2,89.5 249.1,82.5" fill="var(--card-teal-from)" stroke="none"></polygon><polygon points="249.1,82.5 261.2,89.5 249.1,96.5 237.0,89.5" fill="color-mix(in srgb, var(--card-teal) 62%, white)" stroke="none"></polygon></g><g class="acm ac-icici"><polygon points="203.2,200.0 215.3,193.0 215.3,151.4 203.2,158.4" fill="var(--card-violet)" stroke="none"></polygon><polygon points="215.3,193.0 227.4,200.0 227.4,158.4 215.3,151.4" fill="var(--card-violet-from)" stroke="none"></polygon><polygon points="215.3,151.4 227.4,158.4 215.3,165.4 203.2,158.4" fill="color-mix(in srgb, var(--card-violet) 62%, white)" stroke="none"></polygon></g><g class="acm ac-hdfc"><polygon points="169.4,200.5 181.6,193.5 181.6,157.9 169.4,164.9" fill="var(--card-sapphire)" stroke="none"></polygon><polygon points="181.6,193.5 193.7,200.5 193.7,164.9 181.6,157.9" fill="var(--card-sapphire-from)" stroke="none"></polygon><polygon points="181.6,157.9 193.7,164.9 181.6,171.9 169.4,164.9" fill="color-mix(in srgb, var(--card-sapphire) 62%, white)" stroke="none"></polygon></g><g class="acm ac-kotak"><polygon points="135.7,201.0 147.8,194.0 147.8,186.0 135.7,193.0" fill="var(--card-ruby)" stroke="none"></polygon><polygon points="147.8,194.0 159.9,201.0 159.9,193.0 147.8,186.0" fill="var(--card-ruby-from)" stroke="none"></polygon><polygon points="147.8,186.0 159.9,193.0 147.8,200.0 135.7,193.0" fill="color-mix(in srgb, var(--card-ruby) 62%, white)" stroke="none"></polygon></g><g class="acm ac-axis"><polygon points="101.9,201.5 114.0,194.5 114.0,192.7 101.9,199.7" fill="var(--card-copper)" stroke="none"></polygon><polygon points="114.0,194.5 126.1,201.5 126.1,199.7 114.0,192.7" fill="var(--card-copper-from)" stroke="none"></polygon><polygon points="114.0,192.7 126.1,199.7 114.0,206.7 101.9,199.7" fill="color-mix(in srgb, var(--card-copper) 62%, white)" stroke="none"></polygon></g><g class="acm ac-yes"><polygon points="68.1,202.0 80.2,195.0 80.2,193.5 68.1,200.5" fill="var(--card-onyx)" stroke="none"></polygon><polygon points="80.2,195.0 92.4,202.0 92.4,200.5 80.2,193.5" fill="var(--card-onyx-from)" stroke="none"></polygon><polygon points="80.2,193.5 92.4,200.5 80.2,207.5 68.1,200.5" fill="color-mix(in srgb, var(--card-onyx) 62%, white)" stroke="none"></polygon></g><g class="acm ac-sbi"><polygon points="253.4,209.0 265.6,202.0 265.6,92.0 253.4,99.0" fill="url(#hatch)" stroke="var(--warning)"></polygon><polygon points="265.6,202.0 277.7,209.0 277.7,99.0 265.6,92.0" fill="url(#hatch)" stroke="var(--warning)"></polygon><polygon points="265.6,92.0 277.7,99.0 265.6,106.0 253.4,99.0" fill="oklch(0.95 0.05 85 / 0.7)" stroke="var(--warning)"></polygon></g><g class="acm ac-icici"><polygon points="219.7,209.5 231.8,202.5 231.8,159.9 219.7,166.9" fill="var(--card-violet)" stroke="none"></polygon><polygon points="231.8,202.5 243.9,209.5 243.9,166.9 231.8,159.9" fill="var(--card-violet-from)" stroke="none"></polygon><polygon points="231.8,159.9 243.9,166.9 231.8,173.9 219.7,166.9" fill="color-mix(in srgb, var(--card-violet) 62%, white)" stroke="none"></polygon></g><g class="acm ac-hdfc"><polygon points="185.9,210.0 198.0,203.0 198.0,169.8 185.9,176.8" fill="var(--card-sapphire)" stroke="none"></polygon><polygon points="198.0,203.0 210.1,210.0 210.1,176.8 198.0,169.8" fill="var(--card-sapphire-from)" stroke="none"></polygon><polygon points="198.0,169.8 210.1,176.8 198.0,183.8 185.9,176.8" fill="color-mix(in srgb, var(--card-sapphire) 62%, white)" stroke="none"></polygon></g><g class="acm ac-kotak"><polygon points="152.1,210.5 164.2,203.5 164.2,194.2 152.1,201.2" fill="var(--card-ruby)" stroke="none"></polygon><polygon points="164.2,203.5 176.4,210.5 176.4,201.2 164.2,194.2" fill="var(--card-ruby-from)" stroke="none"></polygon><polygon points="164.2,194.2 176.4,201.2 164.2,208.2 152.1,201.2" fill="color-mix(in srgb, var(--card-ruby) 62%, white)" stroke="none"></polygon></g><g class="acm ac-axis"><polygon points="118.3,211.0 130.5,204.0 130.5,201.8 118.3,208.8" fill="var(--card-copper)" stroke="none"></polygon><polygon points="130.5,204.0 142.6,211.0 142.6,208.8 130.5,201.8" fill="var(--card-copper-from)" stroke="none"></polygon><polygon points="130.5,201.8 142.6,208.8 130.5,215.8 118.3,208.8" fill="color-mix(in srgb, var(--card-copper) 62%, white)" stroke="none"></polygon></g><g class="acm ac-yes"><polygon points="84.6,211.5 96.7,204.5 96.7,203.0 84.6,210.0" fill="var(--fill)" stroke="none"></polygon><polygon points="96.7,204.5 108.8,211.5 108.8,210.0 96.7,203.0" fill="var(--fill)" stroke="none"></polygon><polygon points="96.7,203.0 108.8,210.0 96.7,217.0 84.6,210.0" fill="var(--fill-strong)" stroke="none"></polygon></g><g class="acm ac-sbi"><polygon points="269.9,218.5 282.0,211.5 282.0,101.5 269.9,108.5" fill="url(#hatch)" stroke="var(--warning)"></polygon><polygon points="282.0,211.5 294.1,218.5 294.1,108.5 282.0,101.5" fill="url(#hatch)" stroke="var(--warning)"></polygon><polygon points="282.0,101.5 294.1,108.5 282.0,115.5 269.9,108.5" fill="oklch(0.95 0.05 85 / 0.7)" stroke="var(--warning)"></polygon></g><g class="acm ac-icici"><polygon points="236.1,219.0 248.2,212.0 248.2,171.9 236.1,178.9" fill="var(--card-violet)" stroke="none"></polygon><polygon points="248.2,212.0 260.4,219.0 260.4,178.9 248.2,171.9" fill="var(--card-violet-from)" stroke="none"></polygon><polygon points="248.2,171.9 260.4,178.9 248.2,185.9 236.1,178.9" fill="color-mix(in srgb, var(--card-violet) 62%, white)" stroke="none"></polygon></g><g class="acm ac-hdfc"><polygon points="202.3,219.5 214.5,212.5 214.5,181.6 202.3,188.6" fill="var(--card-sapphire)" stroke="none"></polygon><polygon points="214.5,212.5 226.6,219.5 226.6,188.6 214.5,181.6" fill="var(--card-sapphire-from)" stroke="none"></polygon><polygon points="214.5,181.6 226.6,188.6 214.5,195.6 202.3,188.6" fill="color-mix(in srgb, var(--card-sapphire) 62%, white)" stroke="none"></polygon></g><g class="acm ac-kotak"><polygon points="168.6,220.0 180.7,213.0 180.7,205.3 168.6,212.3" fill="var(--card-ruby)" stroke="none"></polygon><polygon points="180.7,213.0 192.8,220.0 192.8,212.3 180.7,205.3" fill="var(--card-ruby-from)" stroke="none"></polygon><polygon points="180.7,205.3 192.8,212.3 180.7,219.3 168.6,212.3" fill="color-mix(in srgb, var(--card-ruby) 62%, white)" stroke="none"></polygon></g><g class="acm ac-axis"><polygon points="134.8,220.5 146.9,213.5 146.9,210.8 134.8,217.8" fill="var(--card-copper)" stroke="none"></polygon><polygon points="146.9,213.5 159.0,220.5 159.0,217.8 146.9,210.8" fill="var(--card-copper-from)" stroke="none"></polygon><polygon points="146.9,210.8 159.0,217.8 146.9,224.8 134.8,217.8" fill="color-mix(in srgb, var(--card-copper) 62%, white)" stroke="none"></polygon></g><g class="acm ac-yes"><polygon points="101.0,221.0 113.1,214.0 113.1,212.5 101.0,219.5" fill="var(--fill)" stroke="none"></polygon><polygon points="113.1,214.0 125.3,221.0 125.3,219.5 113.1,212.5" fill="var(--fill)" stroke="none"></polygon><polygon points="113.1,212.5 125.3,219.5 113.1,226.5 101.0,219.5" fill="var(--fill-strong)" stroke="none"></polygon></g><g class="acm ac-icici"><polygon points="252.6,228.5 264.7,221.5 264.7,182.8 252.6,189.8" fill="var(--card-violet)" stroke="none"></polygon><polygon points="264.7,221.5 276.8,228.5 276.8,189.8 264.7,182.8" fill="var(--card-violet-from)" stroke="none"></polygon><polygon points="264.7,182.8 276.8,189.8 264.7,196.8 252.6,189.8" fill="color-mix(in srgb, var(--card-violet) 62%, white)" stroke="none"></polygon></g><g class="acm ac-hdfc"><polygon points="218.8,229.0 230.9,222.0 230.9,189.9 218.8,196.9" fill="var(--card-sapphire)" stroke="none"></polygon><polygon points="230.9,222.0 243.0,229.0 243.0,196.9 230.9,189.9" fill="var(--card-sapphire-from)" stroke="none"></polygon><polygon points="230.9,189.9 243.0,196.9 230.9,203.9 218.8,196.9" fill="color-mix(in srgb, var(--card-sapphire) 62%, white)" stroke="none"></polygon></g><g class="acm ac-kotak"><polygon points="185.0,229.5 197.1,222.5 197.1,213.8 185.0,220.8" fill="var(--card-ruby)" stroke="none"></polygon><polygon points="197.1,222.5 209.3,229.5 209.3,220.8 197.1,213.8" fill="var(--card-ruby-from)" stroke="none"></polygon><polygon points="197.1,213.8 209.3,220.8 197.1,227.8 185.0,220.8" fill="color-mix(in srgb, var(--card-ruby) 62%, white)" stroke="none"></polygon></g><g class="acm ac-axis"><polygon points="151.2,230.0 163.4,223.0 163.4,219.9 151.2,226.9" fill="var(--card-copper)" stroke="none"></polygon><polygon points="163.4,223.0 175.5,230.0 175.5,226.9 163.4,219.9" fill="var(--card-copper-from)" stroke="none"></polygon><polygon points="163.4,219.9 175.5,226.9 163.4,233.9 151.2,226.9" fill="color-mix(in srgb, var(--card-copper) 62%, white)" stroke="none"></polygon></g><g class="acm ac-yes"><polygon points="117.5,230.5 129.6,223.5 129.6,222.0 117.5,229.0" fill="var(--fill)" stroke="none"></polygon><polygon points="129.6,223.5 141.7,230.5 141.7,229.0 129.6,222.0" fill="var(--fill)" stroke="none"></polygon><polygon points="129.6,222.0 141.7,229.0 129.6,236.0 117.5,229.0" fill="var(--fill-strong)" stroke="none"></polygon></g><g class="acm ac-hdfc"><polygon points="235.2,238.5 247.4,231.5 247.4,197.3 235.2,204.3" fill="var(--card-sapphire)" stroke="none"></polygon><polygon points="247.4,231.5 259.5,238.5 259.5,204.3 247.4,197.3" fill="var(--card-sapphire-from)" stroke="none"></polygon><polygon points="247.4,197.3 259.5,204.3 247.4,211.3 235.2,204.3" fill="color-mix(in srgb, var(--card-sapphire) 62%, white)" stroke="none"></polygon></g><g class="acm ac-kotak"><polygon points="201.5,239.0 213.6,232.0 213.6,224.5 201.5,231.5" fill="var(--card-ruby)" stroke="none"></polygon><polygon points="213.6,232.0 225.7,239.0 225.7,231.5 213.6,224.5" fill="var(--card-ruby-from)" stroke="none"></polygon><polygon points="213.6,224.5 225.7,231.5 213.6,238.5 201.5,231.5" fill="color-mix(in srgb, var(--card-ruby) 62%, white)" stroke="none"></polygon></g><g class="acm ac-axis"><polygon points="167.7,239.5 179.8,232.5 179.8,229.0 167.7,236.0" fill="var(--card-copper)" stroke="none"></polygon><polygon points="179.8,232.5 191.9,239.5 191.9,236.0 179.8,229.0" fill="var(--card-copper-from)" stroke="none"></polygon><polygon points="179.8,229.0 191.9,236.0 179.8,243.0 167.7,236.0" fill="color-mix(in srgb, var(--card-copper) 62%, white)" stroke="none"></polygon></g><g class="acm ac-yes"><polygon points="133.9,240.0 146.0,233.0 146.0,231.5 133.9,238.5" fill="var(--fill)" stroke="none"></polygon><polygon points="146.0,233.0 158.2,240.0 158.2,238.5 146.0,231.5" fill="var(--fill)" stroke="none"></polygon><polygon points="146.0,231.5 158.2,238.5 146.0,245.5 133.9,238.5" fill="var(--fill-strong)" stroke="none"></polygon></g><g class="acm ac-kotak"><polygon points="217.9,248.5 230.0,241.5 230.0,232.7 217.9,239.7" fill="var(--card-ruby)" stroke="none"></polygon><polygon points="230.0,241.5 242.2,248.5 242.2,239.7 230.0,232.7" fill="var(--card-ruby-from)" stroke="none"></polygon><polygon points="230.0,232.7 242.2,239.7 230.0,246.7 217.9,239.7" fill="color-mix(in srgb, var(--card-ruby) 62%, white)" stroke="none"></polygon></g><g class="acm ac-axis"><polygon points="184.1,249.0 196.3,242.0 196.3,238.1 184.1,245.1" fill="var(--card-copper)" stroke="none"></polygon><polygon points="196.3,242.0 208.4,249.0 208.4,245.1 196.3,238.1" fill="var(--card-copper-from)" stroke="none"></polygon><polygon points="196.3,238.1 208.4,245.1 196.3,252.1 184.1,245.1" fill="color-mix(in srgb, var(--card-copper) 62%, white)" stroke="none"></polygon></g><g class="acm ac-yes"><polygon points="150.4,249.5 162.5,242.5 162.5,241.0 150.4,248.0" fill="var(--fill)" stroke="none"></polygon><polygon points="162.5,242.5 174.6,249.5 174.6,248.0 162.5,241.0" fill="var(--fill)" stroke="none"></polygon><polygon points="162.5,241.0 174.6,248.0 162.5,255.0 150.4,248.0" fill="var(--fill-strong)" stroke="none"></polygon></g><g class="acm ac-axis"><polygon points="200.6,258.5 212.7,251.5 212.7,248.3 200.6,255.3" fill="var(--card-copper)" stroke="none"></polygon><polygon points="212.7,251.5 224.9,258.5 224.9,255.3 212.7,248.3" fill="var(--card-copper-from)" stroke="none"></polygon><polygon points="212.7,248.3 224.9,255.3 212.7,262.3 200.6,255.3" fill="color-mix(in srgb, var(--card-copper) 62%, white)" stroke="none"></polygon></g><g class="acm ac-yes"><polygon points="166.8,259.0 179.0,252.0 179.0,250.5 166.8,257.5" fill="var(--fill)" stroke="none"></polygon><polygon points="179.0,252.0 191.1,259.0 191.1,257.5 179.0,250.5" fill="var(--fill)" stroke="none"></polygon><polygon points="179.0,250.5 191.1,257.5 179.0,264.5 166.8,257.5" fill="var(--fill-strong)" stroke="none"></polygon></g><g class="acm ac-yes"><polygon points="183.3,268.5 195.4,261.5 195.4,260.0 183.3,267.0" fill="var(--fill)" stroke="none"></polygon><polygon points="195.4,261.5 207.5,268.5 207.5,267.0 195.4,260.0" fill="var(--fill)" stroke="none"></polygon><polygon points="195.4,260.0 207.5,267.0 195.4,274.0 183.3,267.0" fill="var(--fill-strong)" stroke="none"></polygon></g><g class="acm ac-sbi"><text x="302.46000000000004" y="227.5" font-size="9.5" font-weight="800" fill="var(--fg)">SBI</text></g><g class="acm ac-icici"><text x="285.14000000000004" y="237.5" font-size="9.5" font-weight="800" fill="var(--fg)">ICICI</text></g><g class="acm ac-hdfc"><text x="267.82000000000005" y="247.5" font-size="9.5" font-weight="800" fill="var(--fg)">HDFC</text></g><g class="acm ac-kotak"><text x="250.50000000000003" y="257.5" font-size="9.5" font-weight="800" fill="var(--fg)">Kotak</text></g><g class="acm ac-axis"><text x="233.18000000000004" y="267.5" font-size="9.5" font-weight="800" fill="var(--fg)">Axis</text></g><g class="acm ac-yes"><text x="215.86000000000004" y="277.5" font-size="9.5" font-weight="800" fill="var(--fg)">YES</text></g><text x="30.062000000000012" y="198" text-anchor="middle" font-size="9" font-weight="800" fill="var(--muted)">Jan</text><text x="79.424" y="226.5" text-anchor="middle" font-size="9" font-weight="800" fill="var(--muted)">Apr</text><text x="128.786" y="255" text-anchor="middle" font-size="9" font-weight="800" fill="var(--muted)">Jul</text><text x="178.14800000000002" y="283.5" text-anchor="middle" font-size="9" font-weight="800" fill="var(--fg)">Oct</text></svg></section><section class="card glass" style="padding:16px;gap:6px"><div class="card-h"><span class="card-t">The stacks, in numbers<small>pick a row to light up its stacks</small></span></div><div style="display:flex;flex-direction:column;margin:0 -8px"><label for="np-sel-sbi" class="sr sr-sbi" style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 8px;border-radius:12px;cursor:pointer;border-bottom:1px solid var(--divider)"><span class="cell-name"><span class="mono" style="width:28px;height:28px;border-radius:8px;font-size:12px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to))">S</span><span><b>SBI Rainy Day</b><small><span style="color:var(--warning-text)"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg> read Aug 9</span></small></span></span><span class="row" style="gap:6px"><b class="num">₹6,58,000</b><span class="btn btn-primary btn-xs">Update</span></span></label><label for="np-sel-icici" class="sr sr-icici" style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 8px;border-radius:12px;cursor:pointer;border-bottom:1px solid var(--divider)"><span class="cell-name"><span class="mono" style="width:28px;height:28px;border-radius:8px;font-size:12px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))">I</span><span><b>ICICI Invest</b><small>read Oct 15</small></span></span><span class="row" style="gap:6px"><b class="num">₹2,31,500</b><span class="btn btn-soft btn-xs">Update</span></span></label><label for="np-sel-hdfc" class="sr sr-hdfc" style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 8px;border-radius:12px;cursor:pointer;border-bottom:1px solid var(--divider)"><span class="cell-name"><span class="mono" style="width:28px;height:28px;border-radius:8px;font-size:12px;background:linear-gradient(155deg,var(--card-sapphire-from),var(--card-sapphire-to))">H</span><span><b>HDFC Salary</b><small>read Oct 20</small></span></span><span class="row" style="gap:6px"><b class="num">₹2,04,300</b><span class="btn btn-soft btn-xs">Update</span></span></label><label for="np-sel-kotak" class="sr sr-kotak" style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 8px;border-radius:12px;cursor:pointer;border-bottom:1px solid var(--divider)"><span class="cell-name"><span class="mono" style="width:28px;height:28px;border-radius:8px;font-size:12px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))">K</span><span><b>Kotak Savings</b><small>read Oct 2</small></span></span><span class="row" style="gap:6px"><b class="num">₹52,800</b><span class="btn btn-soft btn-xs">Update</span></span></label><label for="np-sel-axis" class="sr sr-axis" style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 8px;border-radius:12px;cursor:pointer;border-bottom:1px solid var(--divider)"><span class="cell-name"><span class="mono" style="width:28px;height:28px;border-radius:8px;font-size:12px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))">A</span><span><b>Axis EMI</b><small>read Oct 6</small></span></span><span class="row" style="gap:6px"><b class="num">₹18,900</b><span class="btn btn-soft btn-xs">Update</span></span></label><label for="np-sel-yes" class="sr sr-yes" style="display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:10px 8px;border-radius:12px;cursor:pointer;border-bottom:1px solid var(--divider)"><span class="cell-name"><span class="mono mono-off" style="width:28px;height:28px;border-radius:8px;font-size:12px;background:linear-gradient(155deg,var(--card-onyx-from),var(--card-onyx-to))">Y</span><span><b>YES Old Salary</b><small>closed Mar 31</small></span></span><span class="row" style="gap:6px"><b class="num">₹0</b><span class="btn btn-soft btn-xs">Reopen</span></span></label></div></section><section class="card glass" style="gap:12px;padding:16px"><div class="card-h"><span class="card-t">Money out<small>this year · from your card bills, subscriptions and EMIs</small></span></div><div class="hp hpf hp-all" style="flex-direction:column;flex:1 1 auto;"><div class="spread" style="gap:14px"><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px;min-width:0"><i style="width:9px;height:9px;border-radius:3px;background:var(--card-sapphire);flex-shrink:0"></i><b style="font-weight:700">Card bills</b></span><b class="num">₹7,19,775</b></div><div class="track" style="height:7px"><span style="width:100%;background:var(--card-sapphire)"></span></div></div><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px;min-width:0"><i style="width:9px;height:9px;border-radius:3px;background:var(--card-ruby);flex-shrink:0"></i><b style="font-weight:700">Subscriptions</b></span><b class="num">₹19,647</b></div><div class="track" style="height:7px"><span style="width:2.729603000937793%;background:var(--card-ruby)"></span></div></div><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px;min-width:0"><i style="width:9px;height:9px;border-radius:3px;background:var(--card-copper);flex-shrink:0"></i><b style="font-weight:700">Loan EMIs</b></span><b class="num">₹2,24,500</b></div><div class="track" style="height:7px"><span style="width:31.190302525094648%;background:var(--card-copper)"></span></div></div><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px;min-width:0"><i style="width:9px;height:9px;border-radius:3px;background:var(--card-violet);flex-shrink:0"></i><b style="font-weight:700">Investments</b></span><b class="num">₹1,05,000</b></div><div class="track" style="height:7px"><span style="width:14.587892049598834%;background:var(--card-violet)"></span></div></div><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px"><i style="width:9px;height:9px;border-radius:3px;background:repeating-linear-gradient(135deg, var(--muted) 0 2px, transparent 2px 4px);flex-shrink:0"></i><b style="font-weight:700">Everything else</b></span><b class="num" style="color:var(--muted)">−₹4,04,428</b></div><div class="track" style="height:7px"><span style="width:56.18811434128721%;background:repeating-linear-gradient(135deg, var(--fill-strong) 0 5px, transparent 5px 9px)"></span></div></div></div><div class="between foot" style="padding-top:10px;border-top:1px solid var(--divider)"><span class="card-note">Came in: <b style="color:var(--fg)">₹15,48,200</b> recorded income · between your own accounts, transfers cancel out</span><span class="pill pill-derived"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"></path><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"></path></svg> Worked out, not a statement</span></div></div><div class="hp hpf hp-sbi" style="flex-direction:column;flex:1 1 auto;"><div class="spread" style="gap:14px"><p class="card-note" style="padding:10px 0">Nothing recorded goes out of SBI Rainy Day: no card bills, subscriptions or EMIs are paid from it.</p><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px"><i style="width:9px;height:9px;border-radius:3px;background:repeating-linear-gradient(135deg, var(--muted) 0 2px, transparent 2px 4px);flex-shrink:0"></i><b style="font-weight:700">Everything else</b></span><b class="num" style="color:var(--muted)">+₹32,100</b></div><div class="track" style="height:7px"><span style="width:100%;background:repeating-linear-gradient(135deg, var(--fill-strong) 0 5px, transparent 5px 9px)"></span></div></div></div><div class="between foot" style="padding-top:10px;border-top:1px solid var(--divider)"><span class="card-note">this year</span><span class="pill pill-derived"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"></path><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"></path></svg> Worked out, not a statement</span></div></div><div class="hp hpf hp-icici" style="flex-direction:column;flex:1 1 auto;"><div class="spread" style="gap:14px"><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px;min-width:0"><i style="width:9px;height:9px;border-radius:3px;background:var(--card-violet);flex-shrink:0"></i><b style="font-weight:700">Investments</b></span><b class="num">₹1,05,000</b></div><div class="track" style="height:7px"><span style="width:78.35820895522389%;background:var(--card-violet)"></span></div></div><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px"><i style="width:9px;height:9px;border-radius:3px;background:repeating-linear-gradient(135deg, var(--muted) 0 2px, transparent 2px 4px);flex-shrink:0"></i><b style="font-weight:700">Everything else</b></span><b class="num" style="color:var(--muted)">+₹1,34,000</b></div><div class="track" style="height:7px"><span style="width:100%;background:repeating-linear-gradient(135deg, var(--fill-strong) 0 5px, transparent 5px 9px)"></span></div></div></div><div class="between foot" style="padding-top:10px;border-top:1px solid var(--divider)"><span class="card-note">Came in: <b style="color:var(--fg)">₹3,200</b> recorded income · this year</span><span class="pill pill-derived"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"></path><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"></path></svg> Worked out, not a statement</span></div></div><div class="hp hpf hp-hdfc" style="flex-direction:column;flex:1 1 auto;"><div class="spread" style="gap:14px"><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px;min-width:0"><i style="width:9px;height:9px;border-radius:3px;background:var(--card-sapphire);flex-shrink:0"></i><b style="font-weight:700">Card bills</b></span><b class="num">₹6,15,675</b></div><div class="track" style="height:7px"><span style="width:68.30019136367417%;background:var(--card-sapphire)"></span></div></div><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px"><i style="width:9px;height:9px;border-radius:3px;background:repeating-linear-gradient(135deg, var(--muted) 0 2px, transparent 2px 4px);flex-shrink:0"></i><b style="font-weight:700">Everything else</b></span><b class="num" style="color:var(--muted)">−₹9,01,425</b></div><div class="track" style="height:7px"><span style="width:100%;background:repeating-linear-gradient(135deg, var(--fill-strong) 0 5px, transparent 5px 9px)"></span></div></div></div><div class="between foot" style="padding-top:10px;border-top:1px solid var(--divider)"><span class="card-note">Came in: <b style="color:var(--fg)">₹15,45,000</b> recorded income · this year</span><span class="pill pill-derived"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"></path><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"></path></svg> Worked out, not a statement</span></div></div><div class="hp hpf hp-kotak" style="flex-direction:column;flex:1 1 auto;"><div class="spread" style="gap:14px"><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px;min-width:0"><i style="width:9px;height:9px;border-radius:3px;background:var(--card-sapphire);flex-shrink:0"></i><b style="font-weight:700">Card bills</b></span><b class="num">₹1,04,100</b></div><div class="track" style="height:7px"><span style="width:90.2494213113475%;background:var(--card-sapphire)"></span></div></div><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px;min-width:0"><i style="width:9px;height:9px;border-radius:3px;background:var(--card-ruby);flex-shrink:0"></i><b style="font-weight:700">Subscriptions</b></span><b class="num">₹19,647</b></div><div class="track" style="height:7px"><span style="width:17.032952742594084%;background:var(--card-ruby)"></span></div></div><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px"><i style="width:9px;height:9px;border-radius:3px;background:repeating-linear-gradient(135deg, var(--muted) 0 2px, transparent 2px 4px);flex-shrink:0"></i><b style="font-weight:700">Everything else</b></span><b class="num" style="color:var(--muted)">+₹1,15,347</b></div><div class="track" style="height:7px"><span style="width:100%;background:repeating-linear-gradient(135deg, var(--fill-strong) 0 5px, transparent 5px 9px)"></span></div></div></div><div class="between foot" style="padding-top:10px;border-top:1px solid var(--divider)"><span class="card-note">this year</span><span class="pill pill-derived"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"></path><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"></path></svg> Worked out, not a statement</span></div></div><div class="hp hpf hp-axis" style="flex-direction:column;flex:1 1 auto;"><div class="spread" style="gap:14px"><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px;min-width:0"><i style="width:9px;height:9px;border-radius:3px;background:var(--card-copper);flex-shrink:0"></i><b style="font-weight:700">Loan EMIs</b></span><b class="num">₹2,24,500</b></div><div class="track" style="height:7px"><span style="width:100%;background:var(--card-copper)"></span></div></div><div style="display:flex;flex-direction:column;gap:6px"><div class="between" style="font-size:13px"><span class="row" style="gap:9px"><i style="width:9px;height:9px;border-radius:3px;background:repeating-linear-gradient(135deg, var(--muted) 0 2px, transparent 2px 4px);flex-shrink:0"></i><b style="font-weight:700">Everything else</b></span><b class="num" style="color:var(--muted)">+₹2,20,750</b></div><div class="track" style="height:7px"><span style="width:98.32962138084632%;background:repeating-linear-gradient(135deg, var(--fill-strong) 0 5px, transparent 5px 9px)"></span></div></div></div><div class="between foot" style="padding-top:10px;border-top:1px solid var(--divider)"><span class="card-note">this year</span><span class="pill pill-derived"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"></path><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"></path></svg> Worked out, not a statement</span></div></div><div class="hp hpf hp-yes" style="flex-direction:column;flex:1 1 auto;"><div class="spread" style="gap:14px"><p class="card-note" style="padding:10px 0">Nothing recorded goes out of YES Old Salary: no card bills, subscriptions or EMIs are paid from it.</p></div><div class="between foot" style="padding-top:10px;border-top:1px solid var(--divider)"><span class="card-note">this year</span><span class="pill pill-derived"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"></path><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"></path></svg> Worked out, not a statement</span></div></div></section></div></div></div>
+</x-dc>
+</body>
+</html>
