@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FocusEvent, type PointerEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FocusEvent, type PointerEvent } from "react";
 import type { MapBlock, SubscriptionsPageView } from "@/app/subscriptions/views";
 import { formatInr } from "@/lib/format/money";
 import { colorGradient } from "@/lib/format/subscriptionLabels";
@@ -30,9 +30,13 @@ import { useSize } from "./useSize";
  */
 
 /** The rings ripple outward on the active block, as on the Cards page's heatmap (#104). */
-const RIPPLE = "origin-bottom-right motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out group-data-active:scale-[1.18]";
-/** While one is hovered or focused, the rest step back: greyer and a little faded, not washed out to the page. */
-const DIM = "group-data-hovering/map:not-data-active:opacity-75 group-data-hovering/map:not-data-active:saturate-[.55]";
+const RIPPLE = "origin-bottom-right motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out group-data-active:scale-[1.18] group-data-pointed:scale-[1.18]";
+/**
+ * While one is hovered or focused, the rest step back: greyer and a little faded, not washed
+ * out to the page. The same while a payment or a Charged to row points at some (3A, 3B).
+ */
+const DIM =
+  "group-data-hovering/map:not-data-active:opacity-75 group-data-hovering/map:not-data-active:saturate-[.55] group-data-pointing/map:not-data-pointed:opacity-75 group-data-pointing/map:not-data-pointed:saturate-[.55]";
 /** Blocks glide to their new places, and fade, once the map has been measured (so the first layout doesn't fly in from a guess). */
 const GLIDE =
   "motion-safe:[transition:left_500ms_cubic-bezier(0.2,0.8,0.2,1),top_500ms_cubic-bezier(0.2,0.8,0.2,1),width_500ms_cubic-bezier(0.2,0.8,0.2,1),height_500ms_cubic-bezier(0.2,0.8,0.2,1),opacity_250ms_ease-out,filter_200ms_ease-out,translate_200ms_ease-out]";
@@ -49,6 +53,7 @@ function Block({
   picked,
   grouped,
   gone,
+  pointed,
   glide,
   onPick,
   onTryWithout,
@@ -61,6 +66,8 @@ function Block({
   grouped: boolean;
   /** Tried without: folded away. */
   gone: boolean;
+  /** A payment or a Charged to row is pointing at it. */
+  pointed: boolean;
   glide: boolean;
   onPick: () => void;
   onTryWithout: () => void;
@@ -79,7 +86,8 @@ function Block({
       data-map-key={quiet ? undefined : block.id}
       data-map-owner={grouped ? block.category : undefined}
       aria-hidden={quiet || undefined}
-      className={`group absolute data-active:-translate-y-[3px] ${gone ? "overflow-hidden opacity-0" : DIM} ${glide ? GLIDE : STILL} ${quiet ? "pointer-events-none" : ""}`}
+      data-pointed={pointed || undefined}
+      className={`group absolute data-active:-translate-y-[3px] data-pointed:-translate-y-[3px] ${gone ? "overflow-hidden opacity-0" : DIM} ${glide ? GLIDE : STILL} ${quiet ? "pointer-events-none" : ""}`}
       style={at(box)}
     >
       <button
@@ -167,7 +175,7 @@ function Pill({ pill }: { pill: NonNullable<MapBlock["pill"]> }) {
 }
 
 /** By category: a category's name and total over its blocks, and what's hovered and focused for its card. A category isn't something to pick. */
-function CategoryTile({ box, category, per, glide }: { box: Box; category: MapCategory<MapBlock>; per: "month" | "year"; glide: boolean }) {
+function CategoryTile({ box, category, per, pointed, glide }: { box: Box; category: MapCategory<MapBlock>; per: "month" | "year"; pointed: boolean; glide: boolean }) {
   const roomy = box.w > 110 && box.h > 70;
   const value = per12(category.monthly, per);
   return (
@@ -176,6 +184,7 @@ function CategoryTile({ box, category, per, glide }: { box: Box; category: MapCa
       role="group"
       aria-label={`${category.label}, ${formatInr(value)} a ${per}`}
       data-map-key={category.key}
+      data-pointed={pointed || undefined}
       className={`group absolute rounded-xl p-2.5 text-on-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent data-active:-translate-y-[3px] ${DIM} ${glide ? GLIDE : STILL}`}
       style={at(box)}
     >
@@ -219,7 +228,21 @@ function Ghost({ box, stopped, per, shown, glide }: { box: Box; stopped: Subscri
   );
 }
 
-export function CostMapCard({ view, picked, onPick }: { view: SubscriptionsPageView; picked: string; onPick: (id: string) => void }) {
+export function CostMapCard({
+  view,
+  picked,
+  onPick,
+  pointed = null,
+  onHover,
+}: {
+  view: SubscriptionsPageView;
+  picked: string;
+  onPick: (id: string) => void;
+  /** 3A, 3B: what a payment or a Charged to row is pointing at, lit while the rest step back. */
+  pointed?: ReadonlySet<string> | null;
+  /** The block hovered or focused, for the payments it lights; null for none or a category. */
+  onHover?: (id: string | null) => void;
+}) {
   const [per, setPer] = useState<"month" | "year">("month");
   const [by, setBy] = useState<"each" | "category">("each");
   // 1B: the ones tried without, in the order they were taken out. Never saved.
@@ -247,6 +270,8 @@ export function CostMapCard({ view, picked, onPick }: { view: SubscriptionsPageV
   const grouped = by === "category";
 
   const blocks = new Map(view.blocks.map((b) => [b.id, b]));
+  // Stable, so the hover card only reports a change of block.
+  const reportHover = useCallback((key: string | null) => onHover?.(key && view.blocks.some((b) => b.id === key) ? key : null), [onHover, view.blocks]);
   const hoverCategories = new Map<string, HoverCategory>(categories.map((c) => [c.key, { ...c, card: categoryCard(c, shownTotal) }]));
   // A ghost that's going away shrinks to the middle of where it was, while the blocks grow back.
   // It stays mounted after, so it grows from there next time; the first time, it springs in (Ghost).
@@ -322,7 +347,7 @@ export function CostMapCard({ view, picked, onPick }: { view: SubscriptionsPageV
           </div>
       )}
 
-      <CostMapHover blocks={blocks} categories={hoverCategories} per={per} picked={picked}>
+      <CostMapHover blocks={blocks} categories={hoverCategories} per={per} picked={picked} pointing={!!pointed && [...pointed].some((id) => blocks.has(id) && !out.has(id))} onActive={reportHover}>
         <div ref={box} className="relative min-h-[360px] flex-1 md:min-h-[440px]">
           {view.blocks.length === 0 ? (
             <p className="absolute inset-0 flex items-center justify-center rounded-[18px] border-[1.5px] border-dashed border-divider px-6 text-center text-[13px] font-medium text-muted">
@@ -341,12 +366,13 @@ export function CostMapCard({ view, picked, onPick }: { view: SubscriptionsPageV
                   picked={picked === b.id}
                   grouped={grouped}
                   gone={out.has(b.id)}
+                  pointed={!!pointed?.has(b.id)}
                   glide={measured}
                   onPick={() => onPick(b.id)}
                   onTryWithout={() => tryWithout(b.id)}
                 />
               ))}
-              {grouped && categories.map((c) => layout.tiles.get(c.key) && <CategoryTile key={c.key} box={layout.tiles.get(c.key)!} category={c} per={per} glide={measured} />)}
+              {grouped && categories.map((c) => layout.tiles.get(c.key) && <CategoryTile key={c.key} box={layout.tiles.get(c.key)!} category={c} per={per} pointed={c.members.some((m) => pointed?.has(m.id))} glide={measured} />)}
               {/* One ghost element, so moving from one chip to another moves it rather than swapping it. */}
               {ghostOf && ghostBox && <Ghost key="ghost" box={ghostBox} stopped={ghostOf} per={per} shown={!!ghost.id} glide={measured} />}
               {shownBlocks.length === 0 && <p className="absolute inset-0 flex items-center justify-center px-6 text-center text-[13px] font-medium text-muted">Every subscription is taken out. Put them back above.</p>}

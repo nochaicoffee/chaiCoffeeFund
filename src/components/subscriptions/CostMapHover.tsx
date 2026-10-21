@@ -27,12 +27,18 @@ export function CostMapHover({
   categories,
   per,
   picked,
+  pointing = false,
+  onActive,
   children,
 }: {
   blocks: Map<string, MapBlock>;
   categories: Map<string, HoverCategory>;
   per: "month" | "year";
   picked: string;
+  /** Something outside the map is pointing at some of its blocks (3A, 3B): they stay lit and the rest step back. */
+  pointing?: boolean;
+  /** The block or category hovered or focused, or null, as it changes. */
+  onActive?: (key: string | null) => void;
   children: ReactNode;
 }) {
   const wrap = useRef<HTMLDivElement>(null);
@@ -133,12 +139,16 @@ export function CostMapHover({
     if (el && (!el.isConnected || !el.hasAttribute("data-map-key"))) hide();
   });
 
+  useEffect(() => onActive?.(key), [key, onActive]);
+
   const block = shown ? blocks.get(shown) : undefined;
   const category = shown ? categories.get(shown) : undefined;
 
   return (
     <div
       ref={wrap}
+      // The map's own hover wins over something pointing at it from outside.
+      data-pointing={(pointing && !key) || undefined}
       className="group/map relative flex flex-1 flex-col"
       onPointerMove={(e) => {
         if (e.pointerType === "touch") return;

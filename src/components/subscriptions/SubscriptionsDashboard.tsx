@@ -18,6 +18,10 @@ export function SubscriptionsDashboard({ view, initialPick }: { view: Subscripti
   // The pick is kept by id, not by place: a refresh can reorder the carousel or drop the
   // subscription (and Next keeps this state across it), so its place is looked up each time.
   const [pickId, setPickId] = useState(initialPick);
+  // 3A and 3B: what a payment or a Charged to row is pointing at, lit in the map; and the block
+  // hovered in the map, whose payments light up.
+  const [pointed, setPointed] = useState<ReadonlySet<string> | null>(null);
+  const [mapHover, setMapHover] = useState<string | null>(null);
   const [shownPick, setShownPick] = useState(initialPick);
   // A link to another ?sub= on this page arrives as a new initialPick: follow it.
   if (initialPick !== shownPick) {
@@ -41,6 +45,8 @@ export function SubscriptionsDashboard({ view, initialPick }: { view: Subscripti
 
   function choose(next: number) {
     setPickId(view.picks[next].id);
+    // The payments shown change, so whatever a row was pointing at goes.
+    setPointed(null);
     const params = new URLSearchParams(window.location.search);
     if (view.picks[next].id === ALL) params.delete("sub");
     else params.set("sub", view.picks[next].id);
@@ -69,11 +75,11 @@ export function SubscriptionsDashboard({ view, initialPick }: { view: Subscripti
       {/* With no subscriptions yet there's nothing to map or list, so the hero's "Add your first subscription" stands alone. */}
       {view.picks.length > 1 && (
         <div className="grid grid-cols-[minmax(0,1fr)] gap-5 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
-          <CostMapCard view={view} picked={pick.id} onPick={chooseId} />
+          <CostMapCard view={view} picked={pick.id} onPick={chooseId} pointed={pointed} onHover={setMapHover} />
           {/* The last card grows, so this column ends level with the map. */}
           <div className="flex min-w-0 flex-col gap-5 [&>:last-child]:flex-1">
-            <PaymentsCard key={pick.id} pick={pick} payments={view.payments[pick.id]} onAll={() => choose(0)} />
-            <ChargedToCard rows={view.chargedTo} />
+            <PaymentsCard key={pick.id} pick={pick} payments={view.payments[pick.id]} onAll={() => choose(0)} lit={mapHover} onPoint={(id) => setPointed(id ? new Set([id]) : null)} />
+            <ChargedToCard rows={view.chargedTo} onPoint={setPointed} />
           </div>
         </div>
       )}

@@ -180,6 +180,16 @@ He left out 1C (blocks fill up to renewal) and 3C (the price change drawn in its
 - **7C, the ghost:** hovering or focusing a paused or cancelled chip makes room for a dashed block in its colour: "+₹299 a month if you resume it" (or "restart it" for a cancelled one), at its plan's monthly share. By category it gets a tile of its own, since it's in no category's total. When it goes, it shrinks away and the rest grow back.
 - **Where it's worked out:** `costMap.ts` (pure, tested) lays the map out for either view, the ones left out and the ghost. The blocks glide between layouts only after the map has been measured, so the first layout doesn't fly in from a guess.
 
+## Built: connecting the pieces (3A, 3B, 7B)
+
+- **3A, a payment points at its block:** hovering a payment row lights its subscription's block in the map and steps the rest back, by the same dimming as the map's own hover. The other way round, hovering a block lights its rows in the payments table when All is shown, and fades the rest. With one subscription picked, every row is its own, so nothing fades.
+- **3B, a card lights its subscriptions:** hovering or focusing a row in Charged to lights its subscriptions in the map and splits its bar into them, each in its colour.
+- **7B, Charged to shows what lands next:** the same hover opens a light card over the row, with the subscriptions charged there and what lands next.
+  - **For a card, its next statement:** the payments already charged to it since its last statement date, plus the renewals still to come up to its next statement date (on that day included) for the subscriptions usually charged there. It shows the statement's date and total.
+  - **For a bank account, or nowhere set:** the next three renewals.
+  - **The rules:** renewals that passed without being recorded aren't counted, the same as the chart's year total. A payment counts by the card it went on, and one made early is counted once.
+  - **Layout:** the card sits over the rows and glides between them, so nothing around it changes size and the map stays where it is. It's worked out in `lib/aggregate/subscriptionNextCharges.ts` (pure, tested).
+
 ## Built: the greeting points, and toggles slide (7A, 7D)
 
 - **7A, the greeting points:** each figure in the sentence under the greeting is a button (dotted underline) that opens a light card under it.
