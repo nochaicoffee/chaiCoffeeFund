@@ -104,6 +104,29 @@
   --card-copper: oklch(0.6 0.12 50);
   --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
 
+  /* More colours a subscription can be given (SUBSCRIPTION_COLORS), in the card palette's style. */
+  --card-amber-from: oklch(0.37 0.09 72);
+  --card-amber-to: oklch(0.18 0.05 66);
+  --card-amber: oklch(0.67 0.13 72);
+  --card-rose-from: oklch(0.33 0.11 355);
+  --card-rose-to: oklch(0.16 0.07 355);
+  --card-rose: oklch(0.62 0.15 355);
+  --card-indigo-from: oklch(0.3 0.12 278);
+  --card-indigo-to: oklch(0.15 0.07 278);
+  --card-indigo: oklch(0.52 0.16 278);
+  --card-forest-from: oklch(0.33 0.08 138);
+  --card-forest-to: oklch(0.16 0.05 145);
+  --card-forest: oklch(0.6 0.12 138);
+  --card-plum-from: oklch(0.31 0.1 330);
+  --card-plum-to: oklch(0.15 0.06 330);
+  --card-plum: oklch(0.56 0.14 330);
+  --card-ocean-from: oklch(0.33 0.08 228);
+  --card-ocean-to: oklch(0.16 0.05 232);
+  --card-ocean: oklch(0.58 0.11 228);
+  --card-slate-from: oklch(0.33 0.02 250);
+  --card-slate-to: oklch(0.16 0.015 250);
+  --card-slate: oklch(0.6 0.03 250);
+
   /* Text, marks and edges on the card tiles, which are dark in both themes. */
   --on-card: oklch(0.95 0.004 260);
   --on-card-muted: oklch(1 0 0 / 0.6);

@@ -1,16 +1,17 @@
 import { daysBetween } from "../aggregate/cardSpend";
-import type { CardColor, RecurrenceCycle, Subscription, SubscriptionCategory } from "../sheets/types";
+import type { CardColor, RecurrenceCycle, Subscription, SubscriptionCategory, SubscriptionColor } from "../sheets/types";
 
 /** The Subscriptions page's "All" pick. Subscription ids come from the Sheet as UUIDs, so this can't clash with one. */
 export const ALL = "all";
 
-/** A colour from the card palette, as its CSS token's key (`--card-<key>-from`). Emerald is All's. */
-export type ColorKey = "emerald" | Lowercase<CardColor>;
+/** A colour as its CSS token's key (`--card-<key>-from`): the card palette, All's emerald, and the subscription colours. */
+export type ColorKey = "emerald" | Lowercase<CardColor> | Lowercase<SubscriptionColor>;
 
 /**
- * Each category's colour (#124). A subscription takes its category's, so it needs
- * no colour of its own; the design gives Food Music's teal and the rest of the
- * everyday ones onyx.
+ * Each category's colour (#124), for the cost map's By category view and the Category
+ * menu. A subscription's own colour is picked in Add and Edit (#137); this is only its
+ * fallback for a row saved before colours could be picked. The design gives Food Music's
+ * teal and the rest of the everyday ones onyx.
  */
 const CATEGORY_COLORS: Record<SubscriptionCategory, ColorKey> = {
   Streaming: "ruby",
@@ -59,7 +60,7 @@ export function whenFrom(today: string, isoDate: string): string {
   return `${-days} days ago`;
 }
 
-/** How a subscription is marked in a list or chart: its alias, initial and category colour, greyed when it isn't active. */
+/** How a subscription is marked in a list or chart: its alias, initial and its colour, greyed when it isn't active. */
 export interface Mark {
   alias: string;
   initial: string;
@@ -68,6 +69,16 @@ export interface Mark {
   muted: boolean;
 }
 
-export function subscriptionMark(s: Pick<Subscription, "alias" | "category" | "status">): Mark {
-  return { alias: s.alias, initial: (s.alias.trim()[0] ?? "?").toUpperCase(), color: categoryColor(s.category), muted: s.status !== "Active" };
+/** A subscription's colour: the one chosen for it, or (for a row from before colours were chosen) its category's. */
+export function subscriptionColor(s: Pick<Subscription, "color" | "category">): ColorKey {
+  return s.color ? (s.color.toLowerCase() as ColorKey) : categoryColor(s.category);
+}
+
+/** The colour as the Sheet's dropdown names it: "Ruby". */
+export function colorName(key: ColorKey): SubscriptionColor {
+  return (key[0].toUpperCase() + key.slice(1)) as SubscriptionColor;
+}
+
+export function subscriptionMark(s: Pick<Subscription, "alias" | "category" | "status" | "color">): Mark {
+  return { alias: s.alias, initial: (s.alias.trim()[0] ?? "?").toUpperCase(), color: subscriptionColor(s), muted: s.status !== "Active" };
 }

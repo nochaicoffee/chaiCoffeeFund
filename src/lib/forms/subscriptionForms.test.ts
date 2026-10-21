@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { anchorToSave, chargedToValue, markPaidPayment, offPlan, readDateForm, readEditPaymentForm, readPaymentForm, readSubscriptionForm, renewalToRecord, skippedPayment } from "./subscriptionForms";
+import { anchorToSave, chargedToValue, freeColor, markPaidPayment, offPlan, readDateForm, readEditPaymentForm, readPaymentForm, readSubscriptionForm, renewalToRecord, skippedPayment } from "./subscriptionForms";
 import { checkSubscriptionPayment } from "../sheets/subscriptionPayments";
 import type { Subscription, SubscriptionPayment } from "../sheets/types";
 
@@ -13,13 +13,14 @@ const filled = {
   nextRenewal: "2026-10-23",
   startDate: "2024-02-23",
   chargedTo: "card:card-1",
+  color: "Ruby",
 };
 
 describe("readSubscriptionForm", () => {
   it("reads a new subscription, Active, with the name as its short name", () => {
     expect(readSubscriptionForm(filled, known, false)).toEqual({
       ok: true,
-      input: { name: "Netflix Premium", alias: "Netflix Premium", category: "Streaming", amount: 649, billingCycle: "Monthly", billingAnchorDate: "2026-10-23", startDate: "2024-02-23", status: "Active", defaultPaidFromCardId: "card-1" },
+      input: { name: "Netflix Premium", alias: "Netflix Premium", category: "Streaming", amount: 649, billingCycle: "Monthly", billingAnchorDate: "2026-10-23", startDate: "2024-02-23", status: "Active", defaultPaidFromCardId: "card-1", color: "Ruby" },
     });
   });
 
@@ -35,6 +36,19 @@ describe("readSubscriptionForm", () => {
       nextRenewal: "Enter its next renewal date",
       startDate: "Enter when it started",
     });
+  });
+
+  it("takes any of the colours, whatever the category, and asks for one when it's missing", () => {
+    expect(readSubscriptionForm({ ...filled, category: "Streaming", color: "Forest" }, known, false)).toMatchObject({ ok: true, input: { category: "Streaming", color: "Forest" } });
+    const none = readSubscriptionForm({ ...filled, color: "" }, known, false);
+    expect(none.ok ? {} : none.errors).toEqual({ color: "Pick a colour" });
+    const odd = readSubscriptionForm({ ...filled, color: "Turquoise" }, known, false);
+    expect(odd.ok).toBe(false);
+  });
+
+  it("starts a new subscription on a colour no other one has, past All's emerald", () => {
+    expect(freeColor([])).toBe("Sapphire");
+    expect(freeColor(["Sapphire", "Ruby"])).toBe("Onyx");
   });
 
   it("refuses a start after the next renewal, an unknown card, and a category off the list", () => {

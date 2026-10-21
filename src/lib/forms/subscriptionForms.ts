@@ -1,6 +1,15 @@
 import { CYCLE_STEP_MONTHS, addMonthsUTC } from "../aggregate/recurring";
 import { PRICE_CHANGE_THRESHOLD, renewalsFor, scheduleDates, type Renewal } from "../aggregate/subscriptionRenewals";
-import { SUBSCRIPTION_CATEGORIES, type RecurrenceCycle, type Subscription, type SubscriptionCategory, type SubscriptionPayment, type SubscriptionStatus } from "../sheets/types";
+import {
+  SUBSCRIPTION_CATEGORIES,
+  SUBSCRIPTION_COLORS,
+  type RecurrenceCycle,
+  type Subscription,
+  type SubscriptionCategory,
+  type SubscriptionColor,
+  type SubscriptionPayment,
+  type SubscriptionStatus,
+} from "../sheets/types";
 import { FieldReader, type FormFields, type FormResult } from "./fields";
 
 /**
@@ -48,6 +57,7 @@ export interface SubscriptionInput {
   endDate?: string;
   defaultPaidFromAccountId?: string;
   defaultPaidFromCardId?: string;
+  color: SubscriptionColor;
 }
 
 /**
@@ -75,6 +85,7 @@ export function readSubscriptionForm(
   const endDate = status === "Cancelled" ? f.date("endDate", endDateOptional ? undefined : "Enter when it was cancelled") : undefined;
   if (endDate && startDate && endDate < startDate) f.fail("endDate", "It can't be cancelled before it started");
   const charged = readChargedTo(f, "chargedTo", known);
+  const color = f.choice("color", SUBSCRIPTION_COLORS, "Pick a colour");
   return f.result({
     name: name!,
     alias: alias!,
@@ -87,7 +98,16 @@ export function readSubscriptionForm(
     ...(endDate && { endDate }),
     ...(charged.accountId && { defaultPaidFromAccountId: charged.accountId }),
     ...(charged.cardId && { defaultPaidFromCardId: charged.cardId }),
+    color: color!,
   });
+}
+
+/**
+ * The colour Add subscription starts on: the first one no other subscription has, past
+ * Emerald, which is All's (a new one in it would look just like All). It can still be picked.
+ */
+export function freeColor(used: SubscriptionColor[]): SubscriptionColor {
+  return SUBSCRIPTION_COLORS.find((c) => c !== "Emerald" && !used.includes(c)) ?? "Sapphire";
 }
 
 export interface PaymentInput {
