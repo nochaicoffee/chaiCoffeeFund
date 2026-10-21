@@ -10,7 +10,8 @@ describe("subscription labels", () => {
   });
 
   it("gives every category a colour from the card palette", () => {
-    for (const c of SUBSCRIPTION_CATEGORIES) expect(categoryColor(c)).toMatch(/^(ruby|teal|sapphire|violet|copper|onyx)$/);
+    for (const c of SUBSCRIPTION_CATEGORIES) expect(categoryColor(c)).toMatch(/^(ruby|teal|sapphire|violet|copper|onyx|slate)$/);
+    expect(categoryColor("Utilities")).toBe("slate");
     expect(categoryColor("Streaming")).toBe("ruby");
   });
 

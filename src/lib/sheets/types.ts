@@ -169,7 +169,7 @@ export type SubscriptionPaymentStatus = "Pending" | "Paid" | "Skipped";
  * it (#124). Shown without the hyphen ("Cloud storage"). Each has a colour on the
  * Subscriptions page, so a subscription needs no colour of its own.
  */
-export const SUBSCRIPTION_CATEGORIES = ["Streaming", "Music", "Software", "Cloud-Storage", "Fitness", "Food", "Shopping", "News", "Other"] as const;
+export const SUBSCRIPTION_CATEGORIES = ["Streaming", "Music", "Software", "Cloud-Storage", "Fitness", "Food", "Shopping", "News", "Utilities", "Other"] as const;
 export type SubscriptionCategory = (typeof SUBSCRIPTION_CATEGORIES)[number];
 
 /**

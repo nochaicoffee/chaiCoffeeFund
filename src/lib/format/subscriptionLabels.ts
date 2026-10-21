@@ -22,6 +22,7 @@ const CATEGORY_COLORS: Record<SubscriptionCategory, ColorKey> = {
   Food: "teal",
   Shopping: "onyx",
   News: "onyx",
+  Utilities: "slate",
   Other: "onyx",
 };
 

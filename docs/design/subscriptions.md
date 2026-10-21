@@ -78,7 +78,7 @@ The same order: greeting, the hero (smaller covers, a two-column caption), the c
 
 - **Charged to:** a subscription stores where it's usually charged: `defaultPaidFromCardId` or `defaultPaidFromAccountId`, at most one. New payments start from it.
 - **Cancelled:** a third status, with an optional cancelled-on date (`endDate`).
-- **Category:** a fixed list, each with a colour: Streaming, Music, Software, Cloud storage, Fitness, Food, Shopping, News, Other. The Sheet's dropdown holds exactly these.
+- **Category:** a fixed list, each with a colour: Streaming, Music, Software, Cloud storage, Fitness, Food, Shopping, News, Utilities, Other. The Sheet's dropdown holds exactly these. Utilities (slate) was added on 2026-10-21, for things like home internet and mobile plans.
 - **The Sheet:** these columns and dropdowns are added through the Sheets API, and `Quaterly` is fixed to `Quarterly`.
 - **Card-charged subscriptions count once, by context.** The Subscriptions page counts every payment. The Overview's monthly obligations counts a card-charged one only inside its card's bill, never again on top.
 
