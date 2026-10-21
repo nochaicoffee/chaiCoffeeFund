@@ -304,6 +304,10 @@ export interface YearSummary {
    * come at the plan's price, and any already marked paid ahead at what was paid.
    */
   next30: { count: number; total: number };
+  /** What was paid in each month so far this year, January first, for the greeting's cards (7A). */
+  months: { month: MonthKey; paid: number }[];
+  /** The renewals counted in next30, soonest first. */
+  soon: Renewal[];
 }
 
 export function yearSummary(subscriptions: Subscription[], payments: SubscriptionPayment[], today: string): YearSummary {
@@ -317,6 +321,13 @@ export function yearSummary(subscriptions: Subscription[], payments: Subscriptio
     if (v > 0 && (!biggest || v > biggest.paid)) biggest = { month: m, paid: v };
   }
   const soon = allRenewals(subscriptions.filter((s) => s.status === "Active"), payments, today, addDays(today, 29), today).filter((r) => r.status === "upcoming" || r.status === "paid" || r.status === "pending");
-  return { paid: total, monthlyAverage: total / months.length, biggestMonth: biggest, next30: { count: soon.length, total: soon.reduce((t, r) => t + r.amount, 0) } };
+  return {
+    paid: total,
+    monthlyAverage: total / months.length,
+    biggestMonth: biggest,
+    next30: { count: soon.length, total: soon.reduce((t, r) => t + r.amount, 0) },
+    months: months.map((m) => ({ month: m, paid: paid.get(m) ?? 0 })),
+    soon,
+  };
 }
 
