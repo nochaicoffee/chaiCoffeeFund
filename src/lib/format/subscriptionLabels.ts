@@ -1,5 +1,5 @@
 import { daysBetween } from "../aggregate/cardSpend";
-import type { CardColor, RecurrenceCycle, SubscriptionCategory } from "../sheets/types";
+import type { CardColor, RecurrenceCycle, Subscription, SubscriptionCategory } from "../sheets/types";
 
 /** The Subscriptions page's "All" pick. Subscription ids come from the Sheet as UUIDs, so this can't clash with one. */
 export const ALL = "all";
@@ -57,4 +57,17 @@ export function whenFrom(today: string, isoDate: string): string {
   if (days === -1) return "yesterday";
   if (days > 0) return days < 45 ? `in ${days} days` : `in ${Math.round(days / 30)} months`;
   return `${-days} days ago`;
+}
+
+/** How a subscription is marked in a list or chart: its alias, initial and category colour, greyed when it isn't active. */
+export interface Mark {
+  alias: string;
+  initial: string;
+  color: ColorKey;
+  /** Paused or cancelled: drawn greyed. */
+  muted: boolean;
+}
+
+export function subscriptionMark(s: Pick<Subscription, "alias" | "category" | "status">): Mark {
+  return { alias: s.alias, initial: (s.alias.trim()[0] ?? "?").toUpperCase(), color: categoryColor(s.category), muted: s.status !== "Active" };
 }

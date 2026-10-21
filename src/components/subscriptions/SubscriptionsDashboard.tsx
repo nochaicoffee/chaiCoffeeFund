@@ -5,11 +5,12 @@ import type { SubscriptionsPageView } from "@/app/subscriptions/views";
 import { ALL } from "@/lib/format/subscriptionLabels";
 import { CostMapCard } from "./CostMapCard";
 import { ChargedToCard, PaymentsCard } from "./PaymentsCard";
+import { SubscriptionChart } from "./SubscriptionChart";
 import { SubscriptionHero } from "./SubscriptionHero";
 
 /**
  * The Subscriptions page under the greeting (#126): the hero, then the cost map beside
- * the payments and Charged to. One pick drives all of them. It's kept in the address
+ * the payments and Charged to, then the chart (#127). One pick drives all of them. It's kept in the address
  * (`?sub=`) with the history API, which the Next router follows without asking the
  * server again, so turning the carousel is instant and a link opens the same pick.
  */
@@ -76,6 +77,7 @@ export function SubscriptionsDashboard({ view, initialPick }: { view: Subscripti
           </div>
         </div>
       )}
+      <SubscriptionChart chart={view.chart} pick={pick} empty={view.picks.length === 1} />
     </div>
   );
 }

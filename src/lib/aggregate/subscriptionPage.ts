@@ -29,6 +29,17 @@ export interface SubscriptionData {
   accounts: Account[];
 }
 
+/**
+ * The data every figure on the page is worked out from. A payment whose subscription no
+ * longer exists (it was deleted, but its payments weren't) is left out of everything, as
+ * the Cards page leaves out statements whose card is gone: the page can't name it, and a
+ * total that its parts don't add up to would be wrong either way.
+ */
+export function usableSubscriptionData(data: SubscriptionData): SubscriptionData {
+  const ids = new Set(data.subscriptions.map((s) => s.id));
+  return { ...data, payments: data.payments.filter((p) => ids.has(p.subscriptionId)) };
+}
+
 const isCharged = (p: SubscriptionPayment) => p.status === "Paid" && p.amount > 0;
 const byDate = (a: { paymentDate: string }, b: { paymentDate: string }) => (a.paymentDate < b.paymentDate ? -1 : a.paymentDate > b.paymentDate ? 1 : 0);
 

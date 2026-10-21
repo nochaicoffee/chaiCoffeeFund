@@ -8,13 +8,15 @@ import {
   latestPayments,
   priceHistory,
   subscriptionFacts,
+  usableSubscriptionData,
   type AllFacts,
   type SubscriptionData,
   type SubscriptionFacts,
 } from "@/lib/aggregate/subscriptionPage";
 import { formatDate, formatDayDate, formatMonthShort, formatShortDate } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
-import { ALL, cardColorKey, categoryColor, categoryLabel, cycleWord, whenFrom, type ColorKey } from "@/lib/format/subscriptionLabels";
+import { ALL, cardColorKey, categoryColor, categoryLabel, cycleWord, subscriptionMark, whenFrom, type ColorKey, type Mark } from "@/lib/format/subscriptionLabels";
+import { chartView, type ChartView } from "./chartView";
 import type { Subscription, SubscriptionPayment } from "@/lib/sheets/types";
 import type { SentencePart } from "../cards/summarySentence";
 
@@ -27,13 +29,7 @@ import type { SentencePart } from "../cards/summarySentence";
 
 export { ALL };
 
-export interface Mark {
-  alias: string;
-  initial: string;
-  color: ColorKey;
-  /** Paused or cancelled: drawn greyed. */
-  muted: boolean;
-}
+export type { Mark };
 
 export interface Stat {
   label: string;
@@ -119,10 +115,10 @@ export interface SubscriptionsPageView {
   stopped: (Mark & { id: string; label: string })[];
   chargedTo: ChargedToRow[];
   monthlyTotal: number;
+  chart: ChartView;
 }
 
-const mark = (s: Subscription): Mark => ({ alias: s.alias, initial: initialOf(s.alias), color: categoryColor(s.category), muted: s.status !== "Active" });
-const initialOf = (text: string) => (text.trim()[0] ?? "?").toUpperCase();
+const mark = subscriptionMark;
 const ALL_MARK: Mark = { alias: "All", initial: "", color: "emerald", muted: false };
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 /** "Fri, Oct 23", with its year when that isn't this year: "Sat, Oct 23, 2027". */
@@ -242,7 +238,8 @@ function paymentsView(data: SubscriptionData, today: string, s?: Subscription): 
   return view;
 }
 
-export function subscriptionsPageView(data: SubscriptionData, today: string): SubscriptionsPageView {
+export function subscriptionsPageView(sheetData: SubscriptionData, today: string): SubscriptionsPageView {
+  const data = usableSubscriptionData(sheetData);
   const byId = new Map(data.subscriptions.map((s) => [s.id, s]));
   const facts = new Map(data.subscriptions.map((s) => [s.id, subscriptionFacts(s, data.payments, today)]));
   const order = carouselOrder(data.subscriptions, data.payments, today);
@@ -283,6 +280,7 @@ export function subscriptionsPageView(data: SubscriptionData, today: string): Su
     stopped: order.filter((s) => s.status !== "Active").map((s) => ({ ...mark(s), id: s.id, label: s.status === "Paused" ? "paused" : "cancelled" })),
     chargedTo: split.map((p) => ({ key: `${p.kind}:${p.id}`, chip: chipFor(p.kind, p.id, data), count: p.count, monthly: p.monthly, fraction: biggest > 0 ? p.monthly / biggest : 0 })),
     monthlyTotal: total,
+    chart: chartView(data, today),
   };
 }
 
@@ -290,7 +288,8 @@ export function subscriptionsPageView(data: SubscriptionData, today: string): Su
  * The sentence under the greeting, as in the design: paid so far this year, the monthly
  * average, the biggest month, and the renewals in the next 30 days.
  */
-export function summarySentence(data: SubscriptionData, today: string): SentencePart[] {
+export function summarySentence(sheetData: SubscriptionData, today: string): SentencePart[] {
+  const data = usableSubscriptionData(sheetData);
   const year = today.slice(0, 4);
   if (data.subscriptions.length === 0) return [{ text: "No subscriptions yet. Add one and it shows up here, with what it costs and when it renews." }];
   const summary = yearSummary(data.subscriptions, data.payments, today);

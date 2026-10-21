@@ -1,6 +1,6 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { CategoryBlock, MapBlock, SubscriptionsPageView } from "@/app/subscriptions/views";
 import { formatInr } from "@/lib/format/money";
 import { colorGradient } from "@/lib/format/subscriptionLabels";
@@ -8,6 +8,7 @@ import { RingTexture } from "../RingTexture";
 import { CheckIcon } from "./icons";
 import { Mono, Segmented } from "./parts";
 import { squarify, type TreemapRect } from "./treemap";
+import { useSize } from "./useSize";
 
 /**
  * "What each one costs" (#126): a treemap of active subscriptions sized by what they
@@ -114,18 +115,8 @@ function CategoryTile({ rect, category, per }: { rect: TreemapRect; category: Ca
 export function CostMapCard({ view, picked, onPick }: { view: SubscriptionsPageView; picked: string; onPick: (id: string) => void }) {
   const [per, setPer] = useState<"month" | "year">("month");
   const [by, setBy] = useState<"each" | "category">("each");
-  const box = useRef<HTMLDivElement>(null);
   // The map is laid out at its real size, so a block knows whether there's room for its details.
-  const [size, setSize] = useState({ w: 704, h: 520 });
-  useLayoutEffect(() => {
-    const el = box.current;
-    if (!el) return;
-    const measure = () => setSize({ w: el.clientWidth, h: el.clientHeight });
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const [box, size] = useSize<HTMLDivElement>({ w: 704, h: 520 });
 
   const items = by === "each" ? view.blocks.map((b) => ({ key: b.id, value: b.monthly })) : view.categories.map((c) => ({ key: c.key, value: c.monthly }));
   const rects = squarify(items, size.w, size.h);

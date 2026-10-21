@@ -17,6 +17,11 @@ describe("summarySentence", () => {
     );
   });
 
+  it("leaves out payments whose subscription is gone", () => {
+    const orphan = { id: "gone-1", subscriptionId: "deleted", paymentDate: "2026-03-05", amount: 5000, status: "Paid" as const };
+    expect(sentenceText(summarySentence({ ...data, payments: [...data.payments, orphan] }, TODAY))).toBe(sentenceText(summarySentence(data, TODAY)));
+  });
+
   it("says so when there's nothing yet", () => {
     expect(sentenceText(summarySentence({ subscriptions: [], payments: [], cards: [], accounts: [] }, TODAY))).toMatch(/^No subscriptions yet\./);
   });
