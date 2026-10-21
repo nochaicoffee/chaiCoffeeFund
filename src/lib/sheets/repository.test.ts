@@ -9,6 +9,8 @@ const sheet = vi.hoisted(() => ({
   /** Each values.batchUpdate call, as the updates it carried. */
   batches: [] as { range: string; values: unknown[][] }[][],
   deletes: [] as { startIndex: number; endIndex: number }[],
+  /** How many spreadsheets.batchUpdate calls the deletes came in. */
+  deleteCalls: 0,
 }));
 
 vi.mock("./client", () => ({
@@ -28,6 +30,7 @@ vi.mock("./client", () => ({
         },
       },
       batchUpdate: async ({ requestBody }: { requestBody: { requests: { deleteDimension: { range: { startIndex: number; endIndex: number } } }[] } }) => {
+        sheet.deleteCalls += 1;
         for (const r of requestBody.requests) sheet.deletes.push({ startIndex: r.deleteDimension.range.startIndex, endIndex: r.deleteDimension.range.endIndex });
         return { data: {} };
       },
@@ -59,6 +62,7 @@ beforeEach(() => {
   sheet.updates = [];
   sheet.batches = [];
   sheet.deletes = [];
+  sheet.deleteCalls = 0;
   warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 afterEach(() => vi.restoreAllMocks());
@@ -185,6 +189,32 @@ describe("a whole-row check", () => {
   it("lets a merged row that keeps the rule through", async () => {
     await checked.update("a", { name: "Paid", amount: 5 });
     expect(sheet.updates).toHaveLength(1);
+  });
+});
+
+describe("removeWhere", () => {
+  beforeEach(() => {
+    sheet.rows["Things!A2:D"] = [
+      ["a", "Alpha", 100, AUG_5],
+      ["b", "Bravo", 200, AUG_5],
+      ["c", "Alpha", "", AUG_5],
+      ["d", "Delta", 400, AUG_5],
+    ];
+  });
+
+  it("deletes every matching row, invalid ones too, in one request, bottom first", async () => {
+    expect(await things.removeWhere((v) => v.name === "Alpha")).toBe(2);
+    // Rows 2 and 4 (a, and c with no amount): row 4 first, so deleting it doesn't move row 2.
+    expect(sheet.deletes).toEqual([
+      { startIndex: 3, endIndex: 4 },
+      { startIndex: 1, endIndex: 2 },
+    ]);
+    expect(sheet.deleteCalls).toBe(1);
+  });
+
+  it("writes nothing when no row matches", async () => {
+    expect(await things.removeWhere((v) => v.name === "Zulu")).toBe(0);
+    expect(sheet.deletes).toEqual([]);
   });
 });
 

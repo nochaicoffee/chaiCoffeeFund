@@ -3,8 +3,10 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { SubscriptionsDashboard } from "@/components/subscriptions/SubscriptionsDashboard";
+import { HeaderFormButtons, SubscriptionFormsProvider } from "@/components/subscriptions/forms/SubscriptionForms";
 import { appConfig } from "@/lib/appConfig";
 import { greetingFor, todayIso } from "@/lib/format/date";
+import { formsView } from "./formsView";
 import { loadSubscriptionData } from "./loadSubscriptionData";
 import { ALL, subscriptionsPageView, summarySentence } from "./views";
 
@@ -13,8 +15,8 @@ export const metadata: Metadata = { title: "Subscriptions" };
 /**
  * The Subscriptions page (#126, docs/design/subscriptions.md): the greeting, the
  * coloured cover-flow hero, and the cost map beside the payments. `?sub=<id>` opens
- * a pick; `?demo` shows sample data in development. The chart (#127), the forms
- * (#128) and the Renewals page (#130) follow.
+ * a pick; `?demo` shows sample data in development, with the forms disabled. The
+ * forms (#128) open from the header and the hero; the Renewals page (#130) follows.
  */
 export default async function SubscriptionsPage({ searchParams }: PageProps<"/subscriptions">) {
   const params = await searchParams;
@@ -25,8 +27,18 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/su
   const initialPick = view.picks.some((p) => p.id === requested) ? requested : ALL;
 
   return (
+    <SubscriptionFormsProvider forms={formsView(data, today, demo)}>
     <div className="flex flex-col gap-6">
-      <PageHeader section="Subscriptions" title={`${greetingFor()}, ${appConfig.ownerName}`} actions={<RefreshButton iconOnly />}>
+      <PageHeader
+        section="Subscriptions"
+        title={`${greetingFor()}, ${appConfig.ownerName}`}
+        actions={
+          <>
+            <RefreshButton iconOnly />
+            <HeaderFormButtons />
+          </>
+        }
+      >
         <p className="max-w-[960px] text-base leading-[1.7] font-medium text-muted">
           {summarySentence(data, today).map((part, i) =>
             part.strong ? (
@@ -43,5 +55,6 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/su
       </PageHeader>
       <SubscriptionsDashboard view={view} initialPick={initialPick} />
     </div>
+    </SubscriptionFormsProvider>
   );
 }

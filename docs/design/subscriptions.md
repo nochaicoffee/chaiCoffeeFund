@@ -119,6 +119,15 @@ Settled while building it:
 - **A hover card's rows** list the renewals in the month's total first. A renewal not recorded, or a Pending one, isn't in the total, so it's noted ("not recorded", "pending") and muted. A Pending day in Day by day is drawn dashed, like one still to come.
 - **A payment whose subscription no longer exists** is left out of everything on the page, as the Cards page leaves out statements whose card is gone.
 
+## Built: the forms (2026-10-21, #128)
+
+The forms open from the header (Record payment, Add subscription) and from the hero, on the Cards forms' dialog shell. With `?demo` they show disabled ("Sample data can't be changed").
+- **Add and Edit subscription**, with a live preview: its cover, a month and a year, the next renewals (or what's been paid, on Edit), and your monthly total before and after. "Next renewal" can be any renewal date, since the schedule counts from it both ways. Edit adds Status (Cancelled asks for its date) and Delete, which removes its payments too.
+- **Record a payment** starts on the renewal it's for: the oldest one not recorded, or else the next one to come. It starts at the plan's price and where it's usually charged. When the amount is 2% or more off the plan (the price-change rule), it offers "Update the price from now on", ticked. A ₹0 payment isn't accepted; a renewal that didn't charge is Skipped, which the Renewals page records.
+- **Mark paid** is one click from 3 days before a renewal (Record payment otherwise, or to catch up on one not recorded). It records the plan's price on the renewal date, to where it's usually charged, with Undo for 6 seconds.
+- **Pause, Resume, Cancel and Restart** each ask first. Cancel asks for its date. Resume and Restart ask when it starts again (today by default) and store it as `resumedOn`, a new column (decided with Prathik 2026-10-21). The renewals between its last payment and that date weren't due, so they're never flagged. Only the latest restart is kept.
+- **Editing a paused or cancelled one back to Active** starts it again today, the same as Resume.
+
 ## How it got here
 
 The canvas keeps everything explored, newest first: A–K (layouts), L–P (heroes), Q–Z (selectors), S1–S6 (circular carousels) and S7–S16 (the cover flow refined, each with a different full-width chart). Prathik kept these from them: F's greeting, D's cost map, C's payments table, S's cover flow with All at the centre, scrolling in a circle, S9's coloured stage, S9's Day by day chart, S7's Payment trend and S14's Lifetime cost. Along the way he asked that no section be added just to fill space (a separate colour band was dropped), and that cards side by side end level. A layout check measured this across every pick.
