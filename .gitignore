@@ -9,8 +9,9 @@
 client_secret*.json
 *service-account*.json
 *serviceaccount*.json
-secrets/
-.secrets/
+# No trailing slash, so a symlink to the secrets folder (from a jj workspace) is ignored too, not just the folder.
+secrets
+.secrets
 
 # Dependencies / build output
 node_modules/
