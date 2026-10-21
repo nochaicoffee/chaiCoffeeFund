@@ -1,0 +1,940 @@
+<title>Subscriptions Interactions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+  /* Layout: four numbered areas of the Subscriptions page, each with its options side by side when there's room and stacked on a phone.
+     Tokens are the app's own (src/app/globals.css), so each mockup looks like the real page. Light only, like the app today. */
+  :root {
+    color-scheme: light;
+    --page: oklch(0.965 0.004 90);
+    --surface: oklch(0.995 0 0);
+    --surface-line: oklch(0 0 0 / 0.07);
+    --fg: oklch(0.19 0.008 260);
+    --muted: oklch(0.52 0.012 260);
+    --fill: oklch(0 0 0 / 0.055);
+    --fill-strong: oklch(0 0 0 / 0.09);
+    --divider: oklch(0 0 0 / 0.08);
+    --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+    --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+    --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+    --accent: oklch(0.72 0.19 145);
+    --accent-tint: oklch(0.93 0.06 145);
+    --accent-text: oklch(0.42 0.14 145);
+    --on-accent: oklch(0.99 0 0);
+    --ink: oklch(0.16 0.008 260);
+    --on-ink: oklch(0.99 0 0);
+    --positive: oklch(0.42 0.14 145);
+    --negative: oklch(0.55 0.16 25);
+    --negative-tint: oklch(0.95 0.035 40);
+    --warning-tint: oklch(0.95 0.05 85);
+    --warning-text: oklch(0.47 0.1 70);
+    --rings-light: oklch(1 0 0);
+    --on-card: oklch(0.95 0.004 260);
+    --on-card-muted: oklch(1 0 0 / 0.6);
+    --on-card-faint: oklch(1 0 0 / 0.5);
+    --on-card-fill: oklch(1 0 0 / 0.16);
+    --on-card-line: oklch(1 0 0 / 0.12);
+    --on-card-line-top: oklch(1 0 0 / 0.22);
+    --card-emerald-from: oklch(0.42 0.11 155); --card-emerald-to: oklch(0.24 0.07 162); --card-emerald: oklch(0.6 0.12 153);
+    --card-sapphire-from: oklch(0.32 0.09 258); --card-sapphire-to: oklch(0.16 0.05 258); --card-sapphire: oklch(0.48 0.1 258);
+    --card-ruby-from: oklch(0.3 0.11 20); --card-ruby-to: oklch(0.15 0.07 20); --card-ruby: oklch(0.57 0.13 22);
+    --card-onyx-from: oklch(0.28 0.02 75); --card-onyx-to: oklch(0.15 0.01 75); --card-onyx: oklch(0.56 0.04 75);
+    --card-violet-from: oklch(0.31 0.1 300); --card-violet-to: oklch(0.16 0.06 300); --card-violet: oklch(0.53 0.13 300);
+    --card-teal-from: oklch(0.32 0.07 200); --card-teal-to: oklch(0.16 0.04 200); --card-teal: oklch(0.56 0.09 200);
+    --card-copper-from: oklch(0.33 0.09 50); --card-copper-to: oklch(0.16 0.05 50); --card-copper: oklch(0.6 0.12 50);
+    --card-amber-from: oklch(0.37 0.09 72); --card-amber-to: oklch(0.18 0.05 66); --card-amber: oklch(0.67 0.13 72);
+    --card-rose-from: oklch(0.33 0.11 355); --card-rose-to: oklch(0.16 0.07 355); --card-rose: oklch(0.62 0.15 355);
+    --card-indigo-from: oklch(0.3 0.12 278); --card-indigo-to: oklch(0.15 0.07 278); --card-indigo: oklch(0.52 0.16 278);
+    --card-slate-from: oklch(0.33 0.02 250); --card-slate-to: oklch(0.16 0.015 250); --card-slate: oklch(0.6 0.03 250);
+    --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { background: var(--page); color: var(--fg); }
+  body {
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
+    padding-block: 28px 72px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 36px; }
+  .intro { display: flex; flex-direction: column; gap: 10px; max-width: 780px; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+  h1 { margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800; text-wrap: balance; }
+  .intro p { margin: 0; font-size: 15px; font-weight: 500; color: var(--muted); }
+  .intro p b { color: var(--fg); }
+  .jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .jump a { text-decoration: none; color: var(--fg); background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 700; }
+  .jump a:hover { background: var(--accent-tint); color: var(--accent-text); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .sample { width: fit-content; border-radius: 999px; background: var(--accent-tint); color: var(--accent-text); padding: 4px 12px; font-size: 12px; font-weight: 700; }
+  .built { width: fit-content; border-radius: 999px; background: var(--fill); color: var(--fg); padding: 4px 12px; font-size: 12px; font-weight: 700; }
+
+  .area { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 16px; }
+  .area-head { display: flex; flex-direction: column; gap: 4px; max-width: 780px; }
+  .area-head h2 { margin: 0; font-size: 21px; font-weight: 800; text-wrap: balance; }
+  .area-head p { margin: 0; color: var(--muted); font-weight: 500; }
+  .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 18px; }
+  /* Connecting the pieces pairs a map with a list, so those two get wider columns and the third runs full width. */
+  .options.wide { grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); }
+  .options.wide > .option.full { grid-column: 1 / -1; }
+  .option { min-width: 0; display: flex; flex-direction: column; gap: 14px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); border-radius: 24px; padding: 20px; }
+  .opt-head { display: flex; gap: 12px; align-items: flex-start; }
+  .tag { flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 13px; }
+  .opt-head h3 { margin: 0; font-size: 15px; font-weight: 800; }
+  .opt-head p { margin: 2px 0 0; color: var(--muted); font-size: 13px; font-weight: 500; }
+  .hint { font-size: 12px; font-weight: 600; color: var(--muted); margin: 0; }
+  .demo { display: flex; flex-direction: column; gap: 10px; margin-top: auto; }
+
+  /* Segmented control, as in the app. */
+  .seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: var(--fill); }
+  .seg button { border: 0; background: transparent; border-radius: 999px; padding: 5px 12px; font-size: 12px; font-weight: 700; color: var(--muted); }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--accent-text); box-shadow: var(--soft-shadow); }
+  .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .btn { border: 0; border-radius: 999px; padding: 7px 14px; font-size: 12px; font-weight: 800; background: var(--fill); }
+  .btn:hover { background: var(--fill-strong); }
+  .btn.ink { background: var(--ink); color: var(--on-ink); }
+  .btn.ink:hover { opacity: 0.9; }
+
+  /* Rings: the app's texture, drawn by rings() into any .tex layer. */
+  .tex { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; z-index: -1; pointer-events: none; }
+  .tex svg { position: absolute; inset: 0; width: 100%; height: 100%; transform-origin: 100% 100%; transition: transform 700ms var(--ease-out); }
+
+  /* ---------- The map's blocks ---------- */
+  .map { position: relative; height: 300px; }
+  .blk { position: absolute; isolation: isolate; overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; border-radius: 14px; border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); color: var(--on-card); text-align: left; background: linear-gradient(155deg, var(--from), var(--to));
+    transition: left 520ms var(--ease-out), top 520ms var(--ease-out), width 520ms var(--ease-out), height 520ms var(--ease-out), opacity 260ms ease, filter 260ms ease, transform 260ms var(--ease-out), box-shadow 260ms ease; }
+  .blk .ba { display: block; font-size: 12px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .blk .bd { display: block; margin-top: 2px; font-size: 10.5px; font-weight: 600; color: var(--on-card-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .blk .bv { font-size: 13px; font-weight: 800; white-space: nowrap; }
+  .blk .bv small { font-size: 10px; font-weight: 600; color: var(--on-card-muted); }
+  .blk[data-size="big"] { padding: 14px; border-radius: 18px; }
+  .blk[data-size="big"] .ba { font-size: 15px; }
+  .blk[data-size="big"] .bv { font-size: 20px; }
+  .blk[data-size="tiny"] { align-items: center; justify-content: center; padding: 4px; }
+  .blk[data-size="tiny"] .bd, .blk[data-size="tiny"] .bv small, .blk[data-size="small"] .bd { display: none; }
+  .blk[data-size="tiny"] .ba { font-size: 11px; }
+  .blk[data-size="tiny"] .bv { font-size: 10px; }
+  .blk:hover .tex svg, .blk.on .tex svg { transform: scale(1.18); }
+  .map.spot .blk:not(.on) { opacity: 0.75; filter: saturate(0.55); }
+  .map.spot .blk.on { transform: translateY(-3px); }
+
+  /* 1A · morph: each block carries its category's colour as a second layer that fades in. */
+  .blk .catc { position: absolute; inset: 0; z-index: -2; background: linear-gradient(155deg, var(--cfrom), var(--cto)); opacity: 0; transition: opacity 520ms ease; }
+  .map.bycat .blk .catc { opacity: 1; }
+  .map.bycat .blk { border-radius: 8px; border-color: oklch(1 0 0 / 0.06); }
+  /* The category's name and total sit at the tile's top, so each block's own name moves to its bottom. */
+  .map.bycat .blk { justify-content: flex-end; }
+  .map.bycat .blk .bd, .map.bycat .blk .bv { opacity: 0; }
+  .map.bycat .blk .bv { position: absolute; }
+  .map.bycat .blk:is([data-size="small"], [data-size="tiny"]) .ba { opacity: 0; }
+  .map.bycat .blk .ba { font-size: 10.5px; color: var(--on-card-muted); }
+  .blk .bd, .blk .bv { transition: opacity 300ms ease; }
+  .cat { position: absolute; pointer-events: none; padding: 10px 12px; color: var(--on-card); opacity: 0; transition: opacity 300ms ease, left 520ms var(--ease-out), top 520ms var(--ease-out); z-index: 2; }
+  .map.bycat .cat { opacity: 1; transition-delay: 220ms; }
+  .cat b { display: block; font-size: 13px; font-weight: 800; text-shadow: 0 1px 8px oklch(0 0 0 / 0.5); }
+  .cat span { font-size: 15px; font-weight: 800; text-shadow: 0 1px 8px oklch(0 0 0 / 0.5); }
+
+  /* Rolling digits: each digit is a column of 0–9, keyed by its place from the right. */
+  .roll { display: inline-flex; align-items: flex-end; font-variant-numeric: tabular-nums; }
+  .roll .rc { display: inline-block; height: 1.15em; line-height: 1.15em; overflow: hidden; user-select: none; }
+  .roll .strip { display: flex; flex-direction: column; transition: transform 650ms var(--ease-out); }
+  .roll .strip span { height: 1.15em; line-height: 1.15em; }
+  .roll .rs { line-height: 1.15em; }
+
+  /* 1B · try without */
+  .blk .try { position: absolute; top: 6px; right: 6px; z-index: 3; border: 0; border-radius: 999px; padding: 3px 9px; font-size: 10px; font-weight: 800; color: var(--on-card); background: oklch(0 0 0 / 0.35); backdrop-filter: blur(6px); opacity: 0; transform: translateY(-3px); transition: opacity 160ms ease, transform 160ms ease; }
+  .blk:hover .try, .blk:focus-within .try { opacity: 1; transform: none; }
+  .blk[data-size="tiny"] .try { display: none; }
+  .blk.gone { opacity: 0; transform: scale(0.6); pointer-events: none; }
+  .without { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 44px; padding: 8px 12px; border-radius: 14px; background: var(--fill); font-size: 12px; font-weight: 600; color: var(--muted); }
+  .without b { color: var(--fg); font-weight: 800; }
+  .without .save { color: var(--positive); font-weight: 800; }
+  .without .chip { border: 0; display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 4px 10px; font-size: 11px; font-weight: 800; background: var(--surface); box-shadow: var(--soft-shadow); }
+  .without .chip i { width: 8px; height: 8px; border-radius: 3px; }
+
+  /* 1C · renewal fill */
+  .blk .fill { position: absolute; left: 0; right: 0; bottom: 0; z-index: -1; background: oklch(1 0 0 / 0.12); border-top: 1px solid oklch(1 0 0 / 0.28); transition: height 900ms var(--ease-out); }
+  .blk .when { font-size: 10px; font-weight: 700; color: var(--on-card-muted); }
+  .blk.due { animation: breathe 2.4s ease-in-out infinite; }
+  @keyframes breathe { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklch, var(--glow) 0%, transparent); } 50% { box-shadow: 0 0 0 5px color-mix(in oklch, var(--glow) 45%, transparent); } }
+
+  /* ---------- The hero ---------- */
+  .hero { position: relative; isolation: isolate; overflow: hidden; border-radius: 22px; padding: 18px; color: var(--on-card); display: flex; flex-direction: column; gap: 14px; }
+  .hero .bgs { position: absolute; inset: 0; z-index: -2; }
+  .hero .bgs i { position: absolute; inset: 0; transition: opacity 650ms ease; }
+  .covers { display: flex; gap: 8px; flex-wrap: wrap; }
+  .cover { position: relative; isolation: isolate; overflow: hidden; width: 64px; height: 44px; border-radius: 10px; border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); color: var(--on-card); padding: 6px 8px; display: flex; align-items: flex-end; font-size: 11px; font-weight: 800; background: linear-gradient(155deg, var(--from), var(--to)); transition: transform 200ms var(--ease-out), box-shadow 200ms ease; }
+  .cover[aria-pressed="true"] { box-shadow: 0 0 0 2px oklch(1 0 0 / 0.9); }
+  .cover:hover { transform: translateY(-2px); }
+  .hname { font-size: 24px; font-weight: 800; line-height: 1.1; }
+  .hprice { font-size: 13px; font-weight: 700; color: var(--on-card-muted); }
+  .hprice .roll { font-size: 15px; color: var(--on-card); font-weight: 800; }
+  .cyc { display: flex; flex-direction: column; gap: 6px; }
+  .cyc .mid { font-size: 12px; font-weight: 700; }
+  .cyc .ends { display: flex; justify-content: space-between; font-size: 10.5px; font-weight: 700; color: var(--on-card-muted); }
+  .bar { position: relative; height: 8px; border-radius: 999px; background: var(--on-card-fill); }
+  .bar > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: var(--on-card); transition: width 700ms var(--ease-out); }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; }
+  .stat { border-radius: 12px; background: oklch(1 0 0 / 0.1); padding: 8px 10px; min-width: 0; }
+  .stat small { display: block; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--on-card-muted); }
+  .stat b { display: block; font-size: 16px; font-weight: 800; white-space: nowrap; }
+  .stat > span { display: block; font-size: 10.5px; font-weight: 600; color: var(--on-card-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* 2B · read the bar */
+  .scrub { position: relative; height: 22px; display: flex; align-items: center; cursor: crosshair; touch-action: none; }
+  .scrub .bar { flex: 1; }
+  .scrub .today { position: absolute; top: 50%; width: 2px; height: 14px; margin-top: -7px; background: var(--on-card); border-radius: 1px; }
+  .scrub .thumb { position: absolute; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: var(--on-card); box-shadow: 0 0 0 4px oklch(1 0 0 / 0.25); opacity: 0; transition: opacity 120ms ease; }
+  .scrub .lab { position: absolute; bottom: 26px; transform: translateX(-50%); white-space: nowrap; padding: 4px 9px; border-radius: 9px; background: var(--surface); color: var(--fg); font-size: 11px; font-weight: 800; box-shadow: var(--pop-shadow); opacity: 0; transition: opacity 120ms ease; pointer-events: none; }
+  .scrub .lab small { font-weight: 600; color: var(--muted); }
+  .scrub.on .thumb, .scrub.on .lab { opacity: 1; }
+
+  /* 2C · peek */
+  .ring-row { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 14px 4px 46px; perspective: 700px; }
+  .pk { position: relative; isolation: isolate; overflow: visible; border: 0; padding: 0; background: none; transform-style: preserve-3d; }
+  .pk .face { position: relative; isolation: isolate; overflow: hidden; width: 76px; height: 104px; border-radius: 14px; border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); color: var(--on-card); padding: 8px; display: flex; flex-direction: column; justify-content: flex-end; text-align: left; font-size: 11px; font-weight: 800; background: linear-gradient(155deg, var(--from), var(--to)); transition: transform 260ms var(--ease-out), box-shadow 260ms ease; }
+  .pk.left .face { transform: rotateY(28deg) scale(0.9); }
+  .pk.right .face { transform: rotateY(-28deg) scale(0.9); }
+  .pk.front .face { width: 104px; height: 128px; font-size: 13px; }
+  .pk:not(.front):hover .face, .pk:not(.front):focus-visible .face { transform: rotateY(0) translateY(-8px) scale(1); box-shadow: var(--pop-shadow); }
+  .pk .peek { position: absolute; left: 50%; top: calc(100% + 6px); transform: translateX(-50%) translateY(-4px); white-space: nowrap; font-size: 11px; font-weight: 700; color: var(--muted); opacity: 0; transition: opacity 180ms ease, transform 180ms ease; }
+  .pk .peek b { color: var(--fg); }
+  .pk:not(.front):hover .peek, .pk:not(.front):focus-visible .peek { opacity: 1; transform: translateX(-50%); }
+  .stage { border-radius: 22px; padding: 6px; background: linear-gradient(155deg, var(--card-emerald-from), var(--card-emerald-to)); }
+
+  /* ---------- Tables and lists ---------- */
+  .twin { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start; }
+  .twin .map { height: 250px; }
+  .rows { display: flex; flex-direction: column; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 8px 6px; border-bottom: 1px solid var(--divider); font-size: 12px; border-radius: 8px; transition: background 160ms ease, opacity 160ms ease; }
+  .row .who { display: flex; align-items: center; gap: 8px; min-width: 0; font-weight: 700; }
+  .row .who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .amt { font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; }
+  .row .amt small { display: block; font-size: 10.5px; font-weight: 600; color: var(--muted); }
+  .rows.spot .row:not(.on) { opacity: 0.4; }
+  .row.on { background: var(--fill); }
+  .mono { flex-shrink: 0; width: 22px; height: 22px; border-radius: 7px; display: grid; place-items: center; font-size: 10px; font-weight: 800; color: var(--on-card); background: linear-gradient(155deg, var(--from), var(--to)); }
+
+  /* 3B · charged to */
+  .ct { display: flex; flex-direction: column; gap: 12px; }
+  .ct-row { display: flex; flex-direction: column; gap: 6px; padding: 6px; margin: -6px; border-radius: 10px; transition: background 160ms ease; }
+  .ct-row:hover, .ct-row:focus-visible { background: var(--fill); }
+  .ct-top { display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; }
+  .ct-top .chip { display: inline-flex; align-items: center; gap: 6px; }
+  .ct-top .chip i { width: 18px; height: 12px; border-radius: 3px; background: linear-gradient(155deg, var(--from), var(--to)); }
+  .ct-top b { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .ct-bar { position: relative; height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+  .ct-bar .solid { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; transition: opacity 200ms ease; }
+  .ct-bar .split { position: absolute; left: 0; top: 0; bottom: 0; display: flex; gap: 2px; opacity: 0; transition: opacity 200ms ease; }
+  .ct-bar .split i { height: 100%; }
+  .ct-row:hover .ct-bar .solid, .ct-row:focus-visible .ct-bar .solid { opacity: 0; }
+  .ct-row:hover .ct-bar .split, .ct-row:focus-visible .ct-bar .split { opacity: 1; }
+  .ct-names { font-size: 10.5px; font-weight: 600; color: var(--muted); max-height: 0; overflow: hidden; transition: max-height 220ms ease; }
+  .ct-row:hover .ct-names, .ct-row:focus-visible .ct-names { max-height: 32px; }
+
+  /* 3C · a price change in its row */
+  .ptable .row { grid-template-columns: 1.2fr 0.9fr 1fr auto; padding: 10px 6px; }
+  .ptable .row.head { font-size: 10px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); border-bottom: 0; padding-block: 0 4px; }
+  .chg { font-size: 11px; font-weight: 800; white-space: nowrap; }
+  .chg.up { color: var(--negative); }
+  .pill { justify-self: end; border-radius: 999px; padding: 3px 9px; font-size: 10.5px; font-weight: 800; background: var(--accent-tint); color: var(--accent-text); }
+  .grow { grid-column: 1 / -1; display: grid; grid-template-rows: 0fr; transition: grid-template-rows 320ms var(--ease-out); }
+  .grow > div { overflow: hidden; }
+  .row.changed { cursor: default; }
+  .row.changed:hover .grow, .row.changed:focus-visible .grow { grid-template-rows: 1fr; }
+  .grow svg { display: block; width: 100%; max-width: 640px; height: 86px; }
+  .grow .draw { stroke-dasharray: 1; stroke-dashoffset: 1; transition: stroke-dashoffset 700ms var(--ease-out) 120ms; }
+  .row.changed:hover .draw, .row.changed:focus-visible .draw { stroke-dashoffset: 0; }
+
+  /* ---------- Small moments ---------- */
+  .dues { display: flex; gap: 10px; flex-wrap: wrap; }
+  .due-card { position: relative; isolation: isolate; overflow: hidden; flex: 1 1 110px; min-width: 0; border-radius: 16px; padding: 12px; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); background: linear-gradient(155deg, var(--from), var(--to)); display: flex; flex-direction: column; gap: 4px; }
+  .due-card b { font-size: 13px; font-weight: 800; }
+  .due-card .d { font-size: 11.5px; font-weight: 700; color: var(--on-card-muted); }
+  .due-card[data-level="soon"] { animation: breathe 2.6s ease-in-out infinite; }
+  .due-card[data-level="tomorrow"] { animation: breathe 1.5s ease-in-out infinite; }
+  .due-card[data-level="soon"] .d, .due-card[data-level="tomorrow"] .d { color: var(--on-card); }
+  .due-card[data-level="today"] { box-shadow: 0 0 0 3px var(--glow); }
+  .due-card[data-level="today"] .d { color: var(--on-card); }
+  .due-card .badge { position: absolute; top: 10px; right: 10px; border-radius: 999px; padding: 2px 8px; font-size: 10px; font-weight: 800; background: oklch(0.7 0.14 35 / 0.6); opacity: 0; transition: opacity 200ms ease; }
+  .due-card[data-level="today"] .badge, .due-card[data-level="tomorrow"] .badge { opacity: 1; }
+
+  .paid-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+  .mark { border: 0; border-radius: 999px; padding: 8px 16px; font-size: 12px; font-weight: 800; background: oklch(1 0 0 / 0.9); color: var(--fg); transition: background 200ms ease, color 200ms ease, transform 200ms var(--ease-spring); }
+  .mark.done { background: var(--accent); color: var(--on-accent); transform: scale(1.04); }
+  .undo { border: 0; background: none; color: var(--on-card); font-size: 12px; font-weight: 800; text-decoration: underline; text-underline-offset: 3px; opacity: 0; pointer-events: none; transition: opacity 200ms ease; }
+  .undo.show { opacity: 1; pointer-events: auto; }
+  .bar.sweep > i { transition: width 380ms ease-in; }
+
+  .note { font-size: 12px; font-weight: 600; color: var(--muted); border-top: 1px solid var(--divider); padding-top: 10px; margin: 0; }
+
+  @media (max-width: 560px) {
+    .twin { grid-template-columns: minmax(0, 1fr); }
+    .ptable .row { grid-template-columns: 1fr 0.8fr auto; }
+    .ptable .row .cc { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { transition-duration: 1ms !important; animation: none !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <span class="eyebrow">chaiCoffeeFund · Subscriptions</span>
+    <h1>More life for the Subscriptions page</h1>
+    <p>Ideas for four parts of the page, each one a working mockup: hover it, click it, move along it. <b>Pick any you like by number and letter</b> (say 1B, 2A and 3A), the way the Cards page's were picked. Mix freely.</p>
+    <div class="chips">
+      <span class="sample">Sample data from the design, not yours</span>
+      <span class="built">Already built: the map's hover card, and the map holding still (PR #141)</span>
+    </div>
+    <nav class="jump" aria-label="Areas">
+      <a href="#map">1 · The map</a>
+      <a href="#hero">2 · The hero</a>
+      <a href="#links">3 · Payments and Charged to</a>
+      <a href="#moments">4 · Small moments</a>
+    </nav>
+  </header>
+
+  <!-- ============ 1 · The map ============ -->
+  <section class="area" id="map" aria-labelledby="h-map">
+    <div class="area-head">
+      <h2 id="h-map">1 · Playing with the map</h2>
+      <p>"What each one costs" now has its hover card. These make the map itself move and answer questions.</p>
+    </div>
+    <div class="options">
+      <article class="option">
+        <div class="opt-head"><span class="tag">A</span><div><h3>Morph, don't jump</h3><p>Switching to By category, each block flows into its category's tile and takes its colour; switching back, they flow out again. A month and A year roll every number to the new figure.</p></div></div>
+        <div class="demo">
+          <div class="toolbar">
+            <div class="seg" role="group" aria-label="Cost"><button type="button" aria-pressed="true" data-per="month">A month</button><button type="button" aria-pressed="false" data-per="year">A year</button></div>
+            <div class="seg" role="group" aria-label="Group"><button type="button" aria-pressed="true" data-by="each">Each</button><button type="button" aria-pressed="false" data-by="category">By category</button></div>
+          </div>
+          <div class="map" id="map-a"></div>
+        </div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">B</span><div><h3>Try it without</h3><p>Hover a block and press <b>Try without</b>: it folds away, the rest grow to fill, and a line says what you'd pay and save. Try several at once. Nothing is saved; it's a what-if.</p></div></div>
+        <div class="demo">
+          <div class="without" id="without-b" aria-live="polite"></div>
+          <div class="map" id="map-b"></div>
+        </div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">C</span><div><h3>Blocks fill up to renewal</h3><p>Each block fills from the bottom as its cycle runs, so the ones about to renew are the fullest. One renewing within 3 days breathes softly in its own colour.</p></div></div>
+        <div class="demo">
+          <div class="map" id="map-c"></div>
+          <p class="hint">Netflix renews in 3 days, so it's breathing. Cult.fit just renewed, so it's nearly empty.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 2 · The hero ============ -->
+  <section class="area" id="hero" aria-labelledby="h-hero">
+    <div class="area-head">
+      <h2 id="h-hero">2 · Turning the carousel</h2>
+      <p>The cover flow and the coloured hero under it. These make a pick feel like it lands.</p>
+    </div>
+    <div class="options">
+      <article class="option">
+        <div class="opt-head"><span class="tag">A</span><div><h3>Rolling digits</h3><p>Every number in the hero rolls digit by digit to the new pick's, as on the Cards page's details card, while the colour crossfades.</p></div></div>
+        <div class="demo">
+          <div class="hero" id="hero-a">
+            <div class="bgs"></div>
+            <div class="covers" role="group" aria-label="Pick a subscription"></div>
+            <div>
+              <div class="eyebrow" style="color: var(--on-card-muted)" data-f="eyebrow"></div>
+              <div class="hname" data-f="name"></div>
+              <div class="hprice"><span class="roll" data-r="price"></span> <span data-f="per"></span></div>
+            </div>
+            <div class="stats" data-f="stats"></div>
+          </div>
+        </div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">B</span><div><h3>Read the cycle bar</h3><p>Move along the bar under the name to read the date at any point and how far it is from today. It snaps to today and to the renewal, which shows what it'll charge. Arrow keys work too.</p></div></div>
+        <div class="demo">
+          <div class="hero" style="--from: var(--card-ruby-from); --to: var(--card-ruby-to); background: linear-gradient(155deg, var(--from), var(--to))">
+            <div>
+              <div class="eyebrow" style="color: var(--on-card-muted)">Streaming · since Feb 23, 2024</div>
+              <div class="hname">Netflix</div>
+            </div>
+            <div class="cyc">
+              <div class="mid">Renews Fri, Oct 23 · in 3 days</div>
+              <div class="scrub" id="scrub-b" tabindex="0" role="slider" aria-label="Netflix's cycle, Sep 23 to Oct 23" aria-valuemin="0" aria-valuemax="30" aria-valuenow="27">
+                <div class="bar"><i style="width: 90%"></i></div>
+                <span class="today" style="left: 90%"></span>
+                <span class="thumb"></span>
+                <span class="lab"></span>
+              </div>
+              <div class="ends"><span>Sep 23</span><span>Oct 23</span></div>
+            </div>
+            <div class="stats">
+              <div class="stat"><small>Monthly</small><b>₹649</b><span>₹649 a month</span></div>
+              <div class="stat"><small>Renews</small><b>Fri, Oct 23</b><span>in 3 days</span></div>
+              <div class="stat"><small>Paid so far</small><b>₹16,418</b><span>32 payments</span></div>
+              <div class="stat"><small>Price</small><b>↑ ₹150</b><span>₹499 → ₹649 on Jul 23</span></div>
+            </div>
+          </div>
+        </div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">C</span><div><h3>Peek before turning</h3><p>Hovering a cover that isn't in front turns it to face you and shows its price and next renewal under it, without turning the carousel.</p></div></div>
+        <div class="demo">
+          <div class="stage"><div class="ring-row" id="peek-c"></div></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 3 · Payments and Charged to ============ -->
+  <section class="area" id="links" aria-labelledby="h-links">
+    <div class="area-head">
+      <h2 id="h-links">3 · Connecting the pieces</h2>
+      <p>The map, the payments and Charged to show the same subscriptions three ways. These point from one to the others.</p>
+    </div>
+    <div class="options wide">
+      <article class="option">
+        <div class="opt-head"><span class="tag">A</span><div><h3>Point at it</h3><p>Hovering a payment lights its block in the map and steps the rest back. Hovering a block lights its payments.</p></div></div>
+        <div class="demo">
+          <div class="twin">
+            <div class="map" id="map-3a"></div>
+            <div class="rows" id="rows-3a"></div>
+          </div>
+        </div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">B</span><div><h3>Light up a card</h3><p>Hovering a card or an account in Charged to lights its subscriptions in the map, and its bar splits into them with their names.</p></div></div>
+        <div class="demo">
+          <div class="twin">
+            <div class="ct" id="ct-3b"></div>
+            <div class="map" id="map-3b"></div>
+          </div>
+        </div>
+      </article>
+      <article class="option full">
+        <div class="opt-head"><span class="tag">C</span><div><h3>The price change, in its row</h3><p>Hovering a payment where the price changed opens the row and draws the price over time, step by step, right there.</p></div></div>
+        <div class="demo">
+          <div class="rows ptable" id="ptable-3c"></div>
+          <p class="hint">Hover the Jul 23 row, where Netflix went up.</p>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 4 · Small moments ============ -->
+  <section class="area" id="moments" aria-labelledby="h-moments">
+    <div class="area-head">
+      <h2 id="h-moments">4 · Small moments</h2>
+      <p>Little things that happen at the right time, so the page says what's going on without being read.</p>
+    </div>
+    <div class="options">
+      <article class="option">
+        <div class="opt-head"><span class="tag">A</span><div><h3>A renewal getting close</h3><p>A cover renewing within 3 days breathes softly in its own colour, faster the day before. On the day it holds a steady ring and says Due today.</p></div></div>
+        <div class="demo">
+          <div class="dues" id="dues-4a"></div>
+          <div class="toolbar"><button type="button" class="btn ink" id="later-4a">A day later</button><span class="hint" id="today-4a"></span></div>
+        </div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">B</span><div><h3>Paid, with a sweep</h3><p>Mark paid turns green with a tick, the cycle bar sweeps back to the start of the next cycle, and Paid this year rolls up by the amount. Undo puts it all back.</p></div></div>
+        <div class="demo">
+          <div class="hero" style="--from: var(--card-ruby-from); --to: var(--card-ruby-to); background: linear-gradient(155deg, var(--from), var(--to))">
+            <div class="paid-row">
+              <div><div class="hname" style="font-size: 20px">Netflix</div><div class="hprice">₹649 / month</div></div>
+              <div class="toolbar"><button type="button" class="undo" id="undo-4b">Undo</button><button type="button" class="mark" id="mark-4b">Mark paid</button></div>
+            </div>
+            <div class="cyc">
+              <div class="mid" id="mid-4b">Renews Fri, Oct 23 · in 3 days</div>
+              <div class="bar" id="bar-4b"><i style="width: 90%"></i></div>
+              <div class="ends"><span id="from-4b">Sep 23</span><span id="to-4b">Oct 23</span></div>
+            </div>
+            <div class="stats">
+              <div class="stat"><small>Paid this year</small><b><span class="roll" id="paid-4b"></span></b><span id="count-4b">9 payments</span></div>
+              <div class="stat"><small>Paid so far</small><b><span class="roll" id="sofar-4b"></span></b><span id="since-4b">32 payments</span></div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const inr = (n) => "₹" + Math.round(n).toLocaleString("en-IN");
+
+  // The design's sample subscriptions (design/subscriptions/SubsFinal.dc.html), on its "today", Oct 20, 2026.
+  const SUBS = [
+    { id: "chatgpt", alias: "ChatGPT", cat: "Software", cycle: "Monthly", amount: 1999, monthly: 1999, color: "sapphire", charged: "coral", next: "Nov 8", days: 19, frac: 0.39 },
+    { id: "cult", alias: "Cult.fit", cat: "Fitness", cycle: "Quarterly", amount: 4500, monthly: 1500, color: "copper", charged: "kotak", next: "Jan 10", days: 82, frac: 0.11 },
+    { id: "netflix", alias: "Netflix", cat: "Streaming", cycle: "Monthly", amount: 649, monthly: 649, color: "ruby", charged: "millennia", next: "Oct 23", days: 3, frac: 0.9 },
+    { id: "m365", alias: "Microsoft 365", cat: "Software", cycle: "Yearly", amount: 6199, monthly: 516.58, color: "indigo", charged: "millennia", next: "Mar 3", days: 134, frac: 0.63 },
+    { id: "icloud", alias: "iCloud+", cat: "Cloud storage", cycle: "Monthly", amount: 219, monthly: 219, color: "violet", charged: "ace", next: "Oct 24", days: 4, frac: 0.87 },
+    { id: "swiggy", alias: "Swiggy One", cat: "Food", cycle: "Quarterly", amount: 549, monthly: 183, color: "amber", charged: "kotak", next: "Dec 1", days: 42, frac: 0.54 },
+    { id: "youtube", alias: "YouTube", cat: "Streaming", cycle: "Monthly", amount: 149, monthly: 149, color: "rose", charged: "ace", next: "Nov 2", days: 13, frac: 0.58 },
+    { id: "prime", alias: "Prime", cat: "Shopping", cycle: "Yearly", amount: 1499, monthly: 124.92, color: "onyx", charged: "coral", next: "Dec 15", days: 56, frac: 0.85 },
+    { id: "spotify", alias: "Spotify", cat: "Music", cycle: "Monthly", amount: 119, monthly: 119, color: "teal", charged: "millennia", next: "Oct 28", days: 8, frac: 0.73 },
+    { id: "timesprime", alias: "Times Prime", cat: "Shopping", cycle: "Yearly", amount: 1199, monthly: 99.92, color: "slate", charged: "coral", next: "Oct 30", days: 10, frac: 0.97 },
+  ];
+  const CAT_COLOR = { Software: "sapphire", Fitness: "copper", Streaming: "ruby", "Cloud storage": "violet", Food: "teal", Shopping: "onyx", Music: "teal" };
+  const byId = Object.fromEntries(SUBS.map((s) => [s.id, s]));
+  const TOTAL = SUBS.reduce((t, s) => t + s.monthly, 0);
+
+  // ----- Rings, as on the app's cards -----
+  function rings(w = 200, h = 150, { dx = 10, dy = 19, start = 40, step = 24, opacity = 0.06 } = {}) {
+    const cx = w + dx, cy = h + dy, far = Math.hypot(cx, cy);
+    let circles = "";
+    for (let r = start, n = 0; r <= far + step && n < 24; r += step, n++) circles += `<circle cx="${cx}" cy="${cy}" r="${r}"/>`;
+    return `<div class="tex"><svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="var(--rings-light)" stroke-opacity="${opacity}" stroke-width="1">${circles}</g></svg></div>`;
+  }
+  const colorVars = (c) => `--from: var(--card-${c}-from); --to: var(--card-${c}-to); --glow: var(--card-${c});`;
+
+  // ----- The app's squarified treemap (src/components/subscriptions/treemap.ts) -----
+  function squarify(items, width, height) {
+    const pos = items.filter((it) => it.value > 0);
+    const total = pos.reduce((t, it) => t + it.value, 0);
+    if (total <= 0 || width <= 0 || height <= 0) return [];
+    let rest = pos.map((it) => ({ ...it, area: (it.value / total) * width * height })).sort((a, b) => b.area - a.area);
+    let x = 0, y = 0, w = width, h = height;
+    const out = [];
+    const worst = (row, side) => {
+      const sum = row.reduce((t, r) => t + r.area, 0), max = Math.max(...row.map((r) => r.area)), min = Math.min(...row.map((r) => r.area));
+      return Math.max((side * side * max) / (sum * sum), (sum * sum) / (side * side * min));
+    };
+    while (rest.length) {
+      const side = Math.min(w, h);
+      const row = [rest[0]];
+      let i = 1;
+      while (i < rest.length && worst([...row, rest[i]], side) <= worst(row, side)) row.push(rest[i++]);
+      const sum = row.reduce((t, r) => t + r.area, 0);
+      if (w >= h) {
+        const rw = sum / h; let yy = y;
+        for (const r of row) { const rh = r.area / rw; out.push({ key: r.key, x, y: yy, w: rw, h: rh }); yy += rh; }
+        x += rw; w -= rw;
+      } else {
+        const rh = sum / w; let xx = x;
+        for (const r of row) { const rw = r.area / rh; out.push({ key: r.key, x: xx, y, w: rw, h: rh }); xx += rw; }
+        y += rh; h -= rh;
+      }
+      rest = rest.slice(i);
+    }
+    return out;
+  }
+
+  // ----- Rolling digits: columns keyed by their place from the right, so a column is kept and slides -----
+  function roll(el, text) {
+    const cols = el._cols || (el._cols = []);
+    const chars = [...text].reverse();
+    chars.forEach((ch, i) => {
+      const digit = /\d/.test(ch);
+      let col = cols[i];
+      if (!col || col.digit !== digit) {
+        const node = document.createElement("span");
+        node.setAttribute("aria-hidden", "true");
+        if (digit) {
+          node.className = "rc";
+          node.innerHTML = `<span class="strip">${"0123456789".split("").map((d) => `<span>${d}</span>`).join("")}</span>`;
+        } else node.className = "rs";
+        const fresh = { node, digit };
+        if (col) col.node.replaceWith(node);
+        else el.insertBefore(node, el.firstChild);
+        cols[i] = col = fresh;
+        if (digit) {
+          // A new column starts at 0, then rolls to its digit.
+          node.firstChild.style.transform = "translateY(0)";
+          void node.offsetWidth;
+        }
+      }
+      if (digit) col.node.firstChild.style.transform = `translateY(-${Number(ch) * 1.15}em)`;
+      else col.node.textContent = ch;
+    });
+    for (let i = cols.length - 1; i >= chars.length; i--) { cols[i].node.remove(); cols.pop(); }
+    // The columns are hidden from screen readers, which read the number itself.
+    el.setAttribute("role", "img");
+    el.setAttribute("aria-label", text);
+  }
+
+  // ----- Drawing a map's blocks -----
+  const GAP = 5;
+  function sizeOf(w, h) {
+    if (w > 150 && h > 110) return "big";
+    if (w < 60 || h < 46) return "tiny";
+    if (w < 90 || h < 64) return "small";
+    return "mid";
+  }
+  function makeBlock(s, extra = "") {
+    const b = document.createElement("div");
+    b.className = "blk";
+    b.dataset.id = s.id;
+    b.tabIndex = 0;
+    b.style.cssText = colorVars(s.color) + `--cfrom: var(--card-${CAT_COLOR[s.cat]}-from); --cto: var(--card-${CAT_COLOR[s.cat]}-to);`;
+    b.innerHTML = `${rings()}<span class="catc" aria-hidden="true"></span><span><span class="ba">${s.alias}</span><span class="bd">${s.cat} · ${s.cycle}</span></span><span class="bv"><span class="roll"></span><small> a month</small></span>${extra}`;
+    return b;
+  }
+  function place(b, r) {
+    const w = Math.max(0, r.w - GAP), h = Math.max(0, r.h - GAP);
+    Object.assign(b.style, { left: `${r.x + GAP / 2}px`, top: `${r.y + GAP / 2}px`, width: `${w}px`, height: `${h}px` });
+    b.dataset.size = sizeOf(w, h);
+  }
+  function eachLayout(host, subs) {
+    return squarify(subs.map((s) => ({ key: s.id, value: s.monthly })), host.clientWidth, host.clientHeight);
+  }
+  function basicMap(host, { extra, onBlock } = {}) {
+    const blocks = new Map();
+    for (const s of SUBS) {
+      const b = makeBlock(s, extra ? extra(s) : "");
+      host.appendChild(b);
+      blocks.set(s.id, b);
+      roll(b.querySelector(".roll"), inr(s.monthly));
+      onBlock?.(s, b);
+    }
+    const layout = () => eachLayout(host, SUBS).forEach((r) => place(blocks.get(r.key), r));
+    layout();
+    new ResizeObserver(layout).observe(host);
+    return blocks;
+  }
+
+  // ===== 1A · morph between Each and By category, and roll month ↔ year =====
+  (() => {
+    const host = document.getElementById("map-a");
+    const blocks = basicMap(host);
+    let per = "month", by = "each";
+    const cats = [...new Set(SUBS.map((s) => s.cat))];
+    const catTotal = (c) => SUBS.filter((s) => s.cat === c).reduce((t, s) => t + s.monthly, 0);
+    const labels = new Map(cats.map((c) => {
+      const l = document.createElement("div");
+      l.className = "cat";
+      l.innerHTML = `<b>${c}</b><span class="roll"></span>`;
+      host.appendChild(l);
+      return [c, l];
+    }));
+    function layout() {
+      const W = host.clientWidth, H = host.clientHeight;
+      if (by === "each") eachLayout(host, SUBS).forEach((r) => place(blocks.get(r.key), r));
+      else {
+        for (const cr of squarify(cats.map((c) => ({ key: c, value: catTotal(c) })), W, H)) {
+          const members = SUBS.filter((s) => s.cat === cr.key);
+          const inner = squarify(members.map((s) => ({ key: s.id, value: s.monthly })), cr.w - GAP, cr.h - GAP);
+          // Inside a category the blocks sit close, so the tile reads as one.
+          for (const r of inner) place(blocks.get(r.key), { x: cr.x + GAP / 2 + r.x - 1, y: cr.y + GAP / 2 + r.y - 1, w: r.w + GAP - 2, h: r.h + GAP - 2 });
+          const l = labels.get(cr.key);
+          Object.assign(l.style, { left: `${cr.x}px`, top: `${cr.y}px`, maxWidth: `${cr.w}px` });
+          l.hidden = cr.w < 70 || cr.h < 56;
+        }
+      }
+    }
+    function numbers() {
+      const k = per === "year" ? 12 : 1;
+      for (const s of SUBS) {
+        const b = blocks.get(s.id);
+        roll(b.querySelector(".roll"), inr(s.monthly * k));
+        b.querySelector("small").textContent = ` a ${per}`;
+      }
+      for (const [c, l] of labels) roll(l.querySelector(".roll"), inr(catTotal(c) * k));
+    }
+    numbers();
+    layout();
+    new ResizeObserver(layout).observe(host);
+    host.closest(".option").querySelectorAll(".seg button").forEach((btn) => btn.addEventListener("click", () => {
+      const group = btn.parentElement;
+      group.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === btn)));
+      if (btn.dataset.per) { per = btn.dataset.per; numbers(); }
+      if (btn.dataset.by) { by = btn.dataset.by; host.classList.toggle("bycat", by === "category"); layout(); }
+    }));
+  })();
+
+  // ===== 1B · try it without =====
+  (() => {
+    const host = document.getElementById("map-b");
+    const line = document.getElementById("without-b");
+    const removed = new Set();
+    const blocks = basicMap(host, { extra: (s) => `<button type="button" class="try" data-try="${s.id}">Try without</button>` });
+    function render() {
+      const left = SUBS.filter((s) => !removed.has(s.id));
+      for (const [id, b] of blocks) b.classList.toggle("gone", removed.has(id));
+      const rects = eachLayout(host, left);
+      rects.forEach((r) => place(blocks.get(r.key), r));
+      if (!removed.size) {
+        line.innerHTML = `<span>You pay <b>${inr(TOTAL)}</b> a month for ${SUBS.length} subscriptions. Hover a block and press <b>Try without</b>.</span>`;
+        return;
+      }
+      const saved = [...removed].reduce((t, id) => t + byId[id].monthly, 0);
+      const chips = [...removed].map((id) => `<button type="button" class="chip" data-back="${id}" title="Put ${byId[id].alias} back"><i style="background: var(--card-${byId[id].color})"></i>${byId[id].alias} ↺</button>`).join("");
+      line.innerHTML = `<span>Without them: <b>${inr(TOTAL - saved)}</b> a month · <span class="save">${inr(saved * 12)} a year less</span></span>${chips}<button type="button" class="chip" data-back="all">Put all back</button>`;
+    }
+    host.addEventListener("click", (e) => {
+      const id = e.target.closest("[data-try]")?.dataset.try;
+      if (id) { removed.add(id); render(); }
+    });
+    line.addEventListener("click", (e) => {
+      const back = e.target.closest("[data-back]")?.dataset.back;
+      if (!back) return;
+      if (back === "all") removed.clear(); else removed.delete(back);
+      render();
+    });
+    new ResizeObserver(render).observe(host);
+    render();
+  })();
+
+  // ===== 1C · blocks fill up to renewal =====
+  (() => {
+    const host = document.getElementById("map-c");
+    basicMap(host, {
+      extra: (s) => `<span class="fill" aria-hidden="true" style="height: 0%"></span>`,
+      onBlock: (s, b) => {
+        const v = b.querySelector(".bv");
+        v.insertAdjacentHTML("afterend", `<span class="when">${s.days <= 1 ? "tomorrow" : `in ${s.days} days`}</span>`);
+        b.querySelector(".bd").textContent = `Renews ${s.next}`;
+        if (s.days <= 3) b.classList.add("due");
+        // It fills once the page has drawn, so the fill is seen rising.
+        requestAnimationFrame(() => requestAnimationFrame(() => (b.querySelector(".fill").style.height = `${s.frac * 100}%`)));
+        b.title = `${Math.round(s.frac * 100)}% of its cycle gone · renews ${s.next}`;
+      },
+    });
+  })();
+
+  // ===== 2A · rolling digits in the hero =====
+  const PICKS = [
+    { id: "all", alias: "All", color: "emerald", eyebrow: "Everything", name: "All subscriptions", price: 5559, per: "a month · 10 active",
+      stats: [["A month", 5559, "10 active"], ["Renews next", "Netflix", "Fri, Oct 23"], ["Paid this year", 52118, "101 payments"], ["Prices", "1 went up", "₹150 more a month"]] },
+    { id: "netflix", alias: "Netflix", color: "ruby", eyebrow: "Streaming · since Feb 23, 2024", name: "Netflix", price: 649, per: "/ month",
+      stats: [["Monthly", 649, "₹649 a month"], ["Renews", "Fri, Oct 23", "in 3 days"], ["Paid so far", 16418, "32 payments"], ["Price", "↑ ₹150", "₹499 → ₹649 on Jul 23"]] },
+    { id: "chatgpt", alias: "ChatGPT", color: "sapphire", eyebrow: "Software · since Jun 8, 2025", name: "ChatGPT", price: 1999, per: "/ month",
+      stats: [["Monthly", 1999, "₹1,999 a month"], ["Renews", "Sun, Nov 8", "in 19 days"], ["Paid so far", 33983, "17 payments"], ["Price", "Same", "Never changed"]] },
+    { id: "cult", alias: "Cult.fit", color: "copper", eyebrow: "Fitness · since Jan 10, 2026", name: "Cult.fit", price: 4500, per: "/ quarter",
+      stats: [["Quarterly", 4500, "₹1,500 a month"], ["Renews", "Sun, Jan 10, 2027", "in 3 months"], ["Paid so far", 18000, "4 payments"], ["Price", "Same", "Never changed"]] },
+    { id: "spotify", alias: "Spotify", color: "teal", eyebrow: "Music · since Jun 28, 2023", name: "Spotify", price: 119, per: "/ month",
+      stats: [["Monthly", 119, "₹119 a month"], ["Renews", "Wed, Oct 28", "in 8 days"], ["Paid so far", 4879, "41 payments"], ["Price", "Same", "Never changed"]] },
+    { id: "prime", alias: "Prime", color: "onyx", eyebrow: "Shopping · since Dec 15, 2022", name: "Amazon Prime", price: 1499, per: "/ year",
+      stats: [["Yearly", 1499, "₹125 a month"], ["Renews", "Tue, Dec 15", "in 2 months"], ["Paid so far", 5996, "4 payments"], ["Price", "Same", "Never changed"]] },
+  ];
+  (() => {
+    const hero = document.getElementById("hero-a");
+    const bgs = hero.querySelector(".bgs");
+    const covers = hero.querySelector(".covers");
+    const stats = hero.querySelector('[data-f="stats"]');
+    bgs.innerHTML = PICKS.map((p) => `<i data-bg="${p.id}" style="background: linear-gradient(155deg, var(--card-${p.color}-from), var(--card-${p.color}-to)); opacity: 0"></i>`).join("");
+    covers.innerHTML = PICKS.map((p) => `<button type="button" class="cover" data-pick="${p.id}" aria-pressed="false" style="${colorVars(p.color)}">${rings(64, 44, { start: 18, step: 12 })}${p.alias}</button>`).join("");
+    stats.innerHTML = [0, 1, 2, 3].map((i) => `<div class="stat"><small></small><b></b><span></span></div>`).join("");
+    function show(id) {
+      const p = PICKS.find((x) => x.id === id);
+      bgs.querySelectorAll("i").forEach((i) => (i.style.opacity = i.dataset.bg === id ? "1" : "0"));
+      covers.querySelectorAll(".cover").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.pick === id)));
+      hero.querySelector('[data-f="eyebrow"]').textContent = p.eyebrow;
+      hero.querySelector('[data-f="name"]').textContent = p.name;
+      hero.querySelector('[data-f="per"]').textContent = p.per;
+      roll(hero.querySelector('[data-r="price"]'), inr(p.price));
+      [...stats.children].forEach((el, i) => {
+        const [label, value, sub] = p.stats[i];
+        el.querySelector("small").textContent = label;
+        const b = el.querySelector("b");
+        if (typeof value === "number") {
+          if (!b.firstElementChild?.classList.contains("roll")) b.innerHTML = `<span class="roll"></span>`;
+          roll(b.firstElementChild, inr(value));
+        } else b.textContent = value;
+        el.children[2].textContent = sub;
+      });
+    }
+    covers.addEventListener("click", (e) => { const id = e.target.closest("[data-pick]")?.dataset.pick; if (id) show(id); });
+    show("all");
+  })();
+
+  // ===== 2B · read the cycle bar =====
+  (() => {
+    const el = document.getElementById("scrub-b");
+    const thumb = el.querySelector(".thumb"), lab = el.querySelector(".lab");
+    const DAYS = 30, TODAY = 27;
+    const start = Date.UTC(2026, 8, 23);
+    const dateAt = (d) => new Date(start + d * 86400000).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+    let day = TODAY;
+    function show(d) {
+      day = Math.max(0, Math.min(DAYS, d));
+      const f = day / DAYS;
+      thumb.style.left = `${f * 100}%`;
+      lab.style.left = `${Math.min(Math.max(f * 100, 14), 86)}%`;
+      const rel = day - TODAY;
+      let text;
+      if (day === DAYS) text = `${dateAt(day)} · renews <small>₹649 on the Millennia card</small>`;
+      else if (day === 0) text = `${dateAt(day)} · <small>paid ₹649</small>`;
+      else if (rel === 0) text = `Today · <small>3 days to go</small>`;
+      else text = `${dateAt(day)} · <small>${rel < 0 ? `${-rel} ${rel === -1 ? "day" : "days"} ago` : `in ${rel} ${rel === 1 ? "day" : "days"}`}</small>`;
+      lab.innerHTML = text;
+      el.setAttribute("aria-valuenow", String(day));
+      el.setAttribute("aria-valuetext", lab.textContent);
+      el.classList.add("on");
+    }
+    function fromPointer(e) {
+      const r = el.querySelector(".bar").getBoundingClientRect();
+      const px = e.clientX - r.left;
+      let d = Math.round((px / r.width) * DAYS);
+      // Snaps within 10px to today and to the renewal.
+      for (const snap of [TODAY, DAYS]) if (Math.abs(px - (snap / DAYS) * r.width) < 10) d = snap;
+      show(d);
+    }
+    el.addEventListener("pointermove", fromPointer);
+    el.addEventListener("pointerdown", fromPointer);
+    el.addEventListener("pointerleave", () => el.classList.remove("on"));
+    el.addEventListener("focus", () => show(day));
+    el.addEventListener("blur", () => el.classList.remove("on"));
+    el.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === "ArrowUp") { e.preventDefault(); show(day + 1); }
+      if (e.key === "ArrowLeft" || e.key === "ArrowDown") { e.preventDefault(); show(day - 1); }
+      if (e.key === "Home") { e.preventDefault(); show(0); }
+      if (e.key === "End") { e.preventDefault(); show(DAYS); }
+    });
+  })();
+
+  // ===== 2C · peek before turning =====
+  (() => {
+    const row = document.getElementById("peek-c");
+    const order = [byId.spotify, byId.netflix, null, byId.chatgpt, byId.cult];
+    row.innerHTML = order.map((s, i) => {
+      if (!s) return `<span class="pk front"><span class="face" style="${colorVars("emerald")}">${rings(104, 128)}All<br><small style="font-weight: 600; color: var(--on-card-muted)">₹5,559 / month</small></span></span>`;
+      const side = i < 2 ? "left" : "right";
+      return `<button type="button" class="pk ${side}" aria-label="${s.alias}: ${inr(s.amount)}, renews ${s.next}"><span class="face" style="${colorVars(s.color)}">${rings(76, 104)}${s.alias}</span><span class="peek"><b>${inr(s.amount)}</b> · ${s.next}</span></button>`;
+    }).join("");
+  })();
+
+  // ===== 3A · point at it =====
+  const PAYMENTS = [
+    { id: "cult", date: "Oct 10", amount: 4500, where: "Kotak Savings" },
+    { id: "chatgpt", date: "Oct 8", amount: 1999, where: "Coral" },
+    { id: "youtube", date: "Oct 2", amount: 149, where: "Ace" },
+    { id: "spotify", date: "Sep 28", amount: 119, where: "Millennia" },
+    { id: "netflix", date: "Sep 23", amount: 649, where: "Millennia" },
+    { id: "chatgpt", date: "Sep 8", amount: 1999, where: "Coral" },
+  ];
+  const mono = (s) => `<span class="mono" style="${colorVars(s.color)}">${s.alias[0]}</span>`;
+  (() => {
+    const host = document.getElementById("map-3a"), rows = document.getElementById("rows-3a");
+    const blocks = basicMap(host);
+    rows.innerHTML = PAYMENTS.map((p) => `<div class="row" tabindex="0" data-id="${p.id}"><span class="who">${mono(byId[p.id])}<span>${byId[p.id].alias}</span></span><span class="amt">${inr(p.amount)}<small>${p.date} · ${p.where}</small></span></div>`).join("");
+    function light(id) {
+      host.classList.toggle("spot", !!id); rows.classList.toggle("spot", !!id);
+      for (const [bid, b] of blocks) b.classList.toggle("on", bid === id);
+      rows.querySelectorAll(".row").forEach((r) => r.classList.toggle("on", r.dataset.id === id));
+    }
+    for (const el of [host, rows]) {
+      el.addEventListener("pointerover", (e) => light(e.target.closest("[data-id]")?.dataset.id ?? null));
+      el.addEventListener("pointerleave", () => light(null));
+      el.addEventListener("focusin", (e) => light(e.target.closest("[data-id]")?.dataset.id ?? null));
+      el.addEventListener("focusout", () => light(null));
+    }
+  })();
+
+  // ===== 3B · light up a card =====
+  (() => {
+    const host = document.getElementById("map-3b"), list = document.getElementById("ct-3b");
+    const blocks = basicMap(host);
+    const PLACES = [
+      { key: "coral", name: "Coral", color: "copper" },
+      { key: "kotak", name: "Kotak Savings", color: "emerald" },
+      { key: "millennia", name: "Millennia", color: "teal" },
+      { key: "ace", name: "Ace", color: "violet" },
+    ].map((p) => ({ ...p, subs: SUBS.filter((s) => s.charged === p.key).sort((a, b) => b.monthly - a.monthly) }));
+    const most = Math.max(...PLACES.map((p) => p.subs.reduce((t, s) => t + s.monthly, 0)));
+    list.innerHTML = PLACES.map((p) => {
+      const sum = p.subs.reduce((t, s) => t + s.monthly, 0);
+      const width = (sum / most) * 100;
+      return `<div class="ct-row" tabindex="0" data-place="${p.key}">
+        <div class="ct-top"><span class="chip"><i style="${colorVars(p.color)}"></i>${p.name}</span><b>${inr(sum)}</b></div>
+        <div class="ct-bar"><span class="solid" style="width: ${width}%; background: var(--card-${p.color})"></span><span class="split" style="width: ${width}%">${p.subs.map((s) => `<i style="flex-grow: ${s.monthly}; background: var(--card-${s.color})"></i>`).join("")}</span></div>
+        <div class="ct-names">${p.subs.map((s) => `${s.alias} ${inr(s.monthly)}`).join(" · ")}</div>
+      </div>`;
+    }).join("");
+    function light(key) {
+      host.classList.toggle("spot", !!key);
+      for (const [id, b] of blocks) b.classList.toggle("on", !!key && byId[id].charged === key);
+    }
+    list.addEventListener("pointerover", (e) => light(e.target.closest("[data-place]")?.dataset.place ?? null));
+    list.addEventListener("pointerleave", () => light(null));
+    list.addEventListener("focusin", (e) => light(e.target.closest("[data-place]")?.dataset.place ?? null));
+    list.addEventListener("focusout", () => light(null));
+  })();
+
+  // ===== 3C · the price change in its row =====
+  (() => {
+    const table = document.getElementById("ptable-3c");
+    const rows = [["Sep 23, 2026", 649, null], ["Aug 23, 2026", 649, null], ["Jul 23, 2026", 649, "↑ ₹150 more"], ["Jun 23, 2026", 499, null], ["May 23, 2026", 499, null]];
+    // Netflix's price from Feb 2024: ₹499 until Jul 23, 2026, then ₹649. 32 payments, drawn to scale by date.
+    const W = 300, H = 86, pad = 14;
+    const t0 = Date.UTC(2024, 1, 23), t1 = Date.UTC(2026, 8, 23), tStep = Date.UTC(2026, 6, 23);
+    const x = (t) => pad + ((t - t0) / (t1 - t0)) * (W - pad * 2);
+    const y = (a) => (a === 649 ? 22 : 58);
+    const path = `M${x(t0).toFixed(1)},${y(499)} H${x(tStep).toFixed(1)} V${y(649)} H${x(t1).toFixed(1)}`;
+    const svg = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Netflix's price: ₹499 from Feb 2024, ₹649 from Jul 23, 2026">
+      <line x1="${pad}" x2="${W - pad}" y1="${H - 12}" y2="${H - 12}" stroke="var(--divider)"/>
+      <path class="draw" pathLength="1" d="${path}" fill="none" stroke="var(--card-ruby)" stroke-width="2.5" stroke-linejoin="round"/>
+      <circle cx="${x(tStep).toFixed(1)}" cy="${y(649)}" r="3.5" fill="var(--surface)" stroke="var(--card-ruby)" stroke-width="2"/>
+      <text x="${pad}" y="${y(499) - 7}" font-size="10" font-weight="700" fill="var(--muted)">₹499</text>
+      <text x="${x(tStep) - 6}" y="${y(649) - 7}" font-size="10" font-weight="700" fill="var(--negative)" text-anchor="end">₹649 from Jul 23</text>
+      <text x="${pad}" y="${H - 1}" font-size="9.5" font-weight="600" fill="var(--muted)">Feb 2024</text>
+      <text x="${W - pad}" y="${H - 1}" font-size="9.5" font-weight="600" fill="var(--muted)" text-anchor="end">Sep 2026</text>
+    </svg>`;
+    table.innerHTML = `<div class="row head"><span>Paid on</span><span>Amount</span><span class="cc">Change</span><span style="text-align: right">Status</span></div>` +
+      rows.map(([d, a, c]) => `<div class="row${c ? " changed" : ""}" ${c ? 'tabindex="0"' : ""}><span style="font-weight: 600">${d}</span><b class="num">${inr(a)}</b><span class="cc">${c ? `<span class="chg up">${c}</span>` : '<span style="color: var(--muted)">—</span>'}</span><span class="pill">Paid</span>${c ? `<div class="grow"><div>${svg}</div></div>` : ""}</div>`).join("");
+  })();
+
+  // ===== 4A · a renewal getting close =====
+  (() => {
+    const host = document.getElementById("dues-4a"), today = document.getElementById("today-4a");
+    const items = [{ s: byId.netflix, days: 3 }, { s: byId.icloud, days: 4 }, { s: byId.spotify, days: 8 }];
+    let shift = 0;
+    function render() {
+      today.textContent = shift === 0 ? "Today is Oct 20" : `Today is Oct ${20 + shift}`;
+      host.innerHTML = items.map(({ s, days }) => {
+        const d = days - shift;
+        const level = d < 0 ? "past" : d === 0 ? "today" : d === 1 ? "tomorrow" : d <= 3 ? "soon" : "later";
+        const text = d < 0 ? "Renewed" : d === 0 ? "Due today" : d === 1 ? "Renews tomorrow" : `Renews in ${d} days`;
+        return `<div class="due-card" data-level="${level}" style="${colorVars(s.color)}">${rings(140, 80)}<span class="badge">${d === 0 ? "Today" : "Tomorrow"}</span><b>${s.alias}</b><span class="d">${text}</span><span class="d">${inr(s.amount)}</span></div>`;
+      }).join("");
+    }
+    document.getElementById("later-4a").addEventListener("click", () => { shift = (shift + 1) % 6; render(); });
+    render();
+  })();
+
+  // ===== 4B · paid, with a sweep =====
+  (() => {
+    const mark = document.getElementById("mark-4b"), undo = document.getElementById("undo-4b");
+    const bar = document.getElementById("bar-4b"), fill = bar.firstElementChild;
+    const paid = document.getElementById("paid-4b"), sofar = document.getElementById("sofar-4b");
+    const set = (done) => {
+      document.getElementById("mid-4b").textContent = done ? "Paid Oct 20 · next Mon, Nov 23" : "Renews Fri, Oct 23 · in 3 days";
+      document.getElementById("from-4b").textContent = done ? "Oct 23" : "Sep 23";
+      document.getElementById("to-4b").textContent = done ? "Nov 23" : "Oct 23";
+      document.getElementById("count-4b").textContent = done ? "10 payments" : "9 payments";
+      document.getElementById("since-4b").textContent = done ? "33 payments" : "32 payments";
+      // Netflix in 2026: six payments at ₹499, then ₹649 from Jul 23.
+      roll(paid, inr(done ? 5590 : 4941));
+      roll(sofar, inr(done ? 17067 : 16418));
+      mark.classList.toggle("done", done);
+      mark.textContent = done ? "✓ Paid" : "Mark paid";
+      undo.classList.toggle("show", done);
+    };
+    set(false);
+    mark.addEventListener("click", () => {
+      if (mark.classList.contains("done")) return;
+      // The bar sweeps back to the start of the next cycle: empty, then today's place in it.
+      bar.classList.add("sweep");
+      fill.style.width = "0%";
+      setTimeout(() => { bar.classList.remove("sweep"); fill.style.width = "0%"; }, reduced ? 0 : 400);
+      set(true);
+    });
+    undo.addEventListener("click", () => { fill.style.width = "90%"; set(false); });
+  })();
+})();
+</script>
