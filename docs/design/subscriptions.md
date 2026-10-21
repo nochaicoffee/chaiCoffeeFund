@@ -213,7 +213,12 @@ Prathik's picks from sections 2 and 4 of `design/subscriptions-interactions/Subs
   - **All's bar isn't read.** It's the month's spend so far, not a cycle, so a date along it wouldn't match its fill.
   - **After a renewal paid ahead**, the bar is the next cycle, which starts after today. So there's no today on it, and its start says paid.
 - **2C · Peek, changed from the mockup.** In the mockup, the small label under a hovered side cover wasn't legible. Prathik asked for the cover itself to come out instead.
-  - **How it peeks:** hovering a cover that isn't in front slides its face 40px outwards and up, turns it most of the way towards you, and lifts it over the covers beside it, the front one included. It only overlaps the front cover's edge, and the carousel doesn't turn.
+  - **How it peeks (smoothed, 2026-10-21):** Prathik found the first version half-baked. It turned the face almost flat, lifted it over the front cover, and read as a flat card pasted on top. Now the hovered cover stays in the cover flow:
+    - its face turns about halfway towards you, lifts 8px and comes a little forward;
+    - it eases outwards far enough to clear the front cover: 2× `--part` on the right, where its name starts on the side nearest the front, and 1.8× on the left, where a long renewal line runs up to it;
+    - the covers beyond it part by `--part` (56px on a desktop, 28px on a phone) to make room;
+    - it rises above its neighbours but stays under the front cover, so the pick's name is never covered.
+    - It all glides on the carousel's own 520ms ease, with the renewal line fading in a beat later. Only the face moves, and it's part of the cover wherever it slides, so the hover doesn't flicker; nothing invisible widens the hover over a neighbour. The front cover is z 51 and a peeked one 50, above both its neighbours. Covers don't peek while the carousel turns, by a drag, the wheel or the keys, and the carousel doesn't turn on a peek.
   - **What it shows:** its name and price move up to make room for its next renewal, "Renews Oct 24 · in 3 days". Paused and cancelled ones say why they don't renew.
   - **Picking and turning:** clicking it still picks it. A drag doesn't peek the covers it passes, and touch has no hover.
   - **Keyboard and screen readers:** the covers aren't focusable on their own, since the carousel is one focus stop that the arrow keys turn. So each cover's name includes its next renewal.

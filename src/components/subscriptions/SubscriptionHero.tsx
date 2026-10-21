@@ -49,16 +49,27 @@ function offset(i: number, pick: number, n: number): number {
   return d;
 }
 
-/** Where a cover sits `d` steps from the front, from --near, --step and --rot (smaller on a phone). */
-function placement(d: number): CSSProperties {
-  if (d === 0) return { transform: "translateX(-50%) translateZ(70px)", zIndex: 50, opacity: 1 };
+/**
+ * Where a cover sits `d` steps from the front, from --near, --step and --rot (smaller on a
+ * phone). `peek` is the steps from the front of the cover being peeked at (2C), if any: the
+ * covers beyond it on its side part outwards by --part to make room for it, and it rises above
+ * its neighbours, though never above the front cover.
+ */
+function placement(d: number, peek: number | null): CSSProperties {
+  // The front cover is always on top; a peeked one comes next, above both its neighbours (the
+  // covers either side of the front share 49, so a peek at 49 would lose to one of them).
+  if (d === 0) return { transform: "translateX(-50%) translateZ(70px)", zIndex: 51, opacity: 1 };
   const a = Math.abs(d);
   const sign = Math.sign(d);
+  const parted = peek !== null && Math.sign(peek) === sign && a > Math.abs(peek);
   return {
-    transform: `translateX(calc(-50% + ${sign} * (var(--near) + ${a - 1} * var(--step)))) rotateY(calc(${-sign} * var(--rot))) scale(0.84)`,
-    // Which side it's on, for its peek (2C) to slide outwards and turn towards you.
+    transform: `translateX(calc(-50% + ${sign} * (var(--near) + ${a - 1} * var(--step)${parted ? " + var(--part)" : ""}))) rotateY(calc(${-sign} * var(--rot))) scale(0.84)`,
+    // Which side it's on, for its peek to turn towards you and ease outwards far enough to clear
+    // the front cover: on the right, the name and price start on the side nearest it; on the
+    // left, a long renewal line ("Renews Jan 10, 2027 · in 3 months") runs up to it.
     "--side": sign,
-    zIndex: 50 - a,
+    "--shift": sign > 0 ? 2 : 1.8,
+    zIndex: d === peek ? 50 : 50 - a,
     opacity: a >= 6 ? 0 : 1,
     pointerEvents: a >= 6 ? "none" : undefined,
   } as CSSProperties;
@@ -69,17 +80,18 @@ const COVER_CLASS =
   "absolute top-3.5 left-1/2 h-[106px] w-[150px] rounded-[14px] text-left [transform-style:preserve-3d] transition-[transform,opacity,filter] duration-[520ms,380ms,380ms] ease-[cubic-bezier(0.22,0.8,0.2,1)] [-webkit-user-drag:none] focus-visible:outline-none motion-reduce:transition-none md:top-6 md:h-[156px] md:w-[220px] md:rounded-[18px]";
 
 /**
- * 2C · Peek: hovering a cover that isn't in front slides its face out a little and turns
- * it towards you, over the covers beside it and the front one, so its name, price and
- * next renewal read plainly, and the carousel doesn't turn. Only the face moves; the
- * cover stays put under the pointer, so the hover can't flicker off as the face slides
- * away from it.
+ * 2C · Peek: hovering a cover that isn't in front turns its face about halfway towards you,
+ * lifts it a little and eases it outwards, while the covers beyond it part to make room. It
+ * stays in the cover flow: above its neighbours but under the front cover, so the pick's own
+ * name is never covered. Its name and price lift and its next renewal fades in, all inside
+ * the cover. The carousel doesn't turn. Only the face moves: the cover stays put under the
+ * pointer, and the face is part of it wherever it slides, so the hover can't flicker off.
+ * Covers don't peek while the carousel turns, by a drag, the wheel or the keys.
  */
 const PEEK = {
-  cover: "hover:z-[60]!",
-  face: "group-hover/cover:[transform:translateX(calc(var(--side)*40px))_translateY(-10px)_rotateY(calc(var(--side)*36deg))]",
+  face: "[transform:translateX(calc(var(--side)*var(--part)*var(--shift)))_translateY(-8px)_translateZ(24px)_rotateY(calc(var(--side)*var(--rot)*0.5))]",
   // The name and price lift to make room for the next renewal under them.
-  text: "group-hover/cover:-translate-y-[15px] md:group-hover/cover:-translate-y-[18px]",
+  text: "-translate-y-[15px] md:-translate-y-[18px]",
 };
 
 /** 4A · Due: a cover renewing within 3 days breathes in its own colour, faster the day before; on the day the ring holds. */
@@ -89,7 +101,24 @@ function DueRing({ days, picked }: { days: number; picked: boolean }) {
   return <span aria-hidden="true" className={`pointer-events-none absolute -z-20 ${picked ? "-inset-[5.5px] rounded-[19.5px] md:rounded-[23.5px]" : "inset-0 rounded-[inherit]"} ${look}`} />;
 }
 
-function Cover({ pick, picked, peekable, style, onClick }: { pick: PickView; picked: boolean; peekable: boolean; style: CSSProperties; onClick: () => void }) {
+function Cover({
+  pick,
+  picked,
+  peekable,
+  peeking,
+  onPeek,
+  style,
+  onClick,
+}: {
+  pick: PickView;
+  picked: boolean;
+  /** It can be peeked at: not the front cover, and the carousel isn't being dragged. */
+  peekable: boolean;
+  peeking: boolean;
+  onPeek: (on: boolean) => void;
+  style: CSSProperties;
+  onClick: () => void;
+}) {
   const due = pick.dueIn;
   const colors = { "--cover-soft": `color-mix(in oklch, var(--card-${pick.color}) 46%, white)`, "--cover-ink": `var(--card-${pick.color}-to)` } as CSSProperties;
   return (
@@ -101,14 +130,17 @@ function Cover({ pick, picked, peekable, style, onClick }: { pick: PickView; pic
       aria-label={`${pick.name}, ${pick.cover.price}, ${pick.cover.next}`}
       tabIndex={-1}
       onClick={onClick}
-      className={`group/cover ${COVER_CLASS} ${peekable ? PEEK.cover : ""}`}
+      // A mouse or a pen peeks; a touch screen has no hover, and a tap picks.
+      onPointerEnter={(e) => peekable && e.pointerType !== "touch" && onPeek(true)}
+      onPointerLeave={() => onPeek(false)}
+      className={COVER_CLASS}
       style={{ ...style, ...colors }}
     >
       <span
-        className={`relative isolate flex size-full flex-col justify-between rounded-[inherit] px-3 py-2.5 text-on-card transition-[box-shadow,transform] duration-[500ms,380ms] ease-[ease,cubic-bezier(0.22,0.8,0.2,1)] motion-reduce:transition-none md:px-4 md:py-3.5 ${peekable ? PEEK.face : ""}`}
+        className={`relative isolate flex size-full flex-col justify-between rounded-[inherit] px-3 py-2.5 text-on-card transition-[box-shadow,transform] duration-[500ms,520ms] ease-[ease,cubic-bezier(0.22,0.8,0.2,1)] motion-reduce:transition-none md:px-4 md:py-3.5 ${peeking ? PEEK.face : ""}`}
         style={{
           background: coverBackground(pick),
-          boxShadow: picked ? "0 0 0 3px var(--surface), 0 0 0 5.5px var(--pick-soft), 0 24px 40px oklch(0 0 0 / 0.35)" : "0 18px 30px oklch(0 0 0 / 0.28)",
+          boxShadow: picked ? "0 0 0 3px var(--surface), 0 0 0 5.5px var(--pick-soft), 0 24px 40px oklch(0 0 0 / 0.35)" : peeking ? "0 26px 44px oklch(0 0 0 / 0.42)" : "0 18px 30px oklch(0 0 0 / 0.28)",
           WebkitBoxReflect: "below 6px linear-gradient(transparent 62%, oklch(1 0 0 / 0.22))",
           filter: pick.muted ? "grayscale(0.8)" : undefined,
         }}
@@ -123,11 +155,12 @@ function Cover({ pick, picked, peekable, style, onClick }: { pick: PickView; pic
             <span className="truncate text-[10px] font-bold text-on-card-faint">{pick.cover.corner}</span>
           )}
         </span>
-        <span className={`relative min-w-0 ease-[cubic-bezier(0.22,0.8,0.2,1)] motion-safe:transition-transform motion-safe:duration-[380ms] ${peekable ? PEEK.text : ""}`}>
+        <span className={`relative min-w-0 ease-[cubic-bezier(0.22,0.8,0.2,1)] motion-safe:transition-transform motion-safe:duration-[420ms] ${peeking ? PEEK.text : ""}`}>
           <b className="block truncate text-[13.5px] font-bold md:text-lg">{pick.alias}</b>
-          <span className={`block truncate text-[11px] font-semibold text-on-card-muted md:text-xs ${peekable ? "group-hover/cover:text-on-card" : ""}`}>{pick.cover.price}</span>
-          {peekable && (
-            <span aria-hidden="true" className="absolute inset-x-0 top-full truncate text-[10.5px] font-bold text-on-card opacity-0 group-hover/cover:opacity-100 motion-safe:transition-opacity motion-safe:duration-200 md:text-[11.5px]">
+          <span className={`block truncate text-[11px] font-semibold md:text-xs motion-safe:transition-colors motion-safe:duration-300 ${peeking ? "text-on-card" : "text-on-card-muted"}`}>{pick.cover.price}</span>
+          {!picked && (
+            // Fades in a beat after the cover starts turning, so it arrives as the name makes room.
+            <span aria-hidden="true" className={`absolute inset-x-0 top-full truncate text-[10.5px] font-bold text-on-card motion-safe:transition-opacity md:text-[11.5px] ${peeking ? "opacity-100 motion-safe:delay-150 motion-safe:duration-300" : "opacity-0 motion-safe:duration-150"}`}>
               {pick.cover.next}
             </span>
           )}
@@ -354,7 +387,17 @@ export function SubscriptionHero({ picks, index, onIndex }: { picks: PickView[];
   const n = picks.length;
   const pick = picks[index];
   const empty = n === 1;
-  const step = (dir: number) => onIndex((index + dir + n) % n);
+  // A step by the wheel or the keys glides for about 520ms; covers passing under a resting
+  // pointer meanwhile don't peek (a drag holds `turning` itself).
+  const [settling, setSettling] = useState(false);
+  const settle = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => clearTimeout(settle.current ?? undefined), []);
+  const step = (dir: number) => {
+    onIndex((index + dir + n) % n);
+    setSettling(true);
+    clearTimeout(settle.current ?? undefined);
+    settle.current = setTimeout(() => setSettling(false), 560);
+  };
   // The wheel listener is added once, so it reads the latest step through a ref.
   const stepRef = useRef(step);
   useEffect(() => {
@@ -385,6 +428,10 @@ export function SubscriptionHero({ picks, index, onIndex }: { picks: PickView[];
   const drag = useRef<{ x: number; moved: boolean } | null>(null);
   // While a drag turns the carousel, covers don't peek (2C) as they pass under the pointer.
   const [turning, setTurning] = useState(false);
+  // 2C: the cover being peeked at, by its subscription, so a turn or a refresh can't leave it on the wrong one.
+  const [peekId, setPeekId] = useState<string | null>(null);
+  const peekAt = picks.findIndex((p) => p.id === peekId);
+  const peek = !turning && !settling && peekAt >= 0 && peekAt !== index ? offset(peekAt, index, n) : null;
   function down(e: PointerEvent<HTMLDivElement>) {
     if (e.button > 0 || empty) return;
     drag.current = { x: e.clientX, moved: false };
@@ -476,10 +523,22 @@ export function SubscriptionHero({ picks, index, onIndex }: { picks: PickView[];
           if (!drag.current?.moved) drag.current = null;
         }}
         onKeyDown={key}
-        className={`relative -mx-4 h-[196px] touch-pan-y overflow-hidden rounded-[18px] outline-none select-none [perspective:900px] [--near:110px] [--rot:58deg] [--step:46px] focus-visible:shadow-[inset_0_0_0_2px_var(--pick-soft)] md:-mx-[22px] md:h-[270px] md:[perspective:1300px] md:[--near:160px] md:[--rot:55deg] md:[--step:80px] ${empty ? "" : "cursor-grab active:cursor-grabbing"}`}
+        className={`relative -mx-4 h-[196px] touch-pan-y overflow-hidden rounded-[18px] outline-none select-none [perspective:900px] [--near:110px] [--part:28px] [--rot:58deg] [--step:46px] focus-visible:shadow-[inset_0_0_0_2px_var(--pick-soft)] md:-mx-[22px] md:h-[270px] md:[perspective:1300px] md:[--near:160px] md:[--part:56px] md:[--rot:55deg] md:[--step:80px] ${empty ? "" : "cursor-grab active:cursor-grabbing"}`}
       >
         {picks.map((p, i) => (
-          <Cover key={p.id} pick={p} picked={i === index} peekable={!empty && i !== index && !turning} style={empty ? { transform: "translateX(calc(-100% - 8px))" } : placement(offset(i, index, n))} onClick={() => onIndex(i)} />
+          <Cover
+            key={p.id}
+            pick={p}
+            picked={i === index}
+            peekable={!empty && i !== index && !turning && !settling}
+            peeking={peek !== null && i === peekAt}
+            onPeek={(on) => setPeekId((cur) => (on ? p.id : cur === p.id ? null : cur))}
+            style={empty ? { transform: "translateX(calc(-100% - 8px))" } : placement(offset(i, index, n), peek)}
+            onClick={() => {
+              setPeekId(null);
+              onIndex(i);
+            }}
+          />
         ))}
         {empty && (
           <span
