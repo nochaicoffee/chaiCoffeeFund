@@ -3,7 +3,7 @@ import { allFacts, nextRenewal, subscriptionFacts, usableSubscriptionData, type 
 import { monthlyEquivalent } from "@/lib/aggregate/subscriptions";
 import { renewalToRecord } from "@/lib/forms/subscriptionForms";
 import { cardColorKey, type ColorKey } from "@/lib/format/subscriptionLabels";
-import type { Subscription } from "@/lib/sheets/types";
+import type { Subscription, SubscriptionPayment } from "@/lib/sheets/types";
 
 /**
  * What the Subscriptions forms (#128) need, worked out on the server: the subscriptions
@@ -25,8 +25,26 @@ export interface PaymentContext {
   payments: number;
   /** Every payment row, Skipped and Pending ones too: what Delete removes. */
   rows: number;
+  /** The latest charged payment's date: a payment back-dated before it doesn't offer to change the plan's price. */
+  lastCharged: string | null;
   /** For Cancel's "It won't renew on …". */
   nextRenewal: string | null;
+}
+
+/** A recorded payment, as Edit payment and Delete payment on the Renewals page (#130) need it. */
+export interface PaymentRef {
+  id: string;
+  subscriptionId: string;
+  alias: string;
+  /** The renewal it's for, which can differ from when it was paid. */
+  renewalDate: string;
+  paymentDate: string;
+  amount: number;
+  status: SubscriptionPayment["status"];
+  /** Where it was charged, as the Charged to field's value: "card:<id>", "account:<id>" or "". */
+  chargedTo: string;
+  /** That card or account by name, in case the forms no longer list it (a closed card). */
+  place: { kind: "card" | "account"; name: string; color: ColorKey } | null;
 }
 
 export interface FormsData {
@@ -62,6 +80,7 @@ export function formsView(sheetData: SubscriptionData, today: string, demo: bool
       paid: facts.paid,
       payments: facts.payments,
       rows: data.payments.filter((p) => p.subscriptionId === s.id).length,
+      lastCharged: facts.lastCharged?.paymentDate ?? null,
       nextRenewal: next?.date ?? null,
     };
   }

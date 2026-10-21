@@ -1,13 +1,14 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import { changeSubscriptionStatus, deleteSubscription, markRenewalPaid, undoMarkPaid } from "@/app/subscriptions/actions";
-import type { FormsData } from "@/app/subscriptions/formsView";
+import { changeSubscriptionStatus, deletePayment, deleteSubscription, markRenewalPaid, markRenewalSkipped, undoMarkPaid, type MarkPaidResult, type WrittenPayment } from "@/app/subscriptions/actions";
+import type { FormsData, PaymentRef } from "@/app/subscriptions/formsView";
 import { formatShortDate } from "@/lib/format/date";
-import type { PaymentInput } from "@/lib/forms/subscriptionForms";
+import { formatInr } from "@/lib/format/money";
 import { AlertIcon } from "../../cards/forms/icons";
 import { PlayIcon, RenewIcon } from "../icons";
 import { ConfirmDialog } from "./ConfirmDialog";
+import { EditPaymentDialog } from "./EditPaymentDialog";
 import { PaymentFormDialog } from "./PaymentFormDialog";
 import { SubscriptionFormDialog } from "./SubscriptionFormDialog";
 
@@ -19,9 +20,16 @@ import { SubscriptionFormDialog } from "./SubscriptionFormDialog";
  */
 
 export type StatusChange = "pause" | "cancel" | "resume" | "restart";
-type Open = { kind: "add" } | { kind: "edit"; id: string } | { kind: "record"; id?: string } | { kind: "status"; id: string; change: StatusChange } | { kind: "delete"; id: string };
+type Open =
+  | { kind: "add" }
+  | { kind: "edit"; id: string }
+  | { kind: "record"; id?: string; renewalDate?: string }
+  | { kind: "status"; id: string; change: StatusChange }
+  | { kind: "delete"; id: string }
+  | { kind: "edit-payment"; payment: PaymentRef }
+  | { kind: "delete-payment"; payment: PaymentRef };
 
-type Toast = { kind: "paid"; paymentId: string; written: PaymentInput; message: string; key: number } | { kind: "done" | "error"; message: string; key: number };
+type Toast = { kind: "paid"; paymentId: string; written: WrittenPayment; message: string; key: number } | { kind: "done" | "error"; message: string; key: number };
 
 interface Controls {
   forms: FormsData;
@@ -29,7 +37,9 @@ interface Controls {
   disabledReason?: string;
   open: (open: Open) => void;
   markPaid: (subscriptionId: string) => void;
-  /** The subscription whose Mark paid is saving. */
+  /** It didn't charge (#130): a renewal that passed with no payment, recorded as ₹0 Skipped, with Undo. */
+  skip: (subscriptionId: string, renewalDate: string) => void;
+  /** What's saving: a subscription's id for Mark paid, or "<id>:<date>" for It didn't charge. */
   saving: string | null;
 }
 
@@ -52,26 +62,32 @@ export function SubscriptionFormsProvider({ forms, children }: { forms: FormsDat
   const disabledReason = forms.demo ? "Sample data can't be changed" : undefined;
   // The button that opened the form, so focus goes back to it on close, even after Edit → Delete
   // or a menu, whose own buttons are gone by then (a native dialog would send focus to the page).
+  // Edit → Delete swaps the dialog with setOpen, so it keeps Edit's opener.
   const opener = useRef<HTMLElement | null>(null);
   const show = (next: Open) => {
-    if (next.kind !== "delete") opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setOpen(next);
   };
+
+  // A one-click write (Mark paid, It didn't charge), with its toast and Undo.
+  const quick = useCallback((key: string, run: () => Promise<MarkPaidResult>) => {
+    setSaving(key);
+    startTransition(async () => {
+      // The action reports Sheet failures itself; this catches the app being unreachable, so the button never just stops.
+      const result = await run().catch(() => ({ ok: false as const, message: UNREACHABLE }));
+      setSaving(null);
+      setToast(result.ok ? { kind: "paid", paymentId: result.paymentId, written: result.written, message: result.message, key: Date.now() } : { kind: "error", message: result.message, key: Date.now() });
+    });
+  }, []);
 
   const markPaid = useCallback(
     (subscriptionId: string) => {
       const date = forms.context[subscriptionId]?.markPaid;
-      if (!date) return;
-      setSaving(subscriptionId);
-      startTransition(async () => {
-        // The action reports Sheet failures itself; this catches the app being unreachable, so the button never just stops.
-        const result = await markRenewalPaid(subscriptionId, date).catch(() => ({ ok: false as const, message: UNREACHABLE }));
-        setSaving(null);
-        setToast(result.ok ? { kind: "paid", paymentId: result.paymentId, written: result.written, message: result.message, key: Date.now() } : { kind: "error", message: result.message, key: Date.now() });
-      });
+      if (date) quick(subscriptionId, () => markRenewalPaid(subscriptionId, date));
     },
-    [forms.context],
+    [forms.context, quick],
   );
+  const skip = (subscriptionId: string, renewalDate: string) => quick(`${subscriptionId}:${renewalDate}`, () => markRenewalSkipped(subscriptionId, renewalDate));
 
   function undo() {
     if (toast?.kind !== "paid") return;
@@ -100,11 +116,11 @@ export function SubscriptionFormsProvider({ forms, children }: { forms: FormsDat
   const payments = context ? `${context.rows} ${context.rows === 1 ? "payment" : "payments"}` : "payments";
 
   return (
-    <FormsContext.Provider value={{ forms, disabledReason, open: (o) => !disabledReason && show(o), markPaid: (id) => !disabledReason && markPaid(id), saving }}>
+    <FormsContext.Provider value={{ forms, disabledReason, open: (o) => !disabledReason && show(o), markPaid: (id) => !disabledReason && markPaid(id), skip: (id, date) => !disabledReason && skip(id, date), saving }}>
       {children}
       {open?.kind === "add" && <SubscriptionFormDialog forms={forms} onClose={close} />}
       {open?.kind === "edit" && subscription && <SubscriptionFormDialog subscription={subscription} forms={forms} onDelete={() => setOpen({ kind: "delete", id: subscription.id })} onClose={close} />}
-      {open?.kind === "record" && <PaymentFormDialog subscriptionId={open.id} forms={forms} onClose={close} />}
+      {open?.kind === "record" && <PaymentFormDialog subscriptionId={open.id} renewalDate={open.renewalDate} forms={forms} onClose={close} />}
       {open?.kind === "delete" && subscription && (
         <ConfirmDialog
           tone="danger"
@@ -115,6 +131,25 @@ export function SubscriptionFormsProvider({ forms, children }: { forms: FormsDat
           keepLabel="Keep it"
           confirmLabel="Delete"
           action={deleteSubscription}
+          today={forms.today}
+          onClose={close}
+        />
+      )}
+      {open?.kind === "edit-payment" && <EditPaymentDialog payment={open.payment} forms={forms} onDelete={() => setOpen({ kind: "delete-payment", payment: open.payment })} onClose={close} />}
+      {open?.kind === "delete-payment" && (
+        <ConfirmDialog
+          tone="danger"
+          icon={<AlertIcon />}
+          title={`Delete this ${open.payment.alias} payment?`}
+          body={
+            open.payment.status === "Skipped"
+              ? `The note that its ${formatShortDate(open.payment.renewalDate)} renewal didn't charge is removed from the Sheet, so that renewal counts as not recorded again.`
+              : `${formatInr(open.payment.amount)} on ${formatShortDate(open.payment.paymentDate)} is removed from the Sheet, and can't be undone. The renewal it paid for shows as not paid again.`
+          }
+          hidden={{ id: open.payment.id }}
+          keepLabel="Keep it"
+          confirmLabel="Delete payment"
+          action={deletePayment}
           today={forms.today}
           onClose={close}
         />
@@ -191,6 +226,24 @@ export function FormTrigger({ className, label, icon, onClick, iconOnly = false,
 
 const HEADER_PRIMARY = "flex min-h-11 items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold whitespace-nowrap text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:min-h-0";
 const HEADER_GHOST = "flex min-h-11 items-center gap-1.5 rounded-full bg-fill px-5 py-2.5 text-[13px] font-bold whitespace-nowrap text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:min-h-0";
+
+/** The Renewals page header's Record payment (#130): for the subscription it's filtered to, or any. */
+export function RecordPaymentButton({ subscriptionId }: { subscriptionId?: string }) {
+  const { open } = useSubscriptionForms();
+  return (
+    <FormTrigger
+      className={HEADER_PRIMARY}
+      icon={
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      }
+      label="Record payment"
+      onClick={() => open({ kind: "record", id: subscriptionId })}
+    />
+  );
+}
 
 /** The page header's Record payment and Add subscription, as in the design. */
 export function HeaderFormButtons() {

@@ -124,6 +124,33 @@ export function readPaymentForm(fields: FormFields, known: { subscriptionIds: st
   });
 }
 
+/**
+ * What Edit payment saves (#130): when it was paid, what was charged and where, or that
+ * the renewal didn't charge. "" clears where it was charged, as the update schema expects.
+ */
+export interface PaymentEdit {
+  paymentDate: string;
+  amount: number;
+  status: "Paid" | "Skipped";
+  paidFromAccountId: string;
+  paidFromCardId: string;
+}
+
+/**
+ * Edit payment, from a paid renewal's menu on the Renewals page (#130). With "It didn't
+ * charge" ticked it's a ₹0 Skipped payment charged nowhere, so the amount and card aren't
+ * asked for. Otherwise it's Paid, and as in Record a payment a ₹0 one isn't a payment.
+ */
+export function readEditPaymentForm(fields: FormFields, known: { accountIds: string[]; cardIds: string[] }): FormResult<PaymentEdit> {
+  const f = new FieldReader(fields);
+  const paymentDate = f.date("paymentDate", "Enter when it was paid");
+  if (f.raw("skipped") === "1") return f.result({ paymentDate: paymentDate!, amount: 0, status: "Skipped" as const, paidFromAccountId: "", paidFromCardId: "" });
+  const amount = f.amount("amount", { required: "Enter what was charged", label: "amount" });
+  if (amount === 0) f.fail("amount", "Enter what was charged, or tick It didn't charge");
+  const charged = readChargedTo(f, "chargedTo", known);
+  return f.result({ paymentDate: paymentDate!, amount: amount!, status: "Paid" as const, paidFromAccountId: charged.accountId ?? "", paidFromCardId: charged.cardId ?? "" });
+}
+
 /** Cancel (the date it was cancelled) and Resume or Restart (the date it starts again). */
 export function readDateForm(fields: FormFields, name: "endDate" | "resumedOn", notBefore?: string): FormResult<string> {
   const f = new FieldReader(fields);
@@ -159,6 +186,11 @@ export function renewalToRecord(subscription: Subscription, payments: Subscripti
   // Two years back for one not recorded, and two cycles ahead for the next one.
   const renewals = renewalsFor(subscription, payments, addMonthsUTC(today, -24), addMonthsUTC(today, CYCLE_STEP_MONTHS[subscription.billingCycle] * 2), today);
   return renewals.find((r) => r.status === "missing") ?? renewals.find((r) => r.status === "upcoming") ?? null;
+}
+
+/** What "It didn't charge" records for a renewal that passed with no payment (#125): ₹0, Skipped, on the renewal date. */
+export function skippedPayment(subscription: Pick<Subscription, "id">, renewalDate: string): Omit<SubscriptionPayment, "id"> {
+  return { subscriptionId: subscription.id, paymentDate: renewalDate, amount: 0, status: "Skipped" };
 }
 
 /** The payment Mark paid records for a renewal: the plan's price on the renewal date, to where it's usually charged. */

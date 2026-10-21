@@ -8,7 +8,7 @@ const forms = formsView(demoSubscriptionData(TODAY), TODAY, true);
 
 describe("formsView", () => {
   it("offers Mark paid for a renewal due within 3 days, at the design's figures", () => {
-    expect(forms.context["demo-netflix"]).toEqual({ renewalDate: "2026-10-23", after: "2026-11-23", markPaid: "2026-10-23", plan: 649, monthly: 649, paid: 16418, payments: 32, rows: 32, nextRenewal: "2026-10-23" });
+    expect(forms.context["demo-netflix"]).toEqual({ renewalDate: "2026-10-23", after: "2026-11-23", markPaid: "2026-10-23", plan: 649, monthly: 649, paid: 16418, payments: 32, rows: 32, lastCharged: "2026-09-23", nextRenewal: "2026-10-23" });
   });
 
   it("starts Record a payment on a renewal not recorded, and offers no Mark paid for it", () => {

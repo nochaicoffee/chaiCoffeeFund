@@ -29,7 +29,7 @@ export function parsePanel(params: SearchParams): PanelView {
 }
 
 /** A query string from the values that are set, in order, with sample data as a bare `demo`. */
-function queryString(values: [string, string | undefined][], demo: boolean): string {
+export function queryString(values: [string, string | undefined][], demo: boolean): string {
   const query = new URLSearchParams();
   for (const [key, value] of values) if (value) query.set(key, value);
   if (demo) query.set("demo", "");

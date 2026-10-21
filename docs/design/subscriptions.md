@@ -104,7 +104,7 @@ Settled while building it:
 - **By category** blocks show each category's total and its subscriptions; they don't pick anything, since a category isn't one subscription.
 - **With no subscriptions at all**, only the hero shows ("Add your first subscription"); the empty map and payments would only be white space.
 - **On a phone**, tapping a block picks it and scrolls the hero into view. Charged to is left out there, as in the spec's phone order.
-- **Not yet:** the forms (#128), and the "All renewals →" links, which wait for the Renewals page (#130).
+- **Since then:** the forms came in #128, and the "All renewals →" links with the Renewals page (#130).
 
 ## Built: the chart (2026-10-21, #127)
 
@@ -127,6 +127,27 @@ The forms open from the header (Record payment, Add subscription) and from the h
 - **Mark paid** is one click from 3 days before a renewal (Record payment otherwise, or to catch up on one not recorded). It records the plan's price on the renewal date, to where it's usually charged, with Undo for 6 seconds.
 - **Pause, Resume, Cancel and Restart** each ask first. Cancel asks for its date. Resume and Restart ask when it starts again (today by default) and store it as `resumedOn`, a new column (decided with Prathik 2026-10-21). The renewals between its last payment and that date weren't due, so they're never flagged. Only the latest restart is kept.
 - **Editing a paused or cancelled one back to Active** starts it again today, the same as Resume.
+
+## Built: the Renewals page (2026-10-21, #130)
+
+`/subscriptions/renewals`, layout R1. The numbers come from `lib/aggregate/subscriptionRenewalList.ts` on top of the renewals math (unchanged), the words from `app/subscriptions/renewals/views.ts`, and the address from `params.ts`. On the design's sample data and "today" it reproduces the design's figures: 79 renewals in 2026 (16 upcoming, 61 paid, 1 not recorded), the four tiles, each group's header, and 21 rows on page 1 of 4.
+
+Settled while building it:
+- **The period** works as on the Statements page: the last 3, 6 or 12 months, each year, all time, or a custom range of months. A year runs to Dec 31, so this year's includes the renewals still to come in it; all time runs from the first subscription's start to the end of this year. The design's "Next 30 days" option was left out: the first group and the first tile always show it, and a period is whole months, as on the Statements page.
+- **Groups go by date, not status.** "Coming up" is today and the 29 days after it, so a renewal marked paid ahead stays in it. Renewals after that fold away under "10 more later this year", unless nothing is coming up. Oldest first runs the other way: past months from the oldest, then what's coming. As in the design, a group's count includes a won't-renew row, so "Coming up" says 7 renewals where the tile says 6.
+- **A page holds whole months**, as many as fit in 25 rows, so a month is never split across pages. Opened, the later renewals stay on the coming-up ones' page, however many there are, since they open in place.
+- **When the period ends inside the next 30 days** (a range ends with this month, and in December the year ends), the first group says what it shows: "Coming up · to Oct 31". Its rows stay inside the period, so the counts still match it; the Next 30 days tile doesn't follow the period.
+- **The filters:** Paid includes "didn't charge" (Skipped), Upcoming includes Pending, and a won't-renew row shows only under All. Charged to is the payment's card or account, or for one still to come, the subscription's usual one (drawn faded). One not recorded has none. Each filter's count is what choosing it would show with the others applied.
+- **The tiles:** Next 30 days ignores the period, as on the Subscriptions page. The other three follow the period but not the filters, as the Statements page's tiles do. Price changes counts each change of 2% or more in the period up to this month (as Paid does), and "₹X more a month" adds up each one's monthly share.
+- **Sorting** is Newest or Oldest first, as on the Statements page. The design's "Biggest first" was left out, since the table is grouped by date.
+- **Search** matches a subscription's name, alias, category or cycle, or a renewal's own amount: what was paid, or the plan's price for one not paid yet. So "netflix 649" doesn't find the ones paid at ₹499.
+- **Change** is "₹20 over plan" for a subscription's latest charge when it's 2% or more off the plan, otherwise "₹150 vs last" when it moved 2% or more from the charge before.
+- **Row actions go through the forms (#128).** Mark paid is one click with Undo, as in the hero. It's offered only on the renewal the forms' Mark paid pays (the next one due within 3 days), and not while an earlier one isn't recorded: Record payment catches that up first. Record payment on a row starts on that row's renewal. The header's Record payment is for the subscription the page is filtered to, or any.
+- **The ⋯ menu:** on a recorded renewal, Edit payment, Open the subscription, and Delete payment (it asks first; the renewal shows as not paid again). On one not recorded, It didn't charge and Open. A phone has no menu, as in the design.
+- **Edit payment** (no design of its own, so it uses Record a payment's shell) changes when it was paid, what was charged and where. Ticking It didn't charge makes it ₹0, Skipped and charged nowhere. Delete payment is in its footer, as Delete subscription is in Edit subscription.
+- **It didn't charge** on a renewal not recorded writes a ₹0 Skipped payment on its date (#125), with Undo for 6 seconds, so it isn't flagged again. The design only had this button in direction G; on R1 it's in the menu.
+- **"All renewals →"** under a subscription's payments opens `?sub=<id>&period=all`, its whole history with the strip above the table. With All picked it's "View all renewals →", this year.
+- **Narrower than 1280px** the eight columns don't fit, so each row is the phone's two lines. Between 768px and 1280px, rows keep the ⋯ menu; on a phone there's none, as in the design.
 
 ## How it got here
 

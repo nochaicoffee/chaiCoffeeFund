@@ -6,6 +6,7 @@ import { formatDate, formatShortDate } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import { ArrowIcon, RenewIcon } from "./icons";
 import { ChargedTo, Mono, Segmented } from "./parts";
+import { RenewalsLink } from "./RenewalsLink";
 import { useSize } from "./useSize";
 
 /**
@@ -162,7 +163,12 @@ export function PaymentsCard({ pick, payments, onAll }: { pick: PickView; paymen
             </div>
           </div>
         )}
-        {payments.footer && <p className="mt-auto pt-3 text-xs font-medium text-muted">{payments.footer}</p>}
+        <div className="mt-auto flex flex-wrap items-center gap-x-4 gap-y-1 pt-3">
+          {payments.footer && <p className="text-xs font-medium text-muted">{payments.footer}</p>}
+          <span className="ml-auto">
+            <RenewalsLink subscriptionId={all ? undefined : pick.id} />
+          </span>
+        </div>
       </div>
 
       {!all && (

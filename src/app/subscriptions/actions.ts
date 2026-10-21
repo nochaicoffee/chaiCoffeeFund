@@ -5,13 +5,13 @@ import { renewalAction, renewalsFor } from "@/lib/aggregate/subscriptionRenewals
 import { formatShortDate, todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import type { FormState } from "@/lib/forms/formState";
-import { anchorToSave, markPaidPayment, offPlan, readDateForm, readPaymentForm, readSubscriptionForm, type PaymentInput } from "@/lib/forms/subscriptionForms";
+import { anchorToSave, markPaidPayment, offPlan, readDateForm, readEditPaymentForm, readPaymentForm, readSubscriptionForm, skippedPayment } from "@/lib/forms/subscriptionForms";
 import { CACHE_TAGS, getCachedAccounts, getCachedCards, getCachedSubscriptionPayments, getCachedSubscriptions } from "@/lib/sheets/cached";
 import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
 import { InvalidRowError, NotFoundError } from "@/lib/sheets/repository";
-import { createSubscriptionPaymentSchema, subscriptionPaymentsRepository } from "@/lib/sheets/subscriptionPayments";
+import { createSubscriptionPaymentSchema, subscriptionPaymentsRepository, updateSubscriptionPaymentSchema } from "@/lib/sheets/subscriptionPayments";
 import { createSubscriptionSchema, subscriptionsRepository, updateSubscriptionSchema } from "@/lib/sheets/subscriptions";
-import type { Subscription } from "@/lib/sheets/types";
+import type { Subscription, SubscriptionPayment } from "@/lib/sheets/types";
 
 /**
  * The Subscriptions forms' server actions (#128), used with useActionState, as the Cards
@@ -165,8 +165,11 @@ export async function changeSubscriptionStatus(_previous: FormState, formData: F
   return refreshed(CACHE_TAGS.subscriptions);
 }
 
+/** What a one-click Mark paid (or It didn't charge) wrote, as Undo checks it before removing it. */
+export type WrittenPayment = Pick<SubscriptionPayment, "subscriptionId" | "paymentDate" | "amount">;
+
 /** What a one-click Mark paid did: the payment it wrote, for its toast and Undo. */
-export type MarkPaidResult = { ok: true; paymentId: string; written: PaymentInput; message: string } | { ok: false; message: string };
+export type MarkPaidResult = { ok: true; paymentId: string; written: WrittenPayment; message: string } | { ok: false; message: string };
 
 function quickFailed(action: string, error: unknown): MarkPaidResult {
   console.error(`[subscriptions] ${action} failed:`, error instanceof Error ? error.message : String(error));
@@ -201,8 +204,77 @@ export async function markRenewalPaid(subscriptionId: string, renewalDate: strin
   return { ok: true, paymentId: saved.id, written, message: `${subscription.alias}: ${formatInr(written.amount)} paid on ${formatShortDate(renewalDate)}` };
 }
 
-/** Undo for Mark paid: deletes the payment it wrote, unless it's been changed since. */
-export async function undoMarkPaid(paymentId: string, written: PaymentInput): Promise<{ ok: boolean; message: string }> {
+/**
+ * "It didn't charge" in one click (#130), for a renewal that passed with no payment: a ₹0
+ * Skipped payment on the renewal date (#125), so it isn't flagged again. Refused once the
+ * renewal is recorded, so a double click can't write it twice. Undo is Mark paid's.
+ */
+export async function markRenewalSkipped(subscriptionId: string, renewalDate: string): Promise<MarkPaidResult> {
+  const today = todayIso();
+  let subscription: Subscription | null;
+  let payments: SubscriptionPayment[];
+  try {
+    [subscription, payments] = await Promise.all([subscriptionsRepository.get(subscriptionId), subscriptionPaymentsRepository.list()]);
+  } catch (error) {
+    return quickFailed("markRenewalSkipped", error);
+  }
+  if (!subscription) return { ok: false, message: "This subscription isn't in the Subscriptions tab any more. Refresh to see what's there." };
+  const renewal = renewalsFor(subscription, payments, renewalDate, renewalDate, today)[0];
+  if (!renewal || renewal.status !== "missing") return { ok: false, message: "This renewal is already recorded. Refresh to see it." };
+  const written = skippedPayment(subscription, renewalDate);
+  let saved;
+  try {
+    saved = await subscriptionPaymentsRepository.create(createSubscriptionPaymentSchema.parse(written));
+  } catch (error) {
+    return quickFailed("markRenewalSkipped", error);
+  }
+  updateTag(CACHE_TAGS.subscriptionPayments);
+  return { ok: true, paymentId: saved.id, written, message: `${subscription.alias}: ${formatShortDate(renewalDate)} didn't charge` };
+}
+
+const PAYMENT_GONE: FormState = { status: "invalid", errors: { form: "This payment isn't in the SubscriptionPayments tab any more. Close this and refresh." } };
+
+/**
+ * Edit payment (#130), from a paid renewal's menu on the Renewals page: when it was paid,
+ * what was charged and where, or that it didn't charge (₹0, Skipped, charged nowhere).
+ * The update schema merges it over the stored row, and the repository checks the whole
+ * row, so a Skipped payment can't keep an amount.
+ */
+export async function updatePayment(_previous: FormState, formData: FormData): Promise<FormState> {
+  const id = String(formData.get("id") ?? "");
+  if (!id) return PAYMENT_GONE;
+  let cards: Awaited<ReturnType<typeof getCachedCards>>, accounts: Awaited<ReturnType<typeof getCachedAccounts>>;
+  try {
+    [cards, accounts] = await Promise.all([getCachedCards(), getCachedAccounts()]);
+  } catch (error) {
+    return failed("updatePayment", error);
+  }
+  const result = readEditPaymentForm(fields(formData), { cardIds: cards.map((c) => c.id), accountIds: accounts.map((a) => a.id) });
+  if (!result.ok) return { status: "invalid", errors: result.errors };
+  try {
+    await subscriptionPaymentsRepository.update(id, updateSubscriptionPaymentSchema.parse(result.input) as Partial<Omit<SubscriptionPayment, "id">>);
+  } catch (error) {
+    if (error instanceof NotFoundError) return PAYMENT_GONE;
+    if (error instanceof InvalidRowError) return { status: "invalid", errors: { form: error.message } };
+    return failed("updatePayment", error);
+  }
+  return refreshed(CACHE_TAGS.subscriptionPayments);
+}
+
+/** Delete payment (#130). One that's already gone counts as deleted. Its renewal shows as not recorded again. */
+export async function deletePayment(_previous: FormState, formData: FormData): Promise<FormState> {
+  const id = String(formData.get("id") ?? "");
+  if (!id) return PAYMENT_GONE;
+  try {
+    await subscriptionPaymentsRepository.remove(id);
+  } catch (error) {
+    return failed("deletePayment", error);
+  }
+  return refreshed(CACHE_TAGS.subscriptionPayments);
+}
+
+/** Undo for Mark paid and It didn't charge: deletes the payment it wrote, unless it's been changed since. */
+export async function undoMarkPaid(paymentId: string, written: WrittenPayment): Promise<{ ok: boolean; message: string }> {
   let payment;
   try {
     payment = await subscriptionPaymentsRepository.get(paymentId);
