@@ -92,6 +92,20 @@ The rules are in [`docs/system-design.md`](../system-design.md) under Subscripti
 4. **A price change** is a payment 2% or more different from the one before it; smaller moves are ignored.
 5. **Pending** stays in the model, but the app never writes it: upcoming renewals are computed.
 
+## Built (2026-10-21, #126)
+
+The page lives in `src/app/subscriptions/` and `src/components/subscriptions/`. `?demo` (in development only) shows the design's sample data, which reproduces its figures exactly, and is never written to the Sheet. `?sub=<id>` opens a pick, and turning the carousel keeps it in the address without asking the server again.
+
+Settled while building it:
+- **The hero's buttons** (Mark paid, Edit, ⋯, Resume, Restart, Record payment, Add subscription) show disabled with "Coming soon" until the forms land in #128, so the layout already matches the design.
+- **"Prices" for All** counts the active subscriptions whose price went up this year, net (decided with Prathik 2026-10-21): the last charge before this year against the latest one this year, or the first this year for one that started this year, counted when it ended up 2% or more higher. A promo that ends, putting the price back where it was, isn't a rise. "₹X more a month" turns a yearly or quarterly rise into its monthly share, so a ₹200 rise on a yearly plan adds ₹17.
+- **"In the next 30 days"** is today and the 29 days after it. It counts a renewal already marked paid ahead.
+- **A cycle that spans two years** (a yearly plan) shows the year on both ends of its bar.
+- **By category** blocks show each category's total and its subscriptions; they don't pick anything, since a category isn't one subscription.
+- **With no subscriptions at all**, only the hero shows ("Add your first subscription"); the empty map and payments would only be white space.
+- **On a phone**, tapping a block picks it and scrolls the hero into view. Charged to is left out there, as in the spec's phone order.
+- **Not yet:** the chart (#127), the forms (#128), and the "All renewals →" links, which wait for the Renewals page (#130).
+
 ## How it got here
 
 The canvas keeps everything explored, newest first: A–K (layouts), L–P (heroes), Q–Z (selectors), S1–S6 (circular carousels) and S7–S16 (the cover flow refined, each with a different full-width chart). Prathik kept these from them: F's greeting, D's cost map, C's payments table, S's cover flow with All at the centre, scrolling in a circle, S9's coloured stage, S9's Day by day chart, S7's Payment trend and S14's Lifetime cost. Along the way he asked that no section be added just to fill space (a separate colour band was dropped), and that cards side by side end level. A layout check measured this across every pick.

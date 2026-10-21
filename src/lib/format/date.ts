@@ -35,6 +35,13 @@ export function formatShortDate(isoDate: string): string {
   return `${MONTHS[Number(isoDate.slice(5, 7)) - 1].slice(0, 3)} ${Number(isoDate.slice(8, 10))}`;
 }
 
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/** An ISO date with its weekday, as a renewal is written: "2026-10-23" → "Fri, Oct 23". */
+export function formatDayDate(isoDate: string): string {
+  return `${WEEKDAYS[new Date(`${isoDate}T00:00:00Z`).getUTCDay()]}, ${formatShortDate(isoDate)}`;
+}
+
 /** An ISO date with its year, as the Statements page writes it: "2026-08-05" → "Aug 5, 2026". */
 export function formatDate(isoDate: string): string {
   return `${formatShortDate(isoDate)}, ${isoDate.slice(0, 4)}`;
