@@ -1,0 +1,236 @@
+import { CYCLE_STEP_MONTHS, addMonthsUTC } from "./recurring";
+import { monthOf, monthRange } from "./cardSpend";
+import { monthlyEquivalent } from "./subscriptions";
+import {
+  PRICE_CHANGE_THRESHOLD,
+  cycleProgress,
+  firstRenewalAfter,
+  monthEnd,
+  monthlySpendSeries,
+  priceChanges,
+  renewalsFor,
+  type PriceChange,
+  type Renewal,
+} from "./subscriptionRenewals";
+import type { Account, Card, Subscription, SubscriptionCategory, SubscriptionPayment } from "../sheets/types";
+
+/**
+ * The numbers behind the Subscriptions page (#126): the carousel's order, what the
+ * hero shows for each pick, the payments table, and what's charged where. Pure, so
+ * it's tested against fixtures; the renewal rules themselves are in
+ * subscriptionRenewals.ts.
+ */
+
+/** What the Subscriptions page reads: the two tabs, plus the cards and accounts things are charged to. */
+export interface SubscriptionData {
+  subscriptions: Subscription[];
+  payments: SubscriptionPayment[];
+  cards: Card[];
+  accounts: Account[];
+}
+
+const isCharged = (p: SubscriptionPayment) => p.status === "Paid" && p.amount > 0;
+const byDate = (a: { paymentDate: string }, b: { paymentDate: string }) => (a.paymentDate < b.paymentDate ? -1 : a.paymentDate > b.paymentDate ? 1 : 0);
+
+/** An active subscription's next renewal that isn't paid yet (today or later), or null. */
+export function nextRenewal(subscription: Subscription, payments: SubscriptionPayment[], today: string): Renewal | null {
+  if (subscription.status !== "Active") return null;
+  const step = CYCLE_STEP_MONTHS[subscription.billingCycle];
+  return renewalsFor(subscription, payments, today, addMonthsUTC(today, step * 2 + 1), today).find((r) => r.status === "upcoming") ?? null;
+}
+
+const STATUS_RANK = { Active: 0, Paused: 1, Cancelled: 2 } as const;
+
+/**
+ * The carousel's order after All: active subscriptions by their next renewal, soonest
+ * first, then the paused ones, then the cancelled ones. The order wraps round, so the
+ * covers left of All are the ones that renew last.
+ */
+export function carouselOrder(subscriptions: Subscription[], payments: SubscriptionPayment[], today: string): Subscription[] {
+  const next = new Map(subscriptions.map((s) => [s.id, nextRenewal(s, payments, today)?.date ?? "9999-12-31"]));
+  return [...subscriptions].sort(
+    (a, b) =>
+      STATUS_RANK[a.status] - STATUS_RANK[b.status] ||
+      (next.get(a.id)! < next.get(b.id)! ? -1 : next.get(a.id)! > next.get(b.id)! ? 1 : 0) ||
+      a.alias.localeCompare(b.alias),
+  );
+}
+
+/** The hero's bar for one subscription: the cycle it's in, from one renewal to the next. */
+export interface CycleBar {
+  from: string;
+  to: string;
+  /** How far through it today is, 0 to 1. */
+  fraction: number;
+  /** The renewal at its start, when it was settled ahead of its date (Mark paid from 3 days before): the bar shows the cycle after it. */
+  settledAhead?: Renewal;
+}
+
+export interface SubscriptionFacts {
+  subscriptionId: string;
+  monthly: number;
+  yearly: number;
+  /** Its next renewal that isn't paid yet; null unless active. */
+  next: Renewal | null;
+  /** Null unless active, or before its first renewal. */
+  bar: CycleBar | null;
+  /** Every charged payment, and how many. */
+  paid: number;
+  payments: number;
+  /** The latest price change, 2% or more from the payment before. */
+  lastChange: PriceChange | null;
+  /** The latest charged payment, as "last paid" for a paused one. */
+  lastCharged: SubscriptionPayment | null;
+}
+
+export function subscriptionFacts(subscription: Subscription, payments: SubscriptionPayment[], today: string): SubscriptionFacts {
+  const charged = payments.filter((p) => p.subscriptionId === subscription.id && isCharged(p)).sort(byDate);
+  const cycle = cycleProgress(subscription, today);
+  let bar: CycleBar | null = null;
+  if (cycle) {
+    const atNext = renewalsFor(subscription, payments, cycle.next, cycle.next, today)[0];
+    const after = atNext && (atNext.status === "paid" || atNext.status === "skipped") ? firstRenewalAfter(subscription, cycle.next) : null;
+    bar = after ? { from: cycle.next, to: after, fraction: 0, settledAhead: atNext } : { from: cycle.last, to: cycle.next, fraction: cycle.fraction };
+  }
+  return {
+    subscriptionId: subscription.id,
+    monthly: monthlyEquivalent(subscription),
+    yearly: monthlyEquivalent(subscription) * 12,
+    next: nextRenewal(subscription, payments, today),
+    bar,
+    paid: charged.reduce((t, p) => t + p.amount, 0),
+    payments: charged.length,
+    lastChange: priceChanges(payments, subscription.id).at(-1) ?? null,
+    lastCharged: charged.at(-1) ?? null,
+  };
+}
+
+export interface AllFacts {
+  active: number;
+  monthly: number;
+  yearly: number;
+  /** The soonest renewal not paid yet, across active subscriptions. */
+  next: Renewal | null;
+  /** This month: paid so far, and the renewals still to come at the plan's price. */
+  month: { from: string; to: string; paid: number; toCome: number; fraction: number };
+  /** Charged payments this year, January to this month, and how many. */
+  yearPaid: number;
+  yearPayments: number;
+  /**
+   * Active subscriptions whose price went up this year, and how much more a month that adds
+   * up to. Net over the year (decided with Prathik 2026-10-21): the last charge before this
+   * year against the latest one this year (or the first this year, for one that started
+   * this year), counted when it ended up 2% or more higher. So a promo that ends, putting
+   * the price back where it was, isn't a rise.
+   */
+  rises: { count: number; monthlyMore: number };
+}
+
+export function allFacts(subscriptions: Subscription[], payments: SubscriptionPayment[], today: string): AllFacts {
+  const active = subscriptions.filter((s) => s.status === "Active");
+  const nexts = active.flatMap((s) => nextRenewal(s, payments, today) ?? []).sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.subscriptionId.localeCompare(b.subscriptionId)));
+  const nowMonth = monthOf(today);
+  const [month] = monthlySpendSeries(subscriptions, payments, nowMonth, nowMonth, today);
+  const yearMonths = new Set(monthRange(`${today.slice(0, 4)}-01`, nowMonth));
+  const thisYear = payments.filter((p) => isCharged(p) && yearMonths.has(monthOf(p.paymentDate)));
+  let count = 0;
+  let monthlyMore = 0;
+  for (const s of active) {
+    const charged = payments.filter((p) => p.subscriptionId === s.id && isCharged(p) && monthOf(p.paymentDate) <= nowMonth).sort(byDate);
+    const inYear = charged.filter((p) => yearMonths.has(monthOf(p.paymentDate)));
+    const latest = inYear.at(-1);
+    const before = charged.filter((p) => !yearMonths.has(monthOf(p.paymentDate))).at(-1) ?? inYear[0];
+    if (!latest || !before || latest === before) continue;
+    const rise = latest.amount - before.amount;
+    if (rise / before.amount >= PRICE_CHANGE_THRESHOLD) {
+      count += 1;
+      // A rise of ₹X on a yearly plan is ₹X ÷ 12 more a month.
+      monthlyMore += rise / CYCLE_STEP_MONTHS[s.billingCycle];
+    }
+  }
+  const monthly = active.reduce((t, s) => t + monthlyEquivalent(s), 0);
+  return {
+    active: active.length,
+    monthly,
+    yearly: monthly * 12,
+    next: nexts[0] ?? null,
+    month: { from: `${nowMonth}-01`, to: monthEnd(nowMonth), paid: month.paid, toCome: month.expected, fraction: month.total > 0 ? month.paid / month.total : 0 },
+    yearPaid: thisYear.reduce((t, p) => t + p.amount, 0),
+    yearPayments: thisYear.length,
+    rises: { count, monthlyMore },
+  };
+}
+
+export interface PaymentRow {
+  payment: SubscriptionPayment;
+  /** How much it moved from the subscription's charged payment before it, when that's 2% or more. */
+  change: number | null;
+}
+
+/**
+ * The latest payments, newest first, for one subscription or for all of them, each
+ * with its change from the one before (the price-change rule: 2% or more). `count`
+ * and `paid` are over every payment in the filter, not just the ones shown.
+ */
+export function latestPayments(payments: SubscriptionPayment[], limit: number, subscriptionId?: string): { rows: PaymentRow[]; count: number; paid: number } {
+  const own = payments.filter((p) => !subscriptionId || p.subscriptionId === subscriptionId);
+  const changes = new Map<SubscriptionPayment, number>();
+  const bySub = new Map<string, SubscriptionPayment[]>();
+  for (const p of own.filter(isCharged).sort(byDate)) (bySub.get(p.subscriptionId) ?? bySub.set(p.subscriptionId, []).get(p.subscriptionId)!).push(p);
+  for (const list of bySub.values()) {
+    for (let i = 1; i < list.length; i++) {
+      const diff = list[i].amount - list[i - 1].amount;
+      if (Math.abs(diff) / list[i - 1].amount >= PRICE_CHANGE_THRESHOLD) changes.set(list[i], diff);
+    }
+  }
+  const newest = [...own].sort((a, b) => byDate(b, a) || a.subscriptionId.localeCompare(b.subscriptionId));
+  return {
+    rows: newest.slice(0, limit).map((payment) => ({ payment, change: changes.get(payment) ?? null })),
+    count: own.length,
+    paid: own.filter(isCharged).reduce((t, p) => t + p.amount, 0),
+  };
+}
+
+/** What each charged payment cost, oldest first, for the price history. */
+export function priceHistory(payments: SubscriptionPayment[], subscriptionId: string): { date: string; amount: number }[] {
+  return payments
+    .filter((p) => p.subscriptionId === subscriptionId && isCharged(p))
+    .sort(byDate)
+    .map((p) => ({ date: p.paymentDate, amount: p.amount }));
+}
+
+export interface ChargedToPlace {
+  kind: "card" | "account" | "none";
+  /** The card's or account's id; null for subscriptions with nothing set. */
+  id: string | null;
+  monthly: number;
+  count: number;
+}
+
+/** Active subscriptions' monthly cost by where they're charged, biggest first. */
+export function chargedToSplit(subscriptions: Subscription[]): ChargedToPlace[] {
+  const places = new Map<string, ChargedToPlace>();
+  for (const s of subscriptions.filter((x) => x.status === "Active")) {
+    const place: Pick<ChargedToPlace, "kind" | "id"> = s.defaultPaidFromCardId
+      ? { kind: "card", id: s.defaultPaidFromCardId }
+      : s.defaultPaidFromAccountId
+        ? { kind: "account", id: s.defaultPaidFromAccountId }
+        : { kind: "none", id: null };
+    const key = `${place.kind}:${place.id}`;
+    const entry = places.get(key) ?? places.set(key, { ...place, monthly: 0, count: 0 }).get(key)!;
+    entry.monthly += monthlyEquivalent(s);
+    entry.count += 1;
+  }
+  return [...places.values()].sort((a, b) => b.monthly - a.monthly);
+}
+
+/** Active subscriptions' monthly cost by category, biggest first. */
+export function categorySplit(subscriptions: Subscription[]): { category: SubscriptionCategory; monthly: number; count: number }[] {
+  const totals = new Map<SubscriptionCategory, { category: SubscriptionCategory; monthly: number; count: number }>();
+  for (const s of subscriptions.filter((x) => x.status === "Active")) {
+    const entry = totals.get(s.category) ?? totals.set(s.category, { category: s.category, monthly: 0, count: 0 }).get(s.category)!;
+    entry.monthly += monthlyEquivalent(s);
+    entry.count += 1;
+  }
+  return [...totals.values()].sort((a, b) => b.monthly - a.monthly);
+}
