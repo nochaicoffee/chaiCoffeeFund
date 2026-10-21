@@ -91,3 +91,83 @@ describe("Lifetime cost", () => {
     expect(empty.trend.peak).toBeNull();
   });
 });
+
+describe("the chart's interactions (#149)", () => {
+  const day = (d: string) => chart.desktopGrid.days.find((x) => x.date === d)!;
+
+  it("words each day's card: when it is, its status, each renewal with where it's charged, and the total", () => {
+    expect(day("2026-10-23").card).toMatchObject({ title: "Fri, Oct 23 · in 3 days", pill: "Expected", total: "₹649", footer: "Expected, at the plan's price" });
+    expect(day("2026-10-23").card.rows.map((r) => `${r.label} ${r.amount}`)).toEqual(["Netflix · Millennia ₹649"]);
+    expect(day("2026-03-03").card).toMatchObject({ title: "Tue, Mar 3 · 8 months ago", pill: "Paid", total: "₹6,199", footer: null });
+    expect(day("2026-03-03").record).toBeNull();
+  });
+
+  it("says a day wasn't recorded, charges it nowhere, and records that renewal when clicked", () => {
+    expect(day("2026-09-24").card).toMatchObject({ title: "Thu, Sep 24 · 26 days ago", pill: "Not recorded", total: "₹219", footer: "Not recorded yet" });
+    expect(day("2026-09-24").card.rows).toMatchObject([{ label: "iCloud+", amount: "₹219" }]);
+    expect(day("2026-09-24").record).toEqual({ subscriptionId: "demo-icloud", renewalDate: "2026-09-24" });
+    expect(chart.desktopGrid.days.filter((d) => d.record)).toHaveLength(1);
+  });
+
+  it("notes a renewal whose status the day's pill doesn't already say", () => {
+    const sub = (id: string, anchor: string) => ({ id, name: id, alias: id, category: "Streaming" as const, amount: 100, billingCycle: "Monthly" as const, billingAnchorDate: anchor, startDate: anchor, status: "Active" as const });
+    // On Sep 23 one was paid and one wasn't recorded: the day is drawn not recorded, and the paid one says so.
+    const mixed = chartView({ subscriptions: [sub("a", "2026-08-23"), sub("b", "2026-09-23")], payments: [{ id: "p", subscriptionId: "a", paymentDate: "2026-09-23", amount: 100, status: "Paid" }], cards: [], accounts: [] }, TODAY);
+    const sep23 = mixed.desktopGrid.days.find((d) => d.date === "2026-09-23")!;
+    expect(sep23.card.pill).toBe("Not recorded");
+    expect(sep23.card.rows.map((r) => `${r.label} ${r.note ?? ""}`.trim())).toEqual(["a paid", "b"]);
+    expect(sep23.record).toEqual({ subscriptionId: "b", renewalDate: "2026-09-23" });
+  });
+
+  it("gives a range the numbers it adds up", () => {
+    expect(day("2026-09-24").renewals).toEqual([{ subscriptionId: "demo-icloud", status: "missing", amount: 219 }]);
+  });
+
+  it("words each month's card, against a usual month, split by subscription", () => {
+    const october = chart.desktopGrid.months[9];
+    expect(october.label).toBe("October 2026: ₹8,834, this month");
+    expect(october.card).toMatchObject({ title: "October 2026", pill: "This month", total: "₹8,834", diff: { text: "▲ ₹3,275 more than a usual month of ₹5,559", up: true }, footer: "7 renewals · 2 more not listed" });
+    expect(october.card.rows.map((r) => `${r.label} ${r.amount}`)).toEqual(["Cult.fit ₹4,500", "ChatGPT ₹1,999", "Times Prime ₹1,199", "Netflix ₹649", "iCloud+ ₹219"]);
+    expect(october.card.bar.reduce((t, p) => t + p.amount, 0)).toBe(8834);
+    expect(chart.desktopGrid.months[8].card).toMatchObject({ pill: "Paid", diff: { up: false }, footer: "6 renewals · 1 not recorded" });
+    expect(chart.desktopGrid.months[11].card.pill).toBe("Expected");
+  });
+
+  it("stacks each trend bar's parts in their colours, biggest first", () => {
+    const march = chart.trend.months.find((m) => m.month === "2026-03")!;
+    expect(march.stack[0]).toEqual({ id: "demo-m365", color: "sapphire", amount: 6199 });
+    expect(march.stack.reduce((t, p) => t + p.amount, 0)).toBe(march.total);
+    for (let i = 1; i < march.stack.length; i++) expect(march.stack[i].amount).toBeLessThanOrEqual(march.stack[i - 1].amount);
+  });
+
+  it("words this year's running total for each month, and where the year is heading", () => {
+    const all = chart.running[ALL];
+    expect(all.yearTotal).toBe(67667);
+    expect(all.months["2026-08"]).toEqual({ cumulative: 47030, label: "₹47,030 by the end of Aug", note: "paid · on course for ₹67,667 in 2026" });
+    expect(all.months["2026-10"].note).toBe("paid and still due · on course for ₹67,667 in 2026");
+    expect(all.months["2026-11"].note).toBe("expected · on course for ₹67,667 in 2026");
+    expect(all.months["2026-12"]).toMatchObject({ cumulative: 67667, note: "expected · what 2026 is on course for" });
+    expect(chart.running["demo-netflix"].months["2026-12"].cumulative).toBe(chart.running["demo-netflix"].yearTotal);
+    // Cult.fit renewed on Oct 10 and isn't due again this month, so October is simply paid.
+    expect(chart.running["demo-cult"].months["2026-10"].note).toMatch(/^paid · /);
+  });
+
+  it("draws no running total for a pick with nothing paid or due this year", () => {
+    const sub = { id: "old", name: "Old", alias: "Old", category: "Streaming" as const, amount: 99, billingCycle: "Monthly" as const, billingAnchorDate: "2025-01-05", startDate: "2025-01-05", status: "Cancelled" as const, endDate: "2025-06-01" };
+    const old = chartView({ subscriptions: [sub], payments: [{ id: "p", subscriptionId: "old", paymentDate: "2025-01-05", amount: 99, status: "Paid" }], cards: [], accounts: [] }, TODAY);
+    expect(old.running.old).toEqual({ yearTotal: 0, months: {} });
+  });
+
+  it("sorts Lifetime cost three ways, and gives each row what it cost each year", () => {
+    const { order, rows } = chart.lifetime;
+    expect(order.paid).toEqual(rows.map((r) => r.id));
+    // Longest held: Prime started Dec 2022, then Spotify Jun 2023; Cult.fit, from Jan 2026, is the newest.
+    expect(order.held.slice(0, 2)).toEqual(["demo-prime", "demo-spotify"]);
+    expect(order.newest[0]).toBe("demo-cult");
+    expect([...order.newest].reverse()).toEqual(order.held);
+    const prime = rows.find((r) => r.id === "demo-prime")!;
+    expect(prime.years.map((y) => `${y.year} ${y.amount}`)).toEqual(["2022 ₹1.5k", "2023 ₹1.5k", "2024 ₹1.5k", "2025 ₹1.5k"]);
+    expect(prime.each).toMatch(/^4 payments · about ₹[\d,]+ each$/);
+    for (const r of rows) expect(r.years.reduce((t, y) => t + y.paid, 0)).toBeCloseTo(r.paid, 6);
+  });
+});
