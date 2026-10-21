@@ -37,6 +37,9 @@
   /* Semantic states: good / attention / bad. Separate from the accent. */
   --positive: oklch(0.42 0.14 145);
   --warning: oklch(0.72 0.14 75);
+  /* A softer attention state: a renewal not recorded, a pending payment (the Subscriptions design). */
+  --warning-tint: oklch(0.95 0.05 85);
+  --warning-text: oklch(0.47 0.1 70);
   --negative: oklch(0.55 0.16 25);
   --negative-tint: oklch(0.95 0.035 40);
 
@@ -148,6 +151,8 @@
   --color-on-ink: var(--on-ink);
   --color-positive: var(--positive);
   --color-warning: var(--warning);
+  --color-warning-tint: var(--warning-tint);
+  --color-warning-text: var(--warning-text);
   --color-negative: var(--negative);
   --color-negative-tint: var(--negative-tint);
   --color-feature-tile: var(--feature-tile);

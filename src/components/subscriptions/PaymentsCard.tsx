@@ -1,11 +1,12 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useState } from "react";
 import type { ChargedToRow, PaymentRowView, PaymentsView, PickView } from "@/app/subscriptions/views";
 import { formatDate, formatShortDate } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import { ArrowIcon, RenewIcon } from "./icons";
 import { ChargedTo, Mono, Segmented } from "./parts";
+import { useSize } from "./useSize";
 
 /**
  * Payments for the pick (#126): the latest six, with what changed from the one before
@@ -16,7 +17,7 @@ import { ChargedTo, Mono, Segmented } from "./parts";
 const STATUS_PILL: Record<PaymentRowView["status"], string> = {
   Paid: "bg-accent-tint text-accent-text",
   Skipped: "bg-fill text-muted",
-  Pending: "bg-[oklch(0.95_0.05_85)] text-[oklch(0.47_0.1_70)]",
+  Pending: "bg-warning-tint text-warning-text",
 };
 
 function Status({ status }: { status: PaymentRowView["status"] }) {
@@ -82,17 +83,8 @@ function Table({ payments, all }: { payments: PaymentsView; all: boolean }) {
 
 /** What each payment cost, as a step line in the pick's colour, drawn at the card's own width so its labels stay readable. */
 function PriceLine({ points, color }: { points: { date: string; amount: number }[]; color: string }) {
-  const box = useRef<HTMLDivElement>(null);
-  const [W, setW] = useState(520);
-  useLayoutEffect(() => {
-    const el = box.current;
-    if (!el) return;
-    const measure = () => setW(Math.max(200, el.clientWidth));
-    measure();
-    const observer = new ResizeObserver(measure);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+  const [box, size] = useSize<HTMLDivElement>({ w: 520, h: 0 });
+  const W = Math.max(200, size.w);
   const H = 190;
   const pad = 30;
   if (points.length === 0) return <p className="py-10 text-center text-[13px] font-medium text-muted">Nothing has been charged yet.</p>;

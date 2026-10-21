@@ -104,7 +104,20 @@ Settled while building it:
 - **By category** blocks show each category's total and its subscriptions; they don't pick anything, since a category isn't one subscription.
 - **With no subscriptions at all**, only the hero shows ("Add your first subscription"); the empty map and payments would only be white space.
 - **On a phone**, tapping a block picks it and scrolls the hero into view. Charged to is left out there, as in the spec's phone order.
-- **Not yet:** the chart (#127), the forms (#128), and the "All renewals →" links, which wait for the Renewals page (#130).
+- **Not yet:** the forms (#128), and the "All renewals →" links, which wait for the Renewals page (#130).
+
+## Built: the chart (2026-10-21, #127)
+
+The full-width chart is at the end of the page. The numbers come from `lib/aggregate/subscriptionChart.ts` on top of the renewals math, and on the design's sample data they reproduce its month totals exactly.
+
+Settled while building it:
+- **Day by day** doesn't draw a renewal that won't happen (after a cancellation). A day with a renewal not recorded is drawn amber whatever else is on it, and a skipped one (it didn't charge) is drawn plain. Each month's total is the same spend the Payment trend gives it. The cells size to the card's width, so the whole year fits at any desktop width.
+- **On a phone**, Day by day shows five months, from two before this one, kept inside the year (August to December in October). The Payment trend shows the last 6 months and the next 6.
+- **The Payment trend's peak** is the biggest month so far, this month included with what's still to come in it. Its hover card compares a month with a usual month (what everything active costs a month), and opens on hover, focus or tap.
+- **A usual month's line** with a subscription picked is that subscription's monthly cost; a paused or cancelled one has no line.
+- **Lifetime cost's caption** for All counts from the first payment recorded ("since Dec 2022").
+- **A hover card's rows** list the renewals in the month's total first. A renewal not recorded, or a Pending one, isn't in the total, so it's noted ("not recorded", "pending") and muted. A Pending day in Day by day is drawn dashed, like one still to come.
+- **A payment whose subscription no longer exists** is left out of everything on the page, as the Cards page leaves out statements whose card is gone.
 
 ## How it got here
 
