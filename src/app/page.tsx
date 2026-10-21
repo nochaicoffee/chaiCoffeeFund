@@ -12,7 +12,7 @@ import { totalPendingForMonth } from "@/lib/aggregate/income";
 import { totalCostBasisInr } from "@/lib/aggregate/investments";
 import { computeLoanSummaries, totalDueThisMonth } from "@/lib/aggregate/loans";
 import { computeNetWorth } from "@/lib/aggregate/netWorth";
-import { totalMonthlySubscriptionSpend } from "@/lib/aggregate/subscriptions";
+import { monthlySpendOffCards, totalMonthlySubscriptionSpend } from "@/lib/aggregate/subscriptions";
 import {
   getCachedAccounts,
   getCachedBalanceSnapshots,
@@ -70,8 +70,9 @@ export default async function OverviewPage() {
   const loanSummaries = computeLoanSummaries(loans, loanInstallments);
   const trend = balanceTrend(accounts, balanceSnapshots);
 
+  // Subscriptions charged to an active card are already inside its bill below, so only the rest are added (#124).
   const monthlyObligations =
-    totalMonthlySubscriptionSpend(subscriptions) +
+    monthlySpendOffCards(subscriptions, cards) +
     totalDueThisMonth(loans, loanInstallments, yearMonth) +
     cardSummaries.reduce((sum, s) => sum + (s.card.status === "Active" ? s.outstandingBalance : 0), 0);
 

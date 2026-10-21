@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   computeSubscriptionSummaries,
   monthlyEquivalent,
+  monthlySpendOffCards,
   subscriptionSpendByCategory,
   totalMonthlySubscriptionSpend,
 } from "./subscriptions";
@@ -53,16 +54,51 @@ describe("totalMonthlySubscriptionSpend", () => {
     ];
     expect(totalMonthlySubscriptionSpend(subs)).toBe(500);
   });
+
+  it("leaves out cancelled subscriptions too", () => {
+    const subs = [
+      subscription({ id: "s1", amount: 500 }),
+      subscription({ id: "s2", amount: 800, status: "Cancelled", endDate: "2026-09-14" }),
+    ];
+    expect(totalMonthlySubscriptionSpend(subs)).toBe(500);
+  });
+});
+
+describe("monthlySpendOffCards", () => {
+  // Count once, by context (#124): a card-charged subscription is already in its card's statement.
+  const subs = [
+    subscription({ id: "bank", amount: 549, billingCycle: "Quarterly", defaultPaidFromAccountId: "acc-1" }),
+    subscription({ id: "card", amount: 649, defaultPaidFromCardId: "card-1" }),
+    subscription({ id: "unknown", amount: 119 }),
+    subscription({ id: "paused", amount: 299, status: "Paused", defaultPaidFromAccountId: "acc-1" }),
+  ];
+
+  const cards = [{ id: "card-1", status: "Active" as const }];
+
+  it("counts bank-charged and unset subscriptions, but not ones on an active card", () => {
+    expect(monthlySpendOffCards(subs, cards)).toBeCloseTo(549 / 3 + 119, 6);
+  });
+
+  it("plus the part on active cards equals the page's full monthly total, so nothing is lost or counted twice", () => {
+    const onCards = totalMonthlySubscriptionSpend(subs.filter((s) => s.defaultPaidFromCardId));
+    expect(monthlySpendOffCards(subs, cards) + onCards).toBeCloseTo(totalMonthlySubscriptionSpend(subs), 6);
+  });
+
+  it("counts one on a closed, inactive or missing card, since no bill the Overview adds covers it", () => {
+    expect(monthlySpendOffCards(subs, [{ id: "card-1", status: "Closed" }])).toBeCloseTo(549 / 3 + 119 + 649, 6);
+    expect(monthlySpendOffCards(subs, [{ id: "card-1", status: "Inactive" }])).toBeCloseTo(549 / 3 + 119 + 649, 6);
+    expect(monthlySpendOffCards(subs, [])).toBeCloseTo(549 / 3 + 119 + 649, 6);
+  });
 });
 
 describe("subscriptionSpendByCategory", () => {
   it("groups active subscriptions by category", () => {
     const subs = [
       subscription({ id: "s1", category: "Software", amount: 500 }),
-      subscription({ id: "s2", category: "Entertainment", amount: 200 }),
+      subscription({ id: "s2", category: "Streaming", amount: 200 }),
       subscription({ id: "s3", category: "Software", amount: 300 }),
       subscription({ id: "s4", category: "Software", amount: 999, status: "Paused" }),
     ];
-    expect(subscriptionSpendByCategory(subs)).toEqual({ Software: 800, Entertainment: 200 });
+    expect(subscriptionSpendByCategory(subs)).toEqual({ Software: 800, Streaming: 200 });
   });
 });

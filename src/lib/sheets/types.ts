@@ -155,19 +155,38 @@ export interface SyncRun {
 
 // --- Subscriptions ---
 
-export type SubscriptionStatus = "Active" | "Paused";
+/** Paused and cancelled subscriptions are left out of every total. A cancelled one keeps its payments (#124). */
+export type SubscriptionStatus = "Active" | "Paused" | "Cancelled";
 export type SubscriptionPaymentStatus = "Pending" | "Paid";
+
+/**
+ * What a subscription is for, as the Subscriptions tab's category dropdown lists
+ * it (#124). Shown without the hyphen ("Cloud storage"). Each has a colour on the
+ * Subscriptions page, so a subscription needs no colour of its own.
+ */
+export const SUBSCRIPTION_CATEGORIES = ["Streaming", "Music", "Software", "Cloud-Storage", "Fitness", "Food", "Shopping", "News", "Other"] as const;
+export type SubscriptionCategory = (typeof SUBSCRIPTION_CATEGORIES)[number];
 
 export interface Subscription {
   id: string;
   name: string;
   alias: string;
-  category: string;
+  category: SubscriptionCategory;
   amount: number;
   billingCycle: RecurrenceCycle;
   billingAnchorDate: string;
   startDate: string;
   status: SubscriptionStatus;
+  /** The day it was cancelled. Optional: a subscription can be cancelled without a date. */
+  endDate?: string;
+  /**
+   * Where it's usually charged, at most one set, as on payments: a bank account, or a card.
+   * New payments start from it. A card-charged subscription is already inside that card's
+   * statement, so totals of everything you spend count it only there (monthlySpendOffCards in
+   * lib/aggregate/subscriptions.ts, used by the Overview's monthly obligations).
+   */
+  defaultPaidFromAccountId?: string;
+  defaultPaidFromCardId?: string;
 }
 
 export interface SubscriptionPayment {

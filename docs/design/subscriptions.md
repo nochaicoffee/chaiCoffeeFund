@@ -72,17 +72,21 @@ Layout **R1**, picked 2026-10-21: a table like the Cards Statements page. Every 
 
 The same order: greeting, the hero (smaller covers, a two-column caption), the cost map (tap a block to open that subscription), latest payments, and the chart with its switch. Day by day shows August to December on a phone.
 
+## Decided for the build (2026-10-21, #124)
+
+- **Charged to:** a subscription stores where it's usually charged: `defaultPaidFromCardId` or `defaultPaidFromAccountId`, at most one. New payments start from it.
+- **Cancelled:** a third status, with an optional cancelled-on date (`endDate`).
+- **Category:** a fixed list, each with a colour: Streaming, Music, Software, Cloud storage, Fitness, Food, Shopping, News, Other. The Sheet's dropdown holds exactly these.
+- **The Sheet:** these columns and dropdowns are added through the Sheets API, and `Quaterly` is fixed to `Quarterly`.
+- **Card-charged subscriptions count once, by context.** The Subscriptions page counts every payment. The Overview's monthly obligations counts a card-charged one only inside its card's bill, never again on top.
+
 ## Open decisions
 
-1. **Quarterly can't be saved yet.** The Sheet's billing-cycle dropdown says `Quaterly`; it needs to say `Quarterly` before this is built.
-2. **Category: a fixed list or free text?** The Sheet's category column is a dropdown, but the code takes any text. The design uses a fixed list, each with a colour, which needs the code's list to match the dropdown exactly.
-3. **Cancelled, and when.** Status is only Active or Paused. The design adds `Cancelled` and an optional cancelled-on date (`endDate`).
-4. **Usually charged to.** A card or bank account per subscription (`defaultPaidFromCardId` / `defaultPaidFromAccountId`, at most one), so Mark paid works in one click.
-5. **"It didn't charge"** needs somewhere to be stored, such as a ₹0 payment with status `Skipped`, or the button is left out.
-6. **Mark paid timing:** offered from 3 days before the renewal, or only on or after it?
-7. **When a renewal counts as not recorded:** proposed, a payment within half a cycle of the renewal date counts for it.
-8. **What counts as a price change:** any change, or ignore small ones (say under 2%) on dollar-billed charges?
-9. **Pending payments:** upcoming renewals are computed, so the form never writes `Pending`. Keep it in the model or drop it?
+1. **"It didn't charge"** needs somewhere to be stored, such as a ₹0 payment with status `Skipped`, or the button is left out.
+2. **Mark paid timing:** offered from 3 days before the renewal, or only on or after it?
+3. **When a renewal counts as not recorded:** proposed, a payment within half a cycle of the renewal date counts for it.
+4. **What counts as a price change:** any change, or ignore small ones (say under 2%) on dollar-billed charges?
+5. **Pending payments:** upcoming renewals are computed, so the form never writes `Pending`. Keep it in the model or drop it?
 
 ## How it got here
 

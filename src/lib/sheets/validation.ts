@@ -8,6 +8,12 @@ export const nonNegativeNumber = z.number().min(0);
 
 export const nonEmptyString = z.string().min(1);
 
+/**
+ * An optional field that an update can clear: "" blanks its cell, which reads back as
+ * unset. JSON has no undefined, so a PATCH body can't clear a field any other way.
+ */
+export const clearable = <T extends z.ZodType>(schema: T) => z.union([schema, z.literal("")]);
+
 /** A whole number of things: a count of rows, a number of tries. */
 export const count = z.number().int().min(0);
 
