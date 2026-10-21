@@ -1,6 +1,7 @@
 import { daysBetween, monthOf } from "@/lib/aggregate/cardSpend";
 import { MARK_PAID_DAYS_BEFORE, yearSummary } from "@/lib/aggregate/subscriptionRenewals";
 import { monthlyEquivalent } from "@/lib/aggregate/subscriptions";
+import { nextRenewalsFrom, nextStatementCharges } from "@/lib/aggregate/subscriptionNextCharges";
 import {
   allFacts,
   carouselOrder,
@@ -59,6 +60,8 @@ export interface ChargedToChip {
 
 export interface PaymentRowView {
   key: string;
+  /** Whose payment it is, so the row can point at its block in the map (3A). */
+  subscriptionId: string;
   mark: Mark;
   date: string;
   amount: string;
@@ -119,6 +122,21 @@ export interface ChargedToRow {
   monthly: number;
   /** Against the biggest, for its bar. */
   fraction: number;
+  /** Its active subscriptions, biggest first: the bar splits into them and they light up in the map (3B). */
+  members: (Mark & { id: string; monthly: number })[];
+  /** What lands next there (7B): a card's next statement, or an account's next renewals. */
+  next: NextView;
+}
+
+/** A Charged to row's hover card: its next statement or next renewals. */
+export interface NextView {
+  /** "Next statement Nov 2", "Next from Kotak Savings". */
+  title: string;
+  rows: { key: string; mark: Mark; date: string; amount: string; note: string }[];
+  /** A statement's total; null for an account's renewals. */
+  total: string | null;
+  /** When there's nothing: "Nothing lands on it before then." */
+  empty: string;
 }
 
 export interface SubscriptionsPageView {
@@ -222,6 +240,32 @@ function chipFor(kind: "card" | "account" | "none", id: string | null | undefine
   return { kind, name: "Not set", color: "onyx" };
 }
 
+/** Where a subscription is usually charged, as `chargedToSplit` keys it. */
+const placeOf = (s: Subscription) => (s.defaultPaidFromCardId ? `card:${s.defaultPaidFromCardId}` : s.defaultPaidFromAccountId ? `account:${s.defaultPaidFromAccountId}` : "none:null");
+
+/** A Charged to row's hover card (7B): a card's next statement, or the next renewals from an account (or from nowhere set). */
+function nextView(kind: "card" | "account" | "none", id: string | null, chip: ChargedToChip, members: Subscription[], data: SubscriptionData, byId: Map<string, Subscription>, today: string): NextView {
+  // A card that isn't active any more has no statement coming, as elsewhere on the page.
+  const card = kind === "card" ? data.cards.find((c) => c.id === id && c.status === "Active") : undefined;
+  const charges = card ? nextStatementCharges(card, data.subscriptions, data.payments, today) : null;
+  const list = charges ? charges.charges : nextRenewalsFrom(members, data.payments, today);
+  return {
+    title: charges ? `Next statement ${smartDate(charges.closes, today)}` : kind === "card" ? "Next renewals" : kind === "account" ? `Next from ${chip.name}` : "Next renewals",
+    rows: list.map((c) => {
+      const owner = byId.get(c.subscriptionId);
+      return {
+        key: c.key,
+        mark: owner ? mark(owner) : { alias: "Unknown", initial: "?", color: "onyx", muted: true },
+        date: smartDate(c.date, today),
+        amount: formatInr(c.amount),
+        note: c.paid ? "charged" : whenFrom(today, c.date),
+      };
+    }),
+    total: charges ? formatInr(charges.total) : null,
+    empty: charges ? "Nothing lands on it before then." : "Nothing coming up.",
+  };
+}
+
 /** The hover card of an active subscription's block. */
 function blockCard(s: Subscription, f: SubscriptionFacts, total: number, data: SubscriptionData, today: string): BlockCard {
   const change = f.lastChange;
@@ -250,6 +294,7 @@ function paymentsView(data: SubscriptionData, today: string, s?: Subscription): 
       const kind = payment.paidFromCardId ? "card" : payment.paidFromAccountId ? "account" : null;
       return {
         key: payment.id,
+        subscriptionId: payment.subscriptionId,
         mark: owner ? mark(owner) : { alias: "Unknown", initial: "?", color: "onyx", muted: true },
         date: s ? formatDate(payment.paymentDate) : smartDate(payment.paymentDate, today),
         amount: formatInr(payment.amount),
@@ -310,7 +355,19 @@ export function subscriptionsPageView(sheetData: SubscriptionData, today: string
     stopped: order
       .filter((s) => s.status !== "Active")
       .map((s) => ({ ...mark(s), id: s.id, label: s.status === "Paused" ? "paused" : "cancelled", monthly: monthlyEquivalent(s), ghost: s.status === "Paused" ? "if you resume it" : "if you restart it" })),
-    chargedTo: split.map((p) => ({ key: `${p.kind}:${p.id}`, chip: chipFor(p.kind, p.id, data), count: p.count, monthly: p.monthly, fraction: biggest > 0 ? p.monthly / biggest : 0 })),
+    chargedTo: split.map((p) => {
+      const chip = chipFor(p.kind, p.id, data);
+      const members = active.filter((s) => placeOf(s) === `${p.kind}:${p.id}`);
+      return {
+        key: `${p.kind}:${p.id}`,
+        chip,
+        count: p.count,
+        monthly: p.monthly,
+        fraction: biggest > 0 ? p.monthly / biggest : 0,
+        members: members.map((s) => ({ ...mark(s), id: s.id, monthly: facts.get(s.id)!.monthly })).sort((a, b) => b.monthly - a.monthly),
+        next: nextView(p.kind, p.id, chip, members, data, byId, today),
+      };
+    }),
     monthlyTotal: total,
     chart: chartView(data, today),
   };

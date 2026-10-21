@@ -140,6 +140,20 @@ describe("the map, payments and charged to", () => {
     expect(july?.change).toEqual({ text: "₹150 more", up: true });
   });
 
+  it("gives each Charged to row its subscriptions and what lands next there", () => {
+    const coral = view.chargedTo.find((c) => c.chip.name === "Coral")!;
+    expect(coral.members.map((m) => m.alias)).toEqual(["ChatGPT", "Prime", "Times Prime"]);
+    expect(coral.next).toMatchObject({ title: "Next statement Nov 2", total: "₹3,198" });
+    expect(coral.next.rows.map((r) => `${r.mark.alias} ${r.date} ${r.amount} ${r.note}`)).toEqual(["ChatGPT Oct 8 ₹1,999 charged", "Times Prime Oct 30 ₹1,199 in 10 days"]);
+    const kotak = view.chargedTo.find((c) => c.chip.name === "Kotak Savings")!;
+    expect(kotak.next).toMatchObject({ title: "Next from Kotak Savings", total: null });
+    expect(kotak.next.rows[0]).toMatchObject({ date: "Dec 1", amount: "₹549" });
+  });
+
+  it("says whose each payment is, so a row can point at its block", () => {
+    expect(view.payments[ALL].rows[0]).toMatchObject({ subscriptionId: "demo-cult" });
+  });
+
   it("splits the monthly total by where it's charged, as the design does", () => {
     expect(view.chargedTo.map((c) => `${c.chip.name} ${c.count} ${Math.round(c.monthly)}`)).toEqual(["Coral 3 2224", "Kotak Savings 2 1683", "Millennia 3 1285", "Ace 2 368"]);
     expect(view.chargedTo[0].fraction).toBe(1);
