@@ -6,13 +6,14 @@ import { afterPayment, billAfterPayment, type PaymentContext } from "@/lib/aggre
 import { dueLabel, isShort } from "@/lib/aggregate/cardStatements";
 import { paymentStatus, readMarkPaidForm, type RestOfBill } from "@/lib/forms/cardForms";
 import type { ClientCard } from "@/lib/forms/clientCard";
+import { addDays } from "@/lib/forms/dates";
 import { IDLE } from "@/lib/forms/formState";
 import { ISO_DATE_PATTERN, formatDate, formatShortDate } from "@/lib/format/date";
 import { cardName, formatPercent } from "@/lib/format/labels";
 import { formatInr, formatInrExact, parseAmountText } from "@/lib/format/money";
 import type { Statement } from "@/lib/sheets/types";
 import { StatusPill } from "../StatusPill";
-import { Field, MoneyInput, PreviewPanel, Segmented, SelectInput, describedBy, inputClass } from "./fields";
+import { DateInput, Field, MoneyInput, PreviewPanel, Segmented, SelectInput, describedBy } from "./fields";
 import { FormDialog } from "./FormDialog";
 import { CheckIcon, DocumentIcon, InfoIcon } from "./icons";
 import { MiniCardTile, SummaryRow } from "./MiniCardTile";
@@ -193,7 +194,24 @@ export function MarkPaidDialog({
           <MoneyInput {...describedBy("paid-amount", errors.amountPaid, true)} name="amountPaid" value={amount} onChange={(e) => setAmount(e.target.value)} onBlur={() => reveal("amountPaid")} invalid={Boolean(errors.amountPaid)} data-autofocus />
         </Field>
         <Field id="paid-date" label="Paid on" required help={editing || recorded > 0 ? "The latest payment's date." : "Defaults to today."} error={errors.paidDate}>
-          <input {...describedBy("paid-date", errors.paidDate, true)} type="date" name="paidDate" value={paidDate} min={statement.statementDate} max={today} onChange={(e) => setPaidDate(e.target.value)} onBlur={() => reveal("paidDate")} className={inputClass(Boolean(errors.paidDate))} />
+          <DateInput
+            {...describedBy("paid-date", errors.paidDate, true)}
+            label="Paid on"
+            name="paidDate"
+            value={paidDate}
+            today={today}
+            min={statement.statementDate}
+            max={today}
+            // The calendar offers only those from the statement date to today: a due date still to come isn't one.
+            shortcuts={[
+              { label: "Today", date: today },
+              { label: "Yesterday", date: addDays(today, -1) },
+              { label: "Due date", date: statement.dueDate },
+            ]}
+            onChange={setPaidDate}
+            onBlur={() => reveal("paidDate")}
+            invalid={Boolean(errors.paidDate)}
+          />
         </Field>
       </div>
 

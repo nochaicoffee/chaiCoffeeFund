@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDate, formatHeaderDate, formatMonthShort, formatMonthYear, formatShortDate, greetingFor, todayIso } from "./date";
+import { formatDate, formatHeaderDate, formatMonthShort, formatMonthYear, formatShortDate, formatSpokenDate, greetingFor, todayIso } from "./date";
 
 describe("todayIso", () => {
   it("uses the given time zone, not UTC", () => {
@@ -47,5 +47,12 @@ describe("month and date labels", () => {
     expect(formatDate("2026-08-05")).toBe("Aug 5, 2026");
     expect(formatMonthYear("2026-07")).toBe("July 2026");
     expect(formatMonthShort("2026-12")).toBe("Dec");
+  });
+});
+
+describe("formatSpokenDate", () => {
+  it("writes the weekday, month and year out in full", () => {
+    expect(formatSpokenDate("2026-10-18")).toBe("Sunday, October 18, 2026");
+    expect(formatSpokenDate("2026-08-05")).toBe("Wednesday, August 5, 2026");
   });
 });

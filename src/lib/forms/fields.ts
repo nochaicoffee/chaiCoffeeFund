@@ -51,7 +51,7 @@ export class FieldReader {
     return undefined;
   }
 
-  /** An ISO date (from <input type="date">), or undefined when blank or unreadable. */
+  /** An ISO date (from DateInput, which sends what was typed when it isn't one), or undefined when blank or unreadable. */
   date(name: string, requiredMessage?: string): string | undefined {
     const value = this.raw(name).trim();
     if (value === "") {

@@ -7,6 +7,7 @@ import { nextDueAfterAdding } from "@/lib/aggregate/cardEntry";
 import { dueDateFor, latestStatementDate } from "@/lib/aggregate/cardSchedule";
 import { dueLabel } from "@/lib/aggregate/cardStatements";
 import { findDuplicateStatement, readStatementForm } from "@/lib/forms/cardForms";
+import { addDays, isIsoDate } from "@/lib/forms/dates";
 import type { ClientCard } from "@/lib/forms/clientCard";
 import { IDLE } from "@/lib/forms/formState";
 import { formatDate, formatShortDate } from "@/lib/format/date";
@@ -15,7 +16,7 @@ import { formatInr, formatInrCompact, formatInrExact, parseAmountText } from "@/
 import type { Statement } from "@/lib/sheets/types";
 import { cardGradient, cardSwatch } from "../CardTile";
 import { StatusPill } from "../StatusPill";
-import { Field, MoneyInput, PreviewPanel, describedBy, inputClass } from "./fields";
+import { DateInput, Field, MoneyInput, PreviewPanel, describedBy } from "./fields";
 import { FormDialog } from "./FormDialog";
 import { AlertIcon, CheckIcon, DocumentIcon, InfoIcon } from "./icons";
 import { MiniCardTile, SummaryRow } from "./MiniCardTile";
@@ -73,8 +74,16 @@ export function StatementFormDialog({
 
   function changeStatementDate(date: string) {
     setStatementDate(date);
-    if (card && !dueEdited && /^\d{4}-\d{2}-\d{2}$/.test(date)) setDueDate(dueDateFor(card, date));
+    if (card && !dueEdited && isIsoDate(date)) setDueDate(dueDateFor(card, date));
   }
+
+  // The calendars' shortcuts: the card's latest and previous statement days, and the due date its days to pay give.
+  const latest = card && latestStatementDate(card, today);
+  const statementShortcuts = card && latest ? [{ label: "Latest", date: latest }, { label: "Previous", date: latestStatementDate(card, addDays(latest, -1)) }] : [];
+  // The fields hold what was typed until it reads as a date, so the preview uses only the dates that do.
+  const statementDated = isIsoDate(statementDate);
+  const dueDated = isIsoDate(dueDate);
+  const dueShortcuts = card && statementDated ? [{ label: `${card.dueDayBuffer} days after`, date: dueDateFor(card, statementDate) }] : [];
 
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     if (check.ok) {
@@ -87,23 +96,23 @@ export function StatementFormDialog({
 
   const amount = parseAmountText(total);
   const minimumAmount = parseAmountText(minimum);
-  const dated = check.ok || (statementDate && dueDate);
+  const dated = check.ok || (statementDated && dueDated);
   const bar = nextDueAfterAdding({ cards, statements }, today, card && dated && amount !== null ? { cardId: card.id, dueDate, totalAmountDue: amount } : null);
   const cardsById = new Map(cards.map((c) => [c.id, c]));
 
   const preview = (
     <PreviewPanel caption="Updates as you type: the card, the statement, and the Next due bar on your dashboard.">
       <div className="max-md:hidden">
-        <MiniCardTile card={card && { ...card, name: cardName(card) }} dates={statementDate && dueDate ? `${formatShortDate(statementDate)} → ${formatShortDate(dueDate)}` : undefined} />
+        <MiniCardTile card={card && { ...card, name: cardName(card) }} dates={statementDated && dueDated ? `${formatShortDate(statementDate)} → ${formatShortDate(dueDate)}` : undefined} />
       </div>
       <div className="flex flex-col gap-2 rounded-[16px] bg-surface p-4 shadow-soft max-md:p-3">
         <div className="mb-1 flex items-center justify-between">
           <span className="text-sm font-extrabold">Statement</span>
           <StatusPill status="Pending" />
         </div>
-        <SummaryRow label="Statement date">{statementDate ? formatShortDate(statementDate) : "–"}</SummaryRow>
+        <SummaryRow label="Statement date">{statementDated ? formatShortDate(statementDate) : "–"}</SummaryRow>
         <SummaryRow label="Due" strong>
-          {dueDate ? `${formatShortDate(dueDate)} · ${dueLabel({ status: "Pending", dueDate }, today)}` : "–"}
+          {dueDated ? `${formatShortDate(dueDate)} · ${dueLabel({ status: "Pending", dueDate }, today)}` : "–"}
         </SummaryRow>
         <SummaryRow label="Total due" strong>
           {amount !== null ? formatInrExact(amount) : "–"}
@@ -226,20 +235,36 @@ export function StatementFormDialog({
           error={dateError}
           help={card ? <span className="text-accent-text">{cardName(card)}&rsquo;s latest statement (billed on the {ordinal(card.statementDay)}).</span> : undefined}
         >
-          <input {...describedBy("statement-date", dateError, Boolean(card))} type="date" name="statementDate" value={statementDate} max={today} onChange={(e) => changeStatementDate(e.target.value)} onBlur={() => reveal("statementDate")} className={inputClass(Boolean(dateError))} data-autofocus={initial ? true : undefined} />
+          <DateInput
+            {...describedBy("statement-date", dateError, Boolean(card))}
+            label="Statement date"
+            name="statementDate"
+            value={statementDate}
+            today={today}
+            max={today}
+            shortcuts={statementShortcuts}
+            onChange={changeStatementDate}
+            onBlur={() => reveal("statementDate")}
+            invalid={Boolean(dateError)}
+            data-autofocus={initial ? true : undefined}
+          />
         </Field>
         <Field id="statement-due" label="Due date" required error={errors.dueDate} help={card ? <span className="text-accent-text">{card.dueDayBuffer} days later: the card&rsquo;s days to pay.</span> : undefined}>
-          <input
+          <DateInput
             {...describedBy("statement-due", errors.dueDate, Boolean(card))}
-            type="date"
+            label="Due date"
             name="dueDate"
             value={dueDate}
-            onChange={(e) => {
-              setDueDate(e.target.value);
+            today={today}
+            // A due date comes after its statement date, so the calendar starts the day after.
+            min={statementDated ? addDays(statementDate, 1) : undefined}
+            shortcuts={dueShortcuts}
+            onChange={(date) => {
+              setDueDate(date);
               setDueEdited(true);
             }}
             onBlur={() => reveal("dueDate")}
-            className={inputClass(Boolean(errors.dueDate))}
+            invalid={Boolean(errors.dueDate)}
           />
         </Field>
       </div>
