@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, type CSSProperties, type KeyboardEvent, type PointerEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from "react";
 import type { PickView } from "@/app/subscriptions/views";
 import { ALL, colorGradient, type ColorKey } from "@/lib/format/subscriptionLabels";
 import { RingTexture } from "../RingTexture";
+import { FormTrigger, useSubscriptionForms } from "./forms/SubscriptionForms";
 import { CheckIcon, ChevronIcon, EditIcon, MoreIcon, PlayIcon, PlusIcon, RenewIcon } from "./icons";
 
 /**
@@ -83,43 +84,122 @@ function Cover({ pick, picked, style, onClick }: { pick: PickView; picked: boole
   );
 }
 
-/** A form's button. The forms come with #128, so until then it shows disabled, saying so. */
-function SoonButton({ kind, label, icon }: { kind: "primary" | "soft" | "icon"; label: string; icon: ReactNode }) {
-  const look =
-    kind === "primary"
-      ? "bg-[var(--pick-soft)] px-3 text-[var(--pick-ink)] transition-[background-color,color] duration-500"
-      : kind === "soft"
-        ? "bg-[oklch(1_0_0/0.14)] px-3 text-fg"
-        : "w-[30px] justify-center bg-[oklch(1_0_0/0.14)] text-fg";
+const LOOK = {
+  primary: "bg-[var(--pick-soft)] px-3 text-[var(--pick-ink)] transition-[background-color,color] duration-500 hover:brightness-105",
+  soft: "bg-[oklch(1_0_0/0.14)] px-3 text-fg hover:bg-[oklch(1_0_0/0.22)]",
+  icon: "w-[30px] justify-center bg-[oklch(1_0_0/0.14)] text-fg hover:bg-[oklch(1_0_0/0.22)]",
+};
+const BUTTON = "inline-flex min-h-[30px] items-center gap-1.5 rounded-full text-xs font-bold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pick-soft)] max-md:min-h-11";
+
+/** ⋯ on an active subscription: Pause or Cancel, each asking first. */
+function MoreMenu({ id }: { id: string }) {
+  const { open, disabledReason } = useSubscriptionForms();
+  const [shown, setShown] = useState(false);
+  const menu = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!shown) return;
+    // Focus moves into the menu, as a menu button's should.
+    menu.current?.querySelector<HTMLElement>("[role=menuitem]")?.focus();
+    const away = (e: Event) => {
+      if (!menu.current?.contains(e.target as Node)) setShown(false);
+    };
+    const esc = (e: globalThis.KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setShown(false);
+      trigger.current?.focus();
+    };
+    document.addEventListener("pointerdown", away);
+    document.addEventListener("keydown", esc);
+    return () => {
+      document.removeEventListener("pointerdown", away);
+      document.removeEventListener("keydown", esc);
+    };
+  }, [shown]);
+  const item = "flex w-full items-center rounded-[10px] px-3 py-2 text-left text-[13px] font-semibold text-fg hover:bg-fill focus-visible:bg-fill focus-visible:outline-none";
   return (
-    <button type="button" aria-disabled="true" title="Coming soon" aria-label={kind === "icon" ? `${label} (coming soon)` : undefined} className={`inline-flex min-h-[30px] cursor-not-allowed items-center gap-1.5 rounded-full text-xs font-bold whitespace-nowrap opacity-70 ${look}`}>
-      {icon}
-      {kind !== "icon" && label}
-      {kind !== "icon" && <span className="sr-only"> (coming soon)</span>}
-    </button>
+    <div ref={menu} className="relative">
+      <button
+        ref={trigger}
+        type="button"
+        aria-haspopup="menu"
+        aria-expanded={shown}
+        aria-label="Pause or cancel"
+        aria-disabled={disabledReason ? true : undefined}
+        title={disabledReason}
+        onClick={() => !disabledReason && setShown((v) => !v)}
+        className={`${BUTTON} ${LOOK.icon} ${disabledReason ? "cursor-not-allowed opacity-60" : ""}`}
+      >
+        <MoreIcon />
+      </button>
+      {shown && (
+        <div
+          role="menu"
+          onKeyDown={(e) => {
+            // ↑ ↓ move between the two items.
+            if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+            e.preventDefault();
+            const items = [...(menu.current?.querySelectorAll<HTMLElement>("[role=menuitem]") ?? [])];
+            const at = items.indexOf(document.activeElement as HTMLElement);
+            items[(at + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus();
+          }}
+          className="absolute bottom-[calc(100%+6px)] left-1/2 z-[90] w-40 -translate-x-1/2 rounded-[14px] border border-[var(--surface-line)] bg-[oklch(0.995_0_0)] p-1.5 text-left shadow-[var(--pop-shadow)] [--fg:oklch(0.19_0.008_260)] [--fill:oklch(0_0_0/0.055)]">
+          {(["pause", "cancel"] as const).map((change) => (
+            <button
+              key={change}
+              type="button"
+              role="menuitem"
+              className={`${item} ${change === "cancel" ? "text-negative" : ""}`}
+              onClick={() => {
+                setShown(false);
+                // Focus back on ⋯ first, so it's what the dialog returns focus to.
+                trigger.current?.focus();
+                open({ kind: "status", id, change });
+              }}
+            >
+              {change === "pause" ? "Pause" : "Cancel subscription"}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
 function Actions({ pick }: { pick: PickView }) {
+  const { forms, open, markPaid, saving } = useSubscriptionForms();
   if (pick.status === "All")
     return (
       <>
-        <SoonButton kind="primary" label="Record payment" icon={<CheckIcon />} />
-        <SoonButton kind="soft" label="Add subscription" icon={<PlusIcon />} />
+        <FormTrigger className={`${BUTTON} ${LOOK.primary}`} icon={<CheckIcon />} label="Record payment" onClick={() => open({ kind: "record" })} />
+        <FormTrigger className={`${BUTTON} ${LOOK.soft}`} icon={<PlusIcon />} label="Add subscription" onClick={() => open({ kind: "add" })} />
       </>
     );
-  if (pick.status === "Active")
+  const edit = <FormTrigger className={`${BUTTON} ${LOOK.soft}`} icon={<EditIcon />} label="Edit" onClick={() => open({ kind: "edit", id: pick.id })} />;
+  if (pick.status === "Active") {
+    // Mark paid is one click from 3 days before a renewal; otherwise Record payment opens the form.
+    const due = forms.context[pick.id]?.markPaid;
     return (
       <>
-        <SoonButton kind="primary" label="Mark paid" icon={<CheckIcon />} />
-        <SoonButton kind="soft" label="Edit" icon={<EditIcon />} />
-        <SoonButton kind="icon" label="Pause or cancel" icon={<MoreIcon />} />
+        {due ? (
+          <FormTrigger className={`${BUTTON} ${LOOK.primary}`} icon={<CheckIcon />} label="Mark paid" busy={saving === pick.id} onClick={() => markPaid(pick.id)} />
+        ) : (
+          <FormTrigger className={`${BUTTON} ${LOOK.primary}`} icon={<CheckIcon />} label="Record payment" onClick={() => open({ kind: "record", id: pick.id })} />
+        )}
+        {edit}
+        <MoreMenu id={pick.id} />
       </>
     );
+  }
   return (
     <>
-      <SoonButton kind="primary" label={pick.status === "Paused" ? "Resume" : "Restart"} icon={<PlayIcon />} />
-      <SoonButton kind="soft" label="Edit" icon={<EditIcon />} />
+      <FormTrigger
+        className={`${BUTTON} ${LOOK.primary}`}
+        icon={<PlayIcon />}
+        label={pick.status === "Paused" ? "Resume" : "Restart"}
+        onClick={() => open({ kind: "status", id: pick.id, change: pick.status === "Paused" ? "resume" : "restart" })}
+      />
+      {edit}
     </>
   );
 }
@@ -165,6 +245,11 @@ function Caption({ pick }: { pick: PickView }) {
   );
 }
 
+function AddFirst() {
+  const { open } = useSubscriptionForms();
+  return <FormTrigger className={`${BUTTON} ${LOOK.primary}`} icon={<PlusIcon />} label="Add subscription" onClick={() => open({ kind: "add" })} />;
+}
+
 function EmptyCaption() {
   return (
     <div className="flex flex-col items-center gap-3 text-center">
@@ -173,7 +258,7 @@ function EmptyCaption() {
         <h2 className="mt-1 text-2xl leading-[1.15] font-extrabold text-fg md:text-[28px]">Add your first subscription</h2>
       </div>
       <p className="max-w-[440px] text-[13px] leading-relaxed font-medium text-muted">Each one becomes a card here. Turn to it to see what it costs, when it renews and what you&apos;ve paid.</p>
-      <SoonButton kind="primary" label="Add subscription" icon={<PlusIcon />} />
+      <AddFirst />
     </div>
   );
 }

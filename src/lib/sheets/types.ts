@@ -185,6 +185,12 @@ export interface Subscription {
   /** The day it was cancelled. Optional: a subscription can be cancelled without a date. */
   endDate?: string;
   /**
+   * When it last started again after a pause or a cancellation (#128). The renewals
+   * between its last payment before then and this date weren't expected, so they're
+   * never flagged as not recorded.
+   */
+  resumedOn?: string;
+  /**
    * Where it's usually charged, at most one set, as on payments: a bank account, or a card.
    * New payments start from it. A card-charged subscription is already inside that card's
    * statement, so totals of everything you spend count it only there (monthlySpendOffCards in

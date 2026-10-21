@@ -17,6 +17,7 @@ const subscriptionFields = z.object({
   endDate: isoDate.optional(),
   defaultPaidFromAccountId: nonEmptyString.optional(),
   defaultPaidFromCardId: nonEmptyString.optional(),
+  resumedOn: isoDate.optional(),
 });
 
 const BOTH_PLACES = "Charge it to a card or a bank account, not both";
@@ -49,6 +50,7 @@ export const updateSubscriptionSchema = subscriptionFields
   .partial()
   .extend({
     endDate: clearable(isoDate).optional(),
+    resumedOn: clearable(isoDate).optional(),
     defaultPaidFromAccountId: clearable(nonEmptyString).optional(),
     defaultPaidFromCardId: clearable(nonEmptyString).optional(),
   })
@@ -58,7 +60,7 @@ export const updateSubscriptionSchema = subscriptionFields
 /** A row as read back from the Sheet: a valid create, plus its id. */
 export const subscriptionRowSchema = subscriptionFields.extend({ id: nonEmptyString });
 
-/** The Subscriptions tab's columns, in order. endDate and the two charged-to columns were added on the end (#124). */
+/** The Subscriptions tab's columns, in order. endDate and the two charged-to columns were added on the end (#124), and resumedOn after them (#128). */
 export const SUBSCRIPTION_COLUMNS: (keyof Subscription)[] = [
   "id",
   "name",
@@ -72,12 +74,13 @@ export const SUBSCRIPTION_COLUMNS: (keyof Subscription)[] = [
   "endDate",
   "defaultPaidFromAccountId",
   "defaultPaidFromCardId",
+  "resumedOn",
 ];
 
 export const subscriptionsRepository = createRepository<Subscription>({
   sheetName: "Subscriptions",
   columns: SUBSCRIPTION_COLUMNS,
-  dateColumns: ["billingAnchorDate", "startDate", "endDate"],
+  dateColumns: ["billingAnchorDate", "startDate", "endDate", "resumedOn"],
   schema: subscriptionRowSchema,
   check: checkSubscription,
 });

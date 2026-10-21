@@ -252,5 +252,33 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     });
   }
 
-  return { sheetName, list, readAll, get, create, createMany, update, updateMany, remove };
+  /**
+   * Deletes every row whose cells match, in one read and one write, where remove() for
+   * each would cost two requests a row against the Sheets quota (60 a minute): deleting a
+   * subscription's 32 payments one by one would run out. A row that fails validation
+   * still counts, by its cleaned cells, so nothing that belongs is left behind. The rows go
+   * bottom first, so deleting one doesn't move the next. Returns how many were deleted.
+   */
+  async function removeWhere(match: (values: Partial<Record<keyof T, unknown>>) => boolean): Promise<number> {
+    const rows = await fetchRows();
+    const rowNumbers: number[] = [];
+    rows.forEach((row, index) => {
+      const result = readRow(row, columns, dateColumns, schema, kinds);
+      const values = result.kind === "valid" ? (result.record as Partial<Record<keyof T, unknown>>) : result.kind === "invalid" ? result.values : null;
+      if (values && match(values)) rowNumbers.push(index + 2);
+    });
+    if (rowNumbers.length === 0) return 0;
+    const sheetId = await resolveSheetId();
+    await getSheetsClient().spreadsheets.batchUpdate({
+      spreadsheetId: getSpreadsheetId(),
+      requestBody: {
+        requests: rowNumbers
+          .sort((a, b) => b - a)
+          .map((rowNumber) => ({ deleteDimension: { range: { sheetId, dimension: "ROWS", startIndex: rowNumber - 1, endIndex: rowNumber } } })),
+      },
+    });
+    return rowNumbers.length;
+  }
+
+  return { sheetName, list, readAll, get, create, createMany, update, updateMany, remove, removeWhere };
 }

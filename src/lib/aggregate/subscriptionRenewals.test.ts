@@ -166,6 +166,25 @@ describe("renewalsFor", () => {
     expect(statuses(renewalsFor(cancelled, paidLast, "2026-09-01", "2026-12-31", "2026-10-28"))).toEqual(["2026-09-23 paid", "2026-10-23 paid", "2026-11-23 wont-renew"]);
   });
 
+  it("doesn't expect the renewals missed while it was stopped, once it's resumed", () => {
+    // Paused after Jul 23's payment, resumed Oct 1: Aug 23 and Sep 23 weren't due; Oct 23 is.
+    const resumed = sub({ resumedOn: "2026-10-01" });
+    const payments = [pay("2026-07-23", 649)];
+    expect(statuses(renewalsFor(resumed, payments, "2026-07-01", "2026-11-30", "2026-10-28"))).toEqual(["2026-07-23 paid", "2026-10-23 missing", "2026-11-23 upcoming"]);
+  });
+
+  it("expects a renewal on the resume date itself, and still shows the one paid just before it stopped", () => {
+    const resumed = sub({ resumedOn: "2026-09-23" });
+    const payments = [pay("2026-07-23", 649), pay("2026-08-25", 649)];
+    // Aug 23 was paid after all, so it shows; Sep 23 is the day it started again, so it's due.
+    expect(statuses(renewalsFor(resumed, payments, "2026-07-01", "2026-09-30", "2026-10-28"))).toEqual(["2026-07-23 paid", "2026-08-23 paid", "2026-09-23 missing"]);
+  });
+
+  it("restarts a cancelled one from its resume date, with nothing before it flagged", () => {
+    const restarted = sub({ status: "Active", resumedOn: "2026-10-15" });
+    expect(statuses(renewalsFor(restarted, [], "2026-07-01", "2026-10-31", "2026-10-28"))).toEqual(["2026-10-23 missing"]);
+  });
+
   it("stops a cancelled subscription with no cancelled-on date after its last payment", () => {
     const payments = [pay("2026-07-23", 649)];
     expect(statuses(renewalsFor(sub({ status: "Cancelled" }), payments, "2026-07-01", "2026-12-31", TODAY))).toEqual(["2026-07-23 paid"]);

@@ -14,6 +14,9 @@ import type { Subscription, SubscriptionPayment } from "../sheets/types";
  *   depends on the dates asked for.
  * - A renewal whose date has passed with no payment is "not recorded". One whose
  *   payment is a ₹0 Skipped one didn't charge, and isn't flagged.
+ * - Resumed or restarted (resumedOn): the renewals between its last payment before then
+ *   and that date weren't expected, so they're left out rather than flagged. Only the
+ *   latest restart is kept.
  * - Paused: renewals stop after its last payment. Cancelled: renewals stop at its
  *   cancelled-on date (one on that date doesn't happen either), and the first one on
  *   or after it that wasn't paid is shown as "won't renew".
@@ -93,6 +96,11 @@ export function renewalsFor(subscription: Subscription, payments: SubscriptionPa
   let stop: string | null = null;
   if (subscription.status === "Paused") stop = lastSettled ?? "";
   if (subscription.status === "Cancelled") stop = subscription.endDate ? addDays(subscription.endDate, -1) : (lastSettled ?? "");
+  // After a pause or a cancellation it started again on resumedOn: the renewals between its
+  // last payment before then and that date weren't expected (#128, decided with Prathik 2026-10-21).
+  const resumedOn = subscription.resumedOn;
+  const gapFrom = resumedOn ? (own.filter((p) => (p.status === "Paid" || p.status === "Skipped") && p.paymentDate < resumedOn).at(-1)?.paymentDate ?? "") : null;
+  const inGap = (date: string) => resumedOn !== undefined && gapFrom !== null && date > gapFrom && date < resumedOn;
   // The renewal that won't happen: the first unpaid one on or after the cancelled-on date.
   const endDate = subscription.status === "Cancelled" ? subscription.endDate : undefined;
   const wontRenew = endDate ? dates.find((d) => d >= endDate && !matched.has(d)) : undefined;
@@ -101,6 +109,7 @@ export function renewalsFor(subscription: Subscription, payments: SubscriptionPa
   for (const date of dates) {
     if (date < from || date > to) continue;
     const payment = matched.get(date);
+    if (!payment && inGap(date)) continue;
     if (stop !== null && date > stop && !payment) {
       if (date === wontRenew) renewals.push({ subscriptionId: subscription.id, date, status: "wont-renew", amount: subscription.amount });
       continue;

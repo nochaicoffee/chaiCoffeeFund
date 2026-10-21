@@ -19,6 +19,21 @@ export interface SelectOption {
   action?: boolean;
   /** Shown muted on the closed control, like the placeholder: a "Not set" choice. */
   quiet?: boolean;
+  /**
+   * A little colour mark before the label, in the menu and on the closed control: a dot
+   * (a subscription's category) or a card's tile, with a CSS background.
+   */
+  swatch?: { background: string; shape?: "dot" | "card" };
+}
+
+function Swatch({ swatch }: { swatch: NonNullable<SelectOption["swatch"]> }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`shrink-0 ${swatch.shape === "card" ? "h-3.5 w-5 rounded-[4px] shadow-[inset_0_1px_0_oklch(1_0_0/0.2)]" : "size-2.5 rounded-[3px]"}`}
+      style={{ background: swatch.background }}
+    />
+  );
 }
 
 /** Letters typed within this long of each other make one type-ahead search. */
@@ -288,6 +303,7 @@ export function Select({
           variant === "field" ? "text-sm font-semibold" : "text-[13px] font-bold"
         }`}
       >
+        {option.swatch && <Swatch swatch={option.swatch} />}
         <span className="min-w-0 flex-1 truncate">{option.label}</span>
         {option.meta && <span className="shrink-0 text-xs font-semibold text-muted tabular-nums group-aria-selected:text-accent-text">{option.meta}</span>}
         {option.action && !isSelected ? (
@@ -332,6 +348,7 @@ export function Select({
         className={className}
       >
         {icon}
+        {current?.swatch && <Swatch swatch={current.swatch} />}
         <span className={`min-w-0 flex-1 truncate text-left ${muted ? "font-medium text-muted" : ""}`}>{current ? (current.display ?? current.label) : placeholder}</span>
         <svg className={`shrink-0 text-muted motion-safe:transition-transform motion-safe:duration-150 ${open ? "rotate-180" : ""}`} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <polyline points="6 9 12 15 18 9" />
