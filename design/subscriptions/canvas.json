@@ -1,0 +1,1440 @@
+{
+  "pages": [
+    {
+      "id": "readme",
+      "name": "Read me first"
+    },
+    {
+      "id": "final",
+      "name": "Final design"
+    },
+    {
+      "id": "dir-s7",
+      "name": "S7 · Trend bars"
+    },
+    {
+      "id": "dir-s8",
+      "name": "S8 · Glow line"
+    },
+    {
+      "id": "dir-s9",
+      "name": "S9 · Day by day"
+    },
+    {
+      "id": "dir-s10",
+      "name": "S10 · By category"
+    },
+    {
+      "id": "dir-s11",
+      "name": "S11 · Every payment"
+    },
+    {
+      "id": "dir-s12",
+      "name": "S12 · Lifelines"
+    },
+    {
+      "id": "dir-s13",
+      "name": "S13 · Waterfall"
+    },
+    {
+      "id": "dir-s14",
+      "name": "S14 · Lifetime cost"
+    },
+    {
+      "id": "dir-s15",
+      "name": "S15 · Stream"
+    },
+    {
+      "id": "dir-s16",
+      "name": "S16 · Rhythm"
+    },
+    {
+      "id": "dir-s1",
+      "name": "S1 · Cover-flow ring"
+    },
+    {
+      "id": "dir-s2",
+      "name": "S2 · 3D ring"
+    },
+    {
+      "id": "dir-s3",
+      "name": "S3 · Turntable"
+    },
+    {
+      "id": "dir-s4",
+      "name": "S4 · Rolodex"
+    },
+    {
+      "id": "dir-s5",
+      "name": "S5 · Wheel"
+    },
+    {
+      "id": "dir-s6",
+      "name": "S6 · Halo"
+    },
+    {
+      "id": "dir-q",
+      "name": "Q · Dock"
+    },
+    {
+      "id": "dir-r",
+      "name": "R · Ticket stubs"
+    },
+    {
+      "id": "dir-s",
+      "name": "S · Cover flow"
+    },
+    {
+      "id": "dir-t",
+      "name": "T · Orbit"
+    },
+    {
+      "id": "dir-u",
+      "name": "U · Renewal ruler"
+    },
+    {
+      "id": "dir-v",
+      "name": "V · Card fan"
+    },
+    {
+      "id": "dir-w",
+      "name": "W · Cost ribbon"
+    },
+    {
+      "id": "dir-x",
+      "name": "X · Keyboard"
+    },
+    {
+      "id": "dir-y",
+      "name": "Y · Shelf"
+    },
+    {
+      "id": "dir-z",
+      "name": "Z · Folder tabs"
+    },
+    {
+      "id": "dir-l",
+      "name": "L · October equation"
+    },
+    {
+      "id": "dir-m",
+      "name": "M · Departure board"
+    },
+    {
+      "id": "dir-n",
+      "name": "N · Category rings"
+    },
+    {
+      "id": "dir-o",
+      "name": "O · Two-year chart"
+    },
+    {
+      "id": "dir-p",
+      "name": "P · Year dial"
+    },
+    {
+      "id": "lp-states",
+      "name": "L–P · states"
+    },
+    {
+      "id": "dir-a",
+      "name": "A · One list"
+    },
+    {
+      "id": "dir-b",
+      "name": "B · Calendar"
+    },
+    {
+      "id": "dir-c",
+      "name": "C · Tiles and details"
+    },
+    {
+      "id": "dir-d",
+      "name": "D · Cost map"
+    },
+    {
+      "id": "dir-e",
+      "name": "E · Wall calendar"
+    },
+    {
+      "id": "dir-f",
+      "name": "F · Cards twin"
+    },
+    {
+      "id": "dir-g",
+      "name": "G · Check-in"
+    },
+    {
+      "id": "dir-h",
+      "name": "H · By card"
+    },
+    {
+      "id": "dir-dh-states",
+      "name": "D–H · states"
+    },
+    {
+      "id": "dir-i",
+      "name": "I · Two panes"
+    },
+    {
+      "id": "dir-j",
+      "name": "J · Year in review"
+    },
+    {
+      "id": "dir-k",
+      "name": "K · Bento"
+    },
+    {
+      "id": "new-states",
+      "name": "I–K, Renewals 2–3 · states"
+    },
+    {
+      "id": "renewals",
+      "name": "Renewals 1 · Table (picked)"
+    },
+    {
+      "id": "renewals-2",
+      "name": "Renewals 2 · Ledger"
+    },
+    {
+      "id": "renewals-3",
+      "name": "Renewals 3 · Grid"
+    },
+    {
+      "id": "forms",
+      "name": "Forms"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "SubsReadme.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1300,
+      "h": 6208,
+      "page": "readme"
+    },
+    {
+      "file": "SubsFinal.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1922,
+      "page": "final"
+    },
+    {
+      "file": "SubsFinalPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1957,
+      "page": "final"
+    },
+    {
+      "file": "SubsFinalStates.dc.html",
+      "x": 2230,
+      "y": 0,
+      "w": 1700,
+      "h": 2264,
+      "page": "final"
+    },
+    {
+      "file": "SubsS7.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1994,
+      "page": "dir-s7"
+    },
+    {
+      "file": "SubsS7Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1999,
+      "page": "dir-s7"
+    },
+    {
+      "file": "SubsS8.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1983,
+      "page": "dir-s8"
+    },
+    {
+      "file": "SubsS8Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1999,
+      "page": "dir-s8"
+    },
+    {
+      "file": "SubsS9.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1902,
+      "page": "dir-s9"
+    },
+    {
+      "file": "SubsS9Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1961,
+      "page": "dir-s9"
+    },
+    {
+      "file": "SubsS10.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1968,
+      "page": "dir-s10"
+    },
+    {
+      "file": "SubsS10Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1999,
+      "page": "dir-s10"
+    },
+    {
+      "file": "SubsS11.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1924,
+      "page": "dir-s11"
+    },
+    {
+      "file": "SubsS11Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2004,
+      "page": "dir-s11"
+    },
+    {
+      "file": "SubsS12.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2102,
+      "page": "dir-s12"
+    },
+    {
+      "file": "SubsS12Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2167,
+      "page": "dir-s12"
+    },
+    {
+      "file": "SubsS13.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2091,
+      "page": "dir-s13"
+    },
+    {
+      "file": "SubsS13Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2054,
+      "page": "dir-s13"
+    },
+    {
+      "file": "SubsS14.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2108,
+      "page": "dir-s14"
+    },
+    {
+      "file": "SubsS14Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2192,
+      "page": "dir-s14"
+    },
+    {
+      "file": "SubsS15.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1979,
+      "page": "dir-s15"
+    },
+    {
+      "file": "SubsS15Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1999,
+      "page": "dir-s15"
+    },
+    {
+      "file": "SubsS16.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2050,
+      "page": "dir-s16"
+    },
+    {
+      "file": "SubsS16Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2115,
+      "page": "dir-s16"
+    },
+    {
+      "file": "SubsS1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2333,
+      "page": "dir-s1"
+    },
+    {
+      "file": "SubsS1Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2242,
+      "page": "dir-s1"
+    },
+    {
+      "file": "SubsS2.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2250,
+      "page": "dir-s2"
+    },
+    {
+      "file": "SubsS2Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2246,
+      "page": "dir-s2"
+    },
+    {
+      "file": "SubsS3.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2257,
+      "page": "dir-s3"
+    },
+    {
+      "file": "SubsS3Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2188,
+      "page": "dir-s3"
+    },
+    {
+      "file": "SubsS4.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1953,
+      "page": "dir-s4"
+    },
+    {
+      "file": "SubsS4Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2274,
+      "page": "dir-s4"
+    },
+    {
+      "file": "SubsS5.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2232,
+      "page": "dir-s5"
+    },
+    {
+      "file": "SubsS5Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2246,
+      "page": "dir-s5"
+    },
+    {
+      "file": "SubsS6.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2026,
+      "page": "dir-s6"
+    },
+    {
+      "file": "SubsS6Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2300,
+      "page": "dir-s6"
+    },
+    {
+      "file": "SubsQ.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1427,
+      "page": "dir-q"
+    },
+    {
+      "file": "SubsQPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1749,
+      "page": "dir-q"
+    },
+    {
+      "file": "SubsR.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1493,
+      "page": "dir-r"
+    },
+    {
+      "file": "SubsRPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1709,
+      "page": "dir-r"
+    },
+    {
+      "file": "SubsS.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1534,
+      "page": "dir-s"
+    },
+    {
+      "file": "SubsSPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1754,
+      "page": "dir-s"
+    },
+    {
+      "file": "SubsT.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1639,
+      "page": "dir-t"
+    },
+    {
+      "file": "SubsTPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2008,
+      "page": "dir-t"
+    },
+    {
+      "file": "SubsU.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1618,
+      "page": "dir-u"
+    },
+    {
+      "file": "SubsUPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1880,
+      "page": "dir-u"
+    },
+    {
+      "file": "SubsV.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1614,
+      "page": "dir-v"
+    },
+    {
+      "file": "SubsVPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1912,
+      "page": "dir-v"
+    },
+    {
+      "file": "SubsW.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1527,
+      "page": "dir-w"
+    },
+    {
+      "file": "SubsWPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2038,
+      "page": "dir-w"
+    },
+    {
+      "file": "SubsX.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1496,
+      "page": "dir-x"
+    },
+    {
+      "file": "SubsXPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1876,
+      "page": "dir-x"
+    },
+    {
+      "file": "SubsY.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1396,
+      "page": "dir-y"
+    },
+    {
+      "file": "SubsYPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1986,
+      "page": "dir-y"
+    },
+    {
+      "file": "SubsZ.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1337,
+      "page": "dir-z"
+    },
+    {
+      "file": "SubsZPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1858,
+      "page": "dir-z"
+    },
+    {
+      "file": "SubsL.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1690,
+      "page": "dir-l"
+    },
+    {
+      "file": "SubsLPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1533,
+      "page": "dir-l"
+    },
+    {
+      "file": "SubsM.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1548,
+      "page": "dir-m"
+    },
+    {
+      "file": "SubsMPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1600,
+      "page": "dir-m"
+    },
+    {
+      "file": "SubsN.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1743,
+      "page": "dir-n"
+    },
+    {
+      "file": "SubsNPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1964,
+      "page": "dir-n"
+    },
+    {
+      "file": "SubsO.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1717,
+      "page": "dir-o"
+    },
+    {
+      "file": "SubsOPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1552,
+      "page": "dir-o"
+    },
+    {
+      "file": "SubsP.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1367,
+      "page": "dir-p"
+    },
+    {
+      "file": "SubsPPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1762,
+      "page": "dir-p"
+    },
+    {
+      "file": "SubsLPStates.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1700,
+      "h": 2423,
+      "page": "lp-states"
+    },
+    {
+      "file": "SubsA.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1955,
+      "page": "dir-a"
+    },
+    {
+      "file": "SubsAPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2330,
+      "page": "dir-a"
+    },
+    {
+      "file": "SubsAStates.dc.html",
+      "x": 2230,
+      "y": 0,
+      "w": 1700,
+      "h": 4395,
+      "page": "dir-a"
+    },
+    {
+      "file": "SubsB.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1753,
+      "page": "dir-b"
+    },
+    {
+      "file": "SubsBPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1675,
+      "page": "dir-b"
+    },
+    {
+      "file": "SubsBStates.dc.html",
+      "x": 2230,
+      "y": 0,
+      "w": 1700,
+      "h": 5248,
+      "page": "dir-b"
+    },
+    {
+      "file": "SubsC.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1279,
+      "page": "dir-c"
+    },
+    {
+      "file": "SubsCPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1581,
+      "page": "dir-c"
+    },
+    {
+      "file": "SubsCStates.dc.html",
+      "x": 2230,
+      "y": 0,
+      "w": 1700,
+      "h": 4650,
+      "page": "dir-c"
+    },
+    {
+      "file": "SubsD.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1421,
+      "page": "dir-d"
+    },
+    {
+      "file": "SubsDPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1558,
+      "page": "dir-d"
+    },
+    {
+      "file": "SubsE.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1534,
+      "page": "dir-e"
+    },
+    {
+      "file": "SubsEPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1751,
+      "page": "dir-e"
+    },
+    {
+      "file": "SubsF.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1514,
+      "page": "dir-f"
+    },
+    {
+      "file": "SubsFPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1659,
+      "page": "dir-f"
+    },
+    {
+      "file": "SubsG.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1137,
+      "page": "dir-g"
+    },
+    {
+      "file": "SubsGPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2109,
+      "page": "dir-g"
+    },
+    {
+      "file": "SubsH.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1374,
+      "page": "dir-h"
+    },
+    {
+      "file": "SubsHPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1416,
+      "page": "dir-h"
+    },
+    {
+      "file": "SubsDHStates.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1700,
+      "h": 2299,
+      "page": "dir-dh-states"
+    },
+    {
+      "file": "SubsI.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1155,
+      "page": "dir-i"
+    },
+    {
+      "file": "SubsIPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1282,
+      "page": "dir-i"
+    },
+    {
+      "file": "SubsJ.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2015,
+      "page": "dir-j"
+    },
+    {
+      "file": "SubsJPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2144,
+      "page": "dir-j"
+    },
+    {
+      "file": "SubsK.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 914,
+      "page": "dir-k"
+    },
+    {
+      "file": "SubsKPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2221,
+      "page": "dir-k"
+    },
+    {
+      "file": "SubsNewStates.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1700,
+      "h": 3927,
+      "page": "new-states"
+    },
+    {
+      "file": "SubsRenewals.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1952,
+      "page": "renewals"
+    },
+    {
+      "file": "SubsRenewalsPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2064,
+      "page": "renewals"
+    },
+    {
+      "file": "SubsRenewalsStates.dc.html",
+      "x": 2230,
+      "y": 0,
+      "w": 1700,
+      "h": 2280,
+      "page": "renewals"
+    },
+    {
+      "file": "SubsRenewals2.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2166,
+      "page": "renewals-2"
+    },
+    {
+      "file": "SubsRenewals2Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1594,
+      "page": "renewals-2"
+    },
+    {
+      "file": "SubsRenewals3.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1291,
+      "page": "renewals-3"
+    },
+    {
+      "file": "SubsRenewals3Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1423,
+      "page": "renewals-3"
+    },
+    {
+      "file": "SubsForms.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1300,
+      "h": 5942,
+      "page": "forms"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-1",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. The final design, picked 2026-10-21: the coloured cover-flow hero (scroll, drag or use the arrow keys to turn it; the card, bar, button and ring take the pick's colour), the cost map and payments, and a full-width chart that switches between Day by day, Payment trend and Lifetime cost. Spec: docs/design/subscriptions.md.",
+      "page": "final"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S7 · Trend bars: S1's cover flow with All at the centre. Scroll, drag or use the arrow keys and it turns round; the hero, cost map, payments and the full-width chart at the end follow the pick.",
+      "page": "dir-s7"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S8 · Glow line: S1's cover flow with All at the centre. Scroll, drag or use the arrow keys and it turns round; the hero, cost map, payments and the full-width chart at the end follow the pick.",
+      "page": "dir-s8"
+    },
+    {
+      "id": "note-4",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S9 · Day by day: S1's cover flow with All at the centre. Scroll, drag or use the arrow keys and it turns round; the hero, cost map, payments and the full-width chart at the end follow the pick.",
+      "page": "dir-s9"
+    },
+    {
+      "id": "note-5",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S10 · By category: S1's cover flow with All at the centre. Scroll, drag or use the arrow keys and it turns round; the hero, cost map, payments and the full-width chart at the end follow the pick.",
+      "page": "dir-s10"
+    },
+    {
+      "id": "note-6",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S11 · Every payment: S1's cover flow with All at the centre. Scroll, drag or use the arrow keys and it turns round; the hero, cost map, payments and the full-width chart at the end follow the pick.",
+      "page": "dir-s11"
+    },
+    {
+      "id": "note-7",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S12 · Lifelines: S1's cover flow with All at the centre. Scroll, drag or use the arrow keys and it turns round; the hero, cost map, payments and the full-width chart at the end follow the pick.",
+      "page": "dir-s12"
+    },
+    {
+      "id": "note-8",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S13 · Waterfall: S1's cover flow with All at the centre. Scroll, drag or use the arrow keys and it turns round; the hero, cost map, payments and the full-width chart at the end follow the pick.",
+      "page": "dir-s13"
+    },
+    {
+      "id": "note-9",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S14 · Lifetime cost: S1's cover flow with All at the centre. Scroll, drag or use the arrow keys and it turns round; the hero, cost map, payments and the full-width chart at the end follow the pick.",
+      "page": "dir-s14"
+    },
+    {
+      "id": "note-10",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S15 · Stream: S1's cover flow with All at the centre. Scroll, drag or use the arrow keys and it turns round; the hero, cost map, payments and the full-width chart at the end follow the pick.",
+      "page": "dir-s15"
+    },
+    {
+      "id": "note-11",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S16 · Rhythm: S1's cover flow with All at the centre. Scroll, drag or use the arrow keys and it turns round; the hero, cost map, payments and the full-width chart at the end follow the pick.",
+      "page": "dir-s16"
+    },
+    {
+      "id": "note-12",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S1 · Cover-flow ring: All at the centre, the subscriptions round it in renewal order. Pick one, or use the arrows, and it turns to the front; the band, hero, chart, cost map and payments follow.",
+      "page": "dir-s1"
+    },
+    {
+      "id": "note-13",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S2 · 3D ring: All at the centre, the subscriptions round it in renewal order. Pick one, or use the arrows, and it turns to the front; the band, hero, chart, cost map and payments follow.",
+      "page": "dir-s2"
+    },
+    {
+      "id": "note-14",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S3 · Turntable: All at the centre, the subscriptions round it in renewal order. Pick one, or use the arrows, and it turns to the front; the band, hero, chart, cost map and payments follow.",
+      "page": "dir-s3"
+    },
+    {
+      "id": "note-15",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S4 · Rolodex: All at the centre, the subscriptions round it in renewal order. Pick one, or use the arrows, and it turns to the front; the band, hero, chart, cost map and payments follow.",
+      "page": "dir-s4"
+    },
+    {
+      "id": "note-16",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S5 · Wheel: All at the centre, the subscriptions round it in renewal order. Pick one, or use the arrows, and it turns to the front; the band, hero, chart, cost map and payments follow.",
+      "page": "dir-s5"
+    },
+    {
+      "id": "note-17",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S6 · Halo: All at the centre, the subscriptions round it in renewal order. Pick one, or use the arrows, and it turns to the front; the band, hero, chart, cost map and payments follow.",
+      "page": "dir-s6"
+    },
+    {
+      "id": "note-18",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. Start here: the forty-two directions (S7–S16 newest), the three Renewals layouts, how to pick details by number, and the decisions that need an answer.",
+      "page": "readme"
+    },
+    {
+      "id": "note-19",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. A · One list: desktop, phone, then its states (empty, one subscription, due soon, paused and cancelled).",
+      "page": "dir-a"
+    },
+    {
+      "id": "note-20",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. B · Calendar: desktop, phone, then its states, including the drawer that holds one subscription's history.",
+      "page": "dir-b"
+    },
+    {
+      "id": "note-21",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. C · Tiles and details: desktop (click a tile to switch the details), phone, then its states.",
+      "page": "dir-c"
+    },
+    {
+      "id": "note-22",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. D · Cost map: a treemap sized by what each one costs a month (hover a block), then a year ago against now.",
+      "page": "dir-d"
+    },
+    {
+      "id": "note-23",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. E · Wall calendar: this month with each renewal on its day, and the year as dot calendars.",
+      "page": "dir-e"
+    },
+    {
+      "id": "note-24",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. F · Cards twin: the Cards page piece for piece, with categories in place of cards.",
+      "page": "dir-f"
+    },
+    {
+      "id": "note-25",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. G · Check-in: what needs a decision first, then what's on track, and the month as a receipt.",
+      "page": "dir-g"
+    },
+    {
+      "id": "note-26",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. H · By card: a lane per card or account; drag a subscription to change where it's charged.",
+      "page": "dir-h"
+    },
+    {
+      "id": "note-27",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. D to H: empty, due within 3 days, and paused or cancelled, for each.",
+      "page": "dir-dh-states"
+    },
+    {
+      "id": "note-28",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. Picked 2026-10-21. The Renewals page under Subscriptions, like the Cards Statements page: every renewal, paid or to come. Filtered to one subscription, it's that subscription's history.",
+      "page": "renewals"
+    },
+    {
+      "id": "note-29",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. I · Two panes: a list and a details pane (click a row in the list to switch it).",
+      "page": "dir-i"
+    },
+    {
+      "id": "note-30",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. J · Year in review: a report, a statement per section.",
+      "page": "dir-j"
+    },
+    {
+      "id": "note-31",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. K · Bento: everything on one screen as widgets.",
+      "page": "dir-k"
+    },
+    {
+      "id": "note-32",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. States for I, J, K and the Renewals ledger and grid.",
+      "page": "new-states"
+    },
+    {
+      "id": "note-33",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. Renewals 2 · Ledger: a timeline with a Today line, a month list and a summary column.",
+      "page": "renewals-2"
+    },
+    {
+      "id": "note-34",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. Renewals 3 · Grid: a row per subscription, a column per month. Hover a cell for its payment.",
+      "page": "renewals-3"
+    },
+    {
+      "id": "note-35",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. Q · Dock: the selector picks a subscription (or All); the hero, cost map and payments table follow. Click to try it.",
+      "page": "dir-q"
+    },
+    {
+      "id": "note-36",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. R · Ticket stubs: the selector picks a subscription (or All); the hero, cost map and payments table follow. Click to try it.",
+      "page": "dir-r"
+    },
+    {
+      "id": "note-37",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. S · Cover flow: the selector picks a subscription (or All); the hero, cost map and payments table follow. Click to try it.",
+      "page": "dir-s"
+    },
+    {
+      "id": "note-38",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. T · Orbit: the selector picks a subscription (or All); the hero, cost map and payments table follow. Click to try it.",
+      "page": "dir-t"
+    },
+    {
+      "id": "note-39",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. U · Renewal ruler: the selector picks a subscription (or All); the hero, cost map and payments table follow. Click to try it.",
+      "page": "dir-u"
+    },
+    {
+      "id": "note-40",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. V · Card fan: the selector picks a subscription (or All); the hero, cost map and payments table follow. Click to try it.",
+      "page": "dir-v"
+    },
+    {
+      "id": "note-41",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. W · Cost ribbon: the selector picks a subscription (or All); the hero, cost map and payments table follow. Click to try it.",
+      "page": "dir-w"
+    },
+    {
+      "id": "note-42",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. X · Keyboard: the selector picks a subscription (or All); the hero, cost map and payments table follow. Click to try it.",
+      "page": "dir-x"
+    },
+    {
+      "id": "note-43",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. Y · Shelf: the selector picks a subscription (or All); the hero, cost map and payments table follow. Click to try it.",
+      "page": "dir-y"
+    },
+    {
+      "id": "note-44",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. Z · Folder tabs: the selector picks a subscription (or All); the hero, cost map and payments table follow. Click to try it.",
+      "page": "dir-z"
+    },
+    {
+      "id": "note-45",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. L · October equation. L–P all keep F's greeting, D's cost map (click a block) and C's payments table.",
+      "page": "dir-l"
+    },
+    {
+      "id": "note-46",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. M · Departure board, with the greeting, cost map and payments table.",
+      "page": "dir-m"
+    },
+    {
+      "id": "note-47",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. N · Category rings, with the greeting, cost map and payments table.",
+      "page": "dir-n"
+    },
+    {
+      "id": "note-48",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. O · Two-year chart, with the greeting, cost map and payments table.",
+      "page": "dir-o"
+    },
+    {
+      "id": "note-49",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. P · Year dial, with the greeting, cost map and payments table.",
+      "page": "dir-p"
+    },
+    {
+      "id": "note-50",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. L–P: each hero empty and in one changed state, and the payments table's other states.",
+      "page": "lp-states"
+    },
+    {
+      "id": "note-51",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. Forms for every direction: Add, Edit, Record payment, Pause and Cancel, and the phone sheets.",
+      "page": "forms"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "readme"
+  }
+}

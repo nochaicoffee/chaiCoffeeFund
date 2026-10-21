@@ -1,0 +1,323 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Manrope:wght@500;600;700;800&display=swap">
+  <style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.chai-app {
+  --page: oklch(0.965 0.004 90); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06); --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+  --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+  --accent: oklch(0.72 0.19 145); --accent-tint: oklch(0.93 0.06 145); --accent-text: oklch(0.42 0.14 145); --on-accent: oklch(0.99 0 0);
+  --accent-edge: oklch(0.72 0.19 145 / 0.45); --accent-ring: oklch(0.72 0.19 145 / 0.22); --negative-ring: oklch(0.55 0.16 25 / 0.18);
+  --ink: oklch(0.16 0.008 260); --on-ink: oklch(0.99 0 0);
+  --positive: oklch(0.42 0.14 145); --warning: oklch(0.72 0.14 75); --warning-text: oklch(0.47 0.1 70); --warning-tint: oklch(0.95 0.05 85);
+  --negative: oklch(0.55 0.16 25); --negative-tint: oklch(0.95 0.035 40);
+  --feature-tile: oklch(0.935 0.052 148); --feature-tile-line: oklch(0.62 0.15 150 / 0.24); --feature-tile-glow: oklch(1 0 0 / 0.55);
+  --rings-ink: oklch(0.42 0.1 152); --rings-light: oklch(1 0 0); --bar-glow: oklch(1 0 0 / 0.26);
+  --heat-1: oklch(0.95 0.03 150); --heat-2: oklch(0.87 0.07 150); --heat-3: oklch(0.76 0.11 151); --heat-4: oklch(0.6 0.12 153); --heat-5: oklch(0.42 0.1 156);
+  --heat-ink: oklch(0.24 0.05 152); --heat-no-data: oklch(0 0 0 / 0.04); --heat-upcoming: oklch(0 0 0 / 0.13); --trend-no-data: oklch(0 0 0 / 0.1); --trend-peak-shadow: oklch(0.3 0.09 155 / 0.26);
+  --card-emerald-from: oklch(0.42 0.11 155); --card-emerald-to: oklch(0.24 0.07 162); --card-emerald: oklch(0.6 0.12 153);
+  --card-sapphire-from: oklch(0.32 0.09 258); --card-sapphire-to: oklch(0.16 0.05 258); --card-sapphire: oklch(0.48 0.1 258);
+  --card-ruby-from: oklch(0.3 0.11 20); --card-ruby-to: oklch(0.15 0.07 20); --card-ruby: oklch(0.57 0.13 22);
+  --card-onyx-from: oklch(0.28 0.02 75); --card-onyx-to: oklch(0.15 0.01 75); --card-onyx: oklch(0.56 0.04 75);
+  --card-violet-from: oklch(0.31 0.1 300); --card-violet-to: oklch(0.16 0.06 300); --card-violet: oklch(0.53 0.13 300);
+  --card-teal-from: oklch(0.32 0.07 200); --card-teal-to: oklch(0.16 0.04 200); --card-teal: oklch(0.56 0.09 200);
+  --card-copper-from: oklch(0.33 0.09 50); --card-copper-to: oklch(0.16 0.05 50); --card-copper: oklch(0.6 0.12 50);
+  --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
+  --on-card: oklch(0.95 0.004 260); --on-card-muted: oklch(1 0 0 / 0.6); --on-card-faint: oklch(1 0 0 / 0.5); --on-card-fill: oklch(1 0 0 / 0.16); --on-card-line: oklch(1 0 0 / 0.12); --on-card-line-top: oklch(1 0 0 / 0.22); --on-card-lime: oklch(0.88 0.17 138);
+  --card-chip: oklch(0.8 0.13 80); --card-chip-mid: oklch(0.68 0.13 80); --card-chip-deep: oklch(0.55 0.1 80);
+  --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
+  --tile-shadow-selected: 0 10px 26px oklch(0.3 0.09 155 / 0.35), 0 0 0 4px oklch(1 0 0 / 0.08), 0 0 18px oklch(1 0 0 / 0.2);
+  --due-pulse-ring: oklch(0.82 0.12 40 / 0.2); --due-pulse-fill: oklch(0.7 0.14 35 / 0.55);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative; overflow: hidden; font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; background: var(--page); color: var(--fg);
+  font-size: 13px; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+}
+.chai-app h1, .chai-app h2, .chai-app h3, .chai-app p { margin: 0; }
+.glass { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); }
+.glass-strong { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); }
+.muted { color: var(--muted); }
+.strong { color: var(--fg); font-weight: 800; }
+.row { display: flex; align-items: center; gap: 10px; }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.grow { flex: 1; min-width: 0; }
+
+/* ---- Shell ---- */
+.desk { display: flex; gap: 20px; padding: 24px; }
+.rail { width: 64px; flex-shrink: 0; border-radius: 999px; display: flex; flex-direction: column; align-items: center; padding: 18px 0; gap: 10px; }
+.rail-item { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; color: var(--muted); }
+.rail-item.active { background: var(--ink); color: var(--on-ink); }
+.rail-me { margin-top: auto; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+.main { flex: 1; min-width: 0; border-radius: 36px; padding: 26px; display: flex; flex-direction: column; gap: 20px; }
+.ph { display: flex; flex-direction: column; border-radius: 34px; border: 1px solid var(--fill-strong); }
+.ph-status { height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; font-size: 14px; font-weight: 700; }
+.ph-icons { display: flex; gap: 4px; } .ph-icons i { width: 16px; height: 9px; border-radius: 3px; background: var(--fg); opacity: 0.85; }
+.ph-bar { height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 16px; border-bottom: 1px solid var(--divider); font-size: 16px; font-weight: 800; }
+.ph-menu { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.ph-body { flex: 1; min-height: 0; padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ---- Header ---- */
+.pg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.pg-text { display: flex; flex-direction: column; gap: 10px; max-width: 980px; }
+.eyebrow { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.pg-head h1 { font-size: 30px; font-weight: 800; line-height: 1.15; }
+.lede { font-size: 16px; font-weight: 500; line-height: 1.7; color: var(--muted); text-wrap: pretty; }
+.lede b { color: var(--fg); font-weight: 700; }
+.pg-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-top: 4px; }
+.ph-head { flex-direction: column; gap: 14px; }
+.ph-head h1 { font-size: 26px; }
+.ph-head .lede { font-size: 15px; line-height: 1.6; }
+.ph-head .pg-actions { flex-wrap: wrap; margin-top: 0; }
+
+/* ---- Buttons, pills, segmented, chips ---- */
+.btn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 18px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; user-select: none; }
+.btn-primary { background: var(--ink); color: var(--on-ink); position: relative; overflow: hidden; }
+.btn-primary::after { content: ""; position: absolute; top: -60%; left: -30%; width: 46%; height: 220%; background: linear-gradient(100deg, transparent, oklch(1 0 0 / 0.25), transparent); transform: rotate(14deg); pointer-events: none; }
+.btn-ghost { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--fg); }
+.btn-soft { background: var(--fill); color: var(--fg); }
+.btn-accent { background: var(--accent-tint); color: var(--accent-text); }
+.btn-danger { background: var(--negative-tint); color: var(--negative); }
+.btn-icon { width: 40px; padding: 0; justify-content: center; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--muted); }
+.btn-sm { min-height: 30px; padding: 0 12px; font-size: 12px; gap: 6px; }
+.btn-xs { min-height: 26px; padding: 0 10px; font-size: 11px; gap: 5px; }
+.ph .btn { min-height: 44px; }
+.ph .btn-sm { min-height: 36px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.pill-on { background: var(--accent-tint); color: var(--accent-text); }
+.pill-off { background: var(--fill); color: var(--muted); }
+.pill-soon { background: var(--warning-tint); color: var(--warning-text); }
+.pill-due { background: var(--negative-tint); color: var(--negative); animation: due-pulse 2.2s ease-in-out infinite; }
+.pill-warn { background: var(--warning-tint); color: var(--warning-text); }
+.pill-ink { background: var(--ink); color: var(--on-ink); }
+@keyframes due-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px var(--due-pulse-ring); } }
+@media (prefers-reduced-motion: reduce) { .pill-due { animation: none; } }
+.chg { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.chg-up { color: var(--negative); } .chg-down { color: var(--positive); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--fill); gap: 2px; }
+.seg-i { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.seg-i em { font-style: normal; font-size: 11px; color: var(--muted); font-weight: 700; }
+.seg-i.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--fill); color: var(--fg); white-space: nowrap; }
+.chip.on { background: var(--ink); color: var(--on-ink); }
+.chip i { width: 8px; height: 8px; border-radius: 3px; display: inline-block; }
+.chip em { font-style: normal; color: var(--muted); font-size: 11px; }
+.chip.on em { color: oklch(1 0 0 / 0.6); }
+.sample { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--warning-tint); color: var(--warning-text); font-size: 11px; font-weight: 800; letter-spacing: 0.01em; white-space: nowrap; }
+.sample::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--warning); }
+.tag-new { display: inline-flex; padding: 2px 7px; border-radius: 999px; font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: oklch(0.93 0.05 258); color: oklch(0.42 0.1 258); vertical-align: 1px; }
+
+/* ---- Monograms, card chips ---- */
+.mono { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--on-card); font-weight: 800; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18), 0 2px 6px oklch(0 0 0 / 0.18); }
+.mono-off { filter: grayscale(1); opacity: 0.55; }
+.via { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--fg); white-space: nowrap; }
+.minitile { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2); }
+.minibank { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--fill-strong); color: var(--muted); }
+
+/* ---- Cards (surfaces) ---- */
+.card { border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.card-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.card-t { font-size: 15px; font-weight: 800; }
+.card-t small { font-size: 12px; font-weight: 600; color: var(--muted); margin-left: 8px; }
+.card-note { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.55; }
+.link { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--accent-text); white-space: nowrap; }
+.tex { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; z-index: -1; pointer-events: none; }
+.tex svg, .tex .sheen { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.textured { position: relative; isolation: isolate; }
+
+/* Summary tiles, as on the Statements page: one feature tile in mint with rings. */
+.tiles { display: grid; gap: 16px; }
+.stile { position: relative; isolation: isolate; border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.stile .k { font-size: 12px; font-weight: 600; color: var(--muted); }
+.stile .v { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+.stile .v small { font-size: 14px; font-weight: 700; color: var(--muted); letter-spacing: 0; }
+.stile .s { font-size: 12px; color: var(--muted); font-weight: 500; }
+.stile .s b { color: var(--fg); font-weight: 700; }
+.feature { background: var(--feature-tile); border: 1px solid var(--feature-tile-line); }
+.feature .k, .feature .s { color: oklch(0.38 0.06 152); }
+
+/* Dark tiles, like the card tiles */
+.dtile { position: relative; isolation: isolate; flex-shrink: 0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow); }
+.dtile .dt-muted { color: var(--on-card-muted); font-size: 11px; font-weight: 600; }
+.dtile .dt-faint { color: var(--on-card-faint); font-size: 10px; font-weight: 600; }
+.dtile.sel { border: 1.5px solid var(--accent); box-shadow: var(--tile-shadow-selected); }
+.dtile .dt-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--on-card-fill); white-space: nowrap; }
+.dtile .dt-pill.due { background: oklch(0.7 0.14 35 / 0.55); animation: due-pulse 2.2s ease-in-out infinite; }
+.dtile .dt-pill.soon { background: oklch(0.8 0.13 80 / 0.35); }
+.dtile.off { filter: grayscale(0.85); opacity: 0.6; box-shadow: none; }
+.dtile .tick { display: none; } .dtile.sel .tick { display: flex; }
+.tick { position: absolute; top: -9px; right: -9px; width: 21px; height: 21px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px oklch(0 0 0 / 0.4); }
+.addtile { flex-shrink: 0; border-radius: 22px; border: 1.5px dashed var(--fill-strong); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 700; }
+
+/* ---- Fitting neatly: rows of cards end level, and content fills the card ---- */
+.stack-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.stack-col > :last-child { flex: 1 1 auto; }
+.spread { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+.foot { margin-top: auto; }
+.card > .tmap { flex: 1 1 auto; }
+
+/* ---- Tables ---- */
+.th { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.tgroup { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 8px; border-bottom: 1px solid var(--divider); font-size: 13px; font-weight: 800; }
+.tgroup span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.cell-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cell-name b { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cell-name small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+.num { font-weight: 800; }
+.sub2 { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+
+/* ---- Bars ---- */
+.track { height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.track > span { display: block; height: 100%; border-radius: inherit; }
+.stack { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; }
+.stack > span { display: block; height: 100%; position: relative; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.legend b { color: var(--fg); font-weight: 700; }
+
+/* ---- Notice ---- */
+.notice { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); color: var(--warning-text); font-size: 13px; font-weight: 600; }
+.notice b { color: oklch(0.36 0.08 65); font-weight: 800; }
+.notice .grow { color: oklch(0.4 0.08 68); }
+.notice svg { flex-shrink: 0; }
+
+/* ---- Dropdown (the app's own, #112) ---- */
+.sel { position: relative; display: inline-block; }
+.sel > summary { list-style: none; } .sel > summary::-webkit-details-marker { display: none; }
+.sel-trigger { position: relative; display: flex; align-items: center; gap: 8px; border: 1px solid var(--surface-line); background: var(--surface); cursor: pointer; text-align: left; max-width: 100%; }
+.sel-value { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sel-chev { flex-shrink: 0; color: var(--muted); display: flex; transition: transform 160ms var(--ease-out); }
+.sel[open] .sel-chev { transform: rotate(180deg); }
+.sel-icon { display: flex; color: var(--muted); }
+.sel--pill .sel-trigger { min-height: 40px; border-radius: 999px; box-shadow: var(--soft-shadow); padding: 9px 15px; font-size: 13px; font-weight: 700; }
+.sel--pill[open] .sel-trigger { border-color: var(--accent-edge); }
+.sel--small .sel-trigger { min-height: 34px; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; background: var(--fill); border-color: transparent; }
+.sel--field { display: block; }
+.sel--field .sel-trigger { width: 100%; height: 40px; border-radius: 12px; padding: 0 12px 0 14px; font-size: 14px; font-weight: 600; }
+.sel--field[open] .sel-trigger { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.ph .sel--field .sel-trigger { height: 44px; } .ph .sel--pill .sel-trigger { min-height: 44px; }
+.is-placeholder { color: var(--muted); font-weight: 500; }
+.pop { position: absolute; z-index: 20; top: calc(100% + 8px); left: 0; background: var(--surface); border: 1px solid var(--surface-line); border-radius: 16px; box-shadow: var(--pop-shadow); padding: 6px; min-width: 100%; }
+.pop.align-end { left: auto; right: 0; }
+.sel[open] .pop { animation: pop-in 150ms var(--ease-out) both; }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@media (prefers-reduced-motion: reduce) { .sel[open] .pop { animation: none; } .sel-chev { transition: none; } }
+.lb { min-width: 210px; max-height: 300px; overflow-y: auto; }
+.sel--field .lb { min-width: 0; }
+.lb-group { padding: 8px 12px 4px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.lb-divider { height: 1px; margin: 6px 8px; background: var(--divider); }
+.opt { display: flex; align-items: center; gap: 12px; min-height: 36px; padding: 0 10px 0 12px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--fg); cursor: pointer; }
+.sel--field .opt { font-size: 14px; font-weight: 600; }
+.opt:hover { background: var(--fill); }
+.opt-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.opt-meta { flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+.opt-check { flex-shrink: 0; width: 14px; color: var(--accent-text); visibility: hidden; display: flex; }
+.opt[aria-selected="true"] { background: var(--accent-tint); color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-meta { color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-check { visibility: visible; }
+.ph .opt { min-height: 44px; }
+
+/* ---- Light hover card (#104/#105) ---- */
+.hc { width: 250px; border-radius: 16px; padding: 14px; background: var(--surface); color: var(--fg); box-shadow: var(--pop-shadow); border: 1px solid var(--surface-line); }
+.hc .h { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.hc .t { font-size: 22px; font-weight: 800; line-height: 1.25; margin-top: 2px; }
+.hc .d { font-size: 12px; font-weight: 700; margin-top: 2px; color: var(--muted); }
+.hc ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.hc li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+.hc li .nm { flex: 1; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc li b { font-weight: 800; }
+.hc .f { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--divider); font-size: 11px; font-weight: 600; color: var(--muted); }
+.hc-arrow { position: absolute; width: 12px; height: 12px; background: var(--surface); border: 1px solid var(--surface-line); border-top: none; border-left: none; transform: rotate(45deg); }
+.hov { position: relative; }
+.hov > .hc-wrap { position: absolute; z-index: 30; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 160ms ease, transform 240ms var(--ease-out); }
+.hov:hover > .hc-wrap, .hov.is-open > .hc-wrap { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .hov > .hc-wrap { transition: none; transform: none; } }
+
+/* ---- Heatmap ---- */
+.heat { display: grid; gap: 8px; align-items: center; }
+.heat-m { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.heat-m.now { color: var(--fg); }
+.hcell { position: relative; isolation: isolate; height: 54px; border-radius: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.ph .hcell .cap { display: none; }
+.hcell .cap { font-size: 9px; font-weight: 600; opacity: 0.85; margin-top: 1px; white-space: nowrap; }
+.hcell.up { border: 1.5px dashed var(--heat-upcoming); color: var(--muted); background: transparent; }
+.hcell.up.big { border-color: oklch(0.6 0.12 153 / 0.6); color: var(--heat-ink); background: oklch(0.95 0.03 150 / 0.5); }
+.hcell.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); }
+.hcell.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* ---- Forms (as docs/design/cards-forms.md) ---- */
+.dlg { position: relative; background: var(--surface); border-radius: 28px; box-shadow: var(--pop-shadow); display: flex; flex-direction: column; }
+.dlg-h { display: flex; align-items: flex-start; gap: 14px; padding: 26px 28px 0; }
+.dlg-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-tint); color: var(--accent-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dlg-h h3 { font-size: 18px; font-weight: 800; } .dlg-h p { font-size: 13px; color: var(--muted); font-weight: 500; margin-top: 3px; }
+.dlg-x { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--fg); flex-shrink: 0; }
+.dlg-b { display: grid; grid-template-columns: 320px 1fr; gap: 24px; padding: 20px 28px; }
+.dlg-f { display: flex; align-items: center; gap: 10px; padding: 16px 28px 22px; border-top: 1px solid var(--divider); }
+.dlg-f .note { flex: 1; font-size: 12px; color: var(--muted); font-weight: 500; }
+.preview { position: relative; isolation: isolate; border-radius: 20px; background: var(--feature-tile); border: 1px solid var(--feature-tile-line); padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.pv-k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: oklch(0.38 0.1 150); }
+.pv-box { background: oklch(1 0 0 / 0.72); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
+.pv-box .between span:first-child { color: var(--muted); font-weight: 600; }
+.pv-box .between span:last-child { font-weight: 700; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 14px; align-content: start; }
+.fld { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.fld.full { grid-column: 1 / -1; }
+.lbl { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.lbl .req { color: var(--negative); margin-left: 2px; }
+.lbl .opt-tag { font-size: 10px; font-weight: 700; color: var(--muted); opacity: 0.8; margin-left: 6px; letter-spacing: 0.04em; }
+.inp { height: 40px; border-radius: 12px; border: 1px solid var(--surface-line); background: var(--surface); box-shadow: inset 0 1px 1px oklch(0 0 0 / 0.02); padding: 0 14px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.ph .inp { height: 44px; }
+.inp .pre { color: var(--muted); font-weight: 600; } .inp .suf { color: var(--muted); font-weight: 500; font-size: 13px; }
+.inp.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.inp.err { border-color: var(--negative); box-shadow: 0 0 0 3px var(--negative-ring); }
+.inp .ph-text { color: var(--muted); font-weight: 500; }
+.help { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.45; }
+.help svg { flex-shrink: 0; margin-top: 2px; }
+.help.err { color: var(--negative); font-weight: 600; }
+.help.warn { color: var(--warning-text); font-weight: 600; }
+.fseg { display: flex; padding: 3px; border-radius: 13px; background: var(--fill); gap: 2px; }
+.fseg span { flex: 1; text-align: center; padding: 9px 8px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.fseg span.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.ph .fseg span { padding: 11px 6px; }
+.checkrow { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); font-size: 13px; color: oklch(0.36 0.08 65); font-weight: 600; line-height: 1.45; }
+.box { width: 18px; height: 18px; border-radius: 6px; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.box.off { background: var(--surface); border: 1.5px solid var(--fill-strong); }
+.scrim { position: absolute; inset: 0; background: oklch(0.16 0.008 260 / 0.38); }
+
+/* ---- Canvas furniture (labels on the boards themselves) ---- */
+.board { padding: 48px; display: flex; flex-direction: column; gap: 36px; }
+.board-h h2 { font-size: 28px; font-weight: 800; }
+.board-h p { font-size: 14px; color: var(--muted); font-weight: 500; line-height: 1.6; margin-top: 8px; max-width: 1100px; }
+.board-h p b { color: var(--fg); }
+.sec-h { display: flex; gap: 12px; align-items: flex-start; }
+.sec-n { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sec-h h3 { font-size: 16px; font-weight: 800; }
+.sec-h p { font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.55; margin-top: 3px; max-width: 980px; }
+.frame-l { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+.stage { position: relative; border-radius: 28px; background: oklch(0.9 0.005 90); overflow: hidden; }
+.callout { position: absolute; z-index: 40; display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: oklch(0.55 0.2 300); color: white; font-size: 11px; font-weight: 800; box-shadow: 0 4px 12px oklch(0.3 0.15 300 / 0.35); white-space: nowrap; }
+.callout::before { content: attr(data-n); width: 16px; height: 16px; border-radius: 50%; background: white; color: oklch(0.45 0.2 300); display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+</style>
+</helmet>
+<div class="chai-app board" style="width:1700px;height:2423px"><div class="board-h"><div class="row" style="gap:12px"><h2>L–P: states</h2><span class="sample">Sample data, made up. Today is Oct 20, 2026</span></div><p>Each new hero with no data and in one changed state, then the payments table in its other states. The greeting, cost map and payments table work the same in all five.</p></div><section style="display:flex;flex-direction:column;gap:16px"><div class="sec-h"><span class="sec-n">L</span><div><h3>October as an equation</h3><p></p></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start"><div><div class="frame-l">Empty</div><section class="card glass" style=""><span class="eyebrow">October so far</span><div style="display:flex;gap:10px;align-items:center"><div style="flex:1;border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:3px;background:var(--accent-tint)"><span style="font-size:12px;font-weight:700;color:var(--muted)">Paid</span><b style="font-size:26px;font-weight:800">₹0</b><span style="font-size:11.5px;font-weight:600;color:var(--muted)">0 payments</span></div><b style="font-size:24px;color:var(--muted)">+</b><div style="flex:1;border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:3px;border:1.5px dashed var(--fill-strong)"><span style="font-size:12px;font-weight:700;color:var(--muted)">To come</span><b style="font-size:26px;font-weight:800">₹0</b><span style="font-size:11.5px;font-weight:600;color:var(--muted)">0 renewals left</span></div><b style="font-size:24px;color:var(--muted)">=</b><div class="textured" style="flex:1.1;border-radius:18px;padding:14px 16px;background:var(--feature-tile);border:1px solid var(--feature-tile-line);display:flex;flex-direction:column;gap:3px"><span class="tex" aria-hidden="true"><svg viewBox="0 0 240 90" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-ink)" stroke-opacity="0.12" stroke-width="1"><circle cx="250" cy="110" r="40"></circle><circle cx="250" cy="110" r="66"></circle><circle cx="250" cy="110" r="92"></circle><circle cx="250" cy="110" r="118"></circle><circle cx="250" cy="110" r="144"></circle><circle cx="250" cy="110" r="170"></circle><circle cx="250" cy="110" r="196"></circle><circle cx="250" cy="110" r="222"></circle><circle cx="250" cy="110" r="248"></circle></g></svg></span><span style="font-size:12px;font-weight:700;color:oklch(0.38 0.06 152)">October</span><b style="font-size:28px;font-weight:800">₹0</b><span style="font-size:11.5px;font-weight:700;color:oklch(0.38 0.06 152)">Nothing yet</span></div></div><p class="card-note">The sum fills in from the first subscription.</p><span class="btn btn-primary btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add subscription</span></section></div><div><div class="frame-l">After Mark paid</div><section class="card glass" style=""><span class="eyebrow">October so far</span><div style="display:flex;gap:10px;align-items:center"><div style="flex:1;border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:3px;background:var(--accent-tint)"><span style="font-size:12px;font-weight:700;color:var(--muted)">Paid</span><b style="font-size:26px;font-weight:800">₹7,297</b><span style="font-size:11.5px;font-weight:600;color:var(--muted)">4 payments</span></div><b style="font-size:24px;color:var(--muted)">+</b><div style="flex:1;border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:3px;border:1.5px dashed var(--fill-strong)"><span style="font-size:12px;font-weight:700;color:var(--muted)">To come</span><b style="font-size:26px;font-weight:800">₹1,537</b><span style="font-size:11.5px;font-weight:600;color:var(--muted)">3 renewals left</span></div><b style="font-size:24px;color:var(--muted)">=</b><div class="textured" style="flex:1.1;border-radius:18px;padding:14px 16px;background:var(--feature-tile);border:1px solid var(--feature-tile-line);display:flex;flex-direction:column;gap:3px"><span class="tex" aria-hidden="true"><svg viewBox="0 0 240 90" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-ink)" stroke-opacity="0.12" stroke-width="1"><circle cx="250" cy="110" r="40"></circle><circle cx="250" cy="110" r="66"></circle><circle cx="250" cy="110" r="92"></circle><circle cx="250" cy="110" r="118"></circle><circle cx="250" cy="110" r="144"></circle><circle cx="250" cy="110" r="170"></circle><circle cx="250" cy="110" r="196"></circle><circle cx="250" cy="110" r="222"></circle><circle cx="250" cy="110" r="248"></circle></g></svg></span><span style="font-size:12px;font-weight:700;color:oklch(0.38 0.06 152)">October</span><b style="font-size:28px;font-weight:800">₹8,834</b><span style="font-size:11.5px;font-weight:700;color:oklch(0.38 0.06 152)">₹3,275 more than a usual month</span></div></div><p class="card-note">Netflix moved from To come to Paid. The total doesn't change.</p><div style="display:flex;align-items:center;gap:12px;background:var(--ink);color:var(--on-ink);border-radius:14px;padding:9px 9px 9px 14px;font-size:12.5px;font-weight:600;box-shadow:var(--pop-shadow);position:relative;overflow:hidden;width:max-content"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg><span>Netflix: ₹649 paid on Oct 23</span><span style="padding:6px 11px;border-radius:9px;background:oklch(1 0 0 / 0.14);font-weight:800">Undo</span><span style="position:absolute;left:0;bottom:0;height:3px;width:62%;background:var(--accent)"></span></div></section></div></div></section><section style="display:flex;flex-direction:column;gap:16px"><div class="sec-h"><span class="sec-n">M</span><div><h3>Departure board</h3><p></p></div></div><div style="display:grid;grid-template-columns:1fr 1.3fr;gap:22px;align-items:start"><div><div class="frame-l">Empty</div><section class="textured" style="border-radius:22px;padding:18px 22px;background:linear-gradient(160deg,oklch(0.2 0.01 260),var(--ink));color:var(--on-ink);display:flex;flex-direction:column;gap:12px"><span class="tex" aria-hidden="true"><svg viewBox="0 0 800 300" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.04" stroke-width="1"><circle cx="810" cy="320" r="60"></circle><circle cx="810" cy="320" r="94"></circle><circle cx="810" cy="320" r="128"></circle><circle cx="810" cy="320" r="162"></circle><circle cx="810" cy="320" r="196"></circle><circle cx="810" cy="320" r="230"></circle><circle cx="810" cy="320" r="264"></circle><circle cx="810" cy="320" r="298"></circle><circle cx="810" cy="320" r="332"></circle><circle cx="810" cy="320" r="366"></circle><circle cx="810" cy="320" r="400"></circle><circle cx="810" cy="320" r="434"></circle><circle cx="810" cy="320" r="468"></circle><circle cx="810" cy="320" r="502"></circle><circle cx="810" cy="320" r="536"></circle><circle cx="810" cy="320" r="570"></circle><circle cx="810" cy="320" r="604"></circle><circle cx="810" cy="320" r="638"></circle><circle cx="810" cy="320" r="672"></circle><circle cx="810" cy="320" r="706"></circle><circle cx="810" cy="320" r="740"></circle><circle cx="810" cy="320" r="774"></circle><circle cx="810" cy="320" r="808"></circle><circle cx="810" cy="320" r="842"></circle></g></svg></span><div class="between"><b style="font-size:16px">Up next</b><span style="font-size:12px;font-weight:600;color:oklch(1 0 0 / 0.55)">Tue, Oct 20</span></div><div style="padding:30px 0;text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center"><span style="font-size:13px;font-weight:700;letter-spacing:0.08em;color:oklch(1 0 0 / 0.6)">NO RENEWALS IN THE NEXT 30 DAYS</span><span class="btn btn-ghost btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add subscription</span></div><span style="font-size:11px;font-weight:600;color:oklch(1 0 0 / 0.5)">Renewals land here, soonest first, with a countdown in days.</span></section></div><div><div class="frame-l">Everything recorded</div><section class="textured" style="border-radius:22px;padding:18px 22px;background:linear-gradient(160deg,oklch(0.2 0.01 260),var(--ink));color:var(--on-ink);display:flex;flex-direction:column;gap:12px"><span class="tex" aria-hidden="true"><svg viewBox="0 0 800 300" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-light)" stroke-opacity="0.04" stroke-width="1"><circle cx="810" cy="320" r="60"></circle><circle cx="810" cy="320" r="94"></circle><circle cx="810" cy="320" r="128"></circle><circle cx="810" cy="320" r="162"></circle><circle cx="810" cy="320" r="196"></circle><circle cx="810" cy="320" r="230"></circle><circle cx="810" cy="320" r="264"></circle><circle cx="810" cy="320" r="298"></circle><circle cx="810" cy="320" r="332"></circle><circle cx="810" cy="320" r="366"></circle><circle cx="810" cy="320" r="400"></circle><circle cx="810" cy="320" r="434"></circle><circle cx="810" cy="320" r="468"></circle><circle cx="810" cy="320" r="502"></circle><circle cx="810" cy="320" r="536"></circle><circle cx="810" cy="320" r="570"></circle><circle cx="810" cy="320" r="604"></circle><circle cx="810" cy="320" r="638"></circle><circle cx="810" cy="320" r="672"></circle><circle cx="810" cy="320" r="706"></circle><circle cx="810" cy="320" r="740"></circle><circle cx="810" cy="320" r="774"></circle><circle cx="810" cy="320" r="808"></circle><circle cx="810" cy="320" r="842"></circle></g></svg></span><div class="between"><b style="font-size:16px">Up next</b><span style="font-size:12px;font-weight:600;color:oklch(1 0 0 / 0.55)">Tue, Oct 20</span></div><div style="display:grid;grid-template-columns:84px minmax(0,1fr) 110px 80px 110px;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid oklch(1 0 0 / 0.07)"><span class="row" style="gap:3px"><span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:22px;height:30px;border-radius:6px;background:linear-gradient(oklch(0.27 0.01 260) 50%, oklch(0.23 0.01 260) 50%);font-size:18px;font-weight:800">0<span style="position:absolute;left:0;right:0;top:50%;height:1px;background:oklch(0 0 0 / 0.5)"></span></span><span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:22px;height:30px;border-radius:6px;background:linear-gradient(oklch(0.27 0.01 260) 50%, oklch(0.23 0.01 260) 50%);font-size:18px;font-weight:800">3<span style="position:absolute;left:0;right:0;top:50%;height:1px;background:oklch(0 0 0 / 0.5)"></span></span></span><span class="row" style="gap:10px"><span class="mono" style="width:26px;height:26px;border-radius:8px;font-size:11px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))">N</span><b style="font-size:13px">Netflix</b></span><span style="font-size:12px;font-weight:700">FRI 23 OCT</span><b style="text-align:right">₹649</b><span style="text-align:right;font-size:10.5px;font-weight:800;letter-spacing:0.08em;color:oklch(0.78 0.15 30)">DUE SOON</span></div><div style="display:grid;grid-template-columns:84px minmax(0,1fr) 110px 80px 110px;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid oklch(1 0 0 / 0.07)"><span class="row" style="gap:3px"><span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:22px;height:30px;border-radius:6px;background:linear-gradient(oklch(0.27 0.01 260) 50%, oklch(0.23 0.01 260) 50%);font-size:18px;font-weight:800">0<span style="position:absolute;left:0;right:0;top:50%;height:1px;background:oklch(0 0 0 / 0.5)"></span></span><span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:22px;height:30px;border-radius:6px;background:linear-gradient(oklch(0.27 0.01 260) 50%, oklch(0.23 0.01 260) 50%);font-size:18px;font-weight:800">4<span style="position:absolute;left:0;right:0;top:50%;height:1px;background:oklch(0 0 0 / 0.5)"></span></span></span><span class="row" style="gap:10px"><span class="mono" style="width:26px;height:26px;border-radius:8px;font-size:11px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))">i</span><b style="font-size:13px">iCloud+</b></span><span style="font-size:12px;font-weight:700">SAT 24 OCT</span><b style="text-align:right">₹219</b><span style="text-align:right;font-size:10.5px;font-weight:800;letter-spacing:0.08em;color:oklch(0.85 0.15 145)">ON TIME</span></div><div style="display:grid;grid-template-columns:84px minmax(0,1fr) 110px 80px 110px;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid oklch(1 0 0 / 0.07)"><span class="row" style="gap:3px"><span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:22px;height:30px;border-radius:6px;background:linear-gradient(oklch(0.27 0.01 260) 50%, oklch(0.23 0.01 260) 50%);font-size:18px;font-weight:800">0<span style="position:absolute;left:0;right:0;top:50%;height:1px;background:oklch(0 0 0 / 0.5)"></span></span><span style="position:relative;display:inline-flex;align-items:center;justify-content:center;width:22px;height:30px;border-radius:6px;background:linear-gradient(oklch(0.27 0.01 260) 50%, oklch(0.23 0.01 260) 50%);font-size:18px;font-weight:800">8<span style="position:absolute;left:0;right:0;top:50%;height:1px;background:oklch(0 0 0 / 0.5)"></span></span></span><span class="row" style="gap:10px"><span class="mono" style="width:26px;height:26px;border-radius:8px;font-size:11px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to))">S</span><b style="font-size:13px">Spotify</b></span><span style="font-size:12px;font-weight:700">WED 28 OCT</span><b style="text-align:right">₹119</b><span style="text-align:right;font-size:10.5px;font-weight:800;letter-spacing:0.08em;color:oklch(0.85 0.15 145)">ON TIME</span></div><span style="font-size:11px;font-weight:600;color:oklch(1 0 0 / 0.5)">Once iCloud+'s Sep 24 renewal is recorded, its NOT RECORDED row leaves the top of the board.</span></section></div></div></section><section style="display:flex;flex-direction:column;gap:16px"><div class="sec-h"><span class="sec-n">N</span><div><h3>Category rings</h3><p></p></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start"><div><div class="frame-l">Empty</div><section class="card glass" style=""><div class="row" style="gap:24px"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="none" stroke="var(--fill)" stroke-width="12" stroke-dasharray="6 8"></circle><text x="100" y="106" text-anchor="middle" font-size="22" font-weight="800" fill="var(--muted)">₹0</text></svg><div style="display:flex;flex-direction:column;gap:10px"><b style="font-size:18px">Each category gets a ring</b><p class="card-note">Its length is that category's share of what you pay a month.</p><span class="btn btn-primary btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add subscription</span></div></div></section></div><div><div class="frame-l">One category</div><section class="card glass" style=""><div class="row" style="gap:24px"><svg width="200" height="200" viewBox="0 0 200 200"><circle cx="100" cy="100" r="90" fill="none" stroke="var(--card-ruby)" stroke-width="12"></circle><text x="100" y="104" text-anchor="middle" font-size="22" font-weight="800" fill="var(--fg)">₹649</text><text x="100" y="124" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)">a month</text></svg><div style="display:flex;flex-direction:column;gap:8px"><b style="font-size:18px">Streaming is all of it, for now.</b><p class="card-note">With one category the ring is full. It splits as soon as a second one is added.</p></div></div></section></div></div></section><section style="display:flex;flex-direction:column;gap:16px"><div class="sec-h"><span class="sec-n">O</span><div><h3>Two-year chart</h3><p></p></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start"><div><div class="frame-l">Empty</div><section class="textured" style="border-radius:22px;padding:16px 18px;background:var(--feature-tile);border:1px solid var(--feature-tile-line);display:flex;flex-direction:column;gap:10px"><span class="tex" aria-hidden="true"><svg viewBox="0 0 700 260" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-ink)" stroke-opacity="0.08" stroke-width="1"><circle cx="710" cy="280" r="40"></circle><circle cx="710" cy="280" r="66"></circle><circle cx="710" cy="280" r="92"></circle><circle cx="710" cy="280" r="118"></circle><circle cx="710" cy="280" r="144"></circle><circle cx="710" cy="280" r="170"></circle><circle cx="710" cy="280" r="196"></circle><circle cx="710" cy="280" r="222"></circle><circle cx="710" cy="280" r="248"></circle><circle cx="710" cy="280" r="274"></circle><circle cx="710" cy="280" r="300"></circle><circle cx="710" cy="280" r="326"></circle><circle cx="710" cy="280" r="352"></circle><circle cx="710" cy="280" r="378"></circle><circle cx="710" cy="280" r="404"></circle><circle cx="710" cy="280" r="430"></circle><circle cx="710" cy="280" r="456"></circle><circle cx="710" cy="280" r="482"></circle><circle cx="710" cy="280" r="508"></circle><circle cx="710" cy="280" r="534"></circle><circle cx="710" cy="280" r="560"></circle><circle cx="710" cy="280" r="586"></circle><circle cx="710" cy="280" r="612"></circle><circle cx="710" cy="280" r="638"></circle><circle cx="710" cy="280" r="664"></circle><circle cx="710" cy="280" r="690"></circle><circle cx="710" cy="280" r="716"></circle><circle cx="710" cy="280" r="742"></circle></g></svg></span><div class="between"><b style="font-size:18px">₹0 a month</b><span class="btn btn-primary btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add subscription</span></div><div style="background:oklch(1 0 0 / 0.55);border-radius:14px;padding:8px"><svg viewBox="0 0 600 160" width="100%" height="160"><line x1="20" x2="580" y1="120" y2="120" stroke="var(--divider)"></line><line x1="300" x2="300" y1="20" y2="120" stroke="var(--accent)" stroke-width="2"></line><text x="306" y="30" font-size="11" font-weight="800" fill="var(--accent-text)">Today</text><path d="M300,120 L580,120" stroke="var(--accent-text)" stroke-dasharray="5 5" stroke-width="2" fill="none" opacity="0.5"></path><text x="160" y="90" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)">Payments draw the line</text><text x="440" y="90" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)">Expected renewals, dashed</text></svg></div></section></div><div><div class="frame-l">A new subscription, no history yet</div><section class="textured" style="border-radius:22px;padding:16px 18px;background:var(--feature-tile);border:1px solid var(--feature-tile-line);display:flex;flex-direction:column;gap:10px"><span class="tex" aria-hidden="true"><svg viewBox="0 0 700 260" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-ink)" stroke-opacity="0.08" stroke-width="1"><circle cx="710" cy="280" r="40"></circle><circle cx="710" cy="280" r="66"></circle><circle cx="710" cy="280" r="92"></circle><circle cx="710" cy="280" r="118"></circle><circle cx="710" cy="280" r="144"></circle><circle cx="710" cy="280" r="170"></circle><circle cx="710" cy="280" r="196"></circle><circle cx="710" cy="280" r="222"></circle><circle cx="710" cy="280" r="248"></circle><circle cx="710" cy="280" r="274"></circle><circle cx="710" cy="280" r="300"></circle><circle cx="710" cy="280" r="326"></circle><circle cx="710" cy="280" r="352"></circle><circle cx="710" cy="280" r="378"></circle><circle cx="710" cy="280" r="404"></circle><circle cx="710" cy="280" r="430"></circle><circle cx="710" cy="280" r="456"></circle><circle cx="710" cy="280" r="482"></circle><circle cx="710" cy="280" r="508"></circle><circle cx="710" cy="280" r="534"></circle><circle cx="710" cy="280" r="560"></circle><circle cx="710" cy="280" r="586"></circle><circle cx="710" cy="280" r="612"></circle><circle cx="710" cy="280" r="638"></circle><circle cx="710" cy="280" r="664"></circle><circle cx="710" cy="280" r="690"></circle><circle cx="710" cy="280" r="716"></circle><circle cx="710" cy="280" r="742"></circle></g></svg></span><div class="between"><b style="font-size:18px">₹649 a month</b><span class="card-note">Netflix, added today</span></div><div style="background:oklch(1 0 0 / 0.55);border-radius:14px;padding:8px"><svg viewBox="0 0 600 160" width="100%" height="160"><line x1="20" x2="580" y1="120" y2="120" stroke="var(--divider)"></line><line x1="300" x2="300" y1="20" y2="120" stroke="var(--accent)" stroke-width="2"></line><text x="306" y="30" font-size="11" font-weight="800" fill="var(--accent-text)">Today</text><path d="M300,96 L580,96" stroke="var(--accent-text)" stroke-dasharray="5 5" stroke-width="2" fill="none" opacity="0.7"></path><text x="160" y="90" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)">No payments recorded yet</text><text x="440" y="90" text-anchor="middle" font-size="12" font-weight="700" fill="var(--muted)">₹649 each month from Oct 23</text></svg></div></section></div></div></section><section style="display:flex;flex-direction:column;gap:16px"><div class="sec-h"><span class="sec-n">P</span><div><h3>Year dial</h3><p></p></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start"><div><div class="frame-l">Empty</div><section class="card glass" style=""><div class="row" style="gap:20px"><svg viewBox="0 0 300 180" width="300" height="180"><path d="M35,150 A115,115 0 0 1 265,150" fill="none" stroke="var(--fill-strong)" stroke-width="22"></path><text x="150" y="130" text-anchor="middle" font-size="26" font-weight="800" fill="var(--fg)">₹0</text><text x="150" y="152" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)">paid this year</text></svg><div style="display:flex;flex-direction:column;gap:10px"><b style="font-size:18px">The year fills in as you pay</b><p class="card-note">The dial shows what's paid against the whole year at today's prices.</p><span class="btn btn-primary btn-sm"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add subscription</span></div></div></section></div><div><div class="frame-l">December 31: the year is paid</div><section class="card glass" style=""><div class="row" style="gap:20px"><svg viewBox="0 0 300 180" width="300" height="180"><path d="M35,150 A115,115 0 0 1 265,150" fill="none" stroke="var(--fill-strong)" stroke-width="22"></path><path d="M35,150 A115,115 0 0 1 265.0,150.0" fill="none" stroke="var(--accent)" stroke-width="22"></path><text x="150" y="130" text-anchor="middle" font-size="26" font-weight="800" fill="var(--fg)">₹67,667</text><text x="150" y="152" text-anchor="middle" font-size="11" font-weight="700" fill="var(--muted)">paid in 2026</text></svg><div style="display:flex;flex-direction:column;gap:8px"><b style="font-size:18px">All of 2026 is paid.</b><p class="card-note">On Jan 1 it starts again at ₹0, with 2027 at today's prices: ₹66,713.</p></div></div></section></div></div></section><section style="display:flex;flex-direction:column;gap:16px"><div class="sec-h"><span class="sec-n">+</span><div><h3>The cost map and payments table together</h3><p>Clicking a block, or a paused or cancelled chip under the map, picks that subscription; the table follows. All subscriptions shows the latest payments across every one.</p></div></div><div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:22px;align-items:start"><div><div class="frame-l">A cancelled one, picked from the chips</div><section class="card glass" style=""><div class="card-h"><span class="card-t row" style="gap:10px">Payments <span class="muted">·</span> <span class="mono mono-off" style="width:22px;height:22px;border-radius:7px;font-size:10px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))">S</span>SonyLIV</span><span class="seg"><span class="seg-i on">Payments</span><span class="seg-i">Price history</span></span></div><div class="row" style="gap:8px"><span class="chip on"><span class="mono mono-off" style="width:16px;height:16px;border-radius:5px;font-size:7px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))">S</span>SonyLIV<em>cancelled</em></span><span class="card-note">Picked from "Not in the map"</span></div><div style="display:flex;flex-direction:column"><div style="display:grid;grid-template-columns:1.1fr 1fr 1fr 1.2fr 0.8fr" class="th"><span>Paid on</span><span>Amount</span><span>Change</span><span>Charged to</span><span style="text-align:right">Status</span></div><div style="display:grid;grid-template-columns:1.1fr 1fr 1fr 1.2fr 0.8fr;align-items:center;padding:11px 0;border-bottom:1px solid var(--divider);font-size:13px"><span style="font-weight:600">Nov 3, 2025</span><b class="num">₹999</b><span><span class="muted">—</span></span><span><span class="via"><span class="minitile" style="background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to))"></span>Millennia</span></span><span style="text-align:right"><span class="pill pill-on">Paid</span></span></div><div style="display:grid;grid-template-columns:1.1fr 1fr 1fr 1.2fr 0.8fr;align-items:center;padding:11px 0;border-bottom:1px solid var(--divider);font-size:13px"><span style="font-weight:600">Nov 3, 2024</span><b class="num">₹999</b><span><span class="muted">—</span></span><span><span class="via"><span class="minitile" style="background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to))"></span>Millennia</span></span><span style="text-align:right"><span class="pill pill-on">Paid</span></span></div>
+    <div class="between foot" style="padding-top:12px"><span class="card-note">Showing 2 of 2 · ₹1,998 paid since Nov 3, 2024</span><span class="link">All renewals <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="13 6 19 12 13 18"></polyline></svg></span></div></div></section></div><div><div class="frame-l">A subscription with no payments yet</div><section class="card glass" style=""><div class="card-h"><span class="card-t row" style="gap:10px">Payments <span class="muted">·</span> <span class="mono" style="width:22px;height:22px;border-radius:7px;font-size:10px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))">N</span>Netflix</span><span class="seg"><span class="seg-i on">Payments</span><span class="seg-i">Price history</span></span></div><div style="padding:30px 0;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center"><b>No payments recorded yet</b><p class="card-note">Mark it paid when it renews on Oct 23, or add its past payments.</p><span class="btn btn-soft btn-sm">Add past payments</span></div></section></div><div><div class="frame-l">Price history</div><section class="card glass" style=""><div class="card-h"><span class="card-t row" style="gap:10px">Payments <span class="muted">·</span> <span class="mono" style="width:22px;height:22px;border-radius:7px;font-size:10px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))">N</span>Netflix</span><span class="seg"><span class="seg-i">Payments</span><span class="seg-i on">Price history</span></span></div><div style="display:flex;flex-direction:column" style="gap:12px;padding-top:6px"><svg viewBox="0 0 820 210" width="100%" height="210" style="display:block;overflow:visible" aria-label="What each Netflix payment cost">
+    <line x1="275.2371134020619" x2="275.2371134020619" y1="10" y2="188" stroke="var(--divider)" stroke-dasharray="3 3"></line><text x="275.2371134020619" y="204" text-anchor="middle" font-size="10" font-weight="700" fill="var(--muted)">2025</text><line x1="561.2164948453608" x2="561.2164948453608" y1="10" y2="188" stroke="var(--divider)" stroke-dasharray="3 3"></line><text x="561.2164948453608" y="204" text-anchor="middle" font-size="10" font-weight="700" fill="var(--muted)">2026</text>
+    <path d="M30,129.27414003346286 H52.72164948453609 V129.27414003346286 H77.01030927835052 V129.27414003346286 H100.51546391752578 V129.27414003346286 H124.80412371134021 V129.27414003346286 H148.30927835051546 V129.27414003346286 H172.5979381443299 V129.27414003346286 H196.88659793814432 V129.27414003346286 H220.39175257731958 V129.27414003346286 H244.68041237113403 V129.27414003346286 H268.1855670103093 V129.27414003346286 H292.4742268041237 V129.27414003346286 H316.7628865979381 V129.27414003346286 H338.70103092783506 V129.27414003346286 H362.9896907216495 V129.27414003346286 H386.49484536082474 V129.27414003346286 H410.78350515463916 V129.27414003346286 H434.2886597938144 V129.27414003346286 H458.57731958762884 V129.27414003346286 H482.8659793814433 V129.27414003346286 H506.37113402061857 V129.27414003346286 H530.659793814433 V129.27414003346286 H554.1649484536082 V129.27414003346286 H578.4536082474227 V129.27414003346286 H602.7422680412371 V129.27414003346286 H624.680412371134 V129.27414003346286 H648.9690721649484 V129.27414003346286 H672.4742268041238 V129.27414003346286 H696.7628865979382 V129.27414003346286 H720.2680412371134 V58.66188356067269 H744.5567010309278 V58.66188356067269 H768.8453608247422 V58.66188356067269 H790 V188 H30 Z" fill="oklch(0.72 0.19 145 / 0.12)"></path>
+    <path d="M30,129.27414003346286 H52.72164948453609 V129.27414003346286 H77.01030927835052 V129.27414003346286 H100.51546391752578 V129.27414003346286 H124.80412371134021 V129.27414003346286 H148.30927835051546 V129.27414003346286 H172.5979381443299 V129.27414003346286 H196.88659793814432 V129.27414003346286 H220.39175257731958 V129.27414003346286 H244.68041237113403 V129.27414003346286 H268.1855670103093 V129.27414003346286 H292.4742268041237 V129.27414003346286 H316.7628865979381 V129.27414003346286 H338.70103092783506 V129.27414003346286 H362.9896907216495 V129.27414003346286 H386.49484536082474 V129.27414003346286 H410.78350515463916 V129.27414003346286 H434.2886597938144 V129.27414003346286 H458.57731958762884 V129.27414003346286 H482.8659793814433 V129.27414003346286 H506.37113402061857 V129.27414003346286 H530.659793814433 V129.27414003346286 H554.1649484536082 V129.27414003346286 H578.4536082474227 V129.27414003346286 H602.7422680412371 V129.27414003346286 H624.680412371134 V129.27414003346286 H648.9690721649484 V129.27414003346286 H672.4742268041238 V129.27414003346286 H696.7628865979382 V129.27414003346286 H720.2680412371134 V58.66188356067269 H744.5567010309278 V58.66188356067269 H768.8453608247422 V58.66188356067269 H790" fill="none" stroke="var(--accent-text)" stroke-width="2" stroke-linejoin="round"></path>
+    <text x="30" y="121.27414003346286" font-size="10.5" font-weight="700" fill="var(--muted)">₹499</text>
+    <circle cx="790" cy="58.66188356067269" r="4" fill="var(--accent-text)"></circle>
+    <text x="790" y="49.66188356067269" text-anchor="end" font-size="11" font-weight="800" fill="var(--fg)">₹649</text>
+    <circle cx="720.2680412371134" cy="58.66188356067269" r="4" fill="var(--surface)" stroke="var(--negative)" stroke-width="2"></circle><text x="712.2680412371134" y="62.66188356067269" text-anchor="end" font-size="10.5" font-weight="800" fill="var(--negative)">+₹150</text>
+  </svg><div class="legend"><span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="6 11 12 5 18 11"></polyline></svg><b>₹499 → ₹649</b> on Jul 23, 2026</span></div></div></section></div></div></section></div>
+</x-dc>
+</body>
+</html>
