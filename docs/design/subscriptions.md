@@ -180,6 +180,16 @@ He left out 1C (blocks fill up to renewal) and 3C (the price change drawn in its
 - **7C, the ghost:** hovering or focusing a paused or cancelled chip makes room for a dashed block in its colour: "+₹299 a month if you resume it" (or "restart it" for a cancelled one), at its plan's monthly share. By category it gets a tile of its own, since it's in no category's total. When it goes, it shrinks away and the rest grow back.
 - **Where it's worked out:** `costMap.ts` (pure, tested) lays the map out for either view, the ones left out and the ghost. The blocks glide between layouts only after the map has been measured, so the first layout doesn't fly in from a guess.
 
+## Built: the greeting points, and toggles slide (7A, 7D)
+
+- **7A, the greeting points:** each figure in the sentence under the greeting is a button (dotted underline) that opens a light card under it.
+  - **Paid this year:** the year's months, with what was paid in each and the months still to come dashed.
+  - **The monthly average:** the same strip with the average drawn across it.
+  - **The biggest month:** its month lit, and what each subscription paid in it.
+  - **The renewals in the next 30 days:** each one with its date.
+  - The cards come from the same `yearSummary` as the sentence (`greetingView`), so they always agree. The card glides between figures and closes on Esc. On a touch screen a tap opens it and another closes it.
+- **7D, toggles that slide:** every `Segmented` on the page (A month or A year, Each or By category, Payments or Price history, and the chart's views) slides its white pill to the chosen option with a small spring. Until it's been measured, and on the server, the chosen button carries the pill itself. It lives in `Segmented.tsx` (client), and `parts.tsx` re-exports it.
+
 ## How it got here
 
 The canvas keeps everything explored, newest first: A–K (layouts), L–P (heroes), Q–Z (selectors), S1–S6 (circular carousels) and S7–S16 (the cover flow refined, each with a different full-width chart). Prathik kept these from them: F's greeting, D's cost map, C's payments table, S's cover flow with All at the centre, scrolling in a circle, S9's coloured stage, S9's Day by day chart, S7's Payment trend and S14's Lifetime cost. Along the way he asked that no section be added just to fill space (a separate colour band was dropped), and that cards side by side end level. A layout check measured this across every pick.

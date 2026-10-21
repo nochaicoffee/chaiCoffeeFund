@@ -31,24 +31,5 @@ export function ChargedTo({ chip }: { chip: ChargedToChip }) {
   );
 }
 
-/** The segmented toggle the design uses for Payments / Price history and the map's views. */
-export function Segmented<T extends string>({ label, options, value, onChange, small = false }: { label: string; options: { value: T; label: string }[]; value: T; onChange: (value: T) => void; small?: boolean }) {
-  return (
-    <span role="radiogroup" aria-label={label} className="inline-flex gap-0.5 rounded-full bg-fill p-[3px]">
-      {options.map((o) => (
-        <button
-          key={o.value}
-          type="button"
-          role="radio"
-          aria-checked={o.value === value}
-          onClick={() => onChange(o.value)}
-          className={`inline-flex items-center rounded-full font-bold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-accent ${small ? "px-2.5 py-1.5 text-[11.5px]" : "px-[13px] py-1.5 text-xs"} ${
-            o.value === value ? "bg-surface text-accent-text shadow-[0_1px_3px_oklch(0_0_0/0.14)]" : "text-muted hover:text-fg"
-          }`}
-        >
-          {o.label}
-        </button>
-      ))}
-    </span>
-  );
-}
+/** The segmented toggle, in its own client file since it measures itself (7D). */
+export { Segmented } from "./Segmented";

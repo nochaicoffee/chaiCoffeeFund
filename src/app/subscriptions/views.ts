@@ -1,4 +1,4 @@
-import { daysBetween } from "@/lib/aggregate/cardSpend";
+import { daysBetween, monthOf } from "@/lib/aggregate/cardSpend";
 import { MARK_PAID_DAYS_BEFORE, yearSummary } from "@/lib/aggregate/subscriptionRenewals";
 import { monthlyEquivalent } from "@/lib/aggregate/subscriptions";
 import {
@@ -13,7 +13,7 @@ import {
   type SubscriptionData,
   type SubscriptionFacts,
 } from "@/lib/aggregate/subscriptionPage";
-import { formatDate, formatDayDate, formatMonthShort, formatShortDate } from "@/lib/format/date";
+import { formatDate, formatDayDate, formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import { ALL, cardColorKey, categoryColor, categoryLabel, cycleWord, shareOfTotal, subscriptionMark, whenFrom, type ColorKey, type Mark } from "@/lib/format/subscriptionLabels";
 import { chartView, type ChartView } from "./chartView";
@@ -329,20 +329,89 @@ export function summarySentence(sheetData: SubscriptionData, today: string): Sen
   if (summary.paid > 0) {
     parts.push(
       { text: "You've paid " },
-      { text: formatInr(summary.paid), strong: true },
+      { text: formatInr(summary.paid), strong: true, point: "paid" },
       { text: ` for subscriptions so far in ${year}, about ` },
-      { text: formatInr(summary.monthlyAverage), strong: true },
+      { text: formatInr(summary.monthlyAverage), strong: true, point: "average" },
       { text: " a month. " },
     );
     if (summary.biggestMonth) {
       const { month, paid } = summary.biggestMonth;
-      parts.push({ text: `${formatMonthShort(month)} ${month.slice(0, 4)}`, strong: true }, { text: " was the biggest month at " }, { text: formatInr(paid), strong: true }, { text: ". " });
+      parts.push({ text: `${formatMonthShort(month)} ${month.slice(0, 4)}`, strong: true, point: "biggest" }, { text: " was the biggest month at " }, { text: formatInr(paid), strong: true, point: "biggest" }, { text: ". " });
     }
   } else {
     parts.push({ text: `Nothing paid for subscriptions yet in ${year}. ` });
   }
   const { count, total } = summary.next30;
   if (count === 0) parts.push({ text: "No renewals come up in the next 30 days." });
-  else parts.push({ text: plural(count, "renewal"), strong: true }, { text: ` ${count === 1 ? "comes" : "come"} up in the next 30 days, totalling ` }, { text: formatInr(total), strong: true }, { text: "." });
+  else parts.push({ text: plural(count, "renewal"), strong: true, point: "next" }, { text: ` ${count === 1 ? "comes" : "come"} up in the next 30 days, totalling ` }, { text: formatInr(total), strong: true, point: "next" }, { text: "." });
   return parts;
+}
+
+/** A month in a greeting card's strip of the year: what was paid, and whether the card is pointing at it. */
+export interface StripMonth {
+  key: string;
+  /** "J", "F", … */
+  initial: string;
+  paid: number;
+  future: boolean;
+  lit: boolean;
+}
+
+/** What the greeting's figures explain (7A), keyed as the sentence's `point`s are. */
+export interface GreetingCards {
+  paid?: { title: string; total: string; months: StripMonth[]; note: string };
+  average?: { title: string; total: string; months: StripMonth[]; average: number; note: string };
+  biggest?: { title: string; total: string; months: StripMonth[]; rows: { key: string; mark: Mark; amount: string }[] };
+  next?: { title: string; total: string; rows: { key: string; mark: Mark; date: string; amount: string; note: string }[] };
+}
+
+/**
+ * The cards behind the greeting's figures (7A): the year's months with what was paid, the
+ * average across them, what made up the biggest month, and the renewals in the next 30
+ * days. Built from the same summary as the sentence, so they always agree with it.
+ */
+export function greetingView(sheetData: SubscriptionData, today: string): GreetingCards {
+  const data = usableSubscriptionData(sheetData);
+  if (data.subscriptions.length === 0) return {};
+  const year = today.slice(0, 4);
+  const summary = yearSummary(data.subscriptions, data.payments, today);
+  const byId = new Map(data.subscriptions.map((s) => [s.id, s]));
+  const paidIn = new Map(summary.months.map((m) => [m.month, m.paid]));
+  const strip = (lit: (key: string) => boolean): StripMonth[] =>
+    Array.from({ length: 12 }, (_, i) => {
+      const key = `${year}-${String(i + 1).padStart(2, "0")}`;
+      const future = !paidIn.has(key);
+      return { key, initial: formatMonthShort(key)[0], paid: paidIn.get(key) ?? 0, future, lit: !future && lit(key) };
+    });
+  const so = summary.months.length;
+  const cards: GreetingCards = {};
+  if (summary.paid > 0) {
+    const thisMonth = formatMonthYear(monthOf(today)).split(" ")[0];
+    cards.paid = { title: `Paid in ${year}`, total: formatInr(summary.paid), months: strip(() => true), note: so === 1 ? `${thisMonth} so far` : `${plural(so, "month")} so far, January to ${thisMonth}` };
+    cards.average = { title: "A month, on average", total: formatInr(summary.monthlyAverage), months: strip(() => false), average: summary.monthlyAverage, note: `${formatInr(summary.paid)} over ${plural(so, "month")}` };
+  }
+  if (summary.biggestMonth) {
+    const { month, paid } = summary.biggestMonth;
+    const parts = new Map<string, number>();
+    for (const p of data.payments) if (p.status === "Paid" && p.amount > 0 && monthOf(p.paymentDate) === month) parts.set(p.subscriptionId, (parts.get(p.subscriptionId) ?? 0) + p.amount);
+    cards.biggest = {
+      title: `${formatMonthShort(month)} ${month.slice(0, 4)}`,
+      total: formatInr(paid),
+      months: strip((key) => key === month),
+      rows: [...parts.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .map(([id, amount]) => ({ key: id, mark: byId.has(id) ? mark(byId.get(id)!) : { alias: "Unknown", initial: "?", color: "onyx", muted: true }, amount: formatInr(amount) })),
+    };
+  }
+  if (summary.next30.count > 0) {
+    cards.next = {
+      title: "The next 30 days",
+      total: formatInr(summary.next30.total),
+      rows: summary.soon.map((r) => {
+        const owner = byId.get(r.subscriptionId);
+        return { key: `${r.subscriptionId}:${r.date}`, mark: owner ? mark(owner) : { alias: "Unknown", initial: "?", color: "onyx", muted: true }, date: dayDate(r.date, today), amount: formatInr(r.amount), note: r.status === "paid" ? "paid ahead" : whenFrom(today, r.date) };
+      }),
+    };
+  }
+  return cards;
 }

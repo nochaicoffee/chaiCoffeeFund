@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { demoSubscriptionData } from "@/lib/demo/subscriptionsDemo";
 import { sentenceText } from "../cards/summarySentence";
 import type { Subscription, SubscriptionPayment } from "@/lib/sheets/types";
-import { ALL, subscriptionsPageView, summarySentence } from "./views";
+import { ALL, greetingView, subscriptionsPageView, summarySentence } from "./views";
 
 // The design's "today", so the figures are the design's (design/subscriptions/SubsFinal.dc.html).
 const TODAY = "2026-10-20";
@@ -25,6 +25,42 @@ describe("summarySentence", () => {
 
   it("says so when there's nothing yet", () => {
     expect(sentenceText(summarySentence({ subscriptions: [], payments: [], cards: [], accounts: [] }, TODAY))).toMatch(/^No subscriptions yet\./);
+  });
+
+  it("marks each figure with the card it points at (7A)", () => {
+    const points = summarySentence(data, TODAY).filter((p) => p.point).map((p) => `${p.point}: ${p.text}`);
+    expect(points).toEqual(["paid: ₹57,163", "average: ₹5,716", "biggest: Mar 2026", "biggest: ₹10,032", "next: 6 renewals", "next: ₹4,334"]);
+  });
+});
+
+describe("the greeting's cards", () => {
+  const cards = greetingView(data, TODAY);
+
+  it("agree with the sentence", () => {
+    expect(cards.paid).toMatchObject({ title: "Paid in 2026", total: "₹57,163", note: "10 months so far, January to October" });
+    expect(greetingView(data, "2026-01-20").paid?.note).toBe("January so far");
+    expect(cards.average).toMatchObject({ total: "₹5,716", note: "₹57,163 over 10 months" });
+    expect(cards.biggest).toMatchObject({ title: "Mar 2026", total: "₹10,032" });
+    expect(cards.next).toMatchObject({ title: "The next 30 days", total: "₹4,334" });
+    expect(cards.next!.rows).toHaveLength(6);
+  });
+
+  it("lay the year out as twelve months, lit as each card points", () => {
+    expect(cards.paid!.months.map((m) => m.initial).join("")).toBe("JFMAMJJASOND");
+    expect(cards.paid!.months.filter((m) => m.lit)).toHaveLength(10);
+    expect(cards.paid!.months.filter((m) => m.future).map((m) => m.key)).toEqual(["2026-11", "2026-12"]);
+    expect(cards.biggest!.months.filter((m) => m.lit).map((m) => m.key)).toEqual(["2026-03"]);
+    expect(cards.paid!.months.reduce((t, m) => t + m.paid, 0)).toBeCloseTo(57163, 0);
+  });
+
+  it("split the biggest month by subscription, biggest first, adding up to it", () => {
+    const amounts = cards.biggest!.rows.map((r) => Number(r.amount.replace(/[₹,]/g, "")));
+    expect(amounts.reduce((t, a) => t + a, 0)).toBe(10032);
+    for (let i = 1; i < amounts.length; i++) expect(amounts[i - 1]).toBeGreaterThanOrEqual(amounts[i]);
+  });
+
+  it("have nothing to show with no subscriptions", () => {
+    expect(greetingView({ subscriptions: [], payments: [], cards: [], accounts: [] }, TODAY)).toEqual({});
   });
 });
 

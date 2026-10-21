@@ -393,6 +393,15 @@ describe("yearSummary", () => {
     expect(yearSummary([early], [pay("2026-11-02", 649)], "2026-10-30").next30).toEqual({ count: 1, total: 649 });
   });
 
+  it("lists what was paid in each month so far this year, adding up to the year, and the renewals it counts", () => {
+    const summary = yearSummary([sub()], payments, TODAY);
+    expect(summary.months).toHaveLength(10);
+    expect(summary.months[0]).toEqual({ month: "2026-01", paid: 0 });
+    expect(summary.months.find((m) => m.month === "2026-08")).toEqual({ month: "2026-08", paid: 799 });
+    expect(summary.months.reduce((t, m) => t + m.paid, 0)).toBe(summary.paid);
+    expect(summary.soon.map((r) => r.date)).toEqual(["2026-10-23"]);
+  });
+
   it("has no biggest month before any payment this year", () => {
     expect(yearSummary([sub()], [], TODAY)).toMatchObject({ paid: 0, monthlyAverage: 0, biggestMonth: null });
   });

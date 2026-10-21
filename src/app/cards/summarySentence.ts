@@ -7,6 +7,8 @@ import { formatInr } from "@/lib/format/money";
 export interface SentencePart {
   text: string;
   strong?: boolean;
+  /** A figure the reader can point at for a card that explains it (the Subscriptions greeting, 7A): the card's key. */
+  point?: string;
 }
 
 /**
