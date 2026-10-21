@@ -31,6 +31,14 @@
     --warning-tint: oklch(0.95 0.05 85);
     --warning-text: oklch(0.47 0.1 70);
     --rings-light: oklch(1 0 0);
+    --warning: oklch(0.72 0.14 75);
+    --heat-1: oklch(0.95 0.03 150);
+    --heat-2: oklch(0.87 0.07 150);
+    --heat-3: oklch(0.76 0.11 151);
+    --heat-4: oklch(0.6 0.12 153);
+    --heat-5: oklch(0.42 0.1 156);
+    --heat-no-data: oklch(0 0 0 / 0.04);
+    --rings-ink: oklch(0.42 0.1 152);
     --on-card: oklch(0.95 0.004 260);
     --on-card-muted: oklch(1 0 0 / 0.6);
     --on-card-faint: oklch(1 0 0 / 0.5);
@@ -278,6 +286,150 @@
   .undo.show { opacity: 1; pointer-events: auto; }
   .bar.sweep > i { transition: width 380ms ease-in; }
 
+  /* ---------- 5 · The day-by-day grid ---------- */
+  .options.stacked { grid-template-columns: minmax(0, 1fr); }
+  .gridbox { position: relative; }
+  .grid-scroll { overflow-x: auto; padding: 6px 2px 8px; scrollbar-width: none; }
+  .grid-scroll::-webkit-scrollbar { display: none; }
+  .dgrid { position: relative; --cell: 16px; --gap: 4px; width: max-content; min-width: 100%; }
+  .dgrid .months { position: relative; height: 18px; }
+  .dgrid .months span { position: absolute; top: 0; font-size: 11px; font-weight: 800; color: var(--muted); }
+  .dgrid .months span.now { color: var(--accent-text); }
+  .dgrid .wd { position: absolute; left: 0; font-size: 10px; font-weight: 700; color: var(--muted); }
+  .dgrid .cells { display: grid; grid-template-rows: repeat(7, var(--cell)); grid-auto-flow: column; grid-auto-columns: var(--cell); gap: var(--gap); margin-left: 34px; touch-action: none; }
+  .dgrid .cells > span, .day { border-radius: 5px; }
+  .dgrid .nd { background: var(--heat-no-data); }
+  .day { position: relative; isolation: isolate; overflow: hidden; border: 0; padding: 0; cursor: pointer; transition: transform 200ms var(--ease-out), opacity 250ms ease, box-shadow 200ms ease; }
+  .day.l2 { background: var(--heat-2); } .day.l3 { background: var(--heat-3); } .day.l4 { background: var(--heat-4); } .day.l5 { background: var(--heat-5); }
+  .day.exp { background: color-mix(in oklch, var(--heat-1) 50%, transparent); border: 1.5px dashed var(--heat-4); }
+  .day.miss { background: var(--warning-tint); border: 1.5px solid var(--warning); }
+  .dgrid .today { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+  .day.on { transform: translateY(-2px) scale(1.15); box-shadow: var(--pop-shadow); z-index: 2; }
+  .dgrid .day.on.today { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent), var(--pop-shadow); }
+  .dgrid.fade .day:not(.keep) { opacity: 0.16; }
+  /* In a dragged range, days with renewals are outlined and empty days take a light fill, so the range reads without a wall of outlines. */
+  .dgrid .cells .day.sel { outline: 2px solid var(--ink); outline-offset: 1px; z-index: 1; }
+  .dgrid .cells span.sel { background: color-mix(in oklch, var(--ink) 13%, transparent); }
+  .totals { position: relative; height: 26px; margin: 8px 0 0 34px; }
+  .totals .mt { position: absolute; top: 0; height: 100%; display: flex; align-items: center; justify-content: center; border-radius: 8px; border: 0; padding: 0; font-size: 11px; font-weight: 800; background: var(--fill); color: var(--fg); transition: background 160ms ease, color 160ms ease; }
+  .totals .mt.future { background: transparent; box-shadow: inset 0 0 0 1.5px var(--fill-strong); color: var(--muted); }
+  .totals .mt.on { background: var(--ink); color: var(--on-ink); box-shadow: none; }
+
+  /* The light hover card, as on the Cards page (#104). */
+  .lt { position: absolute; left: 0; top: 0; z-index: 30; width: 256px; pointer-events: none; background: var(--surface); color: var(--fg); border: 1px solid var(--surface-line); border-radius: 16px; padding: 14px; box-shadow: var(--pop-shadow); opacity: 0; transform: translate(var(--x, 0px), var(--y, 0px)) scale(0.96); transition: transform 200ms var(--ease-out), opacity 160ms ease; }
+  .lt.show { opacity: 1; transform: translate(var(--x, 0px), var(--y, 0px)); }
+  .lt .lh { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+  .lt .la { margin-top: 2px; font-size: 22px; font-weight: 800; line-height: 1.2; font-variant-numeric: tabular-nums; }
+  .lt .ld { font-size: 11.5px; font-weight: 700; }
+  .lt ul { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+  .lt li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+  .lt li .nm { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+  .lt li b { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .lt .lf { margin-top: 10px; border-top: 1px solid var(--divider); padding-top: 8px; font-size: 11px; font-weight: 600; color: var(--muted); }
+  .lt .lf.warn { color: var(--warning-text); }
+  .lpill { border-radius: 999px; padding: 2px 8px; font-size: 10px; font-weight: 800; background: var(--accent-tint); color: var(--accent-text); }
+  .lpill.exp { background: var(--fill); color: var(--muted); }
+  .lpill.miss { background: var(--warning-tint); color: var(--warning-text); }
+  .splitbar { margin-top: 10px; display: flex; gap: 2px; height: 8px; border-radius: 999px; overflow: hidden; }
+  .splitbar i { height: 100%; }
+  .toast { position: absolute; left: 50%; bottom: 8px; transform: translate(-50%, 8px); padding: 8px 14px; border-radius: 12px; background: var(--ink); color: var(--on-ink); font-size: 12px; font-weight: 700; opacity: 0; transition: opacity 200ms ease, transform 200ms var(--ease-out); pointer-events: none; z-index: 40; white-space: nowrap; }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ---------- 6 · Trend and lifetime ---------- */
+  .chartrow { display: grid; grid-template-columns: minmax(0, 1fr) 220px; gap: 16px; align-items: stretch; }
+  .trend { position: relative; height: 230px; display: flex; align-items: flex-end; gap: 6px; padding-bottom: 22px; }
+  .tb { position: relative; flex: 1; min-width: 0; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; border: 0; background: none; padding: 0; }
+  .tb .tv { font-size: 10px; font-weight: 800; text-align: center; margin-bottom: 4px; white-space: nowrap; color: var(--fg); transition: opacity 200ms ease; }
+  .tb.future .tv { color: var(--muted); }
+  .tb .col { position: relative; border-radius: 9px 9px 4px 4px; overflow: hidden; transition: opacity 220ms ease; }
+  .tb .solid { position: absolute; inset: 0; background: var(--heat-3); transition: opacity 220ms ease; }
+  .tb.future .solid { background: color-mix(in oklch, var(--heat-1) 40%, transparent); border: 1.5px dashed var(--heat-4); border-radius: inherit; }
+  .tb .stack { position: absolute; inset: 0; display: flex; flex-direction: column-reverse; gap: 1px; opacity: 0; transition: opacity 220ms ease; }
+  .tb .stack i { display: block; flex-shrink: 0; transform: scaleY(0.2); transform-origin: bottom; transition: transform 380ms var(--ease-spring); }
+  .tb.future .stack i { opacity: 0.6; }
+  .tb.on .stack { opacity: 1; } .tb.on .stack i { transform: none; } .tb.on .solid { opacity: 0; }
+  .trend.spot .tb:not(.on) .col, .trend.spot .tb:not(.on) .tv { opacity: 0.3; }
+  .tb .ml { position: absolute; bottom: -20px; left: -4px; right: -4px; text-align: center; font-size: 10.5px; font-weight: 700; color: var(--muted); }
+  .tb.now .ml { color: var(--fg); font-weight: 800; }
+  .side { border-radius: 16px; background: var(--fill); padding: 12px; display: flex; flex-direction: column; gap: 8px; font-size: 12px; min-height: 230px; }
+  .side h4 { margin: 0; font-size: 12px; font-weight: 700; color: var(--muted); }
+  .side .sa { font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .side ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; }
+  .side li { display: flex; align-items: center; gap: 7px; font-weight: 600; }
+  .side li i { width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+  .side li span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); }
+  .side li b { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .run { position: absolute; inset: 0 0 22px 0; pointer-events: none; overflow: visible; }
+  .run .full { stroke: var(--divider); }
+  .runlab { position: absolute; z-index: 2; pointer-events: none; padding: 5px 10px; border-radius: 10px; background: var(--surface); box-shadow: var(--pop-shadow); font-size: 11.5px; font-weight: 800; white-space: nowrap; opacity: 0; transition: opacity 150ms ease; }
+  .runlab small { display: block; font-size: 10.5px; font-weight: 600; color: var(--muted); }
+  .runlab.show { opacity: 1; }
+  .life { display: flex; flex-direction: column; gap: 6px; }
+  .lrow { position: relative; display: grid; grid-template-columns: 120px minmax(0, 1fr) 84px; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 12px; transition: background 160ms ease; }
+  .lrow:hover, .lrow:focus-visible { background: var(--fill); }
+  .lrow .who { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 800; min-width: 0; }
+  .lrow .who span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .lrow .lb { position: relative; height: 18px; border-radius: 999px; background: var(--fill); }
+  .lrow .lb i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: linear-gradient(90deg, var(--from), var(--glow)); }
+  .lrow .lv { text-align: right; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .lrow .lv small { display: block; font-size: 10.5px; font-weight: 600; color: var(--muted); }
+  .lrow .yrs { grid-column: 1 / -1; display: grid; grid-template-rows: 0fr; transition: grid-template-rows 280ms var(--ease-out); }
+  .lrow .yrs > div { overflow: hidden; }
+  .lrow:hover .yrs, .lrow:focus-visible .yrs { grid-template-rows: 1fr; }
+  .yr-list { display: flex; gap: 8px; align-items: flex-end; height: 58px; padding: 6px 0 0 128px; }
+  .yr { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; color: var(--muted); }
+  .yr i { width: 28px; border-radius: 5px 5px 2px 2px; background: var(--glow); }
+  .yr b { font-size: 10px; color: var(--fg); }
+
+  /* ---------- 7 · Quieter widgets ---------- */
+  .greet { font-size: 15px; line-height: 1.7; font-weight: 500; color: var(--muted); margin: 0; }
+  .pt { border: 0; background: none; padding: 0 2px; margin: 0 -2px; border-radius: 6px; font: inherit; font-weight: 800; color: var(--fg); text-decoration: underline dotted 1.5px; text-underline-offset: 4px; transition: background 160ms ease; }
+  .pt:hover, .pt:focus-visible, .pt.on { background: var(--accent-tint); color: var(--accent-text); text-decoration-color: transparent; }
+  .strip { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 5px; align-items: end; height: 92px; padding-bottom: 18px; position: relative; }
+  .strip .sb { position: relative; border-radius: 6px 6px 3px 3px; background: var(--heat-2); transition: background 200ms ease, opacity 200ms ease, transform 200ms var(--ease-out); }
+  .strip .sb.future { background: transparent; box-shadow: inset 0 0 0 1.5px var(--fill-strong); }
+  .strip .sb span { position: absolute; bottom: -17px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; color: var(--muted); }
+  .strip.spot .sb:not(.on) { opacity: 0.3; }
+  .strip .sb.on { background: var(--heat-4); transform: translateY(-2px); }
+  .ups { display: flex; flex-wrap: wrap; gap: 6px; }
+  .up { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 4px 10px 4px 4px; background: var(--fill); font-size: 11px; font-weight: 700; transition: background 200ms ease, box-shadow 200ms ease, opacity 200ms ease; }
+  .ups.spot .up:not(.on) { opacity: 0.35; }
+  .up.on { background: var(--surface); box-shadow: 0 0 0 2px var(--accent), var(--soft-shadow); }
+  .up .mono { width: 18px; height: 18px; font-size: 9px; border-radius: 6px; }
+  .stmt { font-size: 11.5px; font-weight: 600; color: var(--muted); display: grid; grid-template-rows: 0fr; transition: grid-template-rows 260ms var(--ease-out); }
+  .stmt > div { overflow: hidden; }
+  .ct-row:hover .stmt, .ct-row:focus-visible .stmt { grid-template-rows: 1fr; }
+  .stmt .sl { display: flex; justify-content: space-between; gap: 8px; padding-top: 4px; }
+  .stmt .sl b { color: var(--fg); font-weight: 800; }
+  .stmt .sh { padding-top: 6px; font-weight: 800; color: var(--fg); }
+  .blk.ghost { background: repeating-linear-gradient(135deg, color-mix(in oklch, var(--glow) 18%, transparent) 0 8px, transparent 8px 16px); border: 1.5px dashed var(--glow); color: var(--fg); opacity: 0; transform: scale(0.8); }
+  .blk.ghost.show { opacity: 1; transform: none; }
+  .blk.ghost .bd { color: var(--muted); }
+  .blk.ghost .bv { color: var(--positive); }
+  .chipsrow { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; border-top: 1px solid var(--divider); padding-top: 10px; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .schip { border: 0; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 5px 12px 5px 5px; background: var(--fill); font-size: 12px; font-weight: 800; color: var(--fg); }
+  .schip:hover, .schip:focus-visible { background: var(--fill-strong); }
+  .schip em { font-style: normal; font-size: 11px; color: var(--muted); }
+  .slide { position: relative; }
+  .slide .ind { position: absolute; top: 3px; bottom: 3px; left: 0; width: 0; border-radius: 999px; background: var(--surface); box-shadow: var(--soft-shadow); transition: left 320ms var(--ease-spring), width 320ms var(--ease-spring); }
+  .slide button { position: relative; z-index: 1; }
+  .slide button[aria-pressed="true"] { background: transparent; box-shadow: none; }
+  .toggles { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+  .compare { display: flex; flex-wrap: wrap; gap: 18px; align-items: center; }
+  .compare > div { display: flex; flex-direction: column; gap: 6px; }
+
+  .ct-row.keep:hover .ct-bar .solid, .ct-row.keep:focus-visible .ct-bar .solid { opacity: 1; }
+  .strip .avgline { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--accent-text); opacity: 0; transition: opacity 200ms ease; pointer-events: none; }
+  .strip .avgline span { position: absolute; right: 0; top: -20px; font-size: 10.5px; font-weight: 800; color: var(--accent-text); background: var(--surface); padding: 0 4px; border-radius: 4px; }
+  .strip.avg .avgline { opacity: 1; }
+
+  @media (max-width: 760px) {
+    .chartrow { grid-template-columns: minmax(0, 1fr); }
+    .side { min-height: 0; }
+    .lrow { grid-template-columns: 96px minmax(0, 1fr) 72px; }
+    .yr-list { padding-left: 0; }
+  }
+
   .note { font-size: 12px; font-weight: 600; color: var(--muted); border-top: 1px solid var(--divider); padding-top: 10px; margin: 0; }
 
   @media (max-width: 560px) {
@@ -294,7 +446,7 @@
   <header class="intro">
     <span class="eyebrow">chaiCoffeeFund · Subscriptions</span>
     <h1>More life for the Subscriptions page</h1>
-    <p>Ideas for four parts of the page, each one a working mockup: hover it, click it, move along it. <b>Pick any you like by number and letter</b> (say 1B, 2A and 3A), the way the Cards page's were picked. Mix freely.</p>
+    <p>Ideas for every part of the page, each one a working mockup: hover it, click it, drag across it. <b>Pick any you like by number and letter</b> (say 1B, 2A and 3A), the way the Cards page's were picked. Mix freely.</p>
     <div class="chips">
       <span class="sample">Sample data from the design, not yours</span>
       <span class="built">Already built: the map's hover card, and the map holding still (PR #141)</span>
@@ -304,6 +456,9 @@
       <a href="#hero">2 · The hero</a>
       <a href="#links">3 · Payments and Charged to</a>
       <a href="#moments">4 · Small moments</a>
+      <a href="#grid">5 · The day-by-day grid</a>
+      <a href="#trends">6 · Trend and Lifetime</a>
+      <a href="#quiet">7 · The quieter widgets</a>
     </nav>
   </header>
 
@@ -470,6 +625,99 @@
       </article>
     </div>
   </section>
+
+  <!-- ============ 5 · The day-by-day grid ============ -->
+  <section class="area" id="grid" aria-labelledby="h-grid">
+    <div class="area-head">
+      <h2 id="h-grid">5 · Reading the day-by-day grid</h2>
+      <p>Over time's Day by day view: every renewal of the year on its day. Today it only has the browser's plain tooltip.</p>
+    </div>
+    <div class="options stacked">
+      <article class="option">
+        <div class="opt-head"><span class="tag">A</span><div><h3>A card for each day</h3><p>Hovering or focusing a day lifts it and shows a light card, like the Cards page's month card: what renewed, where it was charged and whether it's paid. It glides from day to day. A day not recorded says so, and clicking it opens Record a payment.</p></div></div>
+        <div class="demo"><div class="gridbox" id="grid-5a"></div></div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">B</span><div><h3>Spotlight a month</h3><p>Hovering a month's total under the grid keeps that month's days lit and fades the rest. Its card splits the month by subscription and compares it with a usual month.</p></div></div>
+        <div class="demo"><div class="gridbox" id="grid-5b"></div></div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">C</span><div><h3>Drag to add up</h3><p>Press on a day and drag to another: the days between are outlined, and a line adds them up, paid and still to come. Handy for "what does the rest of the year cost?"</p></div></div>
+        <div class="demo">
+          <div class="without" id="range-5c" aria-live="polite"></div>
+          <div class="gridbox" id="grid-5c"></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 6 · Payment trend and Lifetime ============ -->
+  <section class="area" id="trends" aria-labelledby="h-trends">
+    <div class="area-head">
+      <h2 id="h-trends">6 · Payment trend and Lifetime cost</h2>
+      <p>The trend already has a hover card; Lifetime has nothing to touch yet.</p>
+    </div>
+    <div class="options stacked">
+      <article class="option">
+        <div class="opt-head"><span class="tag">A</span><div><h3>A bar splits into its subscriptions</h3><p>Hovering a month's bar stacks it into its subscriptions, each in its own colour, and lists them beside the chart. The other months step back.</p></div></div>
+        <div class="demo"><div class="chartrow"><div class="trend" id="trend-6a"></div><div class="side" id="side-6a"></div></div></div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">B</span><div><h3>A running total</h3><p>Moving along this year's bars draws a line of everything paid so far, up to the month under the pointer, and says where the year is heading.</p></div></div>
+        <div class="demo"><div class="trend" id="trend-6b" style="height: 260px"></div></div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">C</span><div><h3>Lifetime, sorted and opened</h3><p>Sort Lifetime cost by most paid, longest held or newest, and the rows slide to their new places. Hovering a row opens what it cost each year.</p></div></div>
+        <div class="demo">
+          <div class="toolbar"><div class="seg" role="group" aria-label="Sort"><button type="button" aria-pressed="true" data-sort="paid">Most paid</button><button type="button" aria-pressed="false" data-sort="held">Longest held</button><button type="button" aria-pressed="false" data-sort="new">Newest</button></div></div>
+          <div class="life" id="life-6c"></div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- ============ 7 · The quieter widgets ============ -->
+  <section class="area" id="quiet" aria-labelledby="h-quiet">
+    <div class="area-head">
+      <h2 id="h-quiet">7 · The quieter widgets</h2>
+      <p>The greeting, Charged to, the chips under the map and the toggles everywhere don't respond to anything yet.</p>
+    </div>
+    <div class="options wide">
+      <article class="option">
+        <div class="opt-head"><span class="tag">A</span><div><h3>The greeting points</h3><p>Each figure in the sentence under the greeting is a link to what it means: hovering it lights the months, the biggest month or the coming renewals it's talking about.</p></div></div>
+        <div class="demo">
+          <p class="greet" id="greet-7a"></p>
+          <div class="strip" id="strip-7a"></div>
+          <div class="ups" id="ups-7a"></div>
+        </div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">B</span><div><h3>Charged to shows the next bill</h3><p>Hovering a card in Charged to opens which subscriptions land on its next statement, and their total. A bank account shows its next debits.</p></div></div>
+        <div class="demo"><div class="ct" id="ct-7b"></div></div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">C</span><div><h3>A ghost of what you paused</h3><p>Hovering a paused or cancelled chip under the map makes room for a dashed ghost block: what it would add each month if you resumed or restarted it.</p></div></div>
+        <div class="demo">
+          <div class="map" id="map-7c" style="height: 240px"></div>
+          <div class="chipsrow" id="chips-7c"><span>Not in the map:</span></div>
+        </div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">D</span><div><h3>Toggles that slide</h3><p>Every switch on the page (A month or A year, Payments or Price history, the chart's three views) slides its white pill to the new option with a small spring, instead of jumping.</p></div></div>
+        <div class="demo">
+          <div class="compare">
+            <div><span class="hint">Today</span><div class="seg" role="group" aria-label="Today's toggle"><button type="button" aria-pressed="true">Day by day</button><button type="button" aria-pressed="false">Payment trend</button><button type="button" aria-pressed="false">Lifetime cost</button></div></div>
+            <div><span class="hint">Sliding</span><div class="seg slide" role="group" aria-label="Sliding toggle"><span class="ind" aria-hidden="true"></span><button type="button" aria-pressed="true">Day by day</button><button type="button" aria-pressed="false">Payment trend</button><button type="button" aria-pressed="false">Lifetime cost</button></div></div>
+          </div>
+          <div class="toggles">
+            <div class="seg slide" role="group" aria-label="Cost"><span class="ind" aria-hidden="true"></span><button type="button" aria-pressed="true">A month</button><button type="button" aria-pressed="false">A year</button></div>
+            <div class="seg slide" role="group" aria-label="Show"><span class="ind" aria-hidden="true"></span><button type="button" aria-pressed="true">Payments</button><button type="button" aria-pressed="false">Price history</button></div>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
 </div>
 
 <script>
@@ -710,7 +958,7 @@
   // ===== 2A · rolling digits in the hero =====
   const PICKS = [
     { id: "all", alias: "All", color: "emerald", eyebrow: "Everything", name: "All subscriptions", price: 5559, per: "a month · 10 active",
-      stats: [["A month", 5559, "10 active"], ["Renews next", "Netflix", "Fri, Oct 23"], ["Paid this year", 52118, "101 payments"], ["Prices", "1 went up", "₹150 more a month"]] },
+      stats: [["A month", 5559, "10 active"], ["Renews next", "Netflix", "Fri, Oct 23"], ["Paid this year", 55090, "54 payments"], ["Prices", "1 went up", "₹150 more a month"]] },
     { id: "netflix", alias: "Netflix", color: "ruby", eyebrow: "Streaming · since Feb 23, 2024", name: "Netflix", price: 649, per: "/ month",
       stats: [["Monthly", 649, "₹649 a month"], ["Renews", "Fri, Oct 23", "in 3 days"], ["Paid so far", 16418, "32 payments"], ["Price", "↑ ₹150", "₹499 → ₹649 on Jul 23"]] },
     { id: "chatgpt", alias: "ChatGPT", color: "sapphire", eyebrow: "Software · since Jun 8, 2025", name: "ChatGPT", price: 1999, per: "/ month",
@@ -718,7 +966,7 @@
     { id: "cult", alias: "Cult.fit", color: "copper", eyebrow: "Fitness · since Jan 10, 2026", name: "Cult.fit", price: 4500, per: "/ quarter",
       stats: [["Quarterly", 4500, "₹1,500 a month"], ["Renews", "Sun, Jan 10, 2027", "in 3 months"], ["Paid so far", 18000, "4 payments"], ["Price", "Same", "Never changed"]] },
     { id: "spotify", alias: "Spotify", color: "teal", eyebrow: "Music · since Jun 28, 2023", name: "Spotify", price: 119, per: "/ month",
-      stats: [["Monthly", 119, "₹119 a month"], ["Renews", "Wed, Oct 28", "in 8 days"], ["Paid so far", 4879, "41 payments"], ["Price", "Same", "Never changed"]] },
+      stats: [["Monthly", 119, "₹119 a month"], ["Renews", "Wed, Oct 28", "in 8 days"], ["Paid so far", 4760, "40 payments"], ["Price", "Same", "Never changed"]] },
     { id: "prime", alias: "Prime", color: "onyx", eyebrow: "Shopping · since Dec 15, 2022", name: "Amazon Prime", price: 1499, per: "/ year",
       stats: [["Yearly", 1499, "₹125 a month"], ["Renews", "Tue, Dec 15", "in 2 months"], ["Paid so far", 5996, "4 payments"], ["Price", "Same", "Never changed"]] },
   ];
@@ -936,5 +1184,478 @@
     });
     undo.addEventListener("click", () => { fill.style.width = "90%"; set(false); });
   })();
+
+  // ===================== The year's renewals, for sections 5–7 =====================
+  // Each sample subscription's schedule from its start date, at its price on the day (Netflix went
+  // from ₹499 to ₹649 on Jul 23, 2026), with iCloud+'s Sep 24 renewal not recorded, as in the design.
+  const TODAY_ISO = "2026-10-20";
+  const DAY = 86400000;
+  const toT = (s) => Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1, +s.slice(8, 10));
+  const toIso = (t) => new Date(t).toISOString().slice(0, 10);
+  const addMonths = (s, n) => toIso(Date.UTC(+s.slice(0, 4), +s.slice(5, 7) - 1 + n, +s.slice(8, 10)));
+  const fmt = (s, opts) => new Date(toT(s)).toLocaleDateString("en-US", { timeZone: "UTC", ...opts });
+  const dayName = (s) => fmt(s, { weekday: "short", month: "short", day: "numeric" });
+  const shortDate = (s) => fmt(s, { month: "short", day: "numeric" });
+  const compact = (n) => (n >= 1000 ? `₹${(n / 1000).toFixed(1).replace(/\.0$/, "")}k` : inr(n));
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const SCHED = { netflix: ["2024-02-23", 1], icloud: ["2025-04-24", 1], spotify: ["2023-06-28", 1], timesprime: ["2024-10-30", 12], youtube: ["2025-01-02", 1], chatgpt: ["2025-06-08", 1], swiggy: ["2025-09-01", 3], prime: ["2022-12-15", 12], cult: ["2026-01-10", 3], m365: ["2025-03-03", 12] };
+  const PLACE = { coral: "Coral", kotak: "Kotak Savings", millennia: "Millennia", ace: "Ace" };
+  const priceOn = (id, date) => (id === "netflix" && date < "2026-07-23" ? 499 : byId[id].amount);
+  const NOT_RECORDED = new Set(["icloud 2026-09-24"]);
+  const RENEWALS = [];
+  for (const [id, [start, step]] of Object.entries(SCHED)) {
+    for (let k = 0, d = start; d <= "2027-04-30"; k++, d = addMonths(start, k * step)) {
+      RENEWALS.push({ id, date: d, amount: priceOn(id, d), status: d > TODAY_ISO ? "expected" : NOT_RECORDED.has(`${id} ${d}`) ? "missing" : "paid" });
+    }
+  }
+  RENEWALS.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  const byDay = new Map();
+  for (const r of RENEWALS) (byDay.get(r.date) ?? byDay.set(r.date, []).get(r.date)).push(r);
+  const counted = (list) => list.filter((r) => r.status !== "missing").reduce((t, r) => t + r.amount, 0);
+  const inMonth = (key) => RENEWALS.filter((r) => r.date.slice(0, 7) === key);
+
+  // ----- The year's grid, as in the app: a column a week, Monday at the top -----
+  const GRID_START = "2025-12-29", GRID_FIRST = "2026-01-01", GRID_LAST = "2026-12-31";
+  const GRID_DAYS = (toT(GRID_LAST) - toT(GRID_START)) / DAY + 1;
+  const WEEKS = Math.ceil(GRID_DAYS / 7);
+  const weekOf = (s) => Math.floor((toT(s) - toT(GRID_START)) / DAY / 7);
+  const level = (t) => (t <= 200 ? 2 : t <= 700 ? 3 : t <= 2000 ? 4 : 5);
+  const monthKey = (i) => `2026-${String(i + 1).padStart(2, "0")}`;
+
+  function makeGrid(box) {
+    const scroll = document.createElement("div"), g = document.createElement("div"), months = document.createElement("div"), cells = document.createElement("div"), totals = document.createElement("div");
+    scroll.className = "grid-scroll"; g.className = "dgrid"; months.className = "months"; cells.className = "cells"; totals.className = "totals";
+    g.append(months, cells, totals);
+    ["Mon", "", "Wed", "", "Fri", "", ""].forEach((w, i) => { if (!w) return; const s = document.createElement("span"); s.className = "wd"; s.textContent = w; s.dataset.row = i; g.appendChild(s); });
+    scroll.appendChild(g);
+    box.appendChild(scroll);
+    const days = new Map();
+    for (let i = 0; i < GRID_DAYS; i++) {
+      const date = toIso(toT(GRID_START) + i * DAY);
+      const list = byDay.get(date);
+      let el;
+      if (date >= GRID_FIRST && list) {
+        el = document.createElement("button");
+        el.type = "button";
+        el.className = "day " + (list.some((r) => r.status === "missing") ? "miss" : list.every((r) => r.status === "expected") ? "exp" : `l${level(counted(list))}`);
+        el.setAttribute("aria-label", `${dayName(date)}: ${list.map((r) => `${byId[r.id].alias} ${inr(r.amount)}`).join(", ")}`);
+        days.set(date, el);
+      } else {
+        el = document.createElement("span");
+        el.setAttribute("aria-hidden", "true");
+        if (date >= GRID_FIRST) el.className = "nd";
+      }
+      if (date === TODAY_ISO) el.classList.add("today");
+      el.dataset.d = date;
+      cells.appendChild(el);
+    }
+    const monthEls = new Map();
+    const starts = MONTHS.map((_, i) => { const first = `${monthKey(i)}-01`; return weekOf(first) + (new Date(toT(first)).getUTCDay() === 1 ? 0 : 1); });
+    MONTHS.forEach((name, i) => {
+      const key = monthKey(i);
+      const lab = document.createElement("span");
+      lab.textContent = name;
+      if (key === TODAY_ISO.slice(0, 7)) lab.className = "now";
+      months.appendChild(lab);
+      const t = document.createElement("button");
+      t.type = "button";
+      t.className = "mt" + (key > TODAY_ISO.slice(0, 7) ? " future" : "");
+      t.dataset.month = key;
+      t.textContent = compact(counted(inMonth(key)));
+      t.setAttribute("aria-label", `${name} 2026: ${inr(counted(inMonth(key)))}`);
+      totals.appendChild(t);
+      monthEls.set(key, { lab, t, s: starts[i], e: i === 11 ? WEEKS - 1 : starts[i + 1] - 1 });
+    });
+    function layout() {
+      const cell = Math.max(9, Math.min(22, Math.floor((box.clientWidth - 34) / WEEKS - 4)));
+      const step = cell + 4;
+      g.style.setProperty("--cell", `${cell}px`);
+      for (const m of monthEls.values()) {
+        m.lab.style.left = `${34 + m.s * step}px`;
+        Object.assign(m.t.style, { left: `${m.s * step}px`, width: `${(m.e - m.s + 1) * step - 4}px` });
+      }
+      g.querySelectorAll(".wd").forEach((w) => (w.style.top = `${18 + +w.dataset.row * step + 2}px`));
+    }
+    layout();
+    new ResizeObserver(layout).observe(box);
+    return { g, cells, days, monthEls, scroll };
+  }
+
+  // ----- The light hover card, gliding between targets -----
+  function lightCard(box) {
+    const c = document.createElement("div");
+    c.className = "lt";
+    c.setAttribute("role", "tooltip");
+    box.appendChild(c);
+    return c;
+  }
+  function placeCard(card, box, target) {
+    const br = box.getBoundingClientRect(), tr = target.getBoundingClientRect();
+    const w = card.offsetWidth, h = card.offsetHeight;
+    const first = !card.classList.contains("show");
+    if (first) card.style.transition = "opacity 160ms ease";
+    const cx = tr.left - br.left + tr.width / 2;
+    const x = Math.min(Math.max(cx - w / 2, 0), Math.max(0, br.width - w));
+    const y = tr.top - h - 10 < 8 ? tr.bottom - br.top + 10 : tr.top - br.top - h - 10;
+    card.style.setProperty("--x", `${x}px`);
+    card.style.setProperty("--y", `${y}px`);
+    card.classList.add("show");
+    if (first) { void card.offsetWidth; card.style.transition = ""; }
+  }
+  const when = (date) => {
+    const n = Math.round((toT(date) - toT(TODAY_ISO)) / DAY);
+    return n === 0 ? "today" : n === 1 ? "tomorrow" : n === -1 ? "yesterday" : n > 0 ? `in ${n} days` : `${-n} days ago`;
+  };
+
+  // ===== 5A · a card for each day =====
+  (() => {
+    const box = document.getElementById("grid-5a");
+    const G = makeGrid(box);
+    const card = lightCard(box);
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    box.appendChild(toast);
+    let active = null;
+    function show(el) {
+      if (active === el) return;
+      active?.classList.remove("on");
+      el.classList.add("on");
+      active = el;
+      const date = el.dataset.d, list = byDay.get(date);
+      const st = list.some((r) => r.status === "missing") ? "miss" : list.every((r) => r.status === "expected") ? "exp" : "paid";
+      card.innerHTML = `<div class="lh"><span>${dayName(date)} · ${when(date)}</span><span class="lpill ${st === "paid" ? "" : st}">${st === "paid" ? "Paid" : st === "exp" ? "Expected" : "Not recorded"}</span></div>
+        <div class="la">${inr(list.reduce((t, r) => t + r.amount, 0))}</div>
+        <ul>${list.map((r) => `<li>${mono(byId[r.id])}<span class="nm">${byId[r.id].alias} · ${PLACE[byId[r.id].charged]}</span><b>${inr(r.amount)}</b></li>`).join("")}</ul>
+        ${st === "miss" ? `<div class="lf warn">Not recorded yet · click the day to record it</div>` : st === "exp" ? `<div class="lf">Expected, at the plan's price</div>` : ""}`;
+      placeCard(card, box, el);
+    }
+    function hide() { active?.classList.remove("on"); active = null; card.classList.remove("show"); }
+    const fromEvent = (e) => { const d = e.target.closest(".day"); if (d) show(d); };
+    G.cells.addEventListener("pointerover", fromEvent);
+    G.cells.addEventListener("focusin", fromEvent);
+    box.addEventListener("pointerleave", hide);
+    G.cells.addEventListener("focusout", (e) => { if (!G.cells.contains(e.relatedTarget)) hide(); });
+    box.addEventListener("keydown", (e) => e.key === "Escape" && hide());
+    G.scroll.addEventListener("scroll", hide);
+    G.cells.addEventListener("click", (e) => {
+      const d = e.target.closest(".day.miss");
+      if (!d) return;
+      const r = byDay.get(d.dataset.d).find((x) => x.status === "missing");
+      toast.textContent = `Opens Record a payment: ${byId[r.id].alias}, ${shortDate(r.date)}, ${inr(r.amount)}`;
+      toast.classList.add("show");
+      clearTimeout(toast._t);
+      toast._t = setTimeout(() => toast.classList.remove("show"), 2400);
+    });
+  })();
+
+  // ===== 5B · spotlight a month =====
+  (() => {
+    const box = document.getElementById("grid-5b");
+    const G = makeGrid(box);
+    const card = lightCard(box);
+    const totals = G.g.querySelector(".totals");
+    let cur = null;
+    function show(key) {
+      if (cur === key) return;
+      cur = key;
+      G.g.classList.add("fade");
+      G.days.forEach((el, date) => el.classList.toggle("keep", date.slice(0, 7) === key));
+      G.monthEls.forEach((m, k) => m.t.classList.toggle("on", k === key));
+      const list = inMonth(key);
+      const parts = {};
+      list.forEach((r) => (parts[r.id] = (parts[r.id] || 0) + r.amount));
+      const rows = Object.entries(parts).sort((a, b) => b[1] - a[1]);
+      const total = counted(list), diff = total - TOTAL, missing = list.filter((r) => r.status === "missing").length;
+      const future = key > TODAY_ISO.slice(0, 7);
+      card.innerHTML = `<div class="lh"><span>${MONTHS[+key.slice(5) - 1]} 2026</span><span class="lpill ${future ? "exp" : ""}">${future ? "Expected" : key === TODAY_ISO.slice(0, 7) ? "This month" : "Paid"}</span></div>
+        <div class="la">${inr(total)}</div>
+        <div class="ld" style="color: ${diff > 0 ? "var(--negative)" : "var(--positive)"}">${diff > 0 ? "▲" : "▼"} ${inr(Math.abs(diff))} ${diff > 0 ? "more" : "less"} than a usual month of ${inr(TOTAL)}</div>
+        <div class="splitbar" aria-hidden="true">${rows.map(([id, a]) => `<i style="flex-grow: ${a}; background: var(--card-${byId[id].color})"></i>`).join("")}</div>
+        <ul>${rows.slice(0, 5).map(([id, a]) => `<li>${mono(byId[id])}<span class="nm">${byId[id].alias}</span><b>${inr(a)}</b></li>`).join("")}</ul>
+        <div class="lf">${list.length} ${list.length === 1 ? "renewal" : "renewals"}${rows.length > 5 ? ` · ${rows.length - 5} more not listed` : ""}${missing ? ` · ${missing} not recorded` : ""}</div>`;
+      placeCard(card, box, G.monthEls.get(key).t);
+    }
+    function hide() { cur = null; G.g.classList.remove("fade"); G.monthEls.forEach((m) => m.t.classList.remove("on")); card.classList.remove("show"); }
+    const fromEvent = (e) => { const t = e.target.closest(".mt"); if (t) show(t.dataset.month); };
+    totals.addEventListener("pointerover", fromEvent);
+    totals.addEventListener("focusin", fromEvent);
+    box.addEventListener("pointerleave", hide);
+    totals.addEventListener("focusout", (e) => { if (!totals.contains(e.relatedTarget)) hide(); });
+    G.scroll.addEventListener("scroll", hide);
+  })();
+
+  // ===== 5C · drag to add up =====
+  (() => {
+    const box = document.getElementById("grid-5c"), line = document.getElementById("range-5c");
+    const G = makeGrid(box);
+    // It opens on the rest of the year, so the first frame already shows what it does.
+    let anchor = TODAY_ISO, end = GRID_LAST, dragging = false;
+    const span = () => (anchor <= end ? [anchor, end] : [end, anchor]);
+    function mark() {
+      const [a, b] = anchor ? span() : ["", ""];
+      G.cells.querySelectorAll("[data-d]").forEach((el) => el.classList.toggle("sel", !!anchor && el.dataset.d >= GRID_FIRST && el.dataset.d >= a && el.dataset.d <= b));
+      if (!anchor) { line.innerHTML = `<span>Press on a day and drag to another to add up the renewals between.</span>`; return; }
+      const list = RENEWALS.filter((r) => r.date >= a && r.date <= b);
+      const paid = list.filter((r) => r.status === "paid").reduce((t, r) => t + r.amount, 0);
+      const coming = list.filter((r) => r.status === "expected").reduce((t, r) => t + r.amount, 0);
+      const missing = list.filter((r) => r.status === "missing").length;
+      line.innerHTML = `<span><b>${shortDate(a)} – ${shortDate(b)}</b> · ${list.length} ${list.length === 1 ? "renewal" : "renewals"} · <b>${inr(paid + coming)}</b></span>${paid ? `<span>${inr(paid)} paid</span>` : ""}${coming ? `<span>${inr(coming)} still to come</span>` : ""}${missing ? `<span style="color: var(--warning-text)">${missing} not recorded</span>` : ""}<button type="button" class="chip" data-clear>Clear</button>`;
+    }
+    const dateAt = (e) => document.elementFromPoint(e.clientX, e.clientY)?.closest?.("[data-d]")?.dataset.d;
+    G.cells.addEventListener("pointerdown", (e) => {
+      const d = e.target.closest("[data-d]")?.dataset.d;
+      if (!d || d < GRID_FIRST) return;
+      e.preventDefault();
+      dragging = true;
+      anchor = end = d;
+      try { G.cells.setPointerCapture(e.pointerId); } catch {}
+      mark();
+    });
+    G.cells.addEventListener("pointermove", (e) => {
+      if (!dragging) return;
+      const d = dateAt(e);
+      if (d && d >= GRID_FIRST && d !== end) { end = d; mark(); }
+    });
+    window.addEventListener("pointerup", () => (dragging = false));
+    line.addEventListener("click", (e) => { if (e.target.closest("[data-clear]")) { anchor = end = null; mark(); } });
+    mark();
+  })();
+
+  // ----- Months for the trend: the last 12 paid and the next 6 expected, as in the app -----
+  const TREND = Array.from({ length: 18 }, (_, k) => {
+    const key = addMonths("2025-11-01", k).slice(0, 7);
+    const parts = {};
+    inMonth(key).filter((r) => r.status !== "missing").forEach((r) => (parts[r.id] = (parts[r.id] || 0) + r.amount));
+    return { key, name: MONTHS[+key.slice(5) - 1], year: key.slice(0, 4), total: counted(inMonth(key)), parts: Object.entries(parts).sort((a, b) => b[1] - a[1]), future: key > TODAY_ISO.slice(0, 7), now: key === TODAY_ISO.slice(0, 7) };
+  });
+  function drawTrend(host, months, { stack = true, labels = true } = {}) {
+    const max = Math.max(...months.map((m) => m.total));
+    host.innerHTML = months.map((m, i) => `<button type="button" class="tb${m.future ? " future" : ""}${m.now ? " now" : ""}" data-i="${i}" aria-label="${m.name} ${m.year}: ${inr(m.total)}${m.future ? ", expected" : ""}">
+        ${labels ? `<span class="tv">${compact(m.total)}</span>` : ""}
+        <span class="col" style="height: ${Math.max(3, (m.total / max) * 78)}%"><span class="solid"></span>${stack ? `<span class="stack">${m.parts.map(([id, a]) => `<i style="height: calc(${(a / m.total) * 100}% - 1px); background: var(--card-${byId[id].color})"></i>`).join("")}</span>` : ""}</span>
+        <span class="ml">${m.name}</span>
+      </button>`).join("");
+  }
+
+  // ===== 6A · a bar splits into its subscriptions =====
+  (() => {
+    const host = document.getElementById("trend-6a"), side = document.getElementById("side-6a");
+    drawTrend(host, TREND);
+    const idle = () => (side.innerHTML = `<h4>The last 12 months</h4><div class="sa">${inr(TREND.filter((m) => !m.future).reduce((t, m) => t + m.total, 0))}</div><span class="hint">Hover a month to see what it's made of.</span>`);
+    function show(i) {
+      const m = TREND[i];
+      host.classList.add("spot");
+      host.querySelectorAll(".tb").forEach((b) => b.classList.toggle("on", +b.dataset.i === i));
+      side.innerHTML = `<h4>${m.name} ${m.year}${m.future ? " · expected" : m.now ? " · this month" : ""}</h4><div class="sa">${inr(m.total)}</div><ul>${m.parts.map(([id, a]) => `<li><i style="background: var(--card-${byId[id].color})"></i><span>${byId[id].alias}</span><b>${inr(a)}</b></li>`).join("")}</ul>`;
+    }
+    function off() { host.classList.remove("spot"); host.querySelectorAll(".tb").forEach((b) => b.classList.remove("on")); idle(); }
+    const fromEvent = (e) => { const b = e.target.closest(".tb"); if (b) show(+b.dataset.i); };
+    host.addEventListener("pointerover", fromEvent);
+    host.addEventListener("focusin", fromEvent);
+    host.addEventListener("pointerleave", off);
+    host.addEventListener("focusout", (e) => { if (!host.contains(e.relatedTarget)) off(); });
+    idle();
+  })();
+
+  // ===== 6B · a running total =====
+  (() => {
+    const host = document.getElementById("trend-6b");
+    const YEAR = TREND.filter((m) => m.year === "2026");
+    drawTrend(host, YEAR, { stack: false, labels: false });
+    host.querySelectorAll(".solid").forEach((s) => (s.style.opacity = "0.5"));
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.classList.add("run");
+    svg.setAttribute("aria-hidden", "true");
+    host.appendChild(svg);
+    const lab = document.createElement("div");
+    lab.className = "runlab";
+    host.appendChild(lab);
+    const cum = [];
+    YEAR.reduce((t, m, i) => (cum[i] = t + m.total), 0);
+    const yearTotal = cum[YEAR.length - 1];
+    let cur = null;
+    function draw() {
+      const W = host.clientWidth, H = host.clientHeight - 22;
+      const hr = host.getBoundingClientRect();
+      const p = [...host.querySelectorAll(".tb")].map((b, i) => { const r = b.getBoundingClientRect(); return [r.left - hr.left + r.width / 2, H - 6 - (cum[i] / yearTotal) * (H - 26)]; });
+      const d = (arr) => arr.map(([x, y], k) => `${k ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`).join(" ");
+      svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+      svg.setAttribute("width", W);
+      svg.setAttribute("height", H);
+      svg.innerHTML = `<path class="full" d="${d(p)}" fill="none" stroke-width="2" stroke-dasharray="4 4"/>` + (cur === null ? "" : `<path class="drawn" d="${d(p.slice(0, cur + 1))}" fill="none" stroke="var(--accent-text)" stroke-width="2.5" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="${reduced ? 0 : 1}"/><circle cx="${p[cur][0]}" cy="${p[cur][1]}" r="4.5" fill="var(--surface)" stroke="var(--accent-text)" stroke-width="2.5"/>`);
+      if (cur === null) { lab.classList.remove("show"); return; }
+      const path = svg.querySelector(".drawn");
+      void path.getBoundingClientRect();
+      path.style.transition = "stroke-dashoffset 450ms cubic-bezier(0.2, 0.8, 0.2, 1)";
+      path.setAttribute("stroke-dashoffset", "0");
+      const m = YEAR[cur];
+      lab.innerHTML = `${inr(cum[cur])} by the end of ${m.name}<small>${m.future ? `expected · ${inr(yearTotal)} for all of 2026` : `paid · on course for ${inr(yearTotal)} in 2026`}</small>`;
+      Object.assign(lab.style, { left: `${Math.min(Math.max(p[cur][0] - 100, 0), W - 210)}px`, top: `${Math.max(0, p[cur][1] - 58)}px` });
+      lab.classList.add("show");
+    }
+    const fromEvent = (e) => { const b = e.target.closest(".tb"); if (b && +b.dataset.i !== cur) { cur = +b.dataset.i; draw(); } };
+    host.addEventListener("pointerover", fromEvent);
+    host.addEventListener("focusin", fromEvent);
+    host.addEventListener("pointerleave", () => { cur = null; draw(); });
+    host.addEventListener("focusout", (e) => { if (!host.contains(e.relatedTarget)) { cur = null; draw(); } });
+    new ResizeObserver(draw).observe(host);
+  })();
+
+  // ===== 6C · Lifetime, sorted and opened =====
+  (() => {
+    const host = document.getElementById("life-6c");
+    const rows = SUBS.map((s) => {
+      const paid = RENEWALS.filter((r) => r.id === s.id && r.status === "paid");
+      const years = {};
+      paid.forEach((r) => (years[r.date.slice(0, 4)] = (years[r.date.slice(0, 4)] || 0) + r.amount));
+      return { s, total: paid.reduce((t, r) => t + r.amount, 0), count: paid.length, start: SCHED[s.id][0], years };
+    });
+    const ORDER = { paid: (a, b) => b.total - a.total, held: (a, b) => (a.start < b.start ? -1 : 1), new: (a, b) => (a.start > b.start ? -1 : 1) };
+    const max = Math.max(...rows.map((r) => r.total));
+    host.innerHTML = rows.slice().sort(ORDER.paid).map((r) => {
+      const top = Math.max(...Object.values(r.years));
+      return `<div class="lrow" tabindex="0" data-id="${r.s.id}" style="${colorVars(r.s.color)}">
+        <span class="who">${mono(r.s)}<span>${r.s.alias}</span></span>
+        <span class="lb"><i style="width: ${Math.max(4, (r.total / max) * 100)}%"></i></span>
+        <span class="lv">${inr(r.total)}<small>since ${fmt(r.start, { month: "short", year: "numeric" })}</small></span>
+        <div class="yrs"><div><div class="yr-list">${Object.entries(r.years).map(([y, a]) => `<span class="yr"><b>${compact(a)}</b><i style="height: ${Math.max(3, (a / top) * 28)}px"></i>${y}</span>`).join("")}<span class="hint" style="align-self: center">${r.count} ${r.count === 1 ? "payment" : "payments"} · about ${inr(r.total / r.count)} each</span></div></div></div>
+      </div>`;
+    }).join("");
+    function sort(kind) {
+      const before = new Map([...host.children].map((el) => [el, el.getBoundingClientRect().top]));
+      const sorted = rows.slice().sort(ORDER[kind]).map((r) => host.querySelector(`[data-id="${r.s.id}"]`));
+      sorted.forEach((el) => host.appendChild(el));
+      if (reduced) return;
+      // Each row slides from where it was to its new place.
+      for (const el of sorted) {
+        const dy = before.get(el) - el.getBoundingClientRect().top;
+        if (!dy) continue;
+        el.style.transition = "none";
+        el.style.transform = `translateY(${dy}px)`;
+        void el.offsetWidth;
+        el.style.transition = "transform 480ms var(--ease-out), background 160ms ease";
+        el.style.transform = "";
+      }
+    }
+    host.closest(".option").querySelectorAll("[data-sort]").forEach((b) => b.addEventListener("click", () => {
+      b.parentElement.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      sort(b.dataset.sort);
+    }));
+  })();
+
+  // ===== 7A · the greeting points =====
+  (() => {
+    const greet = document.getElementById("greet-7a"), strip = document.getElementById("strip-7a"), ups = document.getElementById("ups-7a");
+    const months = MONTHS.map((n, i) => {
+      const key = monthKey(i), list = inMonth(key);
+      return { key, n, paid: list.filter((r) => r.status === "paid").reduce((t, r) => t + r.amount, 0), all: counted(list), future: key > TODAY_ISO.slice(0, 7) };
+    });
+    const paid = months.reduce((t, m) => t + m.paid, 0);
+    const avg = paid / 10;
+    const big = months.filter((m) => !m.future).reduce((a, b) => (b.paid > a.paid ? b : a));
+    const end = toIso(toT(TODAY_ISO) + 29 * DAY);
+    const next = RENEWALS.filter((r) => r.date >= TODAY_ISO && r.date <= end);
+    greet.innerHTML = `You've paid <button type="button" class="pt" data-pt="paid">${inr(paid)}</button> for subscriptions so far in 2026, about <button type="button" class="pt" data-pt="avg">${inr(avg)} a month</button>. <button type="button" class="pt" data-pt="big">${big.n} 2026</button> was the biggest month at ${inr(big.paid)}. <button type="button" class="pt" data-pt="next">${next.length} renewals</button> come up in the next 30 days, totalling ${inr(next.reduce((t, r) => t + r.amount, 0))}.`;
+    const top = Math.max(...months.map((m) => (m.future ? m.all : m.paid)));
+    strip.innerHTML = months.map((m) => `<span class="sb${m.future ? " future" : ""}" data-key="${m.key}" style="height: ${Math.max(6, ((m.future ? m.all : m.paid) / top) * 70)}px"><span>${m.n}</span></span>`).join("") + `<span class="avgline" style="bottom: ${18 + (avg / top) * 70}px"><span>about ${inr(avg)} a month</span></span>`;
+    ups.innerHTML = next.map((r) => `<span class="up">${mono(byId[r.id])}${byId[r.id].alias} · ${shortDate(r.date)} · ${inr(r.amount)}</span>`).join("");
+    function light(kind) {
+      greet.querySelectorAll(".pt").forEach((p) => p.classList.toggle("on", p.dataset.pt === kind));
+      strip.classList.toggle("spot", kind === "paid" || kind === "big");
+      strip.classList.toggle("avg", kind === "avg");
+      strip.querySelectorAll(".sb").forEach((b) => b.classList.toggle("on", kind === "paid" ? !b.classList.contains("future") : kind === "big" && b.dataset.key === big.key));
+      ups.classList.toggle("spot", kind === "next");
+      ups.querySelectorAll(".up").forEach((u) => u.classList.toggle("on", kind === "next"));
+    }
+    const fromEvent = (e) => { const p = e.target.closest(".pt"); if (p) light(p.dataset.pt); };
+    greet.addEventListener("pointerover", fromEvent);
+    greet.addEventListener("focusin", fromEvent);
+    greet.addEventListener("pointerleave", () => light(null));
+    greet.addEventListener("focusout", (e) => { if (!greet.contains(e.relatedTarget)) light(null); });
+  })();
+
+  // ===== 7B · Charged to shows the next bill =====
+  (() => {
+    const host = document.getElementById("ct-7b");
+    const PLACES = [
+      { key: "coral", name: "Coral", color: "copper", day: 2 },
+      { key: "millennia", name: "Millennia", color: "teal", day: 6 },
+      { key: "ace", name: "Ace", color: "violet", day: 14 },
+      { key: "kotak", name: "Kotak Savings", color: "emerald", day: null },
+    ];
+    const monthly = (key) => SUBS.filter((s) => s.charged === key).reduce((t, s) => t + s.monthly, 0);
+    const most = Math.max(...PLACES.map((p) => monthly(p.key)));
+    const today = new Date(toT(TODAY_ISO));
+    host.innerHTML = PLACES.map((p) => {
+      let head, items;
+      if (p.day) {
+        // The statement that closes next, and the charges since the one before it.
+        const m = today.getUTCMonth() + (today.getUTCDate() >= p.day ? 1 : 0);
+        const close = toIso(Date.UTC(today.getUTCFullYear(), m, p.day)), open = toIso(Date.UTC(today.getUTCFullYear(), m - 1, p.day) + DAY);
+        items = RENEWALS.filter((r) => byId[r.id].charged === p.key && r.date >= open && r.date <= close && r.status !== "missing");
+        head = `Next statement ${shortDate(close)} · ${inr(items.reduce((t, r) => t + r.amount, 0))}`;
+      } else {
+        items = RENEWALS.filter((r) => byId[r.id].charged === p.key && r.date > TODAY_ISO).slice(0, 2);
+        head = "Next debits from the account";
+      }
+      return `<div class="ct-row keep" tabindex="0">
+        <div class="ct-top"><span class="chip"><i style="${colorVars(p.color)}"></i>${p.name}</span><b>${inr(monthly(p.key))}</b></div>
+        <div class="ct-bar"><span class="solid" style="width: ${(monthly(p.key) / most) * 100}%; background: var(--card-${p.color})"></span></div>
+        <div class="stmt"><div><div class="sh">${head}</div>${items.map((r) => `<div class="sl"><span>${byId[r.id].alias} · ${shortDate(r.date)}${r.status === "paid" ? " · paid" : ""}</span><b>${inr(r.amount)}</b></div>`).join("")}</div></div>
+      </div>`;
+    }).join("");
+  })();
+
+  // ===== 7C · a ghost of what you paused =====
+  (() => {
+    const host = document.getElementById("map-7c"), chips = document.getElementById("chips-7c");
+    const blocks = basicMap(host);
+    const STOPPED = [
+      { id: "headspace", alias: "Headspace", monthly: 299, color: "copper", label: "paused", verb: "resumed" },
+      { id: "sonyliv", alias: "SonyLIV", monthly: 83.25, color: "ruby", label: "cancelled", verb: "restarted" },
+    ];
+    const ghost = document.createElement("div");
+    ghost.className = "blk ghost";
+    ghost.setAttribute("aria-hidden", "true");
+    ghost.innerHTML = `<span><span class="ba"></span><span class="bd"></span></span><span class="bv"></span>`;
+    host.appendChild(ghost);
+    chips.insertAdjacentHTML("beforeend", STOPPED.map((s) => `<button type="button" class="schip" data-g="${s.id}"><span class="mono" style="${colorVars(s.color)}">${s.alias[0]}</span>${s.alias}<em>${s.label}</em></button>`).join(""));
+    let cur = null;
+    function layout() {
+      const g = STOPPED.find((s) => s.id === cur);
+      const items = SUBS.map((s) => ({ key: s.id, value: s.monthly }));
+      if (g) items.push({ key: "ghost", value: g.monthly });
+      for (const r of squarify(items, host.clientWidth, host.clientHeight)) place(r.key === "ghost" ? ghost : blocks.get(r.key), r);
+      if (g) {
+        ghost.style.setProperty("--glow", `var(--card-${g.color})`);
+        ghost.querySelector(".ba").textContent = g.alias;
+        ghost.querySelector(".bd").textContent = `if ${g.verb}`;
+        ghost.querySelector(".bv").textContent = `+${inr(g.monthly)} a month`;
+      }
+      ghost.classList.toggle("show", !!g);
+    }
+    const fromEvent = (e) => { const c = e.target.closest("[data-g]"); if (c && c.dataset.g !== cur) { cur = c.dataset.g; layout(); } };
+    chips.addEventListener("pointerover", fromEvent);
+    chips.addEventListener("focusin", fromEvent);
+    chips.addEventListener("pointerleave", () => { cur = null; layout(); });
+    chips.addEventListener("focusout", (e) => { if (!chips.contains(e.relatedTarget)) { cur = null; layout(); } });
+    new ResizeObserver(layout).observe(host);
+  })();
+
+  // ===== 7D · toggles that slide =====
+  document.querySelectorAll("#quiet .seg").forEach((seg) => {
+    const ind = seg.querySelector(".ind");
+    const buttons = [...seg.querySelectorAll("button")];
+    const pressed = () => buttons.find((b) => b.getAttribute("aria-pressed") === "true");
+    const move = (b) => { if (ind) Object.assign(ind.style, { left: `${b.offsetLeft}px`, width: `${b.offsetWidth}px` }); };
+    buttons.forEach((b) => b.addEventListener("click", () => { buttons.forEach((x) => x.setAttribute("aria-pressed", String(x === b))); move(b); }));
+    if (!ind) return;
+    ind.style.transition = "none";
+    move(pressed());
+    void ind.offsetWidth;
+    ind.style.transition = "";
+    new ResizeObserver(() => move(pressed())).observe(seg);
+  });
+
 })();
 </script>
