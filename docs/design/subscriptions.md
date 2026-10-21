@@ -13,6 +13,8 @@ Final design, picked by Prathik on 2026-10-21. Mockups: [`design/subscriptions/`
 
 Every name, price and date in the mockups is made up. "Today" is Oct 20, 2026.
 
+The artboards and `canvas.json` are built by [`design/subscriptions/generator/`](../../design/subscriptions/generator/). A rebuild overwrites them, so make changes in the generator and rebuild, not in the artboards by hand.
+
 ## The page, top to bottom
 
 1. **Greeting**, as on the Cards page: "Subscriptions · Today", "Good morning, Prathik", and one sentence: paid so far this year, the monthly average, the biggest month, and the renewals in the next 30 days.
