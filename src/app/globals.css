@@ -224,6 +224,7 @@
   --animate-pop-in: pop-in 150ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-days-next: days-next 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-days-prev: days-prev 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-tile-in: tile-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1) 260ms both;
 
   @keyframes due-pulse {
     0%,
@@ -247,6 +248,13 @@
     }
     to {
       left: 130%;
+    }
+  }
+  /* A category's name and total on the cost map (1A), once its blocks have moved into its tile. */
+  @keyframes tile-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
     }
   }
   @keyframes fade-out {

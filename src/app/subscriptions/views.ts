@@ -1,9 +1,9 @@
 import { daysBetween } from "@/lib/aggregate/cardSpend";
 import { MARK_PAID_DAYS_BEFORE, yearSummary } from "@/lib/aggregate/subscriptionRenewals";
+import { monthlyEquivalent } from "@/lib/aggregate/subscriptions";
 import {
   allFacts,
   carouselOrder,
-  categorySplit,
   chargedToSplit,
   latestPayments,
   priceHistory,
@@ -15,7 +15,7 @@ import {
 } from "@/lib/aggregate/subscriptionPage";
 import { formatDate, formatDayDate, formatMonthShort, formatShortDate } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
-import { ALL, cardColorKey, categoryColor, categoryLabel, cycleWord, subscriptionMark, whenFrom, type ColorKey, type Mark } from "@/lib/format/subscriptionLabels";
+import { ALL, cardColorKey, categoryColor, categoryLabel, cycleWord, shareOfTotal, subscriptionMark, whenFrom, type ColorKey, type Mark } from "@/lib/format/subscriptionLabels";
 import { chartView, type ChartView } from "./chartView";
 import type { Subscription, SubscriptionPayment } from "@/lib/sheets/types";
 import type { SentencePart } from "../cards/summarySentence";
@@ -90,6 +90,10 @@ export interface MapBlock extends Mark {
   pill: { text: string; due: boolean } | null;
   /** What its hover card says. */
   card: BlockCard;
+  /** Its category, which By category lays it out in and colours it by. */
+  category: string;
+  categoryLabel: string;
+  categoryColor: ColorKey;
 }
 
 /** A block's hover card in the map: what it is, what it costs against the total, and where it stands. */
@@ -108,19 +112,6 @@ export interface BlockCard {
   change: { text: string; up: boolean } | null;
 }
 
-export interface CategoryBlock {
-  key: string;
-  label: string;
-  color: ColorKey;
-  monthly: number;
-  share: number;
-  aliases: string[];
-  /** Its subscriptions, biggest first, for its hover card. */
-  members: (Mark & { id: string; monthly: number })[];
-  /** What its hover card says: "2 subscriptions", "49% of your ₹1,865 a month". */
-  card: { count: string; share: string };
-}
-
 export interface ChargedToRow {
   key: string;
   chip: ChargedToChip;
@@ -135,9 +126,11 @@ export interface SubscriptionsPageView {
   picks: PickView[];
   payments: Record<string, PaymentsView>;
   blocks: MapBlock[];
-  categories: CategoryBlock[];
-  /** Paused and cancelled ones, as chips under the map. */
-  stopped: (Mark & { id: string; label: string })[];
+  /**
+   * Paused and cancelled ones, as chips under the map. `monthly` is what one would add a
+   * month if it started again, for the ghost block its chip shows (`ghost` says how).
+   */
+  stopped: (Mark & { id: string; label: string; monthly: number; ghost: string })[];
   chargedTo: ChargedToRow[];
   monthlyTotal: number;
   chart: ChartView;
@@ -229,12 +222,6 @@ function chipFor(kind: "card" | "account" | "none", id: string | null | undefine
   return { kind, name: "Not set", color: "onyx" };
 }
 
-/** A block's or a category's share of the monthly total, as its hover card says it. */
-function shareOfTotal(monthly: number, total: number): string {
-  const percent = total > 0 ? (monthly / total) * 100 : 0;
-  return `${percent > 0 && percent < 1 ? "Under 1" : Math.round(percent)}% of your ${formatInr(total)} a month`;
-}
-
 /** The hover card of an active subscription's block. */
 function blockCard(s: Subscription, f: SubscriptionFacts, total: number, data: SubscriptionData, today: string): BlockCard {
   const change = f.lastChange;
@@ -307,6 +294,9 @@ export function subscriptionsPageView(sheetData: SubscriptionData, today: string
       footnote: f.next ? (s.billingCycle === "Monthly" ? `Renews ${formatShortDate(f.next.date)}` : `${formatInr(s.amount)} a ${cycleWord(s.billingCycle)}, next ${formatShortDate(f.next.date)}`) : "",
       pill: f.next && days !== null && days <= 7 ? { text: `${formatShortDate(f.next.date)} · ${days}d`, due: days <= MARK_PAID_DAYS_BEFORE } : null,
       card: blockCard(s, f, total, data, today),
+      category: s.category,
+      categoryLabel: categoryLabel(s.category),
+      categoryColor: categoryColor(s.category),
     };
   });
 
@@ -317,20 +307,9 @@ export function subscriptionsPageView(sheetData: SubscriptionData, today: string
     picks: [allPick(all, byId, today), ...order.map((s) => subscriptionPick(s, facts.get(s.id)!, today))],
     payments: Object.fromEntries([[ALL, paymentsView(data, today)], ...data.subscriptions.map((s) => [s.id, paymentsView(data, today, s)])]),
     blocks,
-    categories: categorySplit(data.subscriptions).map((c) => ({
-      key: c.category,
-      label: categoryLabel(c.category),
-      color: categoryColor(c.category),
-      monthly: c.monthly,
-      share: total > 0 ? c.monthly / total : 0,
-      aliases: active.filter((s) => s.category === c.category).map((s) => s.alias),
-      members: active
-        .filter((s) => s.category === c.category)
-        .map((s) => ({ ...mark(s), id: s.id, monthly: facts.get(s.id)!.monthly }))
-        .sort((a, b) => b.monthly - a.monthly),
-      card: { count: plural(active.filter((s) => s.category === c.category).length, "subscription"), share: shareOfTotal(c.monthly, total) },
-    })),
-    stopped: order.filter((s) => s.status !== "Active").map((s) => ({ ...mark(s), id: s.id, label: s.status === "Paused" ? "paused" : "cancelled" })),
+    stopped: order
+      .filter((s) => s.status !== "Active")
+      .map((s) => ({ ...mark(s), id: s.id, label: s.status === "Paused" ? "paused" : "cancelled", monthly: monthlyEquivalent(s), ghost: s.status === "Paused" ? "if you resume it" : "if you restart it" })),
     chargedTo: split.map((p) => ({ key: `${p.kind}:${p.id}`, chip: chipFor(p.kind, p.id, data), count: p.count, monthly: p.monthly, fraction: biggest > 0 ? p.monthly / biggest : 0 })),
     monthlyTotal: total,
     chart: chartView(data, today),

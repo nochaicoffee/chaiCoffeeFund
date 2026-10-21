@@ -86,21 +86,14 @@ describe("the map, payments and charged to", () => {
     expect(icloud).toMatchObject({ price: "₹219 a month", share: "4% of your ₹5,559 a month", change: null });
   });
 
-  it("lists each category's subscriptions for its hover card, biggest first", () => {
-    const software = view.categories.find((c) => c.label === "Software")!;
-    expect(software.members.map((m) => m.alias)).toEqual(software.aliases.slice().sort((a, b) => software.members.find((m) => m.alias === b)!.monthly - software.members.find((m) => m.alias === a)!.monthly));
-    expect(software.members.reduce((t, m) => t + m.monthly, 0)).toBeCloseTo(software.monthly, 9);
-    for (let i = 1; i < software.members.length; i++) expect(software.members[i - 1].monthly).toBeGreaterThanOrEqual(software.members[i].monthly);
+  it("gives each block its category, for By category", () => {
+    expect(view.blocks.find((b) => b.id === "demo-icloud")).toMatchObject({ category: "Cloud-Storage", categoryLabel: "Cloud storage", categoryColor: "violet" });
   });
 
-  it("gives each category's hover card its count and its share of the total", () => {
-    const software = view.categories.find((c) => c.label === "Software")!;
-    expect(software.card).toEqual({ count: `${software.members.length} subscriptions`, share: `${Math.round(software.share * 100)}% of your ₹5,559 a month` });
+  it("says what a paused or cancelled one would add a month if it started again, for its ghost", () => {
+    expect(view.stopped.map((s) => `${s.alias} ${Math.round(s.monthly)} ${s.ghost}`)).toEqual(["Headspace 299 if you resume it", "SonyLIV 83 if you restart it"]);
   });
 
-  it("lists the legend's categories as the design does", () => {
-    expect(view.categories.map((c) => `${c.label} ${Math.round(c.monthly)}`)).toEqual(["Software 2516", "Fitness 1500", "Streaming 798", "Shopping 225", "Cloud storage 219", "Food 183", "Music 119"]);
-  });
 
   it("gives each pick its payments, newest first", () => {
     expect(view.payments[ALL].footer).toBe("The 6 most recent of 156");
@@ -144,7 +137,6 @@ describe("the map's hover cards, at the edges", () => {
 
   it("says Under 1% for a sliver of the total, rather than rounding it to 0", () => {
     expect(card("Tiny").share).toBe("Under 1% of your ₹51,100 a month");
-    expect(edges.categories.find((c) => c.key === "Music")!.card).toEqual({ count: "1 subscription", share: "Under 1% of your ₹51,100 a month" });
   });
 
   it("says Nothing yet before the first payment, and where it isn't charged", () => {

@@ -12,7 +12,7 @@ import {
   type PriceChange,
   type Renewal,
 } from "./subscriptionRenewals";
-import type { Account, Card, Subscription, SubscriptionCategory, SubscriptionPayment } from "../sheets/types";
+import type { Account, Card, Subscription, SubscriptionPayment } from "../sheets/types";
 
 /**
  * The numbers behind the Subscriptions page (#126): the carousel's order, what the
@@ -233,15 +233,4 @@ export function chargedToSplit(subscriptions: Subscription[]): ChargedToPlace[] 
     entry.count += 1;
   }
   return [...places.values()].sort((a, b) => b.monthly - a.monthly);
-}
-
-/** Active subscriptions' monthly cost by category, biggest first. */
-export function categorySplit(subscriptions: Subscription[]): { category: SubscriptionCategory; monthly: number; count: number }[] {
-  const totals = new Map<SubscriptionCategory, { category: SubscriptionCategory; monthly: number; count: number }>();
-  for (const s of subscriptions.filter((x) => x.status === "Active")) {
-    const entry = totals.get(s.category) ?? totals.set(s.category, { category: s.category, monthly: 0, count: 0 }).get(s.category)!;
-    entry.monthly += monthlyEquivalent(s);
-    entry.count += 1;
-  }
-  return [...totals.values()].sort((a, b) => b.monthly - a.monthly);
 }

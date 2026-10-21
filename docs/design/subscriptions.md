@@ -158,6 +158,28 @@ Prathik found the map missing a hover card, and its blocks moving whenever anoth
 - **The hovered block lifts 3px and its rings ripple outward**, as the heatmap's cells do (#104). The others step back to 75% and lose some colour. They were faded to 55% at first, which washed the dark blocks out against the page.
 - **The blocks stay put.** The map is as tall as the column beside it, and lays its blocks out at that height. The Payments card used to change height with the pick (one row for a yearly plan, six for Netflix, plus the "All subscriptions" line), so every pick moved the blocks. At xl the card now keeps room for six rows in either view, and the line under them is always there. For All it says to pick a block. Its header stays on one line, so a long name truncates rather than wrapping the toggle, and Price history spells out only the latest three price changes ("and 2 earlier changes"), so neither can make it taller.
 
+## Interactions Prathik picked (2026-10-21)
+
+From the working mockups in `design/subscriptions-interactions/SubscriptionsInteractions.html`, he picked:
+- **1 · The map:** 1A morph and 1B try without.
+- **2 · The hero:** 2A rolling digits, 2B read the cycle bar, and 2C peek. The mockup's small label under the cover wasn't legible, so the hovered cover should slide out a little and show its details on itself.
+- **3 · Connecting the pieces:** 3A a payment points at its block, and 3B a card lights its subscriptions.
+- **4 · Small moments:** 4A a renewal getting close, and 4B paid with a sweep.
+- **5 · The grid:** all of 5A–C.
+- **6 · Trend and Lifetime:** all of 6A–C.
+- **7 · The quieter widgets:** all of 7A–D.
+
+He left out 1C (blocks fill up to renewal) and 3C (the price change drawn in its row).
+
+**6B's year figure (decided with Prathik):** "on course for ₹X" is what's been paid so far this year, plus the renewals still due before Dec 31 at each plan's current price. Renewals that passed without being recorded aren't counted, and paused and cancelled ones add nothing.
+
+## Built: the map's interactions (1A, 1B, 7C)
+
+- **1A, the morph:** By category no longer swaps the blocks for category tiles. It moves the same blocks into their category's tile, laid out inside it, and fades each one to its category's colour. The tile's name and total sit on top, and they are what's hovered and focused for the category's card. Switching back moves them out again. A month and A year roll every figure on the map and in the legend (`RollingNumber`, shared with the Cards page).
+- **1B, try without:** a block's Try without (shown on hover or focus, on blocks with room for it) folds it to its middle while the rest grow to fill. A line over the map then says what's left a month and what that saves a year, with a chip to put each one back and Put all back. By category, the categories are worked out from what's left, so their tiles, totals, legend and cards all agree. It's never saved, and the block hover cards keep the real figures.
+- **7C, the ghost:** hovering or focusing a paused or cancelled chip makes room for a dashed block in its colour: "+₹299 a month if you resume it" (or "restart it" for a cancelled one), at its plan's monthly share. By category it gets a tile of its own, since it's in no category's total. When it goes, it shrinks away and the rest grow back.
+- **Where it's worked out:** `costMap.ts` (pure, tested) lays the map out for either view, the ones left out and the ghost. The blocks glide between layouts only after the map has been measured, so the first layout doesn't fly in from a guess.
+
 ## How it got here
 
 The canvas keeps everything explored, newest first: A–K (layouts), L–P (heroes), Q–Z (selectors), S1–S6 (circular carousels) and S7–S16 (the cover flow refined, each with a different full-width chart). Prathik kept these from them: F's greeting, D's cost map, C's payments table, S's cover flow with All at the centre, scrolling in a circle, S9's coloured stage, S9's Day by day chart, S7's Payment trend and S14's Lifetime cost. Along the way he asked that no section be added just to fill space (a separate colour band was dropped), and that cards side by side end level. A layout check measured this across every pick.

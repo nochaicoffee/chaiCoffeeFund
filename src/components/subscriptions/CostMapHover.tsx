@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
-import type { CategoryBlock, MapBlock } from "@/app/subscriptions/views";
+import type { MapBlock } from "@/app/subscriptions/views";
 import { formatInr } from "@/lib/format/money";
+import type { MapCategory } from "./costMap";
 import { ArrowIcon } from "./icons";
 import { ChargedTo, Mono } from "./parts";
 
 const TIP_ID = "cost-map-card";
+
+/** A category as its hover card shows it: its subscriptions and what its card says. */
+export type HoverCategory = MapCategory<MapBlock> & { card: { count: string; share: string } };
 
 /**
  * The map's hover card: hovering or focusing a block shows a light card, like the Cards
@@ -14,7 +18,9 @@ const TIP_ID = "cost-map-card";
  * it's charged and what's been paid; a category's tile lists its subscriptions. The card
  * follows the pointer and glides as it goes, or sits over a focused block. Blocks opt in
  * with `data-map-key`; the active one gets `data-active` (it lifts and its rings ripple),
- * and the map gets `data-hovering`, which dims the rest. Not on touch, where a tap picks.
+ * and the map gets `data-hovering`, which dims the rest. By category, a category's blocks
+ * carry `data-map-owner` with its key, so they light up with its tile. Not on touch, where
+ * a tap picks.
  */
 export function CostMapHover({
   blocks,
@@ -24,7 +30,7 @@ export function CostMapHover({
   children,
 }: {
   blocks: Map<string, MapBlock>;
-  categories: Map<string, CategoryBlock>;
+  categories: Map<string, HoverCategory>;
   per: "month" | "year";
   picked: string;
   children: ReactNode;
@@ -32,6 +38,10 @@ export function CostMapHover({
   const wrap = useRef<HTMLDivElement>(null);
   const tip = useRef<HTMLDivElement>(null);
   const active = useRef<HTMLElement | null>(null);
+  // What carries `aria-describedby`: the focusable control inside the active block, so a screen reader hears the card.
+  const described = useRef<HTMLElement | null>(null);
+  // The active element's own blocks, By category, lit along with it.
+  const owned = useRef<HTMLElement[]>([]);
   // Where the pointer is in the map, or null when a block has keyboard focus.
   const pointer = useRef<{ x: number; y: number } | null>(null);
   const [key, setKey] = useState<string | null>(null);
@@ -44,9 +54,13 @@ export function CostMapHover({
     if (!el || !wrap.current?.contains(el)) return place();
     if (active.current !== el) {
       active.current?.removeAttribute("data-active");
-      active.current?.removeAttribute("aria-describedby");
+      described.current?.removeAttribute("aria-describedby");
+      owned.current.forEach((o) => o.removeAttribute("data-active"));
       el.setAttribute("data-active", "");
-      el.setAttribute("aria-describedby", TIP_ID);
+      described.current = el.matches("button, [tabindex]") ? el : (el.querySelector<HTMLElement>("button, [tabindex]") ?? el);
+      described.current.setAttribute("aria-describedby", TIP_ID);
+      owned.current = [...wrap.current.querySelectorAll<HTMLElement>(`[data-map-owner="${CSS.escape(el.dataset.mapKey!)}"]`)];
+      owned.current.forEach((o) => o.setAttribute("data-active", ""));
       active.current = el;
     }
     wrap.current.dataset.hovering = "";
@@ -57,7 +71,10 @@ export function CostMapHover({
 
   function hide() {
     active.current?.removeAttribute("data-active");
-    active.current?.removeAttribute("aria-describedby");
+    described.current?.removeAttribute("aria-describedby");
+    described.current = null;
+    owned.current.forEach((o) => o.removeAttribute("data-active"));
+    owned.current = [];
     active.current = null;
     if (wrap.current) delete wrap.current.dataset.hovering;
     setKey(null);
@@ -107,11 +124,13 @@ export function CostMapHover({
     place();
   }, [key, per]);
 
-  // Switching Each and By category (from the keyboard, with the pointer resting on the map), or a
-  // refresh, can take away the block the card describes: then it closes. Not keyed by the grouping
-  // instead, since remounting the map's box would leave useSize watching the old, detached one.
+  // The block the card describes can stop being one: tried without, grouped By category (from the
+  // keyboard, with the pointer resting on the map), or gone after a refresh. Then the card closes. It
+  // checks the element rather than being keyed by the grouping, since remounting the map's box would
+  // leave useSize watching the old, detached one.
   useEffect(() => {
-    if (active.current && !active.current.isConnected) hide();
+    const el = active.current;
+    if (el && (!el.isConnected || !el.hasAttribute("data-map-key"))) hide();
   });
 
   const block = shown ? blocks.get(shown) : undefined;
@@ -203,7 +222,7 @@ function BlockCardBody({ block, per, picked }: { block: MapBlock; per: "month" |
   );
 }
 
-function CategoryCardBody({ category, per }: { category: CategoryBlock; per: "month" | "year" }) {
+function CategoryCardBody({ category, per }: { category: HoverCategory; per: "month" | "year" }) {
   const count = category.members.length;
   return (
     <>

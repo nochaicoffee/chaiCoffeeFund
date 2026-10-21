@@ -1,3 +1,4 @@
+import { formatInr } from "./money";
 import { daysBetween } from "../aggregate/cardSpend";
 import type { CardColor, RecurrenceCycle, Subscription, SubscriptionCategory, SubscriptionColor } from "../sheets/types";
 
@@ -49,6 +50,12 @@ export function colorGradient(color: ColorKey, angle = 155): string {
 /** A card's colour as a palette key; Onyx when it has none. */
 export function cardColorKey(color: CardColor | undefined): ColorKey {
   return (color ?? "Onyx").toLowerCase() as ColorKey;
+}
+
+/** A block's or a category's share of the monthly total, as the map's hover cards say it: "31% of your ₹1,865 a month", or "Under 1%" for a sliver. */
+export function shareOfTotal(monthly: number, total: number): string {
+  const percent = total > 0 ? (monthly / total) * 100 : 0;
+  return `${percent > 0 && percent < 1 ? "Under 1" : Math.round(percent)}% of your ${formatInr(total)} a month`;
 }
 
 /** How far a date is from today, in words: "today", "tomorrow", "in 3 days", "in 2 months", "4 days ago". */
