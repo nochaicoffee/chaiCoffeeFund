@@ -190,7 +190,7 @@
     },
     {
       "id": "renewals",
-      "name": "Renewals 1 · Table"
+      "name": "Renewals 1 · Table (picked)"
     },
     {
       "id": "renewals-2",
@@ -1245,7 +1245,7 @@
       "x": 0,
       "y": -90,
       "w": 1100,
-      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. The Renewals page under Subscriptions, like the Cards Statements page: every renewal, paid or to come. Filtered to one subscription, it's that subscription's history.",
+      "text": "Sample data, made up: every name, price and date on these boards is invented. Today is Oct 20, 2026. Prathik's real subscriptions are never shown here. Picked 2026-10-21. The Renewals page under Subscriptions, like the Cards Statements page: every renewal, paid or to come. Filtered to one subscription, it's that subscription's history.",
       "page": "renewals"
     },
     {

@@ -8,7 +8,7 @@ Final design, picked by Prathik on 2026-10-21. Mockups: [`design/subscriptions/`
 | `SubsFinalPhone.dc.html` | Phone, interactive carousel and chart switch |
 | `SubsFinalStates.dc.html` | No subscriptions, a renewal due soon, after Mark paid, paused, cancelled, and every pick's colour |
 | `SubsForms.dc.html` | Add / Edit subscription, Record payment, Pause and Cancel, phone sheets |
-| `SubsRenewals*.dc.html` | The Renewals page: three layouts, not chosen yet |
+| `SubsRenewals.dc.html`, `SubsRenewalsPhone`, `SubsRenewalsStates` | The Renewals page, layout R1 (picked 2026-10-21); R2 and R3 were the other options |
 | `SubsReadme.dc.html` | Every direction explored, how picks were made, and the open decisions |
 
 Every name, price and date in the mockups is made up. "Today" is Oct 20, 2026.
@@ -57,22 +57,32 @@ Every name, price and date in the mockups is made up. "Today" is Oct 20, 2026.
 - **Lifetime cost** is the sum of a subscription's recorded payments.
 - New computations for the build (renewal rows, monthly spend by day and month, lifetime cost) belong in `lib/aggregate/` as pure functions with tests, per CLAUDE.md.
 
+## The Renewals page (`/subscriptions/renewals`)
+
+Layout **R1**, picked 2026-10-21: a table like the Cards Statements page. Every direction links here ("All renewals →"), and filtered to one subscription it's that subscription's whole history.
+
+- **Header:** "Subscriptions · Renewals" back link, "Renewals", one sentence (renewals this year, how many aren't recorded, how many are still to come), the period pill (as on the Statements page), Refresh and Record payment.
+- **Tiles:** Next 30 days (the feature tile, with rings), Not recorded, Paid this year, Price changes.
+- **Toolbar:** All / Upcoming / Paid / Not recorded, a subscription filter, Charged to, search, Newest first.
+- **Table:** Coming up in the next 30 days first, then each past month, newest first. Each group header shows its renewals and what was paid, still to come or not recorded. Columns: Subscription · Renews on · Amount (the payment, or the plan's price in muted text for one not paid yet) · Status (Paid, Not recorded, In N days, Upcoming, Won't renew) · Paid on · Charged to · Change (against the last payment, or the plan for the latest one) · an action (Mark paid within 3 days, Record payment when not recorded, ⋯ on paid rows for Edit payment, Open subscription and Delete payment).
+- **States** (`SubsRenewalsStates`): filtered to one subscription (a strip with its total and price history above the table), Not recorded only, nothing in the period, and a paid row's menu.
+- Upcoming renewals are computed from each schedule; nothing is written until a payment is recorded.
+
 ## Phone
 
 The same order: greeting, the hero (smaller covers, a two-column caption), the cost map (tap a block to open that subscription), latest payments, and the chart with its switch. Day by day shows August to December on a phone.
 
 ## Open decisions
 
-1. **The Renewals page layout:** R1 table (like the Statements page), R2 ledger, or R3 grid. All three are in the canvas, with states.
-2. **Quarterly can't be saved yet.** The Sheet's billing-cycle dropdown says `Quaterly`; it needs to say `Quarterly` before this is built.
-3. **Category: a fixed list or free text?** The Sheet's category column is a dropdown, but the code takes any text. The design uses a fixed list, each with a colour, which needs the code's list to match the dropdown exactly.
-4. **Cancelled, and when.** Status is only Active or Paused. The design adds `Cancelled` and an optional cancelled-on date (`endDate`).
-5. **Usually charged to.** A card or bank account per subscription (`defaultPaidFromCardId` / `defaultPaidFromAccountId`, at most one), so Mark paid works in one click.
-6. **"It didn't charge"** needs somewhere to be stored, such as a ₹0 payment with status `Skipped`, or the button is left out.
-7. **Mark paid timing:** offered from 3 days before the renewal, or only on or after it?
-8. **When a renewal counts as not recorded:** proposed, a payment within half a cycle of the renewal date counts for it.
-9. **What counts as a price change:** any change, or ignore small ones (say under 2%) on dollar-billed charges?
-10. **Pending payments:** upcoming renewals are computed, so the form never writes `Pending`. Keep it in the model or drop it?
+1. **Quarterly can't be saved yet.** The Sheet's billing-cycle dropdown says `Quaterly`; it needs to say `Quarterly` before this is built.
+2. **Category: a fixed list or free text?** The Sheet's category column is a dropdown, but the code takes any text. The design uses a fixed list, each with a colour, which needs the code's list to match the dropdown exactly.
+3. **Cancelled, and when.** Status is only Active or Paused. The design adds `Cancelled` and an optional cancelled-on date (`endDate`).
+4. **Usually charged to.** A card or bank account per subscription (`defaultPaidFromCardId` / `defaultPaidFromAccountId`, at most one), so Mark paid works in one click.
+5. **"It didn't charge"** needs somewhere to be stored, such as a ₹0 payment with status `Skipped`, or the button is left out.
+6. **Mark paid timing:** offered from 3 days before the renewal, or only on or after it?
+7. **When a renewal counts as not recorded:** proposed, a payment within half a cycle of the renewal date counts for it.
+8. **What counts as a price change:** any change, or ignore small ones (say under 2%) on dollar-billed charges?
+9. **Pending payments:** upcoming renewals are computed, so the form never writes `Pending`. Keep it in the model or drop it?
 
 ## How it got here
 
