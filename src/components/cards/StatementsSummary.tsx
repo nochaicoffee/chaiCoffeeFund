@@ -3,13 +3,15 @@ import { RingTexture } from "../RingTexture";
 
 export interface SummaryTile {
   label: string;
-  value: string;
+  /** Usually a figure; the Renewals page adds a unit ("3 this year") or a colour. */
+  value: ReactNode;
   caption: ReactNode;
 }
 
 /**
- * The four tiles at the top of the Statements page (StatementsList.dc.html):
- * the first is highlighted, the rest are plain surfaces.
+ * The four tiles at the top of the Statements page (StatementsList.dc.html), and
+ * of the Subscriptions Renewals page: the first is highlighted, the rest are
+ * plain surfaces.
  */
 export function StatementsSummary({ tiles }: { tiles: SummaryTile[] }) {
   return (

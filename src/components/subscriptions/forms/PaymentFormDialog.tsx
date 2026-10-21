@@ -4,6 +4,7 @@ import { useActionState, useState, type FormEvent } from "react";
 import { recordPayment } from "@/app/subscriptions/actions";
 import type { FormsData } from "@/app/subscriptions/formsView";
 import { CYCLE_STEP_MONTHS } from "@/lib/aggregate/recurring";
+import { firstRenewalAfter } from "@/lib/aggregate/subscriptionRenewals";
 import { formatDayDate, formatShortDate } from "@/lib/format/date";
 import { formatInr, parseAmountText } from "@/lib/format/money";
 import { categoryColor, cycleWord } from "@/lib/format/subscriptionLabels";
@@ -26,17 +27,17 @@ function Row({ label, value, tone }: { label: string; value: string; tone?: "up"
 
 /**
  * Record a payment, as designed in design/subscriptions/SubsForms.dc.html: it starts at
- * the renewal it's for (the oldest not recorded, or the next to come), the plan's price
- * and where it's usually charged. When the amount is off the plan by the price-change
- * rule, it offers to update the plan's price from now on, ticked.
+ * the renewal it's for (the oldest not recorded, or the next to come, or the one a Renewals
+ * page row is for), the plan's price and where it's usually charged. When the amount is off
+ * the plan by the price-change rule, it offers to update the plan's price from now on, ticked.
  */
-export function PaymentFormDialog({ subscriptionId, forms, onClose }: { subscriptionId?: string; forms: FormsData; onClose: () => void }) {
+export function PaymentFormDialog({ subscriptionId, renewalDate, forms, onClose }: { subscriptionId?: string; /** A Renewals page row's renewal (#130), instead of the oldest not recorded. */ renewalDate?: string; forms: FormsData; onClose: () => void }) {
   const [state, formAction, pending] = useActionState(recordPayment, IDLE);
   const recordable = forms.subscriptions.filter((s) => s.status === "Active" || s.id === subscriptionId);
   const startFor = (id: string) => {
     const s = forms.subscriptions.find((x) => x.id === id);
     const c = forms.context[id];
-    return { date: c?.renewalDate ?? forms.today, amount: s ? s.amount.toLocaleString("en-IN") : "", chargedTo: s ? chargedToValue(s) : "" };
+    return { date: (id === subscriptionId && renewalDate) || (c?.renewalDate ?? forms.today), amount: s ? s.amount.toLocaleString("en-IN") : "", chargedTo: s ? chargedToValue(s) : "" };
   };
   const [subscription, setSubscription] = useState(subscriptionId ?? "");
   const initial = startFor(subscriptionId ?? "");
@@ -71,18 +72,22 @@ export function PaymentFormDialog({ subscriptionId, forms, onClose }: { subscrip
 
   const s = forms.subscriptions.find((x) => x.id === subscription);
   const c = s ? forms.context[s.id] : undefined;
+  const renewal = s && s.id === subscriptionId && renewalDate ? renewalDate : (c?.renewalDate ?? null);
+  const after = s && renewal ? (renewal === c?.renewalDate ? c.after : firstRenewalAfter(s, renewal)) : null;
   const paid = parseAmountText(amount);
   const diff = s && paid !== null ? paid - s.amount : 0;
-  const offersUpdate = Boolean(s && paid !== null && paid > 0 && offPlan(paid, s.amount));
+  // Catching up an old renewal at what it cost then isn't a new price: only the newest charge offers to change the plan.
+  const newest = !c?.lastCharged || paymentDate >= c.lastCharged;
+  const offersUpdate = Boolean(s && paid !== null && paid > 0 && offPlan(paid, s.amount) && newest);
   // Your monthly total once the plan's price is updated: this one's share at the new price instead of the old.
-  const after = s && s.status === "Active" && paid !== null ? forms.monthlyTotal - (c?.monthly ?? 0) + paid / CYCLE_STEP_MONTHS[s.billingCycle] : forms.monthlyTotal;
+  const monthlyAfter = s && s.status === "Active" && paid !== null ? forms.monthlyTotal - (c?.monthly ?? 0) + paid / CYCLE_STEP_MONTHS[s.billingCycle] : forms.monthlyTotal;
   const card = forms.cards.find((x) => s?.defaultPaidFromCardId === x.id);
   const account = forms.accounts.find((x) => s?.defaultPaidFromAccountId === x.id);
 
   const preview = (
     <PreviewPanel>
       <div className="flex flex-col gap-1.5 rounded-[14px] bg-surface/80 px-3.5 py-3">
-        <Row label="Renewal" value={c?.renewalDate ? formatDayDate(c.renewalDate) : "–"} />
+        <Row label="Renewal" value={renewal ? formatDayDate(renewal) : "–"} />
         <Row label="Plan's price" value={s ? formatInr(s.amount) : "–"} />
         <Row label="This payment" value={paid !== null ? formatInr(paid) : "–"} tone={diff > 0 ? "up" : diff < 0 ? "down" : undefined} />
         {s && paid !== null && (
@@ -93,7 +98,7 @@ export function PaymentFormDialog({ subscriptionId, forms, onClose }: { subscrip
       </div>
       <span className="text-[11px] font-extrabold tracking-[0.06em] text-accent-text uppercase max-md:hidden">After this payment</span>
       <div className="flex flex-col gap-1.5 rounded-[14px] bg-surface/80 px-3.5 py-3">
-        <Row label="Next renewal" value={c?.after ? formatShortDate(c.after) : "–"} />
+        <Row label="Next renewal" value={after ? formatShortDate(after) : "–"} />
         <Row label="Paid so far" value={c && paid !== null ? `${formatInr(c.paid)} → ${formatInr(c.paid + paid)}` : "–"} />
         <Row label="Payments" value={c ? `${c.payments} → ${c.payments + 1}` : "–"} />
       </div>
@@ -104,7 +109,7 @@ export function PaymentFormDialog({ subscriptionId, forms, onClose }: { subscrip
     <FormDialog
       icon={<CheckIcon size={16} />}
       title="Record a payment"
-      subtitle={s ? `${s.alias}${c?.renewalDate ? ` · the renewal on ${formatShortDate(c.renewalDate)}` : ""}` : "For any subscription"}
+      subtitle={s ? `${s.alias}${renewal ? ` · the renewal on ${formatShortDate(renewal)}` : ""}` : "For any subscription"}
       preview={preview}
       footerNote="Saves to the SubscriptionPayments tab"
       primaryLabel="Save payment"
@@ -161,7 +166,7 @@ export function PaymentFormDialog({ subscriptionId, forms, onClose }: { subscrip
             <b className="block font-extrabold">
               Update {s.alias}&rsquo;s price to {formatInr(paid)} from now on.
             </b>
-            Its next renewals are expected at {formatInr(paid)}, and your monthly total goes from {formatInr(forms.monthlyTotal)} to {formatInr(after)}. Leave it unticked for a one-off charge.
+            Its next renewals are expected at {formatInr(paid)}, and your monthly total goes from {formatInr(forms.monthlyTotal)} to {formatInr(monthlyAfter)}. Leave it unticked for a one-off charge.
           </span>
         </label>
       )}

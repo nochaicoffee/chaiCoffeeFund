@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { anchorToSave, chargedToValue, markPaidPayment, offPlan, readDateForm, readPaymentForm, readSubscriptionForm, renewalToRecord } from "./subscriptionForms";
+import { anchorToSave, chargedToValue, markPaidPayment, offPlan, readDateForm, readEditPaymentForm, readPaymentForm, readSubscriptionForm, renewalToRecord, skippedPayment } from "./subscriptionForms";
+import { checkSubscriptionPayment } from "../sheets/subscriptionPayments";
 import type { Subscription, SubscriptionPayment } from "../sheets/types";
 
 const known = { accountIds: ["acc-1"], cardIds: ["card-1"] };
@@ -79,6 +80,36 @@ describe("readPaymentForm", () => {
     expect(empty.ok ? {} : empty.errors).toMatchObject({ subscriptionId: "Choose the subscription", paymentDate: "Enter when it was paid", amount: "Enter what was charged" });
     const zero = readPaymentForm({ ...pay, amount: "0" }, payKnown);
     expect(zero.ok ? {} : zero.errors).toEqual({ amount: "Enter what was charged: a payment can't be ₹0" });
+  });
+});
+
+describe("readEditPaymentForm", () => {
+  const edit = { paymentDate: "2026-09-23", amount: "649", chargedTo: "account:acc-1" };
+
+  it("reads a paid payment, clearing the place it isn't charged to", () => {
+    expect(readEditPaymentForm(edit, known)).toEqual({ ok: true, input: { paymentDate: "2026-09-23", amount: 649, status: "Paid", paidFromAccountId: "acc-1", paidFromCardId: "" } });
+    expect(readEditPaymentForm({ ...edit, chargedTo: "" }, known)).toMatchObject({ ok: true, input: { paidFromAccountId: "", paidFromCardId: "" } });
+  });
+
+  it("makes one that didn't charge ₹0, Skipped and charged nowhere, whatever the amount says", () => {
+    expect(readEditPaymentForm({ ...edit, amount: "", skipped: "1" }, known)).toEqual({ ok: true, input: { paymentDate: "2026-09-23", amount: 0, status: "Skipped", paidFromAccountId: "", paidFromCardId: "" } });
+  });
+
+  it("says what's missing, and refuses ₹0 unless it didn't charge", () => {
+    const empty = readEditPaymentForm({}, known);
+    expect(empty.ok ? {} : empty.errors).toMatchObject({ paymentDate: "Enter when it was paid", amount: "Enter what was charged" });
+    const zero = readEditPaymentForm({ ...edit, amount: "0" }, known);
+    expect(zero.ok ? {} : zero.errors).toEqual({ amount: "Enter what was charged, or tick It didn't charge" });
+    const elsewhere = readEditPaymentForm({ ...edit, chargedTo: "card:gone" }, known);
+    expect(elsewhere.ok ? {} : elsewhere.errors).toEqual({ chargedTo: "Choose one of your cards or accounts" });
+  });
+});
+
+describe("skippedPayment", () => {
+  it("records a renewal that didn't charge as ₹0 Skipped on its date, which the schema accepts", () => {
+    const skipped = skippedPayment({ id: "sub-1" }, "2026-09-24");
+    expect(skipped).toEqual({ subscriptionId: "sub-1", paymentDate: "2026-09-24", amount: 0, status: "Skipped" });
+    expect(checkSubscriptionPayment(skipped)).toBeNull();
   });
 });
 
