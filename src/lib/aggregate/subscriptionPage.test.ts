@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { allFacts, carouselOrder, categorySplit, chargedToSplit, latestPayments, nextRenewal, priceHistory, subscriptionFacts } from "./subscriptionPage";
+import { allFacts, carouselOrder, chargedToSplit, latestPayments, nextRenewal, priceHistory, subscriptionFacts } from "./subscriptionPage";
 import type { Subscription, SubscriptionPayment } from "../sheets/types";
 
 const TODAY = "2026-10-21";
@@ -171,7 +171,7 @@ describe("priceHistory", () => {
   });
 });
 
-describe("chargedToSplit and categorySplit", () => {
+describe("chargedToSplit", () => {
   const subs = [
     sub({ id: "a", amount: 649, defaultPaidFromCardId: "card-1" }),
     sub({ id: "b", amount: 1200, billingCycle: "Quarterly", category: "Fitness", defaultPaidFromAccountId: "acc-1" }),
@@ -185,15 +185,6 @@ describe("chargedToSplit and categorySplit", () => {
       { kind: "card", id: "card-1", monthly: 649 + 119, count: 2 },
       { kind: "account", id: "acc-1", monthly: 400, count: 1 },
       { kind: "none", id: null, monthly: 99, count: 1 },
-    ]);
-  });
-
-  it("adds them by category, biggest first", () => {
-    expect(categorySplit(subs)).toEqual([
-      { category: "Streaming", monthly: 649, count: 1 },
-      { category: "Fitness", monthly: 400, count: 1 },
-      { category: "Music", monthly: 119, count: 1 },
-      { category: "Other", monthly: 99, count: 1 },
     ]);
   });
 });
