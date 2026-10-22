@@ -16,7 +16,7 @@ for spec in names:
     w = next((a["w"] for a in c["artboards"] if a["file"] == f"{n}.dc.html"), 1600)
     js = ""
     if pick:
-        js = f"(() => {{ const r = [...document.querySelectorAll('input.pk-in')].find((i) => i.id.endsWith('-sel-{pick}')); if (r) r.checked = true; return 1; }})()"
+        js = "(() => { for (const k of '" + pick + "'.split('+')) { const r = [...document.querySelectorAll('input.pk-in')].find((i) => i.id.endsWith('-sel-' + k) || i.id.endsWith('-' + k)); if (r) r.checked = true; } return 1; })()"
     out = f"{S}/{n}{('@' + pick) if pick else ''}.png"
     jobs.append({"url": f"file://{D}/{n}.dc.html", "w": w, "h": h.get(f"{n}.dc.html", 1200), "out": out, "wait": 1200, **({"eval": js} if js else {})})
 json.dump(jobs, open(f"{G}/out/measure/shot.json", "w"))

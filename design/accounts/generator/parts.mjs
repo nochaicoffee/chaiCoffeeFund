@@ -190,29 +190,29 @@ export function sitsCard(prefix, { minH = 0 } = {}) {
 }
 
 // ---------- Balance history ----------
-function snapRows(f, n, { ph = false, allCols = false } = {}) {
+function snapRows(f, n, { ph = false, allCols = false, compact = false } = {}) {
   const rows = f.all ? L.SNAPSHOTS.filter((s) => L.isOn(L.acc(s.accountId))).sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, n) : L.snapsOf(f.id).slice().reverse().slice(0, n);
   return rows.map((s) => {
     const a = L.acc(s.accountId), list = L.snapsOf(a.id), i = list.findIndex((x) => x.date === s.date), p = list[i - 1];
     const d = p ? s.balance - p.balance : null, gap = p ? L.daysBetween(p.date, s.date) : null;
-    return `<div class="snaprow" style="display:grid;grid-template-columns:${f.all ? (ph ? "1.4fr 1fr" : "1.6fr 0.8fr 1fr 0.9fr 0.8fr 20px") : ph ? "1fr 1fr 0.8fr" : "1fr 1fr 1fr 0.9fr 20px"};align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--divider);font-size:13px">
+    return `<div class="snaprow" style="display:grid;grid-template-columns:${f.all ? (ph ? "1.4fr 1fr" : compact ? "1.5fr 0.8fr 1fr 0.9fr" : "1.6fr 0.8fr 1fr 0.9fr 0.8fr 20px") : ph ? "1fr 1fr 0.8fr" : compact ? "1fr 1fr 1fr" : "1fr 1fr 1fr 0.9fr 20px"};align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--divider);font-size:13px">
       ${f.all ? `<span class="cell-name">${mono(a, 26)}<span style="min-width:0"><b>${a.name}</b>${ph ? `<small>${fmtSmart(s.date)}</small>` : ""}</span></span>${ph ? "" : `<span style="font-weight:600">${fmtSmart(s.date)}</span>`}` : `<span style="font-weight:600">${fmtSmart(s.date)}</span>`}
       <b class="num"${ph && f.all ? ' style="text-align:right"' : ""}>${inr(s.balance)}${ph && f.all ? `<span class="sub2" style="text-align:right">${d == null ? "first" : chg(d)}</span>` : ""}</b>
       ${ph && f.all ? "" : `<span>${d == null ? `<span class="muted" style="font-size:12px;font-weight:600">First balance</span>` : chg(d)}</span>`}
-      ${ph ? "" : `<span class="muted" style="font-size:12px;font-weight:600">${gap == null ? "—" : `${gap} days`}</span><span class="muted" style="display:flex;justify-content:flex-end">${I.edit(13)}</span>`}</div>`;
+      ${ph || compact ? "" : `<span class="muted" style="font-size:12px;font-weight:600">${gap == null ? "—" : `${gap} days`}</span><span class="muted" style="display:flex;justify-content:flex-end">${I.edit(13)}</span>`}</div>`;
   }).join("");
 }
-export function historyPane(f, { n = 6, ph = false } = {}) {
-  const head = f.all ? (ph ? ["Account", "Balance"] : ["Account", "Date", "Balance", "Change", "Gap"]) : ph ? ["Date", "Balance", "Change"] : ["Date", "Balance", "Change", "Gap"];
-  const cols = f.all ? (ph ? "1.4fr 1fr" : "1.6fr 0.8fr 1fr 0.9fr 0.8fr 20px") : ph ? "1fr 1fr 0.8fr" : "1fr 1fr 1fr 0.9fr 20px";
+export function historyPane(f, { n = 6, ph = false, compact = false, spread = false, fill = null } = {}) {
+  const head = f.all ? (ph ? ["Account", "Balance"] : compact ? ["Account", "Date", "Balance", "Change"] : ["Account", "Date", "Balance", "Change", "Gap"]) : ph ? ["Date", "Balance", "Change"] : compact ? ["Date", "Balance", "Change"] : ["Date", "Balance", "Change", "Gap"];
+  const cols = f.all ? (ph ? "1.4fr 1fr" : compact ? "1.5fr 0.8fr 1fr 0.9fr" : "1.6fr 0.8fr 1fr 0.9fr 0.8fr 20px") : ph ? "1fr 1fr 0.8fr" : compact ? "1fr 1fr 1fr" : "1fr 1fr 1fr 0.9fr 20px";
   const stale = !f.all && f.stale ? `<div class="notice" style="margin-bottom:6px">${I.clock(14)}<span class="grow">No balance since <b>${fmt(f.asOf)}</b>. Its ${inr(f.balance)} is still counted in your total until you update it.</span>${btn("Update", { kind: "primary", cls: "btn-xs" })}</div>` : "";
   const closed = !f.all && !f.on ? `<div class="notice" style="margin-bottom:6px;background:var(--fill);color:var(--muted)">${I.lock(13)}<span class="grow" style="color:var(--muted)">Closed on <b style="color:var(--fg)">${fmtY(f.closedOn)}</b> with a final balance of ₹0. Its history stays.</span></div>` : "";
   const count = f.all ? L.SNAPSHOTS.length : f.snaps;
-  return `${stale}${closed}<div style="display:grid;grid-template-columns:${cols};gap:12px;padding-bottom:8px;border-bottom:1px solid var(--divider)">${head.map((h, i) => `<span class="th"${ph && f.all && i === 1 ? ' style="text-align:right"' : ""}>${h}</span>`).join("")}${ph ? "" : "<span></span>"}</div><div class="spread" style="gap:0;justify-content:flex-start">${snapRows(f, n, { ph })}</div>
+  return `${stale}${closed}<div style="display:grid;grid-template-columns:${cols};gap:12px;padding-bottom:8px;border-bottom:1px solid var(--divider)">${head.map((h, i) => `<span class="th"${ph && f.all && i === 1 ? ' style="text-align:right"' : ""}>${h}</span>`).join("")}${ph || compact ? "" : "<span></span>"}</div><div class="spread" style="gap:0;justify-content:${spread ? "space-between" : "flex-start"}${fill && !f.all ? ";flex:0 0 auto" : ""}">${snapRows(f, n, { ph, compact })}</div>${fill && !f.all ? fill(f) : ""}
     <div class="between foot" style="padding-top:12px"><span class="card-note">${f.all ? `The ${n} latest of ${count} balances` : `${count} balances since ${fmtY(L.snapsOf(f.id)[0].date)}`}</span><span class="link">${f.all ? "All balances" : "All of its balances"} ${I.arrowR()}</span></div>`;
 }
-export function historyCard(prefix, { n = 6, title = "Balance history", ph = false } = {}) {
-    return `<section class="card glass" style="gap:10px${ph ? ";padding:16px" : ""}"><div class="card-h"><span class="card-t row" style="gap:10px">${title} <span class="muted" style="font-weight:600">·</span> ${panes((f) => (f.all ? "All accounts" : `<span class="row" style="gap:8px">${mono(f.a, 22)}${f.name}</span>`))}</span>${ph ? "" : btn("Update balance", { kind: "soft", cls: "btn-sm", icon: I.plus(11) })}</div>${panes((f) => historyPane(f, { n, ph }), {}, { flex: true })}</section>`;
+export function historyCard(prefix, { n = 6, title = "Balance history", ph = false, compact = false, spread = false, fill = null } = {}) {
+    return `<section class="card glass" style="gap:10px${ph ? ";padding:16px" : ""}"><div class="card-h"><span class="card-t row" style="gap:10px">${title} <span class="muted" style="font-weight:600">·</span> ${panes((f) => (f.all ? "All accounts" : `<span class="row" style="gap:8px">${mono(f.a, 22)}${f.name}</span>`))}</span>${ph ? "" : btn("Update balance", { kind: "soft", cls: "btn-sm", icon: I.plus(11) })}</div>${panes((f) => historyPane(f, { n, ph, compact, spread, fill }), {}, { flex: true })}</section>`;
 }
 
 // ---------- Money out (worked out from the rest of the app) ----------

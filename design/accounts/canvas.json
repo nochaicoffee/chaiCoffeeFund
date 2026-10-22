@@ -9,6 +9,22 @@
       "name": "Final design"
     },
     {
+      "id": "r13",
+      "name": "Round 13 · selector inside the hero"
+    },
+    {
+      "id": "r12",
+      "name": "Round 12 · cards as the selector"
+    },
+    {
+      "id": "r11",
+      "name": "Round 11 · W1 with your changes"
+    },
+    {
+      "id": "widgets",
+      "name": "Below the hero (W1–W5)"
+    },
+    {
       "id": "z3",
       "name": "Bank objects, simpler (B1–B7)"
     },
@@ -147,12 +163,60 @@
       "x": 0,
       "y": 0,
       "w": 1300,
-      "h": 8558,
+      "h": 9129,
       "page": "readme"
     },
     {
-      "file": "AccountsFinal.dc.html",
+      "file": "AccountsFinalPage.dc.html",
       "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2784,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalPagePhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 3421,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalPageStates.dc.html",
+      "x": 2230,
+      "y": 0,
+      "w": 1700,
+      "h": 4770,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalPageForms.dc.html",
+      "x": 4050,
+      "y": 0,
+      "w": 1300,
+      "h": 4697,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalPageStatesPhone.dc.html",
+      "x": 5470,
+      "y": 0,
+      "w": 1800,
+      "h": 2096,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalPageFormsPhone.dc.html",
+      "x": 7390,
+      "y": 0,
+      "w": 1800,
+      "h": 2113,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinal.dc.html",
+      "x": 9310,
       "y": 0,
       "w": 1600,
       "h": 1532,
@@ -160,7 +224,7 @@
     },
     {
       "file": "AccountsFinalPhone.dc.html",
-      "x": 1720,
+      "x": 11030,
       "y": 0,
       "w": 390,
       "h": 2033,
@@ -168,7 +232,7 @@
     },
     {
       "file": "AccountsFinalStates.dc.html",
-      "x": 2230,
+      "x": 11540,
       "y": 0,
       "w": 1700,
       "h": 4676,
@@ -176,11 +240,155 @@
     },
     {
       "file": "AccountsFinalForms.dc.html",
-      "x": 4050,
+      "x": 13360,
       "y": 0,
       "w": 1300,
       "h": 3412,
       "page": "final"
+    },
+    {
+      "file": "AccountsR13H1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1198,
+      "page": "r13"
+    },
+    {
+      "file": "AccountsR13H2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 1062,
+      "page": "r13"
+    },
+    {
+      "file": "AccountsR13H3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 1132,
+      "page": "r13"
+    },
+    {
+      "file": "AccountsR13H4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 896,
+      "page": "r13"
+    },
+    {
+      "file": "AccountsR13H5.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 1600,
+      "h": 982,
+      "page": "r13"
+    },
+    {
+      "file": "AccountsR12Selectors.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1403,
+      "page": "r12"
+    },
+    {
+      "file": "AccountsR11A.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2877,
+      "page": "r11"
+    },
+    {
+      "file": "AccountsR11B.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 3070,
+      "page": "r11"
+    },
+    {
+      "file": "AccountsR11C.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 2900,
+      "page": "r11"
+    },
+    {
+      "file": "AccountsR11D.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 3270,
+      "page": "r11"
+    },
+    {
+      "file": "AccountsR11InOut.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 1600,
+      "h": 4364,
+      "page": "r11"
+    },
+    {
+      "file": "AccountsR11Mix.dc.html",
+      "x": 8600,
+      "y": 0,
+      "w": 1600,
+      "h": 2587,
+      "page": "r11"
+    },
+    {
+      "file": "AccountsWidgetsW1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2406,
+      "page": "widgets"
+    },
+    {
+      "file": "AccountsWidgetsW2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 2493,
+      "page": "widgets"
+    },
+    {
+      "file": "AccountsWidgetsW3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 2996,
+      "page": "widgets"
+    },
+    {
+      "file": "AccountsWidgetsW4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 3017,
+      "page": "widgets"
+    },
+    {
+      "file": "AccountsWidgetsW5.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 1600,
+      "h": 2839,
+      "page": "widgets"
+    },
+    {
+      "file": "AccountsWidgetsPhone.dc.html",
+      "x": 8600,
+      "y": 0,
+      "w": 2206,
+      "h": 4366,
+      "page": "widgets"
     },
     {
       "file": "AccountsZ3.dc.html",
@@ -709,11 +917,43 @@
       "x": 0,
       "y": -90,
       "w": 1100,
+      "text": "Round 13 (2026-10-22): the selector goes inside the hero, as Subscriptions does. Five ways: H1 cover flow inside the hero, H2 glass strip along the bottom, H3 wallet stack beside the figure, H4 the cards are the hero, H5 a rail of rings. Pick a card and the stage follows. Sample data, made up.",
+      "page": "r13"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 12 (2026-10-22): Prathik liked a strip of coloured account cards and asked for it as the selector in the cover flow. Five styles under one live hero: S1 strip, S2 cover flow, S3 accordion, S4 dock, S5 fan. Pick a card and the hero recolours. Sample data, made up.",
+      "page": "r12"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 11 (2026-10-22): W1 Movers picked, with changes. Over time is the Scoreboard chart with the glow line first; Month over month becomes money in and money out (what came in, expenses apart from investing, what was saved), with a band or a strip around the chart; five variations of that (I1–I5) and five of the Mix (M1–M5); Coming up unchanged; the greeting points. Four full pages W1-A to W1-D, then the two variation pages. Sample data, made up.",
+      "page": "r11"
+    },
+    {
+      "id": "note-4",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 10 (2026-10-22): the hero stays as it is, and Prathik asked for more widgets below it, mostly visual, with Balance history on the right as on Cards and Subscriptions. Five pages, W1 Movers, W2 Runway, W3 Check-in, W4 Mix, W5 Scoreboard, each with its own widgets and its own arrangement, then all five on a phone. Every widget follows the hero's pick and has its own switch, hover card or row that opens. Sample data, made up.",
+      "page": "widgets"
+    },
+    {
+      "id": "note-5",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
       "text": "Round 9: the cheque felt like too much, so seven simpler objects (B1 monogram tile, B2 quiet passbook, B3 envelope, B4 note bundle, B5 nameplate, B6 key card, B7 stamp), in one live hero with a switch, each on its own stage. Sample data, made up.",
       "page": "z3"
     },
     {
-      "id": "note-2",
+      "id": "note-6",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -721,7 +961,7 @@
       "page": "final"
     },
     {
-      "id": "note-3",
+      "id": "note-7",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -729,7 +969,7 @@
       "page": "readme"
     },
     {
-      "id": "note-4",
+      "id": "note-8",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -737,7 +977,7 @@
       "page": "dir-a"
     },
     {
-      "id": "note-5",
+      "id": "note-9",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -745,7 +985,7 @@
       "page": "dir-b"
     },
     {
-      "id": "note-6",
+      "id": "note-10",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -753,7 +993,7 @@
       "page": "dir-c"
     },
     {
-      "id": "note-7",
+      "id": "note-11",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -761,7 +1001,7 @@
       "page": "dir-d"
     },
     {
-      "id": "note-8",
+      "id": "note-12",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -769,7 +1009,7 @@
       "page": "dir-e"
     },
     {
-      "id": "note-9",
+      "id": "note-13",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -777,7 +1017,7 @@
       "page": "dir-f"
     },
     {
-      "id": "note-10",
+      "id": "note-14",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -785,7 +1025,7 @@
       "page": "dir-g"
     },
     {
-      "id": "note-11",
+      "id": "note-15",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -793,7 +1033,7 @@
       "page": "dir-h"
     },
     {
-      "id": "note-12",
+      "id": "note-16",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -801,7 +1041,7 @@
       "page": "dir-i"
     },
     {
-      "id": "note-13",
+      "id": "note-17",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -809,7 +1049,7 @@
       "page": "dir-j"
     },
     {
-      "id": "note-14",
+      "id": "note-18",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -817,7 +1057,7 @@
       "page": "dir-k"
     },
     {
-      "id": "note-15",
+      "id": "note-19",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -825,7 +1065,7 @@
       "page": "dir-l"
     },
     {
-      "id": "note-16",
+      "id": "note-20",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -833,7 +1073,7 @@
       "page": "dir-m"
     },
     {
-      "id": "note-17",
+      "id": "note-21",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -841,7 +1081,7 @@
       "page": "dir-n"
     },
     {
-      "id": "note-18",
+      "id": "note-22",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -849,7 +1089,7 @@
       "page": "dir-o"
     },
     {
-      "id": "note-19",
+      "id": "note-23",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -857,7 +1097,7 @@
       "page": "dir-p"
     },
     {
-      "id": "note-20",
+      "id": "note-24",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -865,7 +1105,7 @@
       "page": "dir-q"
     },
     {
-      "id": "note-21",
+      "id": "note-25",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -873,7 +1113,7 @@
       "page": "dir-r"
     },
     {
-      "id": "note-22",
+      "id": "note-26",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -881,7 +1121,7 @@
       "page": "dir-s"
     },
     {
-      "id": "note-23",
+      "id": "note-27",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -889,7 +1129,7 @@
       "page": "dir-t"
     },
     {
-      "id": "note-24",
+      "id": "note-28",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -897,7 +1137,7 @@
       "page": "dir-u"
     },
     {
-      "id": "note-25",
+      "id": "note-29",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -905,7 +1145,7 @@
       "page": "dir-v"
     },
     {
-      "id": "note-26",
+      "id": "note-30",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -913,7 +1153,7 @@
       "page": "dir-w"
     },
     {
-      "id": "note-27",
+      "id": "note-31",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -921,7 +1161,7 @@
       "page": "dir-x"
     },
     {
-      "id": "note-28",
+      "id": "note-32",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -929,7 +1169,7 @@
       "page": "dir-y"
     },
     {
-      "id": "note-29",
+      "id": "note-33",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -937,7 +1177,7 @@
       "page": "z2"
     },
     {
-      "id": "note-30",
+      "id": "note-34",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -945,7 +1185,7 @@
       "page": "z1"
     },
     {
-      "id": "note-31",
+      "id": "note-35",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -953,7 +1193,7 @@
       "page": "zsel"
     },
     {
-      "id": "note-32",
+      "id": "note-36",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -961,7 +1201,7 @@
       "page": "ysel"
     },
     {
-      "id": "note-33",
+      "id": "note-37",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -969,7 +1209,7 @@
       "page": "charts"
     },
     {
-      "id": "note-34",
+      "id": "note-38",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -977,7 +1217,7 @@
       "page": "states"
     },
     {
-      "id": "note-35",
+      "id": "note-39",
       "x": 0,
       "y": -90,
       "w": 1100,

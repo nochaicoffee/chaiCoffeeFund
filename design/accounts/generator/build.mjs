@@ -50,6 +50,15 @@ function writeJobs(j) { const p = join(MEASURE, "jobs.json"); writeFileSync(p, J
 const heightsFile = join(HERE, "heights.json");
 const heights = existsSync(heightsFile) ? JSON.parse(readFileSync(heightsFile, "utf8")) : {};
 rendered.forEach((b, i) => { b.h = res[i].height; heights[b.file] = b.h; });
+// A board marked `measureAll` has widgets that change height with the pick (Round 10's pages and phones), so it's also measured
+// with each account picked and takes the tallest: no pick may push content past the artboard's edge.
+const PICKS = ["hdfc", "kotak", "icici", "sbi", "axis", "yes"];
+const tall = rendered.map((b, i) => ({ b, i })).filter(({ b }) => b.measureAll);
+if (tall.length) {
+  const extra = tall.flatMap(({ b, i }) => PICKS.map((id) => ({ ...jobs[i], eval: `(() => { document.querySelectorAll('input.pk-in[id$="-sel-${id}"]').forEach((r) => { r.checked = true; }); })()`, after: 300 })));
+  const more = JSON.parse(execFileSync("node", [join(HERE, "cdp.mjs"), writeJobs(extra)], { encoding: "utf8" }).trim().split("\n").at(-1));
+  tall.forEach(({ b }, k) => { const hs = more.slice(k * PICKS.length, (k + 1) * PICKS.length).map((r) => r.height); b.h = Math.max(b.h, ...hs); heights[b.file] = b.h; });
+}
 writeFileSync(heightsFile, JSON.stringify(heights, null, 2));
 
 // Pass 2: the artboards at their measured size.

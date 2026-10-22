@@ -14,13 +14,30 @@ import { z1Board, z1FormsBoard, z1PhoneBoard } from "./z1.mjs";
 import { z2Board, z2PhoneBoard } from "./z2.mjs";
 import * as FIN from "./final.mjs";
 import { z3Board, z3PhoneBoard } from "./z3.mjs";
+import { R11_DESKTOPS } from "./r11pages.mjs";
+import { R12_DESKTOPS } from "./r12.mjs";
+import { R13_DESKTOPS } from "./r13.mjs";
+import { R14_DESKTOPS } from "./r14.mjs";
+import { statesPhoneBoard, formsPhoneBoard } from "./r15.mjs";
+import { statesBoardNew, formsBoardNew } from "./r16.mjs";
+import { WIDGET_DESKTOPS, widgetsPhoneBoard, WIDGET_PHONE_W } from "./widgets.mjs";
 
 export const BOARDS = [
   { file: "AccountsReadme.dc.html", w: 1300, page: "readme", render: readmeBoard },
+  ...R14_DESKTOPS.map((x) => ({ ...x, page: "final", measureAll: true })),
+  { file: "AccountsFinalPageStates.dc.html", w: 1700, page: "final", render: statesBoardNew },
+  { file: "AccountsFinalPageForms.dc.html", w: 1300, page: "final", render: formsBoardNew },
+  { file: "AccountsFinalPageStatesPhone.dc.html", w: 1800, page: "final", render: statesPhoneBoard, measureAll: true },
+  { file: "AccountsFinalPageFormsPhone.dc.html", w: 1800, page: "final", render: formsPhoneBoard },
   { file: "AccountsFinal.dc.html", w: 1600, page: "final", render: FIN.finalDesktop },
   { file: "AccountsFinalPhone.dc.html", w: 390, page: "final", render: FIN.finalPhone },
   { file: "AccountsFinalStates.dc.html", w: 1700, page: "final", render: FIN.finalStates },
   { file: "AccountsFinalForms.dc.html", w: 1300, page: "final", render: FIN.finalForms },
+  ...R13_DESKTOPS.map((x) => ({ ...x, page: "r13", measureAll: true })),
+  ...R12_DESKTOPS.map((x) => ({ ...x, page: "r12", measureAll: true })),
+  ...R11_DESKTOPS.map((b) => ({ ...b, page: "r11", measureAll: true })),
+  ...WIDGET_DESKTOPS.map((b) => ({ ...b, page: "widgets", measureAll: true })),
+  { file: "AccountsWidgetsPhone.dc.html", w: WIDGET_PHONE_W, page: "widgets", render: widgetsPhoneBoard, measureAll: true },
   { file: "AccountsZ3.dc.html", w: 1600, page: "z3", render: z3Board },
   { file: "AccountsZ3Phone.dc.html", w: 1800, page: "z3", render: z3PhoneBoard },
   { file: "AccountsA.dc.html", w: 1600, page: "dir-a", render: D.aDesktop },
@@ -53,6 +70,10 @@ export const BOARDS = [
 export const PAGES = [
   { id: "readme", name: "Read me first" },
   { id: "final", name: "Final design" },
+  { id: "r13", name: "Round 13 · selector inside the hero" },
+  { id: "r12", name: "Round 12 · cards as the selector" },
+  { id: "r11", name: "Round 11 · W1 with your changes" },
+  { id: "widgets", name: "Below the hero (W1–W5)" },
   { id: "z3", name: "Bank objects, simpler (B1–B7)" },
   { id: "z2", name: "Z1 · account objects, round 2" },
   { id: "z1", name: "Z1 · stage colour and account objects" },
@@ -69,6 +90,10 @@ export const PAGES = [
 ];
 
 export const NOTES = [
+  { page: "r13", text: "Round 13 (2026-10-22): the selector goes inside the hero, as Subscriptions does. Five ways: H1 cover flow inside the hero, H2 glass strip along the bottom, H3 wallet stack beside the figure, H4 the cards are the hero, H5 a rail of rings. Pick a card and the stage follows. Sample data, made up." },
+  { page: "r12", text: "Round 12 (2026-10-22): Prathik liked a strip of coloured account cards and asked for it as the selector in the cover flow. Five styles under one live hero: S1 strip, S2 cover flow, S3 accordion, S4 dock, S5 fan. Pick a card and the hero recolours. Sample data, made up." },
+  { page: "r11", text: "Round 11 (2026-10-22): W1 Movers picked, with changes. Over time is the Scoreboard chart with the glow line first; Month over month becomes money in and money out (what came in, expenses apart from investing, what was saved), with a band or a strip around the chart; five variations of that (I1–I5) and five of the Mix (M1–M5); Coming up unchanged; the greeting points. Four full pages W1-A to W1-D, then the two variation pages. Sample data, made up." },
+  { page: "widgets", text: "Round 10 (2026-10-22): the hero stays as it is, and Prathik asked for more widgets below it, mostly visual, with Balance history on the right as on Cards and Subscriptions. Five pages, W1 Movers, W2 Runway, W3 Check-in, W4 Mix, W5 Scoreboard, each with its own widgets and its own arrangement, then all five on a phone. Every widget follows the hero's pick and has its own switch, hover card or row that opens. Sample data, made up." },
   { page: "z3", text: "Round 9: the cheque felt like too much, so seven simpler objects (B1 monogram tile, B2 quiet passbook, B3 envelope, B4 note bundle, B5 nameplate, B6 key card, B7 stamp), in one live hero with a switch, each on its own stage. Sample data, made up." },
   { page: "final", text: "FINAL, picked by Prathik 2026-10-22: Z1's hero (the account in the headline is a dropdown; the stage takes the bank's colour; the line stays white), the monogram tile (B1) as the account's object, All as its own green tile with a colour band (A4). Desktop, phone, states, forms. Sample data, made up." },
   { page: "readme", text: "The Bank Accounts page (/accounts), design only. Read this board first: how to pick, and the decisions the design depends on. Sample data, made up; today is Oct 21, 2026." },
