@@ -7,7 +7,7 @@ import { formatInr } from "@/lib/format/money";
 export interface SentencePart {
   text: string;
   strong?: boolean;
-  /** A figure the reader can point at for a card that explains it (the Subscriptions greeting, 7A): the card's key. */
+  /** A figure the reader can point at for a card that explains it (the Subscriptions greeting, 7A; Cards, A): the card's key. */
   point?: string;
 }
 
@@ -39,14 +39,14 @@ export function summarySentence({
   if (summary.monthsWithStatements === 0) {
     parts.push({ text: `No statements${on} ${period.kind === "all" ? "yet" : when.replace("so far ", "")}. ` });
   } else {
-    parts.push({ text: `${past ? "You spent" : "You've spent"} ` }, { text: formatInr(summary.total), strong: true });
+    parts.push({ text: `${past ? "You spent" : "You've spent"} ` }, { text: formatInr(summary.total), strong: true, point: "spent" });
     if (oneMonth) parts.push({ text: `${on} ${when}. ` });
-    else parts.push({ text: `${on} ${when}, averaging ` }, { text: formatInr(summary.average), strong: true }, { text: " a month. " });
+    else parts.push({ text: `${on} ${when}, averaging ` }, { text: formatInr(summary.average), strong: true, point: "average" }, { text: " a month. " });
     if (summary.highest && !oneMonth) {
       parts.push(
-        { text: formatMonthYear(summary.highest.month), strong: true },
+        { text: formatMonthYear(summary.highest.month), strong: true, point: "highest" },
         { text: ` ${past ? "was" : "has been"} your highest month at ` },
-        { text: formatInr(summary.highest.amount), strong: true },
+        { text: formatInr(summary.highest.amount), strong: true, point: "highest" },
         { text: ". " },
       );
     }
@@ -58,9 +58,9 @@ export function summarySentence({
     const overdue = pending.nextDueDate < today;
     const due = overdue ? `overdue since ${formatShortDate(pending.nextDueDate)}` : `${pending.count === 1 ? "due" : "next due"} ${formatShortDate(pending.nextDueDate)}`;
     parts.push(
-      { text: pending.count === 1 ? "1 bill" : `${pending.count} bills`, strong: true },
+      { text: pending.count === 1 ? "1 bill" : `${pending.count} bills`, strong: true, point: "pending" },
       { text: ` ${pending.count === 1 ? "is" : "are"} pending, totalling ` },
-      { text: formatInr(pending.total), strong: true },
+      { text: formatInr(pending.total), strong: true, point: "pending" },
       { text: `, ${due}.` },
     );
   }

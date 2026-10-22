@@ -3,12 +3,14 @@ import { loadCardData } from "./loadCardData";
 import { cardsQuery, parsePanel, parsePeriod, parseSelectedCard, parseShowClosed, periodMenu, periodMenuValue, rangePickerStart, statementsQuery } from "./params";
 import { periodLabel as labelFor, withinOneYear } from "@/lib/aggregate/period";
 import { summarySentence } from "./summarySentence";
+import { greetingView } from "./greetingView";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SyncStatementsButton } from "@/components/SyncStatementsButton";
 import { SyncProvider } from "@/components/sync/SyncContext";
 import { SyncReportPanel } from "@/components/sync/SyncReportPanel";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { CardRow } from "@/components/cards/CardRow";
+import { GreetingSentence } from "@/components/cards/GreetingSentence";
 import { CardTile, ClosedCardsTile, cardSwatch } from "@/components/cards/CardTile";
 import { AddCardButton, AddStatementButton, EditCardButton } from "@/components/cards/forms/FormButtons";
 import { DetailsCard } from "@/components/cards/DetailsCard";
@@ -138,17 +140,10 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
             </>
           }
         >
-          <p className="max-w-[960px] text-base leading-[1.7] font-medium text-muted">
-            {summarySentence({ summary, pending, period, today, cardName: selectedCard && cardName(selectedCard) }).map((part, i) =>
-              part.strong ? (
-                <span key={i} className="font-bold whitespace-nowrap text-fg tabular-nums">
-                  {part.text}
-                </span>
-              ) : (
-                <span key={i}>{part.text}</span>
-              ),
-            )}
-          </p>
+          <GreetingSentence
+            parts={summarySentence({ summary, pending, period, today, cardName: selectedCard && cardName(selectedCard) })}
+            cards={greetingView(data, summary, monthDetails, period, today, cardId)}
+          />
           {demo && (
             <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">
               Sample data. Nothing here is from your Sheet.

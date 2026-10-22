@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cards Greeting</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+  /* Tokens are the app's own (src/app/globals.css), so the mockups look like the real Cards page. Light only, like the app today. */
+  :root {
+    color-scheme: light;
+    --page: oklch(0.965 0.004 90);
+    --surface: oklch(0.995 0 0);
+    --surface-line: oklch(0 0 0 / 0.07);
+    --fg: oklch(0.19 0.008 260);
+    --muted: oklch(0.52 0.012 260);
+    --fill: oklch(0 0 0 / 0.055);
+    --fill-strong: oklch(0 0 0 / 0.09);
+    --divider: oklch(0 0 0 / 0.08);
+    --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+    --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+    --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+    --accent: oklch(0.72 0.19 145);
+    --accent-tint: oklch(0.93 0.06 145);
+    --accent-text: oklch(0.42 0.14 145);
+    --on-accent: oklch(0.99 0 0);
+    --ink: oklch(0.16 0.008 260);
+    --on-ink: oklch(0.99 0 0);
+    --negative: oklch(0.55 0.16 25);
+    --negative-tint: oklch(0.95 0.035 40);
+    --heat-1: oklch(0.95 0.03 150);
+    --heat-2: oklch(0.87 0.07 150);
+    --heat-3: oklch(0.76 0.11 151);
+    --heat-4: oklch(0.6 0.12 153);
+    --heat-5: oklch(0.42 0.1 156);
+    --heat-ink: oklch(0.24 0.05 152);
+    --heat-upcoming: oklch(0 0 0 / 0.13);
+    --card-emerald-from: oklch(0.42 0.11 155);
+    --card-emerald-to: oklch(0.24 0.07 162);
+    --card-sapphire-from: oklch(0.32 0.09 258);
+    --card-sapphire-to: oklch(0.16 0.05 258);
+    --card-sapphire: oklch(0.48 0.1 258);
+    --card-ruby-from: oklch(0.3 0.11 20);
+    --card-ruby-to: oklch(0.15 0.07 20);
+    --card-ruby: oklch(0.57 0.13 22);
+    --card-teal-from: oklch(0.32 0.07 200);
+    --card-teal-to: oklch(0.16 0.04 200);
+    --card-teal: oklch(0.56 0.09 200);
+    --card-violet-from: oklch(0.31 0.1 300);
+    --card-violet-to: oklch(0.16 0.06 300);
+    --card-violet: oklch(0.53 0.13 300);
+    --on-card: oklch(0.95 0.004 260);
+    --on-card-muted: oklch(1 0 0 / 0.6);
+    --on-card-faint: oklch(1 0 0 / 0.5);
+    --on-card-fill: oklch(1 0 0 / 0.16);
+    --on-card-line: oklch(1 0 0 / 0.12);
+    --on-card-lime: oklch(0.88 0.17 138);
+    --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
+    --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { background: var(--page); color: var(--fg); }
+  body {
+    margin: 0;
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
+    padding-block: 28px 72px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  .wrap { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px; }
+  .intro { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+  h1.title { margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800; text-wrap: balance; }
+  .intro p { margin: 0; font-size: 15px; font-weight: 500; color: var(--muted); }
+  .sample { width: fit-content; border-radius: 999px; background: var(--accent-tint); color: var(--accent-text); padding: 4px 12px; font-size: 12px; font-weight: 700; }
+
+  .option { min-width: 0; display: flex; flex-direction: column; gap: 14px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); border-radius: 24px; padding: 22px 24px 24px; }
+  .opt-head { display: flex; gap: 12px; align-items: flex-start; max-width: 780px; }
+  .tag { flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 13px; }
+  .opt-head h2 { margin: 0; font-size: 17px; font-weight: 800; }
+  .opt-head p { margin: 2px 0 0; color: var(--muted); font-size: 13.5px; font-weight: 500; }
+  .hint { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .replay { border: 0; background: var(--fill); border-radius: 99px; padding: 6px 14px; font-size: 12.5px; font-weight: 700; cursor: pointer; }
+  .replay:hover { background: var(--fill-strong); }
+
+  /* The page header, as the real page draws it: eyebrow, greeting, then the sentence. */
+  .hdr { display: flex; flex-direction: column; gap: 6px; padding: 18px 18px 20px; border-radius: 18px; background: var(--page); }
+  .hdr-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+  .hdr .eyebrow { font-size: 12.5px; }
+  .hdr h1 { margin: 0; font-size: clamp(28px, 5vw, 42px); line-height: 1.1; font-weight: 800; letter-spacing: -0.01em; }
+  .hdr-actions { display: flex; gap: 8px; flex-shrink: 0; }
+  .hdr-actions span { height: 36px; min-width: 36px; padding: 0 14px; border-radius: 99px; background: var(--fill-strong); display: grid; place-items: center; font-size: 13px; font-weight: 700; }
+  .hdr-actions span.icon { padding: 0; font-size: 16px; }
+  .hdr .greeting-slot { margin-top: 12px; }
+
+  /* The sentence, and its figures. */
+  .gwrap { position: relative; }
+  .sent { margin: 0; max-width: 960px; font-size: 16px; line-height: 1.7; font-weight: 500; color: var(--muted); }
+  .sent b { font-weight: 700; color: var(--fg); white-space: nowrap; }
+  .fig { margin: 0 -2px; padding: 0 2px; border: 0; background: none; border-radius: 6px; font-weight: 700; color: var(--fg); white-space: nowrap; font-variant-numeric: tabular-nums; cursor: pointer; text-decoration: underline dotted; text-decoration-color: oklch(0.52 0.012 260 / 0.6); text-decoration-thickness: 1.5px; text-underline-offset: 4px; transition: color 150ms, background 150ms; }
+  .fig:hover, .fig.on { background: var(--accent-tint); color: var(--accent-text); }
+  .fig.on { text-decoration-color: transparent; }
+  .fig.urgent { white-space: normal; color: var(--negative); text-decoration-color: oklch(0.55 0.16 25 / 0.5); }
+  .fig.urgent:hover, .fig.urgent.on { background: var(--negative-tint); color: var(--negative); }
+
+  /* The card that opens under a figure. */
+  .gtip { position: absolute; left: 0; top: 0; z-index: 30; width: 330px; max-width: 100%; pointer-events: none; opacity: 0; border-radius: 16px; border: 1px solid var(--surface-line); background: var(--surface); color: var(--fg); padding: 14px; box-shadow: var(--pop-shadow); transform: translate(var(--x, 0px), var(--y, 0px)) scale(0.97); transition: transform 200ms var(--ease-out), opacity 200ms var(--ease-out); }
+  .gtip.open { pointer-events: auto; opacity: 1; transform: translate(var(--x, 0px), var(--y, 0px)); }
+  .gtip::before { content: ""; position: absolute; left: 0; right: 0; top: -12px; height: 12px; }
+  .gt-title { font-size: 12px; font-weight: 700; color: var(--muted); }
+  .gt-total { margin-top: 2px; font-size: 24px; line-height: 1.2; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .gt-total small { margin-left: 6px; font-size: 12px; font-weight: 700; color: var(--accent-text); }
+  .gt-note { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--divider); font-size: 11px; font-weight: 600; color: var(--muted); }
+  .strip { position: relative; margin-top: 12px; }
+  .strip .bars { display: flex; align-items: flex-end; gap: 4px; }
+  .strip .col { flex: 1; display: flex; flex-direction: column-reverse; gap: 1px; justify-content: flex-start; }
+  .strip .col i { display: block; border-radius: 2px; }
+  .strip .col i:last-child { border-top-left-radius: 4px; border-top-right-radius: 4px; }
+  .strip .col.future { height: 8px; border: 1.5px dashed var(--fill-strong); border-radius: 4px; }
+  .strip .col.future i { display: none; }
+  .strip .col.pair { flex-direction: row; align-items: flex-end; gap: 1px; }
+  .strip .col.pair i { flex: 1; border-radius: 3px 3px 1px 1px; }
+  .strip .avg { position: absolute; left: 0; right: 0; border-top: 2px dashed var(--accent-text); }
+  .strip .avg span { position: absolute; right: 0; top: -19px; border-radius: 4px; background: var(--surface); padding: 0 4px; font-size: 10px; font-weight: 800; color: var(--accent-text); }
+  .strip .ini { display: flex; gap: 4px; margin-top: 4px; text-align: center; font-size: 9.5px; font-weight: 700; color: var(--muted); }
+  .strip .ini span { flex: 1; }
+  .legend { display: flex; flex-wrap: wrap; gap: 4px 12px; margin-top: 10px; font-size: 11px; font-weight: 600; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .sq { display: inline-block; width: 8px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+  .rows { list-style: none; margin: 10px 0 0; padding: 10px 0 0; border-top: 1px solid var(--divider); display: flex; flex-direction: column; gap: 7px; }
+  .rows li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; min-height: 26px; }
+  .rows .nm { flex: 1; min-width: 0; color: var(--muted); }
+  .rows .nm b { display: block; color: var(--fg); font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rows .nm small { display: block; font-size: 10.5px; font-weight: 600; }
+  .rows .amt { font-weight: 800; font-variant-numeric: tabular-nums; }
+  .rows .mini { width: 54px; height: 5px; border-radius: 99px; background: var(--fill); overflow: hidden; flex-shrink: 0; }
+  .rows .mini i { display: block; height: 100%; border-radius: inherit; }
+  .rows li.hot .nm small { color: var(--negative); font-weight: 800; }
+  .rows li.focus { margin: 0 -8px; padding: 4px 8px; border-radius: 10px; background: var(--negative-tint); }
+  .mono { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; color: var(--on-card); font-size: 11px; font-weight: 800; }
+  .pay { height: 26px; border: 0; border-radius: 99px; padding: 0 11px; background: var(--ink); color: var(--on-ink); font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+  .pay:hover { background: var(--accent-text); }
+  .pay.done { background: var(--accent-tint); color: var(--accent-text); cursor: default; }
+
+  /* B · the page's own pieces, lit by the sentence. */
+  .caption { min-height: 42px; display: flex; align-items: center; gap: 10px; border-radius: 14px; background: var(--fill); padding: 9px 14px; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .caption b { color: var(--fg); }
+  .caption .swap { animation: rise 320ms var(--ease-out); }
+  @keyframes rise { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+  .mini-page { display: flex; flex-direction: column; gap: 14px; }
+  /* A scrolling row clips what's outside it, so its padding leaves room for the tiles' whole shadow to fade out. */
+  .tiles { display: flex; gap: 12px; overflow-x: auto; padding: 10px 24px 40px; margin: -10px -24px -26px; scrollbar-width: none; }
+  .tiles::-webkit-scrollbar { display: none; }
+  .mt { position: relative; flex-shrink: 0; width: 176px; height: 104px; border-radius: 16px; padding: 12px; border: 1px solid var(--on-card-line); color: var(--on-card); box-shadow: var(--tile-shadow); display: flex; flex-direction: column; justify-content: space-between; transition: opacity 260ms, filter 260ms, transform 260ms var(--ease-out); }
+  .mt .nm { font-size: 13px; font-weight: 800; }
+  .mt .sub { font-size: 10px; font-weight: 600; color: var(--on-card-faint); }
+  .mt .track { height: 4px; border-radius: 99px; background: var(--on-card-fill); overflow: hidden; }
+  .mt .track i { display: block; height: 100%; border-radius: inherit; background: var(--on-card); }
+  .mt.all .track i { background: var(--on-card-lime); }
+  .mt .ft { display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--on-card-faint); }
+  .mt .due { border-radius: 99px; background: var(--on-card-fill); padding: 2px 8px; font-weight: 700; color: var(--on-card); white-space: nowrap; transition: background 260ms, box-shadow 260ms; }
+  .heat { overflow-x: auto; scrollbar-width: none; margin: -6px -8px; padding: 6px 8px 10px; transition: opacity 260ms; }
+  .heat::-webkit-scrollbar { display: none; }
+  .heat-grid { display: grid; grid-template-columns: 38px repeat(12, minmax(40px, 1fr)) 74px; gap: 6px; min-width: 640px; align-items: center; }
+  .heat-grid .m { text-align: center; font-size: 10px; font-weight: 700; color: var(--muted); letter-spacing: 0.03em; }
+  .heat-grid .yr { font-size: 12px; font-weight: 800; }
+  .heat-grid .tot { text-align: right; font-size: 12px; font-weight: 800; line-height: 1.25; transition: color 200ms; }
+  .heat-grid .tot small { display: block; font-size: 10px; font-weight: 600; color: var(--muted); }
+  .cell { position: relative; height: 46px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--heat-ink); transition: transform 240ms var(--ease-out), box-shadow 240ms var(--ease-out), opacity 260ms, filter 260ms, outline-color 200ms; outline: 2px solid transparent; outline-offset: 2px; }
+  .cell small { font-size: 9px; font-weight: 600; opacity: 0.85; }
+  .cell.l3, .cell.l4, .cell.l5 { color: var(--on-accent); }
+  .cell.l1 { background: var(--heat-1); } .cell.l2 { background: var(--heat-2); } .cell.l3 { background: var(--heat-3); } .cell.l4 { background: var(--heat-4); } .cell.l5 { background: var(--heat-5); }
+  .cell.up { background: transparent; border: 1.5px dashed var(--heat-upcoming); }
+  .cell.now { outline-color: var(--accent); }
+  .mini-page[data-lit="spent"] .cell:not(.up) { transform: translateY(-2px); outline-color: var(--accent); }
+  .mini-page[data-lit="spent"] .mt { opacity: 0.55; }
+  .mini-page[data-lit="average"] .cell:not(.up):not(.above) { opacity: 0.3; filter: saturate(0.5); }
+  .mini-page[data-lit="average"] .cell.above { transform: translateY(-3px); outline: 2px dashed var(--accent-text); }
+  .mini-page[data-lit="average"] .mt { opacity: 0.55; }
+  .mini-page[data-lit="highest"] .cell:not(.up):not(.peak) { opacity: 0.3; filter: saturate(0.5); }
+  .mini-page[data-lit="highest"] .cell.peak { transform: translateY(-4px); box-shadow: var(--pop-shadow); outline-color: var(--ink); }
+  .mini-page[data-lit="highest"] .tot { color: var(--accent-text); }
+  .mini-page[data-lit="highest"] .mt { opacity: 0.55; }
+  .mini-page[data-lit="pending"] .heat { opacity: 0.4; }
+  .mini-page[data-lit="pending"] .mt:not(.pend) { opacity: 0.4; filter: saturate(0.4); }
+  .mini-page[data-lit="pending"] .mt.pend { transform: translateY(-4px); }
+  .mini-page[data-lit="pending"] .mt.pend .due { background: oklch(0.7 0.14 35 / 0.55); box-shadow: 0 0 0 4px oklch(0.82 0.12 40 / 0.2); }
+  .mini-page[data-lit="pending"] .mt.pend.today .due { animation: breathe 1.6s ease-in-out infinite; }
+  @keyframes breathe { 0%, 100% { box-shadow: 0 0 0 0 oklch(0.82 0.12 40 / 0); } 50% { box-shadow: 0 0 0 6px oklch(0.82 0.12 40 / 0.3); } }
+
+  .states { display: flex; flex-direction: column; gap: 14px; }
+  .state { display: grid; gap: 4px; padding: 12px 14px; border-radius: 14px; background: var(--page); }
+  .state .lbl { font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+  .state .sent { font-size: 15px; line-height: 1.6; }
+  .state .fig { cursor: default; }
+  .state .fig:hover { background: none; color: var(--fg); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition-duration: 1ms !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="intro">
+    <span class="eyebrow">Cards · greeting</span>
+    <h1 class="title">The sentence under “Good afternoon, Prathik”</h1>
+    <p>Subscriptions' greeting points: each figure opens a small card with what it means. The Cards sentence is the same size and shape, so it can do the same. Three ways to do it, all live: hover (or tap, or Tab to) the underlined figures.</p>
+    <span class="sample">Sample data. Nothing here is from your Sheet. Today is Thu, 22 Oct 2026.</span>
+  </header>
+
+  <section class="option" id="a">
+    <div class="opt-head"><span class="tag">A</span><div><h2>The sentence points</h2><p>The same pattern as Subscriptions, with cards in it. Four figures, four cards: the year's months stacked by card, the average against them, what made up the highest month, and the pending bills with how soon each is due. Nothing else on the page changes.</p></div></div>
+    <div class="hdr" id="hdr-a"></div>
+    <div class="hint">Hover or tab to a figure. Tap opens and a second tap closes. Esc closes.</div>
+  </section>
+
+  <section class="option" id="b">
+    <div class="opt-head"><span class="tag">B</span><div><h2>The sentence lights the page</h2><p>No pop-up. Pointing at a figure lights what it's about on the page itself: the months in the heatmap, the months above average, the highest month alone, or the cards that have a bill pending. The page is already the answer, so the sentence just shows you where to look.</p></div></div>
+    <div class="mini-page" id="page-b" data-lit="">
+      <div class="hdr" id="hdr-b"></div>
+      <div class="caption" id="cap-b"><span class="swap">Point at a figure above and the page below lights up.</span></div>
+      <div class="tiles" id="tiles-b"></div>
+      <div class="heat"><div class="heat-grid" id="heat-b"></div></div>
+    </div>
+  </section>
+
+  <section class="option" id="c">
+    <div class="opt-head"><span class="tag">C</span><div><h2>The sentence notices things</h2><p>A is the old sentence made clickable. C lets it say more: how this year compares with last, how much of your limit you're using, and a red clause when a bill is due today. The pending card has a Mark paid button, and the sentence updates as you pay.</p></div></div>
+    <div class="hdr" id="hdr-c"></div>
+    <div class="hint" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span>Try Mark paid on Amazon Pay under the red clause.</span><button class="replay" id="reset-c" type="button">Reset the bills</button></div>
+  </section>
+
+  <section class="option" id="d">
+    <div class="opt-head"><span class="tag">·</span><div><h2>How the sentence reads in other states</h2><p>These carry over from today's sentence in every option: figures that would only repeat themselves drop out, and a figure with nothing behind it stays plain bold, with no underline and no card.</p></div></div>
+    <div class="states" id="states"></div>
+  </section>
+</div>
+
+<script>
+// ----- Sample data (made up). Jan to Oct 2026 per card; Oct is this month's statement, still pending. -----
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const TODAY = new Date(2026, 9, 22);
+const NOW = 9;
+const CARDS = [
+  { id: "regalia", name: "Regalia Gold", issuer: "HDFC Bank", color: "sapphire", limit: 500000, paidPart: 0, due: new Date(2026, 10, 4), months: [18200, 15600, 22400, 19800, 21200, 27400, 35600, 30800, 26100, 38500] },
+  { id: "amazon", name: "Amazon Pay", issuer: "ICICI Bank", color: "ruby", limit: 200000, paidPart: 0, due: new Date(2026, 9, 22), months: [9400, 8100, 11200, 12300, 10500, 14500, 15200, 12400, 11000, 12400] },
+  { id: "flipkart", name: "Flipkart", issuer: "Axis Bank", color: "violet", limit: 300000, paidPart: 7500, due: new Date(2026, 10, 2), months: [6800, 7200, 9900, 8400, 11800, 13600, 19900, 16200, 14100, 21700] },
+  { id: "millennia", name: "Millennia", issuer: "HDFC Bank", color: "teal", limit: 150000, paidPart: 0, due: new Date(2026, 10, 7), months: [4100, 3900, 5600, 8900, 8700, 8200, 6500, 7700, 9400, 6300] },
+];
+const SPEND25 = [21800, 24300, 19900, 26400, 31200, 35800, 45200, 39400, 33100, 36900, 41700, 48300];
+
+const sum = (a) => a.reduce((x, y) => x + y, 0);
+const inr = (n) => "₹" + Math.round(n).toLocaleString("en-IN");
+const dateOf = (d) => `${MON[d.getMonth()]} ${d.getDate()}`;
+const col = (c) => `var(--card-${c.color})`;
+const daysTo = (d) => Math.round((d - TODAY) / 86400000);
+const whenIn = (d) => { const n = daysTo(d); return n === 0 ? "today" : n === 1 ? "tomorrow" : `in ${n} days`; };
+const left = (c) => c.months[NOW] - c.paidPart;
+
+function stats(paid = {}) {
+  const totals = Array.from({ length: NOW + 1 }, (_, i) => sum(CARDS.map((c) => c.months[i])));
+  const spent = sum(totals), average = spent / totals.length;
+  const peak = totals.indexOf(Math.max(...totals));
+  const pending = CARDS.filter((c) => !paid[c.id]).sort((a, b) => a.due - b.due);
+  const owed = sum(pending.map(left));
+  const last = sum(SPEND25.slice(0, NOW + 1));
+  const limit = sum(CARDS.map((c) => c.limit));
+  return { totals, spent, average, peak, peakAmount: totals[peak], pending, owed, vsLast: Math.round((spent / last - 1) * 100), last, limit, used: owed / limit };
+}
+
+// ----- The sentences -----
+function sentenceA(s) {
+  return [
+    { t: "You've spent " }, { t: inr(s.spent), pt: "spent" }, { t: " so far in 2026, averaging " }, { t: inr(s.average), pt: "average" }, { t: " a month. " },
+    { t: `${MON[s.peak]} 2026`, pt: "highest" }, { t: " has been your highest month at " }, { t: inr(s.peakAmount), pt: "highest" }, { t: ". " },
+    ...pendingClause(s),
+  ];
+}
+function pendingClause(s, dueText) {
+  if (!s.pending.length) return [{ t: "No bills are pending." }];
+  const n = s.pending.length, next = s.pending[0];
+  return [
+    { t: n === 1 ? "1 bill" : `${n} bills`, pt: "pending" }, { t: ` ${n === 1 ? "is" : "are"} pending, totalling ` }, { t: inr(s.owed), pt: "pending" },
+    { t: `, ${n === 1 ? "due" : "next due"} ${dateOf(next.due)}.` },
+  ];
+}
+function sentenceC(s) {
+  const worst = [...CARDS].sort((a, b) => left(b) / b.limit - left(a) / a.limit)[0];
+  const parts = [
+    { t: "You've spent " }, { t: inr(s.spent), pt: "spent" }, { t: " so far in 2026, " }, { t: `${s.vsLast >= 0 ? "up" : "down"} ${Math.abs(s.vsLast)}%`, pt: "last" },
+    { t: " on last year, averaging " }, { t: inr(s.average), pt: "average" }, { t: " a month. " },
+    { t: `${MON[s.peak]} 2026`, pt: "highest" }, { t: " has been your highest month at " }, { t: inr(s.peakAmount), pt: "highest" }, { t: ". " },
+    { t: "You're using " }, { t: (s.used * 100).toFixed(1) + "%", pt: "util" }, { t: " of your limit. " },
+  ];
+  if (!s.pending.length) return [...parts, { t: "Every bill is paid." }];
+  const n = s.pending.length, next = s.pending[0], today = daysTo(next.due) <= 0;
+  parts.push({ t: n === 1 ? "1 bill" : `${n} bills`, pt: "pending" }, { t: ` ${n === 1 ? "is" : "are"} pending, totalling ` }, { t: inr(s.owed), pt: "pending" });
+  if (today) parts.push({ t: ", and " }, { t: `${next.name}'s ${inr(left(next))} is due today`, pt: "pending", tone: "urgent", focus: next.id }, { t: "." });
+  else parts.push({ t: `, next due ${dateOf(next.due)}.` });
+  return parts;
+}
+
+// ----- Strip: the year's months as small bars -----
+// mode: "stack" every month stacked by card, "avg" plain bars with the average across them, "peak" the one month in colour, "pair" last year beside this.
+function strip(s, mode) {
+  const H = 56, top = Math.max(1, s.average, ...s.totals, ...(mode === "pair" ? SPEND25.slice(0, NOW + 1) : []));
+  const cols = MON.map((m, i) => {
+    if (i > NOW) return `<div class="col future"></div>`;
+    if (mode === "pair") return `<div class="col pair"><i style="height:${Math.max(3, (SPEND25[i] / top) * H)}px;background:var(--heat-2)"></i><i style="height:${Math.max(3, (s.totals[i] / top) * H)}px;background:var(--heat-4)"></i></div>`;
+    const lit = mode === "stack" || (mode === "peak" && i === s.peak);
+    const segs = lit
+      ? CARDS.filter((c) => c.months[i] > 0).map((c) => `<i style="height:${Math.max(2, (c.months[i] / top) * H)}px;background:${col(c)}"></i>`).join("")
+      : `<i style="height:${Math.max(3, (s.totals[i] / top) * H)}px;background:var(--heat-2)"></i>`;
+    return `<div class="col">${segs}</div>`;
+  }).join("");
+  const avg = mode === "avg" ? `<span class="avg" style="bottom:${16 + (s.average / top) * H}px"><span>${inr(s.average)}</span></span>` : "";
+  return `<div class="strip" aria-hidden="true"><div class="bars" style="height:${H}px">${cols}</div>${avg}<div class="ini">${MON.map((m) => `<span>${m[0]}</span>`).join("")}</div></div>`;
+}
+const legend = () => `<div class="legend">${CARDS.map((c) => `<span><i class="sq" style="background:${col(c)}"></i>${c.name}</span>`).join("")}</div>`;
+const mono = (c) => `<span class="mono" style="background:${col(c)}">${c.name[0]}</span>`;
+
+// ----- The cards -----
+function body(pt, s, o = {}) {
+  if (pt === "spent") {
+    return `<div class="gt-title">Spent in 2026</div><div class="gt-total">${inr(s.spent)}</div>${strip(s, "stack")}${legend()}<div class="gt-note">10 months so far, January to October</div>`;
+  }
+  if (pt === "average") {
+    return `<div class="gt-title">A month, on average</div><div class="gt-total">${inr(s.average)}</div>${strip(s, "avg")}<div class="gt-note">${inr(s.spent)} over 10 months</div>`;
+  }
+  if (pt === "highest") {
+    const rows = CARDS.map((c) => ({ c, v: c.months[s.peak] })).filter((r) => r.v > 0).sort((a, b) => b.v - a.v);
+    return `<div class="gt-title">${MON[s.peak]} 2026, the highest month</div><div class="gt-total">${inr(s.peakAmount)}</div>${strip(s, "peak")}
+      <ul class="rows">${rows.map((r) => `<li><i class="sq" style="background:${col(r.c)}"></i><span class="nm"><b>${r.c.name}</b></span><span class="mini"><i style="width:${(r.v / rows[0].v) * 100}%;background:${col(r.c)}"></i></span><span class="amt">${inr(r.v)}</span></li>`).join("")}</ul>`;
+  }
+  if (pt === "last") {
+    return `<div class="gt-title">January to October, 2026 against 2025</div><div class="gt-total">${inr(s.spent)}<small>${s.vsLast >= 0 ? "+" : ""}${s.vsLast}%</small></div>${strip(s, "pair")}
+      <div class="legend"><span><i class="sq" style="background:var(--heat-2)"></i>2025</span><span><i class="sq" style="background:var(--heat-4)"></i>2026</span></div><div class="gt-note">${inr(s.last)} the same months last year</div>`;
+  }
+  if (pt === "util") {
+    const rows = CARDS.map((c) => ({ c, v: left(c) / c.limit })).sort((a, b) => b.v - a.v);
+    return `<div class="gt-title">Of your ${inr(s.limit)} limit</div><div class="gt-total">${(s.used * 100).toFixed(1)}%<small>${inr(sum(CARDS.map(left)))} owed</small></div>
+      <ul class="rows">${rows.map((r) => `<li><i class="sq" style="background:${col(r.c)}"></i><span class="nm"><b>${r.c.name}</b><small>${inr(left(r.c))} of ${inr(r.c.limit)}</small></span><span class="mini" style="width:64px"><i style="width:${Math.max(3, r.v * 1000)}%;background:${col(r.c)}"></i></span><span class="amt">${(r.v * 100).toFixed(1)}%</span></li>`).join("")}</ul>
+      <div class="gt-note">Active cards only, as on the tiles</div>`;
+  }
+  if (pt === "pending") {
+    const rows = s.pending;
+    return `<div class="gt-title">${rows.length === 1 ? "1 pending bill" : rows.length + " pending bills"}</div><div class="gt-total">${inr(s.owed)}</div>
+      <ul class="rows">${rows.map((c) => {
+        const n = daysTo(c.due);
+        return `<li class="${n <= 3 ? "hot" : ""}${o.focus === c.id ? " focus" : ""}">${mono(c)}<span class="nm"><b>${c.name}</b><small>Due ${dateOf(c.due)} · ${whenIn(c.due)}${c.paidPart ? ` · ${inr(c.paidPart)} paid` : ""}</small></span><span class="amt">${inr(left(c))}</span>${o.pay ? `<button class="pay" data-pay="${c.id}" type="button">Mark paid</button>` : ""}</li>`;
+      }).join("")}</ul>`;
+  }
+  return "";
+}
+
+// ----- The sentence, with its figures and the card that opens under one -----
+function Greeting(root, cfg) {
+  root.innerHTML = `<div class="gwrap"><p class="sent"></p>${cfg.body ? `<div class="gtip" role="tooltip" aria-hidden="true"></div>` : ""}</div>`;
+  const wrap = root.firstChild, sent = wrap.querySelector(".sent"), tip = wrap.querySelector(".gtip");
+  let open = null, press = null;
+
+  function render() {
+    hide();
+    sent.innerHTML = cfg.parts().map((p) => {
+      if (!p.pt) return p.t;
+      return `<button type="button" class="fig${p.tone ? " " + p.tone : ""}" data-pt="${p.pt}"${p.focus ? ` data-focus="${p.focus}"` : ""}>${p.t}</button>`;
+    }).join("");
+  }
+  function place() {
+    if (!open || !tip) return;
+    const b = wrap.getBoundingClientRect(), t = open.btn.getBoundingClientRect();
+    tip.style.setProperty("--x", Math.min(Math.max(t.left - b.left + t.width / 2 - tip.offsetWidth / 2, 0), Math.max(0, b.width - tip.offsetWidth)) + "px");
+    tip.style.setProperty("--y", t.bottom - b.top + 8 + "px");
+  }
+  function show(btn) {
+    if (open && open.btn === btn) return;
+    sent.querySelectorAll(".fig.on").forEach((f) => f.classList.remove("on"));
+    btn.classList.add("on");
+    open = { btn, pt: btn.dataset.pt };
+    if (tip) {
+      tip.innerHTML = cfg.body(btn.dataset.pt, { focus: btn.dataset.focus });
+      const opening = !tip.classList.contains("open");
+      if (opening) tip.style.transition = "none";
+      place();
+      if (opening) { void tip.offsetWidth; tip.style.transition = ""; }
+      tip.classList.add("open");
+      tip.setAttribute("aria-hidden", "false");
+    }
+    cfg.onShow && cfg.onShow(btn.dataset.pt);
+  }
+  function hide() {
+    if (!open) return;
+    open = null;
+    sent.querySelectorAll(".fig.on").forEach((f) => f.classList.remove("on"));
+    if (tip) { tip.classList.remove("open"); tip.setAttribute("aria-hidden", "true"); }
+    cfg.onHide && cfg.onHide();
+  }
+
+  sent.addEventListener("pointerover", (e) => { const f = e.target.closest(".fig"); if (f && e.pointerType === "mouse") show(f); });
+  sent.addEventListener("pointerdown", (e) => { const f = e.target.closest(".fig"); if (f) press = { type: e.pointerType, wasOpen: open && open.btn === f }; });
+  sent.addEventListener("click", (e) => {
+    const f = e.target.closest(".fig");
+    if (!f) return;
+    const tapped = press && press.type !== "mouse", keyed = e.detail === 0;
+    if (tapped || keyed) {
+      const wasOpen = tapped ? press.wasOpen : open && open.btn === f;
+      if (wasOpen) hide(); else show(f);
+    }
+    press = null;
+  });
+  sent.addEventListener("focusin", (e) => { const f = e.target.closest(".fig"); if (f && f.matches(":focus-visible")) show(f); });
+  wrap.addEventListener("focusout", (e) => { if (!wrap.contains(e.relatedTarget)) hide(); });
+  wrap.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") hide(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") hide(); });
+  window.addEventListener("resize", place);
+  if (tip && cfg.onPay) tip.addEventListener("click", (e) => { const b = e.target.closest("[data-pay]"); if (b) cfg.onPay(b.dataset.pay, b); });
+
+  render();
+  return { render, hide, reopen: (pt) => { const f = sent.querySelector(`.fig[data-pt="${pt}"]`); if (f) show(f); } };
+}
+
+// ----- The page header, as the real page draws it -----
+function header(el, extra = "") {
+  el.innerHTML = `<div class="hdr-top"><div><div class="eyebrow">Cards · Thu, 22 Oct</div></div><div class="hdr-actions"><span>2026 ▾</span><span class="icon">⟳</span></div></div>
+    <h1>Good afternoon, Prathik</h1><div class="greeting-slot"></div>`;
+  return el.querySelector(".greeting-slot");
+}
+const $ = (id) => document.getElementById(id);
+
+// ===== A =====
+{
+  const s = stats();
+  Greeting(header($("hdr-a")), { parts: () => sentenceA(s), body: (pt, o) => body(pt, s, o) });
+}
+
+// ===== B =====
+{
+  const s = stats(), page = $("page-b"), cap = $("cap-b");
+  const says = {
+    spent: `<b>Every month so far</b> is lit: January to October, ${inr(s.spent)} in all.`,
+    average: `<b>Months above ${inr(s.average)}</b> are lit: ${s.totals.map((t, i) => (t > s.average ? MON[i] : null)).filter(Boolean).join(", ")}.`,
+    highest: `<b>${MON[s.peak]}</b> alone: ${inr(s.peakAmount)}, the most in any month this year.`,
+    pending: `<b>${s.pending.length} cards</b> have a bill pending. ${s.pending[0].name}'s is due today.`,
+  };
+  Greeting(header($("hdr-b")), {
+    parts: () => sentenceA(s),
+    onShow: (pt) => { page.dataset.lit = pt; cap.innerHTML = `<span class="swap">${says[pt]}</span>`; },
+    onHide: () => { page.dataset.lit = ""; cap.innerHTML = `<span class="swap">Point at a figure above and the page below lights up.</span>`; },
+  });
+  const tile = (name, sub, pct, pill, cls, bg) => `<div class="mt ${cls}" style="background:linear-gradient(150deg,${bg})"><div><div class="nm">${name}</div><div class="sub">${sub}</div></div><div><div class="track"><i style="width:${Math.max(3, pct)}%"></i></div><div class="ft"><span>${pill.foot}</span><span class="due">${pill.text}</span></div></div></div>`;
+  $("tiles-b").innerHTML =
+    tile("All Cards", "4 cards", (s.used * 100), { foot: `${(s.used * 100).toFixed(0)}% used`, text: `${s.pending.length} pending` }, "all pend", "var(--card-emerald-from),var(--card-emerald-to)") +
+    CARDS.map((c) => {
+      const n = daysTo(c.due);
+      return tile(c.name, c.issuer, (left(c) / c.limit) * 1000, { foot: `${inr(left(c))} / ${inr(c.limit)}`, text: n === 0 ? "Due today" : `Due ${dateOf(c.due)} · ${n}d` }, `pend${n === 0 ? " today" : ""}`, `var(--card-${c.color}-from),var(--card-${c.color}-to)`);
+    }).join("");
+  const peak = Math.max(...s.totals, 1);
+  $("heat-b").innerHTML =
+    `<span class="yr">2026</span>` +
+    MON.map((m, i) => {
+      if (i > NOW) return `<div class="cell up"></div>`;
+      const r = s.totals[i] / peak, lvl = r < 0.4 ? 1 : r < 0.55 ? 2 : r < 0.7 ? 3 : r < 0.9 ? 4 : 5;
+      return `<div class="cell l${lvl}${s.totals[i] > s.average ? " above" : ""}${i === s.peak ? " peak" : ""}${i === NOW ? " now" : ""}">${(s.totals[i] / 1000).toFixed(1)}k<small>${m}</small></div>`;
+    }).join("") +
+    `<div class="tot">${inr(s.spent)}<small>Year</small></div>`;
+}
+
+// ===== C =====
+{
+  const paid = {};
+  const refresh = () => Object.assign(state, stats(paid));
+  const state = stats(paid);
+  const g = Greeting(header($("hdr-c")), {
+    parts: () => sentenceC(state),
+    body: (pt, o) => body(pt, state, { ...o, pay: true }),
+    onPay: (id, btn) => {
+      btn.textContent = "Paid ✓"; btn.classList.add("done");
+      paid[id] = true;
+      setTimeout(() => { refresh(); g.render(); g.reopen("pending"); }, 650);
+    },
+  });
+  $("reset-c").onclick = () => { Object.keys(paid).forEach((k) => delete paid[k]); refresh(); g.render(); };
+}
+
+// ===== Other states =====
+{
+  const s = stats();
+  const bold = (t) => ({ t, strong: true });
+  const rows = [
+    ["One month picked (Oct 2026): no average, no highest month, since they'd only repeat the total",
+      [{ t: "You spent " }, bold(inr(s.totals[NOW])), { t: " in Oct 2026. " }, ...pendingClause(s).map((p) => (p.pt ? bold(p.t) : p))]],
+    ["One card selected: the figures are that card's, and the sentence names it",
+      [{ t: "You've spent " }, bold(inr(sum(CARDS[0].months))), { t: " on Regalia Gold so far in 2026, averaging " }, bold(inr(sum(CARDS[0].months) / 10)), { t: " a month. " }, bold("Oct 2026"), { t: " has been your highest month at " }, bold(inr(CARDS[0].months[NOW])), { t: ". " }, bold("1 bill"), { t: " is pending, totalling " }, bold(inr(left(CARDS[0]))), { t: ", due Nov 4." }]],
+    ["Nothing pending", [...sentenceA(s).slice(0, 9), { t: "No bills are pending." }]],
+    ["A past year (2025): past tense", [{ t: "You spent " }, bold(inr(sum(SPEND25))), { t: " in 2025, averaging " }, bold(inr(sum(SPEND25) / 12)), { t: " a month. " }, bold("Dec 2025"), { t: " was your highest month at " }, bold(inr(SPEND25[11])), { t: ". No bills are pending." }]],
+  ];
+  $("states").innerHTML = rows.map(([lbl, parts]) => `<div class="state"><span class="lbl">${lbl}</span><p class="sent">${parts.map((p) => (p.strong ? `<b class="num">${p.t}</b>` : p.pt ? `<b class="num">${p.t}</b>` : p.t)).join("")}</p></div>`).join("");
+}
+</script>
+</body>
+</html>

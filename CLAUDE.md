@@ -51,6 +51,14 @@ If a step feels like it needs new boilerplate instead of just using the existing
 - `lib/aggregate/` and `lib/schedule/` are pure functions with no Sheets/network dependency — computations (net worth, utilization, EMI schedules, FX/cost-basis math) live here specifically so they're unit-testable against fixture data. Every new computation should be a pure function here with a test file next to it, not inline in a page or route.
 - Never guess a money-math formula (interest, FX conversion, amortization, cost basis) from old data or assumption. Ask what's actually intended, then write a test that proves the *math* (e.g. "principal fully repays to exactly zero," "interest strictly decreases"), not just that the code runs.
 
+## Every dashboard's greeting points
+
+Every dashboard page opens with the same header: eyebrow, "Good afternoon, Prathik", then one summary sentence. **That sentence's figures are always pointable** (Prathik's pick, Subscriptions 7A and Cards A): hovering, focusing or tapping a bold figure opens a light card under it with what it means. A new dashboard doesn't get a plain `<p>` sentence. Building one means:
+1. The sentence is a `SentencePart[]` (`src/app/cards/summarySentence.ts` has the type). Each bold figure that has something to explain carries a `point` key; two figures can share one.
+2. A `greetingView` in the page's folder (`src/app/<page>/greetingView.ts`, or in `views.ts`) builds the cards' content as plain, already-formatted data, keyed by those `point`s, from the same summary the sentence reads, so the two always agree. It uses existing `lib/aggregate` functions; new math goes there with a test.
+3. A client `GreetingSentence` in `src/components/<page>/` is a thin wrapper around `PointingSentence` (`src/components/shell/PointingSentence.tsx`): `has(point)` says whether a figure has a card, `card(point)` draws it. Use `CardHead` for the top of a card. Don't copy the hover, glide, focus, tap and Esc behaviour: it's all in the shared component.
+4. A figure with nothing behind it (no data for it) is left without a card and stays plain bold. Test the view against the sentence, as `greetingView.test.ts` does for Cards.
+
 ## Verifying a change to the Sheets layer
 
 Unit tests alone won't catch Sheets-specific gotchas — the Sheets API returns display-formatted values by default (not raw), a Table append needs confirming it actually lands inside the Table's range with formatting intact, and concurrent writes to the same tab can race. Before considering a change to `lib/sheets/` done: create a real row through the app against the actual Sheet, confirm it, update it, delete it, and confirm the sheet is clean again — sequentially, not concurrently, if deleting multiple rows against one tab.
