@@ -133,9 +133,25 @@ export function dayBefore(iso: string): string {
   return new Date(t).toISOString().slice(0, 10);
 }
 
-/** Today's total minus the total carried on `from` (Dec 31 for "since Jan 1"). */
+/**
+ * How much the total moved from `from` to today: each account's balance today minus the one
+ * carried on `from` (Dec 31 for "since Jan 1"). An account first read after `from` counts from
+ * its first balance, since opening an account isn't money coming in (as in everythingElse).
+ */
 export function changeSince(accounts: Account[], snapshots: BalanceSnapshot[], from: string, today: string): number {
-  return totalOn(accounts, snapshots, today) - totalOn(accounts, snapshots, from);
+  let change = 0;
+  for (const account of accounts) {
+    const end = balanceOn(snapshots, account.id, today);
+    if (!end) continue;
+    const before = balanceOn(snapshots, account.id, from);
+    if (before) {
+      change += end.balance - before.balance;
+      continue;
+    }
+    const first = snapshots.filter((s) => s.accountId === account.id).reduce<BalanceSnapshot | null>((best, s) => (best === null || s.date < best.date ? s : best), null);
+    if (first) change += end.balance - first.balance;
+  }
+  return change;
 }
 
 /** The highest total on any of the dates, and when. Null with no dates. */
