@@ -3,7 +3,8 @@ import { randomUUID } from "crypto";
 import type { z } from "zod";
 import { toUserEnteredCell } from "./cellValues";
 import { getSheetsClient, getSpreadsheetId } from "./client";
-import { assertColumnsMatchSchema, columnKinds, readRow, reportInvalidRow, type RowProblem, type SkippedRow } from "./rowReading";
+import { assertColumnsMatchSchema, columnExpectations, columnKinds, readRow, reportInvalidRow, type RowProblem, type SkippedRow } from "./rowReading";
+import { columnLetter } from "./tableStructure";
 
 export class NotFoundError extends Error {
   constructor(message: string) {
@@ -45,10 +46,6 @@ export interface InvalidRow<T> extends SkippedRow {
 /** What createRepository() returns for an entity. */
 export type Repository<T extends { id: string }> = ReturnType<typeof createRepository<T>>;
 
-function columnLetter(index: number): string {
-  return String.fromCharCode(65 + index);
-}
-
 function toRowValues<T>(record: T, columns: (keyof T)[], dateColumns: Set<keyof T>): unknown[] {
   return columns.map((col) => {
     return toUserEnteredCell(record[col], dateColumns.has(col));
@@ -69,6 +66,7 @@ function toRowValues<T>(record: T, columns: (keyof T)[], dateColumns: Set<keyof 
 export function createRepository<T extends { id: string }>(config: RepositoryConfig<T>) {
   const { sheetName, columns, schema, check } = config;
   assertColumnsMatchSchema(sheetName, columns as string[], (config.dateColumns ?? []) as string[], schema);
+  const expectedColumns = columnExpectations(sheetName, columns as string[], schema);
   const dateColumns = new Set(config.dateColumns ?? []);
   const kinds = columnKinds(schema);
   const lastCol = columnLetter(columns.length - 1);
@@ -280,5 +278,5 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     return rowNumbers.length;
   }
 
-  return { sheetName, list, readAll, get, create, createMany, update, updateMany, remove, removeWhere };
+  return { sheetName, expectedColumns, list, readAll, get, create, createMany, update, updateMany, remove, removeWhere };
 }

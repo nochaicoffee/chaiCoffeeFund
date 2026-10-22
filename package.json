@@ -9,7 +9,8 @@
     "lint": "eslint",
     "test": "vitest run",
     "authorize-gmail": "tsx scripts/authorizeGmail.ts",
-    "sync-statements": "tsx scripts/ingestStatements.ts"
+    "sync-statements": "tsx scripts/ingestStatements.ts",
+    "check-sheet": "tsx scripts/checkSheet.ts"
   },
   "dependencies": {
     "googleapis": "^176.0.0",

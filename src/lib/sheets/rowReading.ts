@@ -75,16 +75,45 @@ export function columnKinds(schema: z.ZodType): Record<string, ColumnKind> {
 }
 
 /**
- * Throws when a repository's columns don't match its row schema: a schema field
- * with no column, a column the schema doesn't know, or a date field (isoDate)
- * that isn't a date column, or the reverse. Any of these would fail every row
- * of the tab, so it fails when the repository is created instead.
+ * What the code expects of one column of a tab's Table, which the dev Sheet
+ * check (tableStructure.ts) compares with the real Sheet. A dropdown lists every
+ * value the schema accepts, since a Table's dropdown column rejects any other.
+ */
+export type ColumnExpectation =
+  | { name: string; kind: "text" | "number" | "date" }
+  | { name: string; kind: "dropdown"; options: readonly string[] };
+
+/**
+ * Each column's expectation, in column order, read from the row schema: an isoDate
+ * is a date, a z.enum() a dropdown of its values, a number a number and any other
+ * string text. Throws for a field that's none of these, as no Sheet column type is
+ * known to fit it yet. Assumes the columns already match the schema.
+ */
+export function columnExpectations(sheetName: string, columns: string[], schema: z.ZodType): ColumnExpectation[] {
+  const shape = shapeOf(schema);
+  return columns.map((name): ColumnExpectation => {
+    const base = unwrap(shape[name]);
+    if (base === isoDate) return { name, kind: "date" };
+    if (base instanceof z.ZodEnum) return { name, kind: "dropdown", options: base.options.map(String) };
+    if (base instanceof z.ZodNumber) return { name, kind: "number" };
+    if (base instanceof z.ZodString) return { name, kind: "text" };
+    throw new Error(`${sheetName}: no Sheet column type is known to fit ${name}'s schema`);
+  });
+}
+
+/**
+ * Throws when a repository's columns don't match its row schema: a column
+ * listed twice, a schema field with no column, a column the schema doesn't
+ * know, or a date field (isoDate) that isn't a date column, or the reverse.
+ * Any of these would fail every row of the tab, so it fails when the
+ * repository is created instead.
  */
 export function assertColumnsMatchSchema(sheetName: string, columns: string[], dateColumns: string[], schema: z.ZodType): void {
   const shape = shapeOf(schema);
   const fields = Object.keys(shape);
   const dateFields = fields.filter((field) => unwrap(shape[field]) === isoDate);
   const problems = [
+    ...columns.filter((c, index) => columns.indexOf(c) !== index).map((c) => `column ${c} is listed twice`),
     ...fields.filter((f) => !columns.includes(f)).map((f) => `${f} is in the schema but has no column`),
     ...columns.filter((c) => !fields.includes(c)).map((c) => `column ${c} isn't in the schema`),
     ...dateFields.filter((f) => !dateColumns.includes(f)).map((f) => `${f} is a date but not a date column`),
