@@ -13,7 +13,7 @@ const PAD_Y = 22;
 export function AccountLine({ line }: { line: LineView }) {
   const { points, months } = line;
   if (points.length < 2) {
-    return <div className="flex h-[190px] items-center justify-center text-sm font-semibold text-on-card-muted">No balances in this period yet.</div>;
+    return <div className="flex h-[190px] items-center justify-center text-sm font-semibold text-on-card-muted">{points.length === 1 ? "One balance so far. The line starts with the next." : "No balances in this period yet."}</div>;
   }
   const t0 = Date.parse(points[0].date);
   const t1 = Date.parse(points[points.length - 1].date);

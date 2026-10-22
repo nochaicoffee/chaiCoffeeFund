@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { HistoryRow, PickView } from "@/app/accounts/views";
+import { useAccountForms } from "./forms/AccountForms";
 
 const FIRST = 8;
 
@@ -12,6 +13,7 @@ const FIRST = 8;
  */
 export function HistoryCard({ pick, rows }: { pick: PickView; rows: HistoryRow[] }) {
   const [all, setAll] = useState(false);
+  const { open, disabledReason } = useAccountForms();
   const shown = all ? rows : rows.slice(0, FIRST);
   return (
     <section className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]" aria-label="Balance history">
@@ -28,6 +30,11 @@ export function HistoryCard({ pick, rows }: { pick: PickView; rows: HistoryRow[]
                 <b className="block truncate text-[13px] font-bold">{pick.kind === "all" ? `${r.accountName} · ${r.dateText}` : r.dateText}</b>
                 {r.gapText && <span className="block text-[11px] font-semibold text-muted">{r.gapText}</span>}
               </span>
+              {!disabledReason && (
+                <button type="button" onClick={() => open({ kind: "edit-balance", row: r })} aria-label={`Edit the ${r.dateText} balance`} className="rounded-full px-2 py-1 text-[11px] font-bold text-muted hover:bg-fill hover:text-fg focus-visible:outline-2 focus-visible:outline-accent">
+                  Edit
+                </button>
+              )}
               <span className="text-right">
                 <b className="block text-[13px] font-extrabold tabular-nums">{r.balanceText}</b>
                 <span className={`text-[11px] font-bold ${r.changeTone === "up" ? "text-positive" : r.changeTone === "down" ? "text-negative" : "text-muted"}`}>{r.changeText}</span>
