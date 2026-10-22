@@ -3,8 +3,12 @@
 import { useEffect, useState } from "react";
 import { ALL, type AccountsPageView } from "@/app/accounts/views";
 import { AccountsHero } from "./AccountsHero";
+import { ComingUpCard } from "./ComingUpCard";
 import { HistoryCard } from "./HistoryCard";
+import { InOutCard } from "./InOutCard";
 import { MixCard } from "./MixCard";
+import { MoneyInOutCard } from "./MoneyInOutCard";
+import { OverTimeCard } from "./OverTimeCard";
 
 /**
  * The Accounts page under the greeting (#162): the hero, and below it what's built as the
@@ -51,6 +55,16 @@ export function AccountsDashboard({ view, initialPick }: { view: AccountsPageVie
           <MixCard blocks={view.mix} picked={pick.id} onPick={choose} />
           <HistoryCard key={pick.id} pick={pick} rows={view.history[pick.id] ?? []} />
         </div>
+      )}
+      {view.hasAccounts && (
+        <>
+          <InOutCard detail={pick.detail} />
+          <OverTimeCard key={pick.id} detail={pick.detail} />
+          <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-2">
+            <MoneyInOutCard detail={pick.detail} />
+            <ComingUpCard detail={pick.detail} />
+          </div>
+        </>
       )}
     </div>
   );

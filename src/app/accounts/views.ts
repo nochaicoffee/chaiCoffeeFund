@@ -9,6 +9,7 @@ import { cardColorKey, whenFrom, type ColorKey } from "@/lib/format/subscription
 import type { Account, CardColor } from "@/lib/sheets/types";
 import type { MapEntry } from "@/components/subscriptions/costMap";
 import { daysBetween } from "@/lib/aggregate/cardSpend";
+import { detailFor, type PickDetail } from "./detailView";
 import type { SentencePart } from "../cards/summarySentence";
 
 /**
@@ -62,6 +63,8 @@ export interface PickView {
   changeTone: "up" | "down" | null;
   line: LineView;
   figures: FigureView[];
+  /** What sits under the hero for this pick. */
+  detail: PickDetail;
 }
 
 /** One account's block in the mix: its balance sized like a subscription's cost in the Subscriptions map, grouped by purpose. */
@@ -183,6 +186,7 @@ function accountPick(data: AccountsData, account: Account, period: SpendPeriod, 
     change: !latest ? "Add its first balance" : delta === null ? "First balance" : delta === 0 ? "No change since the balance before" : `${delta >= 0 ? "+" : "−"}${formatInr(Math.abs(delta))} since the balance before`,
     changeTone: delta === null || delta === 0 ? null : delta > 0 ? "up" : "down",
     line: lineFor(data, [account], period, today),
+    detail: detailFor(data, account.id, period, today),
     figures: [
       { label: `Since ${formatShortDate(span.from)}`, value: latest ? `${since >= 0 ? "+" : "−"}${formatInr(Math.abs(since))}` : "—" },
       { label: "Share of the total", value: closed || total <= 0 ? "—" : `${Math.round((held / total) * 100)}%` },
@@ -227,6 +231,7 @@ function allPick(data: AccountsData, period: SpendPeriod, today: string): PickVi
     change: data.snapshots.length === 0 ? "Add a balance to begin" : `${since >= 0 ? "+" : "−"}${formatInr(Math.abs(since))} since ${formatShortDate(span.from)}${latestDate ? ` · latest update ${formatShortDate(latestDate)}` : ""}`,
     changeTone: since === 0 ? null : since > 0 ? "up" : "down",
     line,
+    detail: detailFor(data, null, period, today),
     figures: [
       { label: "This month", value: `${thisMonth >= 0 ? "+" : "−"}${formatInr(Math.abs(thisMonth))}` },
       { label: "High point", value: high ? formatInr(high.total) : "—", note: high ? formatMonthYear(monthOf(high.date)) : undefined },
