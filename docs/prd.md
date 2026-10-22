@@ -214,6 +214,18 @@ Following standard practice, acceptance criteria are written in full only for th
 - [ ] Everything works at phone width (F-PL-03). Phone layouts and the forms, sync report and empty states are designed in code in the same design language (decided 2026-10-17).
 - [ ] With zero cards or zero statements, the page shows a clear empty state with the add actions.
 
+### F-AC-01 and F-AC-02: Accounts, how the numbers are defined
+
+Confirmed by Prathik on 2026-10-22 (he accepted the defaults the mockups show for decisions 1–12 and 19 in [`design/accounts.md`](design/accounts.md)); each is a tested pure function in `lib/aggregate/accounts.ts` and `accountFlows.ts`.
+
+- A **total on a date** counts each account at its latest balance on or before that date, and nothing before its first. Two balances for one account on one day: the later row wins. A step on one account moves the total by exactly that step.
+- **Stale:** an active account whose latest balance is more than 30 days old. It still counts in the total.
+- **Closing** an account adds a ₹0 balance on the day and sets it Inactive (shown as Closed). Its history stays.
+- **Money out** of an account is worked out from card bills paid from it, subscriptions charged to it (not to a card), EMIs paid from it and shares bought from it. **Everything else** is the balance change those don't explain (UPI, cash, transfers between own accounts), shown as worked out, never as a statement.
+- **Saved = came in − expenses**, where expenses are card bills, subscriptions and EMIs. Money invested counts as saved; "kept in the bank" is saved minus invested. Sale proceeds move a balance but are not "came in".
+- **A balance saved on a day that already has one replaces it.** A balance more than 20% below the last one asks you to check it, and never blocks the save.
+- **Colour** is an optional per-account choice of the six card colours, falling back to the purpose's; **last 4** is optional text.
+
 ## 9. Non-functional requirements
 
 | Area | Requirement |
@@ -273,3 +285,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.3 | 2026-10-19 | Card setup matches the old sheet (#75): a card type (Reward Points or Cashback), and the schedule as a statement day plus a due-day buffer instead of two full dates. Also adds issuer and colour dropdowns and an optional default payment account. |
 | 1.4 | 2026-10-19 | A card's last 4 is optional when it's added. The import fills it in from the statement PDF, then uses it to check each statement belongs to its card (#78). |
 | 1.5 | 2026-10-20 | The period can also be the last 3, 6 or 12 months or a custom range of months, by statement date, and a range's average divides by every month of it so far (#113). The trend chart follows the period instead of having its own 3M to All ranges. |
+| 1.6 | 2026-10-22 | Accounts numbers defined (carry-forward totals, stale after 30 days, closing, money out and Everything else, saved, same-day replace, 20% drop warning), per the Accounts design (#155). |
