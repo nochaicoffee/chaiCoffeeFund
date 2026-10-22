@@ -7,6 +7,7 @@ import { CrossfadeBackground } from "../motion/CrossfadeBackground";
 import { RollingNumber } from "../motion/RollingNumber";
 import { RingTexture } from "../RingTexture";
 import { AccountLine } from "./AccountLine";
+import { FormTrigger, HeroButtons, useAccountForms } from "./forms/AccountForms";
 
 /**
  * The Accounts page's hero (docs/design/accounts.md, "The final design"): the cards are the
@@ -93,7 +94,7 @@ function OpenCard({ pick, full }: { pick: PickView; full?: boolean }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-xs font-bold text-on-card-muted">{pick.kind === "all" ? "Your balance" : `Your balance · ${pick.bank}`}</div>
-          <div className="mt-1 text-[44px] leading-none font-extrabold tracking-tight tabular-nums md:text-[62px]">
+          <div className={`mt-1 leading-none font-extrabold tracking-tight tabular-nums ${pick.balance.length > 11 ? "text-[28px] md:text-[40px]" : pick.balance.length > 9 ? "text-[34px] md:text-[48px]" : "text-[44px] md:text-[62px]"}`}>
             <RollingNumber value={pick.balanceValue} format="inr" />
           </div>
         </div>
@@ -106,6 +107,9 @@ function OpenCard({ pick, full }: { pick: PickView; full?: boolean }) {
         </div>
         <div className={`mt-0.5 text-xs font-semibold ${pick.stale ? "text-[var(--card-copper)]" : "text-on-card-muted"}`}>{pick.updated}</div>
         <div className={`text-xs font-semibold ${pick.changeTone === "up" ? "text-on-card-lime" : "text-on-card-muted"}`}>{pick.change}</div>
+        <div className="mt-3">
+          <HeroButtons pickId={pick.id} kind={pick.kind} closed={pick.closed} />
+        </div>
       </div>
       {pick.stale && <span className="absolute top-14 right-4 rotate-6 rounded border-2 border-[var(--card-copper)] px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-[var(--card-copper)] uppercase">Not read · {pick.daysSince} days</span>}
       {pick.closed && <span className="absolute top-14 right-4 rotate-6 rounded border-2 border-on-card-faint px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-on-card-faint uppercase">Closed</span>}
@@ -146,13 +150,17 @@ function Chip({ pick, onPick }: { pick: PickView; onPick: (id: string) => void }
 
 /** With no accounts: ₹0, a dashed place where the first card goes, and no line. */
 function EmptyStage({ pick }: { pick: PickView }) {
+  const { open } = useAccountForms();
   return (
     <div className="flex min-h-[220px] flex-col items-start justify-between gap-6 rounded-[26px] border-2 border-dashed border-white/30 p-6">
       <div>
         <div className="text-xs font-bold text-muted">Your balance</div>
         <div className="mt-1 text-[44px] leading-none font-extrabold md:text-[62px]">{pick.balance}</div>
       </div>
-      <div className="text-sm font-semibold text-muted">No accounts yet. Add your first account and its balance, and its card shows here.</div>
+      <div className="flex flex-col items-start gap-3">
+        <div className="text-sm font-semibold text-muted">No accounts yet. Add your first account and its balance, and its card shows here.</div>
+        <FormTrigger className="min-h-10 rounded-full bg-white px-5 text-[13px] font-extrabold text-[var(--ink)] hover:opacity-90" label="Add your first account" onClick={() => open({ kind: "add" })} />
+      </div>
     </div>
   );
 }

@@ -162,3 +162,7 @@ Prathik picked **H4, the cards are the hero** (rounds 12 and 13) and **W1-A** (r
 **Not done / to know:** the date picker and bank menu open on a phone; ring texture on River, Bridge and Flow map; the mix's Axis block is tiny in both views (it shows only its initial). The phone hero is a different layout from the desktop's on purpose.
 
 **Build mapping:** hero cards from the Cards tile styling and `RingTexture`; the mix from the Subscriptions `CostMapCard`/`costMap.ts` treemap with its By category toggle (here By purpose); greeting from `src/components/shell/PointingSentence.tsx`; Over time from the Scoreboard chart; Balance history and Coming up as already specified above.
+
+## Built: the forms (#165)
+
+Add and Edit account (the account's card is the live preview; Add has an optional balance today, saved as its first), Update balance (change and new total as you type; a drop of more than a fifth warns, a same-day balance says it will be replaced), the monthly check-in (stale first, blanks left alone), Close and Reopen (a ₹0 balance on the day, then Inactive; Reopen sets Active), and editing or deleting one balance from Balance history. Pure reading in `lib/forms/accountForms.ts`, server actions in `app/accounts/actions.ts`, dialogs in `components/accounts/forms/`. With `?demo` every button is disabled. **Not built:** the Undo toast after a save, the phone's pinned-button sheets beyond what `FormDialog` already does, and the forms' error and big-drop states as separate boards.

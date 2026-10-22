@@ -6,7 +6,7 @@ import { formatDate, formatMonthShort, formatMonthYear, formatShortDate } from "
 import { optionLabel } from "@/lib/format/labels";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import { cardColorKey, whenFrom, type ColorKey } from "@/lib/format/subscriptionLabels";
-import type { Account } from "@/lib/sheets/types";
+import type { Account, CardColor } from "@/lib/sheets/types";
 import type { MapEntry } from "@/components/subscriptions/costMap";
 import { daysBetween } from "@/lib/aggregate/cardSpend";
 import type { SentencePart } from "../cards/summarySentence";
@@ -81,6 +81,8 @@ export interface HistoryRow {
   date: string;
   dateText: string;
   balanceText: string;
+  /** The balance as saved, to start an edit on. */
+  balance: number;
   /** "+₹4,200", "−₹1,000", or "First balance". */
   changeText: string;
   changeTone: "up" | "down" | null;
@@ -88,7 +90,38 @@ export interface HistoryRow {
   gapText: string | null;
 }
 
+/** An account as the forms need it: what to preview, what it holds, and what to pre-fill an edit with. */
+export interface FormAccount {
+  id: string;
+  name: string;
+  bank: string;
+  initial: string;
+  colorKey: ColorKey;
+  /** The card colour name an edit starts on. */
+  color: CardColor;
+  accountType: Account["accountType"];
+  purpose: Account["purpose"];
+  startDate: string;
+  last4: string;
+  closed: boolean;
+  stale: boolean;
+  /** Its balance today, or null with none yet. */
+  balance: number | null;
+  latestDate: string | null;
+  /** Whether a loan's EMIs are paid from it, for Close's warning. */
+  paysALoan: boolean;
+}
+
+export interface AccountsFormsData {
+  demo: boolean;
+  today: string;
+  accounts: FormAccount[];
+  /** What every account holds today, for the check-in's total. */
+  total: number;
+}
+
 export interface AccountsPageView {
+  forms: AccountsFormsData;
   picks: PickView[];
   mix: MixBlock[];
   /** Newest first, by pick id: All has every account's readings. */
@@ -235,6 +268,7 @@ export function historyRows(data: AccountsData): Record<string, HistoryRow[]> {
         date: s.date,
         dateText: formatDate(s.date),
         balanceText: formatInr(s.balance),
+        balance: s.balance,
         changeText: delta === null ? "First balance" : delta === 0 ? "No change" : `${delta > 0 ? "+" : "−"}${formatInr(Math.abs(delta))}`,
         changeTone: delta === null || delta === 0 ? null : delta > 0 ? "up" : "down",
         gapText: before ? `${daysBetween(before.date, s.date)} days after the one before` : null,
@@ -247,14 +281,38 @@ export function historyRows(data: AccountsData): Record<string, HistoryRow[]> {
   return { [ALL]: all.sort(newest), ...Object.fromEntries(rows) };
 }
 
-export function accountsPageView(data: AccountsData, today: string, period: SpendPeriod): AccountsPageView {
+export function formsView(data: AccountsData, today: string, demo: boolean): AccountsFormsData {
+  const accounts = [...data.accounts].sort((a, b) => Number(isClosed(a)) - Number(isClosed(b))).map((a): FormAccount => {
+    const latest = balanceOn(data.snapshots, a.id, today);
+    return {
+      id: a.id,
+      name: a.name,
+      bank: a.bank,
+      initial: a.bank.trim()[0]?.toUpperCase() ?? "?",
+      colorKey: cardColorKey(accountColor(a)),
+      color: accountColor(a),
+      accountType: a.accountType,
+      purpose: a.purpose,
+      startDate: a.startDate,
+      last4: a.last4 ?? "",
+      closed: isClosed(a),
+      stale: isStale(a, data.snapshots, today),
+      balance: latest?.balance ?? null,
+      latestDate: latest?.date ?? null,
+      paysALoan: data.loans.some((l) => l.status === "Active" && l.accountId === a.id),
+    };
+  });
+  return { demo, today, accounts, total: totalOn(data.accounts, data.snapshots, today) };
+}
+
+export function accountsPageView(data: AccountsData, today: string, period: SpendPeriod, demo = false): AccountsPageView {
   // Closed accounts come last, as they do in the card row.
   const ordered = [...data.accounts].sort((a, b) => Number(isClosed(a)) - Number(isClosed(b)));
   const live = data.accounts.filter((a) => !isClosed(a));
   const picks = ordered.map((a) => accountPick(data, a, period, today));
   // With one account All would repeat it exactly, so it steps aside (decision 6).
   const showAll = live.length !== 1 || data.accounts.length !== 1;
-  const base = { mix: mixBlocks(data, today), history: historyRows(data) };
+  const base = { forms: formsView(data, today, demo), mix: mixBlocks(data, today), history: historyRows(data) };
   return { ...base, picks: data.accounts.length === 0 ? [allPick(data, period, today)] : showAll && data.accounts.length > 1 ? [allPick(data, period, today), ...picks] : picks, hasAccounts: data.accounts.length > 0 };
 }
 

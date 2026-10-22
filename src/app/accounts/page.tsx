@@ -3,6 +3,7 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { AccountsDashboard } from "@/components/accounts/AccountsDashboard";
 import { GreetingSentence } from "@/components/accounts/GreetingSentence";
+import { AccountFormsProvider, HeaderFormButtons } from "@/components/accounts/forms/AccountForms";
 import { PeriodSelect } from "@/components/cards/PeriodSelect";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
@@ -25,11 +26,12 @@ export default async function AccountsPage({ searchParams }: PageProps<"/account
   const today = todayIso();
   const { demo, data, skipped } = await loadAccountsData(params, today);
   const period = parsePeriod(params, today);
-  const view = accountsPageView(data, today, period);
+  const view = accountsPageView(data, today, period, demo);
   const requested = typeof params.account === "string" ? params.account : ALL;
   const initialPick = view.picks.some((p) => p.id === requested) ? requested : view.picks[0].id;
 
   return (
+    <AccountFormsProvider forms={view.forms}>
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Bank accounts"
@@ -38,6 +40,7 @@ export default async function AccountsPage({ searchParams }: PageProps<"/account
           <>
             <PeriodSelect options={accountsPeriodMenu(data, period, today)} value={accountsPeriodValue(period, today)} start={accountsRangeStart(data, period, today)} currentMonth={today.slice(0, 7)} />
             <RefreshButton iconOnly />
+            <HeaderFormButtons />
           </>
         }
       >
@@ -47,5 +50,6 @@ export default async function AccountsPage({ searchParams }: PageProps<"/account
       </PageHeader>
       <AccountsDashboard view={view} initialPick={initialPick} />
     </div>
+    </AccountFormsProvider>
   );
 }
