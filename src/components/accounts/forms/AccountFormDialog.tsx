@@ -5,14 +5,16 @@ import { saveAccount } from "@/app/accounts/actions";
 import type { AccountsFormsData, FormAccount } from "@/app/accounts/views";
 import { cardColorKey } from "@/lib/format/subscriptionLabels";
 import { optionLabel } from "@/lib/format/labels";
+import { PURPOSE_COLORS } from "@/lib/aggregate/accounts";
 import { ACCOUNT_PURPOSES, ACCOUNT_TYPES, readAccountForm } from "@/lib/forms/accountForms";
 import { IDLE } from "@/lib/forms/formState";
 import { parseAmountText } from "@/lib/format/money";
 import { CARD_COLORS, type CardColor } from "@/lib/sheets/types";
-import { DateInput, Field, MoneyInput, PreviewPanel, SelectInput, TextInput, describedBy } from "../../cards/forms/fields";
+import { DateInput, Field, MoneyInput, PreviewPanel, Segmented, SelectInput, TextInput, describedBy } from "../../cards/forms/fields";
+import { PlusIcon } from "../../cards/forms/icons";
 import { FormDialog } from "../../cards/forms/FormDialog";
 import { useFieldErrors } from "../../cards/forms/useFieldErrors";
-import { MiniAccountCard } from "./MiniAccountCard";
+import { ColorSwatches, MiniAccountCard } from "./MiniAccountCard";
 
 /** The first colour no open account has, so a new account starts apart from the others; it can still be picked. */
 function freeColor(accounts: FormAccount[]): CardColor {
@@ -47,12 +49,13 @@ export function AccountFormDialog({ account, forms, onClose }: { account?: FormA
 
   return (
     <FormDialog
-      icon={<span className="text-sm font-extrabold">+</span>}
+      icon={<PlusIcon />}
       title={editing ? "Edit account" : "Add account"}
-      subtitle={editing ? account!.name : "A bank account and, if you like, what it holds today"}
+      subtitle={editing ? account!.name : "Fill it in and watch the account take shape"}
       preview={
-        <PreviewPanel>
-          <MiniAccountCard colorKey={cardColorKey(color as CardColor)} initial={bank.trim()[0]?.toUpperCase() ?? ""} name={name} last4={last4.length === 4 ? last4 : undefined} balance={editing ? account!.balance : opening} />
+        <PreviewPanel caption="This is how the account will look in your account row. It updates as you type.">
+          <MiniAccountCard colorKey={cardColorKey(color as CardColor)} initial={bank.trim()[0]?.toUpperCase() ?? ""} name={name} last4={last4.length === 4 ? last4 : undefined} balance={editing ? account!.balance : opening} corner={optionLabel(purpose)} />
+          <ColorSwatches colors={CARD_COLORS} value={color} onChange={setColor} error={errors.color} />
         </PreviewPanel>
       }
       footerNote={<span className="max-md:hidden">{editing ? "Balances stay as they are." : "Saved as its first balance, dated today."}</span>}
@@ -71,27 +74,22 @@ export function AccountFormDialog({ account, forms, onClose }: { account?: FormA
           {state.errors.form}
         </p>
       )}
-      <div className="grid gap-4 sm:grid-cols-2">
+      <Segmented name="accountType" legend="Account type" required options={ACCOUNT_TYPES.map((t) => ({ value: t, label: t }))} value={accountType as "Savings" | "Current"} onChange={setType} error={errors.accountType} />
+      <div className="grid gap-x-3.5 gap-y-4 md:grid-cols-2">
         <Field id="name" label="Name" required error={errors.name}>
-          <TextInput {...describedBy("name", errors.name, false)} data-autofocus name="name" value={name} onChange={(e) => setName(e.target.value)} onBlur={() => reveal("name")} invalid={Boolean(errors.name)} placeholder="HDFC Salary" />
+          <TextInput {...describedBy("name", errors.name, false)} data-autofocus name="name" value={name} onChange={(e) => setName(e.target.value)} onBlur={() => reveal("name")} invalid={Boolean(errors.name)} placeholder="e.g. HDFC Salary" />
         </Field>
         <Field id="bank" label="Bank" required error={errors.bank}>
-          <TextInput {...describedBy("bank", errors.bank, false)} name="bank" value={bank} onChange={(e) => setBank(e.target.value)} onBlur={() => reveal("bank")} invalid={Boolean(errors.bank)} placeholder="HDFC Bank" />
-        </Field>
-        <Field id="accountType" label="Type" required error={errors.accountType}>
-          <SelectInput id="accountType" name="accountType" invalid={Boolean(errors.accountType)} options={ACCOUNT_TYPES.map((t) => ({ value: t, label: t }))} value={accountType} onChange={setType} />
+          <TextInput {...describedBy("bank", errors.bank, false)} name="bank" value={bank} onChange={(e) => setBank(e.target.value)} onBlur={() => reveal("bank")} invalid={Boolean(errors.bank)} placeholder="e.g. HDFC Bank" />
         </Field>
         <Field id="startDate" label="Opened on" required error={errors.startDate}>
           <DateInput {...describedBy("startDate", errors.startDate, false)} label="Opened on" name="startDate" value={startDate} onChange={setStartDate} onBlur={() => reveal("startDate")} today={forms.today} invalid={Boolean(errors.startDate)} />
         </Field>
         <Field id="purpose" label="Purpose" required error={errors.purpose}>
-          <SelectInput id="purpose" name="purpose" invalid={Boolean(errors.purpose)} options={ACCOUNT_PURPOSES.map((p) => ({ value: p, label: optionLabel(p) }))} value={purpose} onChange={setPurpose} />
-        </Field>
-        <Field id="color" label="Colour" required error={errors.color}>
-          <SelectInput id="color" name="color" invalid={Boolean(errors.color)} options={CARD_COLORS.map((c) => ({ value: c, label: c }))} value={color} onChange={setColor} />
+          <SelectInput id="purpose" name="purpose" invalid={Boolean(errors.purpose)} options={ACCOUNT_PURPOSES.map((p) => ({ value: p, label: optionLabel(p), swatch: { background: `var(--card-${PURPOSE_COLORS[p].toLowerCase()})` } }))} value={purpose} onChange={setPurpose} placeholder="Choose purpose" />
         </Field>
         <Field id="last4" label="Last 4 digits" help="Optional. Never the full number." error={errors.last4}>
-          <TextInput {...describedBy("last4", errors.last4, true)} name="last4" inputMode="numeric" maxLength={4} value={last4} onChange={(e) => setLast4(e.target.value)} onBlur={() => reveal("last4")} invalid={Boolean(errors.last4)} placeholder="4821" />
+          <TextInput {...describedBy("last4", errors.last4, true)} name="last4" inputMode="numeric" maxLength={4} value={last4} onChange={(e) => setLast4(e.target.value)} onBlur={() => reveal("last4")} invalid={Boolean(errors.last4)} placeholder="e.g. 4821" />
         </Field>
         {!editing && (
           <Field id="balance" label="Balance today" help="Optional." error={errors.balance}>

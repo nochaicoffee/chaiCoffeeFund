@@ -5,6 +5,7 @@ import { closeAccount, deleteBalance, reopenAccount } from "@/app/accounts/actio
 import type { AccountsFormsData, HistoryRow } from "@/app/accounts/views";
 import { formatInr } from "@/lib/format/money";
 import { AlertIcon } from "../../cards/forms/icons";
+import { RenewIcon } from "../../subscriptions/icons";
 import { ConfirmDialog } from "../../subscriptions/forms/ConfirmDialog";
 import { AccountFormDialog } from "./AccountFormDialog";
 import { BalanceFormDialog } from "./BalanceFormDialog";
@@ -83,7 +84,7 @@ export function AccountFormsProvider({ forms, children }: { forms: AccountsForms
       {open?.kind === "reopen" && account && (
         <ConfirmDialog
           tone="neutral"
-          icon={<span className="text-sm font-extrabold">↺</span>}
+          icon={<RenewIcon size={16} />}
           title={`Reopen ${account.name}?`}
           body="It's an open account again and counts in your totals. Add its balance to start it up."
           hidden={{ id: account.id }}
