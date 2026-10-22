@@ -141,8 +141,15 @@ describe("carrying a balance forward (decision 1)", () => {
   });
 
   it("gives the change since a day: today's total minus what was carried on it", () => {
-    expect(changeSince(accounts, snapshots, "2026-08-31", "2026-10-21")).toBe(160_000 - 100_000);
-    expect(changeSince(accounts, snapshots, "2026-07-31", "2026-10-21")).toBe(160_000);
+    // HDFC carried 100,000 on Aug 31 and holds 120,000; Kotak opened on Sep 2 at 40,000 and still holds it.
+    expect(changeSince(accounts, snapshots, "2026-08-31", "2026-10-21")).toBe(20_000);
+  });
+
+  it("counts an account opened after the day from its first balance, not as money coming in", () => {
+    // Both were first read after Jul 31: HDFC 100,000 → 120,000 and Kotak 40,000 → 40,000.
+    expect(changeSince(accounts, snapshots, "2026-07-31", "2026-10-21")).toBe(20_000);
+    // Kotak is carried from Aug 31 at nothing, so only its first balance in the span is the baseline.
+    expect(changeSince([accounts[1]], snapshots, "2026-08-31", "2026-10-21")).toBe(0);
   });
 
   it("builds the line from carried totals, so a day only one account was read isn't undercounted", () => {

@@ -14,7 +14,7 @@ export interface Section {
 /** Every section from the PRD, in sidebar order. */
 export const SECTIONS: Section[] = [
   { href: "/", label: "Overview", icon: "overview" },
-  { href: "/accounts", label: "Accounts", icon: "accounts", comingIn: "M3 · Everyday money" },
+  { href: "/accounts", label: "Accounts", icon: "accounts" },
   { href: "/cards", label: "Cards", icon: "cards" },
   { href: "/subscriptions", label: "Subscriptions", icon: "subscriptions", comingIn: "M3 · Everyday money" },
   { href: "/income", label: "Income", icon: "income", comingIn: "M3 · Everyday money" },
