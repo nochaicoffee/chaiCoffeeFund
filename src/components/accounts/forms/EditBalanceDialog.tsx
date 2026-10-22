@@ -9,6 +9,7 @@ import { IDLE } from "@/lib/forms/formState";
 import { DateInput, Field, MoneyInput, PreviewPanel, describedBy } from "../../cards/forms/fields";
 import { FormDialog } from "../../cards/forms/FormDialog";
 import { useFieldErrors } from "../../cards/forms/useFieldErrors";
+import { EditIcon } from "../../subscriptions/icons";
 import { MiniAccountCard } from "./MiniAccountCard";
 
 /** Editing one balance from Balance history: its day and amount, or delete it. */
@@ -27,10 +28,10 @@ export function EditBalanceDialog({ row, amount, forms, onDelete, onClose }: { r
   }
   return (
     <FormDialog
-      icon={<span className="text-sm font-extrabold">✎</span>}
+      icon={<EditIcon size={16} />}
       title="Edit balance"
       subtitle={`${row.accountName} · ${row.dateText}`}
-      preview={<PreviewPanel>{account && <MiniAccountCard colorKey={account.colorKey} initial={account.initial} name={account.name} last4={account.last4 || undefined} balance={parseAmountText(balance)} closed={account.closed} />}</PreviewPanel>}
+      preview={<PreviewPanel>{account && <MiniAccountCard colorKey={account.colorKey} initial={account.initial} name={account.name} last4={account.last4 || undefined} balance={parseAmountText(balance)} corner={account.bank} closed={account.closed} />}</PreviewPanel>}
       footerNote={
         <span className="flex items-center gap-2">
           <button type="button" onClick={onDelete} className="min-h-11 font-bold text-negative hover:underline focus-visible:outline-2 focus-visible:outline-accent md:min-h-0">

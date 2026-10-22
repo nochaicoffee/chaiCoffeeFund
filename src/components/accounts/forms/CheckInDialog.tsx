@@ -9,7 +9,8 @@ import { IDLE } from "@/lib/forms/formState";
 import { DateInput, Field, MoneyInput, PreviewPanel, describedBy } from "../../cards/forms/fields";
 import { FormDialog } from "../../cards/forms/FormDialog";
 import { useFieldErrors } from "../../cards/forms/useFieldErrors";
-import { MiniAccountCard } from "./MiniAccountCard";
+import { BankIcon } from "../../subscriptions/icons";
+import { MiniAccountCard, SummaryBox } from "./MiniAccountCard";
 
 /**
  * Update balances, the monthly check-in: every open account at once for one day, the stale
@@ -33,15 +34,16 @@ export function CheckInDialog({ forms, onClose }: { forms: AccountsFormsData; on
 
   return (
     <FormDialog
-      icon={<span className="text-sm font-extrabold">₹</span>}
+      icon={<BankIcon size={16} />}
       title="Update balances"
       subtitle="The monthly check-in: type what each account holds"
       preview={
-        <PreviewPanel>
-          <MiniAccountCard colorKey="emerald" initial="∑" name="All accounts" balance={total} note={`${accounts.length} accounts`} />
+        <PreviewPanel caption="Leave an account blank to leave it as it is.">
+          <MiniAccountCard colorKey="emerald" initial="∑" name="All accounts" balance={total} corner={`${accounts.length} accounts`} />
+          <SummaryBox rows={[{ label: "Held now", value: formatInr(forms.total) }, { label: "After this", value: formatInr(total) }]} />
         </PreviewPanel>
       }
-      footerNote={<span className="max-md:hidden">Leave an account blank to leave it as it is.</span>}
+      footerNote={<span className="max-md:hidden">The ones not read lately come first.</span>}
       primaryLabel="Save balances"
       pending={pending}
       errorCount={count}

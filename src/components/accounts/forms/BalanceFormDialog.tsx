@@ -10,7 +10,8 @@ import { IDLE } from "@/lib/forms/formState";
 import { DateInput, Field, MoneyInput, PreviewPanel, SelectInput, describedBy } from "../../cards/forms/fields";
 import { FormDialog } from "../../cards/forms/FormDialog";
 import { useFieldErrors } from "../../cards/forms/useFieldErrors";
-import { MiniAccountCard } from "./MiniAccountCard";
+import { BankIcon } from "../../subscriptions/icons";
+import { MiniAccountCard, SummaryBox } from "./MiniAccountCard";
 
 /**
  * Update balance (docs/design/accounts.md "Forms"): what an account holds on a day. As you type,
@@ -42,18 +43,22 @@ export function BalanceFormDialog({ accountId, forms, onClose }: { accountId?: s
 
   return (
     <FormDialog
-      icon={<span className="text-sm font-extrabold">₹</span>}
+      icon={<BankIcon size={16} />}
       title="Update balance"
       subtitle={account ? account.name : "Record what an account holds"}
       preview={
-        <PreviewPanel>
-          {account && <MiniAccountCard colorKey={account.colorKey} initial={account.initial} name={account.name} last4={account.last4 || undefined} balance={next ?? account.balance} closed={account.closed} />}
-          <p className="text-xs font-semibold text-muted">
-            {change === null ? (last === null ? "This is its first balance." : `Now ${formatInr(last)}.`) : `${change >= 0 ? "+" : "−"}${formatInr(Math.abs(change))} from ${formatInr(last!)}. All accounts: ${formatInr(forms.total + change)}.`}
-          </p>
+        <PreviewPanel caption="A balance is saved as you type it, never worked out.">
+          {account && <MiniAccountCard colorKey={account.colorKey} initial={account.initial} name={account.name} last4={account.last4 || undefined} balance={next ?? account.balance} corner={account.bank} closed={account.closed} />}
+          <SummaryBox
+            rows={[
+              { label: "Now", value: last === null ? "No balance yet" : formatInr(last) },
+              { label: "Change", value: change === null ? "–" : `${change >= 0 ? "+" : "−"}${formatInr(Math.abs(change))}` },
+              { label: "All accounts", value: formatInr(forms.total + (change ?? (next !== null && last === null ? next : 0))) },
+            ]}
+          />
         </PreviewPanel>
       }
-      footerNote={<span className="max-md:hidden">Balances are always saved as you type them, never worked out.</span>}
+      footerNote={<span className="max-md:hidden">A day with a balance already is replaced.</span>}
       primaryLabel="Save balance"
       pending={pending}
       errorCount={count}
