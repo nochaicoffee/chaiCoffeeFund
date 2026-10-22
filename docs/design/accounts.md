@@ -78,7 +78,7 @@ The forms follow the Cards forms ([`cards-forms.md`](cards-forms.md)): a dialog 
 
 ## Open decisions
 
-Each has the default the mockups show; Prathik hasn't answered them yet.
+**Answered 2026-10-22:** Prathik accepted the default for 1–12 and 19, so the page is built to them (see the PRD's "Accounts, how the numbers are defined"). Decisions 13–18 (the round-10 widgets) were dropped with those widgets when W1-A was picked. Each has the default the mockups show.
 
 1. **Carry forward** each balance for totals and the line (shown), or something else.
 2. **Show Everything else**, the change the records don't explain (shown), or show only what's recorded.
