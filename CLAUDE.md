@@ -13,6 +13,10 @@ Common mappings:
 
 Follow the same safety principles as with git: avoid destructive/irreversible operations (e.g. `jj abandon`, force pushes) without explicit user confirmation, and never bypass hooks unless asked.
 
+# Pull Requests
+
+**Never merge a PR before running `/code-review` on it** and fixing or explicitly dismissing every finding (`docs/process.md`, "Build workflow"). Green CI is not a review. The order is: push, open the PR, CI green, `/code-review`, fix, then merge. Say in the wrap-up whether the review ran. This was skipped once (the Accounts PRs, 2026-10-22) and the later review found real bugs.
+
 # Secrets Handling
 
 This project deals with personal financial data (credit card statements, bank balances, loans, subscriptions, investments) and integrates with the Google Sheets API. **No keys, tokens, passwords, service account credentials, or other secrets may ever be written into a tracked file or enter commit history.**
