@@ -1,17 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { loadCardData } from "../loadCardData";
-import { cardsQuery, parsePage, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodYears, statementsQuery, type StatementsListState } from "../params";
+import { cardsQuery, parsePage, parsePeriod, parseSearch, parseSelectedCard, parseSort, parseStatus, periodMenu, periodMenuValue, rangePickerStart, statementsQuery, type StatementsListState } from "../params";
+import { periodLabel, periodPhrase } from "@/lib/aggregate/period";
 import { RefreshButton } from "@/components/RefreshButton";
+import { SyncStatementsButton } from "@/components/SyncStatementsButton";
+import { SyncProvider } from "@/components/sync/SyncContext";
+import { SyncReportPanel } from "@/components/sync/SyncReportPanel";
+import { AddStatementButton, EditCardButton, MarkPaidButton } from "@/components/cards/forms/FormButtons";
 import { PeriodSelect } from "@/components/cards/PeriodSelect";
 import { StatementsList } from "@/components/cards/StatementsList";
 import { StatementsSummary } from "@/components/cards/StatementsSummary";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { cardName } from "@/lib/format/labels";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
-import { pendingSummary, statementYears } from "@/lib/aggregate/cardSpend";
+import { pendingSummary } from "@/lib/aggregate/cardSpend";
 import { filterCounts, filterStatements, groupByMonth, minimumDueNow, paginate, paidSummary, periodOverview } from "@/lib/aggregate/cardStatements";
 import { formatShortDate, todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
+import { paymentContext } from "@/lib/aggregate/cardEntry";
+import { toClientCard } from "@/lib/forms/clientCard";
+import type { Statement } from "@/lib/sheets/types";
 
 export const metadata: Metadata = { title: "Statements" };
 
@@ -38,59 +47,83 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
   const list = filterStatements(data, state);
   const { items, ...pageInfo } = paginate(list, parsePage(params), PAGE_SIZE);
 
-  const periodText = period.kind === "all" ? "so far" : `in ${period.year}`;
+  // "5 in 2026 across 2 cards"; a range reads "5 in the last 6 months" or "5 from March to August 2026".
+  const periodText = period.kind === "all" ? "so far" : period.kind === "year" ? `in ${period.year}` : periodPhrase(period, today);
   const overview = periodOverview(data, period);
   // Due now is every pending bill, whatever the period, like the dashboard's pending line (PRD §8).
   const due = pendingSummary(data, today);
   const paid = paidSummary(data, period);
-  // Sample data never reaches the real forms, so it can't write to the Sheet.
-  const addStatementHref = "/cards#add-statement";
+  // Sample data never reaches the Sheet: the form buttons show disabled.
+  const disabledReason = demo ? "Sample data can't be changed" : undefined;
+  const clientCards = data.cards.map(toClientCard);
+  const clientCardsById = new Map(clientCards.map((c) => [c.id, c]));
+  const accountOptions = accounts.filter((a) => a.status === "Active").map((a) => ({ id: a.id, name: a.name }));
+  const addStatement = (variant: "primary" | "link") => (
+    <AddStatementButton cards={clientCards} statements={data.statements} today={today} initialCardId={state.cardId} disabledReason={disabledReason} variant={variant} />
+  );
+  // Mark paid on a pending row, Edit payment on a paid one (#84).
+  const paymentFor = (statement: Statement) => {
+    const card = clientCardsById.get(statement.cardId);
+    if (!card) return null;
+    // A payment saved from an account that's no longer active keeps it as a choice, so editing the payment doesn't drop it.
+    const savedAccount = accounts.find((a) => a.id === statement.paidFromAccountId && a.status !== "Active");
+    const options = savedAccount ? [...accountOptions, { id: savedAccount.id, name: savedAccount.name }] : accountOptions;
+    return <MarkPaidButton statement={statement} card={card} cards={clientCards} accounts={options} context={paymentContext(data, today, statement.id)} today={today} disabledReason={disabledReason} />;
+  };
+
+  // For the sync report, which names cards by their short name.
+  const syncCardNames = Object.fromEntries(data.cards.map((c) => [c.id, cardName(c)]));
 
   return (
     <div className="flex flex-col gap-5">
-      <PageHeader
-        section="Cards"
-        eyebrow={
-          <Link href={`/cards${cardsQuery({ period, cardId: state.cardId, demo }, today)}`} className="inline-flex min-h-11 items-center gap-1.5 hover:text-fg focus-visible:outline-2 focus-visible:outline-accent md:min-h-0">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="11 6 5 12 11 18" />
-            </svg>
-            Cards · Statements
-          </Link>
-        }
-        title="Statements"
-        actions={
-          <>
-            <PeriodSelect years={periodYears(statementYears(data, today), period)} currentYear={currentYear} value={period.kind === "all" ? "all" : String(period.year)} />
-            <RefreshButton iconOnly />
-            <Link
-              href={addStatementHref}
-              className="flex min-h-11 items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:min-h-0"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" aria-hidden="true">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
+      <SyncProvider cardNames={syncCardNames}>
+        <PageHeader
+          section="Cards"
+          eyebrow={
+            <Link href={`/cards${cardsQuery({ period, cardId: state.cardId, demo }, today)}`} className="inline-flex min-h-11 items-center gap-1.5 hover:text-fg focus-visible:outline-2 focus-visible:outline-accent md:min-h-0">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12" />
+                <polyline points="11 6 5 12 11 18" />
               </svg>
-              Add statement
+              Cards · Statements
             </Link>
-          </>
-        }
-      >
-        <p className="text-[15px] leading-relaxed font-medium text-muted">
-          Every card statement in one place —{" "}
-          {overview.count === 0 ? (
-            `none ${periodText} yet.`
-          ) : (
+          }
+          title="Statements"
+          actions={
             <>
-              {overview.count} {periodText} across {overview.cardCount} {overview.cardCount === 1 ? "card" : "cards"},{" "}
-              {overview.pending > 0 ? <span className="font-bold text-fg">{overview.pending} pending</span> : "all paid"}.
+              <PeriodSelect options={periodMenu(data, period, today, state.cardId)} value={periodMenuValue(period, today)} start={rangePickerStart(data, period, today, state.cardId)} currentMonth={today.slice(0, 7)} />
+              <RefreshButton iconOnly />
+              {/* Every card has a chip here, closed ones included, so this is how a card without a tile is edited. */}
+              {state.cardId && clientCardsById.has(state.cardId) && (
+                <EditCardButton
+                  card={clientCardsById.get(state.cardId)!}
+                  accounts={accountOptions}
+                  usedColors={data.cards.flatMap((c) => (c.color ? [c.color] : []))}
+                  disabledReason={disabledReason}
+                  tone="surface"
+                />
+              )}
+              {!demo && <SyncStatementsButton />}
+              {addStatement("primary")}
             </>
-          )}
-        </p>
-        {demo && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
-        <SkippedRowsNotice tabs={skipped} />
-      </PageHeader>
+          }
+        >
+          <p className="text-[15px] leading-relaxed font-medium text-muted">
+            Every card statement in one place —{" "}
+            {overview.count === 0 ? (
+              `none ${periodText} yet.`
+            ) : (
+              <>
+                {overview.count} {periodText} across {overview.cardCount} {overview.cardCount === 1 ? "card" : "cards"},{" "}
+                {overview.pending > 0 ? <span className="font-bold text-fg">{overview.pending} pending</span> : "all paid"}.
+              </>
+            )}
+          </p>
+          {demo && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
+          {!demo && <SyncReportPanel />}
+          <SkippedRowsNotice tabs={skipped} />
+        </PageHeader>
+      </SyncProvider>
 
       <StatementsSummary
         tiles={[
@@ -104,7 +137,14 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
           },
           { label: "Minimum due", value: formatInr(minimumDueNow(data)), caption: due.count === 0 ? "nothing pending" : "if you pay only the minimums" },
           {
-            label: period.kind === "all" ? "Paid so far" : period.year === currentYear ? "Paid this year" : `Paid in ${period.year}`,
+            label:
+              period.kind === "all"
+                ? "Paid so far"
+                : period.kind === "year"
+                  ? period.year === currentYear
+                    ? "Paid this year"
+                    : `Paid in ${period.year}`
+                  : `Paid in ${period.last ? "the " : ""}${periodLabel(period, today)}`,
             value: formatInr(paid.total),
             caption: `${paid.count} ${paid.count === 1 ? "statement" : "statements"}`,
           },
@@ -130,7 +170,8 @@ export default async function StatementsPage({ searchParams }: PageProps<"/cards
         today={today}
         periodText={periodText}
         periodTotal={overview.count}
-        addStatementHref={addStatementHref}
+        addStatement={addStatement("link")}
+        paymentFor={paymentFor}
       />
     </div>
   );

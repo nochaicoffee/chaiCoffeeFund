@@ -1,5 +1,4 @@
 import { daysBetween, inPeriod, monthOf, remainingDue, statementCounts, toAmount, usableStatements, type CardData, type MonthKey, type SpendPeriod } from "./cardSpend";
-import { statementVariance } from "./cards";
 import { optionLabel } from "../format/labels";
 import type { Card, Statement } from "../sheets/types";
 
@@ -14,15 +13,20 @@ export type StatusFilter = "all" | "pending" | "paid";
 export type SortOrder = "newest" | "oldest";
 
 /**
- * The minimum payments still owed across every pending bill: each one's minimum
- * due less anything already paid on it, never below ₹0. A payment counts towards
- * the minimum first, so paying ₹3,000 on a ₹5,000 minimum leaves ₹2,000
- * (PRD §8, decided 2026-10-17). A blank minimum counts as ₹0.
+ * What's left of a bill's minimum due: the minimum less anything already paid
+ * on it, never below ₹0. A payment counts towards the minimum first, so paying
+ * ₹3,000 on a ₹5,000 minimum leaves ₹2,000 (PRD §8, decided 2026-10-17). A
+ * blank minimum counts as ₹0.
  */
+export function minimumLeft(s: Pick<Statement, "minimumAmountDue" | "amountPaid">): number {
+  return Math.max(0, (toAmount(s.minimumAmountDue) ?? 0) - (toAmount(s.amountPaid) ?? 0));
+}
+
+/** The minimum payments still owed across every pending bill: what's left of each one's minimum. */
 export function minimumDueNow(data: CardData): number {
   return usableStatements(data)
     .filter((s) => s.status === "Pending")
-    .reduce((sum, s) => sum + Math.max(0, (toAmount(s.minimumAmountDue) ?? 0) - (s.amountPaid ?? 0)), 0);
+    .reduce((sum, s) => sum + minimumLeft(s), 0);
 }
 
 export interface PeriodOverview {
@@ -197,19 +201,32 @@ export function groupByMonth(page: Statement[], all: Statement[] = page): MonthG
 
 export type Variance = { kind: "none" } | { kind: "full" } | { kind: "over" | "under"; amount: number };
 
+/** Amount paid − total due, to the paisa: positive when overpaid, negative when short. */
+function paisaDifference(totalAmountDue: number, amountPaid: number): number {
+  return Math.round((amountPaid - totalAmountDue) * 100) / 100;
+}
+
+/**
+ * Whether a payment leaves part of the bill unpaid, to the paisa: what
+ * `paymentVariance` calls underpaid. A credit balance (a negative total) owes nothing.
+ */
+export function isShort(totalAmountDue: number, amountPaid: number): boolean {
+  return paisaDifference(totalAmountDue, amountPaid) < 0;
+}
+
 /**
  * How a paid statement's payment compares with its total due: paid in full, or
  * overpaid or underpaid by the exact difference (to the paisa). Pending ones have none.
  */
 export function paymentVariance(s: Statement): Variance {
   if (s.status !== "Paid") return { kind: "none" };
-  const difference = Math.round(statementVariance(s).variance * 100) / 100;
+  const difference = paisaDifference(s.totalAmountDue, s.amountPaid ?? 0);
   if (difference === 0) return { kind: "full" };
   return difference > 0 ? { kind: "over", amount: difference } : { kind: "under", amount: -difference };
 }
 
 /** The line under a due date: "in 7 days", "due today", "3 days overdue", or "closed" once paid. */
-export function dueLabel(s: Statement, today: string): string {
+export function dueLabel(s: Pick<Statement, "status" | "dueDate">, today: string): string {
   if (s.status === "Paid") return "closed";
   const days = daysBetween(today, s.dueDate);
   const plural = (n: number) => `${n} ${n === 1 ? "day" : "days"}`;

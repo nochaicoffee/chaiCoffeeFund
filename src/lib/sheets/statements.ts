@@ -8,7 +8,8 @@ export const createStatementSchema = z.object({
   cardId: nonEmptyString,
   statementDate: isoDate,
   dueDate: isoDate,
-  totalAmountDue: nonNegativeNumber,
+  // Negative for a credit balance, which the dashboard counts as ₹0 spend (PRD §8).
+  totalAmountDue: z.number(),
   minimumAmountDue: nonNegativeNumber,
   status: z.enum(["Pending", "Paid"]),
   amountPaid: nonNegativeNumber.optional(),
@@ -19,11 +20,8 @@ export const createStatementSchema = z.object({
 
 export const updateStatementSchema = createStatementSchema.partial();
 
-/**
- * A row as read back from the Sheet: a valid create, plus its id. The total due
- * may be negative there: a credit balance, which the dashboard counts as ₹0 spend (PRD §8).
- */
-export const statementRowSchema = createStatementSchema.extend({ id: nonEmptyString, totalAmountDue: z.number() });
+/** A row as read back from the Sheet: a valid create, plus its id. */
+export const statementRowSchema = createStatementSchema.extend({ id: nonEmptyString });
 
 export const statementsRepository = createRepository<Statement>({
   sheetName: "CardStatements",

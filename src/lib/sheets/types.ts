@@ -80,7 +80,10 @@ export interface Card {
   statementPdfPassword?: string;
   /** Comma-separated extra keywords for matching a statement email to this card, beyond name/alias. */
   emailMatchKeywords?: string;
-  /** Last 4 digits of the card number, shown on its tile ("•••• 7042"). Text, so a leading zero survives. */
+  /**
+   * Last 4 digits of the card number, shown on its tile ("•••• 7042"). Text, so a leading zero survives.
+   * Optional: the statement import fills it in from the PDF, and checks it on every statement after (#78).
+   */
   last4?: string;
   /** The card's tile colour. Optional only for rows created before it existed. */
   color?: CardColor;
@@ -103,21 +106,109 @@ export interface Statement {
   paidDate?: string;
 }
 
+// --- Statement sync (#82) ---
+
+/** What happened to one statement email: its statement was added, was already in the Sheet, or couldn't be read. */
+export const STATEMENT_EMAIL_RESULTS = ["Imported", "Duplicate", "Failed"] as const;
+export type StatementEmailResult = (typeof STATEMENT_EMAIL_RESULTS)[number];
+
+/** One statement email the Gmail sync has looked at, so the next sync knows what to skip. */
+export interface StatementEmail {
+  id: string;
+  messageId: string;
+  /** The email's date. Blank only when the email itself couldn't be read. */
+  receivedDate?: string;
+  subject?: string;
+  cardId?: string;
+  result: StatementEmailResult;
+  /** Why it failed, or anything else the import did, like filling in the card's last 4. */
+  details?: string;
+  /** The statement it added, or the one already in the Sheet. */
+  statementId?: string;
+  attempts: number;
+  /** An ISO timestamp, like every *At field. */
+  lastTriedAt: string;
+}
+
+export const SYNC_TRIGGERS = ["Manual", "Scheduled"] as const;
+export type SyncTrigger = (typeof SYNC_TRIGGERS)[number];
+
+/** Skipped: another sync was already running, so this one did nothing. */
+export const SYNC_RUN_STATUSES = ["Running", "Done", "Failed", "Skipped"] as const;
+export type SyncRunStatus = (typeof SYNC_RUN_STATUSES)[number];
+
+/** One run of the Gmail sync: how it was started and what it did. */
+export interface SyncRun {
+  id: string;
+  trigger: SyncTrigger;
+  status: SyncRunStatus;
+  startedAt: string;
+  finishedAt?: string;
+  imported?: number;
+  duplicates?: number;
+  failed?: number;
+  /** New emails left for the next sync, when this one ran out of time. */
+  remaining?: number;
+  /** Why it failed or was skipped. */
+  details?: string;
+}
+
 // --- Subscriptions ---
 
-export type SubscriptionStatus = "Active" | "Paused";
-export type SubscriptionPaymentStatus = "Pending" | "Paid";
+/** Paused and cancelled subscriptions are left out of every total. A cancelled one keeps its payments (#124). */
+export type SubscriptionStatus = "Active" | "Paused" | "Cancelled";
+/**
+ * Skipped is a renewal that didn't charge, stored as a ₹0 payment (#125). Nothing in the
+ * app writes Pending, since upcoming renewals are computed from the schedule; it stays
+ * so a row that has it still reads.
+ */
+export type SubscriptionPaymentStatus = "Pending" | "Paid" | "Skipped";
+
+/**
+ * What a subscription is for, as the Subscriptions tab's category dropdown lists
+ * it (#124). Shown without the hyphen ("Cloud storage"). Each has a colour on the
+ * Subscriptions page, so a subscription needs no colour of its own.
+ */
+export const SUBSCRIPTION_CATEGORIES = ["Streaming", "Music", "Software", "Cloud-Storage", "Fitness", "Food", "Shopping", "News", "Utilities", "Other"] as const;
+export type SubscriptionCategory = (typeof SUBSCRIPTION_CATEGORIES)[number];
+
+/**
+ * The colours a subscription can be given (Prathik, 2026-10-21): picked freely in Add and
+ * Edit, not from its category. The card palette and All's emerald, plus seven more in the
+ * same deep-gradient style. Each is a token set in globals.css (--card-<name>-from/-to and
+ * a swatch). A row from before this column has none, and shows its category's colour.
+ */
+export const SUBSCRIPTION_COLORS = ["Emerald", "Sapphire", "Ruby", "Onyx", "Violet", "Teal", "Copper", "Amber", "Rose", "Indigo", "Forest", "Plum", "Ocean", "Slate"] as const;
+export type SubscriptionColor = (typeof SUBSCRIPTION_COLORS)[number];
 
 export interface Subscription {
   id: string;
   name: string;
   alias: string;
-  category: string;
+  category: SubscriptionCategory;
   amount: number;
   billingCycle: RecurrenceCycle;
   billingAnchorDate: string;
   startDate: string;
   status: SubscriptionStatus;
+  /** The day it was cancelled. Optional: a subscription can be cancelled without a date. */
+  endDate?: string;
+  /**
+   * When it last started again after a pause or a cancellation (#128). The renewals
+   * between its last payment before then and this date weren't expected, so they're
+   * never flagged as not recorded.
+   */
+  resumedOn?: string;
+  /** Its colour, chosen in Add and Edit. */
+  color?: SubscriptionColor;
+  /**
+   * Where it's usually charged, at most one set, as on payments: a bank account, or a card.
+   * New payments start from it. A card-charged subscription is already inside that card's
+   * statement, so totals of everything you spend count it only there (monthlySpendOffCards in
+   * lib/aggregate/subscriptions.ts, used by the Overview's monthly obligations).
+   */
+  defaultPaidFromAccountId?: string;
+  defaultPaidFromCardId?: string;
 }
 
 export interface SubscriptionPayment {

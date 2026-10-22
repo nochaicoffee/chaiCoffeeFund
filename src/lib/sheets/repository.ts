@@ -13,6 +13,14 @@ export class NotFoundError extends Error {
   }
 }
 
+/** A write that would leave a row breaking its entity's `check`. Nothing was written. */
+export class InvalidRowError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "InvalidRowError";
+  }
+}
+
 export interface RepositoryConfig<T extends { id: string }> {
   sheetName: string;
   columns: (keyof T)[];
@@ -20,6 +28,13 @@ export interface RepositoryConfig<T extends { id: string }> {
   dateColumns?: (keyof T)[];
   /** What a valid row looks like, id included. Every row read is checked against it (see rowReading.ts). */
   schema: z.ZodType<T>;
+  /**
+   * A rule across fields that a whole row must keep, such as "a card or an account, not
+   * both", as a message when it's broken. A partial update can't check it from its own
+   * fields, so it runs on the row after the update is merged over the stored one (and on
+   * each new row). A broken rule writes nothing and throws InvalidRowError.
+   */
+  check?: (record: T) => string | null;
 }
 
 /** A row that failed its schema: left out of list() and get(), but still visible to readAll(). */
@@ -49,7 +64,7 @@ function toRowValues<T>(record: T, columns: (keyof T)[], dateColumns: Set<keyof 
  * a row that still fails is logged and left out instead of reaching the pages.
  */
 export function createRepository<T extends { id: string }>(config: RepositoryConfig<T>) {
-  const { sheetName, columns, schema } = config;
+  const { sheetName, columns, schema, check } = config;
   assertColumnsMatchSchema(sheetName, columns as string[], (config.dateColumns ?? []) as string[], schema);
   const expectedColumns = columnExpectations(sheetName, columns as string[], schema);
   const dateColumns = new Set(config.dateColumns ?? []);
@@ -117,8 +132,11 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
    * One read serving both "does it exist" and "which row" — avoids scanning the sheet twice.
    * Finds invalid rows too, so update() can repair one and remove() can delete one.
    */
-  async function findRow(id: string): Promise<{ rowNumber: number; values: Partial<Record<keyof T, unknown>>; record: T | null; problems: RowProblem[] } | null> {
-    const rows = await fetchRows();
+  async function findRow(id: string) {
+    return locateRow(await fetchRows(), id);
+  }
+
+  function locateRow(rows: unknown[][], id: string): { rowNumber: number; values: Partial<Record<keyof T, unknown>>; record: T | null; problems: RowProblem[] } | null {
     // String(): an id typed into the Sheet by hand can come back as a number.
     const index = rows.findIndex((row) => row[0] !== undefined && String(row[0]) === id);
     if (index === -1) return null;
@@ -135,6 +153,11 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     return found?.record ?? null;
   }
 
+  function assertValid(record: T) {
+    const problem = check?.(record);
+    if (problem) throw new InvalidRowError(problem);
+  }
+
   async function create(input: Omit<T, "id">): Promise<T> {
     const [record] = await createMany([input]);
     return record;
@@ -143,6 +166,7 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
   async function createMany(inputs: Omit<T, "id">[]): Promise<T[]> {
     if (inputs.length === 0) return [];
     const records = inputs.map((input) => ({ ...input, id: randomUUID() }) as T);
+    records.forEach(assertValid);
     const sheets = getSheetsClient();
     // USER_ENTERED so ISO dates become real dates in the Table's DATE columns;
     // every other text value is marked literal (see cellValues.ts).
@@ -163,6 +187,7 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     }
     // Starts from the cleaned cells, so an update also rewrites a number stored as text as a number.
     const updated = { ...found.values, ...patch } as T;
+    assertValid(updated);
     const sheets = getSheetsClient();
     await sheets.spreadsheets.values.update({
       spreadsheetId: getSpreadsheetId(),
@@ -171,6 +196,33 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
       requestBody: { values: [toRowValues(updated, columns, dateColumns)] },
     });
     return updated;
+  }
+
+  /**
+   * Several updates for one read and one write, where an update() each would
+   * cost two requests per row against the Sheets quota (60 a minute), like the
+   * statement sync's email log. Writes nothing if any id is missing.
+   */
+  async function updateMany(changes: { id: string; patch: Partial<Omit<T, "id">> }[]): Promise<T[]> {
+    if (changes.length === 0) return [];
+    const rows = await fetchRows();
+    const found = changes.map(({ id, patch }) => {
+      const row = locateRow(rows, id);
+      if (!row) throw new NotFoundError(`${sheetName}: no record found for id ${id}`);
+      return { rowNumber: row.rowNumber, updated: { ...row.values, ...patch } as T };
+    });
+    found.forEach(({ updated }) => assertValid(updated));
+    await getSheetsClient().spreadsheets.values.batchUpdate({
+      spreadsheetId: getSpreadsheetId(),
+      requestBody: {
+        valueInputOption: "USER_ENTERED",
+        data: found.map(({ rowNumber, updated }) => ({
+          range: `${sheetName}!A${rowNumber}:${lastCol}${rowNumber}`,
+          values: [toRowValues(updated, columns, dateColumns)],
+        })),
+      },
+    });
+    return found.map(({ updated }) => updated);
   }
 
   async function remove(id: string): Promise<void> {
@@ -198,5 +250,33 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     });
   }
 
-  return { sheetName, expectedColumns, list, readAll, get, create, createMany, update, remove };
+  /**
+   * Deletes every row whose cells match, in one read and one write, where remove() for
+   * each would cost two requests a row against the Sheets quota (60 a minute): deleting a
+   * subscription's 32 payments one by one would run out. A row that fails validation
+   * still counts, by its cleaned cells, so nothing that belongs is left behind. The rows go
+   * bottom first, so deleting one doesn't move the next. Returns how many were deleted.
+   */
+  async function removeWhere(match: (values: Partial<Record<keyof T, unknown>>) => boolean): Promise<number> {
+    const rows = await fetchRows();
+    const rowNumbers: number[] = [];
+    rows.forEach((row, index) => {
+      const result = readRow(row, columns, dateColumns, schema, kinds);
+      const values = result.kind === "valid" ? (result.record as Partial<Record<keyof T, unknown>>) : result.kind === "invalid" ? result.values : null;
+      if (values && match(values)) rowNumbers.push(index + 2);
+    });
+    if (rowNumbers.length === 0) return 0;
+    const sheetId = await resolveSheetId();
+    await getSheetsClient().spreadsheets.batchUpdate({
+      spreadsheetId: getSpreadsheetId(),
+      requestBody: {
+        requests: rowNumbers
+          .sort((a, b) => b - a)
+          .map((rowNumber) => ({ deleteDimension: { range: { sheetId, dimension: "ROWS", startIndex: rowNumber - 1, endIndex: rowNumber } } })),
+      },
+    });
+    return rowNumbers.length;
+  }
+
+  return { sheetName, expectedColumns, list, readAll, get, create, createMany, update, updateMany, remove, removeWhere };
 }

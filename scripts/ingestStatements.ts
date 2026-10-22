@@ -31,26 +31,39 @@ async function log(line: string): Promise<void> {
   });
 }
 
+/** Syncs in a row for one scheduled run; each reads what fits in its time budget (#82). */
+const MAX_ROUNDS = 10;
+
 async function main() {
-  await log(`Requesting POST ${APP_URL}/api/statements/sync`);
+  for (let round = 1; round <= MAX_ROUNDS; round++) {
+    await log(`Requesting POST ${APP_URL}/api/statements/sync`);
+    const res = await fetch(`${APP_URL}/api/statements/sync`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ trigger: "Scheduled" }),
+    });
+    const body = await res.json();
 
-  const res = await fetch(`${APP_URL}/api/statements/sync`, { method: "POST" });
-  const body = await res.json();
+    if (!res.ok) {
+      await log(`FAILED (${res.status}): ${JSON.stringify(body)}`);
+      process.exitCode = 1;
+      return;
+    }
+    if (body.status === "already-running") {
+      await log(`Another sync is running (started ${body.runningSince}), so this one did nothing.`);
+      return;
+    }
 
-  if (!res.ok) {
-    await log(`FAILED (${res.status}): ${JSON.stringify(body)}`);
-    process.exitCode = 1;
-    return;
-  }
+    const outcomes = body.outcomes as { messageId: string; subject: string; outcome: string; reason?: string }[];
+    const created = outcomes.filter((o) => o.outcome === "created").length;
+    const duplicate = outcomes.filter((o) => o.outcome === "duplicate").length;
+    const skipped = outcomes.filter((o) => o.outcome === "skipped");
 
-  const outcomes = body.outcomes as { messageId: string; subject: string; outcome: string; reason?: string }[];
-  const created = outcomes.filter((o) => o.outcome === "created").length;
-  const duplicate = outcomes.filter((o) => o.outcome === "duplicate").length;
-  const skipped = outcomes.filter((o) => o.outcome === "skipped");
-
-  await log(`Done: ${created} created, ${duplicate} duplicate, ${skipped.length} skipped.`);
-  for (const s of skipped) {
-    await log(`  skipped "${s.subject}" (message ${s.messageId}): ${s.reason}`);
+    await log(`Done: ${created} created, ${duplicate} duplicate, ${skipped.length} skipped, ${body.remaining} left to read.`);
+    for (const s of skipped) {
+      await log(`  skipped "${s.subject}" (message ${s.messageId}): ${s.reason}`);
+    }
+    if (body.remaining === 0) return;
   }
 }
 

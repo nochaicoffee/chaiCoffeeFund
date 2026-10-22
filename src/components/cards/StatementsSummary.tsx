@@ -1,30 +1,17 @@
 import type { ReactNode } from "react";
+import { RingTexture } from "../RingTexture";
 
 export interface SummaryTile {
   label: string;
-  value: string;
+  /** Usually a figure; the Renewals page adds a unit ("3 this year") or a colour. */
+  value: ReactNode;
   caption: ReactNode;
 }
 
-/** The rings in the corner of the highlighted tile, as in the design. */
-function Rings() {
-  return (
-    <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden rounded-[inherit]" aria-hidden="true">
-      <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 92% 8%, var(--feature-tile-glow), transparent 45%)" }} />
-      <svg viewBox="0 0 360 112" preserveAspectRatio="none" className="absolute inset-0 size-full">
-        <g fill="none" stroke="var(--feature-tile-rings)" strokeWidth="1">
-          {Array.from({ length: 21 }, (_, i) => (
-            <circle key={i} cx="380" cy="150" r={20 * (i + 1)} />
-          ))}
-        </g>
-      </svg>
-    </div>
-  );
-}
-
 /**
- * The four tiles at the top of the Statements page (StatementsList.dc.html):
- * the first is highlighted, the rest are plain surfaces.
+ * The four tiles at the top of the Statements page (StatementsList.dc.html), and
+ * of the Subscriptions Renewals page: the first is highlighted, the rest are
+ * plain surfaces.
  */
 export function StatementsSummary({ tiles }: { tiles: SummaryTile[] }) {
   return (
@@ -36,7 +23,18 @@ export function StatementsSummary({ tiles }: { tiles: SummaryTile[] }) {
             i === 0 ? "border-feature-tile-line bg-feature-tile" : "border-surface-line bg-surface"
           }`}
         >
-          {i === 0 && <Rings />}
+          {i === 0 && (
+            <RingTexture
+              width={360}
+              height={112}
+              dx={20}
+              dy={38}
+              first={20}
+              step={20}
+              stroke="var(--feature-tile-rings)"
+              sheen="radial-gradient(circle at 92% 8%, var(--feature-tile-glow), transparent 45%)"
+            />
+          )}
           <span className="text-xs font-semibold text-muted">{tile.label}</span>
           <span className="text-[22px] leading-tight font-extrabold tabular-nums md:text-[26px]">{tile.value}</span>
           <span className="text-[11.5px] font-semibold text-muted">{tile.caption}</span>

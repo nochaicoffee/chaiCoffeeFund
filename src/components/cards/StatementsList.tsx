@@ -1,14 +1,15 @@
 import Form from "next/form";
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { remainingDue } from "@/lib/aggregate/cardSpend";
+import { periodParam } from "@/lib/aggregate/period";
 import { dueLabel, paymentVariance, type FilterCounts, type MonthGroup, type Page, type StatusFilter } from "@/lib/aggregate/cardStatements";
 import type { StatementsListState } from "@/app/cards/params";
 import type { Account, Card, Statement } from "@/lib/sheets/types";
 import { ISO_DATE_PATTERN, formatDate, formatMonthYear } from "@/lib/format/date";
-import { optionLabel } from "@/lib/format/labels";
+import { cardName, optionLabel } from "@/lib/format/labels";
 import { formatInr, formatInrExact } from "@/lib/format/money";
 import { cardGradient, cardSwatch } from "./CardTile";
-import { MarkPaidButton } from "./MarkPaidButton";
 import { StatusPill } from "./StatusPill";
 
 /** The design's eleven columns; below `lg` each row stacks into a small two-column card instead. */
@@ -41,7 +42,9 @@ function Cell({ label, className = "", children }: { label?: string; className?:
   );
 }
 
-function VarianceValue({ statement }: { statement: Statement }) {
+function VarianceValue({ statement, partPaid }: { statement: Statement; partPaid: boolean }) {
+  // A part-paid pending bill shows what's left to pay instead (#84).
+  if (partPaid) return <span className="font-bold whitespace-nowrap text-muted">{formatInrExact(remainingDue(statement))} left</span>;
   const variance = paymentVariance(statement);
   if (variance.kind === "none") return NONE;
   if (variance.kind === "full") {
@@ -66,19 +69,19 @@ function StatementRow({
   card,
   paidFrom,
   today,
-  accounts,
-  demo,
+  action,
 }: {
   statement: Statement;
   card: Card | undefined;
   paidFrom: string | undefined;
   today: string;
-  accounts: Account[];
-  demo: boolean;
+  /** Mark paid on a pending row, Edit payment on a paid one, built by the page. */
+  action: ReactNode;
 }) {
   const paid = statement.status === "Paid";
   // A pending bill can already be part-paid; its totals elsewhere count only what's left.
-  const amountPaid = paid || (statement.amountPaid ?? 0) > 0 ? statement.amountPaid ?? 0 : undefined;
+  const partPaid = !paid && (statement.amountPaid ?? 0) > 0;
+  const amountPaid = paid || partPaid ? statement.amountPaid ?? 0 : undefined;
   const paidOn = statement.paidDate ? (ISO_DATE_PATTERN.test(statement.paidDate) ? formatDate(statement.paidDate) : statement.paidDate) : undefined;
   // On a phone, blank payment fields (all of them, on an unpaid pending row) are left out.
   const shownOnPhone = (value: unknown) => (value === undefined ? "max-lg:hidden" : "");
@@ -90,7 +93,7 @@ function StatementRow({
       <Cell className="flex items-center gap-2.5">
         <span className="h-5 w-[30px] shrink-0 rounded-[5px] shadow-[0_2px_5px_oklch(0_0_0/0.18)]" style={{ background: cardGradient(card?.color) }} aria-hidden="true" />
         <div className="min-w-0 leading-tight">
-          <div className="truncate font-bold">{card?.name ?? "Unknown card"}</div>
+          <div className="truncate font-bold">{card ? cardName(card) : "Unknown card"}</div>
           <div className="truncate text-[11px] font-semibold text-muted">
             {card && optionLabel(card.issuer)}
             {card?.last4 && ` ·· ${card.last4}`}
@@ -118,19 +121,10 @@ function StatementRow({
       <Cell label="Paid from" className={`truncate ${shownOnPhone(paidFrom)}`}>
         <span title={paidFrom}>{paidFrom ?? NONE}</span>
       </Cell>
-      <Cell label="Variance" className={paid ? "" : "max-lg:hidden"}>
-        <VarianceValue statement={statement} />
+      <Cell label="Variance" className={paid || partPaid ? "" : "max-lg:hidden"}>
+        <VarianceValue statement={statement} partPaid={partPaid} />
       </Cell>
-      <Cell className={`flex justify-end max-lg:col-span-2 ${paid ? "max-lg:hidden" : "max-lg:[&>*]:w-full"}`}>
-        {!paid && (
-          <MarkPaidButton
-            statement={statement}
-            cardName={card?.name ?? "this card"}
-            accounts={accounts}
-            disabledReason={demo ? "Sample data can't be changed" : undefined}
-          />
-        )}
-      </Cell>
+      <Cell className={`flex justify-end max-lg:col-span-2 ${paid ? "" : "max-lg:[&>*]:w-full"}`}>{action}</Cell>
     </div>
   );
 }
@@ -154,8 +148,9 @@ function PageLink({ href, label, disabled, children }: { href: string; label: st
 /**
  * The Statements page's list (StatementsList.dc.html): status and card filters
  * with counts, a search and sort, then statements grouped by month with their
- * payment details and variance, and Mark paid on pending rows. Every control is
- * a link or a GET form, so it all works before (or without) client JavaScript.
+ * payment details and variance, Mark paid on pending rows and Edit payment on
+ * paid ones. Every list control is a link or a GET form, so it all works before
+ * (or without) client JavaScript.
  */
 export function StatementsList({
   state,
@@ -168,7 +163,8 @@ export function StatementsList({
   today,
   periodText,
   periodTotal,
-  addStatementHref,
+  addStatement,
+  paymentFor,
 }: {
   state: StatementsListState;
   /** A link to this page with some choices changed, back on page 1 unless a page is given. */
@@ -183,7 +179,10 @@ export function StatementsList({
   periodText: string;
   /** Every statement in the period, before filters. */
   periodTotal: number;
-  addStatementHref: string;
+  /** The empty state's Add a statement button. */
+  addStatement: ReactNode;
+  /** Mark paid for a pending statement, Edit payment for a paid one. */
+  paymentFor: (statement: Statement) => ReactNode;
 }) {
   const status = state.status ?? "all";
   const cardsById = new Map(cards.map((c) => [c.id, c]));
@@ -193,7 +192,7 @@ export function StatementsList({
   const blanksShown = paidShown.some((s) => !s.paidDate || (!s.paidFromAccountId && !s.paidFromCardId));
   const filtered = status !== "all" || state.cardId !== undefined || Boolean(state.search);
   const paidFromName = (s: Statement) =>
-    s.paidFromAccountId ? (accountsById.get(s.paidFromAccountId)?.name ?? "Unknown account") : s.paidFromCardId ? (cardsById.get(s.paidFromCardId)?.name ?? "Unknown card") : undefined;
+    s.paidFromAccountId ? (accountsById.get(s.paidFromAccountId)?.name ?? "Unknown account") : s.paidFromCardId ? (cardsById.has(s.paidFromCardId) ? cardName(cardsById.get(s.paidFromCardId)!) : "Unknown card") : undefined;
 
   const chip = (selected: boolean, empty: boolean) =>
     `inline-flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-bold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-accent md:h-[30px] ${
@@ -234,7 +233,7 @@ export function StatementsList({
                 className={chip(state.cardId === c.id, counts.byCard[c.id] === 0)}
               >
                 <span className="size-2 rounded-[3px]" style={{ background: cardSwatch(c.color) }} aria-hidden="true" />
-                {c.name} <Count value={counts.byCard[c.id] ?? 0} />
+                {cardName(c)} <Count value={counts.byCard[c.id] ?? 0} />
               </Link>
             ))}
           </nav>
@@ -242,11 +241,7 @@ export function StatementsList({
         <div className="flex w-full items-center gap-2 md:w-auto">
           <Form action="/cards/statements" scroll={false} role="search" className="min-w-0 flex-1 md:w-60 md:flex-none">
             {state.cardId && <input type="hidden" name="card" value={state.cardId} />}
-            {state.period.kind === "all" ? (
-              <input type="hidden" name="period" value="all" />
-            ) : (
-              state.period.year !== Number(today.slice(0, 4)) && <input type="hidden" name="period" value={state.period.year} />
-            )}
+            {periodParam(state.period, today) && <input type="hidden" name="period" value={periodParam(state.period, today)} />}
             {status !== "all" && <input type="hidden" name="status" value={status} />}
             {state.sort === "oldest" && <input type="hidden" name="sort" value="oldest" />}
             {state.demo && <input type="hidden" name="demo" value="" />}
@@ -289,9 +284,7 @@ export function StatementsList({
               Clear filters
             </Link>
           ) : (
-            <Link href={addStatementHref} className="inline-flex min-h-11 items-center text-xs font-bold text-accent-text hover:underline md:min-h-0">
-              Add a statement
-            </Link>
+            addStatement
           )}
         </div>
       ) : (
@@ -321,7 +314,7 @@ export function StatementsList({
                 </div>
               </div>
               {group.statements.map((s) => (
-                <StatementRow key={s.id} statement={s} card={cardsById.get(s.cardId)} paidFrom={paidFromName(s)} today={today} accounts={accounts} demo={state.demo} />
+                <StatementRow key={s.id} statement={s} card={cardsById.get(s.cardId)} paidFrom={paidFromName(s)} today={today} action={paymentFor(s)} />
               ))}
             </div>
           ))}
@@ -337,7 +330,7 @@ export function StatementsList({
             {blanksShown && (
               <>
                 {" "}
-                <b className="text-fg">Paid on</b> and <b className="text-fg">Paid from</b> are blank where they weren&rsquo;t recorded. They fill in when you mark a statement paid.
+                <b className="text-fg">Paid on</b> and <b className="text-fg">Paid from</b> are blank where they weren&rsquo;t recorded. They fill in when you mark a statement paid, or with Edit payment.
               </>
             )}
             {paidShown.length > 0 && " Variance compares the amount paid with the total due."}

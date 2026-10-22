@@ -20,7 +20,19 @@ import { nextStatementDate } from "./cardSchedule";
 /** A calendar month as "YYYY-MM". */
 export type MonthKey = string;
 
-export type SpendPeriod = { kind: "year"; year: number } | { kind: "all" };
+/**
+ * The page's period: a calendar year, all time, or a range of whole months,
+ * first to last inclusive (#113). `last` marks the last 3, 6 or 12 months up to
+ * this month, which keep that name and link. period.ts reads, writes and names them.
+ */
+export type SpendPeriod = { kind: "year"; year: number } | { kind: "all" } | { kind: "range"; from: MonthKey; to: MonthKey; last?: 3 | 6 | 12 };
+
+/** Whether a month falls in the period. Statements belong to the month of their statement date. */
+export function periodHasMonth(period: SpendPeriod, month: MonthKey): boolean {
+  if (period.kind === "all") return true;
+  if (period.kind === "year") return month.startsWith(`${period.year}-`);
+  return month >= period.from && month <= period.to;
+}
 
 /** The cards and their statements, as read from the Sheet. */
 export interface CardData {
@@ -69,7 +81,7 @@ function spendOf(statement: Statement): number {
 }
 
 /** What's still due on a statement: total minus anything paid, never below ₹0. Blank amounts count as ₹0. */
-export function remainingDue(statement: Statement): number {
+export function remainingDue(statement: Pick<Statement, "totalAmountDue" | "amountPaid">): number {
   return Math.max(0, (toAmount(statement.totalAmountDue) ?? 0) - (toAmount(statement.amountPaid) ?? 0));
 }
 
@@ -128,6 +140,7 @@ function monthsSoFarFor(period: SpendPeriod, today: string, statements: Statemen
     const last = `${period.year}-12` < current ? `${period.year}-12` : current;
     return monthRange(`${period.year}-01`, last);
   }
+  if (period.kind === "range") return monthRange(period.from, period.to < current ? period.to : current);
   if (statements.length === 0) return [];
   const first = statements.map((s) => monthOf(s.statementDate)).reduce((a, b) => (a < b ? a : b));
   return monthRange(first, current);
@@ -135,8 +148,8 @@ function monthsSoFarFor(period: SpendPeriod, today: string, statements: Statemen
 
 /**
  * Every month so far in the period: Jan to the current month for this year, all
- * 12 for a past year, none for a future year, and from the first statement's
- * month to the current month for all time.
+ * 12 for a past year, none for a future year, from the first statement's month
+ * to the current month for all time, and a range's months up to the current one.
  */
 export function monthsSoFar(period: SpendPeriod, today: string, data: CardData, cardId?: string): MonthKey[] {
   return monthsSoFarFor(period, today, usableStatements(data, cardId));
@@ -256,7 +269,8 @@ export interface HeatCell {
   month: MonthKey;
   /** Spend that month, or null when there's nothing to show. */
   amount: number | null;
-  state: "data" | "no-data" | "upcoming";
+  /** "outside": a month in a shown year but outside the period's range, which the heatmap leaves blank (#113). */
+  state: "data" | "no-data" | "upcoming" | "outside";
   /** 0 for cells without data, otherwise 1–5 from heatLevel. */
   level: 0 | 1 | 2 | 3 | 4 | 5;
 }
@@ -266,9 +280,16 @@ export interface HeatRow {
   cells: HeatCell[];
 }
 
+/** Every calendar year from one to another, inclusive. */
+function yearsFrom(first: number, last: number): number[] {
+  return Array.from({ length: Math.max(0, last - first + 1) }, (_, i) => first + i);
+}
+
 /**
- * One row of 12 months per year: the period's year, or every year from the first
- * statement to today for all time. Shades are relative to the largest month shown.
+ * One row of 12 months per year: the period's year, every year from the first
+ * statement to today for all time, or every year a range touches, with its
+ * months outside the range left blank. Shades are relative to the largest month
+ * shown.
  */
 export function heatmapRows(data: CardData, period: SpendPeriod, today: string, cardId?: string): HeatRow[] {
   const statements = usableStatements(data, cardId);
@@ -277,17 +298,20 @@ export function heatmapRows(data: CardData, period: SpendPeriod, today: string, 
   let years: number[];
   if (period.kind === "year") {
     years = [period.year];
+  } else if (period.kind === "range") {
+    years = yearsFrom(Number(period.from.slice(0, 4)), Number(period.to.slice(0, 4)));
   } else {
     const first = monthsSoFarFor(period, today, statements)[0];
     if (!first) return [];
-    const firstYear = Number(first.slice(0, 4));
-    years = Array.from({ length: Number(current.slice(0, 4)) - firstYear + 1 }, (_, i) => firstYear + i);
+    years = yearsFrom(Number(first.slice(0, 4)), Number(current.slice(0, 4)));
   }
-  const shown = years.flatMap((y) => monthRange(`${y}-01`, `${y}-12`));
+  const outside = (month: MonthKey) => period.kind === "range" && !periodHasMonth(period, month);
+  const shown = years.flatMap((y) => monthRange(`${y}-01`, `${y}-12`)).filter((m) => !outside(m));
   const max = Math.max(0, ...shown.filter((m) => m <= current).map((m) => spend.get(m) ?? 0));
   return years.map((year) => ({
     year,
     cells: monthRange(`${year}-01`, `${year}-12`).map((month): HeatCell => {
+      if (outside(month)) return { month, amount: null, state: "outside", level: 0 };
       if (month > current) return { month, amount: null, state: "upcoming", level: 0 };
       const amount = spend.get(month);
       if (amount === undefined) return { month, amount: null, state: "no-data", level: 0 };
@@ -299,15 +323,23 @@ export function heatmapRows(data: CardData, period: SpendPeriod, today: string, 
 export interface YearTotal {
   year: number;
   total: number;
-  /** Every month so far in that year (PRD §8): 12 for a past year, Jan to now for this year. */
+  /** Every month so far in that year (PRD §8): 12 for a past year, Jan to now for this year; only the range's months for a range. */
   months: number;
   average: number;
 }
 
-/** Each heatmap row's total and monthly average, with the same rules as the rest of the page. */
-export function heatmapYearTotals(data: CardData, rows: HeatRow[], today: string, cardId?: string): YearTotal[] {
+/** The part of a year the period covers: the whole year, or just a range's months in it. */
+function yearPart(period: SpendPeriod, year: number): SpendPeriod {
+  if (period.kind !== "range") return { kind: "year", year };
+  const from = `${year}-01` > period.from ? `${year}-01` : period.from;
+  const to = `${year}-12` < period.to ? `${year}-12` : period.to;
+  return { kind: "range", from, to };
+}
+
+/** Each heatmap row's total and monthly average, over the months that row shows, with the same rules as the rest of the page. */
+export function heatmapYearTotals(data: CardData, rows: HeatRow[], period: SpendPeriod, today: string, cardId?: string): YearTotal[] {
   return rows.map(({ year }) => {
-    const summary = spendSummary(data, { kind: "year", year }, today, cardId);
+    const summary = spendSummary(data, yearPart(period, year), today, cardId);
     return { year, total: summary.total, months: summary.months.length, average: summary.average };
   });
 }
@@ -321,6 +353,41 @@ export function heatmapPeak(rows: HeatRow[]): MonthAmount | null {
     }
   }
   return peak;
+}
+
+export interface MonthDetail {
+  /** The month's spend: the same figure as its heatmap cell. */
+  total: number;
+  /** Spend per card that month, largest first. A credit balance counts as ₹0, as everywhere. */
+  byCard: { cardId: string; amount: number }[];
+  statements: number;
+  pending: number;
+  /** What's still owed on that month's pending bills. */
+  pendingAmount: number;
+}
+
+/**
+ * What the heatmap's month card shows (#104), for each month with statements:
+ * where the month's spend went by card, and whether its bills are paid. Months
+ * go by statement date, as the heatmap's cells do.
+ */
+export function heatmapMonthDetails(data: CardData, cardId?: string): Record<MonthKey, MonthDetail> {
+  const details: Record<MonthKey, MonthDetail> = {};
+  for (const statement of usableStatements(data, cardId)) {
+    const detail = (details[monthOf(statement.statementDate)] ??= { total: 0, byCard: [], statements: 0, pending: 0, pendingAmount: 0 });
+    const amount = spendOf(statement);
+    detail.total += amount;
+    const card = detail.byCard.find((c) => c.cardId === statement.cardId);
+    if (card) card.amount += amount;
+    else detail.byCard.push({ cardId: statement.cardId, amount });
+    detail.statements += 1;
+    if (statement.status === "Pending") {
+      detail.pending += 1;
+      detail.pendingAmount += remainingDue(statement);
+    }
+  }
+  for (const detail of Object.values(details)) detail.byCard.sort((a, b) => b.amount - a.amount);
+  return details;
 }
 
 export interface SeriesPoint {
@@ -356,21 +423,29 @@ export interface CardTileData {
  * The cards shown as tiles, in Sheet order: every card that isn't closed, plus
  * closed cards while they still have a bill to pay.
  */
+function toTile(card: Card, pending: DueItem[], today: string): CardTileData {
+  const own = pending.filter((d) => d.statement.cardId === card.id);
+  const outstanding = own.reduce((sum, d) => sum + d.remaining, 0);
+  return {
+    card,
+    outstanding,
+    utilization: card.creditLimit > 0 ? outstanding / card.creditLimit : null,
+    nextDue: own[0] ?? null,
+    nextStatementDate: nextStatementDate(card, today),
+  };
+}
+
+const owes = (card: Card, pending: DueItem[]) => pending.some((d) => d.statement.cardId === card.id);
+
 export function tileCards(data: CardData, today: string): CardTileData[] {
   const pending = pendingStatements(data, today);
-  return data.cards
-    .filter((card) => card.status !== "Closed" || pending.some((d) => d.statement.cardId === card.id))
-    .map((card) => {
-      const own = pending.filter((d) => d.statement.cardId === card.id);
-      const outstanding = own.reduce((sum, d) => sum + d.remaining, 0);
-      return {
-        card,
-        outstanding,
-        utilization: card.creditLimit > 0 ? outstanding / card.creditLimit : null,
-        nextDue: own[0] ?? null,
-        nextStatementDate: nextStatementDate(card, today),
-      };
-    });
+  return data.cards.filter((card) => card.status !== "Closed" || owes(card, pending)).map((card) => toTile(card, pending, today));
+}
+
+/** Closed cards with nothing left to pay: the tiles the card row folds away behind the "N closed cards" tile. */
+export function closedCardTiles(data: CardData, today: string): CardTileData[] {
+  const pending = pendingStatements(data, today);
+  return data.cards.filter((card) => card.status === "Closed" && !owes(card, pending)).map((card) => toTile(card, pending, today));
 }
 
 export interface CardDetails {
@@ -388,6 +463,8 @@ export interface CardDetails {
   total: number;
   highest: MonthAmount | null;
   lowest: MonthAmount | null;
+  /** Every month so far in the period, the same months as the average, for the chart under the figures (#117). */
+  months: MonthAmount[];
   /** Pending bills, soonest first, for the Next due bar. */
   due: DueItem[];
 }
@@ -420,13 +497,14 @@ export function cardDetails(data: CardData, period: SpendPeriod, today: string, 
     total: summary.total,
     highest: summary.highest,
     lowest: summary.lowest,
+    months: summary.months,
     due,
   };
 }
 
-/** Statements dated in the period: its year, or any year for all time. */
+/** Statements dated in the period: its year, its range's months, or any month for all time. */
 export function inPeriod(statements: Statement[], period: SpendPeriod): Statement[] {
-  return period.kind === "all" ? statements : statements.filter((s) => s.statementDate.startsWith(`${period.year}-`));
+  return period.kind === "all" ? statements : statements.filter((s) => periodHasMonth(period, monthOf(s.statementDate)));
 }
 
 /** The period's newest statements first (by statement date, then due date), for the Statements panel. */
@@ -476,9 +554,11 @@ export interface SpendRange {
   /** Highest and lowest month across every row shown; earliest wins a tie. */
   highest: MonthAmount | null;
   lowest: MonthAmount | null;
-  /** This calendar month's spend, when its year is shown and it has statements, and how it compares with its year's average. */
+  /** This calendar month's spend, when the period includes it and it has statements, and how it compares with its row's average. */
   current: MonthAmount | null;
   currentVsAverage: number | null;
+  /** Whether the period includes this calendar month, so the panel can ask "where this month sits". */
+  showsCurrentMonth: boolean;
 }
 
 /** The smallest of 1, 2 or 5 × a power of ten that's at least `x` (x > 0). */
@@ -488,17 +568,23 @@ function niceStep(x: number): number {
   return 10 * power;
 }
 
-/** "Where this month sits": each year's spread from lowest to highest month, its average, and the current month. */
+/**
+ * "Where this month sits": each year's spread from lowest to highest month, its
+ * average, and the current month. A range shows every year it touches, each
+ * over just the range's months in it.
+ */
 export function spendRange(data: CardData, period: SpendPeriod, today: string, cardId?: string): SpendRange {
   const statements = usableStatements(data, cardId);
   const spend = spendByMonth(statements);
   const years =
     period.kind === "year"
       ? [period.year]
-      : [...new Set(statements.map((s) => Number(s.statementDate.slice(0, 4))))].sort((a, b) => b - a);
+      : period.kind === "range"
+        ? yearsFrom(Number(period.from.slice(0, 4)), Number(period.to.slice(0, 4))).reverse()
+        : [...new Set(statements.map((s) => Number(s.statementDate.slice(0, 4))))].sort((a, b) => b - a);
   const current = monthOf(today);
   const rows: RangeRow[] = years.map((year) => {
-    const summary = spendSummary(data, { kind: "year", year }, today, cardId);
+    const summary = spendSummary(data, yearPart(period, year), today, cardId);
     const months = summary.months.filter((m) => spend.has(m.month));
     return { year, months, highest: summary.highest, lowest: summary.lowest, average: summary.average };
   });
@@ -519,7 +605,8 @@ export function spendRange(data: CardData, period: SpendPeriod, today: string, c
   for (let t = scaleMin; t <= scaleMax + step / 2; t += step) ticks.push(t);
 
   const shownMonths = rows.flatMap((r) => r.months);
-  const currentRow = rows.find((r) => r.year === Number(current.slice(0, 4)));
+  const showsCurrentMonth = periodHasMonth(period, current);
+  const currentRow = showsCurrentMonth ? rows.find((r) => r.year === Number(current.slice(0, 4))) : undefined;
   const currentAmount = currentRow ? spend.get(current) : undefined;
   return {
     rows,
@@ -530,5 +617,6 @@ export function spendRange(data: CardData, period: SpendPeriod, today: string, c
     lowest: shownMonths.reduce<MonthAmount | null>((b, m) => (b === null || m.amount < b.amount ? m : b), null),
     current: currentAmount === undefined ? null : { month: current, amount: currentAmount },
     currentVsAverage: currentAmount === undefined || !currentRow ? null : percentChange(currentAmount, currentRow.average),
+    showsCurrentMonth,
   };
 }

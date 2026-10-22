@@ -1,5 +1,5 @@
 import { cleanAmount } from "./normalize";
-import type { ParsedStatementDetails } from "./types";
+import type { KnownBank, ParsedStatementDetails } from "./types";
 
 /** Returns the first regex in `patterns` that matches `text`, or null. */
 function firstMatch(text: string, patterns: RegExp[]): RegExpMatchArray | null {
@@ -29,13 +29,15 @@ export function parseHdfc(text: string): ParsedStatementDetails {
     details.minimumAmountDue = cleanAmount(tabular[3]);
   }
 
+  // The "C" is HDFC's rupee glyph. pdf.js reads it as a text piece of its own,
+  // so the extracted text has a space after it: "TOTAL AMOUNT DUE  C 5,000.00" (#56).
   if (!details.totalAmountDue) {
-    const total = text.match(/TOTAL AMOUNT DUE\s*\n?\s*[C₹]?(-?[\d,]+\.?\d*)/i);
+    const total = text.match(/TOTAL AMOUNT DUE\s*[C₹]?\s*(-?[\d,]+\.?\d*)/i);
     if (total) details.totalAmountDue = cleanAmount(total[1]);
   }
 
   if (!details.minimumAmountDue) {
-    const min = text.match(/MINIMUM DUE\s*\n?\s*[C₹]?(-?[\d,]+\.?\d*)/i);
+    const min = text.match(/MINIMUM DUE\s*[C₹]?\s*(-?[\d,]+\.?\d*)/i);
     if (min) details.minimumAmountDue = cleanAmount(min[1]);
   }
 
@@ -44,7 +46,7 @@ export function parseHdfc(text: string): ParsedStatementDetails {
     if (due) {
       details.dueDate = due[1];
     } else if (text.match(/DUE DATE\s*\n?\s*(Nil|N\/A|NA|-)/i)) {
-      details.dueDate = "N/A (Credit Balance)";
+      details.noDueDate = "nothing owed";
     }
   }
 
@@ -67,7 +69,8 @@ export function parseHdfc(text: string): ParsedStatementDetails {
     if (match) details.minimumAmountDue = cleanAmount(match[1]);
   }
 
-  if (!details.dueDate) {
+  // Not when the PDF says there's no due date: these would find a date elsewhere.
+  if (!details.dueDate && !details.noDueDate) {
     const match = firstMatch(text, [
       /Payment Due Date[:\s]*(\d{2}[/-]\d{2}[/-]\d{2,4})/i,
       /Due Date[:\s]*(\d{2}[/-]\d{2}[/-]\d{2,4})/i,
@@ -98,8 +101,11 @@ export function parseHdfc(text: string): ParsedStatementDetails {
 export function parseIcici(text: string): ParsedStatementDetails {
   const details: ParsedStatementDetails = { bank: "icici" };
 
-  // ICICI uses a special "Á" glyph for rupee amounts: first is Minimum, second is Total.
-  const iciciAmounts = [...text.matchAll(/Á([\d,]+\.?\d*)/g)].map((m) => m[1]);
+  // ICICI prints rupee amounts with a special glyph: the first is the Minimum, the second the Total.
+  // The reference parser's text extraction read it as "Á"; pdf.js reads it as a backtick, mostly
+  // followed by a space ("` 170.00  ` 3,250.81"). Without this, the amounts came from the generic
+  // fallback instead, which found a worked example of the minimum due on a later page (#56).
+  const iciciAmounts = [...text.matchAll(/(?:Á|`\s*)(\d[\d,]*\.?\d*)/g)].map((m) => m[1]);
   if (iciciAmounts.length >= 2) {
     details.minimumAmountDue = cleanAmount(iciciAmounts[0]);
     details.totalAmountDue = cleanAmount(iciciAmounts[1]);
@@ -150,23 +156,43 @@ export function parseIcici(text: string): ParsedStatementDetails {
 export function parseAxis(text: string): ParsedStatementDetails {
   const details: ParsedStatementDetails = { bank: "axis" };
 
-  const tabularDates = text.match(
-    /(\d{2}[/-]\d{2}[/-]\d{4})\s*-\s*(\d{2}[/-]\d{2}[/-]\d{4})\s+(\d{2}[/-]\d{2}[/-]\d{4})\s+(\d{2}[/-]\d{2}[/-]\d{4})/,
+  // The payment summary as pdf.js extracts it: statement period, due date and
+  // generation date, then "<total> Dr <minimum> Dr" (#56).
+  const summary = text.match(
+    /(\d{2}[/-]\d{2}[/-]\d{4})\s*-\s*(\d{2}[/-]\d{2}[/-]\d{4})\s+(\d{2}[/-]\d{2}[/-]\d{4})\s+(\d{2}[/-]\d{2}[/-]\d{4})\s+([\d,]+\.\d{2})\s*Dr\s+([\d,]+\.\d{2})\s*Dr/,
   );
-  if (tabularDates) {
-    details.dueDate = tabularDates[3];
-    details.statementDate = tabularDates[4];
+  if (summary) {
+    details.dueDate = summary[3];
+    details.statementDate = summary[4];
+    details.totalAmountDue = cleanAmount(summary[5]);
+    details.minimumAmountDue = cleanAmount(summary[6]);
   }
 
-  const totalLine = text.match(/=\s*Total Payment Due\s*\n\s*.*?([\d,]+\.?\d*)\s*Dr\s*$/m);
-  if (totalLine) details.totalAmountDue = cleanAmount(totalLine[1]);
+  if (!summary) {
+    const tabularDates = text.match(
+      /(\d{2}[/-]\d{2}[/-]\d{4})\s*-\s*(\d{2}[/-]\d{2}[/-]\d{4})\s+(\d{2}[/-]\d{2}[/-]\d{4})\s+(\d{2}[/-]\d{2}[/-]\d{4})/,
+    );
+    if (tabularDates) {
+      details.dueDate = tabularDates[3];
+      details.statementDate = tabularDates[4];
+    }
+  }
 
-  const min = text.match(/Dr\s+([\d,]+\.?\d*)\s*Dr/);
-  if (min) details.minimumAmountDue = cleanAmount(min[1]);
+  if (!details.totalAmountDue) {
+    const totalLine = text.match(/=\s*Total Payment Due\s*\n\s*.*?([\d,]+\.?\d*)\s*Dr\s*$/m);
+    if (totalLine) details.totalAmountDue = cleanAmount(totalLine[1]);
+  }
+
+  if (!details.minimumAmountDue) {
+    const min = text.match(/Dr\s+([\d,]+\.?\d*)\s*Dr/);
+    if (min) details.minimumAmountDue = cleanAmount(min[1]);
+  }
 
   if (!details.totalAmountDue) {
     const match = firstMatch(text, [
-      /Total Payment Due[:\s]*([\d,]+\.?\d*)/i,
+      // Not "...+ Other Debit&Charges =Total Payment Due": the account summary's
+      // equation, where the number that follows is the previous balance (#56).
+      /(?<!=\s*)Total Payment Due[:\s]*([\d,]+\.?\d*)/i,
       /Total Amount Due[:\s]*(?:Rs\.?\s*)?([\d,]+\.?\d*)/i,
       /Current Balance[:\s]*(?:Rs\.?\s*)?([\d,]+\.?\d*)/i,
     ]);
@@ -312,8 +338,12 @@ export function parseCsb(text: string): ParsedStatementDetails {
   if (amounts.length >= 1) details.totalAmountDue = cleanAmount(amounts[0]);
   if (amounts.length >= 2) details.minimumAmountDue = cleanAmount(amounts[1]);
 
-  const due = text.match(/Rs\.?\s*[\d,]+\.?\d*\s+(\d{1,2}\s+\w+\s+\d{4})/);
-  if (due) details.dueDate = due[1];
+  // The due date is printed straight after the total, so it's only read from
+  // there. A bill due at once says "Immediate" instead, and a closed card's last
+  // bill has none: searching on found the statement period's start date (#56).
+  const due = text.match(/Rs\.?\s*[\d,]+\.?\d*\s+(?:(\d{1,2}\s+[A-Za-z]+\s+\d{4})|(Immediate)\b)?/);
+  if (due?.[1]) details.dueDate = due[1];
+  else if (due?.[2]) details.noDueDate = "due immediately";
 
   const stmt = text.match(/Rs\.?\s*[\d,]+\.?\d*\s+(\d{2}[/-]\d{2}[/-]\d{4})/);
   if (stmt) details.statementDate = stmt[1];
@@ -360,7 +390,7 @@ export function parseGeneric(text: string): ParsedStatementDetails {
   return details;
 }
 
-export const BANK_PARSERS: Record<Exclude<import("./types").Bank, "unknown">, (text: string) => ParsedStatementDetails> = {
+export const BANK_PARSERS: Record<KnownBank, (text: string) => ParsedStatementDetails> = {
   hdfc: parseHdfc,
   icici: parseIcici,
   axis: parseAxis,

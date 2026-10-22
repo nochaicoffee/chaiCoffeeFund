@@ -1,13 +1,22 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import type { RangeRow, SpendRange, StatementCounts } from "@/lib/aggregate/cardSpend";
 import { daysBetween } from "@/lib/aggregate/cardSpend";
 import type { Card, Statement } from "@/lib/sheets/types";
 import { formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
+import { cardName } from "@/lib/format/labels";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
+import { RingTexture } from "../RingTexture";
 import { cardSwatch } from "./CardTile";
+import { QuickPayProvider, QuickPayStatus } from "./QuickPay";
 import { StatusPill } from "./StatusPill";
 import type { PanelView } from "@/app/cards/params";
 
+
+/** One-click Mark paid (#103) needs its provider, for the toast with Undo; the sample data can't be changed, so it goes without. */
+function MaybeQuickPay({ on, children }: { on?: boolean; children: ReactNode }) {
+  return on ? <QuickPayProvider>{children}</QuickPayProvider> : <>{children}</>;
+}
 
 /** How many years the range view shows before folding the rest away. */
 const VISIBLE_YEARS = 3;
@@ -42,74 +51,92 @@ function StatementsView({
   today,
   counts,
   viewAllHref,
+  addStatement,
+  quickPay,
 }: {
   statements: Statement[];
   cardsById: Map<string, Card>;
   today: string;
   counts: StatementCounts;
   viewAllHref?: string;
+  addStatement?: ReactNode;
+  quickPay?: boolean;
 }) {
   if (statements.length === 0) {
-    return <p className="flex flex-1 items-center justify-center py-8 text-sm text-muted">No statements yet.</p>;
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-1 py-8 text-sm text-muted">
+        <p>No statements yet.</p>
+        {addStatement}
+      </div>
+    );
   }
   return (
     <>
       <div className="-mx-[22px] overflow-x-auto px-[22px]">
-        <table className="w-full min-w-[440px] text-left text-[13px]">
-          <thead>
-            <tr className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase">
-              <th className="py-2 pr-3 font-bold">Card</th>
-              <th className="py-2 pr-3 font-bold">Statement</th>
-              <th className="py-2 pr-3 font-bold">Due</th>
-              <th className="py-2 pr-3 text-right font-bold">Total due</th>
-              <th className="py-2 text-right font-bold">Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {statements.map((s) => {
-              const card = cardsById.get(s.cardId);
-              const days = daysBetween(today, s.dueDate);
-              return (
-                <tr key={s.id} className="h-11 border-t border-divider">
-                  <td className="pr-3 font-bold">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="size-[9px] shrink-0 rounded-[3px]" style={{ background: cardSwatch(card?.color) }} aria-hidden="true" />
-                      {card?.name ?? "Unknown card"}
-                    </span>
-                  </td>
-                  <td className="pr-3 text-muted tabular-nums">{formatShortDate(s.statementDate)}</td>
-                  <td className="pr-3 whitespace-nowrap tabular-nums">
-                    {formatShortDate(s.dueDate)}
-                    {s.status === "Pending" && (
-                      <span className={`text-[11px] font-semibold ${days < 0 ? "text-negative" : "text-muted"}`}>
-                        {" "}
-                        · {days < 0 ? `${-days}d overdue` : days === 0 ? "today" : `in ${days}d`}
+        <MaybeQuickPay on={quickPay}>
+          <table className="w-full min-w-[440px] text-left text-[13px]">
+            <thead>
+              <tr className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase">
+                <th className="py-2 pr-3 font-bold">Card</th>
+                <th className="py-2 pr-3 font-bold">Statement</th>
+                <th className="py-2 pr-3 font-bold">Due</th>
+                <th className="py-2 pr-3 text-right font-bold">Total due</th>
+                <th className="py-2 text-right font-bold">Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {statements.map((s) => {
+                const card = cardsById.get(s.cardId);
+                const days = daysBetween(today, s.dueDate);
+                return (
+                  <tr key={s.id} className="group/row h-11 border-t border-divider">
+                    <td className="pr-3 font-bold">
+                      <span className="inline-flex items-center gap-2">
+                        <span className="size-[9px] shrink-0 rounded-[3px]" style={{ background: cardSwatch(card?.color) }} aria-hidden="true" />
+                        {card ? cardName(card) : "Unknown card"}
                       </span>
-                    )}
-                  </td>
-                  <td className="pr-3 text-right font-bold tabular-nums">{formatInr(s.totalAmountDue)}</td>
-                  <td className="text-right">
-                    <StatusPill status={s.status} />
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                    </td>
+                    <td className="pr-3 text-muted tabular-nums">{formatShortDate(s.statementDate)}</td>
+                    <td className="pr-3 whitespace-nowrap tabular-nums">
+                      {formatShortDate(s.dueDate)}
+                      {s.status === "Pending" && (
+                        <span className={`text-[11px] font-semibold ${days < 0 ? "text-negative" : "text-muted"}`}>
+                          {" "}
+                          · {days < 0 ? `${-days}d overdue` : days === 0 ? "today" : `in ${days}d`}
+                        </span>
+                      )}
+                    </td>
+                    <td className="pr-3 text-right font-bold tabular-nums">{formatInr(s.totalAmountDue)}</td>
+                    <td className="text-right">
+                      {quickPay ? (
+                        <QuickPayStatus id={s.id} status={s.status} what={`${card ? cardName(card) : "This card"}'s ${formatShortDate(s.statementDate)} bill`} />
+                      ) : (
+                        <StatusPill status={s.status} />
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </MaybeQuickPay>
       </div>
       <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3">
         <span className="text-[11px] font-semibold text-muted">
           Showing the {statements.length} most recent
           {counts.closed > 0 && ` · ${counts.inFull} of ${counts.closed} closed ${counts.closed === 1 ? "statement" : "statements"} paid in full`}
         </span>
-        {viewAllHref && (
-          <Link href={viewAllHref} className="inline-flex min-h-11 items-center gap-1 text-xs font-bold text-accent-text hover:underline md:min-h-0">
-            View all statements
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <polyline points="9 18 15 12 9 6" />
-            </svg>
-          </Link>
-        )}
+        <span className="flex items-center gap-4">
+          {addStatement}
+          {viewAllHref && (
+            <Link href={viewAllHref} className="inline-flex min-h-11 items-center gap-1 text-xs font-bold text-accent-text hover:underline md:min-h-0">
+              View all statements
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6" />
+              </svg>
+            </Link>
+          )}
+        </span>
       </div>
     </>
   );
@@ -126,13 +153,25 @@ function RangeRowView({ row, range, singleYear }: { row: RangeRow; range: SpendR
         <div className="absolute inset-x-0 top-1/2 h-0.5 -translate-y-1/2 bg-fill" />
         {row.lowest && row.highest && (
           <div
-            className="absolute top-1/2 h-6 -translate-y-1/2 rounded-full"
+            className="absolute top-1/2 isolate h-6 -translate-y-1/2 rounded-full"
             style={{
               left: `calc(${at(row.lowest.amount)} - 8px)`,
               width: `calc(${at(row.highest.amount)} - ${at(row.lowest.amount)} + 16px)`,
               background: "linear-gradient(90deg, var(--heat-2), var(--heat-4))",
             }}
-          />
+          >
+            <RingTexture
+              width={420}
+              height={24}
+              dx={-20}
+              dy={36}
+              first={9}
+              step={9}
+              stroke="var(--rings-ink)"
+              opacity={0.12}
+              sheen="radial-gradient(circle at 90% 6%, var(--range-glow), transparent 55%)"
+            />
+          </div>
         )}
         {row.months.length > 0 && (
           <div className="absolute top-1/2 h-8 w-0.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-fg opacity-50" style={{ left: at(row.average) }} />
@@ -256,6 +295,9 @@ export function StatementsPanel({
   periodLabel,
   range,
   viewAllHref,
+  addStatement,
+  quickPay,
+  averageLabel = "year avg",
 }: {
   view: PanelView;
   hrefFor: (v: PanelView) => string;
@@ -266,10 +308,16 @@ export function StatementsPanel({
   periodLabel: string;
   range: SpendRange;
   viewAllHref?: string;
+  /** The Add statement link, which lives here on the Cards page rather than in its header. */
+  addStatement?: ReactNode;
+  /** One-click Mark paid on pending rows (#103). Off for the sample data. */
+  quickPay?: boolean;
+  /** What the Spend range's marker is: each year's average, or for a range of months the average of its months in that year. */
+  averageLabel?: string;
 }) {
   const monthName = formatMonthYear(today.slice(0, 7)).split(" ")[0];
-  // Only promise "where this month sits" when this month's year is actually shown.
-  const showsCurrentYear = range.rows.some((r) => r.year === Number(today.slice(0, 4)));
+  // Only promise "where this month sits" when the period includes this month.
+  const showsCurrentMonth = range.showsCurrentMonth;
   return (
     <section aria-labelledby="panel-heading" className="flex min-h-full flex-col gap-3 rounded-[24px] border border-surface-line bg-surface p-[22px] shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
@@ -284,9 +332,9 @@ export function StatementsPanel({
             </>
           ) : (
             <>
-              {showsCurrentYear ? `Where ${monthName} sits` : `Spend range in ${periodLabel}`}{" "}
+              {showsCurrentMonth ? `Where ${monthName} sits` : `Spend range in ${periodLabel}`}{" "}
               <span className="text-xs font-semibold text-muted">
-                · <span className="inline-block h-3 w-0.5 bg-fg align-middle opacity-50" aria-hidden="true" /> year avg
+                · <span className="inline-block h-3 w-0.5 bg-fg align-middle opacity-50" aria-hidden="true" /> {averageLabel}
               </span>
             </>
           )}
@@ -294,7 +342,7 @@ export function StatementsPanel({
         <Segmented view={view} hrefFor={hrefFor} />
       </div>
       {view === "statements" ? (
-        <StatementsView statements={statements} cardsById={cardsById} today={today} counts={counts} viewAllHref={viewAllHref} />
+        <StatementsView statements={statements} cardsById={cardsById} today={today} counts={counts} viewAllHref={viewAllHref} addStatement={addStatement} quickPay={quickPay} />
       ) : (
         <RangeView range={range} monthName={monthName} />
       )}

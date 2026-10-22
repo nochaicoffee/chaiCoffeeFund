@@ -37,6 +37,9 @@
   /* Semantic states: good / attention / bad. Separate from the accent. */
   --positive: oklch(0.42 0.14 145);
   --warning: oklch(0.72 0.14 75);
+  /* A softer attention state: a renewal not recorded, a pending payment (the Subscriptions design). */
+  --warning-tint: oklch(0.95 0.05 85);
+  --warning-text: oklch(0.47 0.1 70);
   --negative: oklch(0.55 0.16 25);
   --negative-tint: oklch(0.95 0.035 40);
 
@@ -45,6 +48,21 @@
   --feature-tile-line: oklch(0.62 0.15 150 / 0.24);
   --feature-tile-glow: oklch(1 0 0 / 0.55);
   --feature-tile-rings: oklch(0.45 0.11 152 / 0.1);
+
+  /*
+   * The texture on chart marks (RingTexture): faint rings, ink on light marks
+   * and light on dark ones, each drawn at its mark's opacity from the design,
+   * and a white sheen in the top-right corner of some.
+   */
+  --rings-ink: oklch(0.42 0.1 152);
+  --rings-light: oklch(1 0 0);
+  --bar-glow: oklch(1 0 0 / 0.26);
+  --range-glow: oklch(1 0 0 / 0.55);
+  --due-glow: oklch(1 0 0 / 0.3);
+
+  /* Statement trend: the stripes on a month with no statements, and the peak bar's shadow. */
+  --trend-no-data: oklch(0 0 0 / 0.1);
+  --trend-peak-shadow: oklch(0.3 0.09 155 / 0.26);
 
   /* Spend heatmap, low to high. */
   --heat-1: oklch(0.95 0.03 150);
@@ -57,7 +75,6 @@
   --heat-no-data: oklch(0 0 0 / 0.04);
   --heat-upcoming: oklch(0 0 0 / 0.13);
   --heat-glow: oklch(1 0 0 / 0.26);
-  --heat-peak-shadow: 0 8px 18px oklch(0.3 0.09 155 / 0.28);
 
   /*
    * Card colours. Each is a 155° gradient (from, to) for the tile, plus a
@@ -87,6 +104,29 @@
   --card-copper: oklch(0.6 0.12 50);
   --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
 
+  /* More colours a subscription can be given (SUBSCRIPTION_COLORS), in the card palette's style. */
+  --card-amber-from: oklch(0.37 0.09 72);
+  --card-amber-to: oklch(0.18 0.05 66);
+  --card-amber: oklch(0.67 0.13 72);
+  --card-rose-from: oklch(0.33 0.11 355);
+  --card-rose-to: oklch(0.16 0.07 355);
+  --card-rose: oklch(0.62 0.15 355);
+  --card-indigo-from: oklch(0.3 0.12 278);
+  --card-indigo-to: oklch(0.15 0.07 278);
+  --card-indigo: oklch(0.52 0.16 278);
+  --card-forest-from: oklch(0.33 0.08 138);
+  --card-forest-to: oklch(0.16 0.05 145);
+  --card-forest: oklch(0.6 0.12 138);
+  --card-plum-from: oklch(0.31 0.1 330);
+  --card-plum-to: oklch(0.15 0.06 330);
+  --card-plum: oklch(0.56 0.14 330);
+  --card-ocean-from: oklch(0.33 0.08 228);
+  --card-ocean-to: oklch(0.16 0.05 232);
+  --card-ocean: oklch(0.58 0.11 228);
+  --card-slate-from: oklch(0.33 0.02 250);
+  --card-slate-to: oklch(0.16 0.015 250);
+  --card-slate: oklch(0.6 0.03 250);
+
   /* Text, marks and edges on the card tiles, which are dark in both themes. */
   --on-card: oklch(0.95 0.004 260);
   --on-card-muted: oklch(1 0 0 / 0.6);
@@ -100,6 +140,21 @@
   --card-chip-deep: oklch(0.55 0.1 80);
   --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
   --tile-shadow-selected: 0 10px 26px oklch(0.3 0.09 155 / 0.35), 0 0 0 4px oklch(1 0 0 / 0.08), 0 0 18px oklch(1 0 0 / 0.2);
+
+  /* Motion on the card tiles (#102): the light that follows the pointer, the chip's glint, and a bill due soon. */
+  --tile-glare: oklch(1 0 0 / 0.32);
+  --chip-glint: oklch(1 0 0 / 0.75);
+  --due-pulse-ring: oklch(0.82 0.12 40 / 0.2);
+  --due-pulse-fill: oklch(0.7 0.14 35 / 0.55);
+
+  /* The hover cards on the heatmap and trend (#104, #105), which float over the chart. */
+  --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+
+  /* The details card's interactions (#117): the free part of the limit, lit while Available is pointed at, and the limit bar's readout. */
+  --limit-free: oklch(0.88 0.17 138 / 0.18);
+  --limit-free-edge: oklch(0.88 0.17 138 / 0.75);
+  --limit-free-glow: oklch(0.88 0.17 138 / 0.35);
+  --readout-shadow: 0 4px 12px oklch(0 0 0 / 0.25);
 }
 
 @theme inline {
@@ -119,6 +174,8 @@
   --color-on-ink: var(--on-ink);
   --color-positive: var(--positive);
   --color-warning: var(--warning);
+  --color-warning-tint: var(--warning-tint);
+  --color-warning-text: var(--warning-text);
   --color-negative: var(--negative);
   --color-negative-tint: var(--negative-tint);
   --color-feature-tile: var(--feature-tile);
@@ -128,6 +185,7 @@
   --color-on-card-faint: var(--on-card-faint);
   --color-on-card-fill: var(--on-card-fill);
   --color-on-card-line: var(--on-card-line);
+  --color-on-card-line-top: var(--on-card-line-top);
   --color-on-card-lime: var(--on-card-lime);
   --color-heat-1: var(--heat-1);
   --color-heat-2: var(--heat-2);
@@ -146,12 +204,130 @@
   --shadow-soft: var(--soft-shadow);
   --shadow-tile: var(--tile-shadow);
   --shadow-tile-selected: var(--tile-shadow-selected);
-  --shadow-heat-peak: var(--heat-peak-shadow);
+  --shadow-pop: var(--pop-shadow);
 }
 
 @theme {
   --radius-card: 22px;
   --radius-control: 13px;
+
+  /* Motion on the Cards page (#102). Each is used behind motion-safe:, so none of it runs for reduced motion. */
+  --animate-due-pulse: due-pulse 2.2s ease-in-out infinite;
+  --animate-bar-fill: bar-fill 900ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-glint: glint 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-fade-out: fade-out 600ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pop: pop 420ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-toast-in: toast-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-toast-drain: toast-drain 6s linear forwards;
+  --animate-draw: draw 500ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-bar-grow: bar-grow 420ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-pop-in: pop-in 150ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-days-next: days-next 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-days-prev: days-prev 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  --animate-tile-in: tile-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1) 260ms both;
+  --animate-breathe: breathe 2.6s ease-in-out infinite;
+  --animate-breathe-fast: breathe 1.5s ease-in-out infinite;
+
+  /* A subscription's cover renewing within 3 days (#148, 4A): a soft ring in its own colour (--cover-soft) swells and fades. */
+  @keyframes breathe {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+    50% {
+      box-shadow: 0 0 0 7px color-mix(in oklch, var(--cover-soft) 50%, transparent);
+    }
+  }
+  @keyframes due-pulse {
+    0%,
+    100% {
+      box-shadow: 0 0 0 0 transparent;
+    }
+    50% {
+      box-shadow: 0 0 0 5px var(--due-pulse-ring);
+      background-color: var(--due-pulse-fill);
+    }
+  }
+  /* From empty to the width the bar already has. */
+  @keyframes bar-fill {
+    from {
+      width: 0;
+    }
+  }
+  @keyframes glint {
+    from {
+      left: -60%;
+    }
+    to {
+      left: 130%;
+    }
+  }
+  /* A category's name and total on the cost map (1A), once its blocks have moved into its tile. */
+  @keyframes tile-in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+  /* A pill that's just changed (#103) springs in. */
+  @keyframes pop {
+    from {
+      transform: scale(0.6);
+      opacity: 0;
+    }
+  }
+  @keyframes toast-in {
+    from {
+      transform: translateY(140%);
+      opacity: 0;
+    }
+  }
+  /* How long Undo has left. */
+  @keyframes toast-drain {
+    to {
+      transform: scaleX(0);
+    }
+  }
+  /* A line that draws itself, as the trend's compare bracket (#105). Used with pathLength 1 and a dash of 1. */
+  /* The details card's month chart (#117): each bar grows up from the baseline. */
+  @keyframes bar-grow {
+    from {
+      transform: scaleY(0);
+    }
+  }
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  /* A dropdown's menu or panel opening (Select.tsx): a short fade and lift, rising instead when it opens above its control. */
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: translateY(var(--pop-from, -4px)) scale(0.98);
+    }
+  }
+  /* The date picker's days (DatePicker.tsx) slide in from the side of the month they follow. */
+  @keyframes days-next {
+    from {
+      opacity: 0.35;
+      transform: translateX(10px);
+    }
+  }
+  @keyframes days-prev {
+    from {
+      opacity: 0.35;
+      transform: translateX(-10px);
+    }
+  }
 }
 
 body {

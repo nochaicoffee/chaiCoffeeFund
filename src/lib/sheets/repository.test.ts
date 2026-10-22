@@ -6,7 +6,11 @@ import { isoDate, nonEmptyString } from "./validation";
 const sheet = vi.hoisted(() => ({
   rows: {} as Record<string, unknown[][]>,
   updates: [] as { range: string; values: unknown[][] }[],
+  /** Each values.batchUpdate call, as the updates it carried. */
+  batches: [] as { range: string; values: unknown[][] }[][],
   deletes: [] as { startIndex: number; endIndex: number }[],
+  /** How many spreadsheets.batchUpdate calls the deletes came in. */
+  deleteCalls: 0,
 }));
 
 vi.mock("./client", () => ({
@@ -20,8 +24,13 @@ vi.mock("./client", () => ({
           sheet.updates.push({ range, values: requestBody.values });
           return { data: {} };
         },
+        batchUpdate: async ({ requestBody }: { requestBody: { data: { range: string; values: unknown[][] }[] } }) => {
+          sheet.batches.push(requestBody.data);
+          return { data: {} };
+        },
       },
       batchUpdate: async ({ requestBody }: { requestBody: { requests: { deleteDimension: { range: { startIndex: number; endIndex: number } } }[] } }) => {
+        sheet.deleteCalls += 1;
         for (const r of requestBody.requests) sheet.deletes.push({ startIndex: r.deleteDimension.range.startIndex, endIndex: r.deleteDimension.range.endIndex });
         return { data: {} };
       },
@@ -51,7 +60,9 @@ const AUG_5 = 46239;
 let warn: ReturnType<typeof vi.spyOn>;
 beforeEach(() => {
   sheet.updates = [];
+  sheet.batches = [];
   sheet.deletes = [];
+  sheet.deleteCalls = 0;
   warn = vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 afterEach(() => vi.restoreAllMocks());
@@ -118,6 +129,92 @@ describe("writing to an invalid row", () => {
     await things.update("b", { amount: 5 });
     await things.remove("b");
     expect(warn).not.toHaveBeenCalled();
+  });
+});
+
+describe("updateMany", () => {
+  beforeEach(() => {
+    sheet.rows["Things!A2:D"] = [
+      ["a", "Alpha", 100, AUG_5],
+      ["b", "Bravo", "", AUG_5],
+      ["c", "Charlie", 12, AUG_5],
+    ];
+  });
+
+  it("writes every row in one request, invalid ones repaired from their cleaned cells", async () => {
+    const updated = await things.updateMany([
+      { id: "c", patch: { amount: 13 } },
+      { id: "b", patch: { amount: 5 } },
+    ]);
+    expect(sheet.batches).toEqual([
+      [
+        { range: "Things!A4:D4", values: [["'c", "'Charlie", 13, "2026-08-05"]] },
+        { range: "Things!A3:D3", values: [["'b", "'Bravo", 5, "2026-08-05"]] },
+      ],
+    ]);
+    expect(updated.map((t) => t.amount)).toEqual([13, 5]);
+  });
+
+  it("clears a field patched to undefined", async () => {
+    await things.updateMany([{ id: "a", patch: { name: undefined } }]);
+    expect(sheet.batches[0][0].values).toEqual([["'a", "", 100, "2026-08-05"]]);
+  });
+
+  it("writes nothing when an id is missing, or when there's nothing to update", async () => {
+    await expect(things.updateMany([{ id: "a", patch: { amount: 1 } }, { id: "zz", patch: { amount: 2 } }])).rejects.toThrow("Things: no record found for id zz");
+    await things.updateMany([]);
+    expect(sheet.batches).toEqual([]);
+  });
+});
+
+describe("a whole-row check", () => {
+  const checked = createRepository<Thing>({
+    sheetName: "Things",
+    columns: ["id", "name", "amount", "date"],
+    dateColumns: ["date"],
+    schema: z.object({ id: nonEmptyString, name: nonEmptyString, amount: z.number(), date: isoDate }),
+    check: (row) => (row.name === "Free" && row.amount !== 0 ? "A free thing costs nothing" : null),
+  });
+  beforeEach(() => {
+    sheet.rows["Things!A2:D"] = [["a", "Free", 0, AUG_5]];
+  });
+
+  it("runs on the row an update is merged over, and writes nothing when it's broken", async () => {
+    await expect(checked.update("a", { amount: 5 })).rejects.toThrow("A free thing costs nothing");
+    await expect(checked.updateMany([{ id: "a", patch: { amount: 5 } }])).rejects.toThrow("A free thing costs nothing");
+    expect(sheet.updates).toEqual([]);
+    expect(sheet.batches).toEqual([]);
+  });
+
+  it("lets a merged row that keeps the rule through", async () => {
+    await checked.update("a", { name: "Paid", amount: 5 });
+    expect(sheet.updates).toHaveLength(1);
+  });
+});
+
+describe("removeWhere", () => {
+  beforeEach(() => {
+    sheet.rows["Things!A2:D"] = [
+      ["a", "Alpha", 100, AUG_5],
+      ["b", "Bravo", 200, AUG_5],
+      ["c", "Alpha", "", AUG_5],
+      ["d", "Delta", 400, AUG_5],
+    ];
+  });
+
+  it("deletes every matching row, invalid ones too, in one request, bottom first", async () => {
+    expect(await things.removeWhere((v) => v.name === "Alpha")).toBe(2);
+    // Rows 2 and 4 (a, and c with no amount): row 4 first, so deleting it doesn't move row 2.
+    expect(sheet.deletes).toEqual([
+      { startIndex: 3, endIndex: 4 },
+      { startIndex: 1, endIndex: 2 },
+    ]);
+    expect(sheet.deleteCalls).toBe(1);
+  });
+
+  it("writes nothing when no row matches", async () => {
+    expect(await things.removeWhere((v) => v.name === "Zulu")).toBe(0);
+    expect(sheet.deletes).toEqual([]);
   });
 });
 

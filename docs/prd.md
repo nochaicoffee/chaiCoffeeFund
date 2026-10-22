@@ -1,6 +1,6 @@
 # chaiCoffeeFund: Product Requirements
 
-- **Status:** Approved v1.3 (v1.0 plus M1 clarifications). Scope changes go into v2.
+- **Status:** Approved v1.4 (v1.0 plus M1 clarifications). Scope changes go into v2.
 - **Owner:** Prathik
 - **Last updated:** 2026-10-19
 - **Related:** [system-design.md](system-design.md) (how it works) · [adr/](adr/) (why) · [process.md](process.md) (how we build) · [`design/dashboards/`](../design/dashboards/) (what it looks like)
@@ -158,12 +158,13 @@ Following standard practice, acceptance criteria are written in full only for th
 *As Prathik, I want to add my cards and their statements in the app, so that I never type them into the Sheet.*
 - [ ] I can add a card with these fields, and it appears straight away with no manual refresh (fields decided 2026-10-19, #75):
   - a name, alias, issuer and card type (Reward Points or Cashback);
-  - the last 4 digits, a colour and the credit limit;
+  - a colour and the credit limit, plus the last 4 digits if known. Otherwise the statement import fills them in (#78);
   - the statement day of the month, and how many days after it the bill is due;
   - optionally, the statement PDF password, email keywords and the account it's usually paid from.
   - Each statement's own due date comes from its PDF. The card's schedule only predicts the next statement and prefills a new one.
 - [ ] I can add a statement to a card with a statement date, due date, total due and minimum due.
 - [ ] I can mark a statement paid with an amount, a date and the account it was paid from. The card's outstanding balance and utilization update.
+- [ ] A part payment can leave the bill Pending until I pay the rest, and a paid bill's payment can be edited, for example to record a second payment (#84).
 - [ ] Paying more or less than the total due shows as overpaid or underpaid by the exact difference.
 - [ ] Every new row lands inside the Sheet's Table with its dropdowns intact. This is verified with a real round trip.
 
@@ -174,6 +175,7 @@ Following standard practice, acceptance criteria are written in full only for th
 - [ ] Running sync twice never creates a duplicate statement.
 - [ ] A statement that matches no card or more than one card is **not written**. It's listed so I can fix the card's keywords.
 - [ ] A PDF that no stored password opens is reported, not silently skipped.
+- [ ] The import reads the masked card number from each PDF. It fills in a card's missing last 4, and won't import a statement whose card number doesn't match the card it was matched to (#78).
 - [ ] Gmail access is read-only, and no credential is ever committed. Statement PDF passwords live in the Cards Sheet tab (Q3).
 
 ### F-CC-05 and F-CC-06: Cards dashboard
@@ -185,6 +187,8 @@ Following standard practice, acceptance criteria are written in full only for th
   - This year: January to the current month.
   - A past year: 12 months.
   - All time: the month of the first statement to the current month.
+  - The last 3, 6 or 12 months, or a custom range: every month of the range up to the current month, **including months with no statements**, the same rule as the years (confirmed by Prathik 2026-10-20, #113).
+- **The period** can be this year, a past year, all time, the last 3, 6 or 12 months (the current month included), or a custom range of whole months. A range counts statements by statement date, like the years (decided 2026-10-20, #113).
 - **Highest and lowest month** only look at months that have statements.
 - **A credit balance** (a negative total due) counts as ₹0 spend. The credit already lowers the next statement's total.
 - **Outstanding** is what's still due on pending bills: total minus anything paid, never below ₹0. It includes closed cards, because their unpaid bills are still owed. That also applies to net worth.
@@ -204,7 +208,7 @@ Following standard practice, acceptance criteria are written in full only for th
 - [ ] A spending heatmap by month for the selected period, one row per year, from statement totals.
 - [ ] A details card coloured to match the selected tile: outstanding, utilization against the limit, available credit, highest and lowest month, total spent, and a Next-due bar split by pending bill.
 - [ ] Beside it, a panel with the 5 most recent statements (linking to the full Statements page), and a Spend range view showing where the current month sits against highest, lowest and average.
-- [ ] A statement trend chart (By card / Total, bars and/or line, ranges 3M to All).
+- [ ] A statement trend chart (By card / Total, bars and/or line) over the selected period. It follows the page's period and has no ranges of its own (decided 2026-10-20, #113).
 - [ ] A full **Statements page** ([`StatementsList.dc.html`](../design/dashboards/StatementsList.dc.html)) lists every statement grouped by month, with status and card filters, payment details and variance, and Mark paid on pending rows. Statement history lives here, not on the dashboard.
 - [ ] The next expected statement date and due date are shown per card, and show up in the Overview's "needs attention" list.
 - [ ] Everything works at phone width (F-PL-03). Phone layouts and the forms, sync report and empty states are designed in code in the same design language (decided 2026-10-17).
@@ -267,3 +271,5 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.1 | 2026-10-17 | Clarifications for M1, no scope change. Answers to Q3, Q5, Q6 and Q7. §8 updated to the final Cards design (a separate Statements page, and `last4` and colour on cards). Card-spend definitions added (statement-date month, average over every month so far, all pending bills). Undesigned pieces get designed in code. |
 | 1.2 | 2026-10-17 | More card-spend rules confirmed while building the math (#44): highest and lowest month use months with statements; a credit balance counts as ₹0; outstanding includes closed cards (in net worth too) and always equals the pending total; utilization uses active cards only; statements on deleted cards are left out. |
 | 1.3 | 2026-10-19 | Card setup matches the old sheet (#75): a card type (Reward Points or Cashback), and the schedule as a statement day plus a due-day buffer instead of two full dates. Also adds issuer and colour dropdowns and an optional default payment account. |
+| 1.4 | 2026-10-19 | A card's last 4 is optional when it's added. The import fills it in from the statement PDF, then uses it to check each statement belongs to its card (#78). |
+| 1.5 | 2026-10-20 | The period can also be the last 3, 6 or 12 months or a custom range of months, by statement date, and a range's average divides by every month of it so far (#113). The trend chart follows the period instead of having its own 3M to All ranges. |

@@ -28,11 +28,19 @@ export function greetingFor(now: Date = new Date(), timeZone: string = appConfig
   return "Good evening";
 }
 
-const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+export const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+export const WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 /** An ISO date as the design writes it: "2026-08-23" → "Aug 23". */
 export function formatShortDate(isoDate: string): string {
-  return `${MONTHS[Number(isoDate.slice(5, 7)) - 1].slice(0, 3)} ${Number(isoDate.slice(8, 10))}`;
+  return `${MONTH_NAMES[Number(isoDate.slice(5, 7)) - 1].slice(0, 3)} ${Number(isoDate.slice(8, 10))}`;
+}
+
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/** An ISO date with its weekday, as a renewal is written: "2026-10-23" → "Fri, Oct 23". */
+export function formatDayDate(isoDate: string): string {
+  return `${WEEKDAYS[new Date(`${isoDate}T00:00:00Z`).getUTCDay()]}, ${formatShortDate(isoDate)}`;
 }
 
 /** An ISO date with its year, as the Statements page writes it: "2026-08-05" → "Aug 5, 2026". */
@@ -42,10 +50,16 @@ export function formatDate(isoDate: string): string {
 
 /** A month key as words: "2026-07" → "July 2026". */
 export function formatMonthYear(month: string): string {
-  return `${MONTHS[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`;
+  return `${MONTH_NAMES[Number(month.slice(5, 7)) - 1]} ${month.slice(0, 4)}`;
 }
 
 /** A month key's short name: "2026-07" → "Jul". */
 export function formatMonthShort(month: string): string {
-  return MONTHS[Number(month.slice(5, 7)) - 1].slice(0, 3);
+  return MONTH_NAMES[Number(month.slice(5, 7)) - 1].slice(0, 3);
+}
+
+/** An ISO date in full, as a screen reader should say a day in the date picker: "2026-10-18" → "Sunday, October 18, 2026". */
+export function formatSpokenDate(isoDate: string): string {
+  const day = new Date(`${isoDate}T00:00:00Z`).getUTCDay();
+  return `${WEEKDAY_NAMES[day]}, ${MONTH_NAMES[Number(isoDate.slice(5, 7)) - 1]} ${Number(isoDate.slice(8, 10))}, ${isoDate.slice(0, 4)}`;
 }

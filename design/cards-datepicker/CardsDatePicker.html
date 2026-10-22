@@ -1,0 +1,859 @@
+<title>Cards Date Picker</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+  /* Layout: numbered areas, like design/cards-dropdowns. 1 is how the field opens (A, B), 2 is shortcuts in the
+     calendar (C, which works with either), 3 is what typing reads as, 4 is the questions to settle. A bar at the
+     top changes details shared by every option. Tokens are the app's own (src/app/globals.css). Light only, like
+     the app today (the dark palette is #57). */
+  :root {
+    color-scheme: light;
+    --page: oklch(0.965 0.004 90);
+    --surface: oklch(0.995 0 0);
+    --surface-line: oklch(0 0 0 / 0.07);
+    --fg: oklch(0.19 0.008 260);
+    --muted: oklch(0.52 0.012 260);
+    --fill: oklch(0 0 0 / 0.055);
+    --fill-strong: oklch(0 0 0 / 0.09);
+    --divider: oklch(0 0 0 / 0.08);
+    --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+    --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+    --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+    --accent: oklch(0.72 0.19 145);
+    --accent-tint: oklch(0.93 0.06 145);
+    --accent-text: oklch(0.42 0.14 145);
+    --accent-ring: oklch(0.72 0.19 145 / 0.25);
+    --accent-edge: oklch(0.72 0.19 145 / 0.45);
+    --on-accent: oklch(0.99 0 0);
+    --ink: oklch(0.16 0.008 260);
+    --on-ink: oklch(0.99 0 0);
+    --negative: oklch(0.55 0.16 25);
+    --negative-ring: oklch(0.55 0.16 25 / 0.15);
+    --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html, body { background: var(--page); color: var(--fg); }
+  body {
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 1.5;
+    padding-block: 28px 96px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input { font: inherit; color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+  .intro { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+  .eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+  h1 { margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800; text-wrap: balance; }
+  .intro p { margin: 0; font-size: 15px; font-weight: 500; color: var(--muted); }
+  .keys { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; font-weight: 600; color: var(--muted); }
+  kbd { font-family: var(--font); font-size: 11px; font-weight: 800; color: var(--fg); background: var(--surface); border: 1px solid var(--surface-line); border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px; white-space: nowrap; }
+  .jump { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+  .jump a { text-decoration: none; color: var(--fg); background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); border-radius: 999px; padding: 7px 14px; font-size: 13px; font-weight: 700; }
+  .jump a:hover { background: var(--accent-tint); color: var(--accent-text); }
+  .sample { width: fit-content; border-radius: 999px; background: var(--accent-tint); color: var(--accent-text); padding: 4px 12px; font-size: 12px; font-weight: 700; }
+
+  /* The shared details bar */
+  .details { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); border-radius: 18px; padding: 12px 16px; }
+  .details > span { font-size: 12px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+  .setting { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; }
+
+  .seg { display: flex; padding: 3px; border-radius: 999px; background: var(--fill); width: fit-content; }
+  .seg button { height: 28px; padding: 0 12px; border-radius: 999px; border: 0; background: transparent; font-size: 12px; font-weight: 700; color: var(--muted); cursor: pointer; white-space: nowrap; }
+  .seg button[aria-pressed="true"] { background: var(--surface); color: var(--accent-text); box-shadow: var(--soft-shadow); }
+
+  .area { display: flex; flex-direction: column; gap: 16px; scroll-margin-top: 16px; }
+  .area-head { display: flex; flex-direction: column; gap: 4px; max-width: 760px; }
+  .area-head h2 { margin: 0; font-size: 21px; font-weight: 800; text-wrap: balance; }
+  .area-head p { margin: 0; color: var(--muted); font-weight: 500; }
+  .options { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); gap: 18px; align-items: start; }
+  .option { min-width: 0; display: flex; flex-direction: column; gap: 14px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); border-radius: 24px; padding: 20px; }
+  .opt-head { display: flex; gap: 12px; align-items: flex-start; }
+  .tag { flex-shrink: 0; width: 28px; height: 28px; border-radius: 9px; display: grid; place-items: center; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 13px; }
+  .opt-head h3 { margin: 0; font-size: 15px; font-weight: 800; }
+  .opt-head p { margin: 2px 0 0; color: var(--muted); font-size: 13px; font-weight: 500; }
+  .opt-tools { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+  .opt-tools small { font-size: 12px; font-weight: 600; color: var(--muted); }
+  .hint { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+  .spec { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 13px; font-weight: 500; color: var(--muted); }
+  .spec li { display: flex; gap: 8px; }
+  .spec li::before { content: ""; flex-shrink: 0; width: 6px; height: 6px; margin-top: 7px; border-radius: 50%; background: var(--accent); }
+  .spec b { color: var(--fg); font-weight: 700; }
+  .readout { display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 14px; background: var(--page); font-size: 12px; font-weight: 600; color: var(--muted); }
+  .readout code { font-family: var(--mono); font-size: 12px; color: var(--fg); word-break: break-all; }
+
+  /* A stage holds two mini forms, as they sit in the Add statement and Mark paid dialogs. Phone narrows it to 375px. */
+  .stage { border-radius: 18px; background: var(--page); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .stage.phone { max-width: 375px; width: 100%; margin-inline: auto; border: 1px solid var(--surface-line); border-radius: 28px; padding: 16px 16px 24px; }
+  .sheet { display: flex; flex-direction: column; gap: 14px; background: var(--surface); border: 1px solid var(--surface-line); border-radius: 18px; padding: 16px; }
+  .phone .sheet { padding: 14px; }
+  .sheet-title { font-size: 15px; font-weight: 800; display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .sheet-title small { font-size: 11px; font-weight: 600; color: var(--muted); }
+  .row2 { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px 14px; }
+  .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .field-label { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+  .field-label .req { color: var(--negative); }
+  .field-help { font-size: 11px; font-weight: 500; color: var(--muted); margin: 0; }
+  .field-help.card { color: var(--accent-text); }
+  .field-err { font-size: 11px; font-weight: 600; color: var(--negative); margin: 0; }
+  .plain-input { width: 100%; height: 40px; border: 1px solid var(--surface-line); border-radius: 12px; background: var(--surface); padding: 0 14px; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* ---------- The date field: inputClass from fields.tsx, plus a calendar at the right ---------- */
+  .df { position: relative; }
+  .df-input { width: 100%; min-width: 0; height: 40px; border: 1px solid var(--surface-line); border-radius: 12px; background: var(--surface); padding: 0 40px 0 14px; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; text-overflow: ellipsis; }
+  .df-input::placeholder { color: var(--muted); font-weight: 500; }
+  .df-input:focus-visible { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+  .df[data-open] .df-input { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+  .df-input[aria-invalid="true"] { border-color: var(--negative); box-shadow: 0 0 0 3px var(--negative-ring); }
+  .df-btn { position: absolute; top: 4px; right: 4px; width: 32px; height: 32px; border: 0; border-radius: 9px; background: transparent; color: var(--muted); display: grid; place-items: center; cursor: pointer; }
+  .df-btn:hover, .df-btn[aria-expanded="true"] { background: var(--fill); color: var(--fg); }
+  .df-btn:focus-visible { outline-offset: 0; }
+  .df-icon { position: absolute; top: 50%; right: 13px; translate: 0 -50%; color: var(--muted); pointer-events: none; display: flex; }
+  .df[data-open] .df-icon { color: var(--accent-text); }
+  .phone .df-input { height: 44px; padding-right: 46px; }
+  .phone .df-btn { top: 0; right: 0; width: 44px; height: 44px; border-radius: 12px; }
+  @media (max-width: 767px) {
+    .df-input, .plain-input { height: 44px; padding-right: 46px; }
+    .df-btn { top: 0; right: 0; width: 44px; height: 44px; border-radius: 12px; }
+  }
+  @media (pointer: coarse) { .df-btn { top: 0; right: 0; width: 44px; height: 44px; border-radius: 12px; } .df-input { padding-right: 46px; } }
+
+  /* ---------- The calendar: a top-layer popover drawn like the dropdowns' menu ---------- */
+  .pop { position: fixed; inset: auto; margin: 0; z-index: 30; overflow: visible; color: var(--fg); background: var(--surface); border: 1px solid var(--surface-line); border-radius: 16px; box-shadow: var(--pop-shadow); padding: 12px; max-width: calc(100vw - 32px); transform-origin: top left; }
+  .pop[data-side="top"] { transform-origin: bottom left; }
+  @media (prefers-reduced-motion: no-preference) {
+    .pop.opening { animation: pop-in 150ms var(--ease-out) both; }
+    .pop[data-side="top"].opening { animation-name: pop-in-up; }
+    .cal tbody.from-next, .mgrid.from-next { animation: slide-from-next 180ms var(--ease-out) both; }
+    .cal tbody.from-prev, .mgrid.from-prev { animation: slide-from-prev 180ms var(--ease-out) both; }
+  }
+  @keyframes pop-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+  @keyframes pop-in-up { from { opacity: 0; transform: translateY(4px) scale(0.98); } }
+  @keyframes slide-from-next { from { opacity: 0.35; transform: translateX(10px); } }
+  @keyframes slide-from-prev { from { opacity: 0.35; transform: translateX(-10px); } }
+
+  .cal { width: 300px; display: flex; flex-direction: column; gap: 6px; }
+  .phone-pop { padding: 10px; }
+  .phone-pop .cal { width: min(320px, calc(100vw - 54px)); }
+  @media (pointer: coarse) { .pop { padding: 10px; } .cal { width: min(320px, calc(100vw - 54px)); } }
+  .cal-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .cal-title { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 8px; border: 0; border-radius: 10px; background: transparent; font-size: 13px; font-weight: 800; font-variant-numeric: tabular-nums; cursor: pointer; }
+  .cal-title:hover { background: var(--fill); }
+  .cal-title svg { color: var(--muted); }
+  @media (prefers-reduced-motion: no-preference) { .cal-title svg { transition: transform 160ms var(--ease-out); } }
+  .cal-title[aria-expanded="true"] svg { transform: rotate(180deg); }
+  span.cal-title { cursor: default; }
+  span.cal-title:hover { background: transparent; }
+  .nav { display: flex; gap: 2px; }
+  .icon-btn { width: 32px; height: 32px; border: 0; border-radius: 10px; background: transparent; display: grid; place-items: center; cursor: pointer; color: var(--muted); }
+  .icon-btn:hover { background: var(--fill); color: var(--fg); }
+  .icon-btn:disabled { opacity: 0.35; cursor: default; background: transparent; }
+  @media (pointer: coarse) { .icon-btn, .cal-title { height: 40px; } .icon-btn { width: 40px; } }
+  .phone-pop .icon-btn, .phone-pop .cal-title { height: 40px; } .phone-pop .icon-btn { width: 40px; }
+
+  .cal table { width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed; margin: -2px; width: calc(100% + 4px); }
+  .cal th { height: 24px; font-size: 10px; font-weight: 800; letter-spacing: 0.03em; color: var(--muted); text-align: center; }
+  .day { height: 36px; padding: 0; border-radius: 10px; text-align: center; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; cursor: pointer; user-select: none; }
+  .day:hover { background: var(--fill); }
+  .day[aria-current="date"] { box-shadow: inset 0 0 0 1.5px var(--accent-edge); }
+  .day[aria-selected="true"] { background: var(--accent); color: var(--on-accent); box-shadow: none; }
+  .day[aria-disabled="true"] { color: var(--muted); opacity: 0.4; cursor: default; background: transparent; }
+  .day:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .day[aria-selected="true"]:focus-visible { outline-color: var(--ink); }
+  .phone-pop .day { height: 44px; }
+  @media (pointer: coarse) { .day { height: 44px; } }
+
+  .mgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding-top: 2px; }
+  .mcell { height: 44px; border: 0; border-radius: 10px; background: transparent; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .mcell:hover { background: var(--fill); }
+  .mcell.now { box-shadow: inset 0 0 0 1.5px var(--accent-edge); }
+  .mcell[aria-pressed="true"] { background: var(--accent-tint); color: var(--accent-text); box-shadow: none; }
+  .mcell:disabled { color: var(--muted); opacity: 0.4; cursor: default; background: transparent; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; padding-bottom: 10px; margin-bottom: 2px; border-bottom: 1px solid var(--divider); }
+  .chip { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 11px; border: 0; border-radius: 999px; background: var(--fill); font-size: 12px; font-weight: 800; cursor: pointer; white-space: nowrap; }
+  .chip span { font-weight: 600; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .chip:hover { background: var(--fill-strong); }
+  .chip[aria-pressed="true"] { background: var(--accent-tint); color: var(--accent-text); }
+  .chip[aria-pressed="true"] span { color: var(--accent-text); }
+  .phone-pop .chip { height: 36px; }
+  @media (pointer: coarse) { .chip { height: 36px; } }
+
+  /* ---------- Area 3: typing ---------- */
+  .typing { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 18px; align-items: start; }
+  .examples-wrap { overflow-x: auto; }
+  .examples { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .examples th { text-align: left; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); padding: 0 10px 8px 0; }
+  .examples td { padding: 7px 10px 7px 0; border-top: 1px solid var(--divider); font-weight: 600; vertical-align: top; }
+  .examples td:first-child { white-space: nowrap; }
+  .examples .try { border: 0; background: var(--fill); border-radius: 8px; padding: 2px 8px; font-family: var(--mono); font-size: 12px; font-weight: 600; cursor: pointer; }
+  .examples .try:hover { background: var(--accent-tint); color: var(--accent-text); }
+  .examples .reads { font-variant-numeric: tabular-nums; }
+  .examples .why { display: block; font-size: 12px; font-weight: 500; color: var(--muted); }
+  .examples .bad { color: var(--negative); }
+
+  .questions { margin: 0; padding-left: 20px; display: grid; gap: 8px; font-weight: 500; max-width: 820px; }
+  .questions b { font-weight: 800; }
+  .questions span { color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header class="intro">
+    <span class="eyebrow">Cards · Mockups · 20 Oct 2026</span>
+    <h1>Date pickers in the app's own style</h1>
+    <p>Add statement and Mark paid still open the browser's own date picker for their three dates. These draw the calendar like the app's dropdowns instead: a light card with the hover cards' shadow, today ringed in green and the chosen day filled. Typing a date still works in every option.</p>
+    <div class="keys">In the calendar: <kbd>←</kbd><kbd>→</kbd> a day, <kbd>↑</kbd><kbd>↓</kbd> a week, <kbd>Home</kbd><kbd>End</kbd> the week's ends, <kbd>PgUp</kbd><kbd>PgDn</kbd> a month, <kbd>Shift</kbd>+<kbd>PgUp</kbd> a year, <kbd>Enter</kbd> picks, <kbd>Esc</kbd> closes.</div>
+    <nav class="jump" aria-label="Sections">
+      <a href="#opens">1 · How the field opens</a>
+      <a href="#shortcuts">2 · Shortcuts</a>
+      <a href="#typing">3 · Typing a date</a>
+      <a href="#settle">4 · To settle</a>
+    </nav>
+    <span class="sample">Sample data. Today is Tue 20 Oct 2026. HDFC Regalia bills on the 18th, with 20 days to pay.</span>
+  </header>
+
+  <div class="details" role="group" aria-label="Details shared by every option">
+    <span>Every option</span>
+    <div class="setting">Week starts
+      <div class="seg" data-setting="weekStart"><button type="button" data-v="0" aria-pressed="true">Sunday</button><button type="button" data-v="1" aria-pressed="false">Monday</button></div>
+    </div>
+    <div class="setting">Weekday in the field
+      <div class="seg" data-setting="weekday"><button type="button" data-v="0" aria-pressed="true">Oct 18, 2026</button><button type="button" data-v="1" aria-pressed="false">Sun, Oct 18, 2026</button></div>
+    </div>
+    <div class="setting">Month name
+      <div class="seg" data-setting="jump"><button type="button" data-v="1" aria-pressed="true">Opens the months</button><button type="button" data-v="0" aria-pressed="false">Just a title</button></div>
+    </div>
+  </div>
+
+  <!-- 1 -->
+  <section class="area" id="opens" aria-labelledby="h-opens">
+    <div class="area-head">
+      <h2 id="h-opens">1 · How the field opens</h2>
+      <p>Both keep a text field you can type into, with the date written as the Statements page writes it. They differ in what a click on the field does.</p>
+    </div>
+    <div class="options">
+      <article class="option" data-option="A">
+        <div class="opt-head"><span class="tag">A</span><div><h3>Type, or open the calendar</h3><p>Clicking the field puts the cursor in it to type. The calendar button at its right opens the calendar, with focus on the chosen day. Closest to how the browser's date field works now.</p></div></div>
+        <div class="opt-tools"><small>Try it at</small><div class="seg" data-width><button type="button" data-v="desktop" aria-pressed="true">Desktop</button><button type="button" data-v="phone" aria-pressed="false">Phone</button></div></div>
+        <div class="stage" data-stage></div>
+        <div class="readout">Saves<code data-readout></code></div>
+        <ul class="spec">
+          <li><span><b>Opens from:</b> the calendar button, or <kbd>Alt</kbd>+<kbd>↓</kbd> in the field. Picking a day closes it and puts focus back on the button.</span></li>
+          <li><span><b>On a phone:</b> tapping the field brings up the keyboard; tapping the 44px calendar button brings up the calendar.</span></li>
+        </ul>
+      </article>
+
+      <article class="option" data-option="B">
+        <div class="opt-head"><span class="tag">B</span><div><h3>Click the field, like the dropdowns</h3><p>Clicking anywhere on the field opens the calendar under it, as the app's dropdowns open their menu. Focus stays in the field, so you can still type, and the calendar follows what you type.</p></div></div>
+        <div class="opt-tools"><small>Try it at</small><div class="seg" data-width><button type="button" data-v="desktop" aria-pressed="true">Desktop</button><button type="button" data-v="phone" aria-pressed="false">Phone</button></div></div>
+        <div class="stage" data-stage></div>
+        <div class="readout">Saves<code data-readout></code></div>
+        <ul class="spec">
+          <li><span><b>Opens from:</b> a click or tap on the field, or <kbd>↓</kbd>, which also moves focus into the calendar. <kbd>Esc</kbd> closes it and stays in the field.</span></li>
+          <li><span><b>On a phone:</b> a tap brings up the calendar and the keyboard together, so the calendar can end up above the field.</span></li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="area" id="shortcuts" aria-labelledby="h-short">
+    <div class="area-head">
+      <h2 id="h-short">2 · Shortcuts in the calendar</h2>
+      <p>C adds a row of one-tap dates above the calendar, picked for each field. It works with A or B.</p>
+    </div>
+    <div class="options">
+      <article class="option" data-option="C">
+        <div class="opt-head"><span class="tag">C</span><div><h3>Dates that fit the field</h3><p>Statement date offers the card's latest and previous statement days. Due date offers the statement date plus the card's days to pay. Paid on offers today, yesterday and the due date, when it's already passed.</p></div></div>
+        <div class="opt-tools">
+          <div class="setting"><small>With</small><div class="seg" data-mode><button type="button" data-v="A" aria-pressed="true">A · calendar button</button><button type="button" data-v="B" aria-pressed="false">B · click the field</button></div></div>
+          <div class="seg" data-width><button type="button" data-v="desktop" aria-pressed="true">Desktop</button><button type="button" data-v="phone" aria-pressed="false">Phone</button></div>
+        </div>
+        <div class="stage" data-stage></div>
+        <div class="readout">Saves<code data-readout></code></div>
+        <ul class="spec">
+          <li><span><b>A shortcut</b> picks its date and closes the calendar, like a day does. The one that matches the field's date is tinted green.</span></li>
+          <li><span><b>Only dates the field allows</b> are offered: Paid on never offers a future due date.</span></li>
+        </ul>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">i</span><div><h3>What stays the same in every option</h3><p>The parts that don't change whichever you choose.</p></div></div>
+        <ul class="spec">
+          <li><span><b>The card:</b> surface, hairline border, the hover cards' shadow and 16px corners, in the top layer like the dropdowns' menu, so it sits above the form dialog and never gets clipped by its scrolling. It opens below the field, or above it when there's more room there.</span></li>
+          <li><span><b>Days:</b> today has the green ring the current month has in Custom range. The chosen day is filled green. Days the field doesn't allow are faded and can't be picked: Statement date and Paid on stop at today, Paid on starts at the statement date, and Due date starts the day after the statement date.</span></li>
+          <li><span><b>Six rows every month,</b> so the card keeps its height and doesn't jump when you change month.</span></li>
+          <li><span><b>Motion:</b> the card fades and lifts in over 150ms, and the days slide a little when the month changes. Nothing moves with reduced motion on.</span></li>
+          <li><span><b>Touch:</b> days, arrows and shortcuts grow to 44px on touch screens and below 768px.</span></li>
+          <li><span><b>Screen readers:</b> the days are a grid; each is read as its full date ("Sunday, October 18, 2026"), with today and the chosen day marked.</span></li>
+        </ul>
+      </article>
+    </div>
+  </section>
+
+  <!-- 3 -->
+  <section class="area" id="typing" aria-labelledby="h-typing">
+    <div class="area-head">
+      <h2 id="h-typing">3 · Typing a date</h2>
+      <p>The field reads most ways of writing a date, and rewrites it as "Oct 18, 2026" when you leave it. Numbers are read day first, as dates are written in India, so 5/8 is 5 August.</p>
+    </div>
+    <div class="typing">
+      <article class="option">
+        <div class="opt-head"><span class="tag">3</span><div><h3>Try it in Paid on</h3><p>Mark paid for the statement of Sep 18, due Oct 8. The date can be from Sep 18 to today.</p></div></div>
+        <div class="stage" data-try-stage>
+          <div class="sheet">
+            <div class="field">
+              <span class="field-label" id="try-label">Paid on <span class="req" aria-hidden="true">*</span></span>
+              <div data-try></div>
+              <p class="field-help" id="try-help">Defaults to today.</p>
+              <p class="field-err" id="try-err" hidden></p>
+            </div>
+          </div>
+        </div>
+        <div class="readout">Saves<code data-try-readout></code></div>
+      </article>
+      <article class="option">
+        <div class="opt-head"><span class="tag">≡</span><div><h3>What it reads</h3><p>Tap one to type it into Paid on.</p></div></div>
+        <div class="examples-wrap">
+          <table class="examples">
+            <thead><tr><th>Typed</th><th>Reads as</th></tr></thead>
+            <tbody data-examples></tbody>
+          </table>
+        </div>
+        <p class="hint">Without a year, it's the nearest such date to the one already in the field (or today), unless that's after the last day the field allows. Then it's the year before.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- 4 -->
+  <section class="area" id="settle" aria-labelledby="h-settle">
+    <div class="area-head">
+      <h2 id="h-settle">4 · To settle before building</h2>
+    </div>
+    <ol class="questions">
+      <li><b>How the field opens:</b> A or B, and with C's shortcuts? <span>Recommended: A with C. A keeps typing and the calendar apart, which works better on a phone.</span></li>
+      <li><b>The week starts on</b> Sunday or Monday? <span>Use the bar at the top to try both.</span></li>
+      <li><b>The weekday in the field:</b> "Oct 18, 2026" or "Sun, Oct 18, 2026"?</li>
+      <li><b>The month name:</b> opens a year of months to jump to, or just a title, with the arrows and PgUp / PgDn to move?</li>
+      <li><b>Typed numbers read day first</b> (5/8 is 5 August)?</li>
+      <li><b>On a phone,</b> the calendar opens under the field as on desktop, with bigger days. <span>The alternative is a sheet from the bottom of the screen.</span></li>
+    </ol>
+  </section>
+</div>
+
+<script>
+(() => {
+  const TODAY = "2026-10-20";
+  const settings = { weekStart: 0, weekday: false, jump: true };
+  const live = new Set();
+
+  /* ---------- Date math on plain YYYY-MM-DD strings, all in UTC so time zones never shift a day ---------- */
+  const MONTHS_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const MONTHS = MONTHS_LONG.map((m) => m.slice(0, 3));
+  const WEEKDAYS_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const pad = (n) => String(n).padStart(2, "0");
+  const iso = (y, m, d) => `${y}-${pad(m)}-${pad(d)}`;
+  const parts = (s) => s.split("-").map(Number);
+  const isIso = (s) => typeof s === "string" && /^\d{4}-\d{2}-\d{2}$/.test(s);
+  const daysIn = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const utc = (s) => { const [y, m, d] = parts(s); return Date.UTC(y, m - 1, d); };
+  const addDays = (s, n) => new Date(utc(s) + n * 864e5).toISOString().slice(0, 10);
+  const daysBetween = (a, b) => Math.round((utc(a) - utc(b)) / 864e5);
+  const weekday = (s) => new Date(utc(s)).getUTCDay();
+  const make = (y, m, d) => (m >= 1 && m <= 12 && d >= 1 && d <= daysIn(y, m) ? iso(y, m, d) : null);
+  const addMonths = (s, n) => { const [y, m, d] = parts(s); const i = y * 12 + m - 1 + n; const ny = Math.floor(i / 12), nm = (i % 12) + 1; return iso(ny, nm, Math.min(d, daysIn(ny, nm))); };
+  const clamp = (s, min, max) => (min && s < min ? min : max && s > max ? max : s);
+  const fmt = (s) => { if (!isIso(s)) return ""; const [y, m, d] = parts(s); const text = `${MONTHS[m - 1]} ${d}, ${y}`; return settings.weekday ? `${WEEKDAYS_LONG[weekday(s)].slice(0, 3)}, ${text}` : text; };
+  const short = (s) => { const [, m, d] = parts(s); return `${MONTHS[m - 1]} ${d}`; };
+  const spoken = (s) => { const [y, m, d] = parts(s); return `${WEEKDAYS_LONG[weekday(s)]}, ${MONTHS_LONG[m - 1]} ${d}, ${y}`; };
+
+  /* The weeks of a month, always six, with null for the days of the months either side. */
+  function weeksOf(month, weekStart) {
+    const [y, m] = parts(`${month}-01`);
+    const lead = (weekday(iso(y, m, 1)) - weekStart + 7) % 7;
+    const cells = [...Array(lead).fill(null), ...Array.from({ length: daysIn(y, m) }, (_, i) => iso(y, m, i + 1))];
+    while (cells.length < 42) cells.push(null);
+    return Array.from({ length: 6 }, (_, w) => cells.slice(w * 7, w * 7 + 7));
+  }
+
+  /* ---------- Reading a typed date. Day first for numbers; a missing year (or month) is the nearest one to `near`,
+     unless that's after `max`, when it's the one before. ---------- */
+  const WEEKDAY_WORDS = WEEKDAYS_LONG.map((w) => w.toLowerCase());
+  const MONTH_WORDS = MONTHS_LONG.map((w) => w.toLowerCase());
+  function parseTyped(text, { today, near, max }) {
+    const t = text.trim().toLowerCase().replace(/,/g, " ").replace(/\s+/g, " ");
+    if (!t) return null;
+    for (const [word, n] of [["today", 0], ["yesterday", -1], ["tomorrow", 1]]) if (t.length >= 3 && word.startsWith(t)) return addDays(today, n);
+    let m = t.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+    if (m) return make(+m[1], +m[2], +m[3]);
+    m = t.match(/^(\d{1,2})[-/. ](\d{1,2})(?:[-/. ](\d{2}|\d{4}))?$/);
+    if (m) return complete(+m[1], +m[2], m[3], near, max);
+    m = t.match(/^(\d{1,2})(?:st|nd|rd|th)?$/);
+    if (m) return complete(+m[1], undefined, undefined, near, max);
+    let day, month, year;
+    for (const tok of t.split(/[\s\-/.]+/)) {
+      if (tok.length >= 3 && WEEKDAY_WORDS.some((w) => w.startsWith(tok))) continue;
+      const mi = tok.length >= 3 ? MONTH_WORDS.findIndex((w) => w.startsWith(tok)) : -1;
+      if (mi >= 0) { if (month !== undefined) return null; month = mi + 1; continue; }
+      const num = tok.match(/^(\d{1,4})(?:st|nd|rd|th)?$/);
+      if (!num) return null;
+      if (num[1].length > 2 || day !== undefined) { if (year !== undefined) return null; year = num[1]; }
+      else day = +num[1];
+    }
+    if (day === undefined || month === undefined) return null;
+    return complete(day, month, year, near, max);
+  }
+  function complete(day, month, yearText, near, max) {
+    if (yearText !== undefined) {
+      if (yearText.length !== 2 && yearText.length !== 4) return null;
+      return month === undefined ? null : make(yearText.length === 2 ? 2000 + +yearText : +yearText, month, day);
+    }
+    const [ny, nm] = parts(near);
+    const candidates = (month === undefined
+      ? [-1, 0, 1].map((k) => { const i = ny * 12 + nm - 1 + k; return make(Math.floor(i / 12), (i % 12) + 1, day); })
+      : [ny - 1, ny, ny + 1].map((y) => make(y, month, day))
+    ).filter(Boolean);
+    if (candidates.length === 0) return null;
+    let best = candidates.reduce((a, b) => (Math.abs(daysBetween(b, near)) < Math.abs(daysBetween(a, near)) ? b : a));
+    if (max && best > max) { const before = candidates.filter((c) => c <= max); if (before.length) best = before[before.length - 1]; }
+    return best;
+  }
+
+  /* ---------- Placing the calendar: popoverPlacement from src/components/listbox.ts, with the stage's sides as the
+     window's when it's narrowed to a phone. ---------- */
+  function place(pop, anchor, frame) {
+    const t = anchor.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth, vh = window.innerHeight;
+    const f = frame ? frame.getBoundingClientRect() : null;
+    const lo = f ? Math.max(0, f.left) : 0, hi = f ? Math.min(vw, f.right) : vw;
+    const margin = f ? 8 : 16, gap = 8;
+    const w = pop.offsetWidth, h = pop.offsetHeight;
+    const below = vh - t.bottom - gap - 16, above = t.top - gap - 16;
+    const side = h > below && above > below ? "top" : "bottom";
+    // When it fits on neither side, it stays inside the window and covers part of the field.
+    const top = Math.max(16, Math.min(side === "bottom" ? t.bottom + gap : t.top - gap - h, vh - 16 - h));
+    const rightmost = hi - margin - w;
+    const left = Math.max(lo + margin, Math.min(t.left, rightmost));
+    pop.style.top = `${top}px`;
+    pop.style.left = `${left}px`;
+    pop.dataset.side = side;
+  }
+
+  const CAL = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/></svg>`;
+  const CHEV = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>`;
+  const PREV = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 6 9 12 15 18"/></svg>`;
+  const NEXT = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 6 15 12 9 18"/></svg>`;
+
+  /* ---------- The date field ---------- */
+  let uid = 0;
+  function DateField(host, o) {
+    const id = `df${++uid}`;
+    const mode = o.mode;
+    let value = o.value ?? "";
+    let text = fmt(value);
+    let near = value || TODAY;
+    let isOpen = false;
+    let view = "days";
+    let month = (value || TODAY).slice(0, 7);
+    let focusDate = value || TODAY;
+    let viewYear = Number(month.slice(0, 4));
+    let slide = "";
+    const min = () => o.min?.() ?? null;
+    const max = () => o.max?.() ?? null;
+    const allowed = (d) => (!min() || d >= min()) && (!max() || d <= max());
+
+    host.innerHTML = `
+      <div class="df mode-${mode}">
+        <input class="df-input" id="${id}" type="text" autocomplete="off" spellcheck="false" placeholder="e.g. 5 Aug 2026" aria-labelledby="${o.labelId}" aria-describedby="${o.helpId}"
+          ${mode === "B" ? `role="combobox" aria-haspopup="dialog" aria-expanded="false" aria-controls="${id}-cal"` : ""}>
+        ${mode === "A" ? `<button type="button" class="df-btn" aria-haspopup="dialog" aria-expanded="false" aria-controls="${id}-cal">${CAL}</button>` : `<span class="df-icon">${CAL}</span>`}
+      </div>
+      <div class="pop cal-pop" id="${id}-cal" popover="manual" role="dialog" aria-label="Choose ${o.label.toLowerCase()}"><div class="cal"></div></div>`;
+    const wrap = host.querySelector(".df");
+    const input = host.querySelector(".df-input");
+    const btn = host.querySelector(".df-btn");
+    const pop = host.querySelector(".pop");
+    const cal = host.querySelector(".cal");
+    const errEl = o.errId ? document.getElementById(o.errId) : null;
+    const helpEl = o.helpId ? document.getElementById(o.helpId) : null;
+    input.value = text;
+
+    const label = () => { if (btn) btn.setAttribute("aria-label", isIso(value) ? `Choose ${o.label.toLowerCase()}, ${spoken(value)}` : `Choose ${o.label.toLowerCase()}`); };
+    label();
+
+    function setError(message) {
+      if (!errEl) return;
+      errEl.textContent = message ?? "";
+      errEl.hidden = !message;
+      if (helpEl) helpEl.hidden = Boolean(message);
+      if (message) { input.setAttribute("aria-invalid", "true"); input.setAttribute("aria-describedby", o.errId); }
+      else { input.removeAttribute("aria-invalid"); input.setAttribute("aria-describedby", o.helpId); }
+    }
+    function validate() {
+      if (!text.trim()) return setError(o.required);
+      if (!isIso(value)) return setError("Enter a date, like 5 Aug 2026");
+      if (min() && value < min()) return setError(o.messages?.min);
+      if (max() && value > max()) return setError(o.messages?.max);
+      setError(null);
+    }
+
+    function emit() { label(); o.onChange?.(value); }
+
+    function chips() {
+      const list = (o.shortcuts?.() ?? []).filter((c) => allowed(c.date));
+      if (!list.length) return "";
+      return `<div class="chips" role="group" aria-label="Shortcuts">${list
+        .map((c) => `<button type="button" class="chip" data-chip="${c.date}" aria-pressed="${c.date === value}" aria-label="${c.label}, ${spoken(c.date)}">${c.label}<span>${short(c.date)}</span></button>`)
+        .join("")}</div>`;
+    }
+
+    function render() {
+      const focusInside = pop.contains(document.activeElement);
+      // A re-render replaces every button, so focus goes back to the same control: the arrows keep it, a day moves it.
+      const keep = focusInside ? ["data-step", "data-year", "data-to-months", "data-to-days"].find((a) => document.activeElement.hasAttribute(a)) : undefined;
+      const keepValue = keep ? document.activeElement.getAttribute(keep) : null;
+      const lo = min(), hi = max();
+      if (view === "days") {
+        const [y, m] = parts(`${month}-01`);
+        const prevOk = !lo || month > lo.slice(0, 7);
+        const nextOk = !hi || month < hi.slice(0, 7);
+        const title = `${MONTHS_LONG[m - 1]} ${y}`;
+        const heads = Array.from({ length: 7 }, (_, i) => (i + settings.weekStart) % 7).map((d) => `<th scope="col" abbr="${WEEKDAYS_LONG[d]}">${WEEKDAYS_LONG[d][0]}</th>`).join("");
+        const rows = weeksOf(month, settings.weekStart).map((week) => `<tr>${week.map((d) => {
+          if (!d) return `<td aria-hidden="true"></td>`;
+          return `<td role="gridcell" class="day" data-date="${d}" tabindex="${d === focusDate ? 0 : -1}" aria-label="${spoken(d)}" aria-selected="${d === value}" ${d === TODAY ? `aria-current="date"` : ""} ${allowed(d) ? "" : `aria-disabled="true"`}>${Number(d.slice(8))}</td>`;
+        }).join("")}</tr>`).join("");
+        cal.innerHTML = `${chips()}
+          <div class="cal-head">
+            ${settings.jump ? `<button type="button" class="cal-title" id="${id}-title" data-to-months aria-expanded="false" aria-label="${title}, choose a month">${title}${CHEV}</button>` : `<span class="cal-title" id="${id}-title" aria-live="polite">${title}</span>`}
+            <div class="nav"><button type="button" class="icon-btn" data-step="-1" aria-label="Previous month" ${prevOk ? "" : "disabled"}>${PREV}</button><button type="button" class="icon-btn" data-step="1" aria-label="Next month" ${nextOk ? "" : "disabled"}>${NEXT}</button></div>
+          </div>
+          <table role="grid" aria-labelledby="${id}-title"><thead><tr>${heads}</tr></thead><tbody class="${slide}">${rows}</tbody></table>`;
+      } else {
+        const months = MONTHS.map((name, i) => {
+          const key = `${viewYear}-${pad(i + 1)}`;
+          const ok = (!lo || key >= lo.slice(0, 7)) && (!hi || key <= hi.slice(0, 7));
+          return `<button type="button" class="mcell${key === TODAY.slice(0, 7) ? " now" : ""}" data-month="${key}" tabindex="${key === month ? 0 : -1}" aria-pressed="${key === month}" aria-label="${MONTHS_LONG[i]} ${viewYear}" ${ok ? "" : "disabled"}>${name}</button>`;
+        }).join("");
+        const prevOk = !lo || viewYear > Number(lo.slice(0, 4));
+        const nextOk = !hi || viewYear < Number(hi.slice(0, 4));
+        cal.innerHTML = `${chips()}
+          <div class="cal-head">
+            <button type="button" class="cal-title" data-to-days aria-expanded="true" aria-label="${viewYear}, back to the days">${viewYear}${CHEV}</button>
+            <div class="nav"><button type="button" class="icon-btn" data-year="-1" aria-label="Previous year" ${prevOk ? "" : "disabled"}>${PREV}</button><button type="button" class="icon-btn" data-year="1" aria-label="Next year" ${nextOk ? "" : "disabled"}>${NEXT}</button></div>
+          </div>
+          <div class="mgrid ${slide}" role="group" aria-label="Months of ${viewYear}">${months}</div>`;
+        if (!cal.querySelector('.mcell[tabindex="0"]:not(:disabled)')) cal.querySelector(".mcell:not(:disabled)")?.setAttribute("tabindex", "0");
+      }
+      slide = "";
+      if (!focusInside || pop.contains(document.activeElement)) return;
+      const again = keep ? cal.querySelector(`[${keep}="${keepValue}"]:not(:disabled)`) : null;
+      if (again) again.focus();
+      else focusGrid();
+    }
+
+    function focusGrid() {
+      const target = view === "days" ? cal.querySelector(`[data-date="${focusDate}"]`) : cal.querySelector('.mcell[tabindex="0"]');
+      target?.focus();
+    }
+
+    const frame = () => (host.closest(".stage")?.classList.contains("phone") ? host.closest(".stage") : null);
+    const follow = () => place(pop, wrap, frame());
+    const outside = (e) => { if (!host.contains(e.target)) close(false); };
+
+    function open(withFocus) {
+      if (!isOpen) {
+        isOpen = true;
+        view = "days";
+        near = isIso(value) ? value : TODAY;
+        focusDate = clamp(isIso(value) ? value : TODAY, min(), max());
+        month = focusDate.slice(0, 7);
+        pop.classList.toggle("phone-pop", Boolean(frame()));
+        render();
+        try { if (!pop.matches(":popover-open")) pop.showPopover(); } catch {}
+        follow();
+        pop.classList.remove("opening"); void pop.offsetWidth; pop.classList.add("opening");
+        wrap.dataset.open = "";
+        (btn ?? input).setAttribute("aria-expanded", "true");
+        document.addEventListener("pointerdown", outside);
+        window.addEventListener("scroll", follow, true);
+        window.addEventListener("resize", follow);
+      }
+      if (withFocus) focusGrid();
+    }
+    function close(returnFocus) {
+      if (!isOpen) return;
+      isOpen = false;
+      try { pop.hidePopover(); } catch {}
+      delete wrap.dataset.open;
+      (btn ?? input).setAttribute("aria-expanded", "false");
+      document.removeEventListener("pointerdown", outside);
+      window.removeEventListener("scroll", follow, true);
+      window.removeEventListener("resize", follow);
+      if (returnFocus) (btn ?? input).focus();
+    }
+    function choose(d) {
+      if (!allowed(d)) return;
+      value = d; text = fmt(d); input.value = text; near = d;
+      setError(null);
+      close(true);
+      emit();
+    }
+    function showMonth(next, direction) {
+      if (next === month) return;
+      slide = direction > 0 ? "from-next" : "from-prev";
+      month = next;
+    }
+    function moveTo(d) {
+      const target = clamp(d, min(), max());
+      if (target.slice(0, 7) !== month) showMonth(target.slice(0, 7), target > focusDate ? 1 : -1);
+      focusDate = target;
+      render();
+      focusGrid();
+    }
+
+    // The field: typing reads the date as you go; leaving the field writes it out again.
+    input.addEventListener("focus", () => { near = isIso(value) ? value : TODAY; });
+    input.addEventListener("input", () => {
+      text = input.value;
+      const parsed = parseTyped(text, { today: TODAY, near, max: max() });
+      value = parsed ?? (text.trim() ? text : "");
+      if (isOpen && parsed) { focusDate = clamp(parsed, min(), max()); if (parsed.slice(0, 7) !== month) showMonth(parsed.slice(0, 7), parsed > `${month}-01` ? 1 : -1); render(); }
+      if (errEl && !errEl.hidden) validate();
+      emit();
+    });
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown" && (mode === "B" || e.altKey)) { e.preventDefault(); open(true); }
+      else if (e.key === "Escape" && isOpen) { e.preventDefault(); close(false); }
+      else if (e.key === "Enter" && mode === "B" && isOpen) { e.preventDefault(); close(false); commit(); }
+    });
+    if (mode === "B") input.addEventListener("click", () => open(false));
+    btn?.addEventListener("click", () => (isOpen ? close(true) : open(true)));
+
+    function commit() {
+      if (isIso(value)) { text = fmt(value); input.value = text; }
+      validate();
+    }
+    host.addEventListener("focusout", (e) => {
+      if (e.relatedTarget && host.contains(e.relatedTarget)) return;
+      if (isOpen && e.relatedTarget) close(false);
+      if (!isOpen) commit();
+    });
+
+    // The calendar
+    pop.addEventListener("click", (e) => {
+      const day = e.target.closest("[data-date]");
+      if (day) { if (day.getAttribute("aria-disabled") !== "true") choose(day.dataset.date); return; }
+      const chip = e.target.closest("[data-chip]");
+      if (chip) return choose(chip.dataset.chip);
+      const step = e.target.closest("[data-step]");
+      if (step) {
+        const n = Number(step.dataset.step);
+        showMonth(addMonths(`${month}-01`, n).slice(0, 7), n);
+        focusDate = clamp(addMonths(focusDate, n), min(), max());
+        if (focusDate.slice(0, 7) !== month) focusDate = clamp(`${month}-01`, min(), max());
+        return render();
+      }
+      if (e.target.closest("[data-to-months]")) { view = "months"; viewYear = Number(month.slice(0, 4)); render(); return cal.querySelector('.mcell[tabindex="0"]')?.focus(); }
+      if (e.target.closest("[data-to-days]")) { view = "days"; render(); return cal.querySelector("[data-to-months]")?.focus(); }
+      const yr = e.target.closest("[data-year]");
+      if (yr) { const n = Number(yr.dataset.year); viewYear += n; slide = n > 0 ? "from-next" : "from-prev"; return render(); }
+      const mc = e.target.closest("[data-month]");
+      if (mc) {
+        const [, , d] = parts(focusDate);
+        month = mc.dataset.month;
+        const [y, m] = parts(`${month}-01`);
+        focusDate = clamp(iso(y, m, Math.min(d, daysIn(y, m))), min(), max());
+        month = focusDate.slice(0, 7);
+        view = "days";
+        render();
+        focusGrid();
+      }
+    });
+    pop.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        if (view === "months") { view = "days"; render(); return focusGrid(); }
+        return close(true);
+      }
+      if (view === "months") {
+        const cell = e.target.closest("[data-month]");
+        if (!cell) return;
+        const step = { ArrowRight: 1, ArrowLeft: -1, ArrowDown: 3, ArrowUp: -3 }[e.key];
+        if (step === undefined) return;
+        e.preventDefault();
+        const cells = [...cal.querySelectorAll(".mcell")];
+        const to = cells[cells.indexOf(cell) + step];
+        if (to && !to.disabled) { cells.forEach((c) => (c.tabIndex = -1)); to.tabIndex = 0; to.focus(); }
+        return;
+      }
+      if (!e.target.closest("[data-date]")) return;
+      const [y, m, d] = parts(focusDate);
+      const wd = (weekday(focusDate) - settings.weekStart + 7) % 7;
+      const moves = {
+        ArrowLeft: () => addDays(focusDate, -1),
+        ArrowRight: () => addDays(focusDate, 1),
+        ArrowUp: () => addDays(focusDate, -7),
+        ArrowDown: () => addDays(focusDate, 7),
+        Home: () => addDays(focusDate, -wd),
+        End: () => addDays(focusDate, 6 - wd),
+        PageUp: () => addMonths(focusDate, e.shiftKey ? -12 : -1),
+        PageDown: () => addMonths(focusDate, e.shiftKey ? 12 : 1),
+      };
+      if (moves[e.key]) { e.preventDefault(); return moveTo(moves[e.key]()); }
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(focusDate); }
+    });
+    pop.addEventListener("focusin", (e) => { const day = e.target.closest("[data-date]"); if (day) focusDate = day.dataset.date; });
+
+    const api = {
+      get value() { return value; },
+      set(next) { value = next; text = fmt(next); input.value = text; label(); if (errEl && !errEl.hidden) validate(); if (isOpen) render(); },
+      setText(next) { input.focus(); input.value = next; input.dispatchEvent(new Event("input")); commit(); },
+      refresh() { if (isIso(value) && document.activeElement !== input) { text = fmt(value); input.value = text; } if (isOpen) render(); if (errEl && !errEl.hidden) validate(); },
+      revalidate() { if (errEl && !errEl.hidden) validate(); if (isOpen) render(); },
+      close: () => close(false),
+    };
+    live.add(api);
+    return api;
+  }
+
+  /* ---------- The two mini forms in a stage ---------- */
+  const STATEMENT_PAID = { statementDate: "2026-09-18", dueDate: "2026-10-08" };
+  function buildStage(article, mode, withShortcuts) {
+    const stage = article.querySelector("[data-stage]");
+    for (const api of [...live]) if (api.stage === stage) { api.close(); live.delete(api); }
+    const k = `${article.dataset.option}`;
+    stage.innerHTML = `
+      <div class="sheet">
+        <div class="sheet-title">Add statement <small>HDFC Regalia</small></div>
+        <div class="row2">
+          <div class="field">
+            <span class="field-label" id="${k}-sd-l">Statement date <span class="req" aria-hidden="true">*</span></span>
+            <div data-f="sd"></div>
+            <p class="field-help card" id="${k}-sd-h">HDFC Regalia's latest statement (billed on the 18th).</p>
+            <p class="field-err" id="${k}-sd-e" hidden></p>
+          </div>
+          <div class="field">
+            <span class="field-label" id="${k}-dd-l">Due date <span class="req" aria-hidden="true">*</span></span>
+            <div data-f="dd"></div>
+            <p class="field-help card" id="${k}-dd-h">20 days later: the card's days to pay.</p>
+            <p class="field-err" id="${k}-dd-e" hidden></p>
+          </div>
+        </div>
+      </div>
+      <div class="sheet">
+        <div class="sheet-title">Mark paid <small>Statement of Sep 18, due Oct 8</small></div>
+        <div class="row2">
+          <div class="field">
+            <span class="field-label">Amount paid <span class="req" aria-hidden="true">*</span></span>
+            <input class="plain-input" id="${k}-amt" value="₹38,500" readonly aria-label="Amount paid">
+            <p class="field-help">Defaults to the total due.</p>
+          </div>
+          <div class="field">
+            <span class="field-label" id="${k}-pd-l">Paid on <span class="req" aria-hidden="true">*</span></span>
+            <div data-f="pd"></div>
+            <p class="field-help" id="${k}-pd-h">Defaults to today.</p>
+            <p class="field-err" id="${k}-pd-e" hidden></p>
+          </div>
+        </div>
+      </div>`;
+    const readout = article.querySelector("[data-readout]");
+    let dueEdited = false;
+    const update = () => { readout.textContent = `statementDate=${sd.value || "–"} · dueDate=${dd.value || "–"} · paidDate=${pd.value || "–"}`; };
+    const sd = DateField(stage.querySelector('[data-f="sd"]'), {
+      mode, label: "Statement date", labelId: `${k}-sd-l`, helpId: `${k}-sd-h`, errId: `${k}-sd-e`, value: "2026-10-18",
+      max: () => TODAY, required: "Choose a statement date", messages: { max: "The statement date can't be in the future" },
+      shortcuts: withShortcuts ? () => [{ label: "Latest", date: "2026-10-18" }, { label: "Previous", date: "2026-09-18" }] : null,
+      onChange: (v) => { if (!dueEdited && isIso(v)) dd.set(addDays(v, 20)); dd.revalidate(); update(); },
+    });
+    const dd = DateField(stage.querySelector('[data-f="dd"]'), {
+      mode, label: "Due date", labelId: `${k}-dd-l`, helpId: `${k}-dd-h`, errId: `${k}-dd-e`, value: "2026-11-07",
+      min: () => (isIso(sd.value) ? addDays(sd.value, 1) : null), required: "Choose a due date", messages: { min: "The due date should be after the statement date" },
+      shortcuts: withShortcuts ? () => (isIso(sd.value) ? [{ label: "20 days after", date: addDays(sd.value, 20) }] : []) : null,
+      onChange: () => { dueEdited = true; update(); },
+    });
+    const pd = DateField(stage.querySelector('[data-f="pd"]'), {
+      mode, label: "Paid on", labelId: `${k}-pd-l`, helpId: `${k}-pd-h`, errId: `${k}-pd-e`, value: TODAY,
+      min: () => STATEMENT_PAID.statementDate, max: () => TODAY, required: "Choose the date you paid",
+      messages: { min: "The payment date can't be before the statement date", max: "The payment date can't be in the future" },
+      shortcuts: withShortcuts ? () => [{ label: "Today", date: TODAY }, { label: "Yesterday", date: addDays(TODAY, -1) }, { label: "Due date", date: STATEMENT_PAID.dueDate }] : null,
+      onChange: update,
+    });
+    for (const f of [sd, dd, pd]) f.stage = stage;
+    update();
+  }
+
+  function segment(seg, onPick) {
+    seg.addEventListener("click", (e) => {
+      const b = e.target.closest("button");
+      if (!b) return;
+      seg.querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+      onPick(b.dataset.v);
+    });
+  }
+
+  for (const article of document.querySelectorAll("[data-option]")) {
+    const opt = article.dataset.option;
+    let mode = opt === "C" ? "A" : opt;
+    buildStage(article, mode, opt === "C");
+    segment(article.querySelector("[data-width]"), (v) => {
+      for (const api of live) if (api.stage === article.querySelector("[data-stage]")) api.close();
+      article.querySelector("[data-stage]").classList.toggle("phone", v === "phone");
+    });
+    const modeSeg = article.querySelector("[data-mode]");
+    if (modeSeg) segment(modeSeg, (v) => { mode = v; buildStage(article, mode, true); });
+  }
+
+  for (const seg of document.querySelectorAll("[data-setting]")) {
+    segment(seg, (v) => {
+      settings[seg.dataset.setting] = seg.dataset.setting === "weekStart" ? Number(v) : v === "1";
+      for (const api of live) api.refresh();
+      renderExamples();
+    });
+  }
+
+  /* ---------- Area 3 ---------- */
+  const tryField = DateField(document.querySelector("[data-try]"), {
+    mode: "A", label: "Paid on", labelId: "try-label", helpId: "try-help", errId: "try-err", value: TODAY,
+    min: () => STATEMENT_PAID.statementDate, max: () => TODAY, required: "Choose the date you paid",
+    messages: { min: "The payment date can't be before the statement date", max: "The payment date can't be in the future" },
+    onChange: (v) => { document.querySelector("[data-try-readout]").textContent = `paidDate=${v || "–"}`; },
+  });
+  document.querySelector("[data-try-readout]").textContent = `paidDate=${TODAY}`;
+  const EXAMPLES = [
+    ["18/10", "Day first, this year"],
+    ["18 oct", ""],
+    ["oct 18", ""],
+    ["18-10-26", "Two-digit year"],
+    ["2026-10-18", ""],
+    ["Oct 18, 2026", "As the field writes it"],
+    ["18", "The 18th nearest to today"],
+    ["25", "Oct 25 hasn't come yet, so September"],
+    ["yesterday", ""],
+    ["5/8", "Day first: 5 August, before the statement"],
+    ["31/9", ""],
+  ];
+  function renderExamples() {
+    const ctx = { today: TODAY, near: TODAY, max: TODAY };
+    document.querySelector("[data-examples]").innerHTML = EXAMPLES.map(([typed, why]) => {
+      const d = parseTyped(typed, ctx);
+      const bad = !d ? "Not a date: “Enter a date, like 5 Aug 2026”" : d < STATEMENT_PAID.statementDate ? "Before the statement date: the field says so" : "";
+      return `<tr><td><button type="button" class="try" data-try-text="${typed}">${typed}</button></td><td><span class="reads">${d ? fmt(d) : "–"}</span>${why || bad ? `<span class="why${bad ? " bad" : ""}">${bad || why}</span>` : ""}</td></tr>`;
+    }).join("");
+  }
+  renderExamples();
+  document.querySelector("[data-examples]").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-try-text]");
+    if (b) tryField.setText(b.dataset.tryText);
+  });
+})();
+</script>

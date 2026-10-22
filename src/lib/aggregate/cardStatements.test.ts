@@ -4,7 +4,9 @@ import {
   filterCounts,
   filterStatements,
   groupByMonth,
+  isShort,
   minimumDueNow,
+  minimumLeft,
   paginate,
   paidSummary,
   paymentVariance,
@@ -74,6 +76,29 @@ describe("minimumDueNow", () => {
     const orphan = statement({ cardId: "gone", status: "Pending", minimumAmountDue: 999 });
     const blank = statement({ status: "Pending", minimumAmountDue: "" as unknown as number });
     expect(minimumDueNow({ cards: [card({})], statements: [orphan, blank, statement({ minimumAmountDue: 500 })] })).toBe(0);
+  });
+});
+
+describe("isShort", () => {
+  it("is short only below the total due, to the paisa, exactly where paymentVariance says underpaid", () => {
+    expect(isShort(16098.5, 16098.49)).toBe(true);
+    expect(isShort(16098.5, 16098.5)).toBe(false);
+    expect(isShort(0.1 + 0.2, 0.3)).toBe(false);
+    expect(isShort(16098, 32196)).toBe(false);
+    expect(isShort(-500, 0)).toBe(false);
+    for (const [total, paid] of [[16098.5, 16098.49], [16098.5, 16098.5], [16098, 32196], [-500, 0], [0.1 + 0.2, 0.3]]) {
+      expect(isShort(total, paid)).toBe(paymentVariance(statement({ totalAmountDue: total, amountPaid: paid })).kind === "under");
+    }
+  });
+});
+
+describe("minimumLeft", () => {
+  it("takes a payment off the minimum first, never below ₹0, with a blank payment or minimum as ₹0", () => {
+    expect(minimumLeft({ minimumAmountDue: 5000, amountPaid: 3000 })).toBe(2000);
+    expect(minimumLeft({ minimumAmountDue: 5000, amountPaid: 5000 })).toBe(0);
+    expect(minimumLeft({ minimumAmountDue: 5000, amountPaid: 8000 })).toBe(0);
+    expect(minimumLeft({ minimumAmountDue: 5000 })).toBe(5000);
+    expect(minimumLeft({ minimumAmountDue: "" as unknown as number, amountPaid: 100 })).toBe(0);
   });
 });
 

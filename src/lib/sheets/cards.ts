@@ -15,7 +15,8 @@ export const createCardSchema = z.object({
   status: z.enum(["Active", "Inactive", "Closed"]),
   statementPdfPassword: nonEmptyString.optional(),
   emailMatchKeywords: nonEmptyString.optional(),
-  last4: z.string().regex(/^\d{4}$/, "Enter the last 4 digits of the card number"),
+  // Optional: the statement import fills it in from the PDF (#78).
+  last4: z.string().regex(/^\d{4}$/, "Enter the last 4 digits of the card number").optional(),
   color: z.enum(CARD_COLORS),
   defaultPaidFromAccountId: nonEmptyString.optional(),
 });
@@ -23,12 +24,11 @@ export const createCardSchema = z.object({
 export const updateCardSchema = createCardSchema.partial();
 
 /**
- * A row as read back from the Sheet: a valid create, plus its id. Last 4 and
- * colour may be blank on rows added before those columns existed (see Card).
+ * A row as read back from the Sheet: a valid create, plus its id. The colour
+ * may be blank on rows added before that column existed (see Card).
  */
 export const cardRowSchema = createCardSchema.extend({
   id: nonEmptyString,
-  last4: createCardSchema.shape.last4.optional(),
   color: createCardSchema.shape.color.optional(),
 });
 
