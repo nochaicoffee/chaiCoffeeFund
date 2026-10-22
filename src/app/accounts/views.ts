@@ -1,5 +1,5 @@
 import { comingUp, flows, moneyItems, type AccountsData } from "@/lib/aggregate/accountFlows";
-import { accountColor, balanceOn, changeSince, dayBefore, daysSinceBalance, highPoint, isClosed, isStale, periodSpan, sharesOfTotal, STALE_DAYS, totalOn, totalSeries, weeklyDates, type BalanceTrendPoint } from "@/lib/aggregate/accounts";
+import { PURPOSE_COLORS, accountColor, balanceOn, changeSince, dayBefore, daysSinceBalance, highPoint, isClosed, isStale, periodSpan, sharesOfTotal, STALE_DAYS, totalOn, totalSeries, weeklyDates, type BalanceTrendPoint } from "@/lib/aggregate/accounts";
 import { addMonths, monthOf, type SpendPeriod } from "@/lib/aggregate/cardSpend";
 import { periodPhrase } from "@/lib/aggregate/period";
 import { formatDate, formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
@@ -7,6 +7,8 @@ import { optionLabel } from "@/lib/format/labels";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import { cardColorKey, whenFrom, type ColorKey } from "@/lib/format/subscriptionLabels";
 import type { Account } from "@/lib/sheets/types";
+import type { MapEntry } from "@/components/subscriptions/costMap";
+import { daysBetween } from "@/lib/aggregate/cardSpend";
 import type { SentencePart } from "../cards/summarySentence";
 
 /**
@@ -62,8 +64,35 @@ export interface PickView {
   figures: FigureView[];
 }
 
+/** One account's block in the mix: its balance sized like a subscription's cost in the Subscriptions map, grouped by purpose. */
+export interface MixBlock extends MapEntry {
+  /** Formatted balance. */
+  balanceText: string;
+  /** Its share of what's held, 0 to 1. */
+  share: number;
+  initial: string;
+}
+
+/** One recorded balance in Balance history: what it was, how it moved, and how long since the one before. */
+export interface HistoryRow {
+  id: string;
+  accountId: string;
+  accountName: string;
+  date: string;
+  dateText: string;
+  balanceText: string;
+  /** "+₹4,200", "−₹1,000", or "First balance". */
+  changeText: string;
+  changeTone: "up" | "down" | null;
+  /** "30 days after the one before". */
+  gapText: string | null;
+}
+
 export interface AccountsPageView {
   picks: PickView[];
+  mix: MixBlock[];
+  /** Newest first, by pick id: All has every account's readings. */
+  history: Record<string, HistoryRow[]>;
   /** The rest of the page's own data, filled in as each widget is built. */
   hasAccounts: boolean;
 }
@@ -174,6 +203,50 @@ function allPick(data: AccountsData, period: SpendPeriod, today: string): PickVi
   };
 }
 
+/** The mix: every open account with a balance above ₹0, biggest first, by purpose. */
+export function mixBlocks(data: AccountsData, today: string): MixBlock[] {
+  return sharesOfTotal(data.accounts.filter((a) => !isClosed(a)), data.snapshots, today).map(({ account, balance, share }) => ({
+    id: account.id,
+    alias: account.name,
+    color: cardColorKey(accountColor(account)),
+    monthly: balance,
+    category: account.purpose,
+    categoryLabel: optionLabel(account.purpose),
+    categoryColor: cardColorKey(PURPOSE_COLORS[account.purpose]),
+    balanceText: formatInr(balance),
+    share,
+    initial: account.bank.trim()[0]?.toUpperCase() ?? "?",
+  }));
+}
+
+/** Every recorded balance with its change from the one before it, newest first. */
+export function historyRows(data: AccountsData): Record<string, HistoryRow[]> {
+  const rows = new Map<string, HistoryRow[]>();
+  const all: HistoryRow[] = [];
+  for (const account of data.accounts) {
+    const mine = data.snapshots.filter((s) => s.accountId === account.id).sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? -1 : 1));
+    const list = mine.map((s, i): HistoryRow => {
+      const before = mine[i - 1];
+      const delta = before ? s.balance - before.balance : null;
+      return {
+        id: s.id,
+        accountId: account.id,
+        accountName: account.name,
+        date: s.date,
+        dateText: formatDate(s.date),
+        balanceText: formatInr(s.balance),
+        changeText: delta === null ? "First balance" : delta === 0 ? "No change" : `${delta > 0 ? "+" : "−"}${formatInr(Math.abs(delta))}`,
+        changeTone: delta === null || delta === 0 ? null : delta > 0 ? "up" : "down",
+        gapText: before ? `${daysBetween(before.date, s.date)} days after the one before` : null,
+      };
+    });
+    all.push(...list);
+    rows.set(account.id, [...list].reverse());
+  }
+  const newest = (a: HistoryRow, b: HistoryRow) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1);
+  return { [ALL]: all.sort(newest), ...Object.fromEntries(rows) };
+}
+
 export function accountsPageView(data: AccountsData, today: string, period: SpendPeriod): AccountsPageView {
   // Closed accounts come last, as they do in the card row.
   const ordered = [...data.accounts].sort((a, b) => Number(isClosed(a)) - Number(isClosed(b)));
@@ -181,7 +254,8 @@ export function accountsPageView(data: AccountsData, today: string, period: Spen
   const picks = ordered.map((a) => accountPick(data, a, period, today));
   // With one account All would repeat it exactly, so it steps aside (decision 6).
   const showAll = live.length !== 1 || data.accounts.length !== 1;
-  return { picks: data.accounts.length === 0 ? [allPick(data, period, today)] : showAll && data.accounts.length > 1 ? [allPick(data, period, today), ...picks] : picks, hasAccounts: data.accounts.length > 0 };
+  const base = { mix: mixBlocks(data, today), history: historyRows(data) };
+  return { ...base, picks: data.accounts.length === 0 ? [allPick(data, period, today)] : showAll && data.accounts.length > 1 ? [allPick(data, period, today), ...picks] : picks, hasAccounts: data.accounts.length > 0 };
 }
 
 // --- The greeting ---

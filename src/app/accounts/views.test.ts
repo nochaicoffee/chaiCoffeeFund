@@ -3,7 +3,7 @@ import type { AccountsData } from "@/lib/aggregate/accountFlows";
 import { thisYear } from "@/lib/aggregate/period";
 import { demoAccountsData } from "@/lib/demo/accountsDemo";
 import { sentenceText } from "../cards/summarySentence";
-import { ALL, accountsPageView, greetingView, summarySentence } from "./views";
+import { ALL, accountsPageView, greetingView, historyRows, mixBlocks, summarySentence } from "./views";
 
 const today = "2026-10-22";
 const period = thisYear(today);
@@ -67,5 +67,31 @@ describe("the greeting", () => {
     const noBalances = { ...demo, snapshots: [] };
     expect(sentenceText(summarySentence(noBalances, today, period))).toMatch(/no balances yet/);
     expect(greetingView(noBalances, today, period)).toEqual({});
+  });
+});
+
+describe("the mix", () => {
+  const blocks = mixBlocks(demo, today);
+  it("holds every open account with money, biggest first, sizes and shares adding up", () => {
+    expect(blocks.map((b) => b.id)).toEqual(["demo-sbi", "demo-hdfc", "demo-icici", "demo-kotak", "demo-axis"]);
+    expect(blocks.reduce((t, b) => t + b.share, 0)).toBeCloseTo(1, 10);
+    expect(blocks.reduce((t, b) => t + b.monthly, 0)).toBe(accountsPageView(demo, today, period).picks[0].balanceValue);
+  });
+  it("groups by the account's purpose", () => {
+    expect(blocks.find((b) => b.id === "demo-sbi")).toMatchObject({ category: "Emergency-Fund", categoryLabel: "Emergency Fund" });
+  });
+});
+
+describe("Balance history", () => {
+  const history = historyRows(demo);
+  it("lists an account's balances newest first, each with its change from the one before", () => {
+    const hdfc = history["demo-hdfc"];
+    expect(hdfc[0].date > hdfc[1].date).toBe(true);
+    expect(hdfc[0].changeText).toBe("+₹22,000");
+    expect(hdfc.at(-1)).toMatchObject({ changeText: "First balance", gapText: null });
+  });
+  it("lists every account's balances under All, and a gap in days", () => {
+    expect(history[ALL]).toHaveLength(Object.entries(history).filter(([k]) => k !== ALL).reduce((n, [, rows]) => n + rows.length, 0));
+    expect(history["demo-hdfc"][0].gapText).toBe("31 days after the one before");
   });
 });
