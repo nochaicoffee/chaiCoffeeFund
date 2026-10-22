@@ -56,6 +56,8 @@ describe("scoping and status", () => {
     expect(ids("4821").length).toBe(4);
     expect(ids("₹1,20,000")).toEqual(["hdfc-2026-01-31"]);
     expect(ids("20000")).toEqual(["hdfc-2026-01-31"]);
+    // A prefix of the amount, not any digits inside it.
+    expect(ids("0000")).toEqual([]);
     expect(ids("zzz")).toEqual([]);
   });
   it("counts rises, falls and first or closing over the scope", () => {

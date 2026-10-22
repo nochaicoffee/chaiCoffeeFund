@@ -68,7 +68,7 @@ export interface HistoryQuery {
 
 const digits = (text: string) => text.replace(/[^\d]/g, "");
 
-/** Whether a search matches an entry: the account's name, bank or last 4 (any case), or an amount, as digits, in its balance or its change. */
+/** Whether a search matches an entry: the account's name, bank or last 4 (any case), or an amount, typed as digits, that its balance or its change starts with (so "2,41" finds ₹2,41,000, not ₹12,41,500). */
 function matches(entry: HistoryEntry, search: string): boolean {
   const q = search.trim().toLowerCase();
   if (q === "") return true;
@@ -76,7 +76,7 @@ function matches(entry: HistoryEntry, search: string): boolean {
   if (account.name.toLowerCase().includes(q) || account.bank.toLowerCase().includes(q) || (account.last4 ?? "") === q) return true;
   const wanted = digits(q);
   if (wanted === "" || !/^[\d,.₹\s]+$/.test(q)) return false;
-  return String(Math.round(Math.abs(entry.balance))).includes(wanted) || (entry.delta !== null && String(Math.round(Math.abs(entry.delta))).includes(wanted));
+  return String(Math.round(Math.abs(entry.balance))).startsWith(wanted) || (entry.delta !== null && String(Math.round(Math.abs(entry.delta))).startsWith(wanted));
 }
 
 /** The entries in the period (by their own date), then the account and purpose, then the search: what the status counts are over. */

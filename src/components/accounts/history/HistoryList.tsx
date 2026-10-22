@@ -132,19 +132,19 @@ export function HistoryList({ view, state, hrefFor, accountsHref, today }: { vie
             })}
           </nav>
           <LinkSelect label="Account" options={view.accounts.map((o) => ({ ...o, display: o.value ? o.label : "All accounts" }))} hrefs={accountHrefs} value={state.accountId ?? ""} className={SELECT} />
-          <span className="max-lg:hidden">
+          <span>
             <LinkSelect label="Purpose" options={view.purposes.map((o) => ({ ...o, display: o.value ? o.label : "Any purpose" }))} hrefs={purposeHrefs} value={state.purpose ?? ""} className={SELECT} />
           </span>
         </div>
-        <div className="flex items-center gap-2.5 max-lg:hidden">
-          <Form action="/accounts/history" scroll={false} role="search" className="w-[250px]">
+        <div className="flex w-full items-center gap-2.5 lg:w-auto">
+          <Form action="/accounts/history" scroll={false} role="search" className="min-w-0 flex-1 lg:w-[250px] lg:flex-none">
             {state.accountId && <input type="hidden" name="account" value={state.accountId} />}
             {state.purpose && <input type="hidden" name="purpose" value={state.purpose} />}
             {periodParam(state.period, today) && <input type="hidden" name="period" value={periodParam(state.period, today)} />}
             {state.status !== "all" && <input type="hidden" name="status" value={state.status} />}
             {state.sort !== "newest" && <input type="hidden" name="sort" value={state.sort} />}
             {state.demo && <input type="hidden" name="demo" value="" />}
-            <label className="flex h-[34px] items-center gap-2 rounded-full bg-fill px-3.5 text-muted focus-within:outline-2 focus-within:outline-accent">
+            <label className="flex h-10 items-center gap-2 md:h-[34px] rounded-full bg-fill px-3.5 text-muted focus-within:outline-2 focus-within:outline-accent">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden="true">
                 <circle cx="11" cy="11" r="7" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -157,7 +157,7 @@ export function HistoryList({ view, state, hrefFor, accountsHref, today }: { vie
             href={hrefFor({ sort: nextSort })}
             scroll={false}
             aria-label={`Sorted by ${sortLabel.toLowerCase()}. Sort by ${{ newest: "newest first", oldest: "oldest first", biggest: "biggest move" }[nextSort]} instead`}
-            className="flex h-[34px] shrink-0 items-center gap-1.5 rounded-full bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent"
+            className="flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:h-[34px]"
           >
             {sortLabel}
             <Chevron />
@@ -186,9 +186,9 @@ export function HistoryList({ view, state, hrefFor, accountsHref, today }: { vie
           <div role="table" aria-label="Balances">
             {view.groups.map((g) => (
               <div key={g.key} role="rowgroup">
-                <div className="flex items-center justify-between border-b border-divider pt-3.5 pb-2 text-[13px] font-extrabold">
-                  <span>{g.title}</span>
-                  <span className="text-xs font-semibold text-muted">{g.note}</span>
+                <div role="row" className="flex items-center justify-between border-b border-divider pt-3.5 pb-2 text-[13px] font-extrabold">
+                  <span role="cell">{g.title}</span>
+                  <span role="cell" className="text-xs font-semibold text-muted">{g.note}</span>
                 </div>
                 {g.rows.map((r) => (
                   <Row key={r.id} row={r} />
