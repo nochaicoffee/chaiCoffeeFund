@@ -77,3 +77,12 @@ export function readCheckInForm(fields: FormFields, known: { accountIds: string[
   if (f.ok && balances.length === 0) f.fail("form", "Type at least one balance");
   return f.result({ date: date!, balances });
 }
+
+/** Close account: the day it closed. Not in the future, and not before its latest balance, which would leave it still holding money. */
+export function readCloseForm(fields: FormFields, latestBalanceDate: string | null, today: string): FormResult<{ endDate: string }> {
+  const f = new FieldReader(fields);
+  const endDate = f.date("endDate", "Enter the day it was closed");
+  if (endDate && endDate > today) f.fail("endDate", "It can't be closed on a day that hasn't come yet");
+  if (endDate && latestBalanceDate && endDate < latestBalanceDate) f.fail("endDate", "It has a balance after that day. Close it on or after its latest balance, or delete that balance first");
+  return f.result({ endDate: endDate! });
+}

@@ -3,14 +3,14 @@
 import { updateTag } from "next/cache";
 import { sameDayBalance } from "@/lib/aggregate/accounts";
 import { todayIso } from "@/lib/format/date";
-import { readAccountForm, readBalanceForm, readCheckInForm, readEditBalanceForm } from "@/lib/forms/accountForms";
+import { readAccountForm, readBalanceForm, readCheckInForm, readCloseForm, readEditBalanceForm } from "@/lib/forms/accountForms";
 import type { FormState } from "@/lib/forms/formState";
 import { accountsRepository, createAccountSchema, updateAccountSchema } from "@/lib/sheets/accounts";
 import { balanceSnapshotsRepository, updateBalanceSnapshotSchema } from "@/lib/sheets/balanceSnapshots";
 import { CACHE_TAGS } from "@/lib/sheets/cached";
 import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
 import { InvalidRowError, NotFoundError } from "@/lib/sheets/repository";
-import type { Account } from "@/lib/sheets/types";
+import type { Account, BalanceSnapshot } from "@/lib/sheets/types";
 
 /**
  * The Accounts forms' server actions (#165), used with useActionState as the Cards and
@@ -35,11 +35,22 @@ function refreshed(...tags: string[]): FormState {
   return { status: "saved", at: Date.now() };
 }
 
-/** One balance for an account on a day: replaces that day's if there is one, else adds it. */
-async function writeBalance(accountId: string, date: string, balance: number): Promise<void> {
-  const same = sameDayBalance(await balanceSnapshotsRepository.list(), accountId, date);
-  if (same) await balanceSnapshotsRepository.update(same.id, { balance });
-  else await balanceSnapshotsRepository.create({ accountId, date, balance });
+/**
+ * Writes balances one at a time (so the Sheet isn't written concurrently): each replaces its
+ * day's if there is one, else is added. The tab is read once for all of them, and each write
+ * is added to what's known, so two for one account and day in a call still make one row.
+ */
+async function writeBalances(entries: { accountId: string; date: string; balance: number }[], known?: BalanceSnapshot[]): Promise<void> {
+  known ??= await balanceSnapshotsRepository.list();
+  for (const { accountId, date, balance } of entries) {
+    const same = sameDayBalance(known, accountId, date);
+    if (same) {
+      await balanceSnapshotsRepository.update(same.id, { balance });
+      same.balance = balance;
+    } else {
+      known.push(await balanceSnapshotsRepository.create({ accountId, date, balance }));
+    }
+  }
 }
 
 /** Add account (with an optional opening balance, today's), or Edit account when the form carries an id. */
@@ -55,7 +66,18 @@ export async function saveAccount(_previous: FormState, formData: FormData): Pro
       return refreshed(CACHE_TAGS.accounts);
     }
     const created = await accountsRepository.create(createAccountSchema.parse({ ...account, status: "Active", ...(last4 && { last4 }) }));
-    if (balance !== undefined) await writeBalance(created.id, todayIso(), balance);
+    if (balance !== undefined) {
+      try {
+        await writeBalances([{ accountId: created.id, date: todayIso(), balance }]);
+      } catch (error) {
+        // Take the account back out, so Try again doesn't add it a second time. If that fails too (the same quota, say), say so rather than offer a retry that would duplicate it.
+        const removed = await accountsRepository.remove(created.id).then(() => true, () => false);
+        if (removed) throw error;
+        console.error("[accounts] the account was added but its balance wasn't saved, and it couldn't be removed again:", error instanceof Error ? error.message : String(error));
+        updateTag(CACHE_TAGS.accounts);
+        return { status: "invalid", errors: { form: "The account was added, but its balance couldn't be saved. Close this and use Update balance to add it." } };
+      }
+    }
   } catch (error) {
     if (error instanceof NotFoundError) return GONE;
     if (error instanceof InvalidRowError) return { status: "invalid", errors: { form: error.message } };
@@ -75,7 +97,7 @@ export async function saveBalance(_previous: FormState, formData: FormData): Pro
   const result = readBalanceForm(fields(formData), { accountIds }, todayIso());
   if (!result.ok) return { status: "invalid", errors: result.errors };
   try {
-    await writeBalance(result.input.accountId, result.input.date, result.input.balance);
+    await writeBalances([result.input]);
   } catch (error) {
     return failed("saveBalance", error);
   }
@@ -93,7 +115,7 @@ export async function saveCheckIn(_previous: FormState, formData: FormData): Pro
   const result = readCheckInForm(fields(formData), { accountIds }, todayIso());
   if (!result.ok) return { status: "invalid", errors: result.errors };
   try {
-    for (const { accountId, balance } of result.input.balances) await writeBalance(accountId, result.input.date, balance);
+    await writeBalances(result.input.balances.map((b) => ({ ...b, date: result.input.date })));
   } catch (error) {
     // Some may have been written; saving again replaces them rather than doubling them.
     return failed("saveCheckIn", error);
@@ -104,11 +126,14 @@ export async function saveCheckIn(_previous: FormState, formData: FormData): Pro
 /** Close account: a ₹0 balance on the day, then Inactive. The balance first, so a failure half way leaves it open. */
 export async function closeAccount(_previous: FormState, formData: FormData): Promise<FormState> {
   const id = String(formData.get("id") ?? "");
-  const date = String(formData.get("endDate") ?? "") || todayIso();
   if (!id) return GONE;
   try {
     if (!(await accountsRepository.get(id))) return GONE;
-    await writeBalance(id, date, 0);
+    const known = await balanceSnapshotsRepository.list();
+    const latest = known.filter((s) => s.accountId === id).map((s) => s.date).sort().at(-1) ?? null;
+    const result = readCloseForm(fields(formData), latest, todayIso());
+    if (!result.ok) return { status: "invalid", errors: result.errors };
+    await writeBalances([{ accountId: id, date: result.input.endDate, balance: 0 }], known);
     await accountsRepository.update(id, { status: "Inactive" });
   } catch (error) {
     return failed("closeAccount", error);
@@ -134,6 +159,11 @@ export async function saveBalanceEdit(_previous: FormState, formData: FormData):
   const result = readEditBalanceForm(fields(formData), todayIso());
   if (!result.ok) return { status: "invalid", errors: result.errors };
   try {
+    const all = await balanceSnapshotsRepository.list();
+    const mine = all.find((s) => s.id === result.input.id);
+    if (!mine) return { status: "invalid", errors: { form: "This balance isn't in the Sheet any more. Close this and refresh." } };
+    // One balance per account per day (decision 7): moving it onto a day that has one would make two.
+    if (sameDayBalance(all, mine.accountId, result.input.date, mine.id)) return { status: "invalid", errors: { date: "This account already has a balance for that day. Edit or delete that one instead" } };
     await balanceSnapshotsRepository.update(result.input.id, updateBalanceSnapshotSchema.parse({ date: result.input.date, balance: result.input.balance }));
   } catch (error) {
     if (error instanceof NotFoundError) return { status: "invalid", errors: { form: "This balance isn't in the Sheet any more. Close this and refresh." } };

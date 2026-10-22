@@ -32,7 +32,6 @@ const cardBackground = (pick: PickView) => (pick.kind === "all" ? `radial-gradie
 
 export function AccountsHero({ picks, pickId, onPick, hasAccounts }: { picks: PickView[]; pickId: string; onPick: (id: string) => void; hasAccounts: boolean }) {
   const pick = picks.find((p) => p.id === pickId) ?? picks[0];
-  const others = picks.filter((p) => p.id !== pick.id);
   return (
     <section aria-label="Your accounts" className="relative isolate overflow-hidden rounded-[28px] p-4 text-fg shadow-[var(--card-shadow)] md:rounded-[36px] md:p-7" style={{ ...STAGE_TOKENS, background: stageBackground(pick.colorKey) }}>
       <CrossfadeBackground background={stageBackground(pick.colorKey)} />
@@ -42,20 +41,9 @@ export function AccountsHero({ picks, pickId, onPick, hasAccounts }: { picks: Pi
         <EmptyStage pick={pick} />
       ) : (
         <>
-          {/* Desktop: every card in one row, the picked one open. */}
-          <div role="tablist" aria-label="Accounts" className="hidden items-stretch gap-3 overflow-x-auto pb-3 md:flex">
-            {picks.map((p) => (p.id === pick.id ? <OpenCard key={p.id} pick={p} /> : <Spine key={p.id} pick={p} onPick={onPick} />))}
-          </div>
-          {/* Phone: the picked card full width, the others under it. */}
-          <div className="md:hidden">
-            <OpenCard pick={pick} full />
-            {others.length > 0 && (
-              <div role="tablist" aria-label="Accounts" className="-mx-1 mt-3 flex gap-2 overflow-x-auto px-1 pb-1">
-                {others.map((p) => (
-                  <Chip key={p.id} pick={p} onPick={onPick} />
-                ))}
-              </div>
-            )}
+          {/* One row on a desktop, the picked card open and the rest folded to spines. On a phone the picked card is full width, first, and the rest wrap under it as chips. */}
+          <div role="group" aria-label="Accounts" className="flex flex-wrap items-stretch gap-2 md:flex-nowrap md:gap-3 md:overflow-x-auto md:pb-3">
+            {picks.map((p) => (p.id === pick.id ? <OpenCard key={p.id} pick={p} /> : <FoldedCard key={p.id} pick={p} onPick={onPick} />))}
           </div>
         </>
       )}
@@ -81,12 +69,11 @@ export function AccountsHero({ picks, pickId, onPick, hasAccounts }: { picks: Pi
 }
 
 /** The picked card, open: its balance large, who and when under it, its purpose as a chip at the top right. */
-function OpenCard({ pick, full }: { pick: PickView; full?: boolean }) {
+function OpenCard({ pick }: { pick: PickView }) {
   return (
     <div
-      role="tab"
-      aria-selected="true"
-      className={`relative isolate flex min-h-[220px] shrink-0 flex-col justify-between overflow-hidden rounded-[26px] border border-white/60 p-5 text-on-card shadow-[var(--tile-shadow-selected)] ${closedStyle(pick)} ${full ? "w-full" : "w-[min(480px,60%)] min-w-[360px]"}`}
+      aria-current="true"
+      className={`relative isolate flex min-h-[220px] shrink-0 flex-col justify-between overflow-hidden rounded-[26px] border border-white/60 p-5 text-on-card shadow-[var(--tile-shadow-selected)] ${closedStyle(pick)} order-first w-full md:order-none md:w-[min(480px,60%)] md:min-w-[360px]`}
       style={{ background: cardBackground(pick) }}
     >
       <CrossfadeBackground background={cardBackground(pick)} />
@@ -94,7 +81,7 @@ function OpenCard({ pick, full }: { pick: PickView; full?: boolean }) {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="text-xs font-bold text-on-card-muted">{pick.kind === "all" ? "Your balance" : `Your balance · ${pick.bank}`}</div>
-          <div className={`mt-1 leading-none font-extrabold tracking-tight tabular-nums ${pick.balance.length > 11 ? "text-[28px] md:text-[40px]" : pick.balance.length > 9 ? "text-[34px] md:text-[48px]" : "text-[44px] md:text-[62px]"}`}>
+          <div className={`mt-1 leading-none font-extrabold tracking-tight tabular-nums whitespace-nowrap ${pick.balance.length > 11 ? "text-[24px] md:text-[40px]" : pick.balance.length > 9 ? "text-[30px] md:text-[48px]" : pick.balance.length > 7 ? "text-[36px] md:text-[62px]" : "text-[44px] md:text-[62px]"}`}>
             <RollingNumber value={pick.balanceValue} format="inr" />
           </div>
         </div>
@@ -119,31 +106,24 @@ function OpenCard({ pick, full }: { pick: PickView; full?: boolean }) {
 
 const closedStyle = (pick: PickView) => (pick.closed ? "grayscale opacity-80" : "");
 
-/** A folded card: a dark spine with the bank's initial at the top and the name at the bottom, widening under the pointer. */
-function Spine({ pick, onPick }: { pick: PickView; onPick: (id: string) => void }) {
+/**
+ * A folded card. On a desktop it's a dark spine with the bank's initial at the top and the name
+ * running up it at the bottom, widening under the pointer; on a phone it's a small chip, the
+ * initial and the name side by side.
+ */
+function FoldedCard({ pick, onPick }: { pick: PickView; onPick: (id: string) => void }) {
   return (
     <button
       type="button"
-      role="tab"
-      aria-selected="false"
+      aria-pressed="false"
       aria-label={pick.name}
       onClick={() => onPick(pick.id)}
-      className={`group/spine relative isolate flex min-h-[220px] w-[64px] shrink-0 cursor-pointer flex-col items-center justify-between overflow-hidden rounded-[22px] border border-on-card-line border-t-on-card-line-top px-2 py-4 text-on-card shadow-[var(--tile-shadow)] transition-[width,transform] duration-300 ease-out hover:w-[92px] focus-visible:w-[92px] focus-visible:outline-2 focus-visible:outline-white motion-reduce:transition-none ${closedStyle(pick)}`}
+      className={`group/spine relative isolate flex h-14 min-w-[104px] shrink-0 cursor-pointer items-center gap-2 overflow-hidden rounded-2xl px-3 text-on-card shadow-[var(--tile-shadow)] focus-visible:outline-2 focus-visible:outline-white md:h-auto md:min-h-[220px] md:w-[64px] md:min-w-0 md:flex-col md:justify-between md:gap-0 md:rounded-[22px] md:border md:border-on-card-line md:border-t-on-card-line-top md:px-2 md:py-4 md:transition-[width] md:duration-300 md:ease-out md:hover:w-[92px] md:focus-visible:w-[92px] motion-reduce:transition-none ${closedStyle(pick)}`}
       style={{ background: cardBackground(pick) }}
     >
-      <span className="flex size-8 items-center justify-center rounded-full border border-white/40 text-sm font-extrabold">{pick.kind === "all" ? "∑" : pick.initial}</span>
-      <span className="[writing-mode:vertical-rl] rotate-180 text-xs font-extrabold tracking-wide whitespace-nowrap">{pick.name}</span>
+      <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-white/40 text-[11px] font-extrabold md:size-8 md:text-sm">{pick.kind === "all" ? "∑" : pick.initial}</span>
+      <span className="max-w-[88px] truncate text-xs font-extrabold md:max-w-none md:[writing-mode:vertical-rl] md:rotate-180 md:tracking-wide md:whitespace-nowrap">{pick.name}</span>
       {pick.stale && <i aria-hidden="true" className="absolute top-2 right-2 size-2 rounded-full bg-[var(--card-copper)]" />}
-    </button>
-  );
-}
-
-/** A phone's small card in the row under the open one. */
-function Chip({ pick, onPick }: { pick: PickView; onPick: (id: string) => void }) {
-  return (
-    <button type="button" role="tab" aria-selected="false" onClick={() => onPick(pick.id)} className={`relative flex h-14 min-w-[104px] shrink-0 items-center gap-2 overflow-hidden rounded-2xl px-3 text-on-card shadow-[var(--tile-shadow)] ${closedStyle(pick)}`} style={{ background: cardBackground(pick) }}>
-      <span className="flex size-6 shrink-0 items-center justify-center rounded-full border border-white/40 text-[11px] font-extrabold">{pick.kind === "all" ? "∑" : pick.initial}</span>
-      <span className="max-w-[88px] truncate text-xs font-extrabold">{pick.name}</span>
     </button>
   );
 }

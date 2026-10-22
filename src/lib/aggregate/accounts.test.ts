@@ -7,6 +7,8 @@ import {
   computeAccountBalances,
   dayBefore,
   highPoint,
+  lastMonthsOfSpan,
+  monthEnds,
   isBigDrop,
   isStale,
   periodSpan,
@@ -212,5 +214,36 @@ describe("colour and dates", () => {
     expect(periodSpan({ kind: "year", year: 2025 }, "2026-10-21", null)).toEqual({ from: "2025-01-01", to: "2025-12-31" });
     expect(periodSpan({ kind: "range", from: "2026-02", to: "2026-02" }, "2026-10-21", null)).toEqual({ from: "2026-02-01", to: "2026-02-28" });
     expect(periodSpan({ kind: "all" }, "2026-10-21", "2024-03-09")).toEqual({ from: "2024-03-09", to: "2026-10-21" });
+  });
+});
+
+describe("same-day balances while editing one", () => {
+  const rows = [snapshot({ id: "a", date: "2026-09-01", balance: 10 }), snapshot({ id: "b", date: "2026-09-05", balance: 20 })];
+  it("ignores the balance being edited, so it doesn't clash with itself", () => {
+    expect(sameDayBalance(rows, "acc-1", "2026-09-05")?.id).toBe("b");
+    expect(sameDayBalance(rows, "acc-1", "2026-09-05", "b")).toBeNull();
+    expect(sameDayBalance(rows, "acc-1", "2026-09-01", "b")?.id).toBe("a");
+  });
+});
+
+describe("charts over months", () => {
+  it("cuts a long span to its last 24 months and leaves a short one alone", () => {
+    expect(lastMonthsOfSpan({ from: "2021-03-09", to: "2026-10-22" })).toEqual({ from: "2024-11-01", to: "2026-10-22" });
+    expect(lastMonthsOfSpan({ from: "2026-01-01", to: "2026-10-22" })).toEqual({ from: "2026-01-01", to: "2026-10-22" });
+  });
+
+  const accounts = [account({ id: "a" }), account({ id: "b" })];
+  const snaps = [
+    snapshot({ id: "1", accountId: "a", date: "2026-01-15", balance: 100 }),
+    snapshot({ id: "2", accountId: "a", date: "2026-02-10", balance: 150 }),
+    snapshot({ id: "3", accountId: "b", date: "2026-02-20", balance: 400 }),
+  ];
+  it("gives each month's end total, and a change that leaves out an account's opening", () => {
+    const m = monthEnds(accounts, snaps, { from: "2026-01-01", to: "2026-03-10" });
+    expect(m.map((x) => [x.month, x.total])).toEqual([["2026-01", 100], ["2026-02", 550], ["2026-03", 550]]);
+    // January: a opens at 100 (not a change). February: a +50, and b opens at 400 (not a change).
+    expect(m.map((x) => x.change)).toEqual([0, 50, 0]);
+    expect(m[2].date).toBe("2026-03-10");
+    expect(m[1].parts.map((p) => p.accountId)).toEqual(["a", "b"]);
   });
 });

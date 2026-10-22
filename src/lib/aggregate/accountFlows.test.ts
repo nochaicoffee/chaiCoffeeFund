@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cameInBySource, comingUp, everythingElse, flows, monthlyFlows, monthsIn, moneyItems, type AccountsData } from "./accountFlows";
+import { bridgeSteps, cameInBySource, comingUp, everythingElse, flows, monthlyFlows, monthsIn, moneyItems, type AccountsData } from "./accountFlows";
 
 const empty: AccountsData = {
   accounts: [
@@ -173,5 +173,28 @@ describe("comingUp (decision 14)", () => {
     const sbi = comingUp(d, "sbi", today);
     expect(sbi.every((i) => i.accountId === "sbi")).toBe(true);
     expect(sbi.map((i) => i.date)).toEqual([...sbi.map((i) => i.date)].sort());
+  });
+});
+
+describe("bridgeSteps", () => {
+  const d = data({
+    snapshots: [snap("sbi", "2025-12-31", 100_000), snap("sbi", "2026-06-30", 130_000), snap("hdfc", "2026-03-01", 50_000), snap("hdfc", "2026-06-30", 60_000)],
+    incomeEntries: [{ id: "e1", incomeSourceId: "salary", expectedDate: "2026-04-30", receivedDate: "2026-04-30", amount: 40_000, status: "Received", accountId: "sbi", tag: "Regular" }],
+  });
+  const span = { from: "2026-01-01", to: "2026-06-30" };
+  const steps = bridgeSteps(d, moneyItems(d, span.from, span.to), null, span);
+
+  it("starts on what was held the day before, ends on what's held at the end, and the steps add up between", () => {
+    expect(steps[0]).toMatchObject({ label: "Start", amount: 100_000 });
+    expect(steps.at(-1)).toMatchObject({ label: "Now", amount: 190_000 });
+    const moved = steps.slice(1, -1).reduce((t, s) => t + s.amount, 0);
+    expect(100_000 + moved).toBe(190_000);
+  });
+
+  it("shows an account first read inside the span as its own step, not as money coming in", () => {
+    expect(steps.find((s) => s.label === "Accounts opened")?.amount).toBe(50_000);
+    expect(steps.find((s) => s.label === "Came in")?.amount).toBe(40_000);
+    // SBI +30,000 and HDFC +10,000 since its first balance: 40,000 explained by income, 0 left over.
+    expect(steps.find((s) => s.label === "Everything else")).toBeUndefined();
   });
 });

@@ -1,4 +1,4 @@
-import { balanceOn, dayBefore } from "./accounts";
+import { balanceOn, dayBefore, totalOn } from "./accounts";
 import { dueDateFor, nextStatementDate } from "./cardSchedule";
 import { monthRange, type MonthKey } from "./cardSpend";
 import { nextOccurrence } from "./recurring";
@@ -244,4 +244,38 @@ export function comingUp(data: AccountsData, accountId: string | null, today: st
 function sourceName(data: AccountsData, id: string): string {
   const source = data.incomeSources.find((s) => s.id === id);
   return source?.alias || source?.name || "Income";
+}
+
+export interface BridgeStep {
+  label: string;
+  amount: number;
+  /** "total" steps (the start and the end) stand on the floor; the rest move it. */
+  kind: "total" | "up" | "down";
+  /** The remainder the records don't explain (decision 2). */
+  worked?: boolean;
+}
+
+/**
+ * The bridge from where the span starts to where it ends: what came in, was sold, went out in
+ * each kind, and everything else; then "Accounts opened", the balances accounts arrived with
+ * when first read inside the span, which isn't money moving (confirmed by Prathik 2026-10-22).
+ * It always ends on what's held at the span's end.
+ */
+export function bridgeSteps(data: AccountsData, items: MoneyItem[], accountId: string | null, span: { from: string; to: string }): BridgeStep[] {
+  const scope = data.accounts.filter((a) => accountId === null || a.id === accountId);
+  const f = flows(items, accountId);
+  const rest = everythingElse(data, items, accountId, span.from, span.to);
+  const start = totalOn(scope, data.snapshots, dayBefore(span.from));
+  const end = totalOn(scope, data.snapshots, span.to);
+  const steps: BridgeStep[] = [{ label: "Start", amount: start, kind: "total" }];
+  const add = (label: string, amount: number, worked = false) => {
+    if (amount !== 0) steps.push({ label, amount, kind: amount > 0 ? "up" : "down", worked });
+  };
+  add("Came in", f.cameIn);
+  add("Sold", f.sold);
+  for (const kind of OUT_KINDS) add(kind, -f.out[kind]);
+  add("Everything else", rest.unexplained, true);
+  add("Accounts opened", end - (start + rest.change));
+  steps.push({ label: "Now", amount: end, kind: "total" });
+  return steps;
 }

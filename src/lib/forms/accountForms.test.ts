@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readAccountForm, readBalanceForm, readCheckInForm, readEditBalanceForm } from "./accountForms";
+import { readCloseForm, readAccountForm, readBalanceForm, readCheckInForm, readEditBalanceForm } from "./accountForms";
 
 const good = { name: "HDFC Salary", bank: "HDFC Bank", accountType: "Savings", purpose: "Spending", startDate: "2026-01-05", color: "Sapphire", last4: "0042", balance: "1,20,000" };
 
@@ -56,5 +56,21 @@ describe("readCheckInForm", () => {
     expect(!none.ok && none.errors.form).toBeDefined();
     const bad = readCheckInForm({ date: "2026-10-22", "balance:a2": "abc" }, known, "2026-10-22");
     expect(!bad.ok && Object.keys(bad.errors)).toEqual(["balance:a2"]);
+  });
+});
+
+describe("readCloseForm", () => {
+  it("takes the day it closed", () => {
+    expect(readCloseForm({ endDate: "2026-10-22" }, "2026-10-20", "2026-10-22")).toEqual({ ok: true, input: { endDate: "2026-10-22" } });
+    expect(readCloseForm({ endDate: "2026-10-20" }, "2026-10-20", "2026-10-22").ok).toBe(true);
+  });
+  it("refuses a day before its latest balance, a future day and a bad date, with the error on the date", () => {
+    for (const endDate of ["2026-10-01", "2026-10-23", "tomorrow", ""]) {
+      const r = readCloseForm({ endDate }, "2026-10-20", "2026-10-22");
+      expect(!r.ok && Object.keys(r.errors)).toEqual(["endDate"]);
+    }
+  });
+  it("takes any day up to today when it has no balance yet", () => {
+    expect(readCloseForm({ endDate: "2020-01-01" }, null, "2026-10-22").ok).toBe(true);
   });
 });

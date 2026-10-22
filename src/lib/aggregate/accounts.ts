@@ -1,4 +1,4 @@
-import { daysBetween, monthOf, type SpendPeriod } from "./cardSpend";
+import { daysBetween, monthOf, type MonthKey, type SpendPeriod } from "./cardSpend";
 import type { Account, AccountPurpose, BalanceSnapshot, CardColor } from "../sheets/types";
 
 /**
@@ -202,9 +202,9 @@ export function accountColor(account: Pick<Account, "color" | "purpose">): CardC
 // --- Saving a balance (decisions 7 and 8) ---
 
 /** The balance already recorded for this account on this day, which a new one replaces (decision 7). The later row, when the Sheet holds two. */
-export function sameDayBalance(snapshots: BalanceSnapshot[], accountId: string, date: string): BalanceSnapshot | null {
+export function sameDayBalance(snapshots: BalanceSnapshot[], accountId: string, date: string, exceptId?: string): BalanceSnapshot | null {
   let found: BalanceSnapshot | null = null;
-  for (const snapshot of snapshots) if (snapshot.accountId === accountId && snapshot.date === date) found = snapshot;
+  for (const snapshot of snapshots) if (snapshot.accountId === accountId && snapshot.date === date && snapshot.id !== exceptId) found = snapshot;
   return found;
 }
 
@@ -220,5 +220,59 @@ export function balanceBefore(snapshots: BalanceSnapshot[], accountId: string, d
   return balanceOn(snapshots, accountId, dayBefore(date));
 }
 
-/** The month a balance was read in, for "updated this month". */
-export const readMonth = (snapshot: Pick<BalanceSnapshot, "date">): string => monthOf(snapshot.date);
+
+// --- Charts over months ---
+
+/** The most months a chart shows; a longer period is cut to its last this many, and everything beside the chart is cut with it. */
+export const MAX_CHART_MONTHS = 24;
+
+/** The span cut to its last `max` months, so the chart, its tiles and its bridge all cover the same days. */
+export function lastMonthsOfSpan(span: { from: string; to: string }, max = MAX_CHART_MONTHS): { from: string; to: string } {
+  const months = monthsBetween(span.from, span.to);
+  return months.length <= max ? span : { from: `${months[months.length - max]}-01`, to: span.to };
+}
+
+/** Every month key from the first day's month to the last day's, inclusive. */
+export function monthsBetween(from: string, to: string): MonthKey[] {
+  const months: MonthKey[] = [];
+  for (let m = monthOf(from); m <= monthOf(to); m = nextMonth(m)) months.push(m);
+  return months;
+}
+
+function nextMonth(month: MonthKey): MonthKey {
+  const [y, m] = month.split("-").map(Number);
+  return m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, "0")}`;
+}
+
+export function lastDayOfMonth(month: MonthKey): string {
+  const [y, m] = month.split("-").map(Number);
+  return new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
+}
+
+export interface MonthEnd {
+  month: MonthKey;
+  /** The last day counted: the month's, or the span's own end. */
+  date: string;
+  total: number;
+  /** What the total moved that month, measured from the month before (or the span's start), an opening not counting as movement. */
+  change: number;
+  /** Each account's balance at the end, above ₹0, for River. */
+  parts: { accountId: string; balance: number }[];
+}
+
+/** Each month's end total, change and parts across a span. */
+export function monthEnds(accounts: Account[], snapshots: BalanceSnapshot[], span: { from: string; to: string }): MonthEnd[] {
+  const months = monthsBetween(span.from, span.to);
+  return months.map((month, i) => {
+    const last = lastDayOfMonth(month);
+    const date = last > span.to ? span.to : last;
+    const before = i === 0 ? dayBefore(span.from) : lastDayOfMonth(months[i - 1]);
+    return {
+      month,
+      date,
+      total: totalOn(accounts, snapshots, date),
+      change: changeSince(accounts, snapshots, before, date),
+      parts: accounts.map((a) => ({ accountId: a.id, balance: balanceOn(snapshots, a.id, date)?.balance ?? 0 })).filter((p) => p.balance > 0),
+    };
+  });
+}

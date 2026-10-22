@@ -224,6 +224,8 @@ Confirmed by Prathik on 2026-10-22 (he accepted the defaults the mockups show fo
 - **Money out** of an account is worked out from card bills paid from it, subscriptions charged to it (not to a card), EMIs paid from it and shares bought from it. **Everything else** is the balance change those don't explain (UPI, cash, transfers between own accounts), shown as worked out, never as a statement.
 - **Saved = came in − expenses**, where expenses are card bills, subscriptions and EMIs. Money invested counts as saved; "kept in the bank" is saved minus invested. Sale proceeds move a balance but are not "came in".
 - **A balance saved on a day that already has one replaces it.** A balance more than 20% below the last one asks you to check it, and never blocks the save.
+- **An opening balance isn't a change** (confirmed 2026-10-22): an account first read inside a period counts from its first balance in "since" figures, and the Bridge shows what it arrived with as its own "Accounts opened" step, so it still ends on what's held. All the change figures run to the period's end; a period longer than 24 months is cut to its last 24 for the charts and everything beside them.
+- **Closing** takes a day not in the future and not before the account's latest balance. A balance can't be moved onto a day that already has one.
 - **Colour** is an optional per-account choice of the six card colours, falling back to the purpose's; **last 4** is optional text.
 
 ## 9. Non-functional requirements
