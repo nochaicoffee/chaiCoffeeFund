@@ -1,0 +1,1232 @@
+{
+  "pages": [
+    {
+      "id": "readme",
+      "name": "Read me first"
+    },
+    {
+      "id": "final",
+      "name": "Final design"
+    },
+    {
+      "id": "r13",
+      "name": "Round 13 · selector inside the hero"
+    },
+    {
+      "id": "r12",
+      "name": "Round 12 · cards as the selector"
+    },
+    {
+      "id": "r11",
+      "name": "Round 11 · W1 with your changes"
+    },
+    {
+      "id": "widgets",
+      "name": "Below the hero (W1–W5)"
+    },
+    {
+      "id": "z3",
+      "name": "Bank objects, simpler (B1–B7)"
+    },
+    {
+      "id": "z2",
+      "name": "Z1 · account objects, round 2"
+    },
+    {
+      "id": "z1",
+      "name": "Z1 · stage colour and account objects"
+    },
+    {
+      "id": "zsel",
+      "name": "Y · six selectors for any number"
+    },
+    {
+      "id": "ysel",
+      "name": "Y · seven selectors"
+    },
+    {
+      "id": "dir-a",
+      "name": "A · Cover flow"
+    },
+    {
+      "id": "dir-b",
+      "name": "B · Tiles and details"
+    },
+    {
+      "id": "dir-c",
+      "name": "C · Money map"
+    },
+    {
+      "id": "dir-d",
+      "name": "D · Passbooks"
+    },
+    {
+      "id": "dir-u",
+      "name": "U · Split bar"
+    },
+    {
+      "id": "dir-v",
+      "name": "V · Account list"
+    },
+    {
+      "id": "dir-w",
+      "name": "W · Passbooks on the desk"
+    },
+    {
+      "id": "dir-x",
+      "name": "X · Index tabs"
+    },
+    {
+      "id": "dir-y",
+      "name": "Y · Ticker"
+    },
+    {
+      "id": "dir-o",
+      "name": "O · Consolidated statement"
+    },
+    {
+      "id": "dir-p",
+      "name": "P · Khata"
+    },
+    {
+      "id": "dir-q",
+      "name": "Q · Receipts"
+    },
+    {
+      "id": "dir-r",
+      "name": "R · Annual report"
+    },
+    {
+      "id": "dir-s",
+      "name": "S · Planner"
+    },
+    {
+      "id": "dir-t",
+      "name": "T · General ledger"
+    },
+    {
+      "id": "dir-e",
+      "name": "E · Reservoir"
+    },
+    {
+      "id": "dir-f",
+      "name": "F · Passbook"
+    },
+    {
+      "id": "dir-g",
+      "name": "G · Instrument cluster"
+    },
+    {
+      "id": "dir-h",
+      "name": "H · Tree rings"
+    },
+    {
+      "id": "dir-i",
+      "name": "I · Bubbles"
+    },
+    {
+      "id": "dir-j",
+      "name": "J · Change ladder"
+    },
+    {
+      "id": "dir-k",
+      "name": "K · Money diary"
+    },
+    {
+      "id": "dir-l",
+      "name": "L · T-accounts"
+    },
+    {
+      "id": "dir-m",
+      "name": "M · Balance slips"
+    },
+    {
+      "id": "dir-n",
+      "name": "N · Stacks"
+    },
+    {
+      "id": "charts",
+      "name": "Chart widget (C1–C6)"
+    },
+    {
+      "id": "states",
+      "name": "States"
+    },
+    {
+      "id": "forms",
+      "name": "Forms"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "AccountsReadme.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1300,
+      "h": 9129,
+      "page": "readme"
+    },
+    {
+      "file": "AccountsFinalPage.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2784,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalPagePhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 3421,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalPageStates.dc.html",
+      "x": 2230,
+      "y": 0,
+      "w": 1700,
+      "h": 4770,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalPageForms.dc.html",
+      "x": 4050,
+      "y": 0,
+      "w": 1300,
+      "h": 4697,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalPageStatesPhone.dc.html",
+      "x": 5470,
+      "y": 0,
+      "w": 1800,
+      "h": 2096,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalPageFormsPhone.dc.html",
+      "x": 7390,
+      "y": 0,
+      "w": 1800,
+      "h": 2113,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinal.dc.html",
+      "x": 9310,
+      "y": 0,
+      "w": 1600,
+      "h": 1532,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalPhone.dc.html",
+      "x": 11030,
+      "y": 0,
+      "w": 390,
+      "h": 2033,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalStates.dc.html",
+      "x": 11540,
+      "y": 0,
+      "w": 1700,
+      "h": 4676,
+      "page": "final"
+    },
+    {
+      "file": "AccountsFinalForms.dc.html",
+      "x": 13360,
+      "y": 0,
+      "w": 1300,
+      "h": 3412,
+      "page": "final"
+    },
+    {
+      "file": "AccountsR13H1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1198,
+      "page": "r13"
+    },
+    {
+      "file": "AccountsR13H2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 1062,
+      "page": "r13"
+    },
+    {
+      "file": "AccountsR13H3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 1132,
+      "page": "r13"
+    },
+    {
+      "file": "AccountsR13H4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 896,
+      "page": "r13"
+    },
+    {
+      "file": "AccountsR13H5.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 1600,
+      "h": 982,
+      "page": "r13"
+    },
+    {
+      "file": "AccountsR12Selectors.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1403,
+      "page": "r12"
+    },
+    {
+      "file": "AccountsR11A.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2877,
+      "page": "r11"
+    },
+    {
+      "file": "AccountsR11B.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 3070,
+      "page": "r11"
+    },
+    {
+      "file": "AccountsR11C.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 2900,
+      "page": "r11"
+    },
+    {
+      "file": "AccountsR11D.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 3270,
+      "page": "r11"
+    },
+    {
+      "file": "AccountsR11InOut.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 1600,
+      "h": 4364,
+      "page": "r11"
+    },
+    {
+      "file": "AccountsR11Mix.dc.html",
+      "x": 8600,
+      "y": 0,
+      "w": 1600,
+      "h": 2587,
+      "page": "r11"
+    },
+    {
+      "file": "AccountsWidgetsW1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2406,
+      "page": "widgets"
+    },
+    {
+      "file": "AccountsWidgetsW2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 2493,
+      "page": "widgets"
+    },
+    {
+      "file": "AccountsWidgetsW3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 2996,
+      "page": "widgets"
+    },
+    {
+      "file": "AccountsWidgetsW4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 3017,
+      "page": "widgets"
+    },
+    {
+      "file": "AccountsWidgetsW5.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 1600,
+      "h": 2839,
+      "page": "widgets"
+    },
+    {
+      "file": "AccountsWidgetsPhone.dc.html",
+      "x": 8600,
+      "y": 0,
+      "w": 2206,
+      "h": 4366,
+      "page": "widgets"
+    },
+    {
+      "file": "AccountsZ3.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 4346,
+      "page": "z3"
+    },
+    {
+      "file": "AccountsZ3Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1800,
+      "h": 900,
+      "page": "z3"
+    },
+    {
+      "file": "AccountsZ2.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 6836,
+      "page": "z2"
+    },
+    {
+      "file": "AccountsZ2Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1800,
+      "h": 900,
+      "page": "z2"
+    },
+    {
+      "file": "AccountsZ1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 6417,
+      "page": "z1"
+    },
+    {
+      "file": "AccountsZ1Forms.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 2406,
+      "page": "z1"
+    },
+    {
+      "file": "AccountsZ1Phone.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1800,
+      "h": 2089,
+      "page": "z1"
+    },
+    {
+      "file": "AccountsZSel.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 6743,
+      "page": "zsel"
+    },
+    {
+      "file": "AccountsZSelPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1800,
+      "h": 2165,
+      "page": "zsel"
+    },
+    {
+      "file": "AccountsYSel.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 5658,
+      "page": "ysel"
+    },
+    {
+      "file": "AccountsYSelPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1800,
+      "h": 2412,
+      "page": "ysel"
+    },
+    {
+      "file": "AccountsA.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2093,
+      "page": "dir-a"
+    },
+    {
+      "file": "AccountsAPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2467,
+      "page": "dir-a"
+    },
+    {
+      "file": "AccountsB.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1825,
+      "page": "dir-b"
+    },
+    {
+      "file": "AccountsBPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2196,
+      "page": "dir-b"
+    },
+    {
+      "file": "AccountsC.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2217,
+      "page": "dir-c"
+    },
+    {
+      "file": "AccountsCPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2818,
+      "page": "dir-c"
+    },
+    {
+      "file": "AccountsD.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1631,
+      "page": "dir-d"
+    },
+    {
+      "file": "AccountsDPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2648,
+      "page": "dir-d"
+    },
+    {
+      "file": "AccountsU.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1483,
+      "page": "dir-u"
+    },
+    {
+      "file": "AccountsUPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1469,
+      "page": "dir-u"
+    },
+    {
+      "file": "AccountsV.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1720,
+      "page": "dir-v"
+    },
+    {
+      "file": "AccountsVPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2297,
+      "page": "dir-v"
+    },
+    {
+      "file": "AccountsW.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1388,
+      "page": "dir-w"
+    },
+    {
+      "file": "AccountsWPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1489,
+      "page": "dir-w"
+    },
+    {
+      "file": "AccountsX.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1389,
+      "page": "dir-x"
+    },
+    {
+      "file": "AccountsXPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1525,
+      "page": "dir-x"
+    },
+    {
+      "file": "AccountsY.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1588,
+      "page": "dir-y"
+    },
+    {
+      "file": "AccountsYPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2026,
+      "page": "dir-y"
+    },
+    {
+      "file": "AccountsO.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1689,
+      "page": "dir-o"
+    },
+    {
+      "file": "AccountsOPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1901,
+      "page": "dir-o"
+    },
+    {
+      "file": "AccountsP.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1319,
+      "page": "dir-p"
+    },
+    {
+      "file": "AccountsPPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1360,
+      "page": "dir-p"
+    },
+    {
+      "file": "AccountsQ.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1193,
+      "page": "dir-q"
+    },
+    {
+      "file": "AccountsQPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1818,
+      "page": "dir-q"
+    },
+    {
+      "file": "AccountsR.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1717,
+      "page": "dir-r"
+    },
+    {
+      "file": "AccountsRPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2035,
+      "page": "dir-r"
+    },
+    {
+      "file": "AccountsS.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1137,
+      "page": "dir-s"
+    },
+    {
+      "file": "AccountsSPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1633,
+      "page": "dir-s"
+    },
+    {
+      "file": "AccountsT.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1441,
+      "page": "dir-t"
+    },
+    {
+      "file": "AccountsTPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1470,
+      "page": "dir-t"
+    },
+    {
+      "file": "AccountsE.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1610,
+      "page": "dir-e"
+    },
+    {
+      "file": "AccountsEPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1975,
+      "page": "dir-e"
+    },
+    {
+      "file": "AccountsF.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1196,
+      "page": "dir-f"
+    },
+    {
+      "file": "AccountsFPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1866,
+      "page": "dir-f"
+    },
+    {
+      "file": "AccountsG.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1632,
+      "page": "dir-g"
+    },
+    {
+      "file": "AccountsGPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1779,
+      "page": "dir-g"
+    },
+    {
+      "file": "AccountsH.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1317,
+      "page": "dir-h"
+    },
+    {
+      "file": "AccountsHPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1923,
+      "page": "dir-h"
+    },
+    {
+      "file": "AccountsI.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1654,
+      "page": "dir-i"
+    },
+    {
+      "file": "AccountsIPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1863,
+      "page": "dir-i"
+    },
+    {
+      "file": "AccountsJ.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1717,
+      "page": "dir-j"
+    },
+    {
+      "file": "AccountsJPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1651,
+      "page": "dir-j"
+    },
+    {
+      "file": "AccountsK.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1809,
+      "page": "dir-k"
+    },
+    {
+      "file": "AccountsKPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 2857,
+      "page": "dir-k"
+    },
+    {
+      "file": "AccountsL.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1418,
+      "page": "dir-l"
+    },
+    {
+      "file": "AccountsLPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1832,
+      "page": "dir-l"
+    },
+    {
+      "file": "AccountsM.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1522,
+      "page": "dir-m"
+    },
+    {
+      "file": "AccountsMPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1615,
+      "page": "dir-m"
+    },
+    {
+      "file": "AccountsN.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1488,
+      "page": "dir-n"
+    },
+    {
+      "file": "AccountsNPhone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1668,
+      "page": "dir-n"
+    },
+    {
+      "file": "AccountsCharts.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 3445,
+      "page": "charts"
+    },
+    {
+      "file": "AccountsStates.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1700,
+      "h": 5012,
+      "page": "states"
+    },
+    {
+      "file": "AccountsStatesPhone.dc.html",
+      "x": 1820,
+      "y": 0,
+      "w": 1300,
+      "h": 1065,
+      "page": "states"
+    },
+    {
+      "file": "AccountsForms.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1300,
+      "h": 8313,
+      "page": "forms"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-1",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 13 (2026-10-22): the selector goes inside the hero, as Subscriptions does. Five ways: H1 cover flow inside the hero, H2 glass strip along the bottom, H3 wallet stack beside the figure, H4 the cards are the hero, H5 a rail of rings. Pick a card and the stage follows. Sample data, made up.",
+      "page": "r13"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 12 (2026-10-22): Prathik liked a strip of coloured account cards and asked for it as the selector in the cover flow. Five styles under one live hero: S1 strip, S2 cover flow, S3 accordion, S4 dock, S5 fan. Pick a card and the hero recolours. Sample data, made up.",
+      "page": "r12"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 11 (2026-10-22): W1 Movers picked, with changes. Over time is the Scoreboard chart with the glow line first; Month over month becomes money in and money out (what came in, expenses apart from investing, what was saved), with a band or a strip around the chart; five variations of that (I1–I5) and five of the Mix (M1–M5); Coming up unchanged; the greeting points. Four full pages W1-A to W1-D, then the two variation pages. Sample data, made up.",
+      "page": "r11"
+    },
+    {
+      "id": "note-4",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 10 (2026-10-22): the hero stays as it is, and Prathik asked for more widgets below it, mostly visual, with Balance history on the right as on Cards and Subscriptions. Five pages, W1 Movers, W2 Runway, W3 Check-in, W4 Mix, W5 Scoreboard, each with its own widgets and its own arrangement, then all five on a phone. Every widget follows the hero's pick and has its own switch, hover card or row that opens. Sample data, made up.",
+      "page": "widgets"
+    },
+    {
+      "id": "note-5",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 9: the cheque felt like too much, so seven simpler objects (B1 monogram tile, B2 quiet passbook, B3 envelope, B4 note bundle, B5 nameplate, B6 key card, B7 stamp), in one live hero with a switch, each on its own stage. Sample data, made up.",
+      "page": "z3"
+    },
+    {
+      "id": "note-6",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "FINAL, picked by Prathik 2026-10-22: Z1's hero (the account in the headline is a dropdown; the stage takes the bank's colour; the line stays white), the monogram tile (B1) as the account's object, All as its own green tile with a colour band (A4). Desktop, phone, states, forms. Sample data, made up.",
+      "page": "final"
+    },
+    {
+      "id": "note-7",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "The Bank Accounts page (/accounts), design only. Read this board first: how to pick, and the decisions the design depends on. Sample data, made up; today is Oct 21, 2026.",
+      "page": "readme"
+    },
+    {
+      "id": "note-8",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "A · Cover flow. The Subscriptions hero for accounts: covers turn round with All at the centre, and the stage takes the pick's colour. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-a"
+    },
+    {
+      "id": "note-9",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "B · Tiles and details. The Cards page's grammar: a tile per account, a calendar of updates, a details card in the pick's colour. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-b"
+    },
+    {
+      "id": "note-10",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "C · Money map. The month's money as the hero: in on the left, out on the right, through each account. Accounts grouped by purpose, updated in their row. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-c"
+    },
+    {
+      "id": "note-11",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "D · Passbooks. The chart first: every account stacked over the year. Then a passbook per account and the monthly check-in. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-d"
+    },
+    {
+      "id": "note-12",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "E · Reservoir. Each account a glass tank filled to its balance against its own record; All is the reservoir, layered by account. A tide chart, and pipes as thick as the money in and out. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-e"
+    },
+    {
+      "id": "note-13",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "F · Passbook. An open passbook: accounts on the left page, the picked one's entries on the right with withdrawals, deposits and a running balance. Index tabs on the edge, stamps for stale and closed. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-f"
+    },
+    {
+      "id": "note-14",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "G · Instrument cluster. A car's dashboard: a balance speedometer with the record marked, a change dial, a freshness fuel gauge and warning lights. Mini gauges pick an account; a trip computer and a chart-recorder trace. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-g"
+    },
+    {
+      "id": "note-15",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "H · Tree rings. Twelve months round a circle, every account a ring as thick as its balance, the emergency fund at the core. Each account against its record, as a ring gauge. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-h"
+    },
+    {
+      "id": "note-16",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "I · Bubbles. Accounts as bubbles sized by balance, with a dashed ring for how big each was last time. A lens beside it updates the pick in place; a year of bubbles below shows every month. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-i"
+    },
+    {
+      "id": "note-17",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "J · Change ladder. The page is about what moved: every account's change as a bar either side of zero, since its last balance, this month or since Jan 1. Movers beside it; each month's rises and falls below. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-j"
+    },
+    {
+      "id": "note-18",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "K · Money diary. A feed of what happened, newest first, in plain sentences: balances recorded, salary in, bills and EMIs out, and what's overdue. Coming up warns when an EMI is bigger than its account. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-k"
+    },
+    {
+      "id": "note-19",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "L · T-accounts. Each account as a ledger T for the month: brought forward and what came in on the left, what went out and carried forward on the right, both sides totalling. A trial balance across the top. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-l"
+    },
+    {
+      "id": "note-20",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "M · Balance slips. Every balance written up like a cheque leaf, the amount in words, with counterfoils down the side to pick the account. A stale balance is stamped, like a stale cheque; a closed one is cancelled. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-m"
+    },
+    {
+      "id": "note-21",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "N · Stacks. Each month's balance as an isometric stack of notes, a row per account: the year as a small city. Pick a row to light it up; hatched stacks were carried, not read. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-n"
+    },
+    {
+      "id": "note-22",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "O · Consolidated statement. One printed statement for every account: a summary with opening, credits, debits and closing, a month-end chart, and the picked account's statement with a running balance in Cr. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-o"
+    },
+    {
+      "id": "note-23",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "P · Khata. A red-bound ledger book of tall pages, one per account, written month by month: brought forward, what came in and went out, carried. Jama and kharch charted below. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-p"
+    },
+    {
+      "id": "note-24",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Q · Receipts. Every check-in prints a receipt. Today's is the hero, with the stale account starred; earlier receipts sit beside it, and a receipt tape prints the months. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-q"
+    },
+    {
+      "id": "note-25",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "R · Annual report. The year so far as a short report: one headline figure, three highlights, a plain-words commentary, an annotated chart, a statement of balances by purpose, and numbered notes. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-r"
+    },
+    {
+      "id": "note-26",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "S · Planner. A month planner: every balance check, salary, bill and EMI on its day, today marked. Checks to do and Coming up on the facing page; a day-by-day line under the month. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-s"
+    },
+    {
+      "id": "note-27",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "T · General ledger. A precise grid: a row per month end, a column per account, carried cells in italics, with each column's sparkline on top and the mix of accounts down the side. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-t"
+    },
+    {
+      "id": "note-28",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "U · Split bar. The green stage, with the bar of what each account holds as the selector: every segment as wide as its balance, the picked one lifted and ringed in its colour while the rest dim. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-u"
+    },
+    {
+      "id": "note-29",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "V · Account list. The green stage split in two: the pick's figure and its year as a glowing line on the left, every account as a row on the right that fills with its colour when picked. Lately and Coming up below. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-v"
+    },
+    {
+      "id": "note-30",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "W · Passbooks on the desk. Your kept passbook on the green: a closed passbook for each account stands in a row; the picked one rises in its colour and lies open below. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-w"
+    },
+    {
+      "id": "note-31",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "X · Index tabs. A green folder with an index tab per account. The picked tab comes forward in its colour and joins the page, which holds its month as a T-account and its month-end balances. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-x"
+    },
+    {
+      "id": "note-32",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Y · Ticker. A giant figure on the green, a board of account pills under it, and the year as a glowing line along the bottom. The picked pill fills with its colour. Live: pick an account and everything follows it. Sample data, made up.",
+      "page": "dir-y"
+    },
+    {
+      "id": "note-33",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Account objects, round 2: cheques with every field filled (C1–C5), passbooks (P1–P5), cards without a chip (D1–D4), five inline ways to show All (A1–A5), and a compact phone hero. Live; sample data, made up.",
+      "page": "z2"
+    },
+    {
+      "id": "note-34",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Z1, picked, with the stage in the bank's colour and six account objects (passbook, cheque book, debit card standing up, seal, tag, vault door), each in the hero, for every account, and in Add account. Live; sample data, made up.",
+      "page": "z1"
+    },
+    {
+      "id": "note-35",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Y's hero with six selectors that hold any number of banks and add no graphs: headline dropdown, purpose tabs, pager, launcher, switch with More, search. Each with a 14-account frame. Live; sample data, made up.",
+      "page": "zsel"
+    },
+    {
+      "id": "note-36",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Y's hero, which Prathik liked, with seven other ways to pick a bank: sliding switch, lanes, waffle, donut, vault dial, type menu, line legend. Live; sample data, made up.",
+      "page": "ysel"
+    },
+    {
+      "id": "note-37",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "The chart widget: six options at full width, each following the pick. Pick one, or two for a switch.",
+      "page": "charts"
+    },
+    {
+      "id": "note-38",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "No accounts, one, many, a stale balance, a closed account, a new account with no balance, and just after saving. Desktop, then phone.",
+      "page": "states"
+    },
+    {
+      "id": "note-39",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Add / Edit account, Update balance, the monthly check-in, Close account, editing one balance, and the phone sheets.",
+      "page": "forms"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "readme"
+  }
+}
