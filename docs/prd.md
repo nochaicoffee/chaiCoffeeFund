@@ -110,8 +110,8 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 
 | ID | Feature | Pri | Status |
 |---|---|---|---|
-| F-AC-01 | Accounts list grouped by purpose, and an add account form | P0 | Designed |
-| F-AC-02 | Log a balance snapshot, and see each account's trend and month-over-month change | P0 | Designed (computation built) |
+| F-AC-01 | Accounts list grouped by purpose, and an add account form | P0 | Built (#160–#165, #171) |
+| F-AC-02 | Log a balance snapshot, and see each account's trend and month-over-month change | P0 | Built (#160–#165, #171); the Flow map and an Undo after saving are left out |
 
 ### Subscriptions (`F-SU`)
 
@@ -286,3 +286,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.4 | 2026-10-19 | A card's last 4 is optional when it's added. The import fills it in from the statement PDF, then uses it to check each statement belongs to its card (#78). |
 | 1.5 | 2026-10-20 | The period can also be the last 3, 6 or 12 months or a custom range of months, by statement date, and a range's average divides by every month of it so far (#113). The trend chart follows the period instead of having its own 3M to All ranges. |
 | 1.6 | 2026-10-22 | Accounts numbers defined (carry-forward totals, stale after 30 days, closing, money out and Everything else, saved, same-day replace, 20% drop warning), per the Accounts design (#155). |
+| 1.7 | 2026-10-22 | Accounts page built end to end (F-AC-01 and F-AC-02), to the design in #155. The Flow map and an Undo toast after saving a balance are not built. |
