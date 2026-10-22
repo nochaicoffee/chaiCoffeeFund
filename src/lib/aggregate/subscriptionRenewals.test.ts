@@ -14,6 +14,7 @@ import {
   renewalsByDay,
   renewalsFor,
   scheduleDates,
+  periodSummary,
   yearSummary,
   type Renewal,
 } from "./subscriptionRenewals";
@@ -404,5 +405,34 @@ describe("yearSummary", () => {
 
   it("has no biggest month before any payment this year", () => {
     expect(yearSummary([sub()], [], TODAY)).toMatchObject({ paid: 0, monthlyAverage: 0, biggestMonth: null });
+  });
+});
+
+describe("periodSummary", () => {
+  const payments = [pay("2025-12-23", 649), pay("2026-07-23", 649), pay("2026-08-23", 799), pay("2026-09-23", 649)];
+
+  it("adds up what was paid in the months given, averages over them and finds the biggest", () => {
+    const summary = periodSummary([sub()], payments, ["2026-07", "2026-08"], TODAY);
+    expect(summary.paid).toBe(649 + 799);
+    expect(summary.monthlyAverage).toBe((649 + 799) / 2);
+    expect(summary.biggestMonth).toEqual({ month: "2026-08", paid: 799 });
+    expect(summary.months).toEqual([{ month: "2026-07", paid: 649 }, { month: "2026-08", paid: 799 }]);
+  });
+
+  it("counts a month before this year, so a past year or a long range has its own figures", () => {
+    expect(periodSummary([sub()], payments, ["2025-11", "2025-12"], TODAY)).toMatchObject({ paid: 649, monthlyAverage: 649 / 2, biggestMonth: { month: "2025-12", paid: 649 } });
+  });
+
+  it("never lets the period change the next 30 days", () => {
+    expect(periodSummary([sub()], payments, ["2025-11"], TODAY).next30).toEqual(yearSummary([sub()], payments, TODAY).next30);
+  });
+
+  it("has no average or biggest month for no months, instead of dividing by zero", () => {
+    expect(periodSummary([sub()], payments, [], TODAY)).toMatchObject({ paid: 0, monthlyAverage: 0, biggestMonth: null, months: [] });
+  });
+
+  it("is what yearSummary says for this year's months", () => {
+    const months = ["2026-01", "2026-02", "2026-03", "2026-04", "2026-05", "2026-06", "2026-07", "2026-08", "2026-09", "2026-10"];
+    expect(periodSummary([sub()], payments, months, TODAY)).toEqual(yearSummary([sub()], payments, TODAY));
   });
 });

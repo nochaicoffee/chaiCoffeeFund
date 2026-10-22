@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isPastPeriod, lastMonths, monthRangePeriod, monthSpanName, parsePeriodParam, periodLabel, periodName, periodParam, periodPhrase, withinOneYear } from "./period";
+import { isPastPeriod, lastMonths, monthRangePeriod, monthSpanName, parsePeriodParam, periodLabel, paidPhrase, periodName, periodParam, periodPhrase, withinOneYear } from "./period";
 import { periodHasMonth, type SpendPeriod } from "./cardSpend";
 
 const TODAY = "2026-10-20";
@@ -125,5 +125,16 @@ describe("isPastPeriod, withinOneYear and periodHasMonth", () => {
     expect(periodHasMonth({ kind: "year", year: 2026 }, "2026-12")).toBe(true);
     expect(periodHasMonth({ kind: "year", year: 2026 }, "2025-12")).toBe(false);
     expect(periodHasMonth({ kind: "all" }, "1999-01")).toBe(true);
+  });
+});
+
+describe("paidPhrase", () => {
+  it("follows \"Paid\" on a stat", () => {
+    expect(paidPhrase({ kind: "year", year: 2026 }, TODAY)).toBe("this year");
+    expect(paidPhrase({ kind: "year", year: 2025 }, TODAY)).toBe("in 2025");
+    expect(paidPhrase({ kind: "all" }, TODAY)).toBe("so far");
+    expect(paidPhrase(lastMonths(6, TODAY), TODAY)).toBe("in the last 6 months");
+    expect(paidPhrase(range("2026-03", "2026-08"), TODAY)).toBe("in Mar – Aug 2026");
+    expect(paidPhrase(range("2026-03", "2026-03"), TODAY)).toBe("in Mar 2026");
   });
 });

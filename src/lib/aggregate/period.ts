@@ -9,6 +9,9 @@ import { addMonths, monthOf, type MonthKey, type SpendPeriod } from "./cardSpend
  * reading and writing it as `?period=`, and how it's named and worded.
  */
 
+/** This year, the period a page opens on. */
+export const thisYear = (today: string): SpendPeriod => ({ kind: "year", year: Number(today.slice(0, 4)) });
+
 /** The quick ranges in the period menu: the last 3, 6 or 12 months, this month included. */
 export const QUICK_RANGES = [3, 6, 12] as const;
 export type QuickRange = (typeof QUICK_RANGES)[number];
@@ -100,6 +103,18 @@ export function periodPhrase(period: SpendPeriod, today: string, firstMonth?: Mo
   return period.from.slice(0, 4) === period.to.slice(0, 4)
     ? `from ${monthWord(period.from)} to ${formatMonthYear(period.to)}`
     : `from ${formatMonthYear(period.from)} to ${formatMonthYear(period.to)}`;
+}
+
+/**
+ * What follows "Paid" on a stat or a card: "this year", "in 2025", "in the last 6
+ * months", "in Mar – Aug 2026", and "so far" for all time. The Subscriptions page
+ * words its figures with it (the period pill, like the Renewals page's).
+ */
+export function paidPhrase(period: SpendPeriod, today: string): string {
+  if (period.kind === "all") return "so far";
+  if (period.kind === "year") return period.year === Number(today.slice(0, 4)) ? "this year" : `in ${period.year}`;
+  if (period.last) return `in the last ${period.last} months`;
+  return `in ${monthSpanName(period.from, period.to)}`;
 }
 
 /** Whether the period is over: a past year, or a range that ended before this month. Over, the page says "You spent"; otherwise "You've spent". */

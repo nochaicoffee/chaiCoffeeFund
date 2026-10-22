@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { demoSubscriptionData } from "@/lib/demo/subscriptionsDemo";
+import { lastMonths } from "@/lib/aggregate/period";
+import type { SpendPeriod } from "@/lib/aggregate/cardSpend";
 import { formatInr } from "@/lib/format/money";
 import { sentenceText } from "../cards/summarySentence";
 import type { SubscriptionData } from "@/lib/aggregate/subscriptionPage";
@@ -12,6 +14,10 @@ const data = demoSubscriptionData(TODAY);
 const view = subscriptionsPageView(data, TODAY);
 const pick = (id: string) => view.picks.find((p) => p.id === id)!;
 const stats = (id: string) => pick(id).stats.map((s) => `${s.label}: ${s.value} · ${s.sub}`);
+// The period pill's "all time", where each figure is what it was before the pill: everything since the start.
+const lifetime = subscriptionsPageView(data, TODAY, { kind: "all" });
+const lifetimePick = (id: string) => lifetime.picks.find((p) => p.id === id)!;
+const lifetimeStats = (id: string) => lifetimePick(id).stats.map((s) => `${s.label}: ${s.value} · ${s.sub}`);
 
 describe("summarySentence", () => {
   it("reads as the design's greeting", () => {
@@ -78,7 +84,9 @@ describe("the carousel and hero", () => {
 
   it("shows a subscription due in 3 days, with its cycle and price change", () => {
     expect(pick("demo-netflix")).toMatchObject({ dueSoon: true, eyebrow: "Streaming · since Feb 23, 2024", bar: { start: "Sep 23", middle: "Renews Fri, Oct 23 · in 3 days", end: "Oct 23", fraction: 0.9 } });
-    expect(stats("demo-netflix")).toEqual(["Monthly: ₹649 · ₹649 a month", "Renews: Fri, Oct 23 · in 3 days", "Paid so far: ₹16,418 · 32 payments", "Price: ↑ ₹150 · ₹499 → ₹649 on Jul 23"]);
+    expect(lifetimeStats("demo-netflix")).toEqual(["Monthly: ₹649 · ₹649 a month", "Renews: Fri, Oct 23 · in 3 days", "Paid so far: ₹16,418 · 32 payments", "Price: ↑ ₹150 · ₹499 → ₹649 on Jul 23"]);
+    // With this year's pill, its paid figure is this year's.
+    expect(stats("demo-netflix")[2]).toBe("Paid this year: ₹4,941 · 9 payments");
   });
 
   it("puts the year on both ends of a cycle that spans two", () => {
@@ -96,7 +104,7 @@ describe("the carousel and hero", () => {
   it("gives the money stats their amounts, so they roll to the next pick's", () => {
     // A month is the plans' monthly shares added up, so it isn't whole; the digits show it rounded, as the value does.
     expect(pick(ALL).stats.map((s) => s.money ?? null)).toEqual([{ amount: 66713 / 12, prefix: "" }, null, { amount: 57163, prefix: "" }, null]);
-    expect(pick("demo-netflix").stats.map((s) => s.money ?? null)).toEqual([{ amount: 649, prefix: "" }, null, { amount: 16418, prefix: "" }, { amount: 150, prefix: "↑ " }]);
+    expect(lifetimePick("demo-netflix").stats.map((s) => s.money ?? null)).toEqual([{ amount: 649, prefix: "" }, null, { amount: 16418, prefix: "" }, { amount: 150, prefix: "↑ " }]);
     // The value is the same text the rolling digits draw.
     for (const p of view.picks) for (const s of p.stats) if (s.money) expect(s.value).toBe(`${s.money.prefix}${formatInr(s.money.amount)}`);
   });
@@ -152,7 +160,7 @@ describe("the carousel and hero", () => {
 
   it("shows paused and cancelled ones with no cycle bar", () => {
     expect(pick("demo-headspace")).toMatchObject({ muted: true, cover: { corner: "Paused" }, bar: { middle: "Paused · last paid Jul 12", fraction: null } });
-    expect(stats("demo-headspace")[2]).toBe("Paid so far: ₹2,691 · 9 payments");
+    expect(lifetimeStats("demo-headspace")[2]).toBe("Paid so far: ₹2,691 · 9 payments");
     expect(pick("demo-sonyliv")).toMatchObject({ cover: { corner: "Cancelled", price: "₹999 / year" }, bar: { middle: "Cancelled Sep 14 · won't renew", fraction: null } });
   });
 });
@@ -191,9 +199,11 @@ describe("the map, payments and charged to", () => {
 
 
   it("gives each pick its payments, newest first", () => {
-    expect(view.payments[ALL].footer).toBe("The 6 most recent of 156");
+    expect(lifetime.payments[ALL].footer).toBe("The 6 most recent of 156");
+    expect(view.payments[ALL].footer).toBe("The 6 most recent of 61 this year");
     expect(view.payments[ALL].rows[0]).toMatchObject({ mark: { alias: "Cult.fit" }, date: "Oct 10", amount: "₹4,500", chargedTo: { kind: "account", name: "Kotak Savings" } });
-    expect(view.payments["demo-netflix"].footer).toBe("Showing 6 of 32 · ₹16,418 paid since Feb 23, 2024");
+    expect(lifetime.payments["demo-netflix"].footer).toBe("Showing 6 of 32 · ₹16,418 paid since Feb 23, 2024");
+    expect(view.payments["demo-netflix"].footer).toBe("Showing 6 of 9 · ₹4,941 paid this year");
     expect(view.payments["demo-netflix"].history?.changes).toEqual(["₹499 → ₹649 on Jul 23, 2026"]);
     const july = view.payments["demo-netflix"].rows.find((r) => r.date === "Jul 23, 2026");
     expect(july?.change).toEqual({ text: "₹150 more", up: true });
@@ -266,5 +276,125 @@ describe("the map's hover cards, at the edges", () => {
       earlier: "and 2 earlier changes",
     });
     expect(view.payments["demo-netflix"].history?.earlier).toBeNull();
+  });
+});
+
+describe("the period pill", () => {
+  const range = (from: string, to: string): SpendPeriod => ({ kind: "range", from, to });
+  // What was paid in some months, added up straight from the payments, to check the page's figures against.
+  const paidIn = (from: string, to: string) =>
+    data.payments.filter((p) => p.status === "Paid" && p.amount > 0 && p.paymentDate.slice(0, 7) >= from && p.paymentDate.slice(0, 7) <= to).reduce((t, p) => t + p.amount, 0);
+  const sentence = (period: SpendPeriod) => sentenceText(summarySentence(data, TODAY, period));
+
+  it("opens on this year, so a page with no period reads as it always has", () => {
+    expect(sentenceText(summarySentence(data, TODAY, { kind: "year", year: 2026 }))).toBe(sentenceText(summarySentence(data, TODAY)));
+    expect(subscriptionsPageView(data, TODAY, { kind: "year", year: 2026 }).picks.map((p) => p.stats)).toEqual(view.picks.map((p) => p.stats));
+  });
+
+  it("words the greeting for the last 6 months, adding up what was paid in them", () => {
+    const total = paidIn("2026-05", "2026-10");
+    expect(sentence(lastMonths(6, TODAY))).toMatch(new RegExp(`^You've paid ${formatInr(total)} for subscriptions in the last 6 months, about ${formatInr(total / 6)} a month\\. `));
+    expect(sentence(lastMonths(6, TODAY))).toMatch(/ 6 renewals come up in the next 30 days, totalling ₹4,334\.$/);
+  });
+
+  it("says \"paid\", not \"you've paid\", of a year that's over", () => {
+    const total = paidIn("2025-01", "2025-12");
+    expect(total).toBeGreaterThan(0);
+    expect(sentence({ kind: "year", year: 2025 })).toMatch(new RegExp(`^You paid ${formatInr(total)} for subscriptions in 2025, about ${formatInr(total / 12)} a month\\. `));
+  });
+
+  it("counts all time from the first payment", () => {
+    const total = paidIn("1900-01", "2026-10");
+    expect(sentence({ kind: "all" })).toMatch(new RegExp(`^You've paid ${formatInr(total)} for subscriptions since December 2022, about ${formatInr(total / 47)} a month\\. `));
+  });
+
+  it("leaves out the average and the biggest month for a period of one month, which would only repeat its total", () => {
+    const text = sentence(range("2026-03", "2026-03"));
+    expect(text).toMatch(/^You paid ₹10,032 for subscriptions in March 2026\. /);
+    expect(text).not.toMatch(/a month|biggest/);
+    expect(summarySentence(data, TODAY, range("2026-03", "2026-03")).filter((p) => p.point).map((p) => p.point)).toEqual(["paid", "next", "next"]);
+    const cards = greetingView(data, TODAY, range("2026-03", "2026-03"));
+    expect(cards.average).toBeUndefined();
+    expect(cards.biggest).toBeUndefined();
+    expect(cards.paid).toMatchObject({ title: "Paid in Mar 2026", total: "₹10,032", note: "March 2026" });
+  });
+
+  it("says so, instead of dividing by nothing, when nothing was paid", () => {
+    expect(sentence({ kind: "year", year: 2030 })).toMatch(/^Nothing paid for subscriptions in 2030\. /);
+    expect(greetingView(data, TODAY, { kind: "year", year: 2030 }).paid).toBeUndefined();
+  });
+
+  it("lays the greeting's strip out as the period's months, a year's twelve or a range's own", () => {
+    const strip = (period: SpendPeriod) => greetingView(data, TODAY, period).paid!.months;
+    expect(strip({ kind: "year", year: 2025 }).map((m) => m.key)).toHaveLength(12);
+    expect(strip({ kind: "year", year: 2025 }).some((m) => m.future)).toBe(false);
+    expect(strip(range("2026-03", "2026-08")).map((m) => m.initial).join("")).toBe("MAMJJA");
+    expect(strip(lastMonths(6, TODAY)).reduce((t, m) => t + m.paid, 0)).toBe(paidIn("2026-05", "2026-10"));
+    // All time is longer than the strip: the latest 12 show, and the card says so.
+    expect(strip({ kind: "all" })).toHaveLength(12);
+    expect(greetingView(data, TODAY, { kind: "all" }).paid!.note).toMatch(/The bars show the last 12$/);
+  });
+
+  it("words a past range's card with its months, and a current one's so far", () => {
+    expect(greetingView(data, TODAY, range("2026-03", "2026-08")).paid).toMatchObject({ title: "Paid in Mar – Aug 2026", note: "6 months, March to August" });
+    expect(greetingView(data, TODAY, lastMonths(6, TODAY)).paid).toMatchObject({ title: "Paid in the last 6 months", note: "6 months so far, May to October" });
+  });
+
+  it("gives the hero's paid figures the period, and its subscriptions add up to All's", () => {
+    for (const period of [lastMonths(3, TODAY), { kind: "year", year: 2025 } as SpendPeriod, range("2026-02", "2026-04"), { kind: "all" } as SpendPeriod]) {
+      const v = subscriptionsPageView(data, TODAY, period);
+      const paidOf = (id: string) => v.picks.find((p) => p.id === id)!.stats.find((s) => s.label.startsWith("Paid "))!;
+      const parts = v.picks.filter((p) => p.id !== ALL).reduce((t, p) => t + (paidOf(p.id).money?.amount ?? 0), 0);
+      expect(parts).toBeCloseTo(paidOf(ALL).money!.amount, 6);
+    }
+    expect(pick(ALL).stats[2].label).toBe("Paid this year");
+    expect(subscriptionsPageView(data, TODAY, { kind: "year", year: 2025 }).picks[0].stats[2].label).toBe("Paid in 2025");
+    expect(subscriptionsPageView(data, TODAY, lastMonths(6, TODAY)).picks[0].stats[2]).toMatchObject({ label: "Paid in the last 6 months", money: { amount: paidIn("2026-05", "2026-10") } });
+    expect(lifetimePick(ALL).stats[2].label).toBe("Paid so far");
+  });
+
+  it("words the Prices stat for the period too", () => {
+    const quiet = subscriptionsPageView(data, TODAY, range("2026-01", "2026-02")).picks[0].stats[3];
+    expect(quiet).toEqual({ label: "Prices", value: "No rises", sub: "in Jan – Feb 2026" });
+  });
+
+  it("lists only the payments made in the period, newest first, and says when there are none", () => {
+    const march = subscriptionsPageView(data, TODAY, range("2026-03", "2026-03"));
+    expect(march.payments[ALL].rows.every((r) => r.date.startsWith("Mar"))).toBe(true);
+    expect(march.payments[ALL].footer).toBe(`The 6 most recent of ${data.payments.filter((p) => p.paymentDate.startsWith("2026-03")).length} in Mar 2026`);
+    const nothing = subscriptionsPageView(data, TODAY, { kind: "year", year: 2030 });
+    expect(nothing.payments[ALL]).toMatchObject({ rows: [], footer: "", empty: "No payments in 2030." });
+    expect(lifetime.payments[ALL].empty).toBe("No payments recorded yet.");
+  });
+
+  it("keeps a payment's change against the one before it, even from before the period", () => {
+    // Netflix's ₹499 → ₹649 was on Jul 23 2026; looking at July alone still says so.
+    const july = subscriptionsPageView(data, TODAY, range("2026-07", "2026-07")).payments["demo-netflix"].rows;
+    expect(july).toHaveLength(1);
+    expect(july[0].change).toEqual({ text: "₹150 more", up: true });
+  });
+
+  it("leaves a subscription's price history whole, and the map and Charged to as today's plans", () => {
+    const march = subscriptionsPageView(data, TODAY, range("2026-03", "2026-03"));
+    expect(march.payments["demo-netflix"].history).toEqual(view.payments["demo-netflix"].history);
+    expect(march.blocks).toEqual(view.blocks);
+    expect(march.chargedTo).toEqual(view.chargedTo);
+    expect(march.monthlyTotal).toBe(view.monthlyTotal);
+  });
+
+  it("never changes the next 30 days", () => {
+    const next = (period: SpendPeriod) => greetingView(data, TODAY, period).next;
+    expect(next(range("2026-03", "2026-03"))).toEqual(next({ kind: "all" }));
+    expect(next({ kind: "all" })).toMatchObject({ title: "The next 30 days", total: "₹4,334" });
+  });
+
+  it("counts a payment marked paid ahead into next month nowhere yet: hero, table and Total paid agree", () => {
+    const plan: Subscription = { id: "p", name: "Plan", alias: "Plan", category: "Streaming", amount: 100, billingCycle: "Monthly", billingAnchorDate: "2026-01-02", startDate: "2026-01-02", status: "Active" };
+    const pay = (paymentDate: string): SubscriptionPayment => ({ id: paymentDate, subscriptionId: "p", paymentDate, amount: 100, status: "Paid" });
+    const ahead = { subscriptions: [plan], payments: [pay("2026-09-02"), pay("2026-10-02"), pay("2026-11-02")], cards: [], accounts: [] };
+    const v = subscriptionsPageView(ahead, "2026-10-30");
+    expect(v.picks[1].stats[2]).toMatchObject({ label: "Paid this year", money: { amount: 200 } });
+    expect(v.payments.p.footer).toBe("Showing 2 of 2 · ₹200 paid this year");
+    expect(v.chart.lifetime.rows[0].paid).toBe(200);
   });
 });

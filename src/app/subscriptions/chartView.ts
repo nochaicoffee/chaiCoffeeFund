@@ -1,4 +1,6 @@
-import { daysBetween, monthOf } from "@/lib/aggregate/cardSpend";
+import { daysBetween, monthOf, type SpendPeriod } from "@/lib/aggregate/cardSpend";
+import { monthSpanName, paidPhrase, thisYear } from "@/lib/aggregate/period";
+import { chartWindows, paidWindow, paymentsIn } from "@/lib/aggregate/subscriptionPeriod";
 import { dayGrid, paidByYear, paymentTrend, phoneDayWindow, runningTotal, type DayKind, type DayRenewal } from "@/lib/aggregate/subscriptionChart";
 import { allFacts, usableSubscriptionData, type SubscriptionData } from "@/lib/aggregate/subscriptionPage";
 import { renewalRows, type Place } from "@/lib/aggregate/subscriptionRenewalList";
@@ -13,9 +15,11 @@ import { ALL, subscriptionMark as mark, whenFrom, type ColorKey, type Mark } fro
  * The chart at the end of the Subscriptions page (#127, docs/design/subscriptions.md
  * "The chart"), in the design's words: Day by day, Payment trend and Lifetime cost, for
  * every pick at once, with what its interactions show (#149): each day's and month's
- * card, each bar's parts, this year's running total and Lifetime cost by year. The
- * numbers come from lib/aggregate/subscriptionChart.ts and lifetimeCost(); this only
- * lays them out and words them.
+ * card, each bar's parts, the period's running total and the cost by year. The numbers
+ * come from lib/aggregate/subscriptionChart.ts and lifetimeCost(); this only lays them
+ * out and words them. All three follow the page's period (this year by default): Day by
+ * day and the trend draw its months (the latest 12 and 24 of a longer one), and the third
+ * view adds up what was paid in it, or everything for all time ("Lifetime cost").
  */
 
 /** A subscription's part of something, in its colour, for a split bar or a stacked one. */
@@ -125,9 +129,9 @@ export interface TrendMonthView {
   card: TrendCardView;
 }
 
-/** This year's running total for a pick (6B): by the end of each month, and the line its hover card adds. */
+/** The running total over the trend's months for a pick (6B): by the end of each month, and the line its hover card adds. */
 export interface RunningView {
-  yearTotal: number;
+  total: number;
   months: Record<string, { cumulative: number; label: string; note: string }>;
 }
 
@@ -150,14 +154,16 @@ export type LifetimeSort = "paid" | "held" | "newest";
 
 export interface ChartView {
   today: string;
-  /** The year Day by day shows, and the window a phone shows. */
-  year: string;
+  /** The months Day by day shows: "Jan – Dec 2026". */
+  span: string;
+  /** What each view says about itself, for the period: its note, and what the third one is called. */
+  copy: { days: string; trend: string; lifetime: string; lifetimeLabel: string; lifetimeShort: string };
   desktopGrid: GridView;
   phoneGrid: GridView;
   trend: { months: TrendMonthView[]; peak: string | null };
   /** The dashed line on the trend: what a usual month costs, for All or for each pick. Zero for a stopped one: no line. */
   usual: Record<string, number>;
-  /** This year's running total, for All and for each pick. */
+  /** The running total over the trend's months, for All and for each pick. */
   running: Record<string, RunningView>;
   lifetime: {
     rows: LifetimeRowView[];
@@ -273,14 +279,14 @@ function gridView(data: SubscriptionData, fromMonth: string, toMonth: string, to
   };
 }
 
-export function chartView(sheetData: SubscriptionData, today: string): ChartView {
+export function chartView(sheetData: SubscriptionData, today: string, period: SpendPeriod = thisYear(today)): ChartView {
   const data = usableSubscriptionData(sheetData);
   const byId = new Map(data.subscriptions.map((s) => [s.id, s]));
-  const year = today.slice(0, 4);
-  const phone = phoneDayWindow(today);
+  const windows = chartWindows(period, today, data.subscriptions);
+  const phone = phoneDayWindow(today, windows.days);
   const usualAll = allFacts(data.subscriptions, data.payments, today).monthly;
   const nowMonth = monthOf(today);
-  const trend = paymentTrend(data.subscriptions, data.payments, today);
+  const trend = paymentTrend(data.subscriptions, data.payments, today, windows.trend);
 
   const color = (id: string) => mark(byId.get(id)!).color;
   const months: TrendMonthView[] = trend.months.map((m) => {
@@ -323,16 +329,20 @@ export function chartView(sheetData: SubscriptionData, today: string): ChartView
   const usual: Record<string, number> = { [ALL]: usualAll };
   for (const s of data.subscriptions) usual[s.id] = s.status === "Active" ? monthlyEquivalent(s) : 0;
 
-  const running: Record<string, RunningView> = { [ALL]: runningView(runningTotal(data.subscriptions, data.payments, today), nowMonth) };
-  for (const s of data.subscriptions) running[s.id] = runningView(runningTotal(data.subscriptions, data.payments, today, s.id), nowMonth);
+  const runningFor = (id?: string) => runningView(runningTotal(data.subscriptions, data.payments, today, id, windows.trend), nowMonth, period);
+  const running: Record<string, RunningView> = { [ALL]: runningFor() };
+  for (const s of data.subscriptions) running[s.id] = runningFor(s.id);
 
-  // Where each of the year's renewals was charged, as the Renewals page has it.
-  const places = new Map(renewalRows(data, { kind: "year", year: Number(year) }, today).map((r) => [`${r.subscriptionId} ${r.date}`, r.place]));
+  // Where each renewal Day by day draws was charged, as the Renewals page has it.
+  const places = new Map(renewalRows(data, { kind: "range", from: windows.days.from, to: windows.days.to }, today).map((r) => [`${r.subscriptionId} ${r.date}`, r.place]));
 
-  const costs = lifetimeCost(data.subscriptions, data.payments);
+  // What the third view adds up: every payment for all time, otherwise those made in the period's months.
+  // The same months the greeting and the hero count: the period up to this month.
+  const counted = paymentsIn(data.payments, paidWindow(period, today, data.subscriptions, data.payments));
+  const costs = lifetimeCost(data.subscriptions, counted);
   const biggest = costs[0]?.paid ?? 0;
   const total = costs.reduce((t, c) => t + c.paid, 0);
-  const firstPaid = data.payments.filter((p) => p.status === "Paid" && p.amount > 0).map((p) => p.paymentDate).sort()[0];
+  const firstPaid = counted.filter((p) => p.status === "Paid" && p.amount > 0).map((p) => p.paymentDate).sort()[0];
   const rows: LifetimeRowView[] = costs.map((c) => {
     const s = byId.get(c.subscriptionId)!;
     const since = `since ${formatMonthShort(s.startDate.slice(0, 7))} ${s.startDate.slice(0, 4)}`;
@@ -343,7 +353,7 @@ export function chartView(sheetData: SubscriptionData, today: string): ChartView
       fraction: biggest > 0 ? c.paid / biggest : 0,
       detail: `${c.payments} ${c.payments === 1 ? "payment" : "payments"} · ${since}${s.status === "Active" ? "" : ` · ${s.status.toLowerCase()}`}`,
       amounts: c.amounts,
-      years: paidByYear(data.payments, s.id).map((y) => ({ ...y, amount: formatInrCompact(y.paid) })),
+      years: paidByYear(counted, s.id).map((y) => ({ ...y, amount: formatInrCompact(y.paid) })),
       each: c.payments ? `${plural(c.payments, "payment")} · about ${formatInr(c.paid / c.payments)} each` : null,
     };
   });
@@ -354,23 +364,38 @@ export function chartView(sheetData: SubscriptionData, today: string): ChartView
     held: rows.map((r) => r.id).sort((a, b) => (start(a) === start(b) ? 0 : start(a) < start(b) ? -1 : 1)),
     newest: rows.map((r) => r.id).sort((a, b) => (start(a) === start(b) ? 0 : start(a) > start(b) ? -1 : 1)),
   };
+  const all = period.kind === "all";
+  const when = all ? (firstPaid ? `since ${formatMonthShort(firstPaid.slice(0, 7))} ${firstPaid.slice(0, 4)}` : "so far") : paidPhrase(period, today);
   const captions: Record<string, string> = {
     [ALL]:
       total > 0 && costs[0]
-        ? `You've paid ${formatInr(total)} across ${plural(data.subscriptions.length, "subscription")} since ${formatMonthShort(firstPaid.slice(0, 7))} ${firstPaid.slice(0, 4)}. ${byId.get(costs[0].subscriptionId)!.alias} is the biggest at ${formatInr(biggest)}.`
-        : "Nothing paid yet. Each subscription's total shows here once its payments are recorded.",
+        ? `You've paid ${formatInr(total)} across ${plural(data.subscriptions.length, "subscription")} ${when}. ${byId.get(costs[0].subscriptionId)!.alias} is the biggest at ${formatInr(biggest)}.`
+        : all
+          ? "Nothing paid yet. Each subscription's total shows here once its payments are recorded."
+          : `Nothing paid ${when}. Each subscription's total shows here once its payments are recorded.`,
   };
   for (const c of costs) {
     const s = byId.get(c.subscriptionId)!;
     captions[s.id] = c.payments
-      ? `${s.alias}: ${formatInr(c.paid)} over ${plural(c.payments, "payment")} since ${formatDate(s.startDate)}, ${Math.round((c.paid / total) * 100)}% of everything you've paid for subscriptions.`
-      : `${s.alias}: nothing paid yet.`;
+      ? `${s.alias}: ${formatInr(c.paid)} over ${plural(c.payments, "payment")} ${all ? `since ${formatDate(s.startDate)}` : when}, ${Math.round((c.paid / total) * 100)}% of everything you've paid for subscriptions${all ? "" : ` ${when}`}.`
+      : `${s.alias}: nothing paid ${all ? "yet" : when}.`;
   }
+
+  const spanName = monthSpanName(windows.days.from, windows.days.to);
+  const trended = windows.trend.from > windows.full.from;
+  const copy = {
+    days: `Every renewal on its day · darker costs more · the pick lights up · drag across days to add them up.${windows.days.from > windows.full.from ? ` Showing the latest 12 months, ${spanName}.` : ""}`,
+    trend: `${trended ? `The latest 24 months, ${monthSpanName(windows.trend.from, windows.trend.to)}` : monthSpanName(windows.trend.from, windows.trend.to)}${windows.trend.to > nowMonth ? ", paid so far and the rest expected" : ", paid"} · the pick is drawn in its colour · the months add up as you go.`,
+    lifetime: all ? "Everything you've paid each one, since it started · open a row for each year." : `What you paid each one ${when} · open a row for each year.`,
+    lifetimeLabel: all ? "Lifetime cost" : "Total paid",
+    lifetimeShort: all ? "Lifetime" : "Paid",
+  };
 
   return {
     today,
-    year,
-    desktopGrid: gridView(data, `${year}-01`, `${year}-12`, today, false, usualAll, places),
+    span: spanName,
+    copy,
+    desktopGrid: gridView(data, windows.days.from, windows.days.to, today, false, usualAll, places),
     phoneGrid: gridView(data, phone.from, phone.to, today, true, usualAll, places),
     trend: { months, peak: trend.peak },
     usual,
@@ -382,21 +407,27 @@ export function chartView(sheetData: SubscriptionData, today: string): ChartView
 /**
  * A running total in the trend card's words: "₹48,212 by the end of Aug", and whether
  * that's paid, paid and still due (this month, while something is), or expected, with
- * where the year is heading. Nothing to draw (no months) when nothing's been paid or is due this year.
+ * where the period is heading ("on course for ₹X in 2026", or "adds up to ₹X over
+ * Mar – Aug 2026" once it's over). Nothing to draw (no months) when nothing's been paid
+ * or is due in it.
  */
-function runningView(total: ReturnType<typeof runningTotal>, nowMonth: string): RunningView {
+function runningView(total: ReturnType<typeof runningTotal>, nowMonth: string, period: SpendPeriod): RunningView {
   const months: RunningView["months"] = {};
-  if (total.yearTotal <= 0) return { yearTotal: 0, months };
-  const heading = `on course for ${formatInr(total.yearTotal)} in ${total.year}`;
+  if (total.total <= 0) return { total: 0, months };
+  const year = period.kind === "year";
+  const name = period.kind === "year" ? String(period.year) : monthSpanName(total.from, total.to);
+  // Something still due in it (this month's rest, or months to come): where it's heading, not yet what it came to.
+  const ahead = total.months.some((m) => m.expected > 0);
+  const heading = `${ahead ? "on course for" : "adds up to"} ${formatInr(total.total)} ${year ? "in" : "over"} ${name}`;
   for (const m of total.months) {
     const state = m.month < nowMonth || (m.month === nowMonth && m.expected === 0) ? "paid" : m.month === nowMonth ? "paid and still due" : "expected";
     months[m.month] = {
       cumulative: m.cumulative,
       label: `${formatInr(m.cumulative)} by the end of ${formatMonthShort(m.month)}`,
-      note: m.month.endsWith("-12") ? `${state} · what ${total.year} is on course for` : `${state} · ${heading}`,
+      note: m.month === total.to ? `${state} · ${ahead ? `what ${name} is on course for` : `the total ${year ? "for" : "over"} ${name}`}` : `${state} · ${heading}`,
     };
   }
-  return { yearTotal: total.yearTotal, months };
+  return { total: total.total, months };
 }
 
 const plural = (n: number, one: string) => `${n} ${n === 1 ? one : `${one}s`}`;

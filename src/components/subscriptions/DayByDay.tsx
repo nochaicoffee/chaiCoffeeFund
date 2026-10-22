@@ -488,7 +488,7 @@ export function DayByDay({ chart, pick, empty }: { chart: ChartView; pick: PickV
         <div
           ref={cells}
           role="group"
-          aria-label={`Renewals by day, ${grid.months[0]?.name ?? ""} to ${grid.months.at(-1)?.name ?? ""} ${chart.year}`}
+          aria-label={`Renewals by day, ${chart.span}`}
           aria-describedby={HINT_ID}
           className="absolute top-5 grid touch-pan-y touch-pinch-zoom select-none"
           style={{ left: label, gridTemplateRows: `repeat(7, ${cell}px)`, gridAutoFlow: "column", gridAutoColumns: `${cell}px`, gap }}
