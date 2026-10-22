@@ -53,7 +53,7 @@ export function AccountsDashboard({ view, initialPick }: { view: AccountsPageVie
         // An equal split; the cards stretch so they end level.
         <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-2">
           <MixCard blocks={view.mix} picked={pick.id} onPick={choose} />
-          <HistoryCard key={pick.id} pick={pick} rows={view.history[pick.id] ?? []} />
+          <HistoryCard key={pick.id} pick={pick} rows={view.history[pick.id] ?? []} href={view.historyHrefs[pick.id]} />
         </div>
       )}
       {view.hasAccounts && (

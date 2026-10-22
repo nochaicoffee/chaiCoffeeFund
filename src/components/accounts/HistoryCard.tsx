@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import Link from "next/link";
 import type { HistoryRow, PickView } from "@/app/accounts/views";
 import { useAccountForms } from "./forms/AccountForms";
 
@@ -11,10 +11,9 @@ const FIRST = 8;
  * with what it changed from the one before and the gap between them. For All, every account's
  * readings with the account's name. Editing a row comes with the forms (#165).
  */
-export function HistoryCard({ pick, rows }: { pick: PickView; rows: HistoryRow[] }) {
-  const [all, setAll] = useState(false);
+export function HistoryCard({ pick, rows, href }: { pick: PickView; rows: HistoryRow[]; href: string }) {
   const { open, disabledReason } = useAccountForms();
-  const shown = all ? rows : rows.slice(0, FIRST);
+  const shown = rows.slice(0, FIRST);
   return (
     <section className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]" aria-label="Balance history">
       <h2 className="text-[15px] font-extrabold">
@@ -43,10 +42,11 @@ export function HistoryCard({ pick, rows }: { pick: PickView; rows: HistoryRow[]
           ))}
         </ul>
       )}
-      {rows.length > FIRST && (
-        <button type="button" onClick={() => setAll(!all)} className="self-start text-[13px] font-bold text-accent-text">
-          {all ? "Show fewer" : `Show all ${rows.length}`}
-        </button>
+      {rows.length > 0 && (
+        <Link href={href} className="inline-flex items-center gap-1.5 self-start text-[13px] font-bold text-accent-text focus-visible:outline-2 focus-visible:outline-accent">
+          View all balances
+          <span aria-hidden="true">→</span>
+        </Link>
       )}
     </section>
   );

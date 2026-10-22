@@ -104,3 +104,12 @@ describe("a past period", () => {
     expect(summarySentence(demo, today, { kind: "year", year: 2026 }).map((p) => p.text).join("")).toContain("up");
   });
 });
+
+describe("links to the Balance history page", () => {
+  it("opens All for All and the account's own for an account, carrying the period and demo", () => {
+    const v = accountsPageView(demo, today, { kind: "range", from: "2026-03", to: "2026-08" }, true);
+    expect(v.historyHrefs[ALL]).toBe("/accounts/history?period=2026-03..2026-08&demo");
+    expect(v.historyHrefs["demo-hdfc"]).toBe("/accounts/history?account=demo-hdfc&period=2026-03..2026-08&demo");
+    expect(accountsPageView(demo, today, period, false).historyHrefs[ALL]).toBe("/accounts/history");
+  });
+});

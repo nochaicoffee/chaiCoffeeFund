@@ -9,6 +9,7 @@ import { cardColorKey, whenFrom, type ColorKey } from "@/lib/format/subscription
 import type { Account, CardColor } from "@/lib/sheets/types";
 import type { MapEntry } from "@/components/subscriptions/costMap";
 import { daysBetween } from "@/lib/aggregate/cardSpend";
+import { historyHref } from "./history/params";
 import { detailFor, type ItemsCache, type PickDetail } from "./detailView";
 import type { SentencePart } from "../cards/summarySentence";
 
@@ -126,6 +127,8 @@ export interface AccountsFormsData {
 }
 
 export interface AccountsPageView {
+  /** The Balance history page for each pick (#177), carrying the period: All opens every account, an account opens its own. */
+  historyHrefs: Record<string, string>;
   forms: AccountsFormsData;
   picks: PickView[];
   mix: MixBlock[];
@@ -316,8 +319,9 @@ export function accountsPageView(data: AccountsData, today: string, period: Spen
   const picks = ordered.map((a) => accountPick(data, a, period, today, cache));
   // With one account All would repeat it exactly, so it steps aside (decision 6).
   const showAll = live.length !== 1 || data.accounts.length !== 1;
-  const base = { forms: formsView(data, today, demo), mix: mixBlocks(data, today), history: historyRows(data) };
-  return { ...base, picks: data.accounts.length === 0 ? [allPick(data, period, today, cache)] : showAll && data.accounts.length > 1 ? [allPick(data, period, today, cache), ...picks] : picks, hasAccounts: data.accounts.length > 0 };
+  const shown = data.accounts.length === 0 ? [allPick(data, period, today, cache)] : showAll && data.accounts.length > 1 ? [allPick(data, period, today, cache), ...picks] : picks;
+  const historyHrefs = Object.fromEntries(shown.map((p) => [p.id, historyHref({ period, status: "all", sort: "newest", page: 1, demo, accountId: p.kind === "account" ? p.id : undefined }, today)]));
+  return { historyHrefs, forms: formsView(data, today, demo), mix: mixBlocks(data, today), history: historyRows(data), picks: shown, hasAccounts: data.accounts.length > 0 };
 }
 
 // --- The greeting ---
