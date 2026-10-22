@@ -4,6 +4,7 @@
 
 export type AccountType = "Savings" | "Current";
 export type AccountPurpose = "Spending" | "Investment" | "Emergency-Fund" | "Loan-Payments";
+/** Closed is Inactive with a ₹0 balance on the day (#160): the Sheet's dropdown stays Active or Inactive. */
 export type AccountStatus = "Active" | "Inactive";
 
 export interface Account {
@@ -14,6 +15,10 @@ export interface Account {
   purpose: AccountPurpose;
   startDate: string;
   status: AccountStatus;
+  /** The account's card colour. Optional: a row without one shows its purpose's colour (accountColor in lib/aggregate/accounts.ts). */
+  color?: CardColor;
+  /** Last 4 digits of the account number, text so a leading zero survives. Never the full number. */
+  last4?: string;
 }
 
 export interface BalanceSnapshot {
