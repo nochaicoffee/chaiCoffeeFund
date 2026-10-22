@@ -18,12 +18,14 @@ import { R11_DESKTOPS } from "./r11pages.mjs";
 import { R12_DESKTOPS } from "./r12.mjs";
 import { R13_DESKTOPS } from "./r13.mjs";
 import { R14_DESKTOPS } from "./r14.mjs";
+import { R17_DESKTOPS } from "./r17.mjs";
 import { statesPhoneBoard, formsPhoneBoard } from "./r15.mjs";
 import { statesBoardNew, formsBoardNew } from "./r16.mjs";
 import { WIDGET_DESKTOPS, widgetsPhoneBoard, WIDGET_PHONE_W } from "./widgets.mjs";
 
 export const BOARDS = [
   { file: "AccountsReadme.dc.html", w: 1300, page: "readme", render: readmeBoard },
+  ...R17_DESKTOPS.map((x) => ({ ...x, page: "history" })),
   ...R14_DESKTOPS.map((x) => ({ ...x, page: "final", measureAll: true })),
   { file: "AccountsFinalPageStates.dc.html", w: 1700, page: "final", render: statesBoardNew },
   { file: "AccountsFinalPageForms.dc.html", w: 1300, page: "final", render: formsBoardNew },
@@ -69,6 +71,7 @@ export const BOARDS = [
 
 export const PAGES = [
   { id: "readme", name: "Read me first" },
+  { id: "history", name: "Balance history page (H1–H3)" },
   { id: "final", name: "Final design" },
   { id: "r13", name: "Round 13 · selector inside the hero" },
   { id: "r12", name: "Round 12 · cards as the selector" },
@@ -90,6 +93,7 @@ export const PAGES = [
 ];
 
 export const NOTES = [
+  { page: "history", text: "Round 17 (2026-10-23): the Balance history page, /accounts/history, the Accounts counterpart of Cards' Statements and Subscriptions' Renewals. Three directions, desktop and phone: H1 Ledger (Renewals' layout: summary tiles, filters, month groups), H2 Check-in grid (which accounts were read when, then the rows), H3 Passbook (one account's running balance, the others on the left). One state of each is drawn, with the row menu open. Sample data, made up." },
   { page: "r13", text: "Round 13 (2026-10-22): the selector goes inside the hero, as Subscriptions does. Five ways: H1 cover flow inside the hero, H2 glass strip along the bottom, H3 wallet stack beside the figure, H4 the cards are the hero, H5 a rail of rings. Pick a card and the stage follows. Sample data, made up." },
   { page: "r12", text: "Round 12 (2026-10-22): Prathik liked a strip of coloured account cards and asked for it as the selector in the cover flow. Five styles under one live hero: S1 strip, S2 cover flow, S3 accordion, S4 dock, S5 fan. Pick a card and the hero recolours. Sample data, made up." },
   { page: "r11", text: "Round 11 (2026-10-22): W1 Movers picked, with changes. Over time is the Scoreboard chart with the glow line first; Month over month becomes money in and money out (what came in, expenses apart from investing, what was saved), with a band or a strip around the chart; five variations of that (I1–I5) and five of the Mix (M1–M5); Coming up unchanged; the greeting points. Four full pages W1-A to W1-D, then the two variation pages. Sample data, made up." },
