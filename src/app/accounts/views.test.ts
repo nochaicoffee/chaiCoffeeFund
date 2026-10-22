@@ -95,3 +95,12 @@ describe("Balance history", () => {
     expect(history["demo-hdfc"][0].gapText).toBe("31 days after the one before");
   });
 });
+
+describe("a past period", () => {
+  it("measures the change to the period's end, so it agrees with the chart beside it", () => {
+    const past = accountsPageView(demo, today, { kind: "year", year: 2025 }, false);
+    // The demo has no balances in 2025, so nothing moved then; the change to today would be the whole total.
+    expect(past.picks[0].change).toMatch(/^\+₹0 since Jan 1/);
+    expect(summarySentence(demo, today, { kind: "year", year: 2026 }).map((p) => p.text).join("")).toContain("up");
+  });
+});

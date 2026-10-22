@@ -1,6 +1,6 @@
 import { comingUp, flows, moneyItems, type AccountsData } from "@/lib/aggregate/accountFlows";
-import { PURPOSE_COLORS, accountColor, balanceOn, changeSince, dayBefore, daysSinceBalance, highPoint, isClosed, isStale, periodSpan, sharesOfTotal, STALE_DAYS, totalOn, totalSeries, weeklyDates, type BalanceTrendPoint } from "@/lib/aggregate/accounts";
-import { addMonths, monthOf, type SpendPeriod } from "@/lib/aggregate/cardSpend";
+import { PURPOSE_COLORS, accountColor, monthEnds, balanceOn, changeSince, dayBefore, daysSinceBalance, highPoint, isClosed, isStale, periodSpan, sharesOfTotal, STALE_DAYS, totalOn, totalSeries, weeklyDates, type BalanceTrendPoint } from "@/lib/aggregate/accounts";
+import { monthOf, type SpendPeriod } from "@/lib/aggregate/cardSpend";
 import { periodPhrase } from "@/lib/aggregate/period";
 import { formatDate, formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
 import { optionLabel } from "@/lib/format/labels";
@@ -9,7 +9,7 @@ import { cardColorKey, whenFrom, type ColorKey } from "@/lib/format/subscription
 import type { Account, CardColor } from "@/lib/sheets/types";
 import type { MapEntry } from "@/components/subscriptions/costMap";
 import { daysBetween } from "@/lib/aggregate/cardSpend";
-import { detailFor, type PickDetail } from "./detailView";
+import { detailFor, type ItemsCache, type PickDetail } from "./detailView";
 import type { SentencePart } from "../cards/summarySentence";
 
 /**
@@ -113,6 +113,8 @@ export interface FormAccount {
   latestDate: string | null;
   /** Whether a loan's EMIs are paid from it, for Close's warning. */
   paysALoan: boolean;
+  /** Every recorded balance, oldest first, so the form can warn against the one before the chosen day. */
+  readings: { id: string; date: string; balance: number }[];
 }
 
 export interface AccountsFormsData {
@@ -133,11 +135,6 @@ export interface AccountsPageView {
   hasAccounts: boolean;
 }
 
-const lastDay = (month: string) => {
-  const [y, m] = month.split("-").map(Number);
-  return new Date(Date.UTC(y, m, 0)).toISOString().slice(0, 10);
-};
-
 function lineFor(data: AccountsData, scope: Account[], period: SpendPeriod, today: string): LineView {
   const first = data.snapshots.filter((s) => scope.some((a) => a.id === s.accountId)).map((s) => s.date).sort()[0] ?? null;
   const span = periodSpan(period, today, first);
@@ -153,7 +150,7 @@ function lineFor(data: AccountsData, scope: Account[], period: SpendPeriod, toda
   return { points, months };
 }
 
-function accountPick(data: AccountsData, account: Account, period: SpendPeriod, today: string): PickView {
+function accountPick(data: AccountsData, account: Account, period: SpendPeriod, today: string, cache: ItemsCache): PickView {
   const latest = balanceOn(data.snapshots, account.id, today);
   const mine = data.snapshots.filter((s) => s.accountId === account.id);
   const previous = latest ? mine.filter((s) => s.date < latest.date).sort((a, b) => (a.date < b.date ? 1 : -1))[0] : undefined;
@@ -163,7 +160,7 @@ function accountPick(data: AccountsData, account: Account, period: SpendPeriod, 
   const span = periodSpan(period, today, mine.map((s) => s.date).sort()[0] ?? null);
   const total = totalOn(data.accounts.filter((a) => !isClosed(a)), data.snapshots, today);
   const held = latest?.balance ?? 0;
-  const since = latest ? changeSince([account], data.snapshots, dayBefore(span.from), today) : 0;
+  const since = latest ? changeSince([account], data.snapshots, dayBefore(span.from), span.to) : 0;
   const items = moneyItems(data, latest ? dayBefore(latest.date) : today, today);
   const billsSince = flows(items.filter((i) => i.date > (latest?.date ?? today)), account.id).expenses;
   const delta = latest && previous ? latest.balance - previous.balance : null;
@@ -186,7 +183,7 @@ function accountPick(data: AccountsData, account: Account, period: SpendPeriod, 
     change: !latest ? "Add its first balance" : delta === null ? "First balance" : delta === 0 ? "No change since the balance before" : `${delta >= 0 ? "+" : "−"}${formatInr(Math.abs(delta))} since the balance before`,
     changeTone: delta === null || delta === 0 ? null : delta > 0 ? "up" : "down",
     line: lineFor(data, [account], period, today),
-    detail: detailFor(data, account.id, period, today),
+    detail: detailFor(data, account.id, period, today, cache),
     figures: [
       { label: `Since ${formatShortDate(span.from)}`, value: latest ? `${since >= 0 ? "+" : "−"}${formatInr(Math.abs(since))}` : "—" },
       { label: "Share of the total", value: closed || total <= 0 ? "—" : `${Math.round((held / total) * 100)}%` },
@@ -196,7 +193,7 @@ function accountPick(data: AccountsData, account: Account, period: SpendPeriod, 
   };
 }
 
-function allPick(data: AccountsData, period: SpendPeriod, today: string): PickView {
+function allPick(data: AccountsData, period: SpendPeriod, today: string, cache: ItemsCache): PickView {
   const live = data.accounts.filter((a) => !isClosed(a));
   const total = totalOn(data.accounts, data.snapshots, today);
   const firstDate = data.snapshots.map((s) => s.date).sort()[0] ?? null;
@@ -205,7 +202,7 @@ function allPick(data: AccountsData, period: SpendPeriod, today: string): PickVi
   const high = highPoint(line.points);
   const staleOnes = live.filter((a) => isStale(a, data.snapshots, today));
   const latestDate = data.snapshots.map((s) => s.date).filter((d) => d <= today).sort().at(-1) ?? null;
-  const since = changeSince(data.accounts, data.snapshots, dayBefore(span.from), today);
+  const since = changeSince(data.accounts, data.snapshots, dayBefore(span.from), span.to);
   const monthStart = dayBefore(`${monthOf(today)}-01`);
   const thisMonth = total - totalOn(data.accounts, data.snapshots, monthStart);
   const items = moneyItems(data, span.from, span.to);
@@ -231,7 +228,7 @@ function allPick(data: AccountsData, period: SpendPeriod, today: string): PickVi
     change: data.snapshots.length === 0 ? "Add a balance to begin" : `${since >= 0 ? "+" : "−"}${formatInr(Math.abs(since))} since ${formatShortDate(span.from)}${latestDate ? ` · latest update ${formatShortDate(latestDate)}` : ""}`,
     changeTone: since === 0 ? null : since > 0 ? "up" : "down",
     line,
-    detail: detailFor(data, null, period, today),
+    detail: detailFor(data, null, period, today, cache),
     figures: [
       { label: "This month", value: `${thisMonth >= 0 ? "+" : "−"}${formatInr(Math.abs(thisMonth))}` },
       { label: "High point", value: high ? formatInr(high.total) : "—", note: high ? formatMonthYear(monthOf(high.date)) : undefined },
@@ -305,6 +302,7 @@ export function formsView(data: AccountsData, today: string, demo: boolean): Acc
       balance: latest?.balance ?? null,
       latestDate: latest?.date ?? null,
       paysALoan: data.loans.some((l) => l.status === "Active" && l.accountId === a.id),
+      readings: data.snapshots.filter((x) => x.accountId === a.id).sort((x, y) => (x.date < y.date ? -1 : x.date > y.date ? 1 : 0)).map(({ id, date, balance }) => ({ id, date, balance })),
     };
   });
   return { demo, today, accounts, total: totalOn(data.accounts, data.snapshots, today) };
@@ -314,11 +312,12 @@ export function accountsPageView(data: AccountsData, today: string, period: Spen
   // Closed accounts come last, as they do in the card row.
   const ordered = [...data.accounts].sort((a, b) => Number(isClosed(a)) - Number(isClosed(b)));
   const live = data.accounts.filter((a) => !isClosed(a));
-  const picks = ordered.map((a) => accountPick(data, a, period, today));
+  const cache: ItemsCache = new Map();
+  const picks = ordered.map((a) => accountPick(data, a, period, today, cache));
   // With one account All would repeat it exactly, so it steps aside (decision 6).
   const showAll = live.length !== 1 || data.accounts.length !== 1;
   const base = { forms: formsView(data, today, demo), mix: mixBlocks(data, today), history: historyRows(data) };
-  return { ...base, picks: data.accounts.length === 0 ? [allPick(data, period, today)] : showAll && data.accounts.length > 1 ? [allPick(data, period, today), ...picks] : picks, hasAccounts: data.accounts.length > 0 };
+  return { ...base, picks: data.accounts.length === 0 ? [allPick(data, period, today, cache)] : showAll && data.accounts.length > 1 ? [allPick(data, period, today, cache), ...picks] : picks, hasAccounts: data.accounts.length > 0 };
 }
 
 // --- The greeting ---
@@ -344,16 +343,10 @@ export interface AccountsGreetingCards {
 
 const signed = (n: number) => `${n >= 0 ? "+" : "−"}${formatInr(Math.abs(n))}`;
 
-/** The month-end totals across a period, the last one being today. */
-function monthEnds(data: AccountsData, period: SpendPeriod, today: string): { key: string; label: string; total: number }[] {
-  const firstDate = data.snapshots.map((s) => s.date).sort()[0] ?? null;
-  const span = periodSpan(period, today, firstDate);
-  const months: { key: string; label: string; total: number }[] = [];
-  for (let m = monthOf(span.from); m <= monthOf(span.to); m = addMonths(m, 1)) {
-    const end = lastDay(m) > span.to ? span.to : lastDay(m);
-    months.push({ key: m, label: formatMonthShort(m)[0], total: totalOn(data.accounts, data.snapshots, end) });
-  }
-  return months;
+/** The month-end totals across a period, the last one being its end. */
+function monthTotals(data: AccountsData, period: SpendPeriod, today: string): { key: string; label: string; total: number }[] {
+  const span = periodSpan(period, today, data.snapshots.map((s) => s.date).sort()[0] ?? null);
+  return monthEnds(data.accounts, data.snapshots, span).map((m) => ({ key: m.month, label: formatMonthShort(m.month)[0], total: m.total }));
 }
 
 export function summarySentence(data: AccountsData, today: string, period: SpendPeriod): SentencePart[] {
@@ -363,8 +356,8 @@ export function summarySentence(data: AccountsData, today: string, period: Spend
   if (!firstDate) return [{ text: `You have ${live.length} account${live.length === 1 ? "" : "s"}, with no balances yet. Add each one's balance to see what you hold.` }];
   const span = periodSpan(period, today, firstDate);
   const total = totalOn(data.accounts, data.snapshots, today);
-  const since = changeSince(data.accounts, data.snapshots, dayBefore(span.from), today);
-  const months = monthEnds(data, period, today);
+  const since = changeSince(data.accounts, data.snapshots, dayBefore(span.from), span.to);
+  const months = monthTotals(data, period, today);
   const best = months.reduce<(typeof months)[number] | null>((b, m) => (b === null || m.total > b.total ? m : b), null);
   const stale = live.filter((a) => isStale(a, data.snapshots, today));
   const parts: SentencePart[] = [
@@ -388,15 +381,15 @@ export function greetingView(data: AccountsData, today: string, period: SpendPer
   const span = periodSpan(period, today, firstDate);
   const total = totalOn(data.accounts, data.snapshots, today);
   const shares = sharesOfTotal(live, data.snapshots, today);
-  const months = monthEnds(data, period, today);
+  const months = monthTotals(data, period, today);
   const best = months.reduce<(typeof months)[number] | null>((b, m) => (b === null || m.total > b.total ? m : b), null);
   const stale = live.filter((a) => isStale(a, data.snapshots, today));
   const rows = (accounts: Account[], note: (a: Account) => string | undefined, amount: (a: Account) => string, fraction: (a: Account) => number): GreetingRow[] =>
     accounts.map((a) => ({ key: a.id, name: a.name, colorKey: cardColorKey(accountColor(a)), amount: amount(a), note: note(a), fraction: fraction(a), warn: isStale(a, data.snapshots, today) }));
   const byBalance = new Map(shares.map((s) => [s.account.id, s]));
-  const since = changeSince(data.accounts, data.snapshots, dayBefore(span.from), today);
+  const since = changeSince(data.accounts, data.snapshots, dayBefore(span.from), span.to);
   const movers = live
-    .map((a) => ({ account: a, change: changeSince([a], data.snapshots, dayBefore(span.from), today) }))
+    .map((a) => ({ account: a, change: changeSince([a], data.snapshots, dayBefore(span.from), span.to) }))
     .filter((m) => m.change !== 0)
     .sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
   const top = Math.max(1, ...movers.map((m) => Math.abs(m.change)));

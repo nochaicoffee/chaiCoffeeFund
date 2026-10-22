@@ -3,7 +3,7 @@
 import { useActionState, useState, type FormEvent } from "react";
 import { saveBalance } from "@/app/accounts/actions";
 import type { AccountsFormsData } from "@/app/accounts/views";
-import { isBigDrop } from "@/lib/aggregate/accounts";
+import { balanceBefore, isBigDrop, sameDayBalance } from "@/lib/aggregate/accounts";
 import { formatInr, parseAmountText } from "@/lib/format/money";
 import { readBalanceForm } from "@/lib/forms/accountForms";
 import { IDLE } from "@/lib/forms/formState";
@@ -36,10 +36,15 @@ export function BalanceFormDialog({ accountId, forms, onClose }: { accountId?: s
     revealAll();
   }
   const next = parseAmountText(balance);
-  const last = account?.balance ?? null;
+  // Compared with the balance before the chosen day, not today's: a back-dated balance sits among the older ones.
+  const readings = (account?.readings ?? []).map((r) => ({ ...r, accountId: id }));
+  const last = date ? (balanceBefore(readings, id, date)?.balance ?? null) : (account?.balance ?? null);
   const change = next !== null && last !== null ? next - last : null;
   const drop = next !== null && isBigDrop(last, next);
-  const sameDay = account?.latestDate === date && date !== "";
+  // Only a balance on or after the latest one changes what's held today.
+  const becomesLatest = !account?.latestDate || (date !== "" && date >= account.latestDate);
+  const allAfter = forms.total + (becomesLatest && next !== null ? next - (account?.balance ?? 0) : 0);
+  const sameDay = date !== "" && sameDayBalance(readings, id, date) !== null;
 
   return (
     <FormDialog
@@ -48,12 +53,12 @@ export function BalanceFormDialog({ accountId, forms, onClose }: { accountId?: s
       subtitle={account ? account.name : "Record what an account holds"}
       preview={
         <PreviewPanel caption="A balance is saved as you type it, never worked out.">
-          {account && <MiniAccountCard colorKey={account.colorKey} initial={account.initial} name={account.name} last4={account.last4 || undefined} balance={next ?? account.balance} corner={account.bank} closed={account.closed} />}
+          {account && <MiniAccountCard colorKey={account.colorKey} initial={account.initial} name={account.name} last4={account.last4 || undefined} balance={becomesLatest ? (next ?? account.balance) : account.balance} corner={account.bank} closed={account.closed} />}
           <SummaryBox
             rows={[
-              { label: "Now", value: last === null ? "No balance yet" : formatInr(last) },
-              { label: "Change", value: change === null ? "–" : `${change >= 0 ? "+" : "−"}${formatInr(Math.abs(change))}` },
-              { label: "All accounts", value: formatInr(forms.total + (change ?? (next !== null && last === null ? next : 0))) },
+              { label: "Now", value: account?.balance == null ? "No balance yet" : formatInr(account.balance) },
+              { label: "Change from the one before", value: change === null ? "–" : `${change >= 0 ? "+" : "−"}${formatInr(Math.abs(change))}` },
+              { label: "All accounts", value: formatInr(allAfter) },
             ]}
           />
         </PreviewPanel>
