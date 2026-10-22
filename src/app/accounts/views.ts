@@ -225,7 +225,7 @@ function allPick(data: AccountsData, period: SpendPeriod, today: string, cache: 
     balance: formatInr(total),
     balanceValue: total,
     updated: live.length === 0 ? "No accounts yet" : `${live.length} account${live.length === 1 ? "" : "s"} · ${upToDate} up to date`,
-    change: data.snapshots.length === 0 ? "Add a balance to begin" : `${since >= 0 ? "+" : "−"}${formatInr(Math.abs(since))} since ${formatShortDate(span.from)}${latestDate ? ` · latest update ${formatShortDate(latestDate)}` : ""}`,
+    change: data.snapshots.length === 0 ? "Add a balance to begin" : `${since >= 0 ? "+" : "−"}${formatInr(Math.abs(since))} since ${formatShortDate(span.from)}${latestDate && span.to === today ? ` · latest update ${formatShortDate(latestDate)}` : ` to ${formatShortDate(span.to)}`}`,
     changeTone: since === 0 ? null : since > 0 ? "up" : "down",
     line,
     detail: detailFor(data, null, period, today, cache),

@@ -42,7 +42,7 @@ export function AccountsHero({ picks, pickId, onPick, hasAccounts }: { picks: Pi
       ) : (
         <>
           {/* One row on a desktop, the picked card open and the rest folded to spines. On a phone the picked card is full width, first, and the rest wrap under it as chips. */}
-          <div role="tablist" aria-label="Accounts" className="flex flex-wrap items-stretch gap-2 md:flex-nowrap md:gap-3 md:overflow-x-auto md:pb-3">
+          <div role="group" aria-label="Accounts" className="flex flex-wrap items-stretch gap-2 md:flex-nowrap md:gap-3 md:overflow-x-auto md:pb-3">
             {picks.map((p) => (p.id === pick.id ? <OpenCard key={p.id} pick={p} /> : <FoldedCard key={p.id} pick={p} onPick={onPick} />))}
           </div>
         </>
@@ -72,8 +72,7 @@ export function AccountsHero({ picks, pickId, onPick, hasAccounts }: { picks: Pi
 function OpenCard({ pick }: { pick: PickView }) {
   return (
     <div
-      role="tab"
-      aria-selected="true"
+      aria-current="true"
       className={`relative isolate flex min-h-[220px] shrink-0 flex-col justify-between overflow-hidden rounded-[26px] border border-white/60 p-5 text-on-card shadow-[var(--tile-shadow-selected)] ${closedStyle(pick)} order-first w-full md:order-none md:w-[min(480px,60%)] md:min-w-[360px]`}
       style={{ background: cardBackground(pick) }}
     >
@@ -116,8 +115,7 @@ function FoldedCard({ pick, onPick }: { pick: PickView; onPick: (id: string) => 
   return (
     <button
       type="button"
-      role="tab"
-      aria-selected="false"
+      aria-pressed="false"
       aria-label={pick.name}
       onClick={() => onPick(pick.id)}
       className={`group/spine relative isolate flex h-14 min-w-[104px] shrink-0 cursor-pointer items-center gap-2 overflow-hidden rounded-2xl px-3 text-on-card shadow-[var(--tile-shadow)] focus-visible:outline-2 focus-visible:outline-white md:h-auto md:min-h-[220px] md:w-[64px] md:min-w-0 md:flex-col md:justify-between md:gap-0 md:rounded-[22px] md:border md:border-on-card-line md:border-t-on-card-line-top md:px-2 md:py-4 md:transition-[width] md:duration-300 md:ease-out md:hover:w-[92px] md:focus-visible:w-[92px] motion-reduce:transition-none ${closedStyle(pick)}`}

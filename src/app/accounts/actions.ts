@@ -10,7 +10,7 @@ import { balanceSnapshotsRepository, updateBalanceSnapshotSchema } from "@/lib/s
 import { CACHE_TAGS } from "@/lib/sheets/cached";
 import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
 import { InvalidRowError, NotFoundError } from "@/lib/sheets/repository";
-import type { Account } from "@/lib/sheets/types";
+import type { Account, BalanceSnapshot } from "@/lib/sheets/types";
 
 /**
  * The Accounts forms' server actions (#165), used with useActionState as the Cards and
@@ -40,8 +40,8 @@ function refreshed(...tags: string[]): FormState {
  * day's if there is one, else is added. The tab is read once for all of them, and each write
  * is added to what's known, so two for one account and day in a call still make one row.
  */
-async function writeBalances(entries: { accountId: string; date: string; balance: number }[]): Promise<void> {
-  const known = await balanceSnapshotsRepository.list();
+async function writeBalances(entries: { accountId: string; date: string; balance: number }[], known?: BalanceSnapshot[]): Promise<void> {
+  known ??= await balanceSnapshotsRepository.list();
   for (const { accountId, date, balance } of entries) {
     const same = sameDayBalance(known, accountId, date);
     if (same) {
@@ -70,9 +70,12 @@ export async function saveAccount(_previous: FormState, formData: FormData): Pro
       try {
         await writeBalances([{ accountId: created.id, date: todayIso(), balance }]);
       } catch (error) {
-        // Take the account back out, so Try again doesn't add it a second time.
-        await accountsRepository.remove(created.id).catch((cleanup) => console.error("[accounts] couldn't remove the account after its balance failed:", cleanup instanceof Error ? cleanup.message : String(cleanup)));
-        throw error;
+        // Take the account back out, so Try again doesn't add it a second time. If that fails too (the same quota, say), say so rather than offer a retry that would duplicate it.
+        const removed = await accountsRepository.remove(created.id).then(() => true, () => false);
+        if (removed) throw error;
+        console.error("[accounts] the account was added but its balance wasn't saved, and it couldn't be removed again:", error instanceof Error ? error.message : String(error));
+        updateTag(CACHE_TAGS.accounts);
+        return { status: "invalid", errors: { form: "The account was added, but its balance couldn't be saved. Close this and use Update balance to add it." } };
       }
     }
   } catch (error) {
@@ -126,10 +129,11 @@ export async function closeAccount(_previous: FormState, formData: FormData): Pr
   if (!id) return GONE;
   try {
     if (!(await accountsRepository.get(id))) return GONE;
-    const latest = (await balanceSnapshotsRepository.list()).filter((s) => s.accountId === id).map((s) => s.date).sort().at(-1) ?? null;
+    const known = await balanceSnapshotsRepository.list();
+    const latest = known.filter((s) => s.accountId === id).map((s) => s.date).sort().at(-1) ?? null;
     const result = readCloseForm(fields(formData), latest, todayIso());
     if (!result.ok) return { status: "invalid", errors: result.errors };
-    await writeBalances([{ accountId: id, date: result.input.endDate, balance: 0 }]);
+    await writeBalances([{ accountId: id, date: result.input.endDate, balance: 0 }], known);
     await accountsRepository.update(id, { status: "Inactive" });
   } catch (error) {
     return failed("closeAccount", error);
