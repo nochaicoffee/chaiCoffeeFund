@@ -7,7 +7,8 @@ import { isoDate } from "./validation";
  * than by hand (CLAUDE.md: never drive the Sheets UI). It only ever adds: missing
  * columns go on the end, typed from the schema, and each enum column's dropdown is
  * set to the schema's values. It never renames, moves or removes a column, and it
- * leaves other columns' types alone; a tab whose existing columns don't match the
+ * leaves other columns' types alone, except one with no type at all, which gets the
+ * schema's (the Accounts tab's startDate was never typed, #160); a tab whose existing columns don't match the
  * repository's order is refused, so nothing is written over the wrong column.
  * Pure, so it's tested against fixture metadata; the dev route sends the request.
  */
@@ -75,6 +76,11 @@ export function planTableColumns(specs: ColumnSpec[], table: sheets_v4.Schema$Ta
       adding = true;
       changes.push(`add ${spec.name} (${spec.type.toLowerCase()}${spec.options ? `: ${spec.options.join(", ")}` : ""})`);
       return { columnIndex: index, columnName: spec.name, columnType: spec.type, ...(spec.options ? { dataValidationRule: dropdownRule(spec.options) } : {}) };
+    }
+    const untyped = !current.columnType || current.columnType === "COLUMN_TYPE_UNSPECIFIED";
+    if (untyped && spec.type !== "DROPDOWN") {
+      changes.push(`set ${spec.name}'s type to ${spec.type.toLowerCase()}`);
+      return { ...current, columnType: spec.type };
     }
     if (spec.type !== "DROPDOWN" || !spec.options) return current;
     const sheetOptions = (current.dataValidationRule?.condition?.values ?? []).map((v) => v.userEnteredValue ?? "");

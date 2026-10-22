@@ -100,4 +100,12 @@ describe("planTableColumns", () => {
     const asText = [...current.slice(0, 3), { columnIndex: 3, columnName: "status", columnType: "TEXT" }];
     expect(planTableColumns(specs, table(asText)).changes[0]).toBe("set status's dropdown to Active, Paused, Cancelled");
   });
+
+  it("types a column that has no type, and leaves a typed one alone (the Accounts tab's startDate, #160)", () => {
+    const untyped = [...current.slice(0, 3), current[3], { columnIndex: 4, columnName: "endDate" }, { columnIndex: 5, columnName: "note", columnType: "DROPDOWN" }];
+    const plan = planTableColumns(specs.map((s) => (s.name === "status" ? { ...s, options: ["Active", "Paused"] } : s)), table(untyped));
+    expect(plan.changes).toEqual(["set endDate's type to date"]);
+    expect(plan.request?.updateTable?.table?.columnProperties?.[4]).toEqual({ columnIndex: 4, columnName: "endDate", columnType: "DATE" });
+    expect(plan.request?.updateTable?.table?.columnProperties?.[5]?.columnType).toBe("DROPDOWN");
+  });
 });
