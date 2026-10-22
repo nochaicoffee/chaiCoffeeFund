@@ -165,3 +165,10 @@ export function HeroButtons({ pickId, kind, closed }: { pickId: string; kind: "a
     </div>
   );
 }
+
+/** A button that opens the monthly check-in, for pages whose only header action is Update balances (the Balance history page, #177). */
+export function UpdateBalancesButton({ className = HEADER_PRIMARY }: { className?: string }) {
+  const { open, forms } = useAccountForms();
+  if (!forms.accounts.some((a) => !a.closed)) return null;
+  return <FormTrigger className={className} label="Update balances" onClick={() => open({ kind: "check-in" })} />;
+}

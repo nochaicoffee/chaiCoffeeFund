@@ -170,3 +170,21 @@ Add and Edit account (the account's card is the live preview; Add has an optiona
 ## Built: this year in and out, Over time, Money in and out, Coming up (#164)
 
 `app/accounts/detailView.ts` builds each pick's under-the-hero data from `lib/aggregate/accountFlows.ts` (tested): the four tiles and the one bar splitting what came in by source; Over time with the **glow line** (month-end total, each month's change as bars), **River** (every account stacked, All only) and **Bridge** (start, came in, sold, card bills, subscriptions, EMIs, investments, Everything else, Accounts opened, now; it always ends on what's held); Money in and out as paired columns per month with saved under each; and Coming up (the next 45 days, a card bill not yet billed as "about", an EMI the account can't cover flagged). Everything is labelled worked out. "Accounts opened" is the balance an account first read inside the period arrives with, which isn't money moving. **Not built:** the Flow map, ring texture on River and Bridge (as in the design's own note), and hover cards on the charts beyond the native tooltips.
+
+## Round 17 (2026-10-23): the Balance history page, mocked up (not picked yet)
+
+The Accounts dashboard's Balance history is only a card (the first 8 rows, Show all, an Edit button on each). Cards has a Statements page and Subscriptions a Renewals page, so `/accounts/history` is proposed as the Accounts counterpart. Three directions, desktop and phone, in `design/accounts/` (canvas page **Balance history page (H1–H3)**; generator `r17.mjs`):
+
+| Board | Idea |
+|---|---|
+| `AccountsHistoryH1.dc.html` (+ `Phone`) | **Ledger**: Renewals' layout. Summary tiles (recorded this year, biggest move, not read lately, days between readings), then filters (All / Rises / Falls / First and closing, account, purpose, search, sort), grouped by month with each month's net change, a row menu (Edit, Update, Delete) and paging |
+| `AccountsHistoryH2.dc.html` (+ `Phone`) | **Check-in grid**: account by month, each cell the day it was read and how far it moved, missed months hatched. Click a cell, a row or a column to list just those readings below |
+| `AccountsHistoryH3.dc.html` (+ `Phone`) | **Passbook**: the accounts on the left, one account's page on the right with its own line, a Date / Change / Balance / Gap table and its Update and Edit buttons |
+
+Shared: the back link and "Balance history" title, a greeting sentence, the period pill and Update balances, and every edit and delete from the dashboard card. Nothing is built; decisions to make are which direction (or a mix, like H1's list under H2's grid), and whether the dashboard card links to it with "View all".
+
+## Built: the Balance history page (#177)
+
+**H1 Ledger was picked (2026-10-23)** and built at `/accounts/history`, reached from the dashboard's Balance history card ("View all balances", carrying the pick and the period) and from the sidebar's Accounts section. A back link to Accounts, the summary sentence, four tiles (recorded, biggest move, not read lately, days between readings), then the filters (All / Rises / Falls / First & closing with counts, account, purpose, search, sort: newest, oldest, biggest move) and the balances grouped by month with each month's net, 12 to a page. Every filter is in the address (`?period= &account= &purpose= &status= &q= &sort= &page=`). A row's ⋯ menu has Edit balance, Update that account (not for a closed one) and Delete balance, through the Accounts forms. Pure logic in `lib/aggregate/accountHistory.ts` (tested), the address in `app/accounts/history/params.ts`, the page's data in `app/accounts/history/views.ts`.
+
+Definitions: a balance's change is against the account's previous balance, even from before the period; only an account's very first balance is "first"; "closing" is a closed account's last ₹0 balance; a month's net is the sum of its changes (so it leaves out first balances) and is the whole month's even when a page shows part of it; a search matches an account's name, bank or last 4, or an amount typed as digits against a balance or its change. H2's check-in grid and H3's passbook weren't built.

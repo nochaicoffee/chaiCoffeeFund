@@ -5,6 +5,10 @@
       "name": "Read me first"
     },
     {
+      "id": "history",
+      "name": "Balance history page (H1–H3)"
+    },
+    {
       "id": "final",
       "name": "Final design"
     },
@@ -165,6 +169,54 @@
       "w": 1300,
       "h": 9129,
       "page": "readme"
+    },
+    {
+      "file": "AccountsHistoryH1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1664,
+      "page": "history"
+    },
+    {
+      "file": "AccountsHistoryH1Phone.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 390,
+      "h": 1516,
+      "page": "history"
+    },
+    {
+      "file": "AccountsHistoryH2.dc.html",
+      "x": 2230,
+      "y": 0,
+      "w": 1600,
+      "h": 1224,
+      "page": "history"
+    },
+    {
+      "file": "AccountsHistoryH2Phone.dc.html",
+      "x": 3950,
+      "y": 0,
+      "w": 390,
+      "h": 1395,
+      "page": "history"
+    },
+    {
+      "file": "AccountsHistoryH3.dc.html",
+      "x": 4460,
+      "y": 0,
+      "w": 1600,
+      "h": 1336,
+      "page": "history"
+    },
+    {
+      "file": "AccountsHistoryH3Phone.dc.html",
+      "x": 6180,
+      "y": 0,
+      "w": 390,
+      "h": 1216,
+      "page": "history"
     },
     {
       "file": "AccountsFinalPage.dc.html",
@@ -917,11 +969,19 @@
       "x": 0,
       "y": -90,
       "w": 1100,
+      "text": "Round 17 (2026-10-23): the Balance history page, /accounts/history, the Accounts counterpart of Cards' Statements and Subscriptions' Renewals. Three directions, desktop and phone: H1 Ledger (Renewals' layout: summary tiles, filters, month groups), H2 Check-in grid (which accounts were read when, then the rows), H3 Passbook (one account's running balance, the others on the left). One state of each is drawn, with the row menu open. Sample data, made up.",
+      "page": "history"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
       "text": "Round 13 (2026-10-22): the selector goes inside the hero, as Subscriptions does. Five ways: H1 cover flow inside the hero, H2 glass strip along the bottom, H3 wallet stack beside the figure, H4 the cards are the hero, H5 a rail of rings. Pick a card and the stage follows. Sample data, made up.",
       "page": "r13"
     },
     {
-      "id": "note-2",
+      "id": "note-3",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -929,7 +989,7 @@
       "page": "r12"
     },
     {
-      "id": "note-3",
+      "id": "note-4",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -937,7 +997,7 @@
       "page": "r11"
     },
     {
-      "id": "note-4",
+      "id": "note-5",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -945,7 +1005,7 @@
       "page": "widgets"
     },
     {
-      "id": "note-5",
+      "id": "note-6",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -953,7 +1013,7 @@
       "page": "z3"
     },
     {
-      "id": "note-6",
+      "id": "note-7",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -961,7 +1021,7 @@
       "page": "final"
     },
     {
-      "id": "note-7",
+      "id": "note-8",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -969,7 +1029,7 @@
       "page": "readme"
     },
     {
-      "id": "note-8",
+      "id": "note-9",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -977,7 +1037,7 @@
       "page": "dir-a"
     },
     {
-      "id": "note-9",
+      "id": "note-10",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -985,7 +1045,7 @@
       "page": "dir-b"
     },
     {
-      "id": "note-10",
+      "id": "note-11",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -993,7 +1053,7 @@
       "page": "dir-c"
     },
     {
-      "id": "note-11",
+      "id": "note-12",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1001,7 +1061,7 @@
       "page": "dir-d"
     },
     {
-      "id": "note-12",
+      "id": "note-13",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1009,7 +1069,7 @@
       "page": "dir-e"
     },
     {
-      "id": "note-13",
+      "id": "note-14",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1017,7 +1077,7 @@
       "page": "dir-f"
     },
     {
-      "id": "note-14",
+      "id": "note-15",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1025,7 +1085,7 @@
       "page": "dir-g"
     },
     {
-      "id": "note-15",
+      "id": "note-16",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1033,7 +1093,7 @@
       "page": "dir-h"
     },
     {
-      "id": "note-16",
+      "id": "note-17",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1041,7 +1101,7 @@
       "page": "dir-i"
     },
     {
-      "id": "note-17",
+      "id": "note-18",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1049,7 +1109,7 @@
       "page": "dir-j"
     },
     {
-      "id": "note-18",
+      "id": "note-19",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1057,7 +1117,7 @@
       "page": "dir-k"
     },
     {
-      "id": "note-19",
+      "id": "note-20",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1065,7 +1125,7 @@
       "page": "dir-l"
     },
     {
-      "id": "note-20",
+      "id": "note-21",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1073,7 +1133,7 @@
       "page": "dir-m"
     },
     {
-      "id": "note-21",
+      "id": "note-22",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1081,7 +1141,7 @@
       "page": "dir-n"
     },
     {
-      "id": "note-22",
+      "id": "note-23",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1089,7 +1149,7 @@
       "page": "dir-o"
     },
     {
-      "id": "note-23",
+      "id": "note-24",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1097,7 +1157,7 @@
       "page": "dir-p"
     },
     {
-      "id": "note-24",
+      "id": "note-25",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1105,7 +1165,7 @@
       "page": "dir-q"
     },
     {
-      "id": "note-25",
+      "id": "note-26",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1113,7 +1173,7 @@
       "page": "dir-r"
     },
     {
-      "id": "note-26",
+      "id": "note-27",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1121,7 +1181,7 @@
       "page": "dir-s"
     },
     {
-      "id": "note-27",
+      "id": "note-28",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1129,7 +1189,7 @@
       "page": "dir-t"
     },
     {
-      "id": "note-28",
+      "id": "note-29",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1137,7 +1197,7 @@
       "page": "dir-u"
     },
     {
-      "id": "note-29",
+      "id": "note-30",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1145,7 +1205,7 @@
       "page": "dir-v"
     },
     {
-      "id": "note-30",
+      "id": "note-31",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1153,7 +1213,7 @@
       "page": "dir-w"
     },
     {
-      "id": "note-31",
+      "id": "note-32",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1161,7 +1221,7 @@
       "page": "dir-x"
     },
     {
-      "id": "note-32",
+      "id": "note-33",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1169,7 +1229,7 @@
       "page": "dir-y"
     },
     {
-      "id": "note-33",
+      "id": "note-34",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1177,7 +1237,7 @@
       "page": "z2"
     },
     {
-      "id": "note-34",
+      "id": "note-35",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1185,7 +1245,7 @@
       "page": "z1"
     },
     {
-      "id": "note-35",
+      "id": "note-36",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1193,7 +1253,7 @@
       "page": "zsel"
     },
     {
-      "id": "note-36",
+      "id": "note-37",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1201,7 +1261,7 @@
       "page": "ysel"
     },
     {
-      "id": "note-37",
+      "id": "note-38",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1209,7 +1269,7 @@
       "page": "charts"
     },
     {
-      "id": "note-38",
+      "id": "note-39",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -1217,7 +1277,7 @@
       "page": "states"
     },
     {
-      "id": "note-39",
+      "id": "note-40",
       "x": 0,
       "y": -90,
       "w": 1100,
