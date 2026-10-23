@@ -77,55 +77,123 @@
   --heat-glow: oklch(1 0 0 / 0.26);
 
   /*
-   * Card colours. Each is a 155° gradient (from, to) for the tile, plus a
-   * solid swatch for chart marks and legend dots. Emerald is reserved for
-   * the All Cards tile; the rest are the palette a card can be given.
+   * The card palette: one list for every dashboard (COLORS in src/lib/sheets/types.ts). Each colour
+   * is a 155° gradient (from, to) for tiles and covers, plus a solid swatch for chart marks and
+   * legend dots; all are dark, with white text (a dusk twin's swatch is lifted a little, to stay readable on the dark page). Each hue has a standard colour and a darker, quieter
+   * "dusk" twin. Emerald is also All Cards' colour. Adding one: its name in COLORS, its three tokens
+   * here, and its name in the Sheet's colour dropdowns (docs/system-design.md).
    */
+  --card-ruby-from: oklch(0.35 0.15 25);
+  --card-ruby-to: oklch(0.17 0.083 25);
+  --card-ruby: oklch(0.58 0.18 25);
+  --card-burgundy-from: oklch(0.25 0.075 25);
+  --card-burgundy-to: oklch(0.12 0.045 25);
+  --card-burgundy: oklch(0.52 0.098 25);
+  --card-coral-from: oklch(0.38 0.13 35);
+  --card-coral-to: oklch(0.18 0.072 35);
+  --card-coral: oklch(0.626 0.156 35);
+  --card-copper-from: oklch(0.37 0.12 55);
+  --card-copper-to: oklch(0.18 0.066 55);
+  --card-copper: oklch(0.606 0.144 55);
+  --card-rust-from: oklch(0.26 0.06 55);
+  --card-rust-to: oklch(0.125 0.036 55);
+  --card-rust: oklch(0.532 0.078 55);
+  --card-amber-from: oklch(0.44 0.115 85);
+  --card-amber-to: oklch(0.215 0.063 85);
+  --card-amber: oklch(0.697 0.138 85);
+  --card-bronze-from: oklch(0.295 0.058 85);
+  --card-bronze-to: oklch(0.142 0.035 85);
+  --card-bronze: oklch(0.574 0.075 85);
+  --card-olive-from: oklch(0.42 0.1 120);
+  --card-olive-to: oklch(0.205 0.055 120);
+  --card-olive: oklch(0.671 0.12 120);
+  --card-moss-from: oklch(0.285 0.05 120);
+  --card-moss-to: oklch(0.138 0.03 120);
+  --card-moss: oklch(0.562 0.065 120);
   --card-emerald-from: oklch(0.42 0.11 155);
   --card-emerald-to: oklch(0.24 0.07 162);
   --card-emerald: oklch(0.6 0.12 153);
-  --card-sapphire-from: oklch(0.32 0.09 258);
-  --card-sapphire-to: oklch(0.16 0.05 258);
-  --card-sapphire: oklch(0.48 0.1 258);
-  --card-ruby-from: oklch(0.3 0.11 20);
-  --card-ruby-to: oklch(0.15 0.07 20);
-  --card-ruby: oklch(0.57 0.13 22);
+  --card-pine-from: oklch(0.255 0.055 152);
+  --card-pine-to: oklch(0.122 0.033 152);
+  --card-pine: oklch(0.526 0.072 152);
+  --card-teal-from: oklch(0.35 0.09 187);
+  --card-teal-to: oklch(0.17 0.05 187);
+  --card-teal: oklch(0.58 0.108 187);
+  --card-spruce-from: oklch(0.25 0.045 187);
+  --card-spruce-to: oklch(0.12 0.027 187);
+  --card-spruce: oklch(0.52 0.058 187);
+  --card-ocean-from: oklch(0.35 0.1 221);
+  --card-ocean-to: oklch(0.17 0.055 221);
+  --card-ocean: oklch(0.58 0.12 221);
+  --card-navy-from: oklch(0.25 0.05 221);
+  --card-navy-to: oklch(0.12 0.03 221);
+  --card-navy: oklch(0.52 0.065 221);
+  --card-sapphire-from: oklch(0.35 0.13 252);
+  --card-sapphire-to: oklch(0.17 0.072 252);
+  --card-sapphire: oklch(0.58 0.156 252);
+  --card-cobalt-from: oklch(0.25 0.065 252);
+  --card-cobalt-to: oklch(0.12 0.039 252);
+  --card-cobalt: oklch(0.52 0.085 252);
+  --card-violet-from: oklch(0.35 0.15 285);
+  --card-violet-to: oklch(0.17 0.083 285);
+  --card-violet: oklch(0.58 0.18 285);
+  --card-aubergine-from: oklch(0.25 0.075 285);
+  --card-aubergine-to: oklch(0.12 0.045 285);
+  --card-aubergine: oklch(0.52 0.098 285);
+  --card-plum-from: oklch(0.35 0.14 318);
+  --card-plum-to: oklch(0.17 0.077 318);
+  --card-plum: oklch(0.58 0.168 318);
+  --card-mulberry-from: oklch(0.25 0.07 318);
+  --card-mulberry-to: oklch(0.12 0.042 318);
+  --card-mulberry: oklch(0.52 0.091 318);
+  --card-pink-from: oklch(0.38 0.15 352);
+  --card-pink-to: oklch(0.185 0.083 352);
+  --card-pink: oklch(0.619 0.18 352);
+  --card-raspberry-from: oklch(0.265 0.075 352);
+  --card-raspberry-to: oklch(0.128 0.045 352);
+  --card-raspberry: oklch(0.538 0.098 352);
   --card-onyx-from: oklch(0.28 0.02 75);
   --card-onyx-to: oklch(0.15 0.01 75);
   --card-onyx: oklch(0.56 0.04 75);
-  --card-violet-from: oklch(0.31 0.1 300);
-  --card-violet-to: oklch(0.16 0.06 300);
-  --card-violet: oklch(0.53 0.13 300);
-  --card-teal-from: oklch(0.32 0.07 200);
-  --card-teal-to: oklch(0.16 0.04 200);
-  --card-teal: oklch(0.56 0.09 200);
-  --card-copper-from: oklch(0.33 0.09 50);
-  --card-copper-to: oklch(0.16 0.05 50);
-  --card-copper: oklch(0.6 0.12 50);
+  --card-slate-from: oklch(0.34 0.025 250);
+  --card-slate-to: oklch(0.17 0.015 250);
+  --card-slate: oklch(0.6 0.03 250);
+  --card-mocha-from: oklch(0.32 0.04 55);
+  --card-mocha-to: oklch(0.17 0.025 50);
+  --card-mocha: oklch(0.54 0.05 55);
+  --card-honey-from: oklch(0.41 0.12 70);
+  --card-honey-to: oklch(0.2 0.066 70);
+  --card-honey: oklch(0.658 0.144 70);
+  --card-jade-from: oklch(0.36 0.1 170);
+  --card-jade-to: oklch(0.175 0.055 170);
+  --card-jade: oklch(0.593 0.12 170);
+  --card-sky-from: oklch(0.36 0.1 205);
+  --card-sky-to: oklch(0.175 0.055 205);
+  --card-sky: oklch(0.593 0.12 205);
+  --card-azure-from: oklch(0.35 0.12 237);
+  --card-azure-to: oklch(0.17 0.066 237);
+  --card-azure: oklch(0.58 0.144 237);
+  --card-orchid-from: oklch(0.35 0.15 300);
+  --card-orchid-to: oklch(0.17 0.083 300);
+  --card-orchid: oklch(0.58 0.18 300);
+  --card-magenta-from: oklch(0.35 0.17 335);
+  --card-magenta-to: oklch(0.17 0.094 335);
+  --card-magenta: oklch(0.58 0.204 335);
+  --card-graphite-from: oklch(0.3 0.012 285);
+  --card-graphite-to: oklch(0.15 0.008 285);
+  --card-graphite: oklch(0.52 0.02 285);
   --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
 
-  /* More colours a subscription can be given (SUBSCRIPTION_COLORS), in the card palette's style. */
-  --card-amber-from: oklch(0.37 0.09 72);
-  --card-amber-to: oklch(0.18 0.05 66);
-  --card-amber: oklch(0.67 0.13 72);
+  /* Kept from before the palette was widened, so saved rows in them look as they did. */
   --card-rose-from: oklch(0.33 0.11 355);
   --card-rose-to: oklch(0.16 0.07 355);
   --card-rose: oklch(0.62 0.15 355);
-  --card-indigo-from: oklch(0.3 0.12 278);
-  --card-indigo-to: oklch(0.15 0.07 278);
-  --card-indigo: oklch(0.52 0.16 278);
   --card-forest-from: oklch(0.33 0.08 138);
   --card-forest-to: oklch(0.16 0.05 145);
   --card-forest: oklch(0.6 0.12 138);
-  --card-plum-from: oklch(0.31 0.1 330);
-  --card-plum-to: oklch(0.15 0.06 330);
-  --card-plum: oklch(0.56 0.14 330);
-  --card-ocean-from: oklch(0.33 0.08 228);
-  --card-ocean-to: oklch(0.16 0.05 232);
-  --card-ocean: oklch(0.58 0.11 228);
-  --card-slate-from: oklch(0.33 0.02 250);
-  --card-slate-to: oklch(0.16 0.015 250);
-  --card-slate: oklch(0.6 0.03 250);
+  --card-indigo-from: oklch(0.3 0.12 278);
+  --card-indigo-to: oklch(0.15 0.07 278);
+  --card-indigo: oklch(0.52 0.16 278);
 
   /* Text, marks and edges on the card tiles, which are dark in both themes. */
   --on-card: oklch(0.95 0.004 260);

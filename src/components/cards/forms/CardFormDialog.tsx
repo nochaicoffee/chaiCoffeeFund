@@ -7,6 +7,8 @@ import type { ClientCard } from "@/lib/forms/clientCard";
 import { IDLE } from "@/lib/forms/formState";
 import { cardName, optionLabel, ordinal } from "@/lib/format/labels";
 import { parseAmountText, formatInr } from "@/lib/format/money";
+import { freeColor } from "@/lib/format/colors";
+import { ColorSwatches } from "../../shell/ColorSwatches";
 import { CARD_COLORS, CARD_ISSUERS, CARD_TYPES, type CardColor } from "@/lib/sheets/types";
 import { CardTile } from "../CardTile";
 import { Field, MoneyInput, PreviewPanel, Segmented, SelectInput, TextInput, describedBy, inputClass } from "./fields";
@@ -50,7 +52,7 @@ export function CardFormDialog({
   const [creditLimit, setCreditLimit] = useState(card ? card.creditLimit.toLocaleString("en-IN") : "");
   const [statementDay, setStatementDay] = useState(card ? String(card.statementDay) : "");
   const [dueDayBuffer, setDueDayBuffer] = useState(card ? String(card.dueDayBuffer) : "");
-  const [color, setColor] = useState<CardColor>(card?.color ?? CARD_COLORS.find((c) => !usedColors.includes(c)) ?? "Sapphire");
+  const [color, setColor] = useState<CardColor>(card?.color ?? (freeColor(usedColors, ["Emerald"]) as CardColor));
   const [account, setAccount] = useState(card?.defaultPaidFromAccountId ?? "");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -91,30 +93,7 @@ export function CardFormDialog({
           footnote={`${day >= 1 && day <= 31 ? `Statement on the ${ordinal(day)}` : "Statement day"} · ${Number(dueDayBuffer) > 0 ? `Due ${dueDayBuffer} days later` : "Days to pay"}`}
         />
       </div>
-      {/* The colour radios sit in the preview panel, inside the form, so they submit with it. */}
-      <fieldset aria-describedby={errors.color ? "color-error" : undefined}>
-        <legend className="mb-2 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
-          Colour<span className="text-negative" aria-hidden="true"> *</span>
-        </legend>
-        <div className="flex flex-wrap gap-2.5">
-          {CARD_COLORS.map((c) => (
-            <label key={c} className="relative flex cursor-pointer flex-col items-center gap-1">
-              <input type="radio" name="color" value={c} checked={color === c} onChange={() => setColor(c)} className="peer sr-only" />
-              <span
-                className="size-[30px] rounded-[9px] shadow-[0_2px_5px_oklch(0_0_0/0.18)] ring-offset-2 ring-offset-feature-tile peer-checked:ring-2 peer-checked:ring-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-accent max-md:size-9"
-                style={{ background: `linear-gradient(155deg, var(--card-${c.toLowerCase()}-from), var(--card-${c.toLowerCase()}-to))` }}
-                aria-hidden="true"
-              />
-              <span className="text-[10px] font-semibold text-muted peer-checked:font-bold peer-checked:text-fg">{c}</span>
-            </label>
-          ))}
-        </div>
-        {errors.color && (
-          <p id="color-error" className="mt-1.5 text-[11px] font-semibold text-negative">
-            {errors.color}
-          </p>
-        )}
-      </fieldset>
+      <ColorSwatches colors={CARD_COLORS} value={color} onChange={(c) => setColor(c as CardColor)} error={errors.color} />
     </PreviewPanel>
   );
 

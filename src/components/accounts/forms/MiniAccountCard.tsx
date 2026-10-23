@@ -1,4 +1,4 @@
-import { colorGradient, type ColorKey } from "@/lib/format/subscriptionLabels";
+import { colorGradient, type ColorKey } from "@/lib/format/colors";
 import { formatInr } from "@/lib/format/money";
 import { RingTexture } from "../../RingTexture";
 
@@ -27,35 +27,6 @@ export function MiniAccountCard({ colorKey, initial, name, last4, balance, corne
         </span>
       </span>
     </div>
-  );
-}
-
-/** The colour radios that sit in the preview panel, inside the form so they submit with it (as in Add card and Add subscription). */
-export function ColorSwatches({ colors, value, onChange, error }: { colors: readonly string[]; value: string; onChange: (color: string) => void; error?: string }) {
-  return (
-    <fieldset aria-describedby={error ? "color-error" : undefined}>
-      <legend className="mb-2 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
-        Colour<span className="text-negative" aria-hidden="true"> *</span>
-      </legend>
-      <div className="flex flex-wrap gap-2.5">
-        {colors.map((c) => (
-          <label key={c} className="relative flex cursor-pointer flex-col items-center gap-1">
-            <input type="radio" name="color" value={c} checked={value === c} onChange={() => onChange(c)} className="peer sr-only" />
-            <span
-              className="size-[30px] rounded-[9px] shadow-[0_2px_5px_oklch(0_0_0/0.18)] ring-offset-2 ring-offset-feature-tile peer-checked:ring-2 peer-checked:ring-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-accent max-md:size-9"
-              style={{ background: colorGradient(c.toLowerCase() as ColorKey) }}
-              aria-hidden="true"
-            />
-            <span className="text-[10px] font-semibold text-muted peer-checked:font-bold peer-checked:text-fg">{c}</span>
-          </label>
-        ))}
-      </div>
-      {error && (
-        <p id="color-error" className="mt-1.5 text-[11px] font-semibold text-negative">
-          {error}
-        </p>
-      )}
-    </fieldset>
   );
 }
 

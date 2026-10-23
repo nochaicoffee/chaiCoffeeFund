@@ -1,0 +1,254 @@
+[
+ {
+  "name": "Ruby",
+  "family": "Red",
+  "from_": "oklch(0.35 0.15 25)",
+  "to": "oklch(0.17 0.083 25)",
+  "swatch": "oklch(0.58 0.18 25)"
+ },
+ {
+  "name": "Burgundy",
+  "family": "Red",
+  "from_": "oklch(0.25 0.075 25)",
+  "to": "oklch(0.12 0.045 25)",
+  "swatch": "oklch(0.52 0.098 25)"
+ },
+ {
+  "name": "Coral",
+  "family": "Orange",
+  "from_": "oklch(0.38 0.13 35)",
+  "to": "oklch(0.18 0.072 35)",
+  "swatch": "oklch(0.626 0.156 35)"
+ },
+ {
+  "name": "Copper",
+  "family": "Orange",
+  "from_": "oklch(0.37 0.12 55)",
+  "to": "oklch(0.18 0.066 55)",
+  "swatch": "oklch(0.606 0.144 55)"
+ },
+ {
+  "name": "Rust",
+  "family": "Orange",
+  "from_": "oklch(0.26 0.06 55)",
+  "to": "oklch(0.125 0.036 55)",
+  "swatch": "oklch(0.532 0.078 55)"
+ },
+ {
+  "name": "Amber",
+  "family": "Gold",
+  "from_": "oklch(0.44 0.115 85)",
+  "to": "oklch(0.215 0.063 85)",
+  "swatch": "oklch(0.697 0.138 85)"
+ },
+ {
+  "name": "Bronze",
+  "family": "Gold",
+  "from_": "oklch(0.295 0.058 85)",
+  "to": "oklch(0.142 0.035 85)",
+  "swatch": "oklch(0.574 0.075 85)"
+ },
+ {
+  "name": "Honey",
+  "family": "Gold",
+  "from_": "oklch(0.41 0.12 70)",
+  "to": "oklch(0.2 0.066 70)",
+  "swatch": "oklch(0.658 0.144 70)"
+ },
+ {
+  "name": "Olive",
+  "family": "Lime",
+  "from_": "oklch(0.42 0.1 120)",
+  "to": "oklch(0.205 0.055 120)",
+  "swatch": "oklch(0.671 0.12 120)"
+ },
+ {
+  "name": "Moss",
+  "family": "Lime",
+  "from_": "oklch(0.285 0.05 120)",
+  "to": "oklch(0.138 0.03 120)",
+  "swatch": "oklch(0.562 0.065 120)"
+ },
+ {
+  "name": "Forest",
+  "family": "Green",
+  "from_": "oklch(0.33 0.08 138)",
+  "to": "oklch(0.16 0.05 145)",
+  "swatch": "oklch(0.6 0.12 138)"
+ },
+ {
+  "name": "Emerald",
+  "family": "Green",
+  "from_": "oklch(0.42 0.11 155)",
+  "to": "oklch(0.24 0.07 162)",
+  "swatch": "oklch(0.6 0.12 153)"
+ },
+ {
+  "name": "Pine",
+  "family": "Green",
+  "from_": "oklch(0.255 0.055 152)",
+  "to": "oklch(0.122 0.033 152)",
+  "swatch": "oklch(0.526 0.072 152)"
+ },
+ {
+  "name": "Jade",
+  "family": "Green",
+  "from_": "oklch(0.36 0.1 170)",
+  "to": "oklch(0.175 0.055 170)",
+  "swatch": "oklch(0.593 0.12 170)"
+ },
+ {
+  "name": "Teal",
+  "family": "Teal",
+  "from_": "oklch(0.35 0.09 187)",
+  "to": "oklch(0.17 0.05 187)",
+  "swatch": "oklch(0.58 0.108 187)"
+ },
+ {
+  "name": "Spruce",
+  "family": "Teal",
+  "from_": "oklch(0.25 0.045 187)",
+  "to": "oklch(0.12 0.027 187)",
+  "swatch": "oklch(0.52 0.058 187)"
+ },
+ {
+  "name": "Sky",
+  "family": "Teal",
+  "from_": "oklch(0.36 0.1 205)",
+  "to": "oklch(0.175 0.055 205)",
+  "swatch": "oklch(0.593 0.12 205)"
+ },
+ {
+  "name": "Ocean",
+  "family": "Blue",
+  "from_": "oklch(0.35 0.1 221)",
+  "to": "oklch(0.17 0.055 221)",
+  "swatch": "oklch(0.58 0.12 221)"
+ },
+ {
+  "name": "Navy",
+  "family": "Blue",
+  "from_": "oklch(0.25 0.05 221)",
+  "to": "oklch(0.12 0.03 221)",
+  "swatch": "oklch(0.52 0.065 221)"
+ },
+ {
+  "name": "Azure",
+  "family": "Blue",
+  "from_": "oklch(0.35 0.12 237)",
+  "to": "oklch(0.17 0.066 237)",
+  "swatch": "oklch(0.58 0.144 237)"
+ },
+ {
+  "name": "Sapphire",
+  "family": "Blue",
+  "from_": "oklch(0.35 0.13 252)",
+  "to": "oklch(0.17 0.072 252)",
+  "swatch": "oklch(0.58 0.156 252)"
+ },
+ {
+  "name": "Cobalt",
+  "family": "Blue",
+  "from_": "oklch(0.25 0.065 252)",
+  "to": "oklch(0.12 0.039 252)",
+  "swatch": "oklch(0.52 0.085 252)"
+ },
+ {
+  "name": "Indigo",
+  "family": "Violet",
+  "from_": "oklch(0.3 0.12 278)",
+  "to": "oklch(0.15 0.07 278)",
+  "swatch": "oklch(0.52 0.16 278)"
+ },
+ {
+  "name": "Violet",
+  "family": "Violet",
+  "from_": "oklch(0.35 0.15 285)",
+  "to": "oklch(0.17 0.083 285)",
+  "swatch": "oklch(0.58 0.18 285)"
+ },
+ {
+  "name": "Aubergine",
+  "family": "Violet",
+  "from_": "oklch(0.25 0.075 285)",
+  "to": "oklch(0.12 0.045 285)",
+  "swatch": "oklch(0.52 0.098 285)"
+ },
+ {
+  "name": "Orchid",
+  "family": "Purple",
+  "from_": "oklch(0.35 0.15 300)",
+  "to": "oklch(0.17 0.083 300)",
+  "swatch": "oklch(0.58 0.18 300)"
+ },
+ {
+  "name": "Plum",
+  "family": "Purple",
+  "from_": "oklch(0.35 0.14 318)",
+  "to": "oklch(0.17 0.077 318)",
+  "swatch": "oklch(0.58 0.168 318)"
+ },
+ {
+  "name": "Mulberry",
+  "family": "Purple",
+  "from_": "oklch(0.25 0.07 318)",
+  "to": "oklch(0.12 0.042 318)",
+  "swatch": "oklch(0.52 0.091 318)"
+ },
+ {
+  "name": "Magenta",
+  "family": "Pink",
+  "from_": "oklch(0.35 0.17 335)",
+  "to": "oklch(0.17 0.094 335)",
+  "swatch": "oklch(0.58 0.204 335)"
+ },
+ {
+  "name": "Pink",
+  "family": "Pink",
+  "from_": "oklch(0.38 0.15 352)",
+  "to": "oklch(0.185 0.083 352)",
+  "swatch": "oklch(0.619 0.18 352)"
+ },
+ {
+  "name": "Raspberry",
+  "family": "Pink",
+  "from_": "oklch(0.265 0.075 352)",
+  "to": "oklch(0.128 0.045 352)",
+  "swatch": "oklch(0.538 0.098 352)"
+ },
+ {
+  "name": "Rose",
+  "family": "Pink",
+  "from_": "oklch(0.33 0.11 355)",
+  "to": "oklch(0.16 0.07 355)",
+  "swatch": "oklch(0.62 0.15 355)"
+ },
+ {
+  "name": "Onyx",
+  "family": "Grey",
+  "from_": "oklch(0.28 0.02 75)",
+  "to": "oklch(0.15 0.01 75)",
+  "swatch": "oklch(0.56 0.04 75)"
+ },
+ {
+  "name": "Slate",
+  "family": "Grey",
+  "from_": "oklch(0.34 0.025 250)",
+  "to": "oklch(0.17 0.015 250)",
+  "swatch": "oklch(0.6 0.03 250)"
+ },
+ {
+  "name": "Mocha",
+  "family": "Grey",
+  "from_": "oklch(0.32 0.04 55)",
+  "to": "oklch(0.17 0.025 50)",
+  "swatch": "oklch(0.54 0.05 55)"
+ },
+ {
+  "name": "Graphite",
+  "family": "Grey",
+  "from_": "oklch(0.3 0.012 285)",
+  "to": "oklch(0.15 0.008 285)",
+  "swatch": "oklch(0.52 0.02 285)"
+ }
+]

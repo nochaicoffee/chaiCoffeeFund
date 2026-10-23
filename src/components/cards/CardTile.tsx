@@ -1,17 +1,17 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { CardColor } from "@/lib/sheets/types";
+import { cardColorKey, colorGradient, colorSwatch } from "@/lib/format/colors";
 import { RingTexture } from "../RingTexture";
 
 /** The tile background for a card colour, from the --card-* tokens (globals.css). Cards without one use onyx. */
 export function cardGradient(color: CardColor | undefined): string {
-  const key = (color ?? "Onyx").toLowerCase();
-  return `linear-gradient(155deg, var(--card-${key}-from), var(--card-${key}-to))`;
+  return colorGradient(cardColorKey(color));
 }
 
 /** The solid swatch for a card colour, for chart marks and legend dots. */
 export function cardSwatch(color: CardColor | undefined): string {
-  return `var(--card-${(color ?? "Onyx").toLowerCase()})`;
+  return colorSwatch(cardColorKey(color));
 }
 
 const ALL_CARDS_BACKGROUND =
