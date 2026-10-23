@@ -37,4 +37,14 @@ describe("decideSyncTurn", () => {
     const dead = run("dead", "Running", STALE_RUN_MS / 60_000 + 1);
     expect(decideSyncTurn([dead, run("me", "Running", 0)], "me", NOW)).toEqual({ goAhead: true, stale: [dead] });
   });
+
+  it("lets a card sync and an account sync run together: only a sync of the same kind holds one up", () => {
+    const accounts = (id: string, minutesAgo: number): SyncRun => ({ ...run(id, "Running", minutesAgo), kind: "Accounts" });
+    const cards = (id: string, minutesAgo: number): SyncRun => ({ ...run(id, "Running", minutesAgo), kind: "Cards" });
+    expect(decideSyncTurn([cards("c", 1), accounts("a", 0)], "a", NOW).goAhead).toBe(true);
+    expect(decideSyncTurn([accounts("a0", 1), accounts("a", 0)], "a", NOW)).toEqual({ goAhead: false, runningSince: "2026-10-19T09:59:00.000Z" });
+    // A blank kind, as every row from before the account sync is, is a card sync.
+    expect(decideSyncTurn([run("old", "Running", 1), accounts("a", 0)], "a", NOW).goAhead).toBe(true);
+    expect(decideSyncTurn([accounts("a", 1), run("me", "Running", 0)], "me", NOW).goAhead).toBe(true);
+  });
 });

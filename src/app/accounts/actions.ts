@@ -62,7 +62,9 @@ export async function saveAccount(_previous: FormState, formData: FormData): Pro
   const { balance, last4, ...account } = result.input;
   try {
     if (editing) {
-      await accountsRepository.update(id, updateAccountSchema.parse({ ...account, last4 }) as Partial<Omit<Account, "id">>);
+      // A blank password keeps the saved one; "clearPassword" removes it (as Edit card does).
+      const patch = updateAccountSchema.parse({ ...account, last4 }) as Partial<Omit<Account, "id">>;
+      await accountsRepository.update(id, { ...patch, ...(formData.get("clearPassword") === "1" && { statementPdfPassword: undefined }) });
       return refreshed(CACHE_TAGS.accounts);
     }
     const created = await accountsRepository.create(createAccountSchema.parse({ ...account, status: "Active", ...(last4 && { last4 }) }));

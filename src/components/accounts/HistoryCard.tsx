@@ -3,6 +3,7 @@
 import Link from "next/link";
 import type { HistoryRow, PickView } from "@/app/accounts/views";
 import { useAccountForms } from "./forms/AccountForms";
+import { NeedsAttentionChip } from "./NeedsAttentionChip";
 
 const FIRST = 8;
 
@@ -29,6 +30,7 @@ export function HistoryCard({ pick, rows, href }: { pick: PickView; rows: Histor
                 <b className="block truncate text-[13px] font-bold">{pick.kind === "all" ? `${r.accountName} · ${r.dateText}` : r.dateText}</b>
                 {r.gapText && <span className="block text-[11px] font-semibold text-muted">{r.gapText}</span>}
               </span>
+              {r.attention && <NeedsAttentionChip item={r.attention} />}
               {!disabledReason && (
                 <button type="button" onClick={() => open({ kind: "edit-balance", row: r })} aria-label={`Edit the ${r.dateText} balance`} className="rounded-full px-2 py-1 text-[11px] font-bold text-muted hover:bg-fill hover:text-fg focus-visible:outline-2 focus-visible:outline-accent">
                   Edit

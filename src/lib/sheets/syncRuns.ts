@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { createRepository } from "./repository";
 import { count, isoTimestamp, nonEmptyString } from "./validation";
-import { SYNC_RUN_STATUSES, SYNC_TRIGGERS, type SyncRun } from "./types";
+import { SYNC_KINDS, SYNC_RUN_STATUSES, SYNC_TRIGGERS, type SyncRun } from "./types";
 
 /**
  * One row per run of the Gmail sync (#82). A sync adds its Running row first,
@@ -11,6 +11,8 @@ import { SYNC_RUN_STATUSES, SYNC_TRIGGERS, type SyncRun } from "./types";
  * no routes or update schema.
  */
 export const createSyncRunSchema = z.object({
+  // Optional: runs from before the account sync have none, and were card syncs.
+  kind: z.enum(SYNC_KINDS).optional(),
   trigger: z.enum(SYNC_TRIGGERS),
   status: z.enum(SYNC_RUN_STATUSES),
   startedAt: isoTimestamp,
@@ -25,8 +27,11 @@ export const createSyncRunSchema = z.object({
 /** A row as read back from the Sheet: a valid create, plus its id. */
 export const syncRunRowSchema = createSyncRunSchema.extend({ id: nonEmptyString });
 
+/** The SyncRuns tab's columns, in order. kind was added on the end. */
+export const SYNC_RUN_COLUMNS: (keyof SyncRun)[] = ["id", "trigger", "status", "startedAt", "finishedAt", "imported", "duplicates", "failed", "remaining", "details", "kind"];
+
 export const syncRunsRepository = createRepository<SyncRun>({
   sheetName: "SyncRuns",
-  columns: ["id", "trigger", "status", "startedAt", "finishedAt", "imported", "duplicates", "failed", "remaining", "details"],
+  columns: SYNC_RUN_COLUMNS,
   schema: syncRunRowSchema,
 });

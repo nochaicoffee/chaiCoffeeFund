@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
+import { ReviewProvider } from "@/components/accounts/ReviewDialog";
 import { AccountFormsProvider, UpdateBalancesButton } from "@/components/accounts/forms/AccountForms";
 import { HistoryList } from "@/components/accounts/history/HistoryList";
 import { PeriodSelect } from "@/components/cards/PeriodSelect";
@@ -36,6 +37,7 @@ export default async function BalanceHistoryPage({ searchParams }: PageProps<"/a
 
   return (
     <AccountFormsProvider forms={formsView(data, today, demo)}>
+      <ReviewProvider demo={demo}>
       <div className="flex flex-col gap-5">
         <PageHeader
           section="Bank accounts"
@@ -97,6 +99,7 @@ export default async function BalanceHistoryPage({ searchParams }: PageProps<"/a
 
         <HistoryList view={view} state={state} hrefFor={hrefFor} accountsHref={accountsHref} today={today} />
       </div>
+      </ReviewProvider>
     </AccountFormsProvider>
   );
 }

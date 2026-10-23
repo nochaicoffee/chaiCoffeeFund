@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { AccountsData } from "@/lib/aggregate/accountFlows";
 import { thisYear } from "@/lib/aggregate/period";
-import { demoAccountsData } from "@/lib/demo/accountsDemo";
+import { demoAccountsData, demoReviews } from "@/lib/demo/accountsDemo";
 import { sentenceText } from "../cards/summarySentence";
-import { ALL, accountsPageView, greetingView, historyRows, mixBlocks, summarySentence } from "./views";
+import { ALL, accountsPageView, formsView, greetingView, historyRows, mixBlocks, summarySentence } from "./views";
 
 const today = "2026-10-22";
 const period = thisYear(today);
@@ -70,6 +70,41 @@ describe("the greeting", () => {
   });
 });
 
+describe("balances a statement disagreed with", () => {
+  const withReview: AccountsData = { ...demo, reviews: demoReviews(demo, today) };
+  const parts = summarySentence(withReview, today, period);
+  const cards = greetingView(withReview, today, period);
+
+  it("is said in the greeting, as a figure that points at a card of its own", () => {
+    expect(sentenceText(parts)).toContain("1 balance from your statements needs a look.");
+    expect(parts.find((p) => p.point === "attention")).toMatchObject({ text: "1 balance", strong: true });
+    expect(cards.attention).toMatchObject({ title: "A statement disagrees" });
+    expect(cards.attention?.rows).toHaveLength(1);
+    expect(cards.attention?.rows[0]).toMatchObject({ name: "HDFC Salary", amount: "−₹13", warn: true });
+    for (const part of parts) if (part.point) expect(cards[part.point as keyof typeof cards], part.point).toBeDefined();
+  });
+
+  it("is not mentioned when nothing is waiting", () => {
+    expect(sentenceText(summarySentence(demo, today, period))).not.toContain("needs a look");
+    expect(greetingView(demo, today, period).attention).toBeUndefined();
+  });
+
+  it("marks the balance it is about in Balance history, and no other", () => {
+    const view = accountsPageView(withReview, today, period);
+    expect(view.attention).toHaveLength(1);
+    const marked = view.history.all.filter((r) => r.attention);
+    expect(marked).toHaveLength(1);
+    expect(marked[0].id).toBe(view.attention[0].snapshotId);
+    expect(view.history[marked[0].accountId].filter((r) => r.attention)).toHaveLength(1);
+  });
+
+  it("finds the balance by account and day if the one the review named was re-entered", () => {
+    const [review] = withReview.reviews!;
+    const moved: AccountsData = { ...withReview, reviews: [{ ...review, snapshotId: "deleted-long-ago" }] };
+    expect(historyRows(moved).all.filter((r) => r.attention)).toHaveLength(1);
+  });
+});
+
 describe("the mix", () => {
   const blocks = mixBlocks(demo, today);
   it("holds every open account with money, biggest first, sizes and shares adding up", () => {
@@ -111,5 +146,20 @@ describe("links to the Balance history page", () => {
     expect(v.historyHrefs[ALL]).toBe("/accounts/history?period=2026-03..2026-08&demo");
     expect(v.historyHrefs["demo-hdfc"]).toBe("/accounts/history?account=demo-hdfc&period=2026-03..2026-08&demo");
     expect(accountsPageView(demo, today, period, false).historyHrefs[ALL]).toBe("/accounts/history");
+  });
+});
+
+describe("a statement PDF password", () => {
+  const withPassword: AccountsData = { ...demo, accounts: demo.accounts.map((a, i) => (i === 0 ? { ...a, statementPdfPassword: "s3cret-Pw" } : a)) };
+  const forms = formsView(withPassword, today, false);
+
+  it("tells the form that one is saved, but never carries it to the browser", () => {
+    expect(forms.accounts.find((a) => a.id === demo.accounts[0].id)?.hasPdfPassword).toBe(true);
+    expect(forms.accounts.filter((a) => a.hasPdfPassword)).toHaveLength(1);
+    expect(JSON.stringify(forms)).not.toContain("s3cret-Pw");
+  });
+
+  it("stays out of the page's own data too", () => {
+    expect(JSON.stringify(accountsPageView(withPassword, today, period))).not.toContain("s3cret-Pw");
   });
 });

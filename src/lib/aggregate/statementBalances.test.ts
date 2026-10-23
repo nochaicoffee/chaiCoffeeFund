@@ -181,6 +181,37 @@ describe("balancesFromStatement", () => {
   });
 });
 
+describe("balancesFromStatement with money held outside the rows", () => {
+  const base = statementOf("2026-01-01", "2026-03-31", 1000, [
+    ["2026-01-05", 100],
+    ["2026-02-10", -50],
+    ["2026-03-20", 25],
+  ]);
+
+  it("adds it to the opening and closing balance, and to month-ends when it stayed put", () => {
+    const points = balancesFromStatement({ ...base, held: { opening: 13, closing: 13, constant: true } });
+    expect(points.map((p) => [p.date, p.balance, p.kind])).toEqual([
+      ["2025-12-31", 1013, "opening"],
+      ["2026-01-31", 1113, "month-end"],
+      ["2026-02-28", 1063, "month-end"],
+      ["2026-03-31", 1088, "closing"],
+    ]);
+  });
+
+  it("when it moved, gives only the opening and closing, whose held amounts are known", () => {
+    const points = balancesFromStatement({ ...base, held: { opening: 13, closing: 20, constant: false } });
+    expect(points.map((p) => [p.date, p.balance, p.kind])).toEqual([
+      ["2025-12-31", 1013, "opening"],
+      ["2026-03-31", 1095, "closing"],
+    ]);
+  });
+
+  it("adds nothing without it, and still checks the rows on their own", () => {
+    expect(balancesFromStatement(base)[0].balance).toBe(1000);
+    expect(checkStatement({ ...base, held: { opening: 13, closing: 13, constant: true } })).toEqual({ ok: true });
+  });
+});
+
 describe("statementSkipReason", () => {
   const account = { status: "Active" as const, startDate: "2026-01-01" };
   it("applies to an open account for a period that has ended", () => {
@@ -216,8 +247,8 @@ describe("reconcile", () => {
 
   it("leaves a balance that already matches, to the paisa", () => {
     const actions = reconcile([snap("a", "2026-07-31", 10000.0), snap("b", "2026-08-31", 8000)], "acc-1", points);
-    expect(actions.map((a) => a.type)).toEqual(["unchanged"]);
-    expect(actions[0]).toMatchObject({ type: "unchanged", snapshotId: "b" });
+    expect(actions.map((a) => a.type)).toEqual(["unchanged", "unchanged"]);
+    expect(actions[1]).toMatchObject({ type: "unchanged", snapshotId: "b" });
   });
 
   it("leaves a different balance on the same day as it is, and says the statement disagrees: the recorded one wins", () => {
@@ -233,17 +264,17 @@ describe("reconcile", () => {
     expect(actions.map((a) => [a.type, a.date])).toEqual([["create", "2026-08-31"]]);
   });
 
-  it("notes, and does not overwrite, an opening balance that disagrees with the balance recorded for that day", () => {
+  it("treats an opening balance that disagrees with the balance recorded for that very day as a mismatch, and changes nothing", () => {
     const actions = reconcile([snap("prev", "2026-07-31", 9000)], "acc-1", points);
-    expect(actions[0]).toEqual({ type: "continuity", date: "2026-07-31", balance: 10000, recordedBalance: 9000, snapshotId: "prev" });
-    expect(actions.some((a) => a.type === "mismatch")).toBe(false);
+    expect(actions[0]).toEqual({ type: "mismatch", date: "2026-07-31", balance: 10000, kind: "opening", snapshotId: "prev", recordedBalance: 9000, bigDrop: false });
+    expect(actions.some((a) => a.type === "create" && a.date === "2026-07-31")).toBe(false);
   });
 
   it("is idempotent: once the creates are applied, a second run creates nothing and the mismatch is the same one", () => {
     const existing = [snap("b", "2026-08-31", 7900)];
     const first = reconcile(existing, "acc-1", points);
     const again = reconcile(apply(existing, first), "acc-1", points);
-    expect(again.filter((a) => a.type === "create" || a.type === "continuity")).toEqual([]);
+    expect(again.filter((a) => a.type === "create")).toEqual([]);
     expect(again.filter((a) => a.type === "mismatch")).toEqual(first.filter((a) => a.type === "mismatch"));
   });
 

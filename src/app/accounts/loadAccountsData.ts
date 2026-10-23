@@ -1,8 +1,9 @@
 import type { AccountsData } from "@/lib/aggregate/accountFlows";
 import { isDemoAllowed } from "@/lib/demo/cardsDemo";
-import { demoAccountsData } from "@/lib/demo/accountsDemo";
+import { demoAccountsData, demoReviews } from "@/lib/demo/accountsDemo";
 import {
   getCachedAccountsTab,
+  getCachedBalanceReviewsTab,
   getCachedBalanceSnapshotsTab,
   getCachedCards,
   getCachedIncomeEntries,
@@ -27,10 +28,14 @@ export async function loadAccountsData(
   today: string,
 ): Promise<{ demo: boolean; data: AccountsData; skipped: SkippedRows[] }> {
   const demo = isDemoAllowed() && params.demo !== undefined;
-  if (demo) return { demo, data: demoAccountsData(today), skipped: [] };
-  const [accounts, snapshots, cards, statements, subscriptions, subscriptionPayments, loans, installments, trades, incomeSources, incomeEntries] = await Promise.all([
+  if (demo) {
+    const sample = demoAccountsData(today);
+    return { demo, data: { ...sample, reviews: demoReviews(sample, today) }, skipped: [] };
+  }
+  const [accounts, snapshots, reviews, cards, statements, subscriptions, subscriptionPayments, loans, installments, trades, incomeSources, incomeEntries] = await Promise.all([
     getCachedAccountsTab(),
     getCachedBalanceSnapshotsTab(),
+    getCachedBalanceReviewsTab(),
     getCachedCards(),
     getCachedStatements(),
     getCachedSubscriptions(),
@@ -43,7 +48,7 @@ export async function loadAccountsData(
   ]);
   return {
     demo,
-    data: { accounts: accounts.records, snapshots: snapshots.records, cards, statements, subscriptions, subscriptionPayments, loans, installments, trades, incomeSources, incomeEntries },
-    skipped: [accounts.skipped, snapshots.skipped],
+    data: { accounts: accounts.records, snapshots: snapshots.records, reviews: reviews.records, cards, statements, subscriptions, subscriptionPayments, loans, installments, trades, incomeSources, incomeEntries },
+    skipped: [accounts.skipped, snapshots.skipped, reviews.skipped],
   };
 }

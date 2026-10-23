@@ -1,6 +1,6 @@
 import type { AccountsData } from "../aggregate/accountFlows";
 import { addMonthsUTC } from "../aggregate/recurring";
-import type { Account, BalanceSnapshot, Card, IncomeEntry, LoanInstallment, Statement } from "../sheets/types";
+import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, LoanInstallment, Statement } from "../sheets/types";
 
 /**
  * Sample accounts from the final design (design/accounts/AccountsFinalPage.dc.html), for
@@ -76,4 +76,14 @@ export function demoAccountsData(today: string): AccountsData {
     incomeSources: [{ id: "demo-salary", name: "Salary", alias: "Salary", category: "Salary", frequency: "Monthly", expectedAmount: 168000, status: "Active" }],
     incomeEntries,
   };
+}
+
+/**
+ * One sample "needs attention" balance for the demo page, so the chip, card and dialog can be seen. Kept apart from
+ * demoAccountsData so the figures the other demo tests read don't move.
+ */
+export function demoReviews(data: AccountsData, today: string): BalanceReview[] {
+  const sample = data.snapshots.filter((s) => s.accountId === "demo-hdfc" && s.date <= today).sort((a, b) => (a.date < b.date ? -1 : 1)).at(-1);
+  if (!sample) return [];
+  return [{ id: "demo-review", accountId: "demo-hdfc", snapshotId: sample.id, date: sample.date, recordedBalance: sample.balance, statementBalance: sample.balance - 13, messageId: "demo", status: "Open", createdAt: `${today}T00:00:00Z` }];
 }

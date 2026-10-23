@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import { RefreshButton } from "@/components/RefreshButton";
+import { SyncAccountStatementsButton } from "@/components/SyncAccountStatementsButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { AccountsDashboard } from "@/components/accounts/AccountsDashboard";
+import { AttentionCard } from "@/components/accounts/AttentionCard";
+import { ReviewProvider } from "@/components/accounts/ReviewDialog";
 import { GreetingSentence } from "@/components/accounts/GreetingSentence";
 import { AccountFormsProvider, HeaderFormButtons } from "@/components/accounts/forms/AccountForms";
 import { PeriodSelect } from "@/components/cards/PeriodSelect";
 import { PageHeader } from "@/components/shell/PageHeader";
+import { AccountSyncProvider } from "@/components/sync/AccountSyncContext";
+import { AccountSyncReportPanel } from "@/components/sync/AccountSyncReportPanel";
 import { appConfig } from "@/lib/appConfig";
 import { greetingFor, todayIso } from "@/lib/format/date";
 import { parsePeriod } from "../cards/params";
@@ -32,6 +37,8 @@ export default async function AccountsPage({ searchParams }: PageProps<"/account
 
   return (
     <AccountFormsProvider forms={view.forms}>
+    <ReviewProvider demo={demo}>
+    <AccountSyncProvider>
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Bank accounts"
@@ -40,6 +47,7 @@ export default async function AccountsPage({ searchParams }: PageProps<"/account
           <>
             <PeriodSelect options={accountsPeriodMenu(data, period, today)} value={accountsPeriodValue(period, today)} start={accountsRangeStart(data, period, today)} currentMonth={today.slice(0, 7)} />
             <RefreshButton iconOnly />
+            {!demo && <SyncAccountStatementsButton />}
             <HeaderFormButtons />
           </>
         }
@@ -47,9 +55,13 @@ export default async function AccountsPage({ searchParams }: PageProps<"/account
         <GreetingSentence parts={summarySentence(data, today, period)} cards={greetingView(data, today, period)} />
         {demo && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
         <SkippedRowsNotice tabs={skipped} />
+        {!demo && <AccountSyncReportPanel />}
       </PageHeader>
+      <AttentionCard items={view.attention} />
       <AccountsDashboard view={view} initialPick={initialPick} />
     </div>
+    </AccountSyncProvider>
+    </ReviewProvider>
     </AccountFormsProvider>
   );
 }

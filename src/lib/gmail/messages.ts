@@ -42,6 +42,40 @@ export function getSubjectHeader(message: gmail_v1.Schema$Message): string {
   return headers.find((h) => h.name === "Subject")?.value ?? "";
 }
 
+/** A PDF on a message, without downloading it. */
+export interface PdfPart {
+  filename: string;
+  attachmentId: string;
+  size: number;
+}
+
+/** Every `.pdf` attachment on a message, walking nested multipart parts, in the order they appear. */
+export function listPdfParts(message: gmail_v1.Schema$Message): PdfPart[] {
+  const found: PdfPart[] = [];
+  const queue: gmail_v1.Schema$MessagePart[] = message.payload ? [message.payload] : [];
+  while (queue.length > 0) {
+    const part = queue.shift()!;
+    if (part.parts && part.parts.length > 0) {
+      queue.push(...part.parts);
+      continue;
+    }
+    const filename = part.filename ?? "";
+    const attachmentId = part.body?.attachmentId;
+    if (filename.toLowerCase().endsWith(".pdf") && attachmentId) found.push({ filename, attachmentId, size: part.body?.size ?? 0 });
+  }
+  return found;
+}
+
+/** Downloads one attachment's bytes. */
+export async function downloadAttachment(gmail: gmail_v1.Gmail, messageId: string, attachmentId: string): Promise<Uint8Array | null> {
+  const res = await gmail.users.messages.attachments.get({ userId: "me", messageId, id: attachmentId });
+  return res.data.data ? base64UrlDecode(res.data.data) : null;
+}
+
+export function getHeader(message: gmail_v1.Schema$Message, name: string): string {
+  return (message.payload?.headers ?? []).find((h) => h.name?.toLowerCase() === name.toLowerCase())?.value ?? "";
+}
+
 /**
  * Downloads the first `.pdf` attachment on a message, walking nested
  * multipart parts — mirrors the reference `download_and_decrypt_pdf_bytes_from_message`'s

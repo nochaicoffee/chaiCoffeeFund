@@ -17,6 +17,7 @@ import { syncRunsRepository } from "@/lib/sheets/syncRuns";
 import type { Card, SyncTrigger } from "@/lib/sheets/types";
 import { logEntry, planEmails } from "./emailLog";
 import { decideSyncTurn } from "./syncTurn";
+import { withTimeout } from "./withTimeout";
 import type { IngestionOutcome, IngestionResult } from "./types";
 
 /** A sync stops starting new emails after this long, well inside the sync route's maxDuration (60s). */
@@ -160,27 +161,6 @@ async function syncEmails(startedAt: number, timeBudgetMs: number, emailTimeoutM
   // syncing again until none are left always gets there, whatever keeps failing.
   const remaining = planned.slice(read.length).filter((email) => !email.logged).length;
   return { status: "done", outcomes: read.map((r) => r.outcome), remaining };
-}
-
-/**
- * Runs one email's work, giving up after `ms`. The work can't be stopped
- * part-way, so it's told through `signal` instead, and checks it before it
- * changes anything: an email given up on adds no statement and fills in no last 4.
- */
-async function withTimeout<T>(work: (signal: AbortSignal) => Promise<T>, ms: number, onTimeout: () => T): Promise<T> {
-  const controller = new AbortController();
-  let timer: ReturnType<typeof setTimeout> | undefined;
-  const timeout = new Promise<T>((resolve) => {
-    timer = setTimeout(() => {
-      controller.abort();
-      resolve(onTimeout());
-    }, ms);
-  });
-  try {
-    return await Promise.race([work(controller.signal), timeout]);
-  } finally {
-    clearTimeout(timer);
-  }
 }
 
 /** What the duplicate check needs from each statement row, valid or not, and from each one read this sync. */

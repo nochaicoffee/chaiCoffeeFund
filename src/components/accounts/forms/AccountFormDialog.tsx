@@ -13,6 +13,7 @@ import { CARD_COLORS, type CardColor } from "@/lib/sheets/types";
 import { DateInput, Field, MoneyInput, PreviewPanel, Segmented, SelectInput, TextInput, describedBy } from "../../cards/forms/fields";
 import { PlusIcon } from "../../cards/forms/icons";
 import { FormDialog } from "../../cards/forms/FormDialog";
+import { PdfPasswordField } from "../../cards/forms/PdfPasswordField";
 import { useFieldErrors } from "../../cards/forms/useFieldErrors";
 import { ColorSwatches } from "../../shell/ColorSwatches";
 import { MiniAccountCard } from "./MiniAccountCard";
@@ -37,8 +38,9 @@ export function AccountFormDialog({ account, forms, onClose }: { account?: FormA
   const [color, setColor] = useState<string>(account?.color ?? freeColor(forms.accounts));
   const [last4, setLast4] = useState(account?.last4 ?? "");
   const [balance, setBalance] = useState("");
+  const [password, setPassword] = useState("");
 
-  const values = { name, bank, accountType, purpose, startDate, color, last4, balance };
+  const values = { name, bank, accountType, purpose, startDate, color, last4, balance, statementPdfPassword: password };
   const check = readAccountForm(values, editing);
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -97,6 +99,9 @@ export function AccountFormDialog({ account, forms, onClose }: { account?: FormA
             <MoneyInput {...describedBy("balance", errors.balance, true)} name="balance" value={balance} onChange={(e) => setBalance(e.target.value)} onBlur={() => reveal("balance")} invalid={Boolean(errors.balance)} />
           </Field>
         )}
+        <div className="md:col-span-2">
+          <PdfPasswordField id="account-password" help="Optional. Opens this account's emailed statement PDFs. Stored in the Accounts tab; never shown again after saving." saved={Boolean(account?.hasPdfPassword)} value={password} onChange={setPassword} />
+        </div>
       </div>
     </FormDialog>
   );

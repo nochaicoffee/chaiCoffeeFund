@@ -17,7 +17,12 @@ export type SyncTurn = { goAhead: true; stale: SyncRun[] } | { goAhead: false; r
  * can mark them failed.
  */
 export function decideSyncTurn(runs: SyncRun[], mine: string, now: number): SyncTurn {
-  const running = runs.filter((run) => run.status === "Running");
+  // Card and account syncs are separate (a blank kind is a card sync, from before there was one), so only
+  // syncs of this one's kind hold it up.
+  const kindOf = (run: SyncRun) => run.kind ?? "Cards";
+  const mineRun = runs.find((run) => run.id === mine);
+  const kind = mineRun ? kindOf(mineRun) : "Cards";
+  const running = runs.filter((run) => run.status === "Running" && kindOf(run) === kind);
   const isStale = (run: SyncRun) => run.id !== mine && now - Date.parse(run.startedAt) > STALE_RUN_MS;
   const first = running.find((run) => !isStale(run));
   if (first && first.id !== mine) return { goAhead: false, runningSince: first.startedAt };

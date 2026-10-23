@@ -102,3 +102,32 @@ export function planTableColumns(specs: ColumnSpec[], table: sheets_v4.Schema$Ta
     },
   };
 }
+
+/**
+ * The requests that create a tab and its Table from nothing: the tab, its header row, then a
+ * Table over the header and one empty row, typed from the schema. For a tab the code needs and
+ * the Sheet doesn't have yet; once it exists `planTableColumns` takes over. `sheetId` is chosen
+ * by the caller, so the three requests can name the tab they create in one batch.
+ */
+export function planNewTable(title: string, specs: ColumnSpec[], sheetId: number): { changes: string[]; requests: sheets_v4.Schema$Request[] } {
+  const columnProperties = specs.map((spec, index): sheets_v4.Schema$TableColumnProperties => ({
+    columnIndex: index,
+    columnName: spec.name,
+    columnType: spec.type,
+    ...(spec.options ? { dataValidationRule: dropdownRule(spec.options) } : {}),
+  }));
+  return {
+    changes: [`create the ${title} tab with ${specs.map((s) => s.name).join(", ")}`],
+    requests: [
+      { addSheet: { properties: { sheetId, title } } },
+      {
+        updateCells: {
+          start: { sheetId, rowIndex: 0, columnIndex: 0 },
+          rows: [{ values: specs.map((spec) => ({ userEnteredValue: { stringValue: spec.name } })) }],
+          fields: "userEnteredValue",
+        },
+      },
+      { addTable: { table: { name: title, range: { sheetId, startRowIndex: 0, endRowIndex: 2, startColumnIndex: 0, endColumnIndex: specs.length }, columnProperties } } },
+    ],
+  };
+}

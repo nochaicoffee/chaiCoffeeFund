@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import type { sheets_v4 } from "googleapis";
 import { isoDate, nonEmptyString } from "./validation";
-import { columnSpecs, planTableColumns } from "./tableColumns";
+import { columnSpecs, planNewTable, planTableColumns } from "./tableColumns";
 
 const schema = z.object({
   id: nonEmptyString,
@@ -107,5 +107,34 @@ describe("planTableColumns", () => {
     expect(plan.changes).toEqual(["set endDate's type to date"]);
     expect(plan.request?.updateTable?.table?.columnProperties?.[4]).toEqual({ columnIndex: 4, columnName: "endDate", columnType: "DATE" });
     expect(plan.request?.updateTable?.table?.columnProperties?.[5]?.columnType).toBe("DROPDOWN");
+  });
+});
+
+describe("planNewTable", () => {
+  const plan = planNewTable("Things", specs, 4242);
+
+  it("creates the tab, writes its header row, then makes a Table over it, all on the one chosen tab id", () => {
+    expect(plan.requests.map((r) => Object.keys(r)[0])).toEqual(["addSheet", "updateCells", "addTable"]);
+    expect(plan.requests[0].addSheet?.properties).toEqual({ sheetId: 4242, title: "Things" });
+    expect(plan.requests[1].updateCells?.start).toEqual({ sheetId: 4242, rowIndex: 0, columnIndex: 0 });
+    expect(plan.requests[1].updateCells?.rows?.[0].values?.map((v) => v.userEnteredValue?.stringValue)).toEqual(["id", "name", "amount", "status", "endDate", "note"]);
+  });
+
+  it("starts the Table at A1, as wide as the columns, and types each column from the schema", () => {
+    const table = plan.requests[2].addTable?.table;
+    expect(table?.range).toEqual({ sheetId: 4242, startRowIndex: 0, endRowIndex: 2, startColumnIndex: 0, endColumnIndex: 6 });
+    expect(table?.columnProperties?.map((c) => [c.columnName, c.columnType])).toEqual([
+      ["id", "TEXT"],
+      ["name", "TEXT"],
+      ["amount", "DOUBLE"],
+      ["status", "DROPDOWN"],
+      ["endDate", "DATE"],
+      ["note", "TEXT"],
+    ]);
+    expect(table?.columnProperties?.[3].dataValidationRule).toEqual(dropdown("Active", "Paused", "Cancelled"));
+  });
+
+  it("says what it will do, in words", () => {
+    expect(plan.changes).toEqual(["create the Things tab with id, name, amount, status, endDate, note"]);
   });
 });

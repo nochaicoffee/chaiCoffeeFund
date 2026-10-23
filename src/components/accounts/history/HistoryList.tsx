@@ -7,6 +7,7 @@ import type { HistoryPageView, HistoryRowView } from "@/app/accounts/history/vie
 import { colorGradient } from "@/lib/format/subscriptionLabels";
 import { LinkSelect } from "../../subscriptions/LinkSelect";
 import { UpdateBalancesButton } from "../forms/AccountForms";
+import { NeedsAttentionChip } from "../NeedsAttentionChip";
 import { HistoryRowMenu } from "./HistoryRowMenu";
 
 const SELECT = "flex h-10 max-w-full cursor-pointer items-center gap-2 rounded-full bg-fill px-3 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent aria-expanded:bg-fill-strong md:h-[34px]";
@@ -64,10 +65,16 @@ function Row({ row }: { row: HistoryRowView }) {
             {row.gapText ? ` · ${row.gapText}` : ""}
             {row.pill && <span className="lg:hidden">{` · ${row.pill}`}</span>}
           </span>
+          {row.row.attention && (
+            <span className="mt-1 block lg:hidden">
+              <NeedsAttentionChip item={row.row.attention} />
+            </span>
+          )}
         </div>
       </div>
-      <div role="cell" className="max-lg:hidden">
+      <div role="cell" className="flex flex-wrap items-center gap-1.5 max-lg:hidden">
         {row.pill && <Pill pill={row.pill} />}
+        {row.row.attention && <NeedsAttentionChip item={row.row.attention} />}
       </div>
       <div role="cell" className="text-right">
         <b className="block text-sm font-extrabold">{row.balanceText}</b>
