@@ -1,25 +1,10 @@
 "use client";
 
+import { SyncButton } from "./SyncButton";
 import { useSync } from "./sync/SyncContext";
 
-/** Starts a statement sync. Its progress and report show under the page header (SyncReportPanel), not here, so the header's buttons stay in one row. */
+/** Starts a card statement sync; its progress and report show under the page header (SyncReportPanel). */
 export function SyncStatementsButton() {
   const { state, start } = useSync();
-  const running = state.phase === "running";
-  return (
-    <button
-      type="button"
-      disabled={running}
-      aria-busy={running || undefined}
-      onClick={start}
-      className="flex items-center gap-2 rounded-full bg-fill px-5 py-2.5 text-[13px] font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-60 max-md:min-h-11"
-    >
-      {running && (
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true" className="animate-spin motion-reduce:animate-none">
-          <path d="M21 12a9 9 0 1 1-6.2-8.6" />
-        </svg>
-      )}
-      {running ? "Syncing…" : "Sync statements"}
-    </button>
-  );
+  return <SyncButton running={state.phase === "running"} onClick={start} />;
 }

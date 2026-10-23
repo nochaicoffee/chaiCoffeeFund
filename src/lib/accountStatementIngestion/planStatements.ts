@@ -17,6 +17,8 @@ export interface PlanContext {
   snapshots: BalanceSnapshot[];
   reviews: ReviewRecord[];
   today: string;
+  /** Whether a statement may give an account its last 4: only when it is the PDF's one statement (matchAccount). */
+  singleStatement?: boolean;
 }
 
 export interface StatementPlan {
@@ -45,7 +47,7 @@ export function planStatement(read: ParseResult, context: PlanContext): Statemen
   const check = checkStatement(statement);
   if (!check.ok) return skipped("numbers", check.problem, period);
 
-  const match = matchAccount(context.accounts, parsed.bank, parsed.accountLast4);
+  const match = matchAccount(context.accounts, parsed.bank, parsed.accountLast4, { fillLast4: context.singleStatement ?? true });
   if (match.kind === "none") return skipped("no-account", match.reason, period);
   if (match.kind === "several") return skipped("several-accounts", `more than one account could be this ${parsed.bank} statement: ${match.accounts.map((a) => a.name).join(", ")}. Set each one's last 4 in Edit account`, period);
   const account = match.account;

@@ -220,6 +220,21 @@ describe("runAccountStatementSync", () => {
     expect(fake.log[0]).toMatchObject({ result: "Imported", attempts: 2 });
   });
 
+  it("a scheduled sync leaves a failure from the last day alone, and the button tries it again", async () => {
+    fake.emails = [{ id: "locked", failure: "no_password_matched" }];
+    await sync({ now: () => new Date("2026-10-23T06:00:00Z") });
+    expect(fake.log[0]).toMatchObject({ result: "Failed", attempts: 1 });
+    const scheduled = await sync({ trigger: "Scheduled", now: () => new Date("2026-10-23T18:00:00Z") });
+    expect(scheduled.outcomes).toEqual([]);
+    expect(fake.log[0].attempts).toBe(1);
+    const nextDay = await sync({ trigger: "Scheduled", now: () => new Date("2026-10-24T07:00:00Z") });
+    expect(nextDay.outcomes).toHaveLength(1);
+    expect(fake.log[0].attempts).toBe(2);
+    const manual = await sync({ now: () => new Date("2026-10-24T07:05:00Z") });
+    expect(manual.outcomes).toHaveLength(1);
+    expect(fake.log[0].attempts).toBe(3);
+  });
+
   it("reports an email with no PDF, a PDF with no text, and one that is not a layout it reads", async () => {
     fake.emails = [{ id: "a", noPdf: true }, { id: "b", failure: "no_text_extracted" }, { id: "c" }];
     const result = await sync();
@@ -256,6 +271,15 @@ describe("runAccountStatementSync", () => {
     expect(fake.accountUpdates).toEqual([{ id: "slice", patch: { last4: "1128" } }]);
     expect(fake.writes.indexOf("accounts.update")).toBeGreaterThan(fake.writes.indexOf("snapshots.createMany"));
     expect(result.outcomes[0].statements[0].notes).toEqual(["filled in Slice Bank Account's last 4 (1128) from the statement"]);
+  });
+
+  it("never numbers an account from a PDF holding several statements", async () => {
+    fake.accounts = [slice({ last4: undefined })];
+    fake.emails = [{ id: "combined", parse: [...AUG(), ...statement("2026-08-01", "2026-08-31", 5, [], "9999")] }];
+    const result = await sync();
+    expect(fake.accountUpdates).toEqual([]);
+    expect(result.outcomes[0].statements.map((s) => s.problem)).toEqual(["no-account", "no-account"]);
+    expect(fake.snapshots).toEqual([]);
   });
 
   it("a PDF holding an account you don't track is reported, and the email is done once the tracked one is in", async () => {

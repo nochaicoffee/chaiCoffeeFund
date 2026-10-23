@@ -13,8 +13,11 @@ export interface PlannedAccountEmail {
  * first as Gmail lists them, so a sync that runs out of time has spent it on new statements rather
  * than on retrying old failures. To read a done email again (say an account was added since), delete
  * its row from the tab.
+ * `skipFailedSince` (an ISO timestamp) leaves out failures tried at or after it. An unattended sync passes
+ * yesterday, so an email that can only fail until Prathik changes something (an account not added, a password
+ * missing) isn't downloaded and decrypted again on every run; pressing the button passes nothing and tries them all.
  */
-export function planAccountEmails(messageIds: string[], log: AccountStatementEmail[]): PlannedAccountEmail[] {
+export function planAccountEmails(messageIds: string[], log: AccountStatementEmail[], { skipFailedSince }: { skipFailedSince?: string } = {}): PlannedAccountEmail[] {
   const byMessage = new Map<string, AccountStatementEmail>();
   // The first row wins if an email was ever logged twice.
   for (const row of log) if (!byMessage.has(row.messageId)) byMessage.set(row.messageId, row);
@@ -24,7 +27,7 @@ export function planAccountEmails(messageIds: string[], log: AccountStatementEma
   for (const messageId of new Set(messageIds)) {
     const logged = byMessage.get(messageId);
     if (!logged) fresh.push({ messageId });
-    else if (logged.result === "Failed") retry.push({ messageId, logged });
+    else if (logged.result === "Failed" && !(skipFailedSince && logged.lastTriedAt >= skipFailedSince)) retry.push({ messageId, logged });
   }
   return [...fresh, ...retry];
 }

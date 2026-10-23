@@ -63,6 +63,7 @@ function Row({ row }: { row: HistoryRowView }) {
           <span className="block truncate text-[11px] font-semibold text-muted">
             {row.dateText}
             {row.gapText ? ` · ${row.gapText}` : ""}
+            {row.row.fromStatement ? " · from a statement" : ""}
             {row.pill && <span className="lg:hidden">{` · ${row.pill}`}</span>}
           </span>
           {row.row.attention && (

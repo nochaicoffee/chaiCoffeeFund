@@ -22,6 +22,10 @@ const all = historyEntries(accounts, snaps);
 const period = { kind: "year", year: 2026 } as const;
 
 describe("historyEntries", () => {
+  it("says which balances a bank statement gave, and no others", () => {
+    const entries = historyEntries([hdfc], [{ ...snap("hdfc", "2026-01-31", 1), source: "Statement" }, { ...snap("hdfc", "2026-02-28", 2), source: "Manual" }, snap("hdfc", "2026-03-31", 3)]);
+    expect(entries.map((e) => e.fromStatement)).toEqual([true, false, false]);
+  });
   it("measures each balance against the one before it, even from before the period", () => {
     const jan = all.find((e) => e.id === "hdfc-2026-01-31")!;
     expect(jan).toMatchObject({ previous: 100_000, delta: 20_000, gapDays: 31, first: false });

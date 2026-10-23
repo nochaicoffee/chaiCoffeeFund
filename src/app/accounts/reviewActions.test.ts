@@ -78,6 +78,14 @@ describe("resolveBalanceReview", () => {
     expect(fake.snapshots[0]).toMatchObject({ id: "other", balance: 800 });
   });
 
+  it("does not write over the balance the review named if it has since been moved to another day", async () => {
+    fake.snapshots = [{ id: "s1", accountId: "slice", date: "2026-09-05", balance: 790 }];
+    await resolveBalanceReview(IDLE, form("r1", "accept"));
+    expect(fake.snapshots).toHaveLength(2);
+    expect(fake.snapshots.find((s) => s.id === "s1")).toMatchObject({ date: "2026-09-05", balance: 790 });
+    expect(fake.snapshots.find((s) => s.id !== "s1")).toMatchObject({ date: "2026-08-31", balance: 800 });
+  });
+
   it("does nothing for a review already answered, so a second tab can't undo the first", async () => {
     fake.reviews = [review({ status: "Kept" })];
     await resolveBalanceReview(IDLE, form("r1", "accept"));

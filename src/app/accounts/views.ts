@@ -95,6 +95,8 @@ export interface HistoryRow {
   gapText: string | null;
   /** A bank statement disagreed with this balance and the question is still open. */
   attention?: AttentionItem;
+  /** A bank statement gave this balance. */
+  fromStatement?: true;
 }
 
 /** An account as the forms need it: what to preview, what it holds, and what to pre-fill an edit with. */
@@ -265,8 +267,7 @@ export function mixBlocks(data: AccountsData, today: string): MixBlock[] {
 }
 
 /** Every recorded balance with its change from the one before it, newest first. */
-export function historyRows(data: AccountsData): Record<string, HistoryRow[]> {
-  const attention = attentionItems(data);
+export function historyRows(data: AccountsData, attention: AttentionItem[] = attentionItems(data)): Record<string, HistoryRow[]> {
   const rows = new Map<string, HistoryRow[]>();
   const all: HistoryRow[] = [];
   for (const account of data.accounts) {
@@ -286,6 +287,7 @@ export function historyRows(data: AccountsData): Record<string, HistoryRow[]> {
         changeTone: delta === null || delta === 0 ? null : delta > 0 ? "up" : "down",
         gapText: before ? `${daysBetween(before.date, s.date)} days after the one before` : null,
         ...(attentionForSnapshot(attention, s) && { attention: attentionForSnapshot(attention, s) }),
+        ...(s.source === "Statement" && { fromStatement: true as const }),
       };
     });
     all.push(...list);
@@ -322,6 +324,7 @@ export function formsView(data: AccountsData, today: string, demo: boolean): Acc
 }
 
 export function accountsPageView(data: AccountsData, today: string, period: SpendPeriod, demo = false): AccountsPageView {
+  const attention = attentionItems(data);
   // Closed accounts come last, as they do in the card row.
   const ordered = [...data.accounts].sort((a, b) => Number(isClosed(a)) - Number(isClosed(b)));
   const live = data.accounts.filter((a) => !isClosed(a));
@@ -331,7 +334,7 @@ export function accountsPageView(data: AccountsData, today: string, period: Spen
   const showAll = live.length !== 1 || data.accounts.length !== 1;
   const shown = data.accounts.length === 0 ? [allPick(data, period, today, cache)] : showAll && data.accounts.length > 1 ? [allPick(data, period, today, cache), ...picks] : picks;
   const historyHrefs = Object.fromEntries(shown.map((p) => [p.id, historyHref({ period, status: "all", sort: "newest", page: 1, demo, accountId: p.kind === "account" ? p.id : undefined }, today)]));
-  return { historyHrefs, forms: formsView(data, today, demo), mix: mixBlocks(data, today), history: historyRows(data), picks: shown, attention: attentionItems(data), hasAccounts: data.accounts.length > 0 };
+  return { historyHrefs, forms: formsView(data, today, demo), mix: mixBlocks(data, today), history: historyRows(data, attention), picks: shown, attention, hasAccounts: data.accounts.length > 0 };
 }
 
 // --- The greeting ---
@@ -393,6 +396,7 @@ export function summarySentence(data: AccountsData, today: string, period: Spend
 }
 
 export function greetingView(data: AccountsData, today: string, period: SpendPeriod): AccountsGreetingCards {
+  const waiting = attentionItems(data);
   const live = data.accounts.filter((a) => !isClosed(a));
   const firstDate = data.snapshots.map((s) => s.date).sort()[0] ?? null;
   if (live.length === 0 || !firstDate) return {};
@@ -424,11 +428,11 @@ export function greetingView(data: AccountsData, today: string, period: SpendPer
       rows: movers.slice(0, 6).map((m) => ({ key: m.account.id, name: m.account.name, colorKey: cardColorKey(accountColor(m.account)), amount: signed(m.change), fraction: Math.abs(m.change) / top })),
     },
     ...(best && months.length > 1 ? { high: { title: formatMonthYear(best.key), total: formatInr(best.total), months: months.map((m) => ({ ...m, lit: m.key === best.key })), note: "The most you held at a month's end" } } : {}),
-    ...(attentionItems(data).length
+    ...(waiting.length
       ? {
           attention: {
-            title: attentionItems(data).length === 1 ? "A statement disagrees" : `${attentionItems(data).length} statements disagree`,
-            rows: attentionItems(data).map((i) => ({ key: i.id, name: i.accountName, colorKey: i.colorKey, amount: i.differenceText, note: `${i.dateText} · recorded ${i.recordedText}, statement ${i.statementText}`, warn: true })),
+            title: waiting.length === 1 ? "A statement disagrees" : `${waiting.length} statements disagree`,
+            rows: waiting.map((i) => ({ key: i.id, name: i.accountName, colorKey: i.colorKey, amount: i.differenceText, note: `${i.dateText} · recorded ${i.recordedText}, statement ${i.statementText}`, warn: true })),
           },
         }
       : {}),

@@ -47,4 +47,14 @@ describe("matchAccount", () => {
   it("does not take 'slice' inside another word", () => {
     expect(matchAccount([account({ name: "Pizzaslicer", bank: "Other" })], "Slice", undefined).kind).toBe("none");
   });
+
+  it("will not number an account from a statement in a PDF that holds several, which can't say whose it is", () => {
+    const r = matchAccount(all, "Jupiter", "4321", { fillLast4: false });
+    expect(r).toMatchObject({ kind: "none" });
+    expect(r.kind === "none" && r.reason).toContain("PDF with several accounts");
+  });
+
+  it("still matches by last 4 in such a PDF: only filling one in is held back", () => {
+    expect(matchAccount(all, "HDFC", "7788", { fillLast4: false })).toEqual({ kind: "match", account: hdfcSecond });
+  });
 });

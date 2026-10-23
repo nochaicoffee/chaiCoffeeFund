@@ -143,10 +143,10 @@ export type ReconcileAction =
 /**
  * What to do with each balance a statement gives, against the balances recorded.
  * Points are handled oldest first and count the ones before them, so a "big drop" is measured
- * against what the statement itself just said. The opening balance is only ever
- * created when the account has nothing before that day; a balance recorded for that very day is
- * compared like any other, so two statements that disagree about a shared day (a monthly inside a
- * custom range) are a mismatch. Running it again once the creates are applied gives `unchanged`
+ * against what the statement itself just said. The opening balance is handled like any other: created
+ * when nothing is recorded for that day, whatever is recorded before it (carrying an older balance forward
+ * would misstate the days between), and compared when something is, so two statements that disagree about a
+ * shared day (a monthly inside a custom range) are a mismatch. Running it again once the creates are applied gives `unchanged`
  * for them and the same mismatches (see `planReviews`).
  */
 export function reconcile(existing: BalanceSnapshot[], accountId: string, points: BalancePoint[], accountStartDate?: string): ReconcileAction[] {
@@ -157,9 +157,6 @@ export function reconcile(existing: BalanceSnapshot[], accountId: string, points
     // A balance from before the account was opened would be a balance of an account that wasn't there.
     if (accountStartDate && point.date < accountStartDate) continue;
     const sameDay = sameDayBalance(working, accountId, point.date);
-    // An opening balance with something earlier recorded is carried from it: nothing to add.
-    // One recorded for that very day is compared like any other (usually the previous statement's closing).
-    if (point.kind === "opening" && !sameDay && working.some((s) => s.accountId === accountId && s.date < point.date)) continue;
     if (sameDay && sameAmount(sameDay.balance, point.balance)) {
       actions.push({ type: "unchanged", date: point.date, balance: point.balance, kind: point.kind, snapshotId: sameDay.id });
       continue;

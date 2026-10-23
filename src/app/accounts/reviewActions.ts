@@ -38,8 +38,10 @@ export async function resolveBalanceReview(_previous: FormState, formData: FormD
     const answer = resolution(review, choice);
     if (answer.setBalance !== null) {
       const snapshots = await balanceSnapshotsRepository.list();
-      // The balance the review was about; or, if that was deleted, whatever is recorded for the day; or a new one.
-      const recorded = snapshots.find((s) => s.id === review.snapshotId) ?? sameDayBalance(snapshots, review.accountId, review.date);
+      // The balance the review was about, if it is still that day's (Edit balance can move one to another day, and
+      // then it isn't the one the statement spoke of); else whatever is recorded for the day; else a new one.
+      const named = snapshots.find((s) => s.id === review.snapshotId);
+      const recorded = named && named.accountId === review.accountId && named.date === review.date ? named : sameDayBalance(snapshots, review.accountId, review.date);
       if (recorded) await balanceSnapshotsRepository.update(recorded.id, { balance: answer.setBalance, source: "Statement" });
       else await balanceSnapshotsRepository.create({ accountId: review.accountId, date: review.date, balance: answer.setBalance, source: "Statement" });
     }

@@ -183,12 +183,13 @@ Following standard practice, acceptance criteria are written in full only for th
 ### F-AC-03 and F-AC-04: Bank account balances from statements
 *As Prathik, I want my bank balances filled in from the statements the banks email me, so that I stop typing them, and I want to be told, not overruled, when a statement disagrees with what I have.*
 - [ ] "Sync statements" on the Accounts page reads every labelled, not-yet-read email: monthly, yearly or custom range, and reports what was added, was already there, needs a look, or couldn't be used, and why.
-- [ ] A statement gives its closing balance on its last day, its opening balance if the account has nothing earlier, and a balance at the end of each month it has transactions in.
+- [ ] A statement gives its closing balance on its last day, its opening balance (the day before it starts, even when an older balance is recorded), and a balance at the end of each month it has transactions in.
 - [ ] A statement whose own numbers don't add up writes nothing and is reported.
 - [ ] Running sync twice, or reading a monthly inside a range already read, adds nothing and opens no question.
 - [ ] A balance already recorded for that account and day is never changed by a sync. If the statement disagrees, a question opens: it shows in the greeting sentence (a figure that points at a card), in a card at the top of the page, and as a chip on that balance in Balance history. **Use the statement's** writes it; **Keep the Sheet's** closes it.
 - [ ] A statement for an account that can't be matched (or matches more than one), a closed account, a period not over yet, one before the account was opened, or a PDF that no saved password opens, is reported with what to change and writes nothing.
-- [ ] Add/Edit account takes the statement PDF password. It is never shown back and never sent to the browser.
+- [ ] Add/Edit account takes the statement PDF password. It is never shown back and never sent to the browser or out of an API route (cards' passwords the same).
+- [ ] Balance history says "from a statement" on a balance a statement gave, and stops saying it once someone types over the balance.
 - [ ] Gmail access is read-only, and no credential is ever committed.
 
 ### F-CC-05 and F-CC-06: Cards dashboard

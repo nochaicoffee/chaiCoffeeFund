@@ -11,6 +11,13 @@ describe("planAccountEmails", () => {
     expect(plan.map((p) => p.messageId)).toEqual(["d", "b"]);
     expect(plan[1].logged?.attempts).toBe(1);
   });
+  it("with skipFailedSince leaves out failures tried since then, but not older ones, new emails or done ones", () => {
+    const old = { ...row("old", "Failed"), lastTriedAt: "2026-10-01T00:00:00Z" };
+    const recent = { ...row("recent", "Failed"), lastTriedAt: "2026-10-23T05:00:00Z" };
+    const plan = planAccountEmails(["recent", "old", "fresh", "done"], [recent, old, row("done", "Imported")], { skipFailedSince: "2026-10-22T06:00:00Z" });
+    expect(plan.map((p) => p.messageId)).toEqual(["fresh", "old"]);
+  });
+
   it("takes an email listed twice once, and the first row of one logged twice", () => {
     expect(planAccountEmails(["x", "x"], []).map((p) => p.messageId)).toEqual(["x"]);
     expect(planAccountEmails(["x"], [row("x", "Imported"), row("x", "Failed")])).toEqual([]);

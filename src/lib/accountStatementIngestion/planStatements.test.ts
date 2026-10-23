@@ -63,6 +63,13 @@ describe("planStatement", () => {
     expect(plan.outcome.notes).toEqual(["filled in Slice Bank Account's last 4 (1128) from the statement"]);
   });
 
+  it("does not fill in a last 4 from one of several statements in a PDF", () => {
+    const plan = planStatement(read(august), context({ accounts: [account({ last4: undefined })], singleStatement: false }));
+    expect(plan.outcome).toMatchObject({ result: "skipped", problem: "no-account" });
+    expect(plan.writes.fillLast4).toBeUndefined();
+    expect(plan.writes.creates).toEqual([]);
+  });
+
   it("skips, with the reason, a statement whose numbers do not add up, and writes nothing", () => {
     const bad = { ...august, closingBalance: august.closingBalance + 1 };
     const plan = planStatement(read(bad), context());

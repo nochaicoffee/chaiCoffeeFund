@@ -28,7 +28,11 @@ export function HistoryCard({ pick, rows, href }: { pick: PickView; rows: Histor
             <li key={r.id} className="flex items-center gap-3 py-2.5">
               <span className="min-w-0 flex-1">
                 <b className="block truncate text-[13px] font-bold">{pick.kind === "all" ? `${r.accountName} · ${r.dateText}` : r.dateText}</b>
-                {r.gapText && <span className="block text-[11px] font-semibold text-muted">{r.gapText}</span>}
+                {(r.gapText || r.fromStatement) && (
+                  <span className="block text-[11px] font-semibold text-muted">
+                    {[r.gapText, r.fromStatement && "from a statement"].filter(Boolean).join(" · ")}
+                  </span>
+                )}
               </span>
               {r.attention && <NeedsAttentionChip item={r.attention} />}
               {!disabledReason && (

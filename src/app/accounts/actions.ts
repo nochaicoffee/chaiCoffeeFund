@@ -45,10 +45,12 @@ async function writeBalances(entries: { accountId: string; date: string; balance
   for (const { accountId, date, balance } of entries) {
     const same = sameDayBalance(known, accountId, date);
     if (same) {
-      await balanceSnapshotsRepository.update(same.id, { balance });
+      // Typed in by hand now, even if a statement gave the balance it replaces.
+      await balanceSnapshotsRepository.update(same.id, { balance, source: "Manual" });
       same.balance = balance;
+      same.source = "Manual";
     } else {
-      known.push(await balanceSnapshotsRepository.create({ accountId, date, balance }));
+      known.push(await balanceSnapshotsRepository.create({ accountId, date, balance, source: "Manual" }));
     }
   }
 }
@@ -166,7 +168,7 @@ export async function saveBalanceEdit(_previous: FormState, formData: FormData):
     if (!mine) return { status: "invalid", errors: { form: "This balance isn't in the Sheet any more. Close this and refresh." } };
     // One balance per account per day (decision 7): moving it onto a day that has one would make two.
     if (sameDayBalance(all, mine.accountId, result.input.date, mine.id)) return { status: "invalid", errors: { date: "This account already has a balance for that day. Edit or delete that one instead" } };
-    await balanceSnapshotsRepository.update(result.input.id, updateBalanceSnapshotSchema.parse({ date: result.input.date, balance: result.input.balance }));
+    await balanceSnapshotsRepository.update(result.input.id, updateBalanceSnapshotSchema.parse({ date: result.input.date, balance: result.input.balance, ...(result.input.balance !== mine.balance && { source: "Manual" as const }) }));
   } catch (error) {
     if (error instanceof NotFoundError) return { status: "invalid", errors: { form: "This balance isn't in the Sheet any more. Close this and refresh." } };
     return failed("saveBalanceEdit", error);

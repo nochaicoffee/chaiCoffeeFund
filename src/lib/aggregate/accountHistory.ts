@@ -27,6 +27,8 @@ export interface HistoryEntry {
   gapDays: number | null;
   first: boolean;
   closing: boolean;
+  /** A bank statement gave this balance (and no one has typed over it since). */
+  fromStatement: boolean;
 }
 
 /** Every balance of every account, each with its change from the one before. Balances of an account that's gone are left out. */
@@ -47,6 +49,7 @@ export function historyEntries(accounts: Account[], snapshots: BalanceSnapshot[]
         gapDays: before ? daysBetween(before.date, s.date) : null,
         first: i === 0,
         closing: isClosed(account) && s.balance === 0 && i === own.length - 1,
+        fromStatement: s.source === "Statement",
       });
     });
   }

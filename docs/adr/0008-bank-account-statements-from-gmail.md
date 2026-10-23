@@ -13,14 +13,14 @@ Balances on the Accounts page are typed in by hand. Three of the banks (HDFC, Sl
 - **Which balances a statement gives:** the opening balance (the day before the period), the balance after the last transaction of each month with transactions, and the closing balance on the period's last day. A month with no transactions gets none: carrying the last balance forward (decision 1 in `docs/design/accounts.md`) already gives the same figure.
 - **The recorded balance always wins.** A statement that disagrees with a balance already recorded for the same account and day changes nothing. It opens a `BalanceReviews` row holding both values, shown as "needs attention" (on the greeting, in a card under it, and on the balance in Balance history) until Prathik chooses **Use the statement's** (writes it) or **Keep the Sheet's** (closes it). The same statement is never raised twice, and a corrected one replaces the open question.
 - **Slice's balance includes its round-up ("atom") account.** The range statements print savings plus atoms, and the monthlies show them as separate accounts, so the monthlies add the round-up balance to the opening and closing balance. If the round-up money moved during a statement, only the opening and closing balance are written, since its dates aren't known.
-- Matching is by bank and the account number's last 4 digits, never guessed: no match or more than one is reported. An account with no last 4 saved takes it from the statement when it is the bank's only such account.
+- Matching is by bank and the account number's last 4 digits, never guessed: no match or more than one is reported. An account with no last 4 saved takes it from the statement when it is the bank's only such account and the PDF holds just that one statement: a PDF with several accounts (HDFC's combined one) can't say whose is whose.
 
 ## Consequences
 - Gmail access stays read-only (`gmail.readonly`). Labels are applied by hand.
 - PDF passwords are a second plaintext column in a private Sheet (`Accounts.statementPdfPassword`), accepted under the same reasoning as the card one (ADR 0006, PRD Q3). Edit account takes it, and it is never sent to the browser.
 - A new bank needs a parser, written from a real statement's text and tested on invented text in the same layout.
 - Like the card sync, it runs from the Sync button or `POST /api/account-statements/sync`; scheduling follows ADR 0007.
-- An email that is logged as done is not read again. To re-read one (an account was added since), delete its row in `AccountStatementEmails`.
+- An email that is logged as done is not read again. To re-read one (an account was added since), delete its row in `AccountStatementEmails`. A failed one is tried again on every button press, but a scheduled run leaves out those that failed in the last day, so an email that can only fail until something is changed isn't downloaded over and over.
 
 ## Alternatives considered
 - **The statement overwrites the Sheet on a mismatch.** The first answer. Rejected for the opposite rule: a hand-typed balance may be right, and silently replacing it hides the disagreement.

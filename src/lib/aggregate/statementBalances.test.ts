@@ -259,9 +259,12 @@ describe("reconcile", () => {
     expect(existing).toEqual([snap("b", "2026-08-31", 7900)]);
   });
 
-  it("does not create an opening balance when something earlier is recorded: the day is carried from it", () => {
+  it("creates the opening balance even when an older balance is recorded: carrying that one forward would misstate the days between", () => {
     const actions = reconcile([snap("old", "2026-06-30", 9000)], "acc-1", points);
-    expect(actions.map((a) => [a.type, a.date])).toEqual([["create", "2026-08-31"]]);
+    expect(actions.map((a) => [a.type, a.date, a.balance])).toEqual([
+      ["create", "2026-07-31", 10000],
+      ["create", "2026-08-31", 8000],
+    ]);
   });
 
   it("treats an opening balance that disagrees with the balance recorded for that very day as a mismatch, and changes nothing", () => {

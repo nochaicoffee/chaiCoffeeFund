@@ -51,15 +51,18 @@ export async function handleRouteErrors(fn: () => Promise<NextResponse>): Promis
  * invalidation on write, applied consistently for every entity instead of
  * being hand-rolled per route. Adding a new entity's API is now this one
  * call plus the matching `createItemRoute` below, not ~30 lines of
- * hand-written boilerplate per entity.
+ * hand-written boilerplate per entity. `serialize` shapes a record for the response:
+ * an entity holding a secret (a card's or an account's statement PDF password) passes
+ * its `toClient…`, so the password never leaves the server.
  */
 export function createListRoute<T extends { id: string }>(
   repository: Repository<T>,
   tag: string,
   createSchema: z.ZodType<Omit<T, "id">>,
+  serialize: (record: T) => unknown = (record) => record,
 ) {
   async function GET() {
-    return handleRouteErrors(async () => NextResponse.json(await repository.list()));
+    return handleRouteErrors(async () => NextResponse.json((await repository.list()).map(serialize)));
   }
 
   async function POST(request: Request) {
@@ -71,7 +74,7 @@ export function createListRoute<T extends { id: string }>(
       }
       const created = await repository.create(parsed.data);
       invalidate(tag);
-      return NextResponse.json(created, { status: 201 });
+      return NextResponse.json(serialize(created), { status: 201 });
     });
   }
 
@@ -83,6 +86,7 @@ export function createItemRoute<T extends { id: string }>(
   repository: Repository<T>,
   tag: string,
   updateSchema: z.ZodType<Partial<Omit<T, "id">>>,
+  serialize: (record: T) => unknown = (record) => record,
 ) {
   async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
     return handleRouteErrors(async () => {
@@ -94,7 +98,7 @@ export function createItemRoute<T extends { id: string }>(
       }
       const updated = await repository.update(id, parsed.data);
       invalidate(tag);
-      return NextResponse.json(updated);
+      return NextResponse.json(serialize(updated));
     });
   }
 

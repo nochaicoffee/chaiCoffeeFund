@@ -18,10 +18,12 @@ export type AccountMatch =
 /**
  * The account a statement belongs to, never guessed: by the bank, then by the last 4 of the
  * number the statement prints. With no last 4 on the statement, only a bank with exactly one
- * account matches. Closed accounts still match (the caller decides what to do with them), so a
+ * account matches. `fillLast4` is whether the statement may give an account its last 4: only when it is the
+ * PDF's one statement. A PDF holding several accounts (HDFC's combined one) can't say which is yours, so an
+ * unnumbered account is never numbered from it. Closed accounts still match (the caller decides what to do with them), so a
  * statement for one is reported as that, not as belonging to nothing.
  */
-export function matchAccount(accounts: Account[], bank: StatementBank, last4: string | undefined): AccountMatch {
+export function matchAccount(accounts: Account[], bank: StatementBank, last4: string | undefined, { fillLast4 = true }: { fillLast4?: boolean } = {}): AccountMatch {
   const ofBank = accounts.filter((a) => BANK_WORDS[bank].test(a.bank) || BANK_WORDS[bank].test(a.name));
   if (ofBank.length === 0) return { kind: "none", reason: `no account is with ${bank}` };
   if (last4) {
@@ -30,7 +32,10 @@ export function matchAccount(accounts: Account[], bank: StatementBank, last4: st
     if (same.length > 1) return { kind: "several", accounts: same };
     // Another account of the bank has a different last 4, so this number is not theirs.
     const unnumbered = ofBank.filter((a) => !a.last4);
-    if (unnumbered.length === 1) return { kind: "fill-last4", account: unnumbered[0], last4 };
+    if (unnumbered.length === 1) {
+      if (!fillLast4) return { kind: "none", reason: `a ${bank} statement for an account ending ${last4} in a PDF with several accounts, so it can't tell whether it is ${unnumbered[0].name}. Set its last 4 in Edit account` };
+      return { kind: "fill-last4", account: unnumbered[0], last4 };
+    }
     if (unnumbered.length > 1) return { kind: "several", accounts: unnumbered };
     return { kind: "none", reason: `a ${bank} statement for an account ending ${last4}, which isn't one of your accounts` };
   }

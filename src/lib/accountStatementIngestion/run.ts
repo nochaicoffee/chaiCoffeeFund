@@ -23,6 +23,8 @@ import type { AccountSyncResult, EmailOutcome, StatementOutcome } from "./types"
 const TIME_BUDGET_MS = 45_000;
 /** One email that takes longer is logged as failed and left for the next sync. */
 const EMAIL_TIMEOUT_MS = 20_000;
+/** A scheduled sync tries a failed email again only after this long (see planAccountEmails). */
+const RETRY_FAILED_AFTER_MS = 24 * 60 * 60 * 1000;
 
 export interface AccountSyncOptions {
   trigger: SyncTrigger;
@@ -66,7 +68,7 @@ export async function runAccountStatementSync({ trigger, dryRun = false, timeBud
 
   let result: Extract<AccountSyncResult, { status: "done" }>;
   try {
-    result = await syncEmails({ startedAt: startedAt.getTime(), timeBudgetMs, emailTimeoutMs, now, dryRun });
+    result = await syncEmails({ startedAt: startedAt.getTime(), timeBudgetMs, emailTimeoutMs, now, dryRun, trigger });
   } catch (error) {
     if (runId) {
       const message = error instanceof Error ? error.message : String(error);
@@ -103,7 +105,7 @@ interface Working {
   seq: number;
 }
 
-async function syncEmails(o: { startedAt: number; timeBudgetMs: number; emailTimeoutMs: number; now: () => Date; dryRun: boolean }): Promise<Extract<AccountSyncResult, { status: "done" }>> {
+async function syncEmails(o: { startedAt: number; timeBudgetMs: number; emailTimeoutMs: number; now: () => Date; dryRun: boolean; trigger: SyncTrigger }): Promise<Extract<AccountSyncResult, { status: "done" }>> {
   const gmail = getGmailClient();
   const [accountRows, snapshotRows, reviewRows, log, messageRefs] = await Promise.all([
     accountsRepository.readAll(),
@@ -125,7 +127,9 @@ async function syncEmails(o: { startedAt: number; timeBudgetMs: number; emailTim
     ...new Set([...accountRows.records.map((a) => a.statementPdfPassword), ...accountRows.invalid.map((row) => row.values.statementPdfPassword)].filter((p): p is string => typeof p === "string" && p !== "")),
   ];
 
-  const planned = planAccountEmails(messageRefs.map((ref) => ref.id), log);
+  // An unattended run leaves out emails that failed within the last day; the button retries every one.
+  const skipFailedSince = o.trigger === "Scheduled" ? new Date(o.now().getTime() - RETRY_FAILED_AFTER_MS).toISOString() : undefined;
+  const planned = planAccountEmails(messageRefs.map((ref) => ref.id), log, { skipFailedSince });
   const read: { outcome: EmailOutcome; logged: (typeof planned)[number]["logged"] }[] = [];
   for (const { messageId, logged } of planned) {
     // Always at least one, so every sync gets somewhere.
@@ -224,7 +228,7 @@ async function processEmail(gmail: gmail_v1.Gmail, messageId: string, working: W
 
   const statements: StatementOutcome[] = [];
   for (const read of results) {
-    const plan = planStatement(read, { accounts: working.accounts, snapshots: working.snapshots, reviews: working.reviews, today });
+    const plan = planStatement(read, { accounts: working.accounts, snapshots: working.snapshots, reviews: working.reviews, today, singleStatement: results.length === 1 });
     applyToWorking(working, plan.writes, plan.outcome, messageId);
     statements.push(plan.outcome);
   }

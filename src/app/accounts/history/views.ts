@@ -96,7 +96,7 @@ export function rowView(e: HistoryEntry, attention?: AttentionItem): HistoryRowV
     changeText,
     changeTone,
     pill: e.closing ? "Closing balance" : e.first ? "First balance" : null,
-    row: { id: e.id, accountId: e.account.id, accountName: e.account.name, date: e.date, dateText: formatDate(e.date), balanceText: formatInr(e.balance), balance: e.balance, changeText, changeTone, gapText, ...(attention && { attention }) },
+    row: { id: e.id, accountId: e.account.id, accountName: e.account.name, date: e.date, dateText: formatDate(e.date), balanceText: formatInr(e.balance), balance: e.balance, changeText, changeTone, gapText, ...(attention && { attention }), ...(e.fromStatement && { fromStatement: true as const }) },
   };
 }
 

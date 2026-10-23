@@ -98,10 +98,25 @@ describe("balances a statement disagreed with", () => {
     expect(view.history[marked[0].accountId].filter((r) => r.attention)).toHaveLength(1);
   });
 
+  it("does not mark a balance moved to another day, though it is the one the review named", () => {
+    const [review] = withReview.reviews!;
+    const moved: AccountsData = { ...withReview, snapshots: withReview.snapshots.map((s) => (s.id === review.snapshotId ? { ...s, date: "2026-01-02" } : s)) };
+    expect(historyRows(moved).all.filter((r) => r.attention)).toHaveLength(0);
+  });
+
   it("finds the balance by account and day if the one the review named was re-entered", () => {
     const [review] = withReview.reviews!;
     const moved: AccountsData = { ...withReview, reviews: [{ ...review, snapshotId: "deleted-long-ago" }] };
     expect(historyRows(moved).all.filter((r) => r.attention)).toHaveLength(1);
+  });
+});
+
+describe("balances from a statement in Balance history", () => {
+  it("are marked, and the rest are not", () => {
+    const [first, second] = demo.snapshots.filter((x) => x.accountId === "demo-hdfc");
+    const marked = historyRows({ ...demo, snapshots: demo.snapshots.map((x) => (x.id === first.id ? { ...x, source: "Statement" as const } : x)) });
+    expect(marked.all.filter((r) => r.fromStatement).map((r) => r.id)).toEqual([first.id]);
+    expect(marked.all.find((r) => r.id === second.id)?.fromStatement).toBeUndefined();
   });
 });
 
