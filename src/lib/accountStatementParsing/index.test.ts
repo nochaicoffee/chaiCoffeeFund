@@ -12,4 +12,11 @@ describe("parseAccountStatements", () => {
     expect(r).toHaveLength(1);
     expect(r![0].ok === false && r![0].problem).toBe("couldn't read the opening balance");
   });
+
+  it("reads HDFC's NetBanking statement as HDFC, not as the combined one or another bank", () => {
+    const text = "Statement   From : 01/01/26   TO   :   31/03/26 Date   Narration   Chq. / Ref No.   Value Date   Withdrawal Amount   Deposit Amount   Closing Balance* STATEMENT SUMMARY HDFC BANK LIMITED UPI-X@okhdfcbank slice";
+    const r = parseAccountStatements(text);
+    expect(r).toHaveLength(1);
+    expect(r![0].ok === false && r![0].problem).toBe("couldn't read the statement's period");
+  });
 });

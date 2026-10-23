@@ -91,6 +91,14 @@ describe("parseHdfc", () => {
     expect(results[1].ok && results[1].parsed.statement.closingBalance).toBe(250);
   });
 
+  it("reads a negative closing balance, as an overdrawn day can leave", () => {
+    const neg = head(ACC, "01/09/2026", "30/09/2026", "100.00") + COLUMNS + " 02/09/2026   ACH D- SOMETHING Value Dt 02/09/2026 Ref 111111111111 250.00   0.00   -150.00 Page 2 of 3";
+    const [r] = parseHdfc(text(neg, head(ACC, "01/09/2026", "30/09/2026", "100.00") + summary("-150.00", "100.00", "250.00", "0.00")));
+    if (!r.ok) throw new Error(r.problem);
+    expect(r.parsed.statement.rows).toEqual([{ date: "2026-09-02", amount: -250, balance: -150 }]);
+    expect(checkStatement(r.parsed.statement)).toEqual({ ok: true });
+  });
+
   it("refuses a statement with no summary page: it may be cut short", () => {
     expect(parseHdfc(text(page1, page2))).toEqual([{ ok: false, problem: "couldn't find the statement's summary, so it may be cut short" }]);
   });

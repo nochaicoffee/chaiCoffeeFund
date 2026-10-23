@@ -21,8 +21,10 @@ const FIELDS = /Limit\s*:\s*(\d{6,12})\s*:\s*(\d{9,18})\s*:\s*(\d{2}\/\d{2}\/\d{
 const OPENING = /HDFC\d{7}\s*:\s*\d{9}\s*:\s*(-?[\d,]+\.\d{2})/;
 const TABLE = /Txn Date\s+Narration\s+Withdrawals\s+Deposits\s+Closing Balance/;
 const AMT = String.raw`[\d,]+\.\d{2}`;
-const ROW = new RegExp(String.raw`(\d{2}\/\d{2}\/\d{4})\s+(.+?)\s+Value Dt (\d{2}\/\d{2}\/\d{4})(?:\s+Ref \S+)?\s+(${AMT})\s+(${AMT})\s+(${AMT})`, "g");
-const SUMMARY = new RegExp(String.raw`((?:${AMT}\s+){4})Closing Balance\s+Credit Amount\s+Debit Amount\s+Opening Balance\s+SUMMARY`);
+// A closing balance (and so the summary's balances) can be negative: an ACH debit before its reversal.
+const BAL = String.raw`-?[\d,]+\.\d{2}`;
+const ROW = new RegExp(String.raw`(\d{2}\/\d{2}\/\d{4})\s+(.+?)\s+Value Dt (\d{2}\/\d{2}\/\d{4})(?:\s+Ref \S+)?\s+(${AMT})\s+(${AMT})\s+(${BAL})`, "g");
+const SUMMARY = new RegExp(String.raw`((?:${BAL}\s+){4})Closing Balance\s+Credit Amount\s+Debit Amount\s+Opening Balance\s+SUMMARY`);
 
 export function isHdfcStatement(text: string): boolean {
   return /Customer ID\s+Account Number\s+Joint Holders/.test(text) && /Txn Date\s+Narration\s+Withdrawals\s+Deposits/.test(text) && /HDFC/i.test(text);

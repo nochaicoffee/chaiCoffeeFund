@@ -1,4 +1,5 @@
 import { parseHdfc, isHdfcStatement } from "./hdfc";
+import { isHdfcNetBankingStatement, parseHdfcNetBanking } from "./hdfcNetBanking";
 import { isJupiterStatement, parseJupiter } from "./jupiter";
 import { isSliceStatement, parseSlice } from "./slice";
 import type { ParseResult } from "./types";
@@ -13,6 +14,7 @@ export function parseAccountStatements(text: string): ParseResult[] | null {
   // Slice last: its test is the loosest (its name), and another bank's narrations can carry it ("Payment from slice").
   if (isJupiterStatement(text)) return [parseJupiter(text)];
   if (isHdfcStatement(text)) return parseHdfc(text);
+  if (isHdfcNetBankingStatement(text)) return [parseHdfcNetBanking(text)];
   if (isSliceStatement(text)) return [parseSlice(text)];
   return null;
 }
