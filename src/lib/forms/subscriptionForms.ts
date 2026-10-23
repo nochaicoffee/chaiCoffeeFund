@@ -1,3 +1,4 @@
+import { freeColor as sharedFreeColor } from "../format/colors";
 import { CYCLE_STEP_MONTHS, addMonthsUTC } from "../aggregate/recurring";
 import { PRICE_CHANGE_THRESHOLD, renewalsFor, scheduleDates, type Renewal } from "../aggregate/subscriptionRenewals";
 import {
@@ -102,12 +103,9 @@ export function readSubscriptionForm(
   });
 }
 
-/**
- * The colour Add subscription starts on: the first one no other subscription has, past
- * Emerald, which is All's (a new one in it would look just like All). It can still be picked.
- */
+/** The colour Add subscription starts on: the first one no other subscription has, past Emerald, which is All's (a new one in it would look just like All). It can still be picked. */
 export function freeColor(used: SubscriptionColor[]): SubscriptionColor {
-  return SUBSCRIPTION_COLORS.find((c) => c !== "Emerald" && !used.includes(c)) ?? "Sapphire";
+  return sharedFreeColor(used, ["Emerald"]);
 }
 
 export interface PaymentInput {

@@ -32,24 +32,26 @@ export const cardRowSchema = createCardSchema.extend({
   color: createCardSchema.shape.color.optional(),
 });
 
+/** The Cards tab's column order, verified against the real Sheet (#75). */
+export const CARD_COLUMNS: (keyof Card)[] = [
+  "id",
+  "name",
+  "alias",
+  "issuer",
+  "cardType",
+  "creditLimit",
+  "statementDay",
+  "dueDayBuffer",
+  "status",
+  "statementPdfPassword",
+  "emailMatchKeywords",
+  "last4",
+  "color",
+  "defaultPaidFromAccountId",
+];
+
 export const cardsRepository = createRepository<Card>({
   sheetName: "Cards",
-  // The Cards tab's column order, verified against the real Sheet (#75).
-  columns: [
-    "id",
-    "name",
-    "alias",
-    "issuer",
-    "cardType",
-    "creditLimit",
-    "statementDay",
-    "dueDayBuffer",
-    "status",
-    "statementPdfPassword",
-    "emailMatchKeywords",
-    "last4",
-    "color",
-    "defaultPaidFromAccountId",
-  ],
+  columns: CARD_COLUMNS,
   schema: cardRowSchema,
 });

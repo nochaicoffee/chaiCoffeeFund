@@ -1,0 +1,23 @@
+{
+  "pages": [
+    {
+      "id": "palette",
+      "name": "Shared palette"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Palette.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1472,
+      "h": 1500,
+      "page": "palette"
+    }
+  ],
+  "annotations": [],
+  "launch": {
+    "view": "canvas",
+    "page": "palette"
+  }
+}

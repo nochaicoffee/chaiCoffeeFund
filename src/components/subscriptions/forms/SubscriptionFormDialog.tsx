@@ -9,6 +9,7 @@ import { formatInr, parseAmountText } from "@/lib/format/money";
 import { categoryColor, categoryLabel, colorGradient, colorName, cycleWord, subscriptionColor } from "@/lib/format/subscriptionLabels";
 import { IDLE } from "@/lib/forms/formState";
 import { chargedToValue, freeColor, readSubscriptionForm } from "@/lib/forms/subscriptionForms";
+import { ColorSwatches } from "../../shell/ColorSwatches";
 import { SUBSCRIPTION_CATEGORIES, SUBSCRIPTION_COLORS, type RecurrenceCycle, type Subscription, type SubscriptionColor } from "@/lib/sheets/types";
 import { RingTexture } from "../../RingTexture";
 import { DateInput, Field, MoneyInput, PreviewPanel, Segmented, SelectInput, TextInput, describedBy } from "../../cards/forms/fields";
@@ -133,31 +134,7 @@ export function SubscriptionFormDialog({
       <div className="flex flex-col gap-1.5 rounded-[14px] bg-surface/80 px-3.5 py-3">
         <Row label="You pay a month" value={`${formatInr(before)} → ${formatInr(after)}`} />
       </div>
-      {/* The colour radios sit in the preview panel, inside the form, so they submit with it (as in Add card). */}
-      <fieldset aria-describedby={errors.color ? "color-error" : undefined}>
-        <legend className="mb-2 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
-          Colour<span className="text-negative" aria-hidden="true"> *</span>
-        </legend>
-        <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
-          {SUBSCRIPTION_COLORS.map((c) => (
-            <label key={c} className="relative flex cursor-pointer flex-col items-center" title={c}>
-              <input type="radio" name="color" value={c} checked={color === c} onChange={() => setColor(c)} aria-label={c} className="peer sr-only" />
-              <span
-                aria-hidden="true"
-                className="aspect-square w-full max-w-9 rounded-[9px] shadow-[0_2px_5px_oklch(0_0_0/0.18)] ring-offset-2 ring-offset-feature-tile peer-checked:ring-2 peer-checked:ring-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-4 peer-focus-visible:outline-accent"
-                style={{ background: colorGradient(c.toLowerCase() as Lowercase<SubscriptionColor>) }}
-              />
-            </label>
-          ))}
-        </div>
-        <p className="mt-1.5 text-[11px] font-semibold text-muted">{errors.color ? (
-            <span id="color-error" className="text-negative">
-              {errors.color}
-            </span>
-          ) : (
-            color
-          )}</p>
-      </fieldset>
+      <ColorSwatches colors={SUBSCRIPTION_COLORS} value={color} onChange={(c) => setColor(c as SubscriptionColor)} error={errors.color} />
     </PreviewPanel>
   );
 

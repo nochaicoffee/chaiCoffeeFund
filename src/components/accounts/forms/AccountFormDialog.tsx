@@ -3,7 +3,7 @@
 import { useActionState, useState, type FormEvent } from "react";
 import { saveAccount } from "@/app/accounts/actions";
 import type { AccountsFormsData, FormAccount } from "@/app/accounts/views";
-import { cardColorKey } from "@/lib/format/subscriptionLabels";
+import { cardColorKey, freeColor as sharedFreeColor } from "@/lib/format/colors";
 import { optionLabel } from "@/lib/format/labels";
 import { PURPOSE_COLORS } from "@/lib/aggregate/accounts";
 import { ACCOUNT_PURPOSES, ACCOUNT_TYPES, readAccountForm } from "@/lib/forms/accountForms";
@@ -14,11 +14,12 @@ import { DateInput, Field, MoneyInput, PreviewPanel, Segmented, SelectInput, Tex
 import { PlusIcon } from "../../cards/forms/icons";
 import { FormDialog } from "../../cards/forms/FormDialog";
 import { useFieldErrors } from "../../cards/forms/useFieldErrors";
-import { ColorSwatches, MiniAccountCard } from "./MiniAccountCard";
+import { ColorSwatches } from "../../shell/ColorSwatches";
+import { MiniAccountCard } from "./MiniAccountCard";
 
 /** The first colour no open account has, so a new account starts apart from the others; it can still be picked. */
 function freeColor(accounts: FormAccount[]): CardColor {
-  return CARD_COLORS.find((c) => !accounts.some((a) => !a.closed && a.color === c)) ?? "Sapphire";
+  return sharedFreeColor(accounts.filter((a) => !a.closed && a.color).map((a) => a.color!), ["Emerald"]) as CardColor;
 }
 
 /**

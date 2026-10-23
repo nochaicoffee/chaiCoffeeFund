@@ -34,9 +34,24 @@ export type RecurrenceCycle = "Monthly" | "Quarterly" | "Yearly";
 
 export type CardStatus = "Active" | "Inactive" | "Closed";
 
-/** Tile colours a card can be given. Each maps to the --card-<colour> tokens in globals.css; emerald is kept for All Cards. */
-export const CARD_COLORS = ["Sapphire", "Ruby", "Onyx", "Violet", "Teal", "Copper"] as const;
-export type CardColor = (typeof CARD_COLORS)[number];
+/**
+ * Every colour a card, an account or a subscription can be given: one palette for all the
+ * dashboards (Prathik, 2026-10-23). The text is the Sheets colour dropdowns' options, and each
+ * name has its --card-<name>-from/-to/<name> tokens in globals.css. Ordered by hue, each with its
+ * darker "dusk" twin after it, for the pickers; the neutrals last. Rose, Forest and Indigo are
+ * kept from the earlier palette so saved rows stay valid.
+ */
+export const COLORS = [
+  "Ruby", "Burgundy", "Coral", "Rose", "Pink", "Raspberry", "Magenta", "Plum", "Mulberry", "Orchid", "Violet", "Aubergine",
+  "Indigo", "Sapphire", "Cobalt", "Azure", "Ocean", "Navy", "Sky", "Teal", "Spruce", "Jade", "Emerald", "Pine", "Forest",
+  "Olive", "Moss", "Amber", "Bronze", "Honey", "Copper", "Rust", "Onyx", "Slate", "Mocha", "Graphite",
+] as const;
+export type Color = (typeof COLORS)[number];
+
+/** Emerald is also the All Cards tile's colour, so a card or an account can't be given it; a subscription can. */
+type NotEmerald = Exclude<Color, "Emerald">;
+export const CARD_COLORS = COLORS.filter((c) => c !== "Emerald") as unknown as readonly [NotEmerald, ...NotEmerald[]];
+export type CardColor = NotEmerald;
 
 /** What a card earns (#75). Shown as "Reward Points" and "Cashback". */
 export const CARD_TYPES = ["Reward-Points", "Cashback"] as const;
@@ -177,14 +192,9 @@ export type SubscriptionPaymentStatus = "Pending" | "Paid" | "Skipped";
 export const SUBSCRIPTION_CATEGORIES = ["Streaming", "Music", "Software", "Cloud-Storage", "Fitness", "Food", "Shopping", "News", "Utilities", "Other"] as const;
 export type SubscriptionCategory = (typeof SUBSCRIPTION_CATEGORIES)[number];
 
-/**
- * The colours a subscription can be given (Prathik, 2026-10-21): picked freely in Add and
- * Edit, not from its category. The card palette and All's emerald, plus seven more in the
- * same deep-gradient style. Each is a token set in globals.css (--card-<name>-from/-to and
- * a swatch). A row from before this column has none, and shows its category's colour.
- */
-export const SUBSCRIPTION_COLORS = ["Emerald", "Sapphire", "Ruby", "Onyx", "Violet", "Teal", "Copper", "Amber", "Rose", "Indigo", "Forest", "Plum", "Ocean", "Slate"] as const;
-export type SubscriptionColor = (typeof SUBSCRIPTION_COLORS)[number];
+/** The colours a subscription can be given, picked freely in Add and Edit: the whole palette. A row from before this column has none, and shows its category's colour. */
+export const SUBSCRIPTION_COLORS = COLORS;
+export type SubscriptionColor = Color;
 
 export interface Subscription {
   id: string;

@@ -1,12 +1,12 @@
 import { formatInr } from "./money";
 import { daysBetween } from "../aggregate/cardSpend";
-import type { CardColor, RecurrenceCycle, Subscription, SubscriptionCategory, SubscriptionColor } from "../sheets/types";
+import type { RecurrenceCycle, Subscription, SubscriptionCategory } from "../sheets/types";
+import { cardColorKey, colorGradient, colorName, type ColorKey } from "./colors";
+
+export { cardColorKey, colorGradient, colorName, type ColorKey };
 
 /** The Subscriptions page's "All" pick. Subscription ids come from the Sheet as UUIDs, so this can't clash with one. */
 export const ALL = "all";
-
-/** A colour as its CSS token's key (`--card-<key>-from`): the card palette, All's emerald, and the subscription colours. */
-export type ColorKey = "emerald" | Lowercase<CardColor> | Lowercase<SubscriptionColor>;
 
 /**
  * Each category's colour (#124), for the cost map's By category view and the Category
@@ -42,16 +42,6 @@ export function cycleWord(cycle: RecurrenceCycle): string {
   return { Monthly: "month", Quarterly: "quarter", Yearly: "year" }[cycle];
 }
 
-/** The 155° gradient a tile in this colour is drawn with. */
-export function colorGradient(color: ColorKey, angle = 155): string {
-  return `linear-gradient(${angle}deg, var(--card-${color}-from), var(--card-${color}-to))`;
-}
-
-/** A card's colour as a palette key; Onyx when it has none. */
-export function cardColorKey(color: CardColor | undefined): ColorKey {
-  return (color ?? "Onyx").toLowerCase() as ColorKey;
-}
-
 /** A block's or a category's share of the monthly total, as the map's hover cards say it: "31% of your ₹1,865 a month", or "Under 1%" for a sliver. */
 export function shareOfTotal(monthly: number, total: number): string {
   const percent = total > 0 ? (monthly / total) * 100 : 0;
@@ -80,11 +70,6 @@ export interface Mark {
 /** A subscription's colour: the one chosen for it, or (for a row from before colours were chosen) its category's. */
 export function subscriptionColor(s: Pick<Subscription, "color" | "category">): ColorKey {
   return s.color ? (s.color.toLowerCase() as ColorKey) : categoryColor(s.category);
-}
-
-/** The colour as the Sheet's dropdown names it: "Ruby". */
-export function colorName(key: ColorKey): SubscriptionColor {
-  return (key[0].toUpperCase() + key.slice(1)) as SubscriptionColor;
 }
 
 export function subscriptionMark(s: Pick<Subscription, "alias" | "category" | "status" | "color">): Mark {
