@@ -15,6 +15,8 @@ import { investmentTransactionsRepository } from "./investmentTransactions";
 import { fixedDepositsRepository } from "./fixedDeposits";
 import { statementEmailsRepository } from "./statementEmails";
 import { syncRunsRepository } from "./syncRuns";
+import { accountStatementEmailsRepository } from "./accountStatementEmails";
+import { balanceReviewsRepository } from "./balanceReviews";
 
 /** Every repository, in the Sheet's tab order. A new entity's repository goes here too (entities.test.ts checks). */
 export const checkedRepositories = [
@@ -32,6 +34,8 @@ export const checkedRepositories = [
   fixedDepositsRepository,
   statementEmailsRepository,
   syncRunsRepository,
+  accountStatementEmailsRepository,
+  balanceReviewsRepository,
 ];
 
 export interface SheetCheck {

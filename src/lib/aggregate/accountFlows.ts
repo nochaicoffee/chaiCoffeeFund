@@ -4,7 +4,7 @@ import { monthRange, type MonthKey } from "./cardSpend";
 import { nextOccurrence } from "./recurring";
 import { addDays } from "./subscriptionRenewals";
 import { nextRenewalsFrom } from "./subscriptionNextCharges";
-import type { Account, BalanceSnapshot, Card, IncomeEntry, IncomeSource, InvestmentTransaction, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment } from "../sheets/types";
+import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, IncomeSource, InvestmentTransaction, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment } from "../sheets/types";
 
 /**
  * Where an account's money went and came from, worked out from records kept elsewhere
@@ -35,6 +35,8 @@ export interface AccountsData {
   trades: InvestmentTransaction[];
   incomeSources: IncomeSource[];
   incomeEntries: IncomeEntry[];
+  /** Balances a bank statement disagreed with (BalanceReviews). Left out where there are none to show. */
+  reviews?: BalanceReview[];
 }
 
 export const OUT_KINDS = ["Card bills", "Subscriptions", "EMIs", "Investments"] as const;

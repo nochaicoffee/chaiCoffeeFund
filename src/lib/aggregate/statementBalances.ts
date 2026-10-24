@@ -1,6 +1,6 @@
 import { balanceBefore, dayBefore, isBigDrop, lastDayOfMonth, sameDayBalance } from "./accounts";
 import { monthOf } from "./cardSpend";
-import type { Account, BalanceSnapshot } from "../sheets/types";
+import type { Account, BalanceSnapshot, ReviewStatus } from "../sheets/types";
 
 /**
  * Turning a bank statement (monthly, yearly or any range) into account balances.
@@ -37,6 +37,12 @@ export interface AccountStatement {
   closingBalance: number;
   /** Oldest first once through `orderRows`. */
   rows: StatementRow[];
+  /**
+   * Money the account holds that the rows' running balance doesn't show (Slice's round-up "atom" account),
+   * which counts toward the account's balance. `constant` is whether it stayed put the whole statement:
+   * only then is it known on the days between, so only then do month-ends include it.
+   */
+  held?: { opening: number; closing: number; constant: boolean };
 }
 
 export const toPaise = (rupees: number): number => Math.round(rupees * 100);
@@ -98,18 +104,21 @@ export interface BalancePoint {
  * day before the period), the balance at the end of each month it has movements
  * in before the last one, and the closing balance on the period's last day.
  * A month ending on the period's own last day is the closing balance, listed once.
+ * Money held outside the rows (`held`) is added to the opening and closing balance, and to
+ * month-ends only when it didn't move; if it did, the days between aren't known, so there are none.
  */
 export function balancesFromStatement(statement: AccountStatement): BalancePoint[] {
-  const { periodStart, periodEnd, openingBalance, closingBalance, rows } = statement;
-  const points: BalancePoint[] = [{ date: dayBefore(periodStart), balance: openingBalance, kind: "opening" }];
+  const { periodStart, periodEnd, openingBalance, closingBalance, rows, held } = statement;
+  const plus = (rupees: number, extra: number) => Math.round((rupees + extra) * 100) / 100;
+  const points: BalancePoint[] = [{ date: dayBefore(periodStart), balance: plus(openingBalance, held?.opening ?? 0), kind: "opening" }];
   const lastRowOfMonth = new Map<string, StatementRow>();
   for (const row of rows) lastRowOfMonth.set(monthOf(row.date), row);
   for (const [month, row] of lastRowOfMonth) {
     const monthEnd = lastDayOfMonth(month);
-    if (monthEnd >= periodEnd) continue;
-    points.push({ date: monthEnd, balance: row.balance, kind: "month-end" });
+    if (monthEnd >= periodEnd || (held && !held.constant)) continue;
+    points.push({ date: monthEnd, balance: plus(row.balance, held?.opening ?? 0), kind: "month-end" });
   }
-  points.push({ date: periodEnd, balance: closingBalance, kind: "closing" });
+  points.push({ date: periodEnd, balance: plus(closingBalance, held?.closing ?? 0), kind: "closing" });
   return points.sort((a, b) => (a.date === b.date ? kindOrder(a.kind) - kindOrder(b.kind) : a.date < b.date ? -1 : 1));
 }
 
@@ -129,20 +138,16 @@ export type ReconcileAction =
   | { type: "create"; date: string; balance: number; kind: BalancePointKind; bigDrop: boolean }
   | { type: "unchanged"; date: string; balance: number; kind: BalancePointKind; snapshotId: string }
   /** The statement says something different from the balance recorded for the day. The recorded one stays; `balance` is the statement's. */
-  | { type: "mismatch"; date: string; balance: number; kind: BalancePointKind; snapshotId: string; recordedBalance: number; bigDrop: boolean }
-  /**
-   * The opening balance differs from a balance recorded for that exact day, usually the previous
-   * statement's closing. Nothing is changed: the two statements disagree, so look at both.
-   */
-  | { type: "continuity"; date: string; balance: number; recordedBalance: number; snapshotId: string };
+  | { type: "mismatch"; date: string; balance: number; kind: BalancePointKind; snapshotId: string; recordedBalance: number; bigDrop: boolean };
 
 /**
  * What to do with each balance a statement gives, against the balances recorded.
  * Points are handled oldest first and count the ones before them, so a "big drop" is measured
- * against what the statement itself just said. The opening balance is only ever
- * created when the account has nothing on or before that day; where a balance is recorded for
- * that day and differs it's a `continuity` note, never a review. Running it again once the
- * creates are applied gives `unchanged` for them and the same mismatches (see `planReviews`).
+ * against what the statement itself just said. The opening balance is handled like any other: created
+ * when nothing is recorded for that day, whatever is recorded before it (carrying an older balance forward
+ * would misstate the days between), and compared when something is, so two statements that disagree about a
+ * shared day (a monthly inside a custom range) are a mismatch. Running it again once the creates are applied gives `unchanged`
+ * for them and the same mismatches (see `planReviews`).
  */
 export function reconcile(existing: BalanceSnapshot[], accountId: string, points: BalancePoint[], accountStartDate?: string): ReconcileAction[] {
   const working = [...existing];
@@ -152,16 +157,6 @@ export function reconcile(existing: BalanceSnapshot[], accountId: string, points
     // A balance from before the account was opened would be a balance of an account that wasn't there.
     if (accountStartDate && point.date < accountStartDate) continue;
     const sameDay = sameDayBalance(working, accountId, point.date);
-    if (point.kind === "opening") {
-      if (sameDay) {
-        if (!sameAmount(sameDay.balance, point.balance)) {
-          actions.push({ type: "continuity", date: point.date, balance: point.balance, recordedBalance: sameDay.balance, snapshotId: sameDay.id });
-        }
-        continue;
-      }
-      // Something earlier is recorded: this day is carried from it, so there's nothing to add.
-      if (working.some((s) => s.accountId === accountId && s.date < point.date)) continue;
-    }
     if (sameDay && sameAmount(sameDay.balance, point.balance)) {
       actions.push({ type: "unchanged", date: point.date, balance: point.balance, kind: point.kind, snapshotId: sameDay.id });
       continue;
@@ -180,8 +175,6 @@ export function reconcile(existing: BalanceSnapshot[], accountId: string, points
 }
 
 // --- Reviews: a mismatch waits for an answer ---
-
-export type ReviewStatus = "Open" | "Accepted" | "Kept" | "Superseded";
 
 /** What a review row holds that planning needs: which balance it is about, and what the statement said. */
 export interface ReviewRecord {

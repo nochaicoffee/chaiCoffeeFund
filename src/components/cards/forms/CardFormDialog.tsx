@@ -13,7 +13,8 @@ import { CARD_COLORS, CARD_ISSUERS, CARD_TYPES, type CardColor } from "@/lib/she
 import { CardTile } from "../CardTile";
 import { Field, MoneyInput, PreviewPanel, Segmented, SelectInput, TextInput, describedBy, inputClass } from "./fields";
 import { FormDialog } from "./FormDialog";
-import { CardIcon, EyeIcon, LockIcon } from "./icons";
+import { CardIcon } from "./icons";
+import { PdfPasswordField } from "./PdfPasswordField";
 import { useFieldErrors } from "./useFieldErrors";
 
 const KEYWORDS_HELP = (
@@ -55,9 +56,6 @@ export function CardFormDialog({
   const [color, setColor] = useState<CardColor>(card?.color ?? (freeColor(usedColors, ["Emerald"]) as CardColor));
   const [account, setAccount] = useState(card?.defaultPaidFromAccountId ?? "");
   const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  // Edit card: a saved password stays unless it's changed or removed.
-  const [passwordMode, setPasswordMode] = useState<"keep" | "change" | "remove">(card?.hasPdfPassword ? "keep" : "change");
   const [keywords, setKeywords] = useState(card?.emailMatchKeywords ?? "");
   const [importOpen, setImportOpen] = useState(false);
 
@@ -119,7 +117,6 @@ export function CardFormDialog({
           {errors.form}
         </p>
       )}
-      {passwordMode === "remove" && <input type="hidden" name="clearPassword" value="1" />}
 
       <Field id="card-name" label="Card name" required help="The full name from your statement." error={errors.name}>
         <TextInput {...describedBy("card-name", errors.name, true)} name="name" value={name} onChange={(e) => setName(e.target.value)} onBlur={() => reveal("name")} placeholder="e.g. HDFC Bank Regalia Gold Credit Card" invalid={Boolean(errors.name)} data-autofocus />
@@ -217,52 +214,7 @@ export function CardFormDialog({
           </svg>
         </summary>
         <div className="flex flex-col gap-4 border-t border-divider px-4 py-4">
-          <Field id="card-password" label="Statement PDF password" help="Opens this card's statement PDFs during email import. Stored in the Cards tab; never shown again after saving.">
-            {passwordMode === "change" ? (
-              <div className="relative">
-                <span className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-muted" aria-hidden="true">
-                  <LockIcon />
-                </span>
-                <input
-                  {...describedBy("card-password", undefined, true)}
-                  type={showPassword ? "text" : "password"}
-                  name="statementPdfPassword"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  autoComplete="off"
-                  spellCheck={false}
-                  placeholder={card?.hasPdfPassword ? "New password" : "The password your bank uses for the PDF"}
-                  className={`${inputClass(false)} pr-11 pl-9`}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword((s) => !s)}
-                  aria-label={showPassword ? "Hide password" : "Show password"}
-                  aria-pressed={showPassword}
-                  className="absolute top-1/2 right-1.5 flex size-8 -translate-y-1/2 items-center justify-center rounded-full text-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-accent"
-                >
-                  <EyeIcon off={showPassword} />
-                </button>
-              </div>
-            ) : (
-              <div className="flex min-h-10 flex-wrap items-center gap-2 rounded-[12px] border border-surface-line px-3.5 py-2 text-sm font-semibold">
-                <LockIcon />
-                {passwordMode === "keep" ? "Saved" : "Will be removed"}
-                <span className="ml-auto flex gap-1.5">
-                  <button type="button" onClick={() => setPasswordMode("change")} className="rounded-full bg-fill px-3 py-1 text-xs font-bold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent max-md:py-2">
-                    Change
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setPasswordMode(passwordMode === "remove" ? "keep" : "remove")}
-                    className="rounded-full bg-fill px-3 py-1 text-xs font-bold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent max-md:py-2"
-                  >
-                    {passwordMode === "remove" ? "Keep it" : "Remove"}
-                  </button>
-                </span>
-              </div>
-            )}
-          </Field>
+          <PdfPasswordField id="card-password" help="Opens this card's statement PDFs during email import. Stored in the Cards tab; never shown again after saving." saved={Boolean(card?.hasPdfPassword)} value={password} onChange={setPassword} />
           <Field id="card-keywords" label="Subject keywords" help={KEYWORDS_HELP}>
             <TextInput {...describedBy("card-keywords", undefined, true)} name="emailMatchKeywords" value={keywords} onChange={(e) => setKeywords(e.target.value)} placeholder="e.g. edge, csb" invalid={false} />
           </Field>

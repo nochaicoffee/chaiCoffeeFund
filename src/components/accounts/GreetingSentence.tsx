@@ -50,6 +50,15 @@ function CardBody({ point, cards }: { point: keyof AccountsGreetingCards; cards:
       </>
     );
   }
+  if (point === "attention" && cards.attention) {
+    return (
+      <>
+        <div className="text-xs font-bold text-muted">{cards.attention.title}</div>
+        <Rows rows={cards.attention.rows} />
+        <div className={NOTE}>Your Sheet keeps its balance until you choose.</div>
+      </>
+    );
+  }
   if (point === "stale" && cards.stale) {
     return (
       <>

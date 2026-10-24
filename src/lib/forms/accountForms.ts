@@ -19,6 +19,8 @@ export interface AccountInput {
   color: CardColor;
   /** Blank is none; on an edit "" clears it. */
   last4: string;
+  /** Kept exactly as typed. Blank is absent, which Edit account treats as "keep the saved one". */
+  statementPdfPassword?: string;
   /** Add only: today's balance, saved as its first one. */
   balance?: number;
 }
@@ -34,8 +36,19 @@ export function readAccountForm(fields: FormFields, editing: boolean): FormResul
   const color = f.choice("color", CARD_COLORS, "Pick a colour");
   const last4 = f.text("last4") ?? "";
   if (last4 && !/^\d{4}$/.test(last4)) f.fail("last4", "Enter just the last 4 digits, like 4821");
+  const password = f.raw("statementPdfPassword");
   const balance = editing ? undefined : f.amount("balance", { label: "balance", allowNegative: false });
-  return f.result({ name: name!, bank: bank!, accountType: accountType!, purpose: purpose!, startDate: startDate!, color: color!, last4, ...(balance !== undefined && { balance }) });
+  return f.result({
+    name: name!,
+    bank: bank!,
+    accountType: accountType!,
+    purpose: purpose!,
+    startDate: startDate!,
+    color: color!,
+    last4,
+    ...(password.trim() !== "" && { statementPdfPassword: password }),
+    ...(balance !== undefined && { balance }),
+  });
 }
 
 export interface BalanceInput {

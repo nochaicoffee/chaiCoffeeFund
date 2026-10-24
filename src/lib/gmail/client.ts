@@ -33,4 +33,9 @@ export function getStatementLabel(): string {
   return requireEnv("GMAIL_STATEMENT_LABEL");
 }
 
+/** The label bank account statements are filed under, apart from the card statements'. */
+export function getAccountStatementLabel(): string {
+  return requireEnv("GMAIL_ACCOUNT_STATEMENT_LABEL");
+}
+
 export const GMAIL_READONLY_SCOPE = "https://www.googleapis.com/auth/gmail.readonly";

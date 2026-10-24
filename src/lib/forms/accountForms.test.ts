@@ -23,6 +23,16 @@ describe("readAccountForm", () => {
   it("won't take a negative opening balance", () => {
     expect(readAccountForm({ ...good, balance: "-5" }, false).ok).toBe(false);
   });
+  it("keeps a statement PDF password exactly as typed, spaces and all", () => {
+    const r = readAccountForm({ ...good, statementPdfPassword: " Ab 12#x " }, true);
+    expect(r.ok && r.input.statementPdfPassword).toBe(" Ab 12#x ");
+  });
+  it("treats a blank password as none, which an edit reads as keep the saved one", () => {
+    for (const blank of ["", "   ", undefined]) {
+      const r = readAccountForm({ ...good, statementPdfPassword: blank }, true);
+      expect(r.ok && "statementPdfPassword" in r.input).toBe(false);
+    }
+  });
 });
 
 describe("readBalanceForm", () => {

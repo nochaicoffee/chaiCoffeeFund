@@ -14,6 +14,7 @@ import { loansRepository } from "./loans";
 import { loanInstallmentsRepository } from "./loanInstallments";
 import { investmentTransactionsRepository } from "./investmentTransactions";
 import { fixedDepositsRepository } from "./fixedDeposits";
+import { balanceReviewsRepository } from "./balanceReviews";
 
 /**
  * Cached reads for every entity, one tag each — used by pages (Server
@@ -45,6 +46,7 @@ export const CACHE_TAGS = {
   loanInstallments: "loanInstallments",
   investmentTransactions: "investmentTransactions",
   fixedDeposits: "fixedDeposits",
+  balanceReviews: "balanceReviews",
 } as const;
 
 const REVALIDATE_SECONDS = 900;
@@ -136,3 +138,7 @@ export const getCachedInvestmentTransactionById = cachedGetById(getCachedInvestm
 export const getCachedFixedDepositsTab = cachedTab(fixedDepositsRepository, CACHE_TAGS.fixedDeposits);
 export const getCachedFixedDeposits = cachedList(getCachedFixedDepositsTab);
 export const getCachedFixedDepositById = cachedGetById(getCachedFixedDeposits);
+
+export const getCachedBalanceReviewsTab = cachedTab(balanceReviewsRepository, CACHE_TAGS.balanceReviews);
+export const getCachedBalanceReviews = cachedList(getCachedBalanceReviewsTab);
+export const getCachedBalanceReviewById = cachedGetById(getCachedBalanceReviews);

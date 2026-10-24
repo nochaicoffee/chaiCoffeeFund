@@ -45,10 +45,12 @@ async function writeBalances(entries: { accountId: string; date: string; balance
   for (const { accountId, date, balance } of entries) {
     const same = sameDayBalance(known, accountId, date);
     if (same) {
-      await balanceSnapshotsRepository.update(same.id, { balance });
+      // Typed in by hand now, even if a statement gave the balance it replaces.
+      await balanceSnapshotsRepository.update(same.id, { balance, source: "Manual" });
       same.balance = balance;
+      same.source = "Manual";
     } else {
-      known.push(await balanceSnapshotsRepository.create({ accountId, date, balance }));
+      known.push(await balanceSnapshotsRepository.create({ accountId, date, balance, source: "Manual" }));
     }
   }
 }
@@ -62,7 +64,9 @@ export async function saveAccount(_previous: FormState, formData: FormData): Pro
   const { balance, last4, ...account } = result.input;
   try {
     if (editing) {
-      await accountsRepository.update(id, updateAccountSchema.parse({ ...account, last4 }) as Partial<Omit<Account, "id">>);
+      // A blank password keeps the saved one; "clearPassword" removes it (as Edit card does).
+      const patch = updateAccountSchema.parse({ ...account, last4 }) as Partial<Omit<Account, "id">>;
+      await accountsRepository.update(id, { ...patch, ...(formData.get("clearPassword") === "1" && { statementPdfPassword: undefined }) });
       return refreshed(CACHE_TAGS.accounts);
     }
     const created = await accountsRepository.create(createAccountSchema.parse({ ...account, status: "Active", ...(last4 && { last4 }) }));
@@ -164,7 +168,7 @@ export async function saveBalanceEdit(_previous: FormState, formData: FormData):
     if (!mine) return { status: "invalid", errors: { form: "This balance isn't in the Sheet any more. Close this and refresh." } };
     // One balance per account per day (decision 7): moving it onto a day that has one would make two.
     if (sameDayBalance(all, mine.accountId, result.input.date, mine.id)) return { status: "invalid", errors: { date: "This account already has a balance for that day. Edit or delete that one instead" } };
-    await balanceSnapshotsRepository.update(result.input.id, updateBalanceSnapshotSchema.parse({ date: result.input.date, balance: result.input.balance }));
+    await balanceSnapshotsRepository.update(result.input.id, updateBalanceSnapshotSchema.parse({ date: result.input.date, balance: result.input.balance, ...(result.input.balance !== mine.balance && { source: "Manual" as const }) }));
   } catch (error) {
     if (error instanceof NotFoundError) return { status: "invalid", errors: { form: "This balance isn't in the Sheet any more. Close this and refresh." } };
     return failed("saveBalanceEdit", error);

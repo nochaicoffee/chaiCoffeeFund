@@ -16,6 +16,8 @@ export const createAccountSchema = z.object({
   // Both optional: rows from before these columns existed have neither (#160).
   color: z.enum(CARD_COLORS).optional(),
   last4: last4Schema.optional(),
+  // Optional: rows from before this column existed have none. Kept exactly as typed, like a card's.
+  statementPdfPassword: nonEmptyString.optional(),
 });
 
 /** An update can clear the last 4: "" blanks the cell (see `clearable`). A colour is changed, not cleared. */
@@ -24,8 +26,8 @@ export const updateAccountSchema = createAccountSchema.partial().extend({ last4:
 /** A row as read back from the Sheet: a valid create, plus its id. */
 export const accountRowSchema = createAccountSchema.extend({ id: nonEmptyString });
 
-/** The Accounts tab's columns, in order. color and last4 were added on the end (#160). */
-export const ACCOUNT_COLUMNS: (keyof Account)[] = ["id", "name", "bank", "accountType", "purpose", "startDate", "status", "color", "last4"];
+/** The Accounts tab's columns, in order. color and last4 were added on the end (#160), then statementPdfPassword. */
+export const ACCOUNT_COLUMNS: (keyof Account)[] = ["id", "name", "bank", "accountType", "purpose", "startDate", "status", "color", "last4", "statementPdfPassword"];
 
 export const accountsRepository = createRepository<Account>({
   sheetName: "Accounts",

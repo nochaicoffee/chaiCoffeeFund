@@ -1,5 +1,6 @@
 import { createListRoute } from "@/lib/api/createCrudRoutes";
+import { toClientAccount } from "@/lib/forms/clientAccount";
 import { accountsRepository, createAccountSchema } from "@/lib/sheets/accounts";
 import { CACHE_TAGS } from "@/lib/sheets/cached";
 
-export const { GET, POST } = createListRoute(accountsRepository, CACHE_TAGS.accounts, createAccountSchema);
+export const { GET, POST } = createListRoute(accountsRepository, CACHE_TAGS.accounts, createAccountSchema, toClientAccount);

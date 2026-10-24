@@ -8,6 +8,7 @@ import { formatInr } from "@/lib/format/money";
 import { cardColorKey, type ColorKey } from "@/lib/format/subscriptionLabels";
 import { ACCOUNT_PURPOSES } from "@/lib/forms/accountForms";
 import type { SelectOption } from "@/components/Select";
+import { attentionForSnapshot, attentionItems, type AttentionItem } from "../attentionView";
 import type { HistoryRow } from "../views";
 import type { HistoryState } from "./params";
 
@@ -76,7 +77,7 @@ export interface HistoryPageView {
 const signed = (n: number) => `${n > 0 ? "+" : n < 0 ? "−" : ""}${formatInr(Math.abs(n))}`;
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 
-export function rowView(e: HistoryEntry): HistoryRowView {
+export function rowView(e: HistoryEntry, attention?: AttentionItem): HistoryRowView {
   const changeText = e.delta === null ? "First balance" : e.delta === 0 ? "No change" : signed(e.delta);
   const changeTone = e.delta === null || e.delta === 0 ? null : e.delta > 0 ? ("up" as const) : ("down" as const);
   const gapText = e.gapDays === null ? null : e.gapDays === 0 ? "the same day as the one before" : `${plural(e.gapDays, "day")} after the one before`;
@@ -95,11 +96,12 @@ export function rowView(e: HistoryEntry): HistoryRowView {
     changeText,
     changeTone,
     pill: e.closing ? "Closing balance" : e.first ? "First balance" : null,
-    row: { id: e.id, accountId: e.account.id, accountName: e.account.name, date: e.date, dateText: formatDate(e.date), balanceText: formatInr(e.balance), balance: e.balance, changeText, changeTone, gapText },
+    row: { id: e.id, accountId: e.account.id, accountName: e.account.name, date: e.date, dateText: formatDate(e.date), balanceText: formatInr(e.balance), balance: e.balance, changeText, changeTone, gapText, ...(attention && { attention }), ...(e.fromStatement && { fromStatement: true as const }) },
   };
 }
 
 export function historyPageView(data: AccountsData, state: HistoryState, today: string): HistoryPageView {
+  const waiting = attentionItems(data);
   const entries = historyEntries(data.accounts, data.snapshots);
   const scoped = scopeEntries(entries, state, today);
   // What's stale follows the account and purpose chosen, as the rest of the tiles do.
@@ -150,7 +152,7 @@ export function historyPageView(data: AccountsData, state: HistoryState, today: 
       key: g.key,
       title: g.key === "biggest" ? "Biggest moves first" : formatMonthYear(g.key),
       note: g.key === "biggest" ? plural(month.entries.length, "balance") : `${plural(month.entries.length, "balance")} · net ${signed(month.net)}`,
-      rows: g.entries.map(rowView),
+      rows: g.entries.map((e) => rowView(e, attentionForSnapshot(waiting, { id: e.id, accountId: e.account.id, date: e.date }))),
     };
   });
 

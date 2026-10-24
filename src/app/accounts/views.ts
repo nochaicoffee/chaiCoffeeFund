@@ -9,6 +9,7 @@ import { cardColorKey, whenFrom, type ColorKey } from "@/lib/format/subscription
 import type { Account, CardColor } from "@/lib/sheets/types";
 import type { MapEntry } from "@/components/subscriptions/costMap";
 import { daysBetween } from "@/lib/aggregate/cardSpend";
+import { attentionForSnapshot, attentionItems, type AttentionItem } from "./attentionView";
 import { historyHref } from "./history/params";
 import { detailFor, type ItemsCache, type PickDetail } from "./detailView";
 import type { SentencePart } from "../cards/summarySentence";
@@ -92,6 +93,10 @@ export interface HistoryRow {
   changeTone: "up" | "down" | null;
   /** "30 days after the one before". */
   gapText: string | null;
+  /** A bank statement disagreed with this balance and the question is still open. */
+  attention?: AttentionItem;
+  /** A bank statement gave this balance. */
+  fromStatement?: true;
 }
 
 /** An account as the forms need it: what to preview, what it holds, and what to pre-fill an edit with. */
@@ -107,6 +112,8 @@ export interface FormAccount {
   purpose: Account["purpose"];
   startDate: string;
   last4: string;
+  /** Whether a statement PDF password is saved. The password itself never reaches the browser. */
+  hasPdfPassword: boolean;
   closed: boolean;
   stale: boolean;
   /** Its balance today, or null with none yet. */
@@ -134,6 +141,8 @@ export interface AccountsPageView {
   mix: MixBlock[];
   /** Newest first, by pick id: All has every account's readings. */
   history: Record<string, HistoryRow[]>;
+  /** Balances a bank statement disagreed with, still waiting for an answer. */
+  attention: AttentionItem[];
   /** The rest of the page's own data, filled in as each widget is built. */
   hasAccounts: boolean;
 }
@@ -258,7 +267,7 @@ export function mixBlocks(data: AccountsData, today: string): MixBlock[] {
 }
 
 /** Every recorded balance with its change from the one before it, newest first. */
-export function historyRows(data: AccountsData): Record<string, HistoryRow[]> {
+export function historyRows(data: AccountsData, attention: AttentionItem[] = attentionItems(data)): Record<string, HistoryRow[]> {
   const rows = new Map<string, HistoryRow[]>();
   const all: HistoryRow[] = [];
   for (const account of data.accounts) {
@@ -277,6 +286,8 @@ export function historyRows(data: AccountsData): Record<string, HistoryRow[]> {
         changeText: delta === null ? "First balance" : delta === 0 ? "No change" : `${delta > 0 ? "+" : "−"}${formatInr(Math.abs(delta))}`,
         changeTone: delta === null || delta === 0 ? null : delta > 0 ? "up" : "down",
         gapText: before ? `${daysBetween(before.date, s.date)} days after the one before` : null,
+        ...(attentionForSnapshot(attention, s) && { attention: attentionForSnapshot(attention, s) }),
+        ...(s.source === "Statement" && { fromStatement: true as const }),
       };
     });
     all.push(...list);
@@ -300,6 +311,7 @@ export function formsView(data: AccountsData, today: string, demo: boolean): Acc
       purpose: a.purpose,
       startDate: a.startDate,
       last4: a.last4 ?? "",
+      hasPdfPassword: Boolean(a.statementPdfPassword),
       closed: isClosed(a),
       stale: isStale(a, data.snapshots, today),
       balance: latest?.balance ?? null,
@@ -312,6 +324,7 @@ export function formsView(data: AccountsData, today: string, demo: boolean): Acc
 }
 
 export function accountsPageView(data: AccountsData, today: string, period: SpendPeriod, demo = false): AccountsPageView {
+  const attention = attentionItems(data);
   // Closed accounts come last, as they do in the card row.
   const ordered = [...data.accounts].sort((a, b) => Number(isClosed(a)) - Number(isClosed(b)));
   const live = data.accounts.filter((a) => !isClosed(a));
@@ -321,7 +334,7 @@ export function accountsPageView(data: AccountsData, today: string, period: Spen
   const showAll = live.length !== 1 || data.accounts.length !== 1;
   const shown = data.accounts.length === 0 ? [allPick(data, period, today, cache)] : showAll && data.accounts.length > 1 ? [allPick(data, period, today, cache), ...picks] : picks;
   const historyHrefs = Object.fromEntries(shown.map((p) => [p.id, historyHref({ period, status: "all", sort: "newest", page: 1, demo, accountId: p.kind === "account" ? p.id : undefined }, today)]));
-  return { historyHrefs, forms: formsView(data, today, demo), mix: mixBlocks(data, today), history: historyRows(data), picks: shown, hasAccounts: data.accounts.length > 0 };
+  return { historyHrefs, forms: formsView(data, today, demo), mix: mixBlocks(data, today), history: historyRows(data, attention), picks: shown, attention, hasAccounts: data.accounts.length > 0 };
 }
 
 // --- The greeting ---
@@ -343,6 +356,8 @@ export interface AccountsGreetingCards {
   since?: { title: string; total: string; rows: GreetingRow[] };
   high?: { title: string; total: string; months: { key: string; label: string; total: number; lit: boolean }[]; note: string };
   stale?: { title: string; rows: GreetingRow[] };
+  /** Balances a statement disagreed with: each day, both figures, and the gap. */
+  attention?: { title: string; rows: GreetingRow[] };
 }
 
 const signed = (n: number) => `${n >= 0 ? "+" : "−"}${formatInr(Math.abs(n))}`;
@@ -375,10 +390,13 @@ export function summarySentence(data: AccountsData, today: string, period: Spend
   if (best && months.length > 1) parts.push({ text: formatMonthYear(best.key), strong: true, point: "high" }, { text: ` was the high point at ` }, { text: formatInr(best.total), strong: true, point: "high" }, { text: ". " });
   if (stale.length === 0) parts.push({ text: "Every balance is up to date." });
   else parts.push({ text: stale.length === 1 ? stale[0].name : `${stale.length} accounts`, strong: true, point: "stale" }, { text: ` ${stale.length === 1 ? "hasn't" : "haven't"} been updated in over ${STALE_DAYS} days.` });
+  const waiting = attentionItems(data);
+  if (waiting.length > 0) parts.push({ text: " " }, { text: `${waiting.length} balance${waiting.length === 1 ? "" : "s"}`, strong: true, point: "attention" }, { text: ` from your statements ${waiting.length === 1 ? "needs" : "need"} a look.` });
   return parts;
 }
 
 export function greetingView(data: AccountsData, today: string, period: SpendPeriod): AccountsGreetingCards {
+  const waiting = attentionItems(data);
   const live = data.accounts.filter((a) => !isClosed(a));
   const firstDate = data.snapshots.map((s) => s.date).sort()[0] ?? null;
   if (live.length === 0 || !firstDate) return {};
@@ -410,6 +428,14 @@ export function greetingView(data: AccountsData, today: string, period: SpendPer
       rows: movers.slice(0, 6).map((m) => ({ key: m.account.id, name: m.account.name, colorKey: cardColorKey(accountColor(m.account)), amount: signed(m.change), fraction: Math.abs(m.change) / top })),
     },
     ...(best && months.length > 1 ? { high: { title: formatMonthYear(best.key), total: formatInr(best.total), months: months.map((m) => ({ ...m, lit: m.key === best.key })), note: "The most you held at a month's end" } } : {}),
+    ...(waiting.length
+      ? {
+          attention: {
+            title: waiting.length === 1 ? "A statement disagrees" : `${waiting.length} statements disagree`,
+            rows: waiting.map((i) => ({ key: i.id, name: i.accountName, colorKey: i.colorKey, amount: i.differenceText, note: `${i.dateText} · recorded ${i.recordedText}, statement ${i.statementText}`, warn: true })),
+          },
+        }
+      : {}),
     ...(stale.length ? { stale: { title: stale.length === 1 ? "Not updated lately" : `${stale.length} not updated lately`, rows: stale.map((a) => ({ key: a.id, name: a.name, colorKey: cardColorKey(accountColor(a)), amount: `${daysSinceBalance(data.snapshots, a.id, today)} days`, note: `Last read ${whenFrom(today, balanceOn(data.snapshots, a.id, today)!.date)}`, warn: true })) } } : {}),
   };
 }

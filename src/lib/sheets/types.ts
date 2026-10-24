@@ -19,13 +19,20 @@ export interface Account {
   color?: CardColor;
   /** Last 4 digits of the account number, text so a leading zero survives. Never the full number. */
   last4?: string;
+  /** Password to open this account's statement PDFs. Used only by the Gmail statement import; never sent to the browser (FormAccount carries `hasPdfPassword` instead). */
+  statementPdfPassword?: string;
 }
+
+/** Where a balance came from. A row with none was typed in, so it reads as Manual. */
+export const BALANCE_SOURCES = ["Manual", "Statement"] as const;
+export type BalanceSource = (typeof BALANCE_SOURCES)[number];
 
 export interface BalanceSnapshot {
   id: string;
   accountId: string;
   date: string;
   balance: number;
+  source?: BalanceSource;
 }
 
 export type RecurrenceCycle = "Monthly" | "Quarterly" | "Yearly";
@@ -150,6 +157,48 @@ export interface StatementEmail {
   lastTriedAt: string;
 }
 
+/** What a sync reads: card statements, or bank account statements. A row with none is a Cards sync (the tab had no kind before). */
+export const SYNC_KINDS = ["Cards", "Accounts"] as const;
+export type SyncKind = (typeof SYNC_KINDS)[number];
+
+/** One bank statement email the account sync has looked at, so the next sync knows what to skip. */
+export interface AccountStatementEmail {
+  id: string;
+  messageId: string;
+  /** The email's date. Blank only when the email itself couldn't be read. */
+  receivedDate?: string;
+  subject?: string;
+  accountId?: string;
+  /** The first and last day the statement covers, once it has been read. */
+  periodStart?: string;
+  periodEnd?: string;
+  result: StatementEmailResult;
+  /** Why it failed, or anything else the import did. */
+  details?: string;
+  attempts: number;
+  /** An ISO timestamp, like every *At field. */
+  lastTriedAt: string;
+}
+
+/** Open: waiting for an answer. Accepted: the statement's balance was written. Kept: the recorded balance stays. Superseded: a corrected statement replaced the question. */
+export const REVIEW_STATUSES = ["Open", "Accepted", "Kept", "Superseded"] as const;
+export type ReviewStatus = (typeof REVIEW_STATUSES)[number];
+
+/** A balance a statement disagreed with, left as recorded until it's answered (lib/aggregate/statementBalances.ts). */
+export interface BalanceReview {
+  id: string;
+  accountId: string;
+  date: string;
+  /** The balance this is about, as recorded. */
+  snapshotId: string;
+  recordedBalance: number;
+  statementBalance: number;
+  messageId: string;
+  status: ReviewStatus;
+  createdAt: string;
+  resolvedAt?: string;
+}
+
 export const SYNC_TRIGGERS = ["Manual", "Scheduled"] as const;
 export type SyncTrigger = (typeof SYNC_TRIGGERS)[number];
 
@@ -160,6 +209,7 @@ export type SyncRunStatus = (typeof SYNC_RUN_STATUSES)[number];
 /** One run of the Gmail sync: how it was started and what it did. */
 export interface SyncRun {
   id: string;
+  kind?: SyncKind;
   trigger: SyncTrigger;
   status: SyncRunStatus;
   startedAt: string;

@@ -137,11 +137,11 @@ function rowTitle(row: SyncReportRow): string {
   return row.receivedDate ? `${card} · email of ${formatDate(row.receivedDate)}` : card;
 }
 
-function timeOf(ms: number): string {
+export function timeOf(ms: number): string {
   return new Date(ms).toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
 }
 
-function Heading({ icon, title, detail, onClose }: { icon: ReactNode; title: string; detail: string; onClose?: () => void }) {
+export function Heading({ icon, title, detail, onClose }: { icon: ReactNode; title: string; detail: string; onClose?: () => void }) {
   return (
     <div className="flex items-start justify-between gap-3">
       <div className="flex min-w-0 items-start gap-2.5">
@@ -166,11 +166,11 @@ const TONES = {
   negative: "bg-negative-tint text-negative",
 } as const;
 
-function Badge({ tone }: { tone: keyof typeof TONES }) {
+export function Badge({ tone }: { tone: keyof typeof TONES }) {
   return <span className={`mt-px flex size-6 shrink-0 items-center justify-center rounded-full ${TONES[tone]}`}>{tone === "accent" ? <CheckIcon /> : <AlertIcon />}</span>;
 }
 
-function Spinner() {
+export function Spinner() {
   return (
     <span className={`mt-px flex size-6 shrink-0 items-center justify-center rounded-full ${TONES.accent}`}>
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" aria-hidden="true" className="animate-spin motion-reduce:animate-none">
@@ -181,7 +181,7 @@ function Spinner() {
 }
 
 /** A count, in its tone only when it isn't 0. */
-function Count({ n, label, tone }: { n: number; label: string; tone: keyof typeof TONES }) {
+export function Count({ n, label, tone }: { n: number; label: string; tone: keyof typeof TONES }) {
   return (
     <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${TONES[n === 0 ? "neutral" : tone]}`}>
       <span className="tabular-nums">{n}</span>

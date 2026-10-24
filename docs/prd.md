@@ -112,6 +112,8 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 |---|---|---|---|
 | F-AC-01 | Accounts list grouped by purpose, and an add account form | P0 | Built (#160–#165, #171) |
 | F-AC-02 | Log a balance snapshot, and see each account's trend and month-over-month change | P0 | Built (#160–#165, #171); the Flow map and an Undo after saving are left out |
+| F-AC-03 | Update balances from emailed bank statements (HDFC, Slice, Jupiter), on demand ("Sync statements" on the Accounts page) | P0 | Built, run against real email 2026-10-23 (ADR 0008) |
+| F-AC-04 | A balance a statement disagrees with is flagged "needs attention" until answered | P0 | Built (ADR 0008) |
 
 ### Subscriptions (`F-SU`)
 
@@ -177,6 +179,18 @@ Following standard practice, acceptance criteria are written in full only for th
 - [ ] A PDF that no stored password opens is reported, not silently skipped.
 - [ ] The import reads the masked card number from each PDF. It fills in a card's missing last 4, and won't import a statement whose card number doesn't match the card it was matched to (#78).
 - [ ] Gmail access is read-only, and no credential is ever committed. Statement PDF passwords live in the Cards Sheet tab (Q3).
+
+### F-AC-03 and F-AC-04: Bank account balances from statements
+*As Prathik, I want my bank balances filled in from the statements the banks email me, so that I stop typing them, and I want to be told, not overruled, when a statement disagrees with what I have.*
+- [ ] "Sync statements" on the Accounts page reads every labelled, not-yet-read email: monthly, yearly or custom range, and reports what was added, was already there, needs a look, or couldn't be used, and why.
+- [ ] A statement gives its closing balance on its last day, its opening balance (the day before it starts, even when an older balance is recorded), and a balance at the end of each month it has transactions in.
+- [ ] A statement whose own numbers don't add up writes nothing and is reported.
+- [ ] Running sync twice, or reading a monthly inside a range already read, adds nothing and opens no question.
+- [ ] A balance already recorded for that account and day is never changed by a sync. If the statement disagrees, a question opens: it shows in the greeting sentence (a figure that points at a card), in a card at the top of the page, and as a chip on that balance in Balance history. **Use the statement's** writes it; **Keep the Sheet's** closes it.
+- [ ] A statement for an account that can't be matched (or matches more than one), a closed account, a period not over yet, one before the account was opened, or a PDF that no saved password opens, is reported with what to change and writes nothing.
+- [ ] Add/Edit account takes the statement PDF password. It is never shown back and never sent to the browser or out of an API route (cards' passwords the same).
+- [ ] Balance history says "from a statement" on a balance a statement gave, and stops saying it once someone types over the balance.
+- [ ] Gmail access is read-only, and no credential is ever committed.
 
 ### F-CC-05 and F-CC-06: Cards dashboard
 *As Prathik, I want the Cards page to show my card spending at a glance, so that a monthly check-in takes minutes.*
@@ -308,6 +322,7 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.5 | 2026-10-20 | The period can also be the last 3, 6 or 12 months or a custom range of months, by statement date, and a range's average divides by every month of it so far (#113). The trend chart follows the period instead of having its own 3M to All ranges. |
 | 1.6 | 2026-10-22 | Accounts numbers defined (carry-forward totals, stale after 30 days, closing, money out and Everything else, saved, same-day replace, 20% drop warning), per the Accounts design (#155). |
 | 1.7 | 2026-10-22 | Accounts page built end to end (F-AC-01 and F-AC-02), to the design in #155. The Flow map and an Undo toast after saving a balance are not built. |
+| 1.8 | 2026-10-23 | Bank account balances from emailed statements (F-AC-03, F-AC-04, ADR 0008): HDFC, Slice and Jupiter; the recorded balance always wins and a disagreement waits for an answer. |
 | 1.9 | 2026-10-24 | Income numbers defined (§8 F-IN-01/02): RSU and ESPP are not income, a month counts what landed, late after 3 days, pending computed not stored, the salary read from HDFC statements. Income design final: Z1 with the E1 Ledger and E3 Passbook (#184). |
 | 1.10 | 2026-10-24 | Income: pending counts every missed date after the latest received regular payment; only a Regular entry receives a scheduled payment (#186). Overview's pending income is computed from the schedules, a line per source. |
 | 1.11 | 2026-10-24 | The Income page (#188): the greeting whose figures point, the attention strip, and the Year in columns cover with a year pill and a source pick; a picked source's columns are drawn on their own scale. |
