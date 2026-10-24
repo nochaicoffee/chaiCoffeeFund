@@ -24,21 +24,43 @@ export interface RangeStart {
  * list starts again at page 1. Each option's value is its `?period=`, blank for
  * this year (params.ts, periodMenu).
  */
-export function PeriodSelect({ options, value, start, currentMonth }: { options: SelectOption[]; value: string; start: RangeStart; currentMonth: MonthKey }) {
+/** The pill's look, shared with the Income page's year pill. */
+export const PILL_SELECT_CLASS =
+  "flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-surface-line bg-surface py-2.5 pr-4 pl-4 text-[13px] font-bold text-fg shadow-soft focus-visible:outline-2 focus-visible:outline-accent aria-expanded:border-accent/45 md:min-h-0";
+
+export function CalendarIcon() {
+  return (
+    <svg className="shrink-0 text-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <line x1="3" y1="10" x2="21" y2="10" />
+      <line x1="8" y1="3" x2="8" y2="7" />
+      <line x1="16" y1="3" x2="16" y2="7" />
+    </svg>
+  );
+}
+
+/**
+ * Goes to this page with `?<param>=value` (or without it for ""), keeping the rest of the address and a bare
+ * `?demo` bare, and dropping the list's page number, which belongs to the old choice.
+ */
+export function useSearchParamNavigation(param: string): (value: string) => void {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const triggerRef = useRef<HTMLButtonElement>(null);
-  const [picking, setPicking] = useState(false);
-
-  function choose(next: string) {
+  return (value: string) => {
     const query = new URLSearchParams(searchParams.toString());
     query.delete("page");
-    if (next === "") query.delete("period");
-    else query.set("period", next);
+    if (value === "") query.delete(param);
+    else query.set(param, value);
     const text = query.toString().replace(/(^|&)demo=(&|$)/, "$1demo$2");
     router.push(text ? `${pathname}?${text}` : pathname, { scroll: false });
-  }
+  };
+}
+
+export function PeriodSelect({ options, value, start, currentMonth }: { options: SelectOption[]; value: string; start: RangeStart; currentMonth: MonthKey }) {
+  const choose = useSearchParamNavigation("period");
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const [picking, setPicking] = useState(false);
 
   function closePicker(returnFocus: boolean) {
     setPicking(false);
@@ -55,15 +77,8 @@ export function PeriodSelect({ options, value, start, currentMonth }: { options:
         value={value}
         onChange={choose}
         onAction={() => setPicking(true)}
-        icon={
-          <svg className="shrink-0 text-muted" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect x="3" y="5" width="18" height="16" rx="2" />
-            <line x1="3" y1="10" x2="21" y2="10" />
-            <line x1="8" y1="3" x2="8" y2="7" />
-            <line x1="16" y1="3" x2="16" y2="7" />
-          </svg>
-        }
-        className="flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-surface-line bg-surface py-2.5 pr-4 pl-4 text-[13px] font-bold text-fg shadow-soft focus-visible:outline-2 focus-visible:outline-accent aria-expanded:border-accent/45 md:min-h-0"
+        icon={<CalendarIcon />}
+        className={PILL_SELECT_CLASS}
       />
       {picking && (
         <MonthRangePicker
