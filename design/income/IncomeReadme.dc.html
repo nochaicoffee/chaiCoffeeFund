@@ -1,0 +1,641 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Manrope:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500;1,6..72,600&display=swap">
+  <style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.chai-app {
+  --page: oklch(0.965 0.004 90); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06); --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+  --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+  --accent: oklch(0.72 0.19 145); --accent-tint: oklch(0.93 0.06 145); --accent-text: oklch(0.42 0.14 145); --on-accent: oklch(0.99 0 0);
+  --accent-edge: oklch(0.72 0.19 145 / 0.45); --accent-ring: oklch(0.72 0.19 145 / 0.22); --negative-ring: oklch(0.55 0.16 25 / 0.18);
+  --ink: oklch(0.16 0.008 260); --on-ink: oklch(0.99 0 0);
+  --positive: oklch(0.42 0.14 145); --warning: oklch(0.72 0.14 75); --warning-text: oklch(0.47 0.1 70); --warning-tint: oklch(0.95 0.05 85);
+  --negative: oklch(0.55 0.16 25); --negative-tint: oklch(0.95 0.035 40);
+  --feature-tile: oklch(0.935 0.052 148); --feature-tile-line: oklch(0.62 0.15 150 / 0.24); --feature-tile-glow: oklch(1 0 0 / 0.55);
+  --rings-ink: oklch(0.42 0.1 152); --rings-light: oklch(1 0 0); --bar-glow: oklch(1 0 0 / 0.26);
+  --heat-1: oklch(0.95 0.03 150); --heat-2: oklch(0.87 0.07 150); --heat-3: oklch(0.76 0.11 151); --heat-4: oklch(0.6 0.12 153); --heat-5: oklch(0.42 0.1 156);
+  --heat-ink: oklch(0.24 0.05 152); --heat-no-data: oklch(0 0 0 / 0.04); --heat-upcoming: oklch(0 0 0 / 0.13); --trend-no-data: oklch(0 0 0 / 0.1); --trend-peak-shadow: oklch(0.3 0.09 155 / 0.26);
+  --card-emerald-from: oklch(0.42 0.11 155); --card-emerald-to: oklch(0.24 0.07 162); --card-emerald: oklch(0.6 0.12 153);
+  --card-sapphire-from: oklch(0.32 0.09 258); --card-sapphire-to: oklch(0.16 0.05 258); --card-sapphire: oklch(0.48 0.1 258);
+  --card-ruby-from: oklch(0.3 0.11 20); --card-ruby-to: oklch(0.15 0.07 20); --card-ruby: oklch(0.57 0.13 22);
+  --card-onyx-from: oklch(0.28 0.02 75); --card-onyx-to: oklch(0.15 0.01 75); --card-onyx: oklch(0.56 0.04 75);
+  --card-violet-from: oklch(0.31 0.1 300); --card-violet-to: oklch(0.16 0.06 300); --card-violet: oklch(0.53 0.13 300);
+  --card-teal-from: oklch(0.32 0.07 200); --card-teal-to: oklch(0.16 0.04 200); --card-teal: oklch(0.56 0.09 200);
+  --card-copper-from: oklch(0.33 0.09 50); --card-copper-to: oklch(0.16 0.05 50); --card-copper: oklch(0.6 0.12 50);
+  --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
+  --on-card: oklch(0.95 0.004 260); --on-card-muted: oklch(1 0 0 / 0.6); --on-card-faint: oklch(1 0 0 / 0.5); --on-card-fill: oklch(1 0 0 / 0.16); --on-card-line: oklch(1 0 0 / 0.12); --on-card-line-top: oklch(1 0 0 / 0.22); --on-card-lime: oklch(0.88 0.17 138);
+  --card-chip: oklch(0.8 0.13 80); --card-chip-mid: oklch(0.68 0.13 80); --card-chip-deep: oklch(0.55 0.1 80);
+  --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
+  --tile-shadow-selected: 0 10px 26px oklch(0.3 0.09 155 / 0.35), 0 0 0 4px oklch(1 0 0 / 0.08), 0 0 18px oklch(1 0 0 / 0.2);
+  --due-pulse-ring: oklch(0.82 0.12 40 / 0.2); --due-pulse-fill: oklch(0.7 0.14 35 / 0.55);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative; overflow: hidden; font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; background: var(--page); color: var(--fg);
+  font-size: 13px; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+}
+.chai-app h1, .chai-app h2, .chai-app h3, .chai-app p { margin: 0; }
+.glass { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); }
+.glass-strong { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); }
+.muted { color: var(--muted); }
+.strong { color: var(--fg); font-weight: 800; }
+.row { display: flex; align-items: center; gap: 10px; }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.grow { flex: 1; min-width: 0; }
+
+/* ---- Shell ---- */
+.desk { display: flex; gap: 20px; padding: 24px; }
+.rail { width: 64px; flex-shrink: 0; border-radius: 999px; display: flex; flex-direction: column; align-items: center; padding: 18px 0; gap: 10px; }
+.rail-item { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; color: var(--muted); }
+.rail-item.active { background: var(--ink); color: var(--on-ink); }
+.rail-me { margin-top: auto; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+.main { flex: 1; min-width: 0; border-radius: 36px; padding: 26px; display: flex; flex-direction: column; gap: 20px; }
+.ph { display: flex; flex-direction: column; border-radius: 34px; border: 1px solid var(--fill-strong); }
+.ph-status { height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; font-size: 14px; font-weight: 700; }
+.ph-icons { display: flex; gap: 4px; } .ph-icons i { width: 16px; height: 9px; border-radius: 3px; background: var(--fg); opacity: 0.85; }
+.ph-bar { height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 16px; border-bottom: 1px solid var(--divider); font-size: 16px; font-weight: 800; }
+.ph-menu { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.ph-body { flex: 1; min-height: 0; padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ---- Header ---- */
+.pg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.pg-text { display: flex; flex-direction: column; gap: 10px; max-width: 980px; }
+.eyebrow { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.pg-head h1 { font-size: 30px; font-weight: 800; line-height: 1.15; }
+.lede { font-size: 16px; font-weight: 500; line-height: 1.7; color: var(--muted); text-wrap: pretty; }
+.lede b { color: var(--fg); font-weight: 700; }
+.pg-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-top: 4px; }
+.ph-head { flex-direction: column; gap: 14px; }
+.ph-head h1 { font-size: 26px; }
+.ph-head .lede { font-size: 15px; line-height: 1.6; }
+.ph-head .pg-actions { flex-wrap: wrap; margin-top: 0; }
+
+/* ---- Buttons, pills, segmented, chips ---- */
+.btn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 18px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; user-select: none; }
+.btn-primary { background: var(--ink); color: var(--on-ink); position: relative; overflow: hidden; }
+.btn-primary::after { content: ""; position: absolute; top: -60%; left: -30%; width: 46%; height: 220%; background: linear-gradient(100deg, transparent, oklch(1 0 0 / 0.25), transparent); transform: rotate(14deg); pointer-events: none; }
+.btn-ghost { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--fg); }
+.btn-soft { background: var(--fill); color: var(--fg); }
+.btn-accent { background: var(--accent-tint); color: var(--accent-text); }
+.btn-danger { background: var(--negative-tint); color: var(--negative); }
+.btn-icon { width: 40px; padding: 0; justify-content: center; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--muted); }
+.btn-sm { min-height: 30px; padding: 0 12px; font-size: 12px; gap: 6px; }
+.btn-xs { min-height: 26px; padding: 0 10px; font-size: 11px; gap: 5px; }
+.ph .btn { min-height: 44px; }
+.ph .btn-sm { min-height: 36px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.pill-on { background: var(--accent-tint); color: var(--accent-text); }
+.pill-off { background: var(--fill); color: var(--muted); }
+.pill-soon { background: var(--warning-tint); color: var(--warning-text); }
+.pill-due { background: var(--negative-tint); color: var(--negative); animation: due-pulse 2.2s ease-in-out infinite; }
+.pill-warn { background: var(--warning-tint); color: var(--warning-text); }
+.pill-ink { background: var(--ink); color: var(--on-ink); }
+@keyframes due-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px var(--due-pulse-ring); } }
+@media (prefers-reduced-motion: reduce) { .pill-due { animation: none; } }
+.chg { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.chg-up { color: var(--negative); } .chg-down { color: var(--positive); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--fill); gap: 2px; }
+.seg-i { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.seg-i em { font-style: normal; font-size: 11px; color: var(--muted); font-weight: 700; }
+.seg-i.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--fill); color: var(--fg); white-space: nowrap; }
+.chip.on { background: var(--ink); color: var(--on-ink); }
+.chip i { width: 8px; height: 8px; border-radius: 3px; display: inline-block; }
+.chip em { font-style: normal; color: var(--muted); font-size: 11px; }
+.chip.on em { color: oklch(1 0 0 / 0.6); }
+.sample { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--warning-tint); color: var(--warning-text); font-size: 11px; font-weight: 800; letter-spacing: 0.01em; white-space: nowrap; }
+.sample::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--warning); }
+.tag-new { display: inline-flex; padding: 2px 7px; border-radius: 999px; font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: oklch(0.93 0.05 258); color: oklch(0.42 0.1 258); vertical-align: 1px; }
+
+/* ---- Monograms, card chips ---- */
+.mono { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--on-card); font-weight: 800; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18), 0 2px 6px oklch(0 0 0 / 0.18); }
+.mono-off { filter: grayscale(1); opacity: 0.55; }
+.via { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--fg); white-space: nowrap; }
+.minitile { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2); }
+.minibank { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--fill-strong); color: var(--muted); }
+
+/* ---- Cards (surfaces) ---- */
+.card { border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.card-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.card-t { font-size: 15px; font-weight: 800; }
+.card-t small { font-size: 12px; font-weight: 600; color: var(--muted); margin-left: 8px; }
+.card-note { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.55; }
+.link { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--accent-text); white-space: nowrap; }
+.tex { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; z-index: -1; pointer-events: none; }
+.tex svg, .tex .sheen { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.textured { position: relative; isolation: isolate; }
+
+/* Summary tiles, as on the Statements page: one feature tile in mint with rings. */
+.tiles { display: grid; gap: 16px; }
+.stile { position: relative; isolation: isolate; border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.stile .k { font-size: 12px; font-weight: 600; color: var(--muted); }
+.stile .v { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+.stile .v small { font-size: 14px; font-weight: 700; color: var(--muted); letter-spacing: 0; }
+.stile .s { font-size: 12px; color: var(--muted); font-weight: 500; }
+.stile .s b { color: var(--fg); font-weight: 700; }
+.feature { background: var(--feature-tile); border: 1px solid var(--feature-tile-line); }
+.feature .k, .feature .s { color: oklch(0.38 0.06 152); }
+
+/* Dark tiles, like the card tiles */
+.dtile { position: relative; isolation: isolate; flex-shrink: 0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow); }
+.dtile .dt-muted { color: var(--on-card-muted); font-size: 11px; font-weight: 600; }
+.dtile .dt-faint { color: var(--on-card-faint); font-size: 10px; font-weight: 600; }
+.dtile.sel { border: 1.5px solid var(--accent); box-shadow: var(--tile-shadow-selected); }
+.dtile .dt-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--on-card-fill); white-space: nowrap; }
+.dtile .dt-pill.due { background: oklch(0.7 0.14 35 / 0.55); animation: due-pulse 2.2s ease-in-out infinite; }
+.dtile .dt-pill.soon { background: oklch(0.8 0.13 80 / 0.35); }
+.dtile.off { filter: grayscale(0.85); opacity: 0.6; box-shadow: none; }
+.dtile .tick { display: none; } .dtile.sel .tick { display: flex; }
+.tick { position: absolute; top: -9px; right: -9px; width: 21px; height: 21px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px oklch(0 0 0 / 0.4); }
+.addtile { flex-shrink: 0; border-radius: 22px; border: 1.5px dashed var(--fill-strong); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 700; }
+
+/* ---- Fitting neatly: rows of cards end level, and content fills the card ---- */
+.stack-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.stack-col > :last-child { flex: 1 1 auto; }
+.spread { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+.foot { margin-top: auto; }
+.card > .tmap { flex: 1 1 auto; }
+
+/* ---- Tables ---- */
+.th { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.tgroup { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 8px; border-bottom: 1px solid var(--divider); font-size: 13px; font-weight: 800; }
+.tgroup span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.cell-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cell-name b { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cell-name small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+.num { font-weight: 800; }
+.sub2 { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+
+/* ---- Bars ---- */
+.track { height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.track > span { display: block; height: 100%; border-radius: inherit; }
+.stack { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; }
+.stack > span { display: block; height: 100%; position: relative; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.legend b { color: var(--fg); font-weight: 700; }
+
+/* ---- Notice ---- */
+.notice { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); color: var(--warning-text); font-size: 13px; font-weight: 600; }
+.notice b { color: oklch(0.36 0.08 65); font-weight: 800; }
+.notice .grow { color: oklch(0.4 0.08 68); }
+.notice svg { flex-shrink: 0; }
+
+/* ---- Dropdown (the app's own, #112) ---- */
+.sel { position: relative; display: inline-block; }
+.sel > summary { list-style: none; } .sel > summary::-webkit-details-marker { display: none; }
+.sel-trigger { position: relative; display: flex; align-items: center; gap: 8px; border: 1px solid var(--surface-line); background: var(--surface); cursor: pointer; text-align: left; max-width: 100%; }
+.sel-value { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sel-chev { flex-shrink: 0; color: var(--muted); display: flex; transition: transform 160ms var(--ease-out); }
+.sel[open] .sel-chev { transform: rotate(180deg); }
+.sel-icon { display: flex; color: var(--muted); }
+.sel--pill .sel-trigger { min-height: 40px; border-radius: 999px; box-shadow: var(--soft-shadow); padding: 9px 15px; font-size: 13px; font-weight: 700; }
+.sel--pill[open] .sel-trigger { border-color: var(--accent-edge); }
+.sel--small .sel-trigger { min-height: 34px; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; background: var(--fill); border-color: transparent; }
+.sel--field { display: block; }
+.sel--field .sel-trigger { width: 100%; height: 40px; border-radius: 12px; padding: 0 12px 0 14px; font-size: 14px; font-weight: 600; }
+.sel--field[open] .sel-trigger { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.ph .sel--field .sel-trigger { height: 44px; } .ph .sel--pill .sel-trigger { min-height: 44px; }
+.is-placeholder { color: var(--muted); font-weight: 500; }
+.pop { position: absolute; z-index: 20; top: calc(100% + 8px); left: 0; background: var(--surface); border: 1px solid var(--surface-line); border-radius: 16px; box-shadow: var(--pop-shadow); padding: 6px; min-width: 100%; }
+.pop.align-end { left: auto; right: 0; }
+.sel[open] .pop { animation: pop-in 150ms var(--ease-out) both; }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@media (prefers-reduced-motion: reduce) { .sel[open] .pop { animation: none; } .sel-chev { transition: none; } }
+.lb { min-width: 210px; max-height: 300px; overflow-y: auto; }
+.sel--field .lb { min-width: 0; }
+.lb-group { padding: 8px 12px 4px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.lb-divider { height: 1px; margin: 6px 8px; background: var(--divider); }
+.opt { display: flex; align-items: center; gap: 12px; min-height: 36px; padding: 0 10px 0 12px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--fg); cursor: pointer; }
+.sel--field .opt { font-size: 14px; font-weight: 600; }
+.opt:hover { background: var(--fill); }
+.opt-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.opt-meta { flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+.opt-check { flex-shrink: 0; width: 14px; color: var(--accent-text); visibility: hidden; display: flex; }
+.opt[aria-selected="true"] { background: var(--accent-tint); color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-meta { color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-check { visibility: visible; }
+.ph .opt { min-height: 44px; }
+
+/* ---- Light hover card (#104/#105) ---- */
+.hc { width: 250px; border-radius: 16px; padding: 14px; background: var(--surface); color: var(--fg); box-shadow: var(--pop-shadow); border: 1px solid var(--surface-line); }
+.hc .h { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.hc .t { font-size: 22px; font-weight: 800; line-height: 1.25; margin-top: 2px; }
+.hc .d { font-size: 12px; font-weight: 700; margin-top: 2px; color: var(--muted); }
+.hc ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.hc li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+.hc li .nm { flex: 1; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc li b { font-weight: 800; }
+.hc .f { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--divider); font-size: 11px; font-weight: 600; color: var(--muted); }
+.hc-arrow { position: absolute; width: 12px; height: 12px; background: var(--surface); border: 1px solid var(--surface-line); border-top: none; border-left: none; transform: rotate(45deg); }
+.hov { position: relative; }
+.hov > .hc-wrap { position: absolute; z-index: 30; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 160ms ease, transform 240ms var(--ease-out); }
+.hov:hover > .hc-wrap, .hov.is-open > .hc-wrap { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .hov > .hc-wrap { transition: none; transform: none; } }
+
+/* ---- Heatmap ---- */
+.heat { display: grid; gap: 8px; align-items: center; }
+.heat-m { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.heat-m.now { color: var(--fg); }
+.hcell { position: relative; isolation: isolate; height: 54px; border-radius: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.ph .hcell .cap { display: none; }
+.hcell .cap { font-size: 9px; font-weight: 600; opacity: 0.85; margin-top: 1px; white-space: nowrap; }
+.hcell.up { border: 1.5px dashed var(--heat-upcoming); color: var(--muted); background: transparent; }
+.hcell.up.big { border-color: oklch(0.6 0.12 153 / 0.6); color: var(--heat-ink); background: oklch(0.95 0.03 150 / 0.5); }
+.hcell.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); }
+.hcell.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* ---- Forms (as docs/design/cards-forms.md) ---- */
+.dlg { position: relative; background: var(--surface); border-radius: 28px; box-shadow: var(--pop-shadow); display: flex; flex-direction: column; }
+.dlg-h { display: flex; align-items: flex-start; gap: 14px; padding: 26px 28px 0; }
+.dlg-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-tint); color: var(--accent-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dlg-h h3 { font-size: 18px; font-weight: 800; } .dlg-h p { font-size: 13px; color: var(--muted); font-weight: 500; margin-top: 3px; }
+.dlg-x { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--fg); flex-shrink: 0; }
+.dlg-b { display: grid; grid-template-columns: 320px 1fr; gap: 24px; padding: 20px 28px; }
+.dlg-f { display: flex; align-items: center; gap: 10px; padding: 16px 28px 22px; border-top: 1px solid var(--divider); }
+.dlg-f .note { flex: 1; font-size: 12px; color: var(--muted); font-weight: 500; }
+.preview { position: relative; isolation: isolate; border-radius: 20px; background: var(--feature-tile); border: 1px solid var(--feature-tile-line); padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.pv-k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: oklch(0.38 0.1 150); }
+.pv-box { background: oklch(1 0 0 / 0.72); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
+.pv-box .between span:first-child { color: var(--muted); font-weight: 600; }
+.pv-box .between span:last-child { font-weight: 700; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 14px; align-content: start; }
+.fld { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.fld.full { grid-column: 1 / -1; }
+.lbl { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.lbl .req { color: var(--negative); margin-left: 2px; }
+.lbl .opt-tag { font-size: 10px; font-weight: 700; color: var(--muted); opacity: 0.8; margin-left: 6px; letter-spacing: 0.04em; }
+.inp { height: 40px; border-radius: 12px; border: 1px solid var(--surface-line); background: var(--surface); box-shadow: inset 0 1px 1px oklch(0 0 0 / 0.02); padding: 0 14px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.ph .inp { height: 44px; }
+.inp .pre { color: var(--muted); font-weight: 600; } .inp .suf { color: var(--muted); font-weight: 500; font-size: 13px; }
+.inp.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.inp.err { border-color: var(--negative); box-shadow: 0 0 0 3px var(--negative-ring); }
+.inp .ph-text { color: var(--muted); font-weight: 500; }
+.help { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.45; }
+.help svg { flex-shrink: 0; margin-top: 2px; }
+.help.err { color: var(--negative); font-weight: 600; }
+.help.warn { color: var(--warning-text); font-weight: 600; }
+.fseg { display: flex; padding: 3px; border-radius: 13px; background: var(--fill); gap: 2px; }
+.fseg span { flex: 1; text-align: center; padding: 9px 8px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.fseg span.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.ph .fseg span { padding: 11px 6px; }
+.checkrow { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); font-size: 13px; color: oklch(0.36 0.08 65); font-weight: 600; line-height: 1.45; }
+.box { width: 18px; height: 18px; border-radius: 6px; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.box.off { background: var(--surface); border: 1.5px solid var(--fill-strong); }
+.scrim { position: absolute; inset: 0; background: oklch(0.16 0.008 260 / 0.38); }
+
+/* ---- Canvas furniture (labels on the boards themselves) ---- */
+.board { padding: 48px; display: flex; flex-direction: column; gap: 36px; }
+.board-h h2 { font-size: 28px; font-weight: 800; }
+.board-h p { font-size: 14px; color: var(--muted); font-weight: 500; line-height: 1.6; margin-top: 8px; max-width: 1100px; }
+.board-h p b { color: var(--fg); }
+.sec-h { display: flex; gap: 12px; align-items: flex-start; }
+.sec-n { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sec-h h3 { font-size: 16px; font-weight: 800; }
+.sec-h p { font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.55; margin-top: 3px; max-width: 980px; }
+.frame-l { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+.stage { position: relative; border-radius: 28px; background: oklch(0.9 0.005 90); overflow: hidden; }
+.callout { position: absolute; z-index: 40; display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: oklch(0.55 0.2 300); color: white; font-size: 11px; font-weight: 800; box-shadow: 0 4px 12px oklch(0.3 0.15 300 / 0.35); white-space: nowrap; }
+.callout::before { content: attr(data-n); width: 16px; height: 16px; border-radius: 50%; background: white; color: oklch(0.45 0.2 300); display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+
+/* ===================== Accounts additions ===================== */
+.pill-stale { background: var(--warning-tint); color: var(--warning-text); }
+.pill-stale.pulse { animation: stale-pulse 2.6s ease-in-out infinite; }
+@keyframes stale-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px oklch(0.72 0.14 75 / 0.22); } }
+.pill-derived { background: oklch(0.94 0.03 258); color: oklch(0.42 0.1 258); }
+.chg-up { color: var(--positive); } .chg-down { color: var(--negative); }
+.chg-out { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .pill-stale.pulse { animation: none; } }
+
+/* Hidden radios that hold the pick (All or an account) */
+.pk-in { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+label.pk, label.sx { cursor: pointer; }
+
+/* Cover flow (as the Subscriptions final design) */
+.cstage { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; outline: none; border-radius: 18px; }
+.cstage:active { cursor: grabbing; }
+.cstage:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.cstage .sx { transition: transform 520ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 380ms, filter 380ms !important; -webkit-user-drag: none; }
+.chint { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 70; display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; background: oklch(1 0 0 / 0.72); border: 1px solid var(--surface-line); font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); pointer-events: none; }
+.chint kbd { font: inherit; font-weight: 800; padding: 0 5px; border-radius: 5px; background: var(--fill); color: var(--fg); }
+.stg { position: absolute; inset: 0; border-radius: inherit; opacity: 0; z-index: -2; transition: opacity 650ms ease; pointer-events: none; }
+.stage-dark { --fg: oklch(0.97 0.004 260); --muted: oklch(1 0 0 / 0.62); --divider: oklch(1 0 0 / 0.14); --fill: oklch(1 0 0 / 0.12); --fill-strong: oklch(1 0 0 / 0.22); --accent-text: var(--on-card-lime); --surface: oklch(0.22 0.012 260); --surface-line: oklch(1 0 0 / 0.1); color: var(--fg); border-color: transparent !important; }
+.stage-dark .btn-soft { background: oklch(1 0 0 / 0.14); color: var(--fg); }
+.stage-dark .btn-icon { background: oklch(1 0 0 / 0.14); color: var(--fg); border-color: transparent; }
+.stage-dark .chint { background: oklch(0 0 0 / 0.35); border-color: oklch(1 0 0 / 0.12); }
+.stage-dark .pill-off { background: oklch(1 0 0 / 0.14); color: var(--fg); }
+.stage-dark .pill-stale { background: oklch(0.8 0.13 80 / 0.28); color: oklch(0.93 0.09 85); }
+.stage-deep .pk-bar { background: var(--pick-soft, var(--on-card-lime)) !important; transition: background 500ms; }
+.stage-deep .btn-primary { background: var(--pick-soft, var(--on-card-lime)); color: var(--pick-ink, var(--ink)); transition: background 500ms, color 500ms; }
+.stage-deep .chint kbd { background: var(--pick-soft, var(--fill)); color: var(--pick-ink, var(--fg)); }
+.cnav { display: none; }
+@media (prefers-reduced-motion: reduce) { .cstage .sx, .stg { transition: none !important; } }
+
+/* The hero panes: one per pick, only the picked one shows */
+.hp { display: none; }
+
+/* Hero stats */
+.hstat { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.hstat .k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.hstat .v { font-size: 17px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hstat .s { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Account tiles (the Cards tiles' grammar) */
+.atile { position: relative; isolation: isolate; flex-shrink: 0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow); overflow: hidden; }
+.atile .t-muted { color: var(--on-card-muted); font-size: 11px; font-weight: 600; }
+.atile .t-faint { color: var(--on-card-faint); font-size: 10.5px; font-weight: 600; }
+.atile .t-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--on-card-fill); white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.atile .t-pill.stale { background: oklch(0.8 0.13 80 / 0.38); color: oklch(0.97 0.05 90); animation: stale-pulse 2.6s ease-in-out infinite; }
+.atile.off { filter: grayscale(0.85); opacity: 0.62; box-shadow: none; }
+.atile .bank { width: 28px; height: 28px; border-radius: 9px; background: var(--on-card-fill); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+.tilewrap { position: relative; flex-shrink: 0; display: block; }
+.tilewrap .tick { display: none; }
+@media (prefers-reduced-motion: reduce) { .atile .t-pill.stale { animation: none; } }
+
+/* Treemap ("Where it sits") */
+.tmap { position: relative; }
+.tblock { position: absolute; border-radius: 14px; padding: 12px 14px; color: var(--on-card); overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; isolation: isolate; transition: transform 160ms var(--ease-out), opacity 240ms, filter 240ms; }
+.tblock b { font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tblock .tb-s { font-size: 11px; font-weight: 600; color: var(--on-card-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tblock .tb-v { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.tblock .tb-p { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 700; color: var(--on-card-faint); }
+label.tblock:hover { transform: translateY(-2px); }
+.tgroup-l { position: absolute; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+
+/* Charts */
+.chart { display: block; overflow: visible; }
+.chart text { font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; }
+.acm { transition: opacity 260ms ease, filter 260ms ease; }
+.axis-t { font-size: 10.5px; font-weight: 700; fill: var(--muted); }
+.axis-l { stroke: var(--divider); stroke-dasharray: 3 4; }
+.vlabel { font-size: 11px; font-weight: 800; fill: var(--fg); }
+.hatch-fill { fill: url(#hatch); }
+
+/* Snapshot calendar */
+.scal { display: grid; gap: 6px; align-items: center; }
+.scal .sc-h { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.scal .sc-h.now { color: var(--fg); }
+.scell { position: relative; height: 44px; border-radius: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 800; transition: opacity 240ms; }
+.scell small { font-size: 9px; font-weight: 700; opacity: 0.8; margin-top: 1px; }
+.scell.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); font-weight: 700; }
+.scell.stale { background: repeating-linear-gradient(135deg, oklch(0.95 0.05 85) 0 6px, oklch(0.98 0.02 85) 6px 12px); color: var(--warning-text); border: 1.5px dashed oklch(0.72 0.14 75 / 0.6); }
+.scell.closed { background: var(--fill); color: var(--muted); font-weight: 700; }
+.scell.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* Account rows (direction C) */
+.arow { display: grid; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--divider); }
+.arow:last-child { border-bottom: 0; }
+.qinp { height: 36px; border-radius: 11px; border: 1px solid var(--surface-line); background: var(--surface); padding: 0 12px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; box-shadow: inset 0 1px 1px oklch(0 0 0 / 0.02); }
+.qinp .pre { color: var(--muted); font-weight: 600; }
+.qinp.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.qinp.ghost { color: var(--muted); font-weight: 600; }
+
+/* Passbooks (direction D) */
+.pbook { position: relative; isolation: isolate; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; transition: transform 160ms var(--ease-out), box-shadow 200ms, opacity 240ms; }
+label.pbook:hover { transform: translateY(-2px); }
+.pbook .spine { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
+
+/* Paper laid on the green stage: back to the light tokens */
+.on-paper { --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --divider: oklch(0 0 0 / 0.08); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07); --accent-text: oklch(0.42 0.14 145); color: var(--fg); }
+.stage-dark .on-paper .btn-soft { background: var(--fill); color: var(--fg); }
+.stage-dark .on-paper .btn-icon { background: var(--surface); color: var(--muted); border-color: var(--surface-line); }
+.stage-dark .on-paper .pill-off { background: var(--fill); color: var(--muted); }
+.stage-dark .on-paper .pill-stale { background: var(--warning-tint); color: var(--warning-text); }
+
+/* ===================== Income additions ===================== */
+.pill-late { background: var(--warning-tint); color: var(--warning-text); }
+.pill-derived { background: oklch(0.94 0.03 258); color: oklch(0.42 0.1 258); }
+.minibank { width: 18px; height: 18px; border-radius: 6px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--on-card); font-size: 9.5px; font-weight: 800; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2); }
+.pk-in { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+label.pk, label.sx { cursor: pointer; }
+.lede .pt { position: relative; display: inline-block; }
+.lede .pt > b { cursor: help; border-bottom: 1.5px dotted var(--accent-text); padding-bottom: 1px; transition: background 160ms; border-radius: 4px; }
+.lede .pt:hover > b, .lede .pt:focus-visible > b { background: var(--accent-tint); }
+.lede .hc-wrap { font-weight: 500; font-size: 13px; line-height: 1.4; color: var(--fg); }
+.lede .warn-b { color: var(--warning-text); }
+
+/* Ring texture on marks (the app's RingTexture, as CSS) */
+.rt { position: relative; overflow: hidden; }
+.rt::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: repeating-radial-gradient(circle at calc(100% + 10px) calc(100% + 18px), oklch(1 0 0 / 0.26) 0 1px, transparent 1px 15px); }
+.rt.rt-dark::after { background: repeating-radial-gradient(circle at calc(100% + 10px) calc(100% + 18px), oklch(0 0 0 / 0.14) 0 1px, transparent 1px 15px); }
+
+/* Hero furniture shared by the four variations */
+.hero { position: relative; isolation: isolate; border-radius: 28px; overflow: hidden; }
+.hk { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.hbig { font-size: 64px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.02; }
+.hbig small { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; margin-right: 2px; opacity: 0.8; }
+.hsub { font-size: 13px; font-weight: 600; color: var(--muted); }
+.hfig { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.hfig .k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.hfig .v { font-size: 20px; font-weight: 800; white-space: nowrap; letter-spacing: -0.01em; }
+.hfig .s { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.hfig .v.warn { color: var(--warning-text); }
+.delta { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; background: oklch(1 0 0 / 0.6); color: var(--positive); }
+
+/* Payday river (I1) */
+.river { display: grid; grid-template-columns: 150px 1fr 96px; align-items: stretch; }
+.river .ax { grid-column: 2; position: relative; height: 38px; }
+.river .ax span { position: absolute; top: 20px; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.river .ax span.now { color: var(--fg); }
+.lane { display: contents; }
+.lane > * { transition: opacity 240ms; }
+.lane .ll { display: flex; align-items: center; gap: 10px; height: var(--lh, 54px); cursor: pointer; border-radius: 14px; padding-right: 6px; }
+.lane .ll b { font-size: 13px; font-weight: 800; display: block; line-height: 1.2; }
+.lane .ll small { font-size: 11px; font-weight: 600; color: var(--muted); display: block; }
+.lane .lp { position: relative; height: var(--lh, 54px); }
+.lane .lp::before { content: ""; position: absolute; left: 0; width: var(--now, 81%); top: var(--ly, 50%); height: 0; border-top: 1.5px solid var(--lane, var(--muted)); opacity: 0.3; }
+.lane .lp::after { content: ""; position: absolute; left: var(--now, 81%); right: 0; top: var(--ly, 50%); height: 0; border-top: 1.5px dashed var(--lane, var(--muted)); opacity: 0.5; }
+.lane .lt { display: flex; align-items: center; justify-content: flex-end; font-size: 13px; font-weight: 800; height: var(--lh, 54px); }
+.bead { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; color: var(--on-card); font-size: 9.5px; font-weight: 800; box-shadow: 0 2px 6px oklch(0.3 0.09 155 / 0.28), inset 0 1px 0 oklch(1 0 0 / 0.28); }
+.bead.late { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px oklch(0.72 0.14 75), 0 2px 6px oklch(0.3 0.09 155 / 0.28); }
+.bead.pend { background: var(--warning-tint) !important; border: 2px dashed oklch(0.72 0.14 75); color: var(--warning-text); box-shadow: none; animation: due-pulse 2.2s ease-in-out infinite; }
+.bead.soon { background: oklch(1 0 0 / 0.5) !important; border: 1.5px dashed var(--lane); color: var(--fg); box-shadow: none; }
+.bead-l { position: absolute; transform: translate(0, -50%); font-size: 11px; font-weight: 800; white-space: nowrap; color: var(--fg); pointer-events: none; }
+.bead-l.soon { color: var(--muted); font-weight: 700; }
+.bead-wrap { position: absolute; top: 50%; left: 0; width: 0; height: 0; }
+.bead-wrap.hov > .hc-wrap { left: 50%; margin-left: -125px; bottom: calc(100% + 20px); }
+.todayline { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1.5px solid var(--ink); z-index: 4; pointer-events: none; }
+.todaytag { position: absolute; top: -2px; transform: translateX(-50%); z-index: 5; padding: 3px 9px; border-radius: 999px; background: var(--ink); color: var(--on-ink); font-size: 10px; font-weight: 800; white-space: nowrap; letter-spacing: 0.02em; }
+@keyframes due-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px oklch(0.72 0.14 75 / 0.25); } }
+
+/* Month columns (stacked bars) */
+.mb { display: flex; align-items: flex-end; gap: 14px; position: relative; padding-left: 40px; }
+.mcol { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; position: relative; }
+.mstack { display: flex; flex-direction: column-reverse; gap: 2px; justify-content: flex-start; }
+.mseg { border-radius: 4px; min-height: 3px; transition: opacity 260ms, filter 260ms; }
+.mseg:last-child { border-top-left-radius: 9px; border-top-right-radius: 9px; }
+.mseg.ghost { border: 1.5px dashed var(--c); background: color-mix(in oklch, var(--c) 12%, transparent); }
+.mseg.pend { background: repeating-linear-gradient(135deg, oklch(0.9 0.08 85) 0 5px, oklch(0.96 0.04 85) 5px 10px); border: 1.5px dashed oklch(0.72 0.14 75); }
+.mval { text-align: center; font-size: 11px; font-weight: 800; padding-bottom: 6px; white-space: nowrap; }
+.mval.muted { color: var(--muted); font-weight: 700; }
+.mlab { text-align: center; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); padding-top: 9px; }
+.mlab.now { color: var(--fg); }
+.mcol.nowcol .mstack { filter: drop-shadow(0 0 0 transparent); }
+.mcol.nowcol::before { content: ""; position: absolute; left: -7px; right: -7px; top: -4px; bottom: -6px; border-radius: 14px; background: var(--fill); z-index: -1; }
+.mline { position: absolute; left: 0; right: 0; border-top: 1.5px dashed oklch(0.45 0.1 152 / 0.55); pointer-events: none; z-index: 3; }
+.mline span { position: absolute; right: 0; top: -22px; font-size: 11px; font-weight: 800; color: var(--positive); background: var(--surface); padding: 1px 8px; border-radius: 999px; border: 1px solid var(--surface-line); }
+.mgrid { position: absolute; left: 0; right: 0; z-index: 0; border-top: 1px dashed var(--divider); pointer-events: none; }
+.mgrid span { position: absolute; left: 0; top: -17px; font-size: 10px; font-weight: 700; color: var(--muted); }
+.mcol.hov > .hc-wrap { bottom: auto; top: 0; }
+
+/* Source rows */
+.srow { display: grid; align-items: center; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--divider); }
+.srow:last-child { border-bottom: 0; }
+.srow.off { opacity: 0.55; }
+.spark { display: flex; align-items: flex-end; gap: 3px; height: 28px; }
+.spark i { flex: 1; min-width: 4px; border-radius: 2px; background: var(--c); min-height: 2px; }
+.spark i.z { background: var(--fill-strong); height: 2px !important; }
+.spark i.f { background: transparent; border: 1px dashed var(--c); opacity: 0.6; }
+
+/* Coming up rows */
+.cu { display: grid; grid-template-columns: 46px 1fr auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--divider); }
+.cu:last-of-type { border-bottom: 0; }
+.cu .dd { width: 46px; border-radius: 12px; padding: 5px 0; background: var(--fill); text-align: center; line-height: 1.1; }
+.cu .dd b { display: block; font-size: 17px; font-weight: 800; }
+.cu .dd span { font-size: 10px; font-weight: 800; color: var(--muted); letter-spacing: 0.05em; }
+.cu .dd.late { background: var(--warning-tint); } .cu .dd.late span { color: var(--warning-text); }
+.cu .tt { font-size: 13.5px; font-weight: 700; } .cu .ss { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+.cu .amt { font-size: 15px; font-weight: 800; color: var(--positive); text-align: right; }
+.cu .amt small { display: block; font-size: 11px; font-weight: 700; color: var(--muted); }
+
+/* Bars with ring texture */
+.hbar { height: 10px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.hbar > span { display: block; height: 100%; border-radius: inherit; }
+
+/* Pay rhythm */
+.rhy { display: grid; grid-template-columns: 130px 1fr 96px; gap: 14px; align-items: center; padding: 9px 0; }
+.rhy .rt-axis { position: relative; height: 26px; }
+.rhy .band { position: absolute; top: 3px; bottom: 3px; left: 0; border-radius: 8px; background: var(--accent-tint); opacity: 0.8; }
+.rhy .base { position: absolute; left: 0; right: 0; top: 50%; border-top: 1px solid var(--divider); }
+.rdot { position: absolute; top: 50%; width: 11px; height: 11px; border-radius: 50%; transform: translate(-50%, -50%); background: var(--c); box-shadow: 0 0 0 2px var(--surface); }
+.rdot.late { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px oklch(0.72 0.14 75); }
+.rdot.pend { width: 13px; height: 13px; background: var(--warning-tint); border: 2px dashed oklch(0.72 0.14 75); box-shadow: none; animation: due-pulse 2.2s ease-in-out infinite; }
+.rhy-ticks { display: grid; grid-template-columns: 130px 1fr 96px; gap: 14px; }
+.rhy-ticks > div { position: relative; height: 16px; font-size: 10px; font-weight: 700; color: var(--muted); }
+.rhy-ticks span { position: absolute; transform: translateX(-50%); }
+
+/* Pay calendar */
+.pcal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.pcal .dh { font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); text-align: center; padding-bottom: 2px; }
+.pcal .dc { position: relative; min-height: 64px; border-radius: 12px; background: var(--fill); padding: 6px 7px; display: flex; flex-direction: column; gap: 3px; }
+.pcal .dc.out { background: transparent; border: 1px dashed var(--divider); }
+.pcal .dc.out .n { color: var(--muted); opacity: 0.6; }
+.pcal .dc.today { box-shadow: inset 0 0 0 2px var(--ink); background: var(--surface); }
+.pcal .dc .n { font-size: 11px; font-weight: 800; color: var(--muted); }
+.pcal .dc.has { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); }
+.pcal .chip2 { display: flex; align-items: center; gap: 5px; padding: 2px 7px; border-radius: 7px; font-size: 10.5px; font-weight: 800; color: var(--on-card); white-space: nowrap; overflow: hidden; }
+.pcal .chip2.pend { background: var(--warning-tint) !important; color: var(--warning-text); border: 1.5px dashed oklch(0.72 0.14 75); }
+.pcal .chip2.soon { background: oklch(1 0 0) !important; color: var(--fg); border: 1.5px dashed var(--c); }
+
+/* Legend dots */
+.lg { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.lg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.lg i.dash { border: 1.5px dashed var(--muted); background: transparent; }
+.lg i.hat { background: repeating-linear-gradient(135deg, oklch(0.9 0.08 85) 0 3px, oklch(0.96 0.04 85) 3px 6px); border: 1px dashed oklch(0.72 0.14 75); }
+
+/* Round 3 visuals: pickable blocks, tiles and bubbles keep their hover cards (the ring texture needs no clipping) */
+.pickable.rt { overflow: visible !important; }
+.bt { position: relative; isolation: isolate; display: flex; flex-direction: column; padding: 16px; border-radius: 22px; color: var(--on-card); min-width: 0; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.22); }
+.dt-pill { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: oklch(1 0 0 / 0.18); white-space: nowrap; color: var(--on-card); }
+/* Dark stage for the wheel (I3) */
+.stage-deep { background: linear-gradient(155deg, var(--card-emerald-from), var(--card-emerald-to)); color: var(--on-card); --fg: oklch(0.97 0.004 260); --muted: oklch(1 0 0 / 0.62); --divider: oklch(1 0 0 / 0.14); --fill: oklch(1 0 0 / 0.1); --fill-strong: oklch(1 0 0 / 0.2); --surface: oklch(0.22 0.04 160); --surface-line: oklch(1 0 0 / 0.14); --accent-text: var(--on-card-lime); --accent-tint: oklch(1 0 0 / 0.14); }
+.stage-deep .btn-primary { background: var(--on-card-lime); color: var(--ink); }
+.stage-deep .btn-ghost { background: oklch(1 0 0 / 0.14); color: var(--fg); border-color: transparent; box-shadow: none; }
+.stage-deep .hc { --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --divider: oklch(0 0 0 / 0.08); }
+.stage-deep .hc * { color: inherit; }
+.stage-deep .hc .h, .stage-deep .hc .d, .stage-deep .hc li .nm, .stage-deep .hc .f { color: var(--muted); }
+.stage-deep .pill-on { background: oklch(0.88 0.12 145 / 0.22); color: var(--on-card-lime); }
+.stage-deep .pill-late { background: oklch(0.85 0.12 85 / 0.25); color: oklch(0.94 0.09 88); }
+.stage-deep .pill-due { background: oklch(0.7 0.14 35 / 0.45); color: oklch(0.97 0.04 60); }
+.mchip { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; padding: 7px 0; width: 54px; border-radius: 14px; font-size: 11px; font-weight: 800; letter-spacing: 0.03em; color: var(--muted); cursor: pointer; transition: background 160ms, color 160ms; text-transform: uppercase; }
+.mchip i { width: 20px; height: 4px; border-radius: 2px; background: currentColor; opacity: 0.35; }
+.mchip:hover { background: var(--fill); }
+.mpane { display: none; }
+.pbar { height: 8px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+
+/* Entries ledger */
+.erow { display: grid; align-items: center; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--divider); }
+.erow:last-child { border-bottom: 0; }
+.erow .dim { color: var(--muted); font-weight: 600; }
+.tag { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800; background: var(--fill); color: var(--muted); }
+.tag.bonus { background: oklch(0.94 0.04 300); color: oklch(0.42 0.12 300); }
+.tag.other { background: var(--fill); color: var(--muted); }
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.search { height: 40px; min-width: 250px; border-radius: 999px; background: var(--fill); display: flex; align-items: center; gap: 8px; padding: 0 16px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.pager .pgb { display: inline-flex; align-items: center; gap: 8px; }
+.pager .pgb i { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--surface-line); display: flex; align-items: center; justify-content: center; background: var(--surface); color: var(--fg); font-style: normal; box-shadow: var(--soft-shadow); }
+.mgrp { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 8px; border-bottom: 1px solid var(--divider); font-size: 13px; font-weight: 800; }
+.mgrp span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.menu { position: absolute; z-index: 20; right: 0; top: calc(100% + 6px); width: 190px; padding: 6px; border-radius: 16px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--pop-shadow); display: flex; flex-direction: column; }
+.menu span { padding: 9px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 9px; }
+.menu span.on { background: var(--fill); } .menu span.dng { color: var(--negative); }
+.mini-btn { display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; min-height: 30px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.mini-btn.ok { background: var(--accent-tint); color: var(--accent-text); }
+.mini-btn.warn { background: var(--warning-tint); color: var(--warning-text); }
+.mini-btn.ghost { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); }
+
+/* Matrix (E2) */
+.mx { display: grid; gap: 8px; align-items: stretch; }
+.mx .mh { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); text-align: center; align-self: end; padding-bottom: 4px; }
+.mx .mh.now { color: var(--fg); }
+.mx .mc { position: relative; border-radius: 12px; min-height: 52px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; gap: 1px; }
+.mx .mc small { font-size: 10px; font-weight: 700; opacity: 0.85; }
+.mx .mc.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); font-weight: 700; }
+.mx .mc.late { box-shadow: inset 0 0 0 2px oklch(0.72 0.14 75); }
+.mx .mc.pend { background: repeating-linear-gradient(135deg, oklch(0.9 0.08 85) 0 5px, oklch(0.96 0.04 85) 5px 10px); border: 1.5px dashed oklch(0.72 0.14 75); color: var(--warning-text); }
+.mx .mc.soon { border: 1.5px dashed var(--c); color: var(--fg); background: color-mix(in oklch, var(--c) 8%, transparent); }
+.mx .mc.sel { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+.mx .rl { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 800; min-width: 0; }
+.mx .rl small { display: block; font-size: 11px; font-weight: 600; color: var(--muted); }
+.mx .rt2 { text-align: right; font-size: 13px; font-weight: 800; align-self: center; }
+
+/* Timeline (E3) */
+.tl { position: relative; padding-left: 28px; }
+.tl::before { content: ""; position: absolute; left: 9px; top: 8px; bottom: 8px; width: 2px; background: var(--divider); }
+.tl .it { position: relative; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; padding: 12px 0; }
+.tl .it::before { content: ""; position: absolute; left: -26px; top: 50%; width: 12px; height: 12px; margin-top: -6px; border-radius: 50%; background: var(--c, var(--positive)); box-shadow: 0 0 0 4px var(--surface); }
+.tl .it.pend::before { background: var(--warning-tint); border: 2px dashed oklch(0.72 0.14 75); }
+.tl .it.soon::before { background: var(--surface); border: 2px dashed var(--c); }
+.tl .it .mo { position: absolute; left: -28px; top: -2px; font-size: 10px; }
+.srcpick { display: flex; flex-direction: column; gap: 6px; }
+.srcpick .sp { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 16px; border: 1.5px solid transparent; }
+.srcpick .sp.on { background: var(--surface); border-color: var(--c); box-shadow: var(--soft-shadow); }
+.srcpick .sp b { display: block; font-size: 13px; font-weight: 800; } .srcpick .sp small { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+
+/* Dialog helpers for the forms board */
+.sw { display: inline-flex; gap: 8px; }
+.sw i { width: 26px; height: 26px; border-radius: 9px; display: inline-block; }
+.sw i.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+</style>
+</helmet>
+<div class="chai-app board" style="width:1300px;height:3821px"><div class="board-h"><div class="row" style="gap:14px;flex-wrap:wrap"><h2>Income: read me first</h2><span class="sample">Sample data, made up. Today is Oct 24, 2026</span></div><p>The <b>/income</b> dashboard and its <b>Entries</b> page, as designs to pick from. Every dashboard in the app has the same two parts: a main page (the greeting, a hero of its own, widgets) and a page that lists every record (Cards' Statements, Subscriptions' Renewals, Accounts' Balance history). Income gets both. The shell, the greeting whose figures point, the summary tiles, the dropdowns and the ring texture are the other dashboards'; the heroes are new, as each dashboard gets its own idea. Nothing here is built yet.</p></div>
+<section style="display:flex;flex-direction:column;gap:14px"><div class="sec-h"><span class="sec-n">★★</span><div><h3>Round 3: the layout Prathik described (Z1 to Z7, and the cover's actions)</h3><p>Five rows: 1 the cover (I4) full width; 2 a colourful visual to the left of the entries; 3 one wide Trends card, This year and last with a switch to Month by month and Pay rhythm; 4 every source; 5 the Pay calendar beside Pay changes, drawn as bars in each source's colour (By % or In ₹). The cover now carries the pick's details and actions, as on the other dashboards: Mark received (while pending), Record income, Edit source, a ⋯ menu and a link into the source's entries.</p></div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px"><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">Z1</span><b style="font-size:15px">Income map (picked, with the heatmap)</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">Blocks sized by what each pays; the Cards-style heatmap sits under the cover.</b> The cost map's grammar: a block per source in its colour, sized by what landed this year or by its usual month, the next payment on each, and the inactive ones under Not in the map.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">Z2</span><b style="font-size:15px">Bento</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">A tile per source.</b> Salary is the big tile, the RSUs wide, the rest small; each has a year of months in white bars (dashed for a payment still to come), what it pays so far or usually, its next date and where it lands.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">Z3</span><b style="font-size:15px">Bubbles</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">The area of each is what it pays.</b> Packed bubbles on a ringed panel: the salary and the RSUs dominate, the interest and dividends are small. Same Received / A usual month switch.</div></div></div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px"><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">Z4</span><b style="font-size:15px">Payday orbits</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">A ring per source, you in the middle.</b> A planet's size is what it pays; how far round its ring it sits is how far through its cycle it is. The line at the top is payday; a planet that passes it unpaid turns amber and pulses.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">Z5</span><b style="font-size:15px">Coins</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">Every coin is ₹10,000.</b> The year as a jar of coins, in each source's colour, dashed for the ones still to come, amber for the pending one.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">Z6</span><b style="font-size:15px">Payday dial</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">The days of the month round a dial.</b> A ring per source; a dot for each payment on the day it landed, the shaded stretch where it usually lands, a hand for today and the next payday in the middle.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">Z7</span><b style="font-size:15px">Vials</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">How full is the year.</b> A beaker of the whole year filling in layers, dashed for what's still to come, and a test tube per source showing how full its own year is.</div></div></div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px"><div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 9px;border-radius:999px;font-size:11px">Pick</span><div><b style="font-size:14px">Every visual drives the page</b><div class="card-note" style="margin-top:4px;font-size:12.5px">Pick a block, tile or bubble and the cover, the entries, the sources, the pay rhythm and the calendar follow it; the entries card's All sources chip puts it back.</div></div></div></div><div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 9px;border-radius:999px;font-size:11px">Forms</span><div><b style="font-size:14px">Cover actions board</b><div class="card-note" style="margin-top:4px;font-size:12.5px">IncomeZForms draws the cover on a pending source with its ⋯ menu open, Edit source, Mark received (Record income on the pending entry), the Undo toast and the delete confirm.</div></div></div></div></div></section>
+<section style="display:flex;flex-direction:column;gap:14px"><div class="sec-h"><span class="sec-n">★</span><div><h3>Round 2: the picked hero (I4, Year in columns), with different widgets</h3><p>Prathik picked I4 on 2026-10-24 and asked for the same hero with different widgets: the Sources table from I4, Pay calendar, Pay rhythm, This year and last, an entries card like the other dashboards have, and some new ones. Never more than two widgets in a row. Four pages, Y1 to Y4, on the first canvas page.</p></div></div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px"><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">Y1</span><b style="font-size:15px">Everyday</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">Records and what's next first.</b> Entries beside Coming up, then Pay calendar beside Pay rhythm, the Sources table, This year and last beside Financial year, then What's ahead beside Salary, investments and one-offs.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">Y2</span><b style="font-size:15px">Planner</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">Looking forward first.</b> Financial year beside What's ahead, Pay calendar beside Coming up, Sources, This year and last beside Pay rhythm, and a wide Entries card at the end with its Tag and Landed in columns.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">Y3</span><b style="font-size:15px">Analyst</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">The comparison first, wide.</b> This year and last across the page (switch it to Month by month for paired columns), then Salary, investments and one-offs beside Where it lands, Sources, Pay rhythm beside Pay changes, and Pay calendar beside Entries.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">Y4</span><b style="font-size:15px">Records-led</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">Like Subscriptions' payments.</b> A wide Entries card straight under the hero (switch it to Pay changes), then Sources, Pay rhythm beside What's ahead, This year and last beside Pay changes, and Pay calendar beside Financial year.</div></div></div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px"><div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 9px;border-radius:999px;font-size:11px">New</span><div><b style="font-size:14px">Financial year</b><div class="card-note" style="margin-top:4px;font-size:12.5px">India's Apr to Mar year: received so far, what's still expected at each source's usual amount (no bonus assumed, so it's a floor), against the last financial year and against the same point of it. Useful at tax time; it computes nothing about tax.</div></div></div></div><div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 9px;border-radius:999px;font-size:11px">New</span><div><b style="font-size:14px">What's ahead</b><div class="card-note" style="margin-top:4px;font-size:12.5px">The next six months from each schedule, stacked by source, with the lumpy ones named (the RSU vests in Nov and Feb).</div></div></div></div><div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 9px;border-radius:999px;font-size:11px">New</span><div><b style="font-size:14px">Salary, investments and one-offs</b><div class="card-note" style="margin-top:4px;font-size:12.5px">The year by category, and what your investments pay a month (FD interest and dividends at their usual amounts: ₹8,200, 3.6% of a usual month).</div></div></div></div><div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 9px;border-radius:999px;font-size:11px">New</span><div><b style="font-size:14px">Pay changes</b><div class="card-note" style="margin-top:4px;font-size:12.5px">Every payment 2% or more off the one before it (a raise, a bigger vest, a lower dividend). Also a switch on the Entries card.</div></div></div></div><div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 9px;border-radius:999px;font-size:11px">Also</span><div><b style="font-size:14px">The chips drive the page</b><div class="card-note" style="margin-top:4px;font-size:12.5px">Pick a source in the hero and the Entries card, Sources table, Pay rhythm and Pay calendar follow it; the rest of the sources fade or go. The Month by month switch there and the Month by month switch in This year and last both work.</div></div></div></div><div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 9px;border-radius:999px;font-size:11px">Also</span><div><b style="font-size:14px">Entries card</b><div class="card-note" style="margin-top:4px;font-size:12.5px">Newest first with a link to the whole Entries page (E1 Ledger from round 1 is the proposed one), and a footer like Subscriptions' payments.</div></div></div></div></div></section>
+<section style="display:flex;flex-direction:column;gap:14px"><div class="sec-h"><span class="sec-n">1</span><div><h3>Round 1, the dashboard: four heroes</h3><p>Same greeting, same attention strip (pending income is called out, as the PRD asks), and each its own idea for the hero. Under it, widgets built from the same library, arranged differently each time.</p></div></div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px"><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">I1</span><b style="font-size:15px">Payday river</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">Every source is a lane across the year.</b> A bead is a payment, sized by its amount: solid when it landed, ringed in amber when it landed more than 3 days late, dashed when pending or still to come. Today is a line through the lanes. Pick a lane to follow one source. Light, on the mint feature tile.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">I2</span><b style="font-size:15px">Money flow</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">Sources flow into the accounts they land in.</b> A flow map (Sankey): a ribbon as wide as the money it carries, with the pending dividend drawn as a dashed amber ribbon on its way. Pick a source or an account and the rest fades; the facts under it change to that pick's.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">I3</span><b style="font-size:15px">Income wheel</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">The year as a wheel, a spoke per month.</b> Each spoke is as tall as what landed in that month, stacked by source; expected months are outlined. Pick a month (the chips round the wheel) and its payments open on the right, with how much of what's expected has landed. On the deep green stage, like Accounts' hero.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">I4</span><b style="font-size:15px">Year in columns</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">The plain one, done well.</b> Twelve stacked columns, a usual-month line, a By source / Regular and bonus switch, and chips that light up one source across the year. The figure and its words change with the pick. The most data in the least space.</div></div></div></section>
+<section style="display:flex;flex-direction:column;gap:14px"><div class="sec-h"><span class="sec-n">2</span><div><h3>The widgets</h3><p>Each answers a question about income that none of the other dashboards do. Every one has a hover card, and the switches work without script.</p></div></div><ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:13.5px;line-height:1.6;font-weight:500;max-width:1100px"><li><b>Month by month</b>: what landed each month, by source or as regular / bonus / one-off. Pending and expected income is outlined and never added to a total.</li><li><b>Sources</b>: the master list (F-IN-01): usual amount, what it's worth a month, received this year, a year of months as a sparkline, the next one, where it lands, and whether it's on track.</li><li><b>Coming up</b>: pending first, then what each source's schedule says is next, with Mark received on the pending one.</li><li><b>Where it lands</b>: which account each source pays into and how much of the year went to each.</li><li><b>Pay rhythm</b>: how many days after its expected date each payment landed, per source. This is why the entry has an expected date and a received date.</li><li><b>This year, and last</b>: the running total against the same days of 2025, and which sources grew.</li><li><b>Where it comes from</b>, <b>Regular, bonus and one-off</b>: the mix by source, and what a usual month is without the bonuses (the March bonus makes the year lumpy).</li><li><b>Pay calendar</b>: the month with each payday on its day.</li></ul></section>
+<section style="display:flex;flex-direction:column;gap:14px"><div class="sec-h"><span class="sec-n">3</span><div><h3>The Entries page: three layouts</h3><p>/income/entries. Header with the period pill, Refresh and Record income, summary tiles, then the records. As on the other two, it's every payment in the period.</p></div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px"><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">E1</span><b style="font-size:15px">Ledger</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">Renewals' layout.</b> Tiles, All / Upcoming / Pending / Received, source / account / tag filters, then month groups with Needs attention and Coming up on top. A row has expected date, amount, status, received date, where it landed, tag and the change on the payment before. Mark received sits on the rows that need it.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">E2</span><b style="font-size:15px">Pay grid</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">Sources down, months across.</b> Which payments landed when, at a glance; late, pending and still-expected cells look different. Pick a cell for the entry behind it, with the source's whole year beside the latest entries.</div></div><div class="card glass" style="gap:8px;padding:18px 20px"><div class="row" style="gap:10px"><span class="pill pill-ink">E3</span><b style="font-size:15px">Passbook</b></div><div class="card-note" style="font-size:13px"><b style="color:var(--fg)">One source's whole history.</b> Pick a source on the left; on the right its facts (last raise, next payment, on time), a year of bars and a timeline of every payment, expected ones first. A salary shows its raises.</div></div></div></section>
+<section style="display:flex;flex-direction:column;gap:14px"><div class="sec-h"><span class="sec-n">4</span><div><h3>Numbers (definitions)</h3><p>These are the money rules the mockups use, so every figure on every board agrees. Each needs a yes before it's built, and then a test that proves the math (CLAUDE.md).</p></div></div><ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:13.5px;line-height:1.6;font-weight:500;max-width:1100px"><li><b>A month's income</b> is what was received in it, by the date it landed. Pending and expected entries are shown but never counted.</li><li><b>A usual month (expected)</b> is the sum of each active source's monthly equivalent: its amount over the months in its cycle (₹1,46,700: salary ₹1,38,500 + FD ₹6,133 + dividends ₹2,067). One-time sources have none. <b>The greeting's "about ₹1,61,880 a month"</b> is different: what was received, over the 10 months so far.</li><li><b>Against last year</b> compares Jan 1 to today in both years (₹16,18,800 against ₹14,30,700, 13%).</li><li><b>Late</b> is received more than 3 days after it was expected. <b>Pending</b> is expected by today and not received. <b>Upcoming</b> comes from each source's schedule, at its usual amount; nothing is stored until it's received.</li><li><b>Change</b> compares a payment with the one before it from the same source and tag; under 2% it isn't shown (Subscriptions' price-change rule).</li><li>Loan repayments and money moved between your own accounts are never income (PRD).</li></ul></section>
+<section style="display:flex;flex-direction:column;gap:14px"><div class="sec-h"><span class="sec-n">5</span><div><h3>Open decisions</h3><p>Each has the default the mockups show. None is answered yet.</p></div></div><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+<div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 0px;border-radius:999px;font-size:11px">1</span><div><b style="font-size:14px">Which usual month leads</b><div class="card-note" style="margin-top:4px;font-size:12.5px">Shown: the sources' usual month (₹1,46,700, when every source pays) in the figures, and the received average in the greeting. Two numbers can confuse; pick one, or keep both with these labels.</div></div></div></div>
+<div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 0px;border-radius:999px;font-size:11px">2</span><div><b style="font-size:14px">Late means more than 3 days</b><div class="card-note" style="margin-top:4px;font-size:12.5px">Shown: 3 days after the expected date, for every source. Or a number per source (a salary 1 day, a dividend 7).</div></div></div></div>
+<div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 0px;border-radius:999px;font-size:11px">3</span><div><b style="font-size:14px">A payment counts in the month it landed</b><div class="card-note" style="margin-top:4px;font-size:12.5px">Shown, so a salary that arrives on Mar 31 for April counts in March. Or count it in the month it was expected.</div></div></div></div>
+<div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 0px;border-radius:999px;font-size:11px">4</span><div><b style="font-size:14px">New columns on IncomeSources</b><div class="card-note" style="margin-top:4px;font-size:12.5px">Shown: color (the shared palette), icon, and the account it usually lands in (so a new entry starts filled in, like Subscriptions' charged-to). Or none, and colour comes from the category.</div></div></div></div>
+<div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 0px;border-radius:999px;font-size:11px">5</span><div><b style="font-size:14px">What a tag means</b><div class="card-note" style="margin-top:4px;font-size:12.5px">Shown: Regular is anything on a schedule (salary, interest, dividends), Bonus is variable pay on top (the March bonus), Other is a one-off (the tax refund). The bonus is an entry on the Salary source, not a source of its own.</div></div></div></div>
+<div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 0px;border-radius:999px;font-size:11px">6</span><div><b style="font-size:14px">Pending entries</b><div class="card-note" style="margin-top:4px;font-size:12.5px">Shown: upcoming income is computed and only saved when received, as on Subscriptions. A Pending entry exists only when someone adds one. Or the app writes a Pending entry for every expected payment.</div></div></div></div>
+<div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 0px;border-radius:999px;font-size:11px">7</span><div><b style="font-size:14px">RSU and ESPP</b><div class="card-note" style="margin-top:4px;font-size:12.5px">Decided 2026-10-24: not income. A vest or an ESPP purchase lands shares, not cash, and ESPP is already taken out of the salary credit, so they live in Investments (source RSU or ESPP). Dividends on those shares are income.</div></div></div></div>
+<div class="card glass" style="gap:6px;padding:16px 20px"><div class="row" style="gap:10px;align-items:flex-start"><span class="sec-n" style="min-width:24px;width:auto;height:24px;padding:0 0px;border-radius:999px;font-size:11px">8</span><div><b style="font-size:14px">Irregular sources</b><div class="card-note" style="margin-top:4px;font-size:12.5px">Dividends have a usual amount of ₹6,200 and a usual day, so a missing one shows as pending the day after its usual date. Or sources can be marked Irregular, and never go pending.</div></div></div></div>
+</div></section>
+<section style="display:flex;flex-direction:column;gap:14px"><div class="sec-h"><span class="sec-n">6</span><div><h3>Not here yet</h3><p>Phone layouts, the states (no income yet, one source, a month with nothing), and the forms (Add source, Record income, Edit entry, Mark received) come once a direction is picked, as the other dashboards did it.  Sample figures are not reconciled with the Accounts mock-ups' Came in; the built page computes both from the Sheet.</p></div></div></section></div>
+</x-dc>
+</body>
+</html>

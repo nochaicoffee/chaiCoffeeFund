@@ -126,8 +126,8 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 
 | ID | Feature | Pri | Status |
 |---|---|---|---|
-| F-IN-01 | Income sources, and an add source form | P0 | Designed |
-| F-IN-02 | Income entries, expected vs. received, with pending income called out and a monthly equivalent | P0 | Designed (computation built) |
+| F-IN-01 | Income sources, and an add source form | P0 | Designed (final 2026-10-24, #184) |
+| F-IN-02 | Income entries, expected vs. received, with pending income called out and a monthly equivalent | P0 | Designed (final 2026-10-24, #184; computation partly built) |
 
 ### Loans (`F-LO`)
 
@@ -242,6 +242,22 @@ Confirmed by Prathik on 2026-10-22 (he accepted the defaults the mockups show fo
 - **Closing** takes a day not in the future and not before the account's latest balance. A balance can't be moved onto a day that already has one.
 - **Colour** is an optional per-account choice of the six card colours, falling back to the purpose's; **last 4** is optional text.
 
+### F-IN-01 and F-IN-02: Income, how the numbers are defined
+
+Confirmed by Prathik on 2026-10-24 (he accepted the defaults the mockups show for decisions 1–8 in [`design/income.md`](design/income.md), except 7, which he changed); each becomes a tested pure function in `lib/aggregate/`.
+
+- **RSU vests and ESPP purchases are not income.** They land shares, not cash, and ESPP is already taken out of the salary credit, so they live in Investments (`InvestmentTransactions` with source RSU or ESPP). Selling those shares isn't income either. Dividends on them are.
+- **A month's income** is what was received in it, by the date it landed. Pending and expected payments are shown, never counted.
+- **A usual month** is the sum of each active source's amount over the months in its cycle; one-time sources have none. The page's figures lead with it. The greeting's "about … a month" is received ÷ the months so far.
+- **Late** is received more than 3 days after it was expected, for every source. **Pending** is a payment whose expected date has passed (from the day after) and that hasn't been received, for every source. **Upcoming** comes from each active source's schedule at its usual amount.
+- **Pending and upcoming payments are computed, never stored.** An `IncomeEntries` row is written only when money is received.
+- **Tags:** Regular is anything on a schedule; Bonus is variable pay on top (an entry on the Salary source); Other is a one-off.
+- **Against last year** compares Jan 1 to today in both years. **The financial year** (Apr–Mar) projection is received + pending + each active source's schedule to Mar 31 at its usual amount, with no bonus assumed.
+- **A pay change** is a payment 2% or more off the one before it from the same source and tag.
+- Loan disbursements and repayments, transfers between your own accounts, and sale proceeds are never income.
+- **The NetApp salary is read from the HDFC account statements** (#187): a deposit whose narration matches the source's statement text becomes a received entry, once. Everything else is recorded in the app.
+- Sources get an optional colour, icon and the account they usually land in.
+
 ## 9. Non-functional requirements
 
 | Area | Requirement |
@@ -304,3 +320,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.6 | 2026-10-22 | Accounts numbers defined (carry-forward totals, stale after 30 days, closing, money out and Everything else, saved, same-day replace, 20% drop warning), per the Accounts design (#155). |
 | 1.7 | 2026-10-22 | Accounts page built end to end (F-AC-01 and F-AC-02), to the design in #155. The Flow map and an Undo toast after saving a balance are not built. |
 | 1.8 | 2026-10-23 | Bank account balances from emailed statements (F-AC-03, F-AC-04, ADR 0008): HDFC, Slice and Jupiter; the recorded balance always wins and a disagreement waits for an answer. |
+| 1.9 | 2026-10-24 | Income numbers defined (§8 F-IN-01/02): RSU and ESPP are not income, a month counts what landed, late after 3 days, pending computed not stored, the salary read from HDFC statements. Income design final: Z1 with the E1 Ledger and E3 Passbook (#184). |

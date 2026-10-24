@@ -12,8 +12,8 @@ import { formatInr, formatInrExact } from "@/lib/format/money";
 import { cardGradient, cardSwatch } from "./CardTile";
 import { StatusPill } from "./StatusPill";
 
-/** The design's eleven columns; below `lg` each row stacks into a small two-column card instead. */
-const COLUMNS = "lg:grid-cols-[1.75fr_1fr_1.15fr_0.95fr_0.85fr_0.8fr_0.95fr_0.8fr_0.9fr_1fr_96px]";
+/** The design's eleven columns, which need about 1050px of table to sit without overlapping (the page is 1280px wide by then); below `xl` each row stacks into a small two-column card instead. */
+const COLUMNS = "xl:grid-cols-[1.75fr_1fr_1.05fr_0.95fr_0.85fr_0.8fr_0.95fr_0.8fr_0.9fr_1.1fr_96px]";
 const HEADERS = ["Card", "Statement date", "Due date", "Total due", "Min due", "Status", "Amount paid", "Paid on", "Paid from", "Variance"];
 
 const STATUS_OPTIONS: [StatusFilter, string][] = [
@@ -33,7 +33,7 @@ function Cell({ label, className = "", children }: { label?: string; className?:
   return (
     <div role="cell" className={`min-w-0 ${className}`}>
       {label && (
-        <span aria-hidden="true" className="block text-[10px] font-bold tracking-[0.03em] text-muted uppercase lg:hidden">
+        <span aria-hidden="true" className="block text-[10px] font-bold tracking-[0.03em] text-muted uppercase xl:hidden">
           {label}
         </span>
       )}
@@ -44,13 +44,19 @@ function Cell({ label, className = "", children }: { label?: string; className?:
 
 function VarianceValue({ statement, partPaid }: { statement: Statement; partPaid: boolean }) {
   // A part-paid pending bill shows what's left to pay instead (#84).
-  if (partPaid) return <span className="font-bold whitespace-nowrap text-muted">{formatInrExact(remainingDue(statement))} left</span>;
+  if (partPaid) {
+    return (
+      <span className="font-bold text-muted">
+        <span className="whitespace-nowrap">{formatInrExact(remainingDue(statement))}</span> left
+      </span>
+    );
+  }
   const variance = paymentVariance(statement);
   if (variance.kind === "none") return NONE;
   if (variance.kind === "full") {
     return (
-      <span className="inline-flex items-center gap-[5px] font-bold text-accent-text">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <span className="inline-flex items-center gap-[5px] font-bold whitespace-nowrap text-accent-text">
+        <svg className="shrink-0" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <polyline points="5 12.5 10 17.5 19 7" />
         </svg>
         Paid in full
@@ -58,8 +64,9 @@ function VarianceValue({ statement, partPaid }: { statement: Statement; partPaid
     );
   }
   return (
-    <span className={`font-bold whitespace-nowrap ${variance.kind === "under" ? "text-negative" : "text-fg"}`}>
-      {variance.kind === "over" ? "Overpaid" : "Underpaid"} {formatInrExact(variance.amount)}
+    // The label may drop above the amount in a narrow column; the amount itself never splits.
+    <span className={`font-bold ${variance.kind === "under" ? "text-negative" : "text-fg"}`}>
+      {variance.kind === "over" ? "Overpaid" : "Underpaid"} <span className="whitespace-nowrap">{formatInrExact(variance.amount)}</span>
     </span>
   );
 }
@@ -84,11 +91,11 @@ function StatementRow({
   const amountPaid = paid || partPaid ? statement.amountPaid ?? 0 : undefined;
   const paidOn = statement.paidDate ? (ISO_DATE_PATTERN.test(statement.paidDate) ? formatDate(statement.paidDate) : statement.paidDate) : undefined;
   // On a phone, blank payment fields (all of them, on an unpaid pending row) are left out.
-  const shownOnPhone = (value: unknown) => (value === undefined ? "max-lg:hidden" : "");
+  const shownOnPhone = (value: unknown) => (value === undefined ? "max-xl:hidden" : "");
   return (
     <div
       role="row"
-      className={`grid grid-cols-2 items-start gap-x-4 gap-y-2.5 border-b border-divider px-3.5 py-3.5 text-[13px] tabular-nums lg:min-h-[60px] lg:items-center lg:gap-3 lg:py-2 ${COLUMNS}`}
+      className={`grid grid-cols-2 items-start gap-x-4 gap-y-2.5 border-b border-divider px-3.5 py-3.5 text-[13px] tabular-nums xl:min-h-[60px] xl:items-center xl:gap-3 xl:py-2 ${COLUMNS}`}
     >
       <Cell className="flex items-center gap-2.5">
         <span className="h-5 w-[30px] shrink-0 rounded-[5px] shadow-[0_2px_5px_oklch(0_0_0/0.18)]" style={{ background: cardGradient(card?.color) }} aria-hidden="true" />
@@ -109,7 +116,7 @@ function StatementRow({
         {formatInrExact(statement.totalAmountDue)}
       </Cell>
       <Cell label="Min due">{formatInrExact(statement.minimumAmountDue)}</Cell>
-      <Cell className="max-lg:col-start-2 max-lg:row-start-1 max-lg:justify-self-end">
+      <Cell className="max-xl:col-start-2 max-xl:row-start-1 max-xl:justify-self-end">
         <StatusPill status={statement.status} />
       </Cell>
       <Cell label="Amount paid" className={`font-bold ${shownOnPhone(amountPaid)}`}>
@@ -121,10 +128,10 @@ function StatementRow({
       <Cell label="Paid from" className={`truncate ${shownOnPhone(paidFrom)}`}>
         <span title={paidFrom}>{paidFrom ?? NONE}</span>
       </Cell>
-      <Cell label="Variance" className={paid || partPaid ? "" : "max-lg:hidden"}>
+      <Cell label="Variance" className={paid || partPaid ? "" : "max-xl:hidden"}>
         <VarianceValue statement={statement} partPaid={partPaid} />
       </Cell>
-      <Cell className={`flex justify-end max-lg:col-span-2 ${paid ? "" : "max-lg:[&>*]:w-full"}`}>{action}</Cell>
+      <Cell className={`flex justify-end max-xl:col-span-2 ${paid ? "" : "max-xl:[&>*]:w-full"}`}>{action}</Cell>
     </div>
   );
 }
@@ -289,7 +296,7 @@ export function StatementsList({
         </div>
       ) : (
         <div role="table" aria-label={`Statements ${periodText}`} className="-mx-4 md:mx-0">
-          <div role="rowgroup" className="max-lg:sr-only">
+          <div role="rowgroup" className="max-xl:sr-only">
             <div role="row" className={`grid gap-3 border-b border-divider px-3.5 pb-2.5 ${COLUMNS}`}>
               {HEADERS.map((h) => (
                 <span key={h} role="columnheader" className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase">

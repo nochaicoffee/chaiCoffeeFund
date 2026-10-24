@@ -1,0 +1,276 @@
+{
+  "pages": [
+    {
+      "id": "readme",
+      "name": "Read me first"
+    },
+    {
+      "id": "r4",
+      "name": "Round 4: visuals without RSU/ESPP (Z8–Z11)"
+    },
+    {
+      "id": "r3",
+      "name": "Round 3: the picked layout (Z1–Z7)"
+    },
+    {
+      "id": "r2",
+      "name": "Round 2: Year in columns + widgets (Y1–Y4)"
+    },
+    {
+      "id": "dash",
+      "name": "Round 1: Dashboard (I1–I4)"
+    },
+    {
+      "id": "entries",
+      "name": "Round 1: Entries page (E1–E3)"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "IncomeReadme.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1300,
+      "h": 3821,
+      "page": "readme"
+    },
+    {
+      "file": "IncomeZ8.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 3534,
+      "page": "r4"
+    },
+    {
+      "file": "IncomeZ9.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 3534,
+      "page": "r4"
+    },
+    {
+      "file": "IncomeZ10.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 3534,
+      "page": "r4"
+    },
+    {
+      "file": "IncomeZ11.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 3562,
+      "page": "r4"
+    },
+    {
+      "file": "IncomeZ1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 3534,
+      "page": "r3"
+    },
+    {
+      "file": "IncomeZ2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 3390,
+      "page": "r3"
+    },
+    {
+      "file": "IncomeZ3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 3390,
+      "page": "r3"
+    },
+    {
+      "file": "IncomeZ4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 3266,
+      "page": "r3"
+    },
+    {
+      "file": "IncomeZ5.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 1600,
+      "h": 3266,
+      "page": "r3"
+    },
+    {
+      "file": "IncomeZ6.dc.html",
+      "x": 8600,
+      "y": 0,
+      "w": 1600,
+      "h": 3281,
+      "page": "r3"
+    },
+    {
+      "file": "IncomeZ7.dc.html",
+      "x": 10320,
+      "y": 0,
+      "w": 1600,
+      "h": 3266,
+      "page": "r3"
+    },
+    {
+      "file": "IncomeZForms.dc.html",
+      "x": 12040,
+      "y": 0,
+      "w": 1900,
+      "h": 2345,
+      "page": "r3"
+    },
+    {
+      "file": "IncomeY1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 3570,
+      "page": "r2"
+    },
+    {
+      "file": "IncomeY2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 3771,
+      "page": "r2"
+    },
+    {
+      "file": "IncomeY3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 3578,
+      "page": "r2"
+    },
+    {
+      "file": "IncomeY4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 3789,
+      "page": "r2"
+    },
+    {
+      "file": "IncomeI1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2515,
+      "page": "dash"
+    },
+    {
+      "file": "IncomeI2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 2458,
+      "page": "dash"
+    },
+    {
+      "file": "IncomeI3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 2482,
+      "page": "dash"
+    },
+    {
+      "file": "IncomeI4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 2638,
+      "page": "dash"
+    },
+    {
+      "file": "IncomeE1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1422,
+      "page": "entries"
+    },
+    {
+      "file": "IncomeE2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 1415,
+      "page": "entries"
+    },
+    {
+      "file": "IncomeE3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 1390,
+      "page": "entries"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-1",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 4 (2026-10-24): RSU and ESPP aren't income any more (decision 7), so the salary is about 93% of the year and Z1's map became one big block. Four visuals for the same slot that still read: Z8 Year rings (each source's own year, every ring the same size), Z9 Lens (the salary, and the rest blown up beside it), Z10 Pay ladder (every payment on a scale that grows ×10 every two steps), Z11 Receipt (the year itemised). Z4 to Z7 on the Round 3 page are redrawn without RSU and ESPP too. Sample data, made up.",
+      "page": "r4"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 3 (2026-10-24): the layout Prathik described. 1 the cover (I4) full width, now with the pick's details and Edit / Mark received / ⋯ actions; 2 a colourful visual beside the entries; 3 a full-width trend card that switches between this year and last, month by month and pay rhythm; 4 every source; 5 the pay calendar beside pay changes drawn as bars (by percent or in rupees). Z1 treemap, Z2 bento tiles, Z3 bubbles; Z1 is the picked visual (2026-10-24) and now has the income heatmap straight under the cover. Z4 orbits, Z5 coins, Z6 payday dial and Z7 vials are the same page with visuals that aren't blocks or tiles. Pick a block, tile or bubble and the cover, entries, sources and calendar follow. Sample data, made up.",
+      "page": "r3"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 2 (2026-10-24): Prathik picked the I4 hero, Year in columns. Four pages with that hero and different widgets, never more than two to a row. Y1 Everyday, Y2 Planner, Y3 Analyst, Y4 Records-led. Every page has Sources, Pay calendar, Pay rhythm, This year and last (with a Month by month switch) and an Entries card; new are Financial year, What's ahead, Salary investments and one-offs, and Pay changes. The source chips in the hero also filter the entries, sources, pay rhythm and calendar. Sample data, made up.",
+      "page": "r2"
+    },
+    {
+      "id": "note-4",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Income, round 1 (2026-10-24). Read this first: what is on the canvas, the money rules the mockups use, and the open decisions with their defaults.",
+      "page": "readme"
+    },
+    {
+      "id": "note-5",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 1 (2026-10-24): the /income dashboard, four directions with the same greeting and each its own hero. I1 Payday river, I2 Money flow, I3 Income wheel, I4 Year in columns. Sample data, made up; today is Oct 24, 2026.",
+      "page": "dash"
+    },
+    {
+      "id": "note-6",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 1 (2026-10-24): the Entries page, /income/entries, the Income counterpart of Cards' Statements, Subscriptions' Renewals and Accounts' Balance history. E1 Ledger (Renewals' layout), E2 Pay grid (sources by month), E3 Passbook (one source's whole history). Sample data, made up.",
+      "page": "entries"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "readme"
+  }
+}
