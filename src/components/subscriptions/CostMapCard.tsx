@@ -7,7 +7,8 @@ import { colorGradient } from "@/lib/format/subscriptionLabels";
 import { RollingNumber } from "../motion/RollingNumber";
 import { RingTexture } from "../RingTexture";
 import { categoryCard, mapCategories, mapLayout, whatIf, type Box, type MapCategory } from "./costMap";
-import { CostMapHover, type HoverCategory } from "./CostMapHover";
+import { BlockCardBody, CategoryCardBody, type HoverCategory } from "./CostMapCards";
+import { CostMapHover } from "./CostMapHover";
 import { CheckIcon, RenewIcon } from "./icons";
 import { Mono, Segmented } from "./parts";
 import { useSize } from "./useSize";
@@ -347,7 +348,11 @@ export function CostMapCard({
           </div>
       )}
 
-      <CostMapHover blocks={blocks} categories={hoverCategories} per={per} picked={picked} pointing={!!pointed && [...pointed].some((id) => blocks.has(id) && !out.has(id))} onActive={reportHover}>
+      <CostMapHover
+        watch={per}
+        renderBlock={(key) => (blocks.has(key) ? <BlockCardBody block={blocks.get(key)!} per={per} picked={picked === key} /> : null)}
+        renderCategory={(key) => (hoverCategories.has(key) ? <CategoryCardBody category={hoverCategories.get(key)!} per={per} /> : null)}
+        pointing={!!pointed && [...pointed].some((id) => blocks.has(id) && !out.has(id))} onActive={reportHover}>
         <div ref={box} className="relative min-h-[360px] flex-1 md:min-h-[440px]">
           {view.blocks.length === 0 ? (
             <p className="absolute inset-0 flex items-center justify-center rounded-[18px] border-[1.5px] border-dashed border-divider px-6 text-center text-[13px] font-medium text-muted">

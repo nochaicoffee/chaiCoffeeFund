@@ -1,7 +1,8 @@
-import { comingUp, flows, moneyItems, type AccountsData } from "@/lib/aggregate/accountFlows";
-import { PURPOSE_COLORS, accountColor, monthEnds, balanceOn, changeSince, dayBefore, daysSinceBalance, highPoint, isClosed, isStale, periodSpan, sharesOfTotal, STALE_DAYS, totalOn, totalSeries, weeklyDates, type BalanceTrendPoint } from "@/lib/aggregate/accounts";
+import { comingUp, moneyItems, type AccountsData, type FlowItem } from "@/lib/aggregate/accountFlows";
+import { checkInGrid } from "@/lib/aggregate/accountCheckIns";
+import { PURPOSE_COLORS, accountColor, monthEnds, balanceOn, changeSince, dayBefore, daysSinceBalance, isClosed, isStale, periodSpan, sharesOfTotal, STALE_DAYS, totalOn, totalSeries, weeklyDates, type BalanceTrendPoint } from "@/lib/aggregate/accounts";
 import { monthOf, type SpendPeriod } from "@/lib/aggregate/cardSpend";
-import { periodPhrase } from "@/lib/aggregate/period";
+import { periodName, periodPhrase } from "@/lib/aggregate/period";
 import { formatDate, formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
 import { optionLabel } from "@/lib/format/labels";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
@@ -23,11 +24,12 @@ import type { SentencePart } from "../cards/summarySentence";
 
 export const ALL = "all";
 
-export interface FigureView {
+/** One of the four facts across the top of the hero's right section. */
+export interface FactView {
   label: string;
   value: string;
   note?: string;
-  /** Amber, for a stale balance. */
+  /** Amber, for something that needs a look. */
   warn?: boolean;
 }
 
@@ -62,9 +64,12 @@ export interface PickView {
   updated: string;
   /** Under the balance: "+₹4,200 since the balance before", or "No balance yet". */
   change: string;
+  /** The same change as a short figure for a strip: "+₹935", "no change", or "" for All and a first balance. */
+  changeShort: string;
   changeTone: "up" | "down" | null;
+  /** What it holds of the total, 0 to 1; null for All, a closed account and one with no balance. */
+  share: number | null;
   line: LineView;
-  figures: FigureView[];
   /** What sits under the hero for this pick. */
   detail: PickDetail;
 }
@@ -76,6 +81,14 @@ export interface MixBlock extends MapEntry {
   /** Its share of what's held, 0 to 1. */
   share: number;
   initial: string;
+  /** Under its name on a big block: "Spending · HDFC Bank". */
+  detail: string;
+  /** "Updated Oct 21", at a big block's foot. */
+  footnote: string;
+  /** An amber pill on a block that needs a look: "Not read · 83 days". */
+  pill: string | null;
+  /** What its hover card says. */
+  card: { bank: string; last4: string | null; purpose: string; updated: string; change: string; changeTone: "up" | "down" | null };
 }
 
 /** One recorded balance in Balance history: what it was, how it moved, and how long since the one before. */
@@ -97,6 +110,17 @@ export interface HistoryRow {
   attention?: AttentionItem;
   /** A bank statement gave this balance. */
   fromStatement?: true;
+}
+
+/** A balance as the dashboard's table shows it: the row, with the account's mark (as on a Subscriptions payment) and where the balance came from. */
+export interface HistoryTableRow extends HistoryRow {
+  /** Days after the balance before, or null for the first. */
+  gapDays: number | null;
+  accountInitial: string;
+  accountColor: ColorKey;
+  accountClosed: boolean;
+  /** "Statement" when a bank statement gave it, else "By hand". */
+  sourceText: string;
 }
 
 /** An account as the forms need it: what to preview, what it holds, and what to pre-fill an edit with. */
@@ -133,14 +157,34 @@ export interface AccountsFormsData {
   total: number;
 }
 
+/** The check-in calendar: accounts by months, each cell the readings of that month. */
+export interface CheckInsView {
+  months: { key: string; label: string }[];
+  rows: {
+    accountId: string;
+    name: string;
+    initial: string;
+    colorKey: ColorKey;
+    purpose: string;
+    closed: boolean;
+    cells: { month: string; monthText: string; state: "read" | "missed" | "open" | "none"; readings: { dateText: string; balanceText: string }[] }[];
+  }[];
+  facts: FactView[];
+}
+
 export interface AccountsPageView {
+  /** What the period pill is set to: "This year", "Last 6 months"... */
+  periodLabel: string;
+  /** Every recorded movement of money in the period, for the hero's Trend to add up over any stretch the pointer measures. */
+  flowItems: FlowItem[];
+  checkIns: CheckInsView;
   /** The Balance history page for each pick (#177), carrying the period: All opens every account, an account opens its own. */
   historyHrefs: Record<string, string>;
   forms: AccountsFormsData;
   picks: PickView[];
   mix: MixBlock[];
   /** Newest first, by pick id: All has every account's readings. */
-  history: Record<string, HistoryRow[]>;
+  history: Record<string, HistoryTableRow[]>;
   /** Balances a bank statement disagreed with, still waiting for an answer. */
   attention: AttentionItem[];
   /** The rest of the page's own data, filled in as each widget is built. */
@@ -169,12 +213,8 @@ function accountPick(data: AccountsData, account: Account, period: SpendPeriod, 
   const days = daysSinceBalance(data.snapshots, account.id, today);
   const stale = isStale(account, data.snapshots, today);
   const closed = isClosed(account);
-  const span = periodSpan(period, today, mine.map((s) => s.date).sort()[0] ?? null);
   const total = totalOn(data.accounts.filter((a) => !isClosed(a)), data.snapshots, today);
   const held = latest?.balance ?? 0;
-  const since = latest ? changeSince([account], data.snapshots, dayBefore(span.from), span.to) : 0;
-  const items = moneyItems(data, latest ? dayBefore(latest.date) : today, today);
-  const billsSince = flows(items.filter((i) => i.date > (latest?.date ?? today)), account.id).expenses;
   const delta = latest && previous ? latest.balance - previous.balance : null;
   return {
     id: account.id,
@@ -193,15 +233,11 @@ function accountPick(data: AccountsData, account: Account, period: SpendPeriod, 
     balanceValue: held,
     updated: !latest ? "No balance yet" : closed ? `Closed ${formatShortDate(latest.date)}` : `Updated ${formatShortDate(latest.date)}${stale ? ` · ${days} days ago` : ""}`,
     change: !latest ? "Add its first balance" : delta === null ? "First balance" : delta === 0 ? "No change since the balance before" : `${delta >= 0 ? "+" : "−"}${formatInr(Math.abs(delta))} since the balance before`,
+    changeShort: delta === null ? "" : delta === 0 ? "no change" : `${delta >= 0 ? "+" : "−"}${formatInr(Math.abs(delta))}`,
     changeTone: delta === null || delta === 0 ? null : delta > 0 ? "up" : "down",
+    share: !latest || closed || total <= 0 ? null : held / total,
     line: lineFor(data, [account], period, today),
     detail: detailFor(data, account.id, period, today, cache),
-    figures: [
-      { label: `Since ${formatShortDate(span.from)}`, value: latest ? `${since >= 0 ? "+" : "−"}${formatInr(Math.abs(since))}` : "—" },
-      { label: "Share of the total", value: closed || total <= 0 ? "—" : `${Math.round((held / total) * 100)}%` },
-      { label: "Out to bills since its last balance", value: formatInr(billsSince), note: "Worked out" },
-      { label: "Updated", value: !latest ? "—" : days === 0 ? "Today" : `${days} days ago`, note: latest ? formatDate(latest.date) : undefined, warn: stale },
-    ],
   };
 }
 
@@ -211,14 +247,9 @@ function allPick(data: AccountsData, period: SpendPeriod, today: string, cache: 
   const firstDate = data.snapshots.map((s) => s.date).sort()[0] ?? null;
   const span = periodSpan(period, today, firstDate);
   const line = lineFor(data, data.accounts, period, today);
-  const high = highPoint(line.points);
   const staleOnes = live.filter((a) => isStale(a, data.snapshots, today));
   const latestDate = data.snapshots.map((s) => s.date).filter((d) => d <= today).sort().at(-1) ?? null;
   const since = changeSince(data.accounts, data.snapshots, dayBefore(span.from), span.to);
-  const monthStart = dayBefore(`${monthOf(today)}-01`);
-  const thisMonth = total - totalOn(data.accounts, data.snapshots, monthStart);
-  const items = moneyItems(data, span.from, span.to);
-  const out = flows(items, null);
   const withBalance = live.filter((a) => balanceOn(data.snapshots, a.id, today));
   const upToDate = withBalance.length - staleOnes.length;
   return {
@@ -238,41 +269,54 @@ function allPick(data: AccountsData, period: SpendPeriod, today: string, cache: 
     balanceValue: total,
     updated: live.length === 0 ? "No accounts yet" : `${live.length} account${live.length === 1 ? "" : "s"} · ${upToDate} up to date`,
     change: data.snapshots.length === 0 ? "Add a balance to begin" : `${since >= 0 ? "+" : "−"}${formatInr(Math.abs(since))} since ${formatShortDate(span.from)}${latestDate && span.to === today ? ` · latest update ${formatShortDate(latestDate)}` : ` to ${formatShortDate(span.to)}`}`,
+    changeShort: "",
     changeTone: since === 0 ? null : since > 0 ? "up" : "down",
+    share: null,
     line,
     detail: detailFor(data, null, period, today, cache),
-    figures: [
-      { label: "This month", value: `${thisMonth >= 0 ? "+" : "−"}${formatInr(Math.abs(thisMonth))}` },
-      { label: "High point", value: high ? formatInr(high.total) : "—", note: high ? formatMonthYear(monthOf(high.date)) : undefined },
-      { label: "Out to bills", value: formatInr(out.expenses), note: "Worked out" },
-      { label: "Up to date", value: `${upToDate} of ${withBalance.length}`, note: staleOnes.length ? `${staleOnes[0].name} is stale` : undefined, warn: staleOnes.length > 0 },
-    ],
   };
 }
 
 /** The mix: every open account with a balance above ₹0, biggest first, by purpose. */
 export function mixBlocks(data: AccountsData, today: string): MixBlock[] {
-  return sharesOfTotal(data.accounts.filter((a) => !isClosed(a)), data.snapshots, today).map(({ account, balance, share }) => ({
-    id: account.id,
-    alias: account.name,
-    color: cardColorKey(accountColor(account)),
-    monthly: balance,
-    category: account.purpose,
-    categoryLabel: optionLabel(account.purpose),
-    categoryColor: cardColorKey(PURPOSE_COLORS[account.purpose]),
-    balanceText: formatInr(balance),
-    share,
-    initial: account.bank.trim()[0]?.toUpperCase() ?? "?",
-  }));
+  return sharesOfTotal(data.accounts.filter((a) => !isClosed(a)), data.snapshots, today).map(({ account, balance, share }) => {
+    const latest = balanceOn(data.snapshots, account.id, today);
+    const before = latest ? data.snapshots.filter((s) => s.accountId === account.id && s.date < latest.date).sort((a, b) => (a.date < b.date ? 1 : -1))[0] : undefined;
+    const delta = latest && before ? latest.balance - before.balance : null;
+    const days = daysSinceBalance(data.snapshots, account.id, today);
+    return {
+      id: account.id,
+      alias: account.name,
+      color: cardColorKey(accountColor(account)),
+      monthly: balance,
+      category: account.purpose,
+      categoryLabel: optionLabel(account.purpose),
+      categoryColor: cardColorKey(PURPOSE_COLORS[account.purpose]),
+      balanceText: formatInr(balance),
+      share,
+      initial: account.bank.trim()[0]?.toUpperCase() ?? "?",
+      detail: `${optionLabel(account.purpose)} · ${account.bank}`,
+      footnote: latest ? `Updated ${formatShortDate(latest.date)}` : "No balance yet",
+      pill: isStale(account, data.snapshots, today) ? `Not read · ${days} days` : null,
+      card: {
+        bank: account.bank,
+        last4: account.last4 ?? null,
+        purpose: optionLabel(account.purpose),
+        updated: latest ? formatDate(latest.date) : "No balance yet",
+        change: delta === null ? "First balance" : delta === 0 ? "No change" : `${delta >= 0 ? "+" : "−"}${formatInr(Math.abs(delta))}`,
+        changeTone: delta === null || delta === 0 ? null : delta > 0 ? "up" : "down",
+      },
+    };
+  });
 }
 
 /** Every recorded balance with its change from the one before it, newest first. */
-export function historyRows(data: AccountsData, attention: AttentionItem[] = attentionItems(data)): Record<string, HistoryRow[]> {
-  const rows = new Map<string, HistoryRow[]>();
-  const all: HistoryRow[] = [];
+export function historyRows(data: AccountsData, attention: AttentionItem[] = attentionItems(data)): Record<string, HistoryTableRow[]> {
+  const rows = new Map<string, HistoryTableRow[]>();
+  const all: HistoryTableRow[] = [];
   for (const account of data.accounts) {
     const mine = data.snapshots.filter((s) => s.accountId === account.id).sort((a, b) => (a.date === b.date ? 0 : a.date < b.date ? -1 : 1));
-    const list = mine.map((s, i): HistoryRow => {
+    const list = mine.map((s, i): HistoryTableRow => {
       const before = mine[i - 1];
       const delta = before ? s.balance - before.balance : null;
       return {
@@ -288,12 +332,17 @@ export function historyRows(data: AccountsData, attention: AttentionItem[] = att
         gapText: before ? `${daysBetween(before.date, s.date)} days after the one before` : null,
         ...(attentionForSnapshot(attention, s) && { attention: attentionForSnapshot(attention, s) }),
         ...(s.source === "Statement" && { fromStatement: true as const }),
+        gapDays: before ? daysBetween(before.date, s.date) : null,
+        accountInitial: account.bank.trim()[0]?.toUpperCase() ?? "?",
+        accountColor: isClosed(account) ? "onyx" : cardColorKey(accountColor(account)),
+        accountClosed: isClosed(account),
+        sourceText: s.source === "Statement" ? "Statement" : "By hand",
       };
     });
     all.push(...list);
     rows.set(account.id, [...list].reverse());
   }
-  const newest = (a: HistoryRow, b: HistoryRow) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1);
+  const newest = (a: HistoryTableRow, b: HistoryTableRow) => (a.date === b.date ? 0 : a.date < b.date ? 1 : -1);
   return { [ALL]: all.sort(newest), ...Object.fromEntries(rows) };
 }
 
@@ -323,6 +372,32 @@ export function formsView(data: AccountsData, today: string, demo: boolean): Acc
   return { demo, today, accounts, total: totalOn(data.accounts, data.snapshots, today) };
 }
 
+/** The check-in calendar for the period, closed accounts last as in the card row. */
+export function checkInsView(data: AccountsData, today: string, period: SpendPeriod): CheckInsView {
+  const first = data.snapshots.map((s) => s.date).sort()[0] ?? null;
+  const ordered = [...data.accounts].sort((a, b) => Number(isClosed(a)) - Number(isClosed(b)));
+  const grid = checkInGrid(ordered, data.snapshots, periodSpan(period, today, first), today);
+  const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  return {
+    months: grid.months.map((m) => ({ key: m, label: formatMonthShort(m) })),
+    rows: grid.rows.map((r) => ({
+      accountId: r.account.id,
+      name: r.account.name,
+      initial: r.account.bank.trim()[0]?.toUpperCase() ?? "?",
+      colorKey: isClosed(r.account) ? "onyx" : cardColorKey(accountColor(r.account)),
+      purpose: optionLabel(r.account.purpose),
+      closed: isClosed(r.account),
+      cells: r.cells.map((c) => ({ month: c.month, monthText: formatMonthYear(c.month), state: c.state, readings: c.readings.map((x) => ({ dateText: formatShortDate(x.date), balanceText: formatInr(x.balance) })) })),
+    })),
+    facts: [
+      { label: "Readings", value: String(grid.readings), note: `in ${plural(grid.months.length, "month")}` },
+      { label: "Quiet months", value: String(grid.missed), note: "with no reading", warn: grid.missed > 0 },
+      { label: "Longest gap", value: grid.longestGap.account ? `${grid.longestGap.days} days` : "—", note: grid.longestGap.account?.name },
+      { label: "Read most", value: grid.busiest.account?.name ?? "—", note: grid.busiest.account ? plural(grid.busiest.readings, "reading") : undefined },
+    ],
+  };
+}
+
 export function accountsPageView(data: AccountsData, today: string, period: SpendPeriod, demo = false): AccountsPageView {
   const attention = attentionItems(data);
   // Closed accounts come last, as they do in the card row.
@@ -334,7 +409,14 @@ export function accountsPageView(data: AccountsData, today: string, period: Spen
   const showAll = live.length !== 1 || data.accounts.length !== 1;
   const shown = data.accounts.length === 0 ? [allPick(data, period, today, cache)] : showAll && data.accounts.length > 1 ? [allPick(data, period, today, cache), ...picks] : picks;
   const historyHrefs = Object.fromEntries(shown.map((p) => [p.id, historyHref({ period, status: "all", sort: "newest", page: 1, demo, accountId: p.kind === "account" ? p.id : undefined }, today)]));
-  return { historyHrefs, forms: formsView(data, today, demo), mix: mixBlocks(data, today), history: historyRows(data, attention), picks: shown, attention, hasAccounts: data.accounts.length > 0 };
+  const first = data.snapshots.map((s) => s.date).sort()[0] ?? null;
+  const span = periodSpan(period, today, first);
+  // The picks' own pass over the same days is reused when the period is short enough to match it.
+  const itemsKey = `${span.from}..${span.to}`;
+  const items = cache.get(itemsKey) ?? moneyItems(data, span.from, span.to);
+  cache.set(itemsKey, items);
+  const flowItems: FlowItem[] = items.map(({ kind, date, amount, accountId }) => ({ kind, date, amount, accountId }));
+  return { periodLabel: periodName(period, today), flowItems, checkIns: checkInsView(data, today, period), historyHrefs, forms: formsView(data, today, demo), mix: mixBlocks(data, today), history: historyRows(data, attention), picks: shown, attention, hasAccounts: data.accounts.length > 0 };
 }
 
 // --- The greeting ---

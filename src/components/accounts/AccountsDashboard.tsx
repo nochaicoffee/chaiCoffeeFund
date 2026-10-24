@@ -48,12 +48,12 @@ export function AccountsDashboard({ view, initialPick }: { view: AccountsPageVie
 
   return (
     <div className="flex flex-col gap-5">
-      <AccountsHero picks={view.picks} pickId={pick.id} onPick={choose} hasAccounts={view.hasAccounts} />
+      <AccountsHero view={view} pickId={pick.id} onPick={choose} />
       {view.hasAccounts && (
         // An equal split; the cards stretch so they end level.
         <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-2">
           <MixCard blocks={view.mix} picked={pick.id} onPick={choose} />
-          <HistoryCard key={pick.id} pick={pick} rows={view.history[pick.id] ?? []} href={view.historyHrefs[pick.id]} />
+          <HistoryCard key={pick.id} pick={pick} rows={view.history[pick.id] ?? []} href={view.historyHrefs[pick.id]} hasAll={view.picks[0].id === ALL} onAll={() => choose(ALL)} />
         </div>
       )}
       {view.hasAccounts && (

@@ -178,3 +178,50 @@ describe("a statement PDF password", () => {
     expect(JSON.stringify(accountsPageView(withPassword, today, period))).not.toContain("s3cret-Pw");
   });
 });
+
+describe("the hero's wallet, Trend and check-ins", () => {
+  const view = accountsPageView(demo, today, period);
+  const accounts = view.picks.slice(1).filter((p) => !p.closed);
+  const total = accounts.reduce((sum, p) => sum + p.balanceValue, 0);
+
+  it("gives each open account its share of the total, and All, a closed one and an account with no balance none", () => {
+    expect(view.picks[0].share).toBeNull();
+    expect(view.picks.at(-1)?.share).toBeNull();
+    for (const p of accounts) expect(p.share).toBeCloseTo(p.balanceValue / total);
+    expect(accounts.reduce((sum, p) => sum + (p.share ?? 0), 0)).toBeCloseTo(1);
+  });
+
+  it("writes an account's last change short for its strip, and leaves All's blank", () => {
+    expect(view.picks[0].changeShort).toBe("");
+    for (const p of view.picks.slice(1)) {
+      if (p.changeTone === "up") expect(p.changeShort).toMatch(/^\+₹/);
+      if (p.changeTone === "down") expect(p.changeShort).toMatch(/^−₹/);
+      if (p.changeTone === null) expect(["", "no change"]).toContain(p.changeShort);
+    }
+  });
+
+  it("names the period and carries every movement of money in it, for the Trend to add up over any stretch", () => {
+    expect(view.periodLabel).toBe("This year");
+    expect(view.flowItems.length).toBeGreaterThan(0);
+    expect(view.flowItems.every((i) => i.date >= "2026-01-01" && i.date <= today)).toBe(true);
+    expect(Object.keys(view.flowItems[0]).sort()).toEqual(["accountId", "amount", "date", "kind"]);
+    const last6 = accountsPageView(demo, today, { kind: "range", from: "2026-05", to: "2026-10", last: 6 });
+    expect(last6.periodLabel).toBe("Last 6 months");
+    expect(last6.flowItems.every((i) => i.date >= "2026-05-01")).toBe(true);
+  });
+
+  it("makes the check-in calendar a row for every account, closed ones last, over the period's months", () => {
+    expect(view.checkIns.rows).toHaveLength(demo.accounts.length);
+    expect(view.checkIns.rows.at(-1)?.closed).toBe(true);
+    expect(view.checkIns.months.at(-1)?.key).toBe("2026-10");
+    expect(view.checkIns.months).toHaveLength(10);
+    for (const row of view.checkIns.rows) expect(row.cells).toHaveLength(view.checkIns.months.length);
+    expect(view.checkIns.facts.map((f) => f.label)).toEqual(["Readings", "Quiet months", "Longest gap", "Read most"]);
+  });
+
+  it("has nothing in the calendar with no accounts", () => {
+    const empty = accountsPageView(none, today, period);
+    expect(empty.checkIns.rows).toEqual([]);
+    expect(empty.checkIns.facts[0].value).toBe("0");
+  });
+});
