@@ -7,6 +7,8 @@ import { ACCOUNT_STATEMENT_EMAIL_COLUMNS, accountStatementEmailRowSchema } from 
 import { BALANCE_REVIEW_COLUMNS, balanceReviewRowSchema } from "@/lib/sheets/balanceReviews";
 import { BALANCE_SNAPSHOT_COLUMNS, balanceSnapshotRowSchema } from "@/lib/sheets/balanceSnapshots";
 import { CARD_COLUMNS, cardRowSchema } from "@/lib/sheets/cards";
+import { INCOME_ENTRY_COLUMNS, incomeEntryRowSchema } from "@/lib/sheets/incomeEntries";
+import { INCOME_SOURCE_COLUMNS, incomeSourceRowSchema } from "@/lib/sheets/incomeSources";
 import { SYNC_RUN_COLUMNS, syncRunRowSchema } from "@/lib/sheets/syncRuns";
 import { SUBSCRIPTION_PAYMENT_COLUMNS, subscriptionPaymentRowSchema } from "@/lib/sheets/subscriptionPayments";
 import { SUBSCRIPTION_COLUMNS, subscriptionRowSchema } from "@/lib/sheets/subscriptions";
@@ -22,6 +24,8 @@ const TABS = {
   SyncRuns: () => columnSpecs(SYNC_RUN_COLUMNS as string[], syncRunRowSchema),
   Subscriptions: () => columnSpecs(SUBSCRIPTION_COLUMNS as string[], subscriptionRowSchema),
   SubscriptionPayments: () => columnSpecs(SUBSCRIPTION_PAYMENT_COLUMNS as string[], subscriptionPaymentRowSchema),
+  IncomeSources: () => columnSpecs(INCOME_SOURCE_COLUMNS as string[], incomeSourceRowSchema),
+  IncomeEntries: () => columnSpecs(INCOME_ENTRY_COLUMNS as string[], incomeEntryRowSchema),
 };
 
 /** Tabs the code needs that may not exist yet: the route creates them, with their Table, when they're missing. Existing tabs are never created over. */
