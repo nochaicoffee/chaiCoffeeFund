@@ -1,4 +1,4 @@
-import type { IncomeFrequency, IncomeSource } from "../sheets/types";
+import type { CardColor, IncomeFrequency, IncomeSource } from "../sheets/types";
 
 const FREQUENCY_STEP_MONTHS: Record<IncomeFrequency, number> = {
   Monthly: 1,
@@ -18,4 +18,11 @@ export function monthlyEquivalentIncome(source: IncomeSource): number {
 /** Total monthly-equivalent income across active sources. */
 export function totalMonthlyEquivalentIncome(sources: IncomeSource[]): number {
   return sources.filter((s) => s.status === "Active").reduce((sum, s) => sum + monthlyEquivalentIncome(s), 0);
+}
+
+/** A source's colour when it has none of its own: its category's. */
+export const CATEGORY_COLORS: Record<IncomeSource["category"], CardColor> = { Salary: "Sapphire", Investment: "Teal", Other: "Ruby" };
+
+export function sourceColor(source: Pick<IncomeSource, "color" | "category">): CardColor {
+  return source.color ?? CATEGORY_COLORS[source.category];
 }

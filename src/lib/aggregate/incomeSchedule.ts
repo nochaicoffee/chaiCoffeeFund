@@ -127,3 +127,22 @@ export function nextPayment(source: IncomeSource, entries: IncomeEntry[], today:
 }
 
 export const sumAmounts = (payments: { amount: number }[]): number => payments.reduce((t, p) => t + p.amount, 0);
+
+export interface OnTimeSummary {
+  /** Regular and one-off payments received; bonuses don't have a fixed day, so they're left out. */
+  count: number;
+  onTime: number;
+  /** How many days after expected they landed, on average; an early one counts as on the day. */
+  averageDaysAfter: number;
+}
+
+/** How often payments land on time (within 3 days of expected), for the cover's On time figure. */
+export function onTimeSummary(entries: IncomeEntry[]): OnTimeSummary {
+  const landed = entries.filter((e) => isReceived(e) && e.tag !== "Bonus");
+  if (landed.length === 0) return { count: 0, onTime: 0, averageDaysAfter: 0 };
+  return {
+    count: landed.length,
+    onTime: landed.filter((e) => !isLate(e)).length,
+    averageDaysAfter: landed.reduce((t, e) => t + Math.max(0, daysAfterExpected(e) ?? 0), 0) / landed.length,
+  };
+}

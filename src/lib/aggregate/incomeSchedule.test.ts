@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { daysAfterExpected, isLate, nextPayment, pendingPayments, receivedScheduledDates, scheduledDates, upcomingPayments } from "./incomeSchedule";
+import { daysAfterExpected, isLate, nextPayment, onTimeSummary, pendingPayments, receivedScheduledDates, scheduledDates, upcomingPayments } from "./incomeSchedule";
 import type { IncomeEntry, IncomeSource } from "../sheets/types";
 
 const source = (o: Partial<IncomeSource> = {}): IncomeSource => ({
@@ -131,6 +131,17 @@ describe("nextPayment", () => {
     expect(nextPayment(source(), [got("2026-04-05", "2026-04-05")], "2026-10-24")).toMatchObject({ expectedDate: "2026-07-05", pending: true });
     expect(nextPayment(source(), [got("2026-10-05", "2026-10-05")], "2026-10-24")).toMatchObject({ expectedDate: "2027-01-05", pending: false });
     expect(nextPayment(source({ frequency: "One-Time", scheduleDate: "2026-01-01" }), [got("2026-01-01", "2026-01-01")], "2026-10-24")).toBeUndefined();
+  });
+});
+
+describe("onTimeSummary", () => {
+  it("counts payments within 3 days as on time, leaves bonuses out, and averages early ones as on the day", () => {
+    const entries = [got("2026-01-05", "2026-01-05"), got("2026-04-05", "2026-04-10"), got("2026-07-05", "2026-07-03"), got("2026-03-20", "2026-03-31", { tag: "Bonus" })];
+    expect(onTimeSummary(entries)).toEqual({ count: 3, onTime: 2, averageDaysAfter: 5 / 3 });
+  });
+
+  it("is empty with nothing received", () => {
+    expect(onTimeSummary([])).toEqual({ count: 0, onTime: 0, averageDaysAfter: 0 });
   });
 });
 
