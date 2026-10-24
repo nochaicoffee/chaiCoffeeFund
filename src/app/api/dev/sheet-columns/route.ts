@@ -3,6 +3,8 @@ import { handleRouteErrors } from "@/lib/api/createCrudRoutes";
 import { getSheetsClient, getSpreadsheetId } from "@/lib/sheets/client";
 import { ACCOUNT_COLUMNS, accountRowSchema } from "@/lib/sheets/accounts";
 import { CARD_COLUMNS, cardRowSchema } from "@/lib/sheets/cards";
+import { INCOME_ENTRY_COLUMNS, incomeEntryRowSchema } from "@/lib/sheets/incomeEntries";
+import { INCOME_SOURCE_COLUMNS, incomeSourceRowSchema } from "@/lib/sheets/incomeSources";
 import { SUBSCRIPTION_PAYMENT_COLUMNS, subscriptionPaymentRowSchema } from "@/lib/sheets/subscriptionPayments";
 import { SUBSCRIPTION_COLUMNS, subscriptionRowSchema } from "@/lib/sheets/subscriptions";
 import { columnSpecs, planTableColumns } from "@/lib/sheets/tableColumns";
@@ -13,6 +15,8 @@ const TABS = {
   Accounts: () => columnSpecs(ACCOUNT_COLUMNS as string[], accountRowSchema),
   Subscriptions: () => columnSpecs(SUBSCRIPTION_COLUMNS as string[], subscriptionRowSchema),
   SubscriptionPayments: () => columnSpecs(SUBSCRIPTION_PAYMENT_COLUMNS as string[], subscriptionPaymentRowSchema),
+  IncomeSources: () => columnSpecs(INCOME_SOURCE_COLUMNS as string[], incomeSourceRowSchema),
+  IncomeEntries: () => columnSpecs(INCOME_ENTRY_COLUMNS as string[], incomeEntryRowSchema),
 };
 
 type Plan = { error: string } | ({ tab: string; spreadsheetId: string; table: { rows: number; columns: string[] } } & ReturnType<typeof planTableColumns>);

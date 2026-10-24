@@ -243,6 +243,12 @@ export type IncomeFrequency = "Monthly" | "Quarterly" | "Yearly" | "One-Time";
 export type IncomeSourceStatus = "Active" | "Inactive";
 export type IncomeEntryStatus = "Received" | "Pending";
 export type IncomeTag = "Regular" | "Bonus" | "Other";
+/** A source's icon on the Income page (#185). Shown as each name's icon, never as text. */
+export const INCOME_ICONS = ["Briefcase", "Trend", "Lock", "Pie", "Receipt", "Gift", "Home", "Coins"] as const;
+export type IncomeIcon = (typeof INCOME_ICONS)[number];
+/** How an income entry got into the Sheet: typed in the app, or read from a bank statement (#187). */
+export const INCOME_ENTRY_ORIGINS = ["Manual", "Statement"] as const;
+export type IncomeEntryOrigin = (typeof INCOME_ENTRY_ORIGINS)[number];
 
 export interface IncomeSource {
   id: string;
@@ -252,6 +258,15 @@ export interface IncomeSource {
   frequency: IncomeFrequency;
   expectedAmount: number;
   status: IncomeSourceStatus;
+  // The rest were added on the end for the Income page (#185); rows from before have none of them.
+  /** A day it's expected; the schedule counts from it both ways. A one-time source's only date. */
+  scheduleDate?: string;
+  color?: CardColor;
+  icon?: IncomeIcon;
+  /** The account it usually lands in. */
+  accountId?: string;
+  /** Text in a bank statement line that marks a deposit as this income (#187). */
+  statementMatch?: string;
 }
 
 export interface IncomeEntry {
@@ -263,6 +278,10 @@ export interface IncomeEntry {
   status: IncomeEntryStatus;
   accountId?: string;
   tag: IncomeTag;
+  /** Rows from before #185 have none: they were typed in. */
+  origin?: IncomeEntryOrigin;
+  /** The statement line it was read from, so a statement read twice adds nothing (#187). */
+  statementRef?: string;
 }
 
 // --- Loans ---
