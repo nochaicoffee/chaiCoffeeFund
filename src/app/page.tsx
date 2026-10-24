@@ -8,7 +8,7 @@ import { balanceTrend } from "@/lib/aggregate/accounts";
 import { computeCardSummaries } from "@/lib/aggregate/cards";
 import { cardName } from "@/lib/format/labels";
 import { totalEstimatedFixedDepositValue } from "@/lib/aggregate/fixedDeposits";
-import { totalPendingForMonth } from "@/lib/aggregate/income";
+import { pendingPayments, sumAmounts } from "@/lib/aggregate/incomeSchedule";
 import { totalCostBasisInr } from "@/lib/aggregate/investments";
 import { computeLoanSummaries, totalDueThisMonth } from "@/lib/aggregate/loans";
 import { computeNetWorth } from "@/lib/aggregate/netWorth";
@@ -19,6 +19,7 @@ import {
   getCachedCards,
   getCachedFixedDeposits,
   getCachedIncomeEntries,
+  getCachedIncomeSources,
   getCachedInvestmentTransactions,
   getCachedLoanInstallments,
   getCachedLoans,
@@ -38,6 +39,7 @@ export default async function OverviewPage() {
     investmentTransactions,
     fixedDeposits,
     incomeEntries,
+    incomeSources,
   ] = await Promise.all([
     getCachedAccounts(),
     getCachedBalanceSnapshots(),
@@ -49,6 +51,7 @@ export default async function OverviewPage() {
     getCachedInvestmentTransactions(),
     getCachedFixedDeposits(),
     getCachedIncomeEntries(),
+    getCachedIncomeSources(),
   ]);
 
   const today = todayIso();
@@ -76,7 +79,8 @@ export default async function OverviewPage() {
     totalDueThisMonth(loans, loanInstallments, yearMonth) +
     cardSummaries.reduce((sum, s) => sum + (s.card.status === "Active" ? s.outstandingBalance : 0), 0);
 
-  const pendingIncomeThisMonth = totalPendingForMonth(incomeEntries, yearMonth);
+  // Pending income is computed from each source's schedule, never stored (PRD §8).
+  const pendingIncome = pendingPayments(incomeSources, incomeEntries, today);
 
   const attention: { label: string; detail: string }[] = [];
   for (const summary of cardSummaries) {
@@ -95,10 +99,12 @@ export default async function OverviewPage() {
       });
     }
   }
-  if (pendingIncomeThisMonth > 0) {
+  for (const source of incomeSources) {
+    const pending = pendingIncome.filter((p) => p.sourceId === source.id);
+    if (pending.length === 0) continue;
     attention.push({
-      label: "Pending income this month",
-      detail: formatInr(pendingIncomeThisMonth),
+      label: `${source.alias || source.name} not received`,
+      detail: `${formatInr(sumAmounts(pending))} — ${pending.length === 1 ? "expected" : `${pending.length} payments, the first expected`} ${pending[0].expectedDate}`,
     });
   }
 
