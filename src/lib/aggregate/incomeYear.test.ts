@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { againstLastYear, financialYear, financialYearOf, incomeByMonth, payChanges, receivedMonthlyAverage, sameDayLastYear } from "./incomeYear";
+import { againstLastYear, financialYear, financialYearOf, incomeByMonth, payChanges, projectedThroughYear, receivedMonthlyAverage, sameDayLastYear } from "./incomeYear";
 import type { IncomeEntry, IncomeSource } from "../sheets/types";
 
 let n = 0;
@@ -78,6 +78,23 @@ describe("financialYear", () => {
     expect(fy.expected).toBe(500000);
     expect(fy.projected).toBe(fy.received + fy.pending + fy.expected);
     expect(fy.lastYear).toEqual({ name: "FY 2025-26", total: 180000, sameDay: 90000 });
+  });
+});
+
+describe("projectedThroughYear", () => {
+  it("adds what's owed and each schedule at its usual amount on top of what's landed, ending on the year's total", () => {
+    // Jan to Sep received (9 × 1L); Oct 1 missed (owed); Nov and Dec scheduled.
+    const entries = ["01", "02", "03", "04", "05", "06", "07", "08", "09"].map((m) => got(`2026-${m}-01`, 100000));
+    const p = projectedThroughYear([salary], entries, "2026-10-24");
+    expect(p.slice(0, 9)).toEqual(Array(9).fill(null));
+    expect(p.slice(9)).toEqual([1000000, 1100000, 1200000]);
+  });
+
+  it("counts a payment owed from an earlier month in this month, since it hasn't landed", () => {
+    const entries = ["01", "02", "03", "04", "05", "06", "07", "08"].map((m) => got(`2026-${m}-01`, 100000));
+    const p = projectedThroughYear([salary], entries, "2026-10-24");
+    expect(p[9]).toBe(800000 + 200000);
+    expect(p[11]).toBe(1200000);
   });
 });
 

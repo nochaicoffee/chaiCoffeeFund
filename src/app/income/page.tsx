@@ -12,6 +12,7 @@ import { formatInrCompact } from "@/lib/format/money";
 import { totalReceivedBetween } from "@/lib/aggregate/incomeYear";
 import { loadIncomeData } from "./loadIncomeData";
 import { ALL, attentionView, coverView, greetingView, incomeYears, summarySentence } from "./views";
+import { lowerWidgets } from "./lowerView";
 import { incomeWidgets } from "./widgetsView";
 
 export const metadata: Metadata = { title: "Income" };
@@ -56,7 +57,7 @@ export default async function IncomePage({ searchParams }: PageProps<"/income">)
           <p className="mt-1 text-sm font-semibold text-muted">Your salary, interest, dividends and one-offs will show here, a column for every month.</p>
         </section>
       ) : (
-        <IncomeDashboard cover={cover} widgets={incomeWidgets(data, today, year, cover.picks.map((p) => p.id))} today={today} initialPick={initialPick} />
+        <IncomeDashboard cover={cover} widgets={incomeWidgets(data, today, year, cover.picks.map((p) => p.id))} lower={lowerWidgets(data, today, year, cover.picks.map((p) => p.id))} today={today} initialPick={initialPick} />
       )}
     </div>
   );

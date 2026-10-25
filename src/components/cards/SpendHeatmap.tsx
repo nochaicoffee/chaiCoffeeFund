@@ -103,6 +103,7 @@ export function SpendHeatmap({
   legendUpcoming = "Upcoming",
   empty = "No statements yet. The heatmap fills in as statements arrive.",
   footnote,
+  tableLabel = "Spending by month",
 }: {
   title: string;
   rows: HeatRow[];
@@ -121,6 +122,8 @@ export function SpendHeatmap({
   legendUpcoming?: string;
   empty?: string;
   footnote?: string;
+  /** What the table is, for screen readers: "Spending by month", "Income by month". */
+  tableLabel?: string;
 }) {
   const totals = new Map(yearTotals.map((t) => [t.year, t]));
   const currentMonthNumber = currentMonth.slice(5, 7);
@@ -151,7 +154,7 @@ export function SpendHeatmap({
       ) : (
         <MaybeHover hover={details && cards ? { details, cards, averages: Object.fromEntries(yearTotals.map((t) => [t.year, t.average])), peak: peak?.month ?? null, current: currentMonth } : undefined}>
           <div className="-mx-[22px] overflow-x-auto px-[22px] pt-1 pb-1">
-            <div role="table" aria-label={`Spending by month, ${title}`} className="flex w-max min-w-full flex-col gap-2">
+            <div role="table" aria-label={`${tableLabel}, ${title}`} className="flex w-max min-w-full flex-col gap-2">
               <div role="row" className={GRID}>
                 {/* A real grid cell, so the month labels line up; the text is for screen readers only. */}
                 <span role="columnheader">

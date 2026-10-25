@@ -39,7 +39,8 @@ export function IncomeMapCard({ map, picked, onPick }: { map: IncomeMap; picked:
       {blocks.length === 0 ? (
         <p className="flex-1 py-10 text-center text-sm font-semibold text-muted">{by === "received" ? "Nothing received this year yet." : "No source pays on a schedule."}</p>
       ) : (
-        <div ref={box} className="relative min-h-[320px] flex-1 md:min-h-[380px]">
+        <div ref={box} className="relative min-h-[320px] flex-1 overflow-hidden md:min-h-[380px]">
+          {/* Clipped: until it's measured it lays out at the fallback width, which mustn't widen a phone's page. */}
           {all.map((source) => {
             const b = blocks.find((x) => x.id === source.id) ?? source;
             const rect = layout.boxes.get(b.id);

@@ -144,3 +144,24 @@ export function payChanges(entries: IncomeEntry[]): PayChange[] {
   }
   return out.sort((a, b) => b.receivedDate.localeCompare(a.receivedDate));
 }
+
+/**
+ * Received adding up through the year shown, then from this month on what's still expected on top: payments owed
+ * (counted this month, since they haven't landed) and each schedule to December at its usual amount, no bonus.
+ * One value per month, null before this month; it ends on the year's projected total.
+ */
+export function projectedThroughYear(sources: IncomeSource[], entries: IncomeEntry[], today: string): (number | null)[] {
+  const year = Number(today.slice(0, 4));
+  const now = Number(today.slice(5, 7)) - 1;
+  const received = totalReceivedBetween(entries, `${year}-01-01`, today);
+  const pending = pendingPayments(sources, entries, today).filter((p) => p.expectedDate.startsWith(String(year)));
+  const upcoming = upcomingPayments(sources, entries, today, `${year}-12-31`);
+  const months = yearMonths(year);
+  const owedEarlier = sumAmounts(pending.filter((p) => p.expectedDate < `${months[now]}-01`));
+  let running = received;
+  return months.map((month, i) => {
+    if (i < now) return null;
+    running += (i === now ? owedEarlier : 0) + sumAmounts([...pending, ...upcoming].filter((p) => p.expectedDate.startsWith(month)));
+    return running;
+  });
+}
