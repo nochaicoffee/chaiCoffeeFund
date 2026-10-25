@@ -126,8 +126,8 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 
 | ID | Feature | Pri | Status |
 |---|---|---|---|
-| F-IN-01 | Income sources, and an add source form | P0 | Designed (final 2026-10-24, #184) |
-| F-IN-02 | Income entries, expected vs. received, with pending income called out and a monthly equivalent | P0 | Designed (final 2026-10-24, #184; computation partly built) |
+| F-IN-01 | Income sources, and an add source form | P0 | Built (2026-10-25, #184–#191) |
+| F-IN-02 | Income entries, expected vs. received, with pending income called out and a monthly equivalent | P0 | Built (2026-10-25, #184–#191); the salary from statements awaits its first real run (#187) |
 
 ### Loans (`F-LO`)
 
@@ -329,3 +329,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.12 | 2026-10-25 | Income from bank statements (#187, ADR 0009): the account statement sync records deposits matching a source's statement text, always Regular; `reread` catches up statements read before. |
 | 1.13 | 2026-10-25 | The Income page's widgets (#189): the income heatmap, the income map beside Entries, Trends (this year and last, month by month, pay rhythm), Sources, the Pay calendar and Pay changes, all following the pick. |
 | 1.14 | 2026-10-25 | Income forms (#190): Add and Edit source (with Next expected, where it lands, the statement text, colour and icon), Record income, Mark received on a payment that's owed, Edit and delete a payment, Mark inactive, Delete source (with its payments; Mark inactive offered instead), and Undo for six seconds after recording. |
+| 1.15 | 2026-10-25 | The Income Entries page (#191): the Ledger for every source and a source's Passbook. F-IN-01 and F-IN-02 built. |

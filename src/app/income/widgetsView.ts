@@ -5,7 +5,7 @@ import { incomeByMonth, payChanges, receivedBetween, yearMonths } from "@/lib/ag
 import { cardColorKey, type ColorKey } from "@/lib/format/colors";
 import { formatMonthShort, formatShortDate } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
-import type { IncomeSource } from "@/lib/sheets/types";
+import type { IncomeEntry, IncomeSource } from "@/lib/sheets/types";
 import { ALL, type IncomeData } from "./views";
 
 /**
@@ -164,6 +164,11 @@ export interface EntriesCard {
 
 const afterText = (days: number) => (days <= 0 ? "on the day" : `${plural(days, "day")} after expected`);
 
+/** A received payment's status pill: Received, or Received · N days late (PRD §8: more than 3 days after expected). Shared with the Entries page. */
+export function receivedStatus(entry: IncomeEntry): { text: string; tone: "good" | "warn" } {
+  return isLate(entry) ? { text: `Received · ${plural(daysAfterExpected(entry) ?? 0, "day")} late`, tone: "warn" } : { text: "Received", tone: "good" };
+}
+
 /** The latest entries for a pick, newest first with anything still owed on top, and its pay changes. */
 export function entriesCard(data: IncomeData, today: string, pick: string, limit = 8): EntriesCard {
   const byId = new Map(data.sources.map((s) => [s.id, s]));
@@ -191,7 +196,7 @@ export function entriesCard(data: IncomeData, today: string, pick: string, limit
       when: formatShortDate(e.receivedDate as string),
       whenNote: afterText(after),
       amount: formatInr(e.amount),
-      status: isLate(e) ? { text: `Received · ${plural(after, "day")} late`, tone: "warn" } : { text: "Received", tone: "good" },
+      status: receivedStatus(e),
       fromStatement: e.origin === "Statement",
       owed: false,
       expectedDate: e.expectedDate,

@@ -17,6 +17,16 @@ import type { Account, IncomeEntry, IncomeSource, IncomeTag } from "@/lib/sheets
  */
 
 export const ALL = "all";
+
+/** An Income page's address, keeping `?demo` bare and leaving out what's the default (this year, all sources). */
+export function incomeHref(path: "/income" | "/income/entries", { demo, year, thisYear, source }: { demo: boolean; year: number; thisYear: number; source?: string }): string {
+  const q = new URLSearchParams();
+  if (demo) q.set("demo", "");
+  if (year !== thisYear) q.set("year", String(year));
+  if (source && source !== ALL) q.set("source", source);
+  const text = q.toString().replace(/(^|&)demo=(&|$)/, "$1demo$2");
+  return `${path}${text ? `?${text}` : ""}`;
+}
 /** What's "coming up" in the greeting: the next 30 days, today included. */
 export const NEXT_DAYS = 30;
 

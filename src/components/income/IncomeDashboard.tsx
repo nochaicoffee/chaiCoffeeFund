@@ -18,7 +18,7 @@ import { TrendsCard } from "./TrendsCard";
  * the Entries card, the wide Trends card, the Sources table, then the Pay calendar beside Pay changes. One pick drives all of it, kept in the address as `?source=` (usePickInAddress), as on
  * Accounts.
  */
-export function IncomeDashboard({ cover, widgets, lower, today, initialPick }: { cover: CoverView; widgets: IncomeWidgets; lower: LowerWidgets; today: string; initialPick: string }) {
+export function IncomeDashboard({ cover, widgets, lower, today, initialPick, entriesHref }: { cover: CoverView; widgets: IncomeWidgets; lower: LowerWidgets; today: string; initialPick: string; entriesHref: Record<string, string> }) {
   const [pickId, choose] = usePickInAddress("source", initialPick, cover.picks.map((p) => p.id), (id) => id === ALL);
   const pick = cover.picks.find((p) => p.id === pickId) ?? cover.picks[0];
   const heat = widgets.heatmap[pick.id] ?? widgets.heatmap[ALL];
@@ -43,7 +43,7 @@ export function IncomeDashboard({ cover, widgets, lower, today, initialPick }: {
       {/* An equal split; the cards stretch so they end level. */}
       <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-2">
         <IncomeMapCard map={widgets.map} picked={pick.id} onPick={choose} />
-        <EntriesCard card={widgets.entries[pick.id] ?? widgets.entries[ALL]} pickLabel={pick.id === ALL ? "all sources" : pick.label} />
+        <EntriesCard card={widgets.entries[pick.id] ?? widgets.entries[ALL]} pickLabel={pick.id === ALL ? "all sources" : pick.label} allHref={entriesHref[pick.id] ?? entriesHref[ALL]} />
       </div>
       {/* Keyed by the pick, so its view switch and the calendar's month start fresh for each. */}
       <TrendsCard key={`trends-${cover.year}-${pick.id}`} trends={lower.trends[pick.id] ?? lower.trends[ALL]} />
