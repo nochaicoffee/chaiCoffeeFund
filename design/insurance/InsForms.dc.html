@@ -1,0 +1,669 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Manrope:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500;1,6..72,600&display=swap">
+  <style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.chai-app {
+  --page: oklch(0.965 0.004 90); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06); --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+  --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+  --accent: oklch(0.72 0.19 145); --accent-tint: oklch(0.93 0.06 145); --accent-text: oklch(0.42 0.14 145); --on-accent: oklch(0.99 0 0);
+  --accent-edge: oklch(0.72 0.19 145 / 0.45); --accent-ring: oklch(0.72 0.19 145 / 0.22); --negative-ring: oklch(0.55 0.16 25 / 0.18);
+  --ink: oklch(0.16 0.008 260); --on-ink: oklch(0.99 0 0);
+  --positive: oklch(0.42 0.14 145); --warning: oklch(0.72 0.14 75); --warning-text: oklch(0.47 0.1 70); --warning-tint: oklch(0.95 0.05 85);
+  --negative: oklch(0.55 0.16 25); --negative-tint: oklch(0.95 0.035 40);
+  --feature-tile: oklch(0.935 0.052 148); --feature-tile-line: oklch(0.62 0.15 150 / 0.24); --feature-tile-glow: oklch(1 0 0 / 0.55);
+  --rings-ink: oklch(0.42 0.1 152); --rings-light: oklch(1 0 0); --bar-glow: oklch(1 0 0 / 0.26);
+  --heat-1: oklch(0.95 0.03 150); --heat-2: oklch(0.87 0.07 150); --heat-3: oklch(0.76 0.11 151); --heat-4: oklch(0.6 0.12 153); --heat-5: oklch(0.42 0.1 156);
+  --heat-ink: oklch(0.24 0.05 152); --heat-no-data: oklch(0 0 0 / 0.04); --heat-upcoming: oklch(0 0 0 / 0.13); --trend-no-data: oklch(0 0 0 / 0.1); --trend-peak-shadow: oklch(0.3 0.09 155 / 0.26);
+  --card-emerald-from: oklch(0.42 0.11 155); --card-emerald-to: oklch(0.24 0.07 162); --card-emerald: oklch(0.6 0.12 153);
+  --card-sapphire-from: oklch(0.32 0.09 258); --card-sapphire-to: oklch(0.16 0.05 258); --card-sapphire: oklch(0.48 0.1 258);
+  --card-ruby-from: oklch(0.3 0.11 20); --card-ruby-to: oklch(0.15 0.07 20); --card-ruby: oklch(0.57 0.13 22);
+  --card-onyx-from: oklch(0.28 0.02 75); --card-onyx-to: oklch(0.15 0.01 75); --card-onyx: oklch(0.56 0.04 75);
+  --card-violet-from: oklch(0.31 0.1 300); --card-violet-to: oklch(0.16 0.06 300); --card-violet: oklch(0.53 0.13 300);
+  --card-teal-from: oklch(0.32 0.07 200); --card-teal-to: oklch(0.16 0.04 200); --card-teal: oklch(0.56 0.09 200);
+  --card-copper-from: oklch(0.33 0.09 50); --card-copper-to: oklch(0.16 0.05 50); --card-copper: oklch(0.6 0.12 50);
+  --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
+  --on-card: oklch(0.95 0.004 260); --on-card-muted: oklch(1 0 0 / 0.6); --on-card-faint: oklch(1 0 0 / 0.5); --on-card-fill: oklch(1 0 0 / 0.16); --on-card-line: oklch(1 0 0 / 0.12); --on-card-line-top: oklch(1 0 0 / 0.22); --on-card-lime: oklch(0.88 0.17 138);
+  --card-chip: oklch(0.8 0.13 80); --card-chip-mid: oklch(0.68 0.13 80); --card-chip-deep: oklch(0.55 0.1 80);
+  --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
+  --tile-shadow-selected: 0 10px 26px oklch(0.3 0.09 155 / 0.35), 0 0 0 4px oklch(1 0 0 / 0.08), 0 0 18px oklch(1 0 0 / 0.2);
+  --due-pulse-ring: oklch(0.82 0.12 40 / 0.2); --due-pulse-fill: oklch(0.7 0.14 35 / 0.55);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative; overflow: hidden; font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; background: var(--page); color: var(--fg);
+  font-size: 13px; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+}
+.chai-app h1, .chai-app h2, .chai-app h3, .chai-app p { margin: 0; }
+.glass { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); }
+.glass-strong { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); }
+.muted { color: var(--muted); }
+.strong { color: var(--fg); font-weight: 800; }
+.row { display: flex; align-items: center; gap: 10px; }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.grow { flex: 1; min-width: 0; }
+
+/* ---- Shell ---- */
+.desk { display: flex; gap: 20px; padding: 24px; }
+.rail { width: 64px; flex-shrink: 0; border-radius: 999px; display: flex; flex-direction: column; align-items: center; padding: 18px 0; gap: 10px; }
+.rail-item { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; color: var(--muted); }
+.rail-item.active { background: var(--ink); color: var(--on-ink); }
+.rail-me { margin-top: auto; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+.main { flex: 1; min-width: 0; border-radius: 36px; padding: 26px; display: flex; flex-direction: column; gap: 20px; }
+.ph { display: flex; flex-direction: column; border-radius: 34px; border: 1px solid var(--fill-strong); }
+.ph-status { height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; font-size: 14px; font-weight: 700; }
+.ph-icons { display: flex; gap: 4px; } .ph-icons i { width: 16px; height: 9px; border-radius: 3px; background: var(--fg); opacity: 0.85; }
+.ph-bar { height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 16px; border-bottom: 1px solid var(--divider); font-size: 16px; font-weight: 800; }
+.ph-menu { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.ph-body { flex: 1; min-height: 0; padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ---- Header ---- */
+.pg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.pg-text { display: flex; flex-direction: column; gap: 10px; max-width: 980px; }
+.eyebrow { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.pg-head h1 { font-size: 30px; font-weight: 800; line-height: 1.15; }
+.lede { font-size: 16px; font-weight: 500; line-height: 1.7; color: var(--muted); text-wrap: pretty; }
+.lede b { color: var(--fg); font-weight: 700; }
+.pg-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-top: 4px; }
+.ph-head { flex-direction: column; gap: 14px; }
+.ph-head h1 { font-size: 26px; }
+.ph-head .lede { font-size: 15px; line-height: 1.6; }
+.ph-head .pg-actions { flex-wrap: wrap; margin-top: 0; }
+
+/* ---- Buttons, pills, segmented, chips ---- */
+.btn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 18px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; user-select: none; }
+.btn-primary { background: var(--ink); color: var(--on-ink); position: relative; overflow: hidden; }
+.btn-primary::after { content: ""; position: absolute; top: -60%; left: -30%; width: 46%; height: 220%; background: linear-gradient(100deg, transparent, oklch(1 0 0 / 0.25), transparent); transform: rotate(14deg); pointer-events: none; }
+.btn-ghost { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--fg); }
+.btn-soft { background: var(--fill); color: var(--fg); }
+.btn-accent { background: var(--accent-tint); color: var(--accent-text); }
+.btn-danger { background: var(--negative-tint); color: var(--negative); }
+.btn-icon { width: 40px; padding: 0; justify-content: center; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--muted); }
+.btn-sm { min-height: 30px; padding: 0 12px; font-size: 12px; gap: 6px; }
+.btn-xs { min-height: 26px; padding: 0 10px; font-size: 11px; gap: 5px; }
+.ph .btn { min-height: 44px; }
+.ph .btn-sm { min-height: 36px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.pill-on { background: var(--accent-tint); color: var(--accent-text); }
+.pill-off { background: var(--fill); color: var(--muted); }
+.pill-soon { background: var(--warning-tint); color: var(--warning-text); }
+.pill-due { background: var(--negative-tint); color: var(--negative); animation: due-pulse 2.2s ease-in-out infinite; }
+.pill-warn { background: var(--warning-tint); color: var(--warning-text); }
+.pill-ink { background: var(--ink); color: var(--on-ink); }
+@keyframes due-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px var(--due-pulse-ring); } }
+@media (prefers-reduced-motion: reduce) { .pill-due { animation: none; } }
+.chg { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.chg-up { color: var(--negative); } .chg-down { color: var(--positive); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--fill); gap: 2px; }
+.seg-i { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.seg-i em { font-style: normal; font-size: 11px; color: var(--muted); font-weight: 700; }
+.seg-i.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--fill); color: var(--fg); white-space: nowrap; }
+.chip.on { background: var(--ink); color: var(--on-ink); }
+.chip i { width: 8px; height: 8px; border-radius: 3px; display: inline-block; }
+.chip em { font-style: normal; color: var(--muted); font-size: 11px; }
+.chip.on em { color: oklch(1 0 0 / 0.6); }
+.sample { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--warning-tint); color: var(--warning-text); font-size: 11px; font-weight: 800; letter-spacing: 0.01em; white-space: nowrap; }
+.sample::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--warning); }
+.tag-new { display: inline-flex; padding: 2px 7px; border-radius: 999px; font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: oklch(0.93 0.05 258); color: oklch(0.42 0.1 258); vertical-align: 1px; }
+
+/* ---- Monograms, card chips ---- */
+.mono { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--on-card); font-weight: 800; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18), 0 2px 6px oklch(0 0 0 / 0.18); }
+.mono-off { filter: grayscale(1); opacity: 0.55; }
+.via { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--fg); white-space: nowrap; }
+.minitile { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2); }
+.minibank { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--fill-strong); color: var(--muted); }
+
+/* ---- Cards (surfaces) ---- */
+.card { border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.card-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.card-t { font-size: 15px; font-weight: 800; }
+.card-t small { font-size: 12px; font-weight: 600; color: var(--muted); margin-left: 8px; }
+.card-note { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.55; }
+.link { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--accent-text); white-space: nowrap; }
+.tex { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; z-index: -1; pointer-events: none; }
+.tex svg, .tex .sheen { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.textured { position: relative; isolation: isolate; }
+
+/* Summary tiles, as on the Statements page: one feature tile in mint with rings. */
+.tiles { display: grid; gap: 16px; }
+.stile { position: relative; isolation: isolate; border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.stile .k { font-size: 12px; font-weight: 600; color: var(--muted); }
+.stile .v { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+.stile .v small { font-size: 14px; font-weight: 700; color: var(--muted); letter-spacing: 0; }
+.stile .s { font-size: 12px; color: var(--muted); font-weight: 500; }
+.stile .s b { color: var(--fg); font-weight: 700; }
+.feature { background: var(--feature-tile); border: 1px solid var(--feature-tile-line); }
+.feature .k, .feature .s { color: oklch(0.38 0.06 152); }
+
+/* Dark tiles, like the card tiles */
+.dtile { position: relative; isolation: isolate; flex-shrink: 0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow); }
+.dtile .dt-muted { color: var(--on-card-muted); font-size: 11px; font-weight: 600; }
+.dtile .dt-faint { color: var(--on-card-faint); font-size: 10px; font-weight: 600; }
+.dtile.sel { border: 1.5px solid var(--accent); box-shadow: var(--tile-shadow-selected); }
+.dtile .dt-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--on-card-fill); white-space: nowrap; }
+.dtile .dt-pill.due { background: oklch(0.7 0.14 35 / 0.55); animation: due-pulse 2.2s ease-in-out infinite; }
+.dtile .dt-pill.soon { background: oklch(0.8 0.13 80 / 0.35); }
+.dtile.off { filter: grayscale(0.85); opacity: 0.6; box-shadow: none; }
+.dtile .tick { display: none; } .dtile.sel .tick { display: flex; }
+.tick { position: absolute; top: -9px; right: -9px; width: 21px; height: 21px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px oklch(0 0 0 / 0.4); }
+.addtile { flex-shrink: 0; border-radius: 22px; border: 1.5px dashed var(--fill-strong); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 700; }
+
+/* ---- Fitting neatly: rows of cards end level, and content fills the card ---- */
+.stack-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.stack-col > :last-child { flex: 1 1 auto; }
+.spread { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+.foot { margin-top: auto; }
+.card > .tmap { flex: 1 1 auto; }
+
+/* ---- Tables ---- */
+.th { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.tgroup { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 8px; border-bottom: 1px solid var(--divider); font-size: 13px; font-weight: 800; }
+.tgroup span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.cell-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cell-name b { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cell-name small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+.num { font-weight: 800; }
+.sub2 { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+
+/* ---- Bars ---- */
+.track { height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.track > span { display: block; height: 100%; border-radius: inherit; }
+.stack { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; }
+.stack > span { display: block; height: 100%; position: relative; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.legend b { color: var(--fg); font-weight: 700; }
+
+/* ---- Notice ---- */
+.notice { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); color: var(--warning-text); font-size: 13px; font-weight: 600; }
+.notice b { color: oklch(0.36 0.08 65); font-weight: 800; }
+.notice .grow { color: oklch(0.4 0.08 68); }
+.notice svg { flex-shrink: 0; }
+
+/* ---- Dropdown (the app's own, #112) ---- */
+.sel { position: relative; display: inline-block; }
+.sel > summary { list-style: none; } .sel > summary::-webkit-details-marker { display: none; }
+.sel-trigger { position: relative; display: flex; align-items: center; gap: 8px; border: 1px solid var(--surface-line); background: var(--surface); cursor: pointer; text-align: left; max-width: 100%; }
+.sel-value { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sel-chev { flex-shrink: 0; color: var(--muted); display: flex; transition: transform 160ms var(--ease-out); }
+.sel[open] .sel-chev { transform: rotate(180deg); }
+.sel-icon { display: flex; color: var(--muted); }
+.sel--pill .sel-trigger { min-height: 40px; border-radius: 999px; box-shadow: var(--soft-shadow); padding: 9px 15px; font-size: 13px; font-weight: 700; }
+.sel--pill[open] .sel-trigger { border-color: var(--accent-edge); }
+.sel--small .sel-trigger { min-height: 34px; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; background: var(--fill); border-color: transparent; }
+.sel--field { display: block; }
+.sel--field .sel-trigger { width: 100%; height: 40px; border-radius: 12px; padding: 0 12px 0 14px; font-size: 14px; font-weight: 600; }
+.sel--field[open] .sel-trigger { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.ph .sel--field .sel-trigger { height: 44px; } .ph .sel--pill .sel-trigger { min-height: 44px; }
+.is-placeholder { color: var(--muted); font-weight: 500; }
+.pop { position: absolute; z-index: 20; top: calc(100% + 8px); left: 0; background: var(--surface); border: 1px solid var(--surface-line); border-radius: 16px; box-shadow: var(--pop-shadow); padding: 6px; min-width: 100%; }
+.pop.align-end { left: auto; right: 0; }
+.sel[open] .pop { animation: pop-in 150ms var(--ease-out) both; }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@media (prefers-reduced-motion: reduce) { .sel[open] .pop { animation: none; } .sel-chev { transition: none; } }
+.lb { min-width: 210px; max-height: 300px; overflow-y: auto; }
+.sel--field .lb { min-width: 0; }
+.lb-group { padding: 8px 12px 4px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.lb-divider { height: 1px; margin: 6px 8px; background: var(--divider); }
+.opt { display: flex; align-items: center; gap: 12px; min-height: 36px; padding: 0 10px 0 12px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--fg); cursor: pointer; }
+.sel--field .opt { font-size: 14px; font-weight: 600; }
+.opt:hover { background: var(--fill); }
+.opt-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.opt-meta { flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+.opt-check { flex-shrink: 0; width: 14px; color: var(--accent-text); visibility: hidden; display: flex; }
+.opt[aria-selected="true"] { background: var(--accent-tint); color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-meta { color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-check { visibility: visible; }
+.ph .opt { min-height: 44px; }
+
+/* ---- Light hover card (#104/#105) ---- */
+.hc { width: 250px; border-radius: 16px; padding: 14px; background: var(--surface); color: var(--fg); box-shadow: var(--pop-shadow); border: 1px solid var(--surface-line); }
+.hc .h { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.hc .t { font-size: 22px; font-weight: 800; line-height: 1.25; margin-top: 2px; }
+.hc .d { font-size: 12px; font-weight: 700; margin-top: 2px; color: var(--muted); }
+.hc ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.hc li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+.hc li .nm { flex: 1; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc li b { font-weight: 800; }
+.hc .f { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--divider); font-size: 11px; font-weight: 600; color: var(--muted); }
+.hc-arrow { position: absolute; width: 12px; height: 12px; background: var(--surface); border: 1px solid var(--surface-line); border-top: none; border-left: none; transform: rotate(45deg); }
+.hov { position: relative; }
+.hov > .hc-wrap { position: absolute; z-index: 30; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 160ms ease, transform 240ms var(--ease-out); }
+.hov:hover > .hc-wrap, .hov.is-open > .hc-wrap { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .hov > .hc-wrap { transition: none; transform: none; } }
+
+/* ---- Heatmap ---- */
+.heat { display: grid; gap: 8px; align-items: center; }
+.heat-m { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.heat-m.now { color: var(--fg); }
+.hcell { position: relative; isolation: isolate; height: 54px; border-radius: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.ph .hcell .cap { display: none; }
+.hcell .cap { font-size: 9px; font-weight: 600; opacity: 0.85; margin-top: 1px; white-space: nowrap; }
+.hcell.up { border: 1.5px dashed var(--heat-upcoming); color: var(--muted); background: transparent; }
+.hcell.up.big { border-color: oklch(0.6 0.12 153 / 0.6); color: var(--heat-ink); background: oklch(0.95 0.03 150 / 0.5); }
+.hcell.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); }
+.hcell.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* ---- Forms (as docs/design/cards-forms.md) ---- */
+.dlg { position: relative; background: var(--surface); border-radius: 28px; box-shadow: var(--pop-shadow); display: flex; flex-direction: column; }
+.dlg-h { display: flex; align-items: flex-start; gap: 14px; padding: 26px 28px 0; }
+.dlg-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-tint); color: var(--accent-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dlg-h h3 { font-size: 18px; font-weight: 800; } .dlg-h p { font-size: 13px; color: var(--muted); font-weight: 500; margin-top: 3px; }
+.dlg-x { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--fg); flex-shrink: 0; }
+.dlg-b { display: grid; grid-template-columns: 320px 1fr; gap: 24px; padding: 20px 28px; }
+.dlg-f { display: flex; align-items: center; gap: 10px; padding: 16px 28px 22px; border-top: 1px solid var(--divider); }
+.dlg-f .note { flex: 1; font-size: 12px; color: var(--muted); font-weight: 500; }
+.preview { position: relative; isolation: isolate; border-radius: 20px; background: var(--feature-tile); border: 1px solid var(--feature-tile-line); padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.pv-k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: oklch(0.38 0.1 150); }
+.pv-box { background: oklch(1 0 0 / 0.72); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
+.pv-box .between span:first-child { color: var(--muted); font-weight: 600; }
+.pv-box .between span:last-child { font-weight: 700; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 14px; align-content: start; }
+.fld { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.fld.full { grid-column: 1 / -1; }
+.lbl { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.lbl .req { color: var(--negative); margin-left: 2px; }
+.lbl .opt-tag { font-size: 10px; font-weight: 700; color: var(--muted); opacity: 0.8; margin-left: 6px; letter-spacing: 0.04em; }
+.inp { height: 40px; border-radius: 12px; border: 1px solid var(--surface-line); background: var(--surface); box-shadow: inset 0 1px 1px oklch(0 0 0 / 0.02); padding: 0 14px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.ph .inp { height: 44px; }
+.inp .pre { color: var(--muted); font-weight: 600; } .inp .suf { color: var(--muted); font-weight: 500; font-size: 13px; }
+.inp.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.inp.err { border-color: var(--negative); box-shadow: 0 0 0 3px var(--negative-ring); }
+.inp .ph-text { color: var(--muted); font-weight: 500; }
+.help { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.45; }
+.help svg { flex-shrink: 0; margin-top: 2px; }
+.help.err { color: var(--negative); font-weight: 600; }
+.help.warn { color: var(--warning-text); font-weight: 600; }
+.fseg { display: flex; padding: 3px; border-radius: 13px; background: var(--fill); gap: 2px; }
+.fseg span { flex: 1; text-align: center; padding: 9px 8px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.fseg span.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.ph .fseg span { padding: 11px 6px; }
+.checkrow { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); font-size: 13px; color: oklch(0.36 0.08 65); font-weight: 600; line-height: 1.45; }
+.box { width: 18px; height: 18px; border-radius: 6px; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.box.off { background: var(--surface); border: 1.5px solid var(--fill-strong); }
+.scrim { position: absolute; inset: 0; background: oklch(0.16 0.008 260 / 0.38); }
+
+/* ---- Canvas furniture (labels on the boards themselves) ---- */
+.board { padding: 48px; display: flex; flex-direction: column; gap: 36px; }
+.board-h h2 { font-size: 28px; font-weight: 800; }
+.board-h p { font-size: 14px; color: var(--muted); font-weight: 500; line-height: 1.6; margin-top: 8px; max-width: 1100px; }
+.board-h p b { color: var(--fg); }
+.sec-h { display: flex; gap: 12px; align-items: flex-start; }
+.sec-n { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sec-h h3 { font-size: 16px; font-weight: 800; }
+.sec-h p { font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.55; margin-top: 3px; max-width: 980px; }
+.frame-l { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+.stage { position: relative; border-radius: 28px; background: oklch(0.9 0.005 90); overflow: hidden; }
+.callout { position: absolute; z-index: 40; display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: oklch(0.55 0.2 300); color: white; font-size: 11px; font-weight: 800; box-shadow: 0 4px 12px oklch(0.3 0.15 300 / 0.35); white-space: nowrap; }
+.callout::before { content: attr(data-n); width: 16px; height: 16px; border-radius: 50%; background: white; color: oklch(0.45 0.2 300); display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+
+/* ===================== Accounts additions ===================== */
+.pill-stale { background: var(--warning-tint); color: var(--warning-text); }
+.pill-stale.pulse { animation: stale-pulse 2.6s ease-in-out infinite; }
+@keyframes stale-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px oklch(0.72 0.14 75 / 0.22); } }
+.pill-derived { background: oklch(0.94 0.03 258); color: oklch(0.42 0.1 258); }
+.chg-up { color: var(--positive); } .chg-down { color: var(--negative); }
+.chg-out { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .pill-stale.pulse { animation: none; } }
+
+/* Hidden radios that hold the pick (All or an account) */
+.pk-in { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+label.pk, label.sx { cursor: pointer; }
+
+/* Cover flow (as the Subscriptions final design) */
+.cstage { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; outline: none; border-radius: 18px; }
+.cstage:active { cursor: grabbing; }
+.cstage:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.cstage .sx { transition: transform 520ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 380ms, filter 380ms !important; -webkit-user-drag: none; }
+.chint { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 70; display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; background: oklch(1 0 0 / 0.72); border: 1px solid var(--surface-line); font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); pointer-events: none; }
+.chint kbd { font: inherit; font-weight: 800; padding: 0 5px; border-radius: 5px; background: var(--fill); color: var(--fg); }
+.stg { position: absolute; inset: 0; border-radius: inherit; opacity: 0; z-index: -2; transition: opacity 650ms ease; pointer-events: none; }
+.stage-dark { --fg: oklch(0.97 0.004 260); --muted: oklch(1 0 0 / 0.62); --divider: oklch(1 0 0 / 0.14); --fill: oklch(1 0 0 / 0.12); --fill-strong: oklch(1 0 0 / 0.22); --accent-text: var(--on-card-lime); --surface: oklch(0.22 0.012 260); --surface-line: oklch(1 0 0 / 0.1); color: var(--fg); border-color: transparent !important; }
+.stage-dark .btn-soft { background: oklch(1 0 0 / 0.14); color: var(--fg); }
+.stage-dark .btn-icon { background: oklch(1 0 0 / 0.14); color: var(--fg); border-color: transparent; }
+.stage-dark .chint { background: oklch(0 0 0 / 0.35); border-color: oklch(1 0 0 / 0.12); }
+.stage-dark .pill-off { background: oklch(1 0 0 / 0.14); color: var(--fg); }
+.stage-dark .pill-stale { background: oklch(0.8 0.13 80 / 0.28); color: oklch(0.93 0.09 85); }
+.stage-deep .pk-bar { background: var(--pick-soft, var(--on-card-lime)) !important; transition: background 500ms; }
+.stage-deep .btn-primary { background: var(--pick-soft, var(--on-card-lime)); color: var(--pick-ink, var(--ink)); transition: background 500ms, color 500ms; }
+.stage-deep .chint kbd { background: var(--pick-soft, var(--fill)); color: var(--pick-ink, var(--fg)); }
+.cnav { display: none; }
+@media (prefers-reduced-motion: reduce) { .cstage .sx, .stg { transition: none !important; } }
+
+/* The hero panes: one per pick, only the picked one shows */
+.hp { display: none; }
+
+/* Hero stats */
+.hstat { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.hstat .k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.hstat .v { font-size: 17px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hstat .s { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Account tiles (the Cards tiles' grammar) */
+.atile { position: relative; isolation: isolate; flex-shrink: 0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow); overflow: hidden; }
+.atile .t-muted { color: var(--on-card-muted); font-size: 11px; font-weight: 600; }
+.atile .t-faint { color: var(--on-card-faint); font-size: 10.5px; font-weight: 600; }
+.atile .t-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--on-card-fill); white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.atile .t-pill.stale { background: oklch(0.8 0.13 80 / 0.38); color: oklch(0.97 0.05 90); animation: stale-pulse 2.6s ease-in-out infinite; }
+.atile.off { filter: grayscale(0.85); opacity: 0.62; box-shadow: none; }
+.atile .bank { width: 28px; height: 28px; border-radius: 9px; background: var(--on-card-fill); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+.tilewrap { position: relative; flex-shrink: 0; display: block; }
+.tilewrap .tick { display: none; }
+@media (prefers-reduced-motion: reduce) { .atile .t-pill.stale { animation: none; } }
+
+/* Treemap ("Where it sits") */
+.tmap { position: relative; }
+.tblock { position: absolute; border-radius: 14px; padding: 12px 14px; color: var(--on-card); overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; isolation: isolate; transition: transform 160ms var(--ease-out), opacity 240ms, filter 240ms; }
+.tblock b { font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tblock .tb-s { font-size: 11px; font-weight: 600; color: var(--on-card-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tblock .tb-v { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.tblock .tb-p { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 700; color: var(--on-card-faint); }
+label.tblock:hover { transform: translateY(-2px); }
+.tgroup-l { position: absolute; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+
+/* Charts */
+.chart { display: block; overflow: visible; }
+.chart text { font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; }
+.acm { transition: opacity 260ms ease, filter 260ms ease; }
+.axis-t { font-size: 10.5px; font-weight: 700; fill: var(--muted); }
+.axis-l { stroke: var(--divider); stroke-dasharray: 3 4; }
+.vlabel { font-size: 11px; font-weight: 800; fill: var(--fg); }
+.hatch-fill { fill: url(#hatch); }
+
+/* Snapshot calendar */
+.scal { display: grid; gap: 6px; align-items: center; }
+.scal .sc-h { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.scal .sc-h.now { color: var(--fg); }
+.scell { position: relative; height: 44px; border-radius: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 800; transition: opacity 240ms; }
+.scell small { font-size: 9px; font-weight: 700; opacity: 0.8; margin-top: 1px; }
+.scell.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); font-weight: 700; }
+.scell.stale { background: repeating-linear-gradient(135deg, oklch(0.95 0.05 85) 0 6px, oklch(0.98 0.02 85) 6px 12px); color: var(--warning-text); border: 1.5px dashed oklch(0.72 0.14 75 / 0.6); }
+.scell.closed { background: var(--fill); color: var(--muted); font-weight: 700; }
+.scell.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* Account rows (direction C) */
+.arow { display: grid; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--divider); }
+.arow:last-child { border-bottom: 0; }
+.qinp { height: 36px; border-radius: 11px; border: 1px solid var(--surface-line); background: var(--surface); padding: 0 12px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; box-shadow: inset 0 1px 1px oklch(0 0 0 / 0.02); }
+.qinp .pre { color: var(--muted); font-weight: 600; }
+.qinp.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.qinp.ghost { color: var(--muted); font-weight: 600; }
+
+/* Passbooks (direction D) */
+.pbook { position: relative; isolation: isolate; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; transition: transform 160ms var(--ease-out), box-shadow 200ms, opacity 240ms; }
+label.pbook:hover { transform: translateY(-2px); }
+.pbook .spine { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
+
+/* Paper laid on the green stage: back to the light tokens */
+.on-paper { --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --divider: oklch(0 0 0 / 0.08); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07); --accent-text: oklch(0.42 0.14 145); color: var(--fg); }
+.stage-dark .on-paper .btn-soft { background: var(--fill); color: var(--fg); }
+.stage-dark .on-paper .btn-icon { background: var(--surface); color: var(--muted); border-color: var(--surface-line); }
+.stage-dark .on-paper .pill-off { background: var(--fill); color: var(--muted); }
+.stage-dark .on-paper .pill-stale { background: var(--warning-tint); color: var(--warning-text); }
+
+/* ===================== Shared with Income ===================== */
+.pill-late { background: var(--warning-tint); color: var(--warning-text); }
+.pill-derived { background: oklch(0.94 0.03 258); color: oklch(0.42 0.1 258); }
+.minibank { width: 18px; height: 18px; border-radius: 6px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--on-card); font-size: 9.5px; font-weight: 800; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2); }
+.pk-in { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+label.pk, label.sx { cursor: pointer; }
+.lede .pt { position: relative; display: inline-block; }
+.lede .pt > b { cursor: help; border-bottom: 1.5px dotted var(--accent-text); padding-bottom: 1px; transition: background 160ms; border-radius: 4px; }
+.lede .pt:hover > b, .lede .pt:focus-visible > b { background: var(--accent-tint); }
+.lede .hc-wrap { font-weight: 500; font-size: 13px; line-height: 1.4; color: var(--fg); }
+.lede .warn-b { color: var(--warning-text); }
+
+/* Ring texture on marks (the app's RingTexture, as CSS) */
+.rt { position: relative; overflow: hidden; }
+.rt::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: repeating-radial-gradient(circle at calc(100% + 10px) calc(100% + 18px), oklch(1 0 0 / 0.26) 0 1px, transparent 1px 15px); }
+.rt.rt-dark::after { background: repeating-radial-gradient(circle at calc(100% + 10px) calc(100% + 18px), oklch(0 0 0 / 0.14) 0 1px, transparent 1px 15px); }
+
+/* Hero furniture shared by the four variations */
+.hero { position: relative; isolation: isolate; border-radius: 28px; overflow: hidden; }
+.hk { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.hbig { font-size: 64px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.02; }
+.hbig small { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; margin-right: 2px; opacity: 0.8; }
+.hsub { font-size: 13px; font-weight: 600; color: var(--muted); }
+.hfig { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.hfig .k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.hfig .v { font-size: 20px; font-weight: 800; white-space: nowrap; letter-spacing: -0.01em; }
+.hfig .s { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.hfig .v.warn { color: var(--warning-text); }
+.delta { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; background: oklch(1 0 0 / 0.6); color: var(--positive); }
+
+/* Payday river (I1) */
+.river { display: grid; grid-template-columns: 150px 1fr 96px; align-items: stretch; }
+.river .ax { grid-column: 2; position: relative; height: 38px; }
+.river .ax span { position: absolute; top: 20px; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.river .ax span.now { color: var(--fg); }
+.lane { display: contents; }
+.lane > * { transition: opacity 240ms; }
+.lane .ll { display: flex; align-items: center; gap: 10px; height: var(--lh, 54px); cursor: pointer; border-radius: 14px; padding-right: 6px; }
+.lane .ll b { font-size: 13px; font-weight: 800; display: block; line-height: 1.2; }
+.lane .ll small { font-size: 11px; font-weight: 600; color: var(--muted); display: block; }
+.lane .lp { position: relative; height: var(--lh, 54px); }
+.lane .lp::before { content: ""; position: absolute; left: 0; width: var(--now, 81%); top: var(--ly, 50%); height: 0; border-top: 1.5px solid var(--lane, var(--muted)); opacity: 0.3; }
+.lane .lp::after { content: ""; position: absolute; left: var(--now, 81%); right: 0; top: var(--ly, 50%); height: 0; border-top: 1.5px dashed var(--lane, var(--muted)); opacity: 0.5; }
+.lane .lt { display: flex; align-items: center; justify-content: flex-end; font-size: 13px; font-weight: 800; height: var(--lh, 54px); }
+.bead { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; color: var(--on-card); font-size: 9.5px; font-weight: 800; box-shadow: 0 2px 6px oklch(0.3 0.09 155 / 0.28), inset 0 1px 0 oklch(1 0 0 / 0.28); }
+.bead.late { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px oklch(0.72 0.14 75), 0 2px 6px oklch(0.3 0.09 155 / 0.28); }
+.bead.pend { background: var(--warning-tint) !important; border: 2px dashed oklch(0.72 0.14 75); color: var(--warning-text); box-shadow: none; animation: due-pulse 2.2s ease-in-out infinite; }
+.bead.soon { background: oklch(1 0 0 / 0.5) !important; border: 1.5px dashed var(--lane); color: var(--fg); box-shadow: none; }
+.bead-l { position: absolute; transform: translate(0, -50%); font-size: 11px; font-weight: 800; white-space: nowrap; color: var(--fg); pointer-events: none; }
+.bead-l.soon { color: var(--muted); font-weight: 700; }
+.bead-wrap { position: absolute; top: 50%; left: 0; width: 0; height: 0; }
+.bead-wrap.hov > .hc-wrap { left: 50%; margin-left: -125px; bottom: calc(100% + 20px); }
+.todayline { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1.5px solid var(--ink); z-index: 4; pointer-events: none; }
+.todaytag { position: absolute; top: -2px; transform: translateX(-50%); z-index: 5; padding: 3px 9px; border-radius: 999px; background: var(--ink); color: var(--on-ink); font-size: 10px; font-weight: 800; white-space: nowrap; letter-spacing: 0.02em; }
+@keyframes due-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px oklch(0.72 0.14 75 / 0.25); } }
+
+/* Month columns (stacked bars) */
+.mb { display: flex; align-items: flex-end; gap: 14px; position: relative; padding-left: 40px; }
+.mcol { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; position: relative; }
+.mstack { display: flex; flex-direction: column-reverse; gap: 2px; justify-content: flex-start; }
+.mseg { border-radius: 4px; min-height: 3px; transition: opacity 260ms, filter 260ms; }
+.mseg:last-child { border-top-left-radius: 9px; border-top-right-radius: 9px; }
+.mseg.ghost { border: 1.5px dashed var(--c); background: color-mix(in oklch, var(--c) 12%, transparent); }
+.mseg.pend { background: repeating-linear-gradient(135deg, oklch(0.9 0.08 85) 0 5px, oklch(0.96 0.04 85) 5px 10px); border: 1.5px dashed oklch(0.72 0.14 75); }
+.mval { text-align: center; font-size: 11px; font-weight: 800; padding-bottom: 6px; white-space: nowrap; }
+.mval.muted { color: var(--muted); font-weight: 700; }
+.mlab { text-align: center; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); padding-top: 9px; }
+.mlab.now { color: var(--fg); }
+.mcol.nowcol .mstack { filter: drop-shadow(0 0 0 transparent); }
+.mcol.nowcol::before { content: ""; position: absolute; left: -7px; right: -7px; top: -4px; bottom: -6px; border-radius: 14px; background: var(--fill); z-index: -1; }
+.mline { position: absolute; left: 0; right: 0; border-top: 1.5px dashed oklch(0.45 0.1 152 / 0.55); pointer-events: none; z-index: 3; }
+.mline span { position: absolute; right: 0; top: -22px; font-size: 11px; font-weight: 800; color: var(--positive); background: var(--surface); padding: 1px 8px; border-radius: 999px; border: 1px solid var(--surface-line); }
+.mgrid { position: absolute; left: 0; right: 0; z-index: 0; border-top: 1px dashed var(--divider); pointer-events: none; }
+.mgrid span { position: absolute; left: 0; top: -17px; font-size: 10px; font-weight: 700; color: var(--muted); }
+.mcol.hov > .hc-wrap { bottom: auto; top: 0; }
+
+/* Source rows */
+.srow { display: grid; align-items: center; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--divider); }
+.srow:last-child { border-bottom: 0; }
+.srow.off { opacity: 0.55; }
+.spark { display: flex; align-items: flex-end; gap: 3px; height: 28px; }
+.spark i { flex: 1; min-width: 4px; border-radius: 2px; background: var(--c); min-height: 2px; }
+.spark i.z { background: var(--fill-strong); height: 2px !important; }
+.spark i.f { background: transparent; border: 1px dashed var(--c); opacity: 0.6; }
+
+/* Coming up rows */
+.cu { display: grid; grid-template-columns: 46px 1fr auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--divider); }
+.cu:last-of-type { border-bottom: 0; }
+.cu .dd { width: 46px; border-radius: 12px; padding: 5px 0; background: var(--fill); text-align: center; line-height: 1.1; }
+.cu .dd b { display: block; font-size: 17px; font-weight: 800; }
+.cu .dd span { font-size: 10px; font-weight: 800; color: var(--muted); letter-spacing: 0.05em; }
+.cu .dd.late { background: var(--warning-tint); } .cu .dd.late span { color: var(--warning-text); }
+.cu .tt { font-size: 13.5px; font-weight: 700; } .cu .ss { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+.cu .amt { font-size: 15px; font-weight: 800; color: var(--positive); text-align: right; }
+.cu .amt small { display: block; font-size: 11px; font-weight: 700; color: var(--muted); }
+
+/* Bars with ring texture */
+.hbar { height: 10px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.hbar > span { display: block; height: 100%; border-radius: inherit; }
+
+/* Legend dots */
+.lg { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.lg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.lg i.dash { border: 1.5px dashed var(--muted); background: transparent; }
+.lg i.hat { background: repeating-linear-gradient(135deg, oklch(0.9 0.08 85) 0 3px, oklch(0.96 0.04 85) 3px 6px); border: 1px dashed oklch(0.72 0.14 75); }
+
+/* Round 3 visuals: pickable blocks, tiles and bubbles keep their hover cards (the ring texture needs no clipping) */
+.pickable.rt { overflow: visible !important; }
+.bt { position: relative; isolation: isolate; display: flex; flex-direction: column; padding: 16px; border-radius: 22px; color: var(--on-card); min-width: 0; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.22); }
+.dt-pill { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: oklch(1 0 0 / 0.18); white-space: nowrap; color: var(--on-card); }
+/* Dark stage for the wheel (I3) */
+.stage-deep { background: linear-gradient(155deg, var(--card-emerald-from), var(--card-emerald-to)); color: var(--on-card); --fg: oklch(0.97 0.004 260); --muted: oklch(1 0 0 / 0.62); --divider: oklch(1 0 0 / 0.14); --fill: oklch(1 0 0 / 0.1); --fill-strong: oklch(1 0 0 / 0.2); --surface: oklch(0.22 0.04 160); --surface-line: oklch(1 0 0 / 0.14); --accent-text: var(--on-card-lime); --accent-tint: oklch(1 0 0 / 0.14); }
+.stage-deep .btn-primary { background: var(--on-card-lime); color: var(--ink); }
+.stage-deep .btn-ghost { background: oklch(1 0 0 / 0.14); color: var(--fg); border-color: transparent; box-shadow: none; }
+.stage-deep .hc { --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --divider: oklch(0 0 0 / 0.08); }
+.stage-deep .hc * { color: inherit; }
+.stage-deep .hc .h, .stage-deep .hc .d, .stage-deep .hc li .nm, .stage-deep .hc .f { color: var(--muted); }
+.stage-deep .pill-on { background: oklch(0.88 0.12 145 / 0.22); color: var(--on-card-lime); }
+.stage-deep .pill-late { background: oklch(0.85 0.12 85 / 0.25); color: oklch(0.94 0.09 88); }
+.stage-deep .pill-due { background: oklch(0.7 0.14 35 / 0.45); color: oklch(0.97 0.04 60); }
+.mchip { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; padding: 7px 0; width: 54px; border-radius: 14px; font-size: 11px; font-weight: 800; letter-spacing: 0.03em; color: var(--muted); cursor: pointer; transition: background 160ms, color 160ms; text-transform: uppercase; }
+.mchip i { width: 20px; height: 4px; border-radius: 2px; background: currentColor; opacity: 0.35; }
+.mchip:hover { background: var(--fill); }
+.mpane { display: none; }
+.pbar { height: 8px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+
+/* Entries ledger */
+.erow { display: grid; align-items: center; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--divider); }
+.erow:last-child { border-bottom: 0; }
+.erow .dim { color: var(--muted); font-weight: 600; }
+.tag { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800; background: var(--fill); color: var(--muted); }
+.tag.bonus { background: oklch(0.94 0.04 300); color: oklch(0.42 0.12 300); }
+.tag.other { background: var(--fill); color: var(--muted); }
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.search { height: 40px; min-width: 250px; border-radius: 999px; background: var(--fill); display: flex; align-items: center; gap: 8px; padding: 0 16px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.pager .pgb { display: inline-flex; align-items: center; gap: 8px; }
+.pager .pgb i { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--surface-line); display: flex; align-items: center; justify-content: center; background: var(--surface); color: var(--fg); font-style: normal; box-shadow: var(--soft-shadow); }
+.mgrp { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 8px; border-bottom: 1px solid var(--divider); font-size: 13px; font-weight: 800; }
+.mgrp span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.menu { position: absolute; z-index: 20; right: 0; top: calc(100% + 6px); width: 190px; padding: 6px; border-radius: 16px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--pop-shadow); display: flex; flex-direction: column; }
+.menu span { padding: 9px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 9px; }
+.menu span.on { background: var(--fill); } .menu span.dng { color: var(--negative); }
+.mini-btn { display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; min-height: 30px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.mini-btn.ok { background: var(--accent-tint); color: var(--accent-text); }
+.mini-btn.warn { background: var(--warning-tint); color: var(--warning-text); }
+.mini-btn.ghost { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); }
+
+/* Dialog helpers for the forms board */
+.sw { display: inline-flex; gap: 8px; }
+.sw i { width: 26px; height: 26px; border-radius: 9px; display: inline-block; }
+.sw i.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+
+/* The pieces of Loans' stylesheet the Insurance boards still use (pruned 2026-10-29: add a rule back if a new board needs one). */
+.chai-app { --solid: oklch(0.995 0 0); --future-base: white; --grid: oklch(0.3 0.09 155 / 0.18); --c-prin: oklch(0.6 0.12 153); --c-int: oklch(0.72 0.14 62); }
+.pick { transition: opacity 240ms; }
+.tbl { flex: 1; display: flex; flex-direction: column; }
+.tbl > .srow:not(:first-child), .tbl > .cu { flex: 1; }
+.nb.fill { flex: 1; flex-direction: column; }
+.cap { position: relative; height: 24px; border-radius: 999px; background: var(--fill); }
+.cap > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; }
+.cap > b { position: absolute; top: -5px; bottom: -5px; width: 3px; border-radius: 2px; background: var(--fg); opacity: 0.85; }
+/* Round 2: hands-on pages. Chips are labels for hidden radios; the page shows the block for the picked combination. */
+@keyframes cmb-in { from { opacity: 0; transform: translateY(6px); } }
+@keyframes growx { from { transform: scaleX(0); } }
+
+/* ===================== Insurance ===================== */
+.chai-app { --c-paid: var(--card-sapphire); }
+.insdir .nb { display: none; animation: cmb-in 380ms var(--ease-out); }
+.hero.feat { background: var(--feature-tile); border: 1px solid var(--feature-tile-line); }
+.k-up { color: var(--warning-text); }
+
+/* A protectee's tile on the cover map */
+.who { display: flex; flex-direction: column; gap: 14px; padding: 18px; border-radius: 22px; background: oklch(1 0 0 / 0.62); border: 1px solid oklch(0 0 0 / 0.07); box-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 8px 20px oklch(0 0 0 / 0.04); min-width: 0; }
+.who-h { display: flex; align-items: center; gap: 12px; }
+.who-h b { display: block; font-size: 16px; font-weight: 800; line-height: 1.15; } .who-h small { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.who-body { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+.pol { display: flex; flex-direction: column; gap: 9px; padding: 12px 12px 11px; border-radius: 16px; background: var(--surface); border: 1px solid var(--surface-line); border-left: 4px solid var(--c); box-shadow: var(--soft-shadow); cursor: pointer; transition: box-shadow 200ms, transform 200ms; }
+.pol:hover { transform: translateY(-1px); box-shadow: var(--card-shadow); }
+.pol-t { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.pol-t b { font-size: 13px; font-weight: 800; line-height: 1.2; } .pol-t small { display: block; font-size: 11px; font-weight: 600; color: var(--muted); margin-top: 1px; }
+.pol-cover { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; } .pol-cover small { font-size: 10.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); margin-left: 6px; }
+.pol-f { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; font-weight: 700; color: var(--muted); }
+.pol-f .soon { color: var(--warning-text); }
+.tbar { position: relative; height: 8px; border-radius: 999px; background: var(--fill-strong); overflow: hidden; }
+.tbar > span { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: var(--c); }
+.tbar.soon > span { background: repeating-linear-gradient(135deg, oklch(0.72 0.14 75) 0 5px, oklch(0.8 0.12 78) 5px 10px); }
+.who.gap { background: transparent; border: 1.5px dashed oklch(0 0 0 / 0.22); box-shadow: none; }
+.gapbox { flex: 1; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 10px; padding: 14px; border-radius: 16px; background: oklch(1 0 0 / 0.5); }
+.gapbox b { font-size: 14px; font-weight: 800; } .gapbox p { font-size: 12px; font-weight: 600; color: var(--muted); line-height: 1.5; }
+label.pol { cursor: pointer; }
+
+/* Runway, creep: charts drawn in SVG with hover zones over them */
+.chart-wrap { position: relative; }
+.zone { position: absolute; top: 0; bottom: 0; }
+.zone:hover, .zone:focus-visible { background: oklch(0 0 0 / 0.035); outline: none; }
+.chart-wrap svg text { font-family: 'Manrope', system-ui, sans-serif; }
+.exp { stroke-dasharray: 4 3; }
+.lg i.exp { background: transparent; border: 1.5px dashed var(--muted); }
+
+/* Policy details */
+.kv { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px; }
+.kv > div { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.kv .k { font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.kv .v { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+.kv .nov .v { color: var(--muted); font-weight: 600; }
+.kv .v .cp { display: inline-flex; color: var(--muted); }
+.kv .full { grid-column: 1 / -1; }
+.addon { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border-radius: 999px; background: var(--fill); font-size: 12px; font-weight: 700; }
+.addon svg { color: var(--positive); }
+.addons { display: flex; flex-wrap: wrap; gap: 7px; }
+
+/* NCB ladder */
+.ladder { display: flex; align-items: center; gap: 0; position: relative; padding: 4px 0; }
+.ladder .st { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 7px; position: relative; font-size: 11px; font-weight: 800; color: var(--muted); }
+.ladder .st i { width: 14px; height: 14px; border-radius: 50%; background: var(--fill-strong); position: relative; z-index: 1; }
+.ladder .st::before { content: ""; position: absolute; top: 10px; left: -50%; right: 50%; height: 3px; background: var(--fill-strong); }
+.ladder .st:first-child::before { display: none; }
+.ladder .st.done i { background: var(--c); } .ladder .st.done::before { background: var(--c); }
+.ladder .st.now i { background: var(--c); box-shadow: 0 0 0 4px color-mix(in oklch, var(--c) 28%, transparent); } .ladder .st.now { color: var(--fg); }
+.ladder .st.nx i { background: var(--surface); box-shadow: inset 0 0 0 2px var(--c); } .ladder .st.nx::before { background: repeating-linear-gradient(90deg, var(--c) 0 4px, transparent 4px 8px); }
+
+/* Mini cards */
+.mini { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 18px; background: oklch(1 0 0 / 0.62); border: 1px solid oklch(0 0 0 / 0.07); min-width: 0; }
+.mini b { font-size: 13px; font-weight: 800; } .mini small { font-size: 11px; font-weight: 600; color: var(--muted); display: block; }
+.spark { display: flex; align-items: flex-end; gap: 3px; height: 40px; }
+.spark i { flex: 1; border-radius: 3px 3px 1px 1px; background: var(--c); min-height: 3px; opacity: 0.55; } .spark i.l { opacity: 1; }
+.chg-up { color: var(--negative); } .chg-dn { color: var(--positive); } .chg-0 { color: var(--muted); }
+
+/* States / forms boards */
+.stt { display: flex; flex-direction: column; gap: 10px; }
+.stt > .cap { font-size: 12px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.stt > p { font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.55; max-width: 720px; }
+.stt > p b { color: var(--fg); }
+.frame { border-radius: 26px; border: 1px solid var(--surface-line); background: var(--page); padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow: hidden; }
+.empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 44px 24px; border-radius: 22px; border: 1.5px dashed oklch(0 0 0 / 0.2); }
+.empty b { font-size: 18px; font-weight: 800; } .empty p { font-size: 13.5px; color: var(--muted); font-weight: 500; max-width: 440px; line-height: 1.55; }
+.pill-lapsed { background: var(--negative-tint); color: var(--negative); }
+.pill-soon2 { background: var(--warning-tint); color: var(--warning-text); }
+.toast { display: inline-flex; align-items: center; gap: 14px; padding: 12px 16px 12px 18px; border-radius: 999px; background: var(--ink); color: var(--on-ink); box-shadow: var(--pop-shadow); font-weight: 700; font-size: 13.5px; align-self: flex-start; }
+.toast i { width: 22px; height: 22px; border-radius: 50%; background: oklch(0.88 0.17 125); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; font-style: normal; }
+.toast u { color: oklch(0.88 0.17 125); font-weight: 800; text-decoration: none; margin-left: 6px; }
+.cell-name b { white-space: normal; }
+.gc > .card, .gc > .nb > .card { flex: 1; }
+.pol.off { opacity: 0.6; filter: grayscale(0.8); border-left-color: var(--fill-strong); }
+</style>
+</helmet>
+<div class="chai-app board" style="width:1100px;height:5290px"><div class="board-h"><div class="row" style="gap:14px;flex-wrap:wrap"><h2>Insurance forms: add a policy, renew it, cancel it</h2><span class="sample">His real policies, from Gmail. Today is Oct 29, 2026; the renewal quotes in 2027 are illustrative</span></div><p>Every policy is a <b>master row</b> (what it is, who it covers, the insurer) and a <b>payment for each term</b> (the dates the cover runs, how many years it buys, the premium, and for a vehicle the IDV and no-claim step). <b>Renewing is recording the next term.</b> A term can last <b>one to five years</b>, paid once or each year: his health cover and his bike's policy are single premiums for three years, so a year of cover is the premium over the years. The <b>kind</b> decides the fields. Nothing is deleted when a policy ends: cancelled ones stay, dimmed.</p></div>
+<section style="display:flex;flex-direction:column;gap:16px"><div class="sec-h"><span class="sec-n">1</span><div><h3>Add policy: health, paid once for three years</h3><p>His ManipalCigna policy as the example. The two new fields are how long the cover lasts and whether the premium is paid once or each year; the preview works out a year of it and the cost against the cover. The paid-on day is optional: the PDFs don't say, so the day cover starts stands in until it's entered.</p></div></div><div class="dlg" style="width:960px"><div class="dlg-h"><span class="dlg-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span><div><h3>Add policy</h3><p>Something you're insured under</p></div><span class="dlg-x"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span></div><div class="dlg-b"><div class="preview"><span class="tex" aria-hidden="true"><svg viewBox="0 0 320 520" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-ink)" stroke-opacity="0.1" stroke-width="1"><circle cx="330" cy="540" r="50"></circle><circle cx="330" cy="540" r="76"></circle><circle cx="330" cy="540" r="102"></circle><circle cx="330" cy="540" r="128"></circle><circle cx="330" cy="540" r="154"></circle><circle cx="330" cy="540" r="180"></circle><circle cx="330" cy="540" r="206"></circle><circle cx="330" cy="540" r="232"></circle><circle cx="330" cy="540" r="258"></circle><circle cx="330" cy="540" r="284"></circle><circle cx="330" cy="540" r="310"></circle><circle cx="330" cy="540" r="336"></circle><circle cx="330" cy="540" r="362"></circle><circle cx="330" cy="540" r="388"></circle><circle cx="330" cy="540" r="414"></circle><circle cx="330" cy="540" r="440"></circle><circle cx="330" cy="540" r="466"></circle><circle cx="330" cy="540" r="492"></circle><circle cx="330" cy="540" r="518"></circle><circle cx="330" cy="540" r="544"></circle><circle cx="330" cy="540" r="570"></circle><circle cx="330" cy="540" r="596"></circle><circle cx="330" cy="540" r="622"></circle></g></svg></span><span class="pv-k">What you'll see</span><div class="pv-box" style="gap:12px"><div class="row" style="gap:12px"><span class="mono" style="width:40px;height:40px;border-radius:12px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to));"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 5.6a5.2 5.2 0 0 0-7.4 0L12 7l-1.4-1.4a5.2 5.2 0 0 0-7.4 7.4L12 21.8l8.8-8.8a5.2 5.2 0 0 0 0-7.4Z"></path></svg></span><span><b style="font-size:15px;display:block">Health · Lifetime Health</b><span class="muted" style="font-weight:600">ManipalCigna · You</span></span></div><div style="font-size:30px;font-weight:800;letter-spacing:-0.02em">₹50,00,000<span style="font-size:13px;font-weight:700;color:var(--muted)"> sum insured</span></div></div><div class="pv-box"><div class="between"><span>Paid</span><span>₹38,428 once</span></div><div class="between"><span>Cover</span><span>Jul 5, 2026 to Jul 4, 2029</span></div><div class="between"><span style="font-weight:800;color:var(--fg)">A year of it</span><span>₹12,809 (₹1,067 a month)</span></div><div class="between"><span>Renews</span><span>in 980 days, Jul 5, 2029</span></div></div><span class="pill pill-derived" style="align-self:flex-start"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"></path><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"></path></svg> Worked out</span><div class="pv-box"><div class="between"><span style="font-weight:800;color:var(--fg)">A year ÷ cover</span><span>0.26%</span></div></div></div><div class="fields"><div class="fld full"><span class="lbl">Kind</span><div class="fseg"><span class="on">Health</span><span class="">Life</span><span class="">Motor</span><span class="">Accident</span><span class="">Home</span></div><span class="help">The kind decides which fields follow. Pick Motor for a car or bike, and the vehicle fields appear.</span></div><div class="fld"><span class="lbl">Name<span class="req">*</span></span><div class="inp focus"><span class="">Lifetime Health</span></div><span class="help">The plan's name, so two policies from one insurer stay apart.</span></div><div class="fld"><span class="lbl">Insurer<span class="req">*</span></span><div class="inp"><span class="">ManipalCigna</span></div></div><div class="fld"><span class="lbl">Covers<span class="req">*</span></span><div class="inp"><span>You</span><span style="margin-left:auto;color:var(--muted);display:flex"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div><span class="help">A person, a vehicle or the home. The page groups policies by this.</span></div><div class="fld"><span class="lbl">Policy number</span><div class="inp"><span class="">…3850</span></div><span class="help">Only the last four digits are kept.</span></div><div class="fld"><span class="lbl">Sum insured<span class="req">*</span></span><div class="inp"><span class="pre">₹</span><span class="">50,00,000</span></div><span class="help">The most the policy pays in a policy year.</span></div><div class="fld"><span class="lbl">Cover starts<span class="req">*</span></span><div class="inp"><span class="">Jul 5, 2026</span></div><span class="help">The first day of cover, from the schedule.</span></div><div class="fld"><span class="lbl">Cover lasts<span class="req">*</span></span><div class="fseg"><span class="">1 year</span><span class="">2 years</span><span class="on">3 years</span><span class="">5 years</span></div><span class="help">How long this premium buys. The renewal date is worked out from it.</span></div><div class="fld"><span class="lbl">Premium paid<span class="req">*</span></span><div class="fseg"><span class="on">Once</span><span class="">Each year</span></div><span class="help">A single premium is spread over the years for "a year".</span></div><div class="fld"><span class="lbl">Premium<span class="req">*</span></span><div class="inp"><span class="pre">₹</span><span class="">38,427.59</span><span class="suf" style="margin-left:auto">for 3 years</span></div><span class="help">With GST, as paid.</span></div><div class="fld"><span class="lbl">Paid on</span><div class="inp"><span class="">Jul 5, 2026</span></div><span class="help">The PDF doesn't say. Until you enter it, the day cover starts is used.</span></div><div class="fld"><span class="lbl">Paid from<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span>Not recorded yet</span><span style="margin-left:auto;color:var(--muted);display:flex"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div><span class="help">An account, or a card. A card's premium is counted once, as a premium.</span></div><div class="fld"><span class="lbl">Policy document<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span class="ph-text">A link to the PDF</span></div></div><div class="fld full"><span class="lbl">Add-ons and covers<span class="opt-tag">OPTIONAL</span></span><div class="addons"><span class="addon"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>Health 360 Shield</span><span class="addon"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>Health 360 OPD</span><span class="addon"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>Cumulative bonus 15%</span><span class="addon"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>Worldwide emergency ₹25L</span></div></div><div class="fld"><span class="lbl">Claims helpline<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span class="">1800-102-4461</span></div><span class="help">So it's here when you need to claim.</span></div><div class="fld"><span class="lbl">Waiting periods<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span class="">30 days; 24 months for pre-existing</span></div></div></div></div><div class="dlg-f"><span class="note">The term you're in is saved as its first payment, so the page can count the days left.</span><span class="btn btn-soft">Cancel</span><span class="btn btn-primary">Add policy</span></div></div></section>
+<section style="display:flex;flex-direction:column;gap:16px"><div class="sec-h"><span class="sec-n">2</span><div><h3>Add policy: motor</h3><p>His Acko car policy. A vehicle has an IDV, a no-claim bonus step, and add-ons shown as on or off. The registration number is entered once, and only its last four digits show on the page.</p></div></div><div class="dlg" style="width:960px"><div class="dlg-h"><span class="dlg-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg></span><div><h3>Add policy</h3><p>Motor: a car or a bike</p></div><span class="dlg-x"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span></div><div class="dlg-b"><div class="preview"><span class="tex" aria-hidden="true"><svg viewBox="0 0 320 520" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-ink)" stroke-opacity="0.1" stroke-width="1"><circle cx="330" cy="540" r="50"></circle><circle cx="330" cy="540" r="76"></circle><circle cx="330" cy="540" r="102"></circle><circle cx="330" cy="540" r="128"></circle><circle cx="330" cy="540" r="154"></circle><circle cx="330" cy="540" r="180"></circle><circle cx="330" cy="540" r="206"></circle><circle cx="330" cy="540" r="232"></circle><circle cx="330" cy="540" r="258"></circle><circle cx="330" cy="540" r="284"></circle><circle cx="330" cy="540" r="310"></circle><circle cx="330" cy="540" r="336"></circle><circle cx="330" cy="540" r="362"></circle><circle cx="330" cy="540" r="388"></circle><circle cx="330" cy="540" r="414"></circle><circle cx="330" cy="540" r="440"></circle><circle cx="330" cy="540" r="466"></circle><circle cx="330" cy="540" r="492"></circle><circle cx="330" cy="540" r="518"></circle><circle cx="330" cy="540" r="544"></circle><circle cx="330" cy="540" r="570"></circle><circle cx="330" cy="540" r="596"></circle><circle cx="330" cy="540" r="622"></circle></g></svg></span><span class="pv-k">What you'll see</span><div class="pv-box" style="gap:12px"><div class="row" style="gap:12px"><span class="mono" style="width:40px;height:40px;border-radius:12px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to));"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><span><b style="font-size:15px;display:block">Car · Comprehensive Platinum</b><span class="muted" style="font-weight:600">Acko · Honda City · …1843</span></span></div><div style="font-size:30px;font-weight:800;letter-spacing:-0.02em">₹4,42,000<span style="font-size:13px;font-weight:700;color:var(--muted)"> IDV</span></div></div><div class="pv-box"><div class="between"><span>Paid</span><span>₹5,504 for the year</span></div><div class="between"><span>No-claim bonus</span><span>50%, the top step</span></div><div class="between"><span>Cover</span><span>Aug 6, 2026 to Aug 5, 2027</span></div><div class="between"><span>Renews</span><span>in 281 days, Aug 6, 2027</span></div></div><div class="pv-box" style="gap:6px"><div class="between"><span>Policy recorded for</span><span>the car</span></div></div></div><div class="fields"><div class="fld full"><span class="lbl">Kind</span><div class="fseg"><span class="">Health</span><span class="">Life</span><span class="on">Motor</span><span class="">Accident</span><span class="">Home</span></div></div><div class="fld"><span class="lbl">Name<span class="req">*</span></span><div class="inp focus"><span class="">Car · Comprehensive Platinum</span></div></div><div class="fld"><span class="lbl">Insurer<span class="req">*</span></span><div class="inp"><span class="">Acko</span></div></div><div class="fld"><span class="lbl">Covers<span class="req">*</span></span><div class="inp"><span>Car · Honda City</span><span style="margin-left:auto;color:var(--muted);display:flex"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div><span class="help">Add the vehicle once: its registration number tells two vehicles apart. Only the last four digits show.</span></div><div class="fld"><span class="lbl">Policy number</span><div class="inp"><span class="">…5104</span></div></div><div class="fld"><span class="lbl">IDV<span class="req">*</span></span><div class="inp"><span class="pre">₹</span><span class="">4,42,000</span></div><span class="help">Insured declared value: the most paid if it's stolen or written off. It falls each year.</span></div><div class="fld"><span class="lbl">Premium<span class="req">*</span></span><div class="inp"><span class="pre">₹</span><span class="">5,504</span><span class="suf" style="margin-left:auto">for 1 year</span></div></div><div class="fld"><span class="lbl">Cover starts<span class="req">*</span></span><div class="inp"><span class="">Aug 6, 2026</span></div></div><div class="fld"><span class="lbl">Cover lasts<span class="req">*</span></span><div class="fseg"><span class="on">1 year</span><span class="">2 years</span><span class="">3 years</span><span class="">5 years</span></div></div><div class="fld"><span class="lbl">Paid on</span><div class="inp"><span class="">Aug 6, 2026</span></div></div><div class="fld"><span class="lbl">Paid from<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span>Not recorded yet</span><span style="margin-left:auto;color:var(--muted);display:flex"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div></div><div class="fld full"><span class="lbl">No-claim bonus</span><div class="fseg"><span class="">0%</span><span class="">20%</span><span class="">25%</span><span class="">35%</span><span class="">45%</span><span class="on">50%</span></div><span class="help">The step on this term, from the schedule. The car is at the top.</span></div><div class="fld full"><span class="lbl">Cover</span><div class="fseg"><span class="on">Comprehensive</span><span class="">Third party only</span></div><span class="help">A third-party-only policy has no IDV; the page shows the premium and the dates.</span></div><div class="fld full"><span class="lbl">Add-ons<span class="opt-tag">OPTIONAL</span></span><div class="addons"><span class="addon"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>Consumables</span><span class="addon"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>Rat bite</span><span class="addon"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>Consequential damage</span></div><div style="height:6px"></div><div class="addons"><span class="addon" style="opacity:.55"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Zero depreciation</span><span class="addon" style="opacity:.55"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Engine protect</span><span class="addon" style="opacity:.55"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Roadside assistance</span></div><span class="help">Greyed ones aren't on this policy.</span></div><div class="fld"><span class="lbl">Deductible<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span class="pre">₹</span><span class="">1,000</span></div><span class="help">Paid on every claim.</span></div><div class="fld"><span class="lbl">Claims helpline<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span class="">1800-266-2256</span></div></div></div></div><div class="dlg-f"><span class="note">A vehicle is added once, and each renewal is a new term on its policy.</span><span class="btn btn-soft">Cancel</span><span class="btn btn-primary">Add policy</span></div></div></section>
+<section style="display:flex;flex-direction:column;gap:16px"><div class="sec-h"><span class="sec-n">3</span><div><h3>Renew: on time</h3><p>His Digit accident cover, due Mar 21, 2027 (the quote is illustrative). Pre-filled from the last term: dates, cover and account. The insurer's quote is the only thing you must type.</p></div></div><div style="display:flex;flex-direction:column;gap:22px"><div class="dlg" style="width:960px"><div class="dlg-h"><span class="dlg-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><polyline points="21 3 21 9 15 9"></polyline></svg></span><div><h3>Renew policy</h3><p>Accident · Owner-driver cover · term 2</p></div><span class="dlg-x"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span></div><div class="dlg-b"><div class="preview"><span class="tex" aria-hidden="true"><svg viewBox="0 0 320 520" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-ink)" stroke-opacity="0.1" stroke-width="1"><circle cx="330" cy="540" r="50"></circle><circle cx="330" cy="540" r="76"></circle><circle cx="330" cy="540" r="102"></circle><circle cx="330" cy="540" r="128"></circle><circle cx="330" cy="540" r="154"></circle><circle cx="330" cy="540" r="180"></circle><circle cx="330" cy="540" r="206"></circle><circle cx="330" cy="540" r="232"></circle><circle cx="330" cy="540" r="258"></circle><circle cx="330" cy="540" r="284"></circle><circle cx="330" cy="540" r="310"></circle><circle cx="330" cy="540" r="336"></circle><circle cx="330" cy="540" r="362"></circle><circle cx="330" cy="540" r="388"></circle><circle cx="330" cy="540" r="414"></circle><circle cx="330" cy="540" r="440"></circle><circle cx="330" cy="540" r="466"></circle><circle cx="330" cy="540" r="492"></circle><circle cx="330" cy="540" r="518"></circle><circle cx="330" cy="540" r="544"></circle><circle cx="330" cy="540" r="570"></circle><circle cx="330" cy="540" r="596"></circle><circle cx="330" cy="540" r="622"></circle></g></svg></span><span class="pv-k">After this renewal</span><div class="pv-box" style="gap:12px"><div class="row" style="gap:12px"><span class="mono" style="width:40px;height:40px;border-radius:12px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to));"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.4 7.5 9.5 4.4-1.1 7.5-4.9 7.5-9.5V6Z"></path><polyline points="8.8 12 11.2 14.4 15.4 10"></polyline></svg></span><span><b style="font-size:15px;display:block">Accident · Owner-driver cover</b><span class="muted" style="font-weight:600">Digit · owner-driver of the bike</span></span></div><div style="font-size:30px;font-weight:800;letter-spacing:-0.02em">₹473<span style="font-size:13px;font-weight:700;color:var(--muted)"> for the year</span></div><span class="chg-up" style="font-weight:800;font-size:12.5px">+4.9% on last year's ₹451</span></div><div class="pv-box"><div class="between"><span>Cover</span><span>₹15,00,000, the same</span></div><div class="between"><span>New term</span><span>Mar 21, 2027 to Mar 20, 2028</span></div><div class="between"><span>Next renewal</span><span>Mar 21, 2028</span></div></div></div><div class="fields"><div class="fld full"><span class="lbl">Policy</span><div class="inp"><span>Accident · Owner-driver cover · Digit</span><span style="margin-left:auto;color:var(--muted);display:flex"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div></div><div class="fld"><span class="lbl">New term starts<span class="req">*</span></span><div class="inp focus"><span class="">Mar 21, 2027</span></div><span class="help">The day after the last term ends. Change it if the insurer gave a different date.</span></div><div class="fld"><span class="lbl">Paid on<span class="req">*</span></span><div class="inp"><span class="">Mar 18, 2027</span></div></div><div class="fld"><span class="lbl">Cover lasts<span class="req">*</span></span><div class="fseg"><span class="on">1 year</span><span class="">2 years</span><span class="">3 years</span><span class="">5 years</span></div><span class="help">A multi-year renewal is one premium for all of it.</span></div><div class="fld"><span class="lbl">Premium<span class="req">*</span></span><div class="inp"><span class="pre">₹</span><span class="">473</span><span class="suf" style="margin-left:auto">for 1 year</span></div><span class="help">The insurer's quote, with GST. Last time was ₹451.</span></div><div class="fld"><span class="lbl">Sum insured<span class="req">*</span></span><div class="inp"><span class="pre">₹</span><span class="">15,00,000</span></div><span class="help">Same as before. Change it if the cover changed.</span></div><div class="fld"><span class="lbl">Paid from<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span>Not recorded yet</span><span style="margin-left:auto;color:var(--muted);display:flex"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div></div><div class="fld"><span class="lbl">Policy number<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span class="ph-text">Same as before</span></div><span class="help">Only if the insurer issued a new one.</span></div><div class="fld"><span class="lbl">Add-ons<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span class="ph-text">Same as before</span></div></div></div></div><div class="dlg-f"><span class="note">Saves the new term as a payment, and the policy's cover, premium and renewal date move to it.</span><span class="btn btn-soft">Cancel</span><span class="btn btn-primary"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg> Renew</span></div></div><div class="toast"><i><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg></i>Accident · Owner-driver cover renewed to Mar 2028 · ₹473<u>Undo</u><span style="opacity:.55">6s</span></div></div></section>
+<section style="display:flex;flex-direction:column;gap:16px"><div class="sec-h"><span class="sec-n">4</span><div><h3>Renew: after a lapse</h3><p>When the new term starts after the old one ended, the form says how many days had no cover, and the gap stays in the history. For this policy it also says the bike's policy relies on it.</p></div></div><div class="dlg" style="width:960px"><div class="dlg-h"><span class="dlg-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><polyline points="21 3 21 9 15 9"></polyline></svg></span><div><h3>Renew policy</h3><p>Accident · Owner-driver cover · term 2</p></div><span class="dlg-x"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span></div><div class="dlg-b"><div class="preview"><span class="tex" aria-hidden="true"><svg viewBox="0 0 320 520" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-ink)" stroke-opacity="0.1" stroke-width="1"><circle cx="330" cy="540" r="50"></circle><circle cx="330" cy="540" r="76"></circle><circle cx="330" cy="540" r="102"></circle><circle cx="330" cy="540" r="128"></circle><circle cx="330" cy="540" r="154"></circle><circle cx="330" cy="540" r="180"></circle><circle cx="330" cy="540" r="206"></circle><circle cx="330" cy="540" r="232"></circle><circle cx="330" cy="540" r="258"></circle><circle cx="330" cy="540" r="284"></circle><circle cx="330" cy="540" r="310"></circle><circle cx="330" cy="540" r="336"></circle><circle cx="330" cy="540" r="362"></circle><circle cx="330" cy="540" r="388"></circle><circle cx="330" cy="540" r="414"></circle><circle cx="330" cy="540" r="440"></circle><circle cx="330" cy="540" r="466"></circle><circle cx="330" cy="540" r="492"></circle><circle cx="330" cy="540" r="518"></circle><circle cx="330" cy="540" r="544"></circle><circle cx="330" cy="540" r="570"></circle><circle cx="330" cy="540" r="596"></circle><circle cx="330" cy="540" r="622"></circle></g></svg></span><span class="pv-k">After this renewal, late</span><div class="pv-box" style="gap:12px"><div class="row" style="gap:12px"><span class="mono" style="width:40px;height:40px;border-radius:12px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to));"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.4 7.5 9.5 4.4-1.1 7.5-4.9 7.5-9.5V6Z"></path><polyline points="8.8 12 11.2 14.4 15.4 10"></polyline></svg></span><span><b style="font-size:15px;display:block">Accident · Owner-driver cover</b><span class="muted" style="font-weight:600">Digit · owner-driver of the bike</span></span></div><div style="font-size:30px;font-weight:800;letter-spacing:-0.02em">₹473<span style="font-size:13px;font-weight:700;color:var(--muted)"> for the year</span></div><span class="chg-up" style="font-weight:800;font-size:12.5px">+4.9% on last year's ₹451</span></div><div class="pv-box"><div class="between"><span>Cover</span><span>₹15,00,000, the same</span></div><div class="between"><span>New term</span><span>Mar 27, 2027 to Mar 26, 2028</span></div><div class="between"><span>Next renewal</span><span>Mar 27, 2028</span></div></div><div class="pv-box" style="display:block;background:var(--warning-tint);color:var(--warning-text);font-weight:700;font-size:12px;line-height:1.55">Cover stopped Mar 20 and restarts Mar 27: <b>6 days with no cover</b>. The bike's policy leaves owner-driver cover out because this one exists, so there was none in the gap.</div></div><div class="fields"><div class="fld full"><span class="lbl">Policy</span><div class="inp"><span>Accident · Owner-driver cover · Digit</span><span style="margin-left:auto;color:var(--muted);display:flex"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div></div><div class="fld"><span class="lbl">New term starts<span class="req">*</span></span><div class="inp focus"><span class="">Mar 27, 2027</span></div><span class="help warn">Later than Mar 21, so the page records a gap.</span></div><div class="fld"><span class="lbl">Paid on<span class="req">*</span></span><div class="inp"><span class="">Mar 27, 2027</span></div></div><div class="fld"><span class="lbl">Cover lasts<span class="req">*</span></span><div class="fseg"><span class="on">1 year</span><span class="">2 years</span><span class="">3 years</span><span class="">5 years</span></div><span class="help">A multi-year renewal is one premium for all of it.</span></div><div class="fld"><span class="lbl">Premium<span class="req">*</span></span><div class="inp"><span class="pre">₹</span><span class="">473</span><span class="suf" style="margin-left:auto">for 1 year</span></div><span class="help">The insurer's quote, with GST. Last time was ₹451.</span></div><div class="fld"><span class="lbl">Sum insured<span class="req">*</span></span><div class="inp"><span class="pre">₹</span><span class="">15,00,000</span></div><span class="help">Same as before. Change it if the cover changed.</span></div><div class="fld"><span class="lbl">Paid from<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span>Not recorded yet</span><span style="margin-left:auto;color:var(--muted);display:flex"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div></div><div class="fld"><span class="lbl">Policy number<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span class="ph-text">Same as before</span></div><span class="help">Only if the insurer issued a new one.</span></div><div class="fld"><span class="lbl">Add-ons<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span class="ph-text">Same as before</span></div></div><div class="fld full"><div class="checkrow "><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg><span><b>This renews after the term ended.</b> The gap (Mar 21 to Mar 26) stays on the policy's history. The Insurance page showed it as lapsed until now.</span></div></div></div></div><div class="dlg-f"><span class="note">Saves the new term as a payment, and the policy's cover, premium and renewal date move to it.</span><span class="btn btn-soft">Cancel</span><span class="btn btn-primary"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg> Renew</span></div></div></section>
+<section style="display:flex;flex-direction:column;gap:16px"><div class="sec-h"><span class="sec-n">5</span><div><h3>Cancel</h3><p>Sold the car, surrendered a plan, replaced it: it stops counting and stays on record.</p></div></div><div style="display:flex;flex-direction:column;gap:22px"><div class="dlg" style="width:960px"><div class="dlg-h"><span class="dlg-ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span><div><h3>Cancel policy</h3><p>It stops renewing and counting</p></div><span class="dlg-x"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></span></div><div class="dlg-b"><div class="preview"><span class="tex" aria-hidden="true"><svg viewBox="0 0 320 520" preserveAspectRatio="none"><g fill="none" stroke="var(--rings-ink)" stroke-opacity="0.1" stroke-width="1"><circle cx="330" cy="540" r="50"></circle><circle cx="330" cy="540" r="76"></circle><circle cx="330" cy="540" r="102"></circle><circle cx="330" cy="540" r="128"></circle><circle cx="330" cy="540" r="154"></circle><circle cx="330" cy="540" r="180"></circle><circle cx="330" cy="540" r="206"></circle><circle cx="330" cy="540" r="232"></circle><circle cx="330" cy="540" r="258"></circle><circle cx="330" cy="540" r="284"></circle><circle cx="330" cy="540" r="310"></circle><circle cx="330" cy="540" r="336"></circle><circle cx="330" cy="540" r="362"></circle><circle cx="330" cy="540" r="388"></circle><circle cx="330" cy="540" r="414"></circle><circle cx="330" cy="540" r="440"></circle><circle cx="330" cy="540" r="466"></circle><circle cx="330" cy="540" r="492"></circle><circle cx="330" cy="540" r="518"></circle><circle cx="330" cy="540" r="544"></circle><circle cx="330" cy="540" r="570"></circle><circle cx="330" cy="540" r="596"></circle><circle cx="330" cy="540" r="622"></circle></g></svg></span><span class="pv-k">Cancelling</span><div class="pv-box" style="gap:12px"><div class="row" style="gap:12px"><span class="mono" style="width:40px;height:40px;border-radius:12px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to));"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><span><b style="font-size:15px;display:block">Car · Comprehensive Platinum</b><span class="muted" style="font-weight:600">Acko · Honda City · …1843</span></span></div><div style="font-size:30px;font-weight:800;letter-spacing:-0.02em">Stops counting</div></div><div class="pv-box"><div class="between"><span>A year of cover</span><span>₹20,511 → ₹15,007</span></div><div class="between"><span>Renewals</span><span>none to come</span></div><div class="between"><span style="font-weight:800;color:var(--fg)">History</span><span>1 payment stays</span></div></div></div><div class="fields"><div class="fld full"><span class="lbl">Policy</span><div class="inp"><span>Car · Comprehensive Platinum · Acko</span><span style="margin-left:auto;color:var(--muted);display:flex"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div></div><div class="fld"><span class="lbl">Cancelled on</span><div class="inp focus"><span class="">Nov 2, 2026</span></div></div><div class="fld"><span class="lbl">Why</span><div class="inp"><span>Vehicle sold</span><span style="margin-left:auto;color:var(--muted);display:flex"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div></div><div class="fld"><span class="lbl">Refund<span class="opt-tag">OPTIONAL</span></span><div class="inp"><span class="pre">₹</span><span class="">0</span></div><span class="help">If the insurer refunded part of the premium. Recorded as a refund, not as income.</span></div><div class="fld"><span class="lbl">Replaced by</span><div class="inp"><span>Nothing</span><span style="margin-left:auto;color:var(--muted);display:flex"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg></span></div></div><div class="fld full"><div class="checkrow "><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg><span><b>Nothing is deleted.</b> A cancelled policy is left out of every total and its payments stay, as a cancelled subscription does. It's shown dimmed, and Restart brings it back.</span></div></div></div></div><div class="dlg-f"><span class="note">Cancelled, sold, surrendered or replaced: the page keeps the record.</span><span class="btn btn-soft">Keep it</span><span class="btn btn-primary" style="background:var(--negative)">Cancel policy</span></div></div><div class="toast"><i><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg></i>Car · Comprehensive Platinum cancelled<u>Undo</u><span style="opacity:.55">6s</span></div></div></section></div>
+</x-dc>
+</body>
+</html>
