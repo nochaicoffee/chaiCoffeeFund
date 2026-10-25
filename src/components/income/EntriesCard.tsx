@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { EntriesCard as EntriesCardData, EntryRow, PayChangeRow } from "@/app/income/widgetsView";
 import { Segmented } from "../subscriptions/Segmented";
@@ -15,9 +16,9 @@ const TONES = {
 /**
  * The Entries card beside the income map (IncomeZ1): the latest payments for the pick, anything still owed on top,
  * with a switch to its pay changes (a payment 2% or more off the one before it). An owed one has Mark received; a
- * payment opens Edit payment (#190). "All entries" comes with the Entries page (#191).
+ * payment opens Edit payment (#190). "All entries" opens the Entries page (#191), on the pick's Passbook.
  */
-export function EntriesCard({ card, pickLabel }: { card: EntriesCardData; pickLabel: string }) {
+export function EntriesCard({ card, pickLabel, allHref }: { card: EntriesCardData; pickLabel: string; allHref: string }) {
   const [view, setView] = useState<"entries" | "changes">("entries");
   return (
     <section aria-label="Entries" className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]">
@@ -58,7 +59,12 @@ export function EntriesCard({ card, pickLabel }: { card: EntriesCardData; pickLa
           ))}
         </ul>
       )}
-      <p className="border-t border-divider pt-3 text-[11.5px] font-semibold text-muted">{view === "entries" ? card.note : "A raise, a bigger payment or a lower dividend, newest first."}</p>
+      <p className="flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3 text-[11.5px] font-semibold text-muted">
+        <span>{view === "entries" ? card.note : "A raise, a bigger payment or a lower dividend, newest first."}</span>
+        <Link href={allHref} className="text-[12.5px] font-extrabold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">
+          All entries →
+        </Link>
+      </p>
     </section>
   );
 }

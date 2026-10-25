@@ -13,7 +13,7 @@ import { greetingFor, todayIso } from "@/lib/format/date";
 import { formatInrCompact } from "@/lib/format/money";
 import { totalReceivedBetween } from "@/lib/aggregate/incomeYear";
 import { loadIncomeData } from "./loadIncomeData";
-import { ALL, attentionView, coverView, greetingView, incomeFormsData, incomeYears, summarySentence } from "./views";
+import { ALL, attentionView, coverView, greetingView, incomeFormsData, incomeHref, incomeYears, summarySentence } from "./views";
 import { lowerWidgets } from "./lowerView";
 import { incomeWidgets } from "./widgetsView";
 
@@ -34,6 +34,8 @@ export default async function IncomePage({ searchParams }: PageProps<"/income">)
   const cover = coverView(data, today, year);
   const requested = typeof params.source === "string" ? params.source : ALL;
   const initialPick = cover.picks.some((p) => p.id === requested) ? requested : ALL;
+  // The Entries page for each pick: the Ledger for all sources, a source's Passbook.
+  const entriesHref = Object.fromEntries(cover.picks.map((p) => [p.id, incomeHref("/income/entries", { demo, year, thisYear: years[0], source: p.id })]));
   const yearOptions = years.map((y, i) => ({ value: i === 0 ? "" : String(y), label: i === 0 ? "This year" : String(y), meta: formatInrCompact(totalReceivedBetween(data.entries, `${y}-01-01`, `${y}-12-31`)) }));
 
   return (
@@ -64,7 +66,7 @@ export default async function IncomePage({ searchParams }: PageProps<"/income">)
           </div>
         </section>
       ) : (
-        <IncomeDashboard cover={cover} widgets={incomeWidgets(data, today, year, cover.picks.map((p) => p.id))} lower={lowerWidgets(data, today, year, cover.picks.map((p) => p.id))} today={today} initialPick={initialPick} />
+        <IncomeDashboard cover={cover} widgets={incomeWidgets(data, today, year, cover.picks.map((p) => p.id))} lower={lowerWidgets(data, today, year, cover.picks.map((p) => p.id))} today={today} initialPick={initialPick} entriesHref={entriesHref} />
       )}
     </div>
     </IncomeFormsProvider>
