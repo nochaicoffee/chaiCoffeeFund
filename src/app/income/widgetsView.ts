@@ -134,6 +134,10 @@ export interface EntryRow {
   amount: string;
   status: { text: string; tone: "good" | "warn" | "late" };
   fromStatement: boolean;
+  /** Owed, not an entry: Mark received rather than Edit. */
+  owed: boolean;
+  /** The payday it's for (owed rows: the one Mark received opens on). */
+  expectedDate: string;
 }
 
 export interface PayChangeRow {
@@ -169,7 +173,7 @@ export function entriesCard(data: IncomeData, today: string, pick: string, limit
     .sort((a, b) => b.expectedDate.localeCompare(a.expectedDate))
     .map((p) => {
     const s = byId.get(p.sourceId);
-    return { key: `pending-${p.sourceId}-${p.expectedDate}`, sourceId: p.sourceId, name: nameOf(s), frequency: s?.frequency ?? "", colorKey: colorOf(s), icon: s?.icon, when: `expected ${formatShortDate(p.expectedDate)}`, whenNote: `${plural(p.daysLate, "day")} ago`, amount: formatInr(p.amount), status: { text: `${plural(p.daysLate, "day")} late`, tone: "late" }, fromStatement: false };
+    return { key: `pending-${p.sourceId}-${p.expectedDate}`, sourceId: p.sourceId, name: nameOf(s), frequency: s?.frequency ?? "", colorKey: colorOf(s), icon: s?.icon, when: `expected ${formatShortDate(p.expectedDate)}`, whenNote: `${plural(p.daysLate, "day")} ago`, amount: formatInr(p.amount), status: { text: `${plural(p.daysLate, "day")} late`, tone: "late" }, fromStatement: false, owed: true, expectedDate: p.expectedDate };
   });
   const received = entriesOf(data, pick)
     .filter((e) => e.status === "Received" && e.receivedDate)
@@ -189,6 +193,8 @@ export function entriesCard(data: IncomeData, today: string, pick: string, limit
       amount: formatInr(e.amount),
       status: isLate(e) ? { text: `Received · ${plural(after, "day")} late`, tone: "warn" } : { text: "Received", tone: "good" },
       fromStatement: e.origin === "Statement",
+      owed: false,
+      expectedDate: e.expectedDate,
     };
   });
   const all = [...pending, ...rows];

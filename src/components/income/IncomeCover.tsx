@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ALL, TAG_SEGMENTS, type CoverMonth, type CoverPick, type CoverSegment, type CoverView } from "@/app/income/views";
 import { niceTop } from "./chartScale";
+import { CoverButtons } from "./forms/IncomeForms";
 import { Segmented } from "@/components/subscriptions/Segmented";
 import { RollingNumber } from "@/components/motion/RollingNumber";
 import { RingTexture } from "@/components/RingTexture";
@@ -81,6 +82,8 @@ export function IncomeCover({ cover, pickId, onPick }: { cover: CoverView; pickI
           ))}
         </dl>
       </div>
+
+      <CoverButtons pickId={pick.id} />
 
       <div className="flex flex-wrap gap-2" role="group" aria-label="Pick a source">
         {[{ id: ALL, label: "All sources", colorKey: "emerald", inactive: false }, ...cover.sources].map((s) => (

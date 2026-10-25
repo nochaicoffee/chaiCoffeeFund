@@ -11,6 +11,7 @@ import { AccountFormDialog } from "./AccountFormDialog";
 import { BalanceFormDialog } from "./BalanceFormDialog";
 import { CheckInDialog } from "./CheckInDialog";
 import { EditBalanceDialog } from "./EditBalanceDialog";
+import { FormTriggerButton, HEADER_GHOST_CLASS, HEADER_PRIMARY_CLASS } from "../../shell/FormTriggerButton";
 
 /**
  * Opens the Accounts forms (#165) from anywhere on the page: Add and Edit account, Update
@@ -117,16 +118,11 @@ export function AccountFormsProvider({ forms, children }: { forms: AccountsForms
 /** A button that opens a form. With sample data it stays focusable but disabled, with the reason as a tooltip. */
 export function FormTrigger({ className, label, onClick, ref }: { className: string; label: string; onClick: () => void; ref?: Ref<HTMLButtonElement> }) {
   const { disabledReason } = useAccountForms();
-  return (
-    <button ref={ref} type="button" onClick={disabledReason ? undefined : onClick} aria-disabled={disabledReason ? true : undefined} title={disabledReason} className={`${className} ${disabledReason ? "cursor-not-allowed opacity-60" : ""}`}>
-      {label}
-      {disabledReason && <span className="sr-only">{` (${disabledReason})`}</span>}
-    </button>
-  );
+  return <FormTriggerButton ref={ref} className={className} label={label} onClick={onClick} disabledReason={disabledReason} />;
 }
 
-const HEADER_PRIMARY = "flex min-h-11 items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold whitespace-nowrap text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:min-h-0";
-const HEADER_GHOST = "flex min-h-11 items-center gap-1.5 rounded-full bg-fill px-5 py-2.5 text-[13px] font-bold whitespace-nowrap text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:min-h-0";
+const HEADER_PRIMARY = HEADER_PRIMARY_CLASS;
+const HEADER_GHOST = HEADER_GHOST_CLASS;
 
 /** The page header's Update balances (the check-in) and Add account, as in the design. */
 export function HeaderFormButtons() {
