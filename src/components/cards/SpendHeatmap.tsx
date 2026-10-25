@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import type { HeatCell, HeatRow, MonthAmount, MonthDetail, MonthKey, YearTotal } from "@/lib/aggregate/cardSpend";
 import { formatMonthShort, formatMonthYear } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
@@ -14,21 +14,31 @@ function Swatch({ style, className = "" }: { style?: CSSProperties; className?: 
   return <span aria-hidden="true" className={`inline-block size-3 rounded-[4px] ${className}`} style={style} />;
 }
 
-function Cell({ cell, isPeak, isCurrent }: { cell: HeatCell; isPeak: boolean; isCurrent: boolean }) {
+function Cell({ cell, isPeak, isCurrent, noData }: { cell: HeatCell; isPeak: boolean; isCurrent: boolean; noData: string }) {
   const label = formatMonthYear(cell.month);
   // A month outside the page's range is left blank (#113), keeping its place so the columns still line up.
   if (cell.state === "outside") {
     return <div role="cell" aria-label={`${label}: outside the period`} className="h-[52px]" />;
   }
   if (cell.state === "upcoming") {
-    return <div role="cell" aria-label={`${label}: upcoming`} className="h-[52px] rounded-control border-[1.5px] border-dashed border-heat-upcoming" />;
+    // Income's months still to come hold what's scheduled; Cards' are empty.
+    return (
+      <div role="cell" aria-label={`${label}: upcoming${cell.amount ? `, ${formatInr(cell.amount)} expected` : ""}`} className="flex h-[52px] flex-col items-center justify-center rounded-control border-[1.5px] border-dashed border-heat-upcoming text-[11px] font-bold text-muted tabular-nums">
+        {cell.amount ? (
+          <>
+            <span>{formatInrCompact(cell.amount)}</span>
+            <span className="mt-px text-[9px] font-semibold">expected</span>
+          </>
+        ) : null}
+      </div>
+    );
   }
   if (cell.state === "no-data" || cell.amount === null) {
     // The current month is still marked before its statements arrive, so it reads as "in progress", not "missed".
     return (
       <div
         role="cell"
-        aria-label={`${label}: no statements${isCurrent ? " yet, this month" : ""}`}
+        aria-label={`${label}: ${noData.toLowerCase()}${isCurrent ? " yet, this month" : ""}`}
         className={`flex h-[52px] flex-col items-center justify-center rounded-control text-xs font-semibold text-muted ${
           isCurrent ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""
         }`}
@@ -74,7 +84,9 @@ function Cell({ cell, isPeak, isCurrent }: { cell: HeatCell; isPeak: boolean; is
 /**
  * The design's spending heatmap: one row of twelve months per year, shaded from
  * the card-spend math, with the peak and the current month marked, and each
- * year's total and monthly average on the right.
+ * year's total and monthly average on the right. The Income page draws its
+ * income heatmap with it too (#189): its own heading and words, no month card,
+ * and months still to come holding what's expected.
  */
 export function SpendHeatmap({
   title,
@@ -85,17 +97,30 @@ export function SpendHeatmap({
   details,
   cards,
   totalsLabel = "Year",
+  heading = "Spending heatmap",
+  noData = "No statements",
+  legendNoData = "No data",
+  legendUpcoming = "Upcoming",
+  empty = "No statements yet. The heatmap fills in as statements arrive.",
+  footnote,
 }: {
   title: string;
   rows: HeatRow[];
   yearTotals: YearTotal[];
   peak: MonthAmount | null;
   currentMonth: MonthKey;
-  /** Each month's split by card and paid status, for the month card (#104). */
-  details: Record<MonthKey, MonthDetail>;
-  cards: Record<string, HeatmapCardInfo>;
+  /** Each month's split by card and paid status, for the month card (#104). Without it there's no month card. */
+  details?: Record<MonthKey, MonthDetail>;
+  cards?: Record<string, HeatmapCardInfo>;
   /** The right-hand column's heading: "Year", or "Total" when a range's rows total only its months. */
   totalsLabel?: string;
+  heading?: string;
+  /** What a month with nothing is: "No statements", "No payment". */
+  noData?: string;
+  legendNoData?: string;
+  legendUpcoming?: string;
+  empty?: string;
+  footnote?: string;
 }) {
   const totals = new Map(yearTotals.map((t) => [t.year, t]));
   const currentMonthNumber = currentMonth.slice(5, 7);
@@ -106,13 +131,13 @@ export function SpendHeatmap({
     <section aria-labelledby="heatmap-heading" className="flex flex-col gap-3 rounded-[24px] border border-surface-line bg-surface p-[22px] shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
         <h2 id="heatmap-heading" className="text-sm font-bold text-fg">
-          Spending heatmap <span className="text-muted">· {title}</span>
+          {heading} <span className="text-muted">· {title}</span>
         </h2>
         <div className="flex flex-wrap items-center gap-[7px] text-[11px] text-muted" aria-hidden="true">
           <Swatch style={{ background: "repeating-linear-gradient(135deg, var(--fill-strong) 0 2px, transparent 2px 4px)" }} />
-          <span>No data</span>
+          <span>{legendNoData}</span>
           <Swatch className="ml-2 border-[1.5px] border-dashed border-heat-upcoming" />
-          <span>Upcoming</span>
+          <span>{legendUpcoming}</span>
           <span className="ml-3">Low</span>
           {[1, 2, 3, 4, 5].map((level) => (
             <Swatch key={level} style={{ background: `var(--heat-${level})` }} />
@@ -122,9 +147,9 @@ export function SpendHeatmap({
       </div>
 
       {rows.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted">No statements yet. The heatmap fills in as statements arrive.</p>
+        <p className="py-6 text-center text-sm text-muted">{empty}</p>
       ) : (
-        <HeatmapHover details={details} cards={cards} averages={Object.fromEntries(yearTotals.map((t) => [t.year, t.average]))} peak={peak?.month ?? null} current={currentMonth}>
+        <MaybeHover hover={details && cards ? { details, cards, averages: Object.fromEntries(yearTotals.map((t) => [t.year, t.average])), peak: peak?.month ?? null, current: currentMonth } : undefined}>
           <div className="-mx-[22px] overflow-x-auto px-[22px] pt-1 pb-1">
             <div role="table" aria-label={`Spending by month, ${title}`} className="flex w-max min-w-full flex-col gap-2">
               <div role="row" className={GRID}>
@@ -157,12 +182,12 @@ export function SpendHeatmap({
                       {row.year}
                     </span>
                     {row.cells.map((cell) => (
-                      <Cell key={cell.month} cell={cell} isPeak={peak?.month === cell.month} isCurrent={cell.month === currentMonth} />
+                      <Cell key={cell.month} cell={cell} isPeak={peak?.month === cell.month} isCurrent={cell.month === currentMonth} noData={noData} />
                     ))}
                     <div role="cell" className="text-right leading-tight">
                       <div className="text-sm font-extrabold tabular-nums">{formatInr(total?.total ?? 0)}</div>
                       {!total || total.total === 0 ? (
-                        <div className="text-[10px] font-semibold text-muted">No statements</div>
+                        <div className="text-[10px] font-semibold text-muted">{noData}</div>
                       ) : (
                         <div className="text-[10px] font-semibold text-muted tabular-nums">
                           {total.months} {total.months === 1 ? "month" : "months"} · avg {formatInr(total.average)}
@@ -174,8 +199,14 @@ export function SpendHeatmap({
               })}
             </div>
           </div>
-        </HeatmapHover>
+        </MaybeHover>
       )}
+      {footnote && <p className="text-[11.5px] font-semibold text-muted">{footnote}</p>}
     </section>
   );
+}
+
+/** The month card around the table when there's one to show (Cards); the table alone otherwise (Income). */
+function MaybeHover({ hover, children }: { hover?: Omit<Parameters<typeof HeatmapHover>[0], "children">; children: ReactNode }) {
+  return hover ? <HeatmapHover {...hover}>{children}</HeatmapHover> : <>{children}</>;
 }
