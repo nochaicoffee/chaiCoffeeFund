@@ -1,5 +1,5 @@
 import { orderRows, sameAmount, type StatementRow } from "../aggregate/statementBalances";
-import { last4Of, parseRupees, parseSlashDate } from "./readers";
+import { last4Of, parseRupees, parseSlashDate, tidyNarration } from "./readers";
 import type { ParseResult } from "./types";
 
 /**
@@ -74,7 +74,7 @@ export function parseHdfc(text: string): ParseResult[] {
         // The quarter's interest is posted the day after the period ends but valued on its last day, and
         // the closing balance includes it: it counts on the last day.
         const counted = date > periodEnd && valueDate <= periodEnd ? periodEnd : date;
-        account.rows.push({ date: counted, amount: Math.round((deposited - withdrawn) * 100) / 100, balance });
+        account.rows.push({ date: counted, amount: Math.round((deposited - withdrawn) * 100) / 100, balance, narration: tidyNarration(m[2]) });
       }
     }
     const summary = SUMMARY.exec(page);

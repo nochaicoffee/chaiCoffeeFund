@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { vi } from "vitest";
-import type { Account, AccountStatementEmail, BalanceReview, BalanceSnapshot, SyncRun } from "../sheets/types";
+import type { Account, AccountStatementEmail, BalanceReview, BalanceSnapshot, IncomeEntry, IncomeSource, SyncRun } from "../sheets/types";
 
 /**
  * The account statement sync with Gmail, the PDF reader and the Sheets repositories faked. Each fake email carries
@@ -18,6 +18,8 @@ const fake = vi.hoisted(() => ({
   runs: [] as SyncRun[],
   writes: [] as string[],
   accountUpdates: [] as { id: string; patch: Partial<Account> }[],
+  incomeSources: [] as IncomeSource[],
+  incomeEntries: [] as IncomeEntry[],
   failReviewWrite: false,
   nextId: 0,
 }));
@@ -95,6 +97,18 @@ vi.mock("@/lib/sheets/accountStatementEmails", () => ({
     },
   },
 }));
+vi.mock("@/lib/sheets/incomeSources", () => ({ incomeSourcesRepository: { list: async () => fake.incomeSources } }));
+vi.mock("@/lib/sheets/incomeEntries", () => ({
+  incomeEntriesRepository: {
+    list: async () => fake.incomeEntries,
+    createMany: async (inputs: Omit<IncomeEntry, "id">[]) => {
+      fake.writes.push("income.createMany");
+      const rows = inputs.map((input) => ({ ...input, id: `inc${++fake.nextId}` }));
+      fake.incomeEntries.push(...rows);
+      return rows;
+    },
+  },
+}));
 vi.mock("@/lib/sheets/syncRuns", () => ({
   syncRunsRepository: {
     create: async (input: Omit<SyncRun, "id">) => {
@@ -137,8 +151,69 @@ beforeEach(() => {
   fake.runs = [];
   fake.writes = [];
   fake.accountUpdates = [];
+  fake.incomeSources = [];
+  fake.incomeEntries = [];
   fake.failReviewWrite = false;
   fake.nextId = 0;
+});
+
+describe("income from statements (#187)", () => {
+  const salary: IncomeSource = { id: "sal", name: "NetApp Salary", alias: "Salary", category: "Salary", frequency: "Monthly", expectedAmount: 138500, status: "Active", scheduleDate: "2026-01-01", statementMatch: "NETAPP" };
+  const withSalary = () => {
+    const [read] = statement("2026-09-01", "2026-09-30", 1000, [["2026-09-01", 138500], ["2026-09-05", -200]]) as { parsed: { statement: { rows: { narration?: string }[] } } }[];
+    read.parsed.statement.rows[0].narration = "NEFT CR NETAPP INDIA";
+    read.parsed.statement.rows[1].narration = "UPI SHOP";
+    return [read];
+  };
+
+  it("records a matching deposit as received income, before the email is logged", async () => {
+    fake.incomeSources = [salary];
+    fake.emails = [{ id: "sep", parse: withSalary() }];
+    const result = await sync();
+    expect(result.outcomes[0].statements[0]).toMatchObject({ result: "imported", income: 1 });
+    expect(fake.incomeEntries).toEqual([expect.objectContaining({ incomeSourceId: "sal", receivedDate: "2026-09-01", expectedDate: "2026-09-01", amount: 138500, accountId: "slice", tag: "Regular", origin: "Statement" })]);
+    expect(fake.writes).toEqual(["snapshots.createMany", "income.createMany", "log.createMany"]);
+    expect(fake.log[0].details).toContain("1 income");
+  });
+
+  it("adds nothing when the statement is read again", async () => {
+    fake.incomeSources = [salary];
+    fake.emails = [{ id: "sep", parse: withSalary() }];
+    await sync();
+    const again = await sync({ reread: true });
+    expect(again.outcomes[0].statements[0]).toMatchObject({ result: "unchanged", income: 0 });
+    expect(fake.incomeEntries).toHaveLength(1);
+  });
+
+  it("reads done emails again with reread, so statements read before income matching give their income", async () => {
+    fake.emails = [{ id: "sep", parse: withSalary() }];
+    await sync();
+    expect(fake.incomeEntries).toEqual([]);
+    expect((await sync()).outcomes).toEqual([]);
+    fake.incomeSources = [salary];
+    const caughtUp = await sync({ reread: true });
+    expect(caughtUp.outcomes[0].statements[0]).toMatchObject({ income: 1, created: 0, unchanged: 2 });
+    expect(fake.incomeEntries).toHaveLength(1);
+    expect(fake.log).toHaveLength(1);
+  });
+
+  it("counts done emails as still to read when a reread runs out of time", async () => {
+    fake.incomeSources = [salary];
+    fake.emails = [{ id: "sep", parse: withSalary() }, { id: "aug", parse: AUG() }];
+    await sync();
+    let tick = 0;
+    const slow = await sync({ reread: true, timeBudgetMs: 1, now: () => new Date(Date.parse("2026-10-23T06:00:00Z") + tick++ * 1000) });
+    expect(slow.outcomes).toHaveLength(1);
+    expect(slow.remaining).toBe(1);
+  });
+
+  it("writes nothing on a dry run", async () => {
+    fake.incomeSources = [salary];
+    fake.emails = [{ id: "sep", parse: withSalary() }];
+    const result = await sync({ dryRun: true });
+    expect(result.outcomes[0].statements[0].income).toBe(1);
+    expect(fake.incomeEntries).toEqual([]);
+  });
 });
 
 describe("runAccountStatementSync", () => {

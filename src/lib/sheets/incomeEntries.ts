@@ -2,7 +2,7 @@ import "server-only";
 import { z } from "zod";
 import { createRepository } from "./repository";
 import { isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
-import { INCOME_ENTRY_ORIGINS, type IncomeEntry } from "./types";
+import { BALANCE_SOURCES, type IncomeEntry } from "./types";
 
 export const createIncomeEntrySchema = z.object({
   incomeSourceId: nonEmptyString,
@@ -14,7 +14,7 @@ export const createIncomeEntrySchema = z.object({
   accountId: nonEmptyString.optional(),
   tag: z.enum(["Regular", "Bonus", "Other"]),
   // Optional: rows from before these columns existed have neither (#185).
-  origin: z.enum(INCOME_ENTRY_ORIGINS).optional(),
+  origin: z.enum(BALANCE_SOURCES).optional(),
   statementRef: nonEmptyString.optional(),
 });
 

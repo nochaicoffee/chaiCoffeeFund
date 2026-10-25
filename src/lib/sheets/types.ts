@@ -296,9 +296,6 @@ export type IncomeTag = "Regular" | "Bonus" | "Other";
 /** A source's icon on the Income page (#185). Shown as each name's icon, never as text. */
 export const INCOME_ICONS = ["Briefcase", "Trend", "Lock", "Pie", "Receipt", "Gift", "Home", "Coins"] as const;
 export type IncomeIcon = (typeof INCOME_ICONS)[number];
-/** How an income entry got into the Sheet: typed in the app, or read from a bank statement (#187). */
-export const INCOME_ENTRY_ORIGINS = ["Manual", "Statement"] as const;
-export type IncomeEntryOrigin = (typeof INCOME_ENTRY_ORIGINS)[number];
 
 export interface IncomeSource {
   id: string;
@@ -328,8 +325,8 @@ export interface IncomeEntry {
   status: IncomeEntryStatus;
   accountId?: string;
   tag: IncomeTag;
-  /** Rows from before #185 have none: they were typed in. */
-  origin?: IncomeEntryOrigin;
+  /** Typed in the app, or read from a bank statement (#187): the same two as a balance's source. Rows from before #185 have none. */
+  origin?: BalanceSource;
   /** The statement line it was read from, so a statement read twice adds nothing (#187). */
   statementRef?: string;
 }

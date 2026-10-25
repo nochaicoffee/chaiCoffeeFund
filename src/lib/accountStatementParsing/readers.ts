@@ -53,3 +53,6 @@ export const last4Of = (accountNumber: string): string | undefined => {
   const digits = accountNumber.replace(/\D/g, "");
   return digits.length >= 4 ? digits.slice(-4) : undefined;
 };
+
+/** A row's narration with pdf.js's stray spacing collapsed: "NEFT CR-   NETAPP  INDIA" → "NEFT CR- NETAPP INDIA". */
+export const tidyNarration = (text: string): string => text.replace(/\s+/g, " ").trim();

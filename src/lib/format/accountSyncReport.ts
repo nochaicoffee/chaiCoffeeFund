@@ -16,6 +16,8 @@ export interface AccountSyncRow {
   subject: string;
   added: number;
   alreadyThere: number;
+  /** Income entries the statement gave (#187). */
+  income: number;
 }
 
 export interface AccountSyncFailedRow {
@@ -41,6 +43,8 @@ export interface AccountSyncReport {
   filledLast4: string[];
   /** New emails still to read, when the sync stopped before reaching them. */
   remaining: number;
+  /** Income entries added across every statement (#187). */
+  income: number;
 }
 
 function sentence(text: string): string {
@@ -87,11 +91,11 @@ export function buildAccountSyncReport(outcomes: EmailOutcome[], remaining: numb
         failed.push({ messageId: email.messageId, title, reason: sentence(s.reason ?? "it couldn't be used"), ...(accountFixFor(s.problem) && { fix: accountFixFor(s.problem) }) });
         continue;
       }
-      const row: AccountSyncRow = { messageId: email.messageId, account: s.accountName, period: period(s.periodStart, s.periodEnd), subject: email.subject, added: s.created, alreadyThere: s.unchanged };
+      const row: AccountSyncRow = { messageId: email.messageId, account: s.accountName, period: period(s.periodStart, s.periodEnd), subject: email.subject, added: s.created, alreadyThere: s.unchanged, income: s.income ?? 0 };
       (s.result === "imported" ? imported : alreadyIn).push(row);
       for (const r of s.reviews) reviews.push({ ...r, messageId: email.messageId, account: s.accountName ?? "Account" });
       if (s.notes.some((n) => n.startsWith("filled in")) && s.accountName) filled.push(s.accountName);
     }
   }
-  return { emails: outcomes.length, imported, alreadyIn, reviews, failed, filledLast4: [...new Set(filled)], remaining };
+  return { emails: outcomes.length, imported, alreadyIn, reviews, failed, filledLast4: [...new Set(filled)], remaining, income: imported.reduce((t, r) => t + r.income, 0) };
 }

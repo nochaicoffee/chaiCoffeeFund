@@ -13,11 +13,12 @@ export interface PlannedAccountEmail {
  * first as Gmail lists them, so a sync that runs out of time has spent it on new statements rather
  * than on retrying old failures. To read a done email again (say an account was added since), delete
  * its row from the tab.
+ * `everything` reads done emails again too (the income catch-up, #187).
  * `skipFailedSince` (an ISO timestamp) leaves out failures tried at or after it. An unattended sync passes
  * yesterday, so an email that can only fail until Prathik changes something (an account not added, a password
  * missing) isn't downloaded and decrypted again on every run; pressing the button passes nothing and tries them all.
  */
-export function planAccountEmails(messageIds: string[], log: AccountStatementEmail[], { skipFailedSince }: { skipFailedSince?: string } = {}): PlannedAccountEmail[] {
+export function planAccountEmails(messageIds: string[], log: AccountStatementEmail[], { skipFailedSince, everything = false }: { skipFailedSince?: string; everything?: boolean } = {}): PlannedAccountEmail[] {
   const byMessage = new Map<string, AccountStatementEmail>();
   // The first row wins if an email was ever logged twice.
   for (const row of log) if (!byMessage.has(row.messageId)) byMessage.set(row.messageId, row);
@@ -27,6 +28,8 @@ export function planAccountEmails(messageIds: string[], log: AccountStatementEma
   for (const messageId of new Set(messageIds)) {
     const logged = byMessage.get(messageId);
     if (!logged) fresh.push({ messageId });
+    // Reading again (the income catch-up, #187): done emails too.
+    else if (everything) retry.push({ messageId, logged });
     else if (logged.result === "Failed" && !(skipFailedSince && logged.lastTriedAt >= skipFailedSince)) retry.push({ messageId, logged });
   }
   return [...fresh, ...retry];
@@ -46,6 +49,7 @@ export function accountLogEntry(outcome: EmailOutcome, logged: AccountStatementE
     const who = s.accountName ?? s.bank ?? "statement";
     if (s.result === "skipped") return `${who}: skipped, ${s.reason}`;
     const parts = [`${s.created} added`, `${s.unchanged} already there`];
+    if (s.income) parts.push(`${s.income} income`);
     if (s.reviews.length > 0) parts.push(`${s.reviews.length} to review (${s.reviews.map((r) => r.date).join(", ")})`);
     return `${who}: ${parts.join(", ")}${s.notes.length > 0 ? `; ${s.notes.join("; ")}` : ""}`;
   });

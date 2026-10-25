@@ -79,14 +79,17 @@ const isReceived = (e: IncomeEntry) => e.status === "Received" && !!e.receivedDa
  */
 export function receivedScheduledDates(source: IncomeSource, entries: IncomeEntry[]): Set<string> {
   const out = new Set<string>();
-  const window = MATCH_DAYS[source.frequency];
   for (const e of entries) {
     if (e.incomeSourceId !== source.id || e.tag !== "Regular" || !isReceived(e)) continue;
-    const near = scheduledDates(source, addDays(e.expectedDate, -window), addDays(e.expectedDate, window));
-    const nearest = near.sort((a, b) => Math.abs(daysBetween(a, e.expectedDate)) - Math.abs(daysBetween(b, e.expectedDate)) || a.localeCompare(b))[0];
-    out.add(nearest ?? e.expectedDate);
+    out.add(nearestScheduledDate(source, e.expectedDate) ?? e.expectedDate);
   }
   return out;
+}
+
+/** The source's scheduled date nearest `date`, within half a cycle; the earlier on a tie. Undefined when none is that near. */
+export function nearestScheduledDate(source: Pick<IncomeSource, "frequency" | "scheduleDate">, date: string): string | undefined {
+  const window = MATCH_DAYS[source.frequency];
+  return scheduledDates(source, addDays(date, -window), addDays(date, window)).sort((a, b) => Math.abs(daysBetween(a, date)) - Math.abs(daysBetween(b, date)) || a.localeCompare(b))[0];
 }
 
 /** Pending payments across active sources, oldest first. */
