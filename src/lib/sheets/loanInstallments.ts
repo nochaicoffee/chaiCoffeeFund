@@ -27,24 +27,27 @@ export const loanInstallmentRowSchema = z.object({
 // API. Updates are for marking an installment paid (or correcting it).
 export const updateLoanInstallmentSchema = loanInstallmentRowSchema.omit({ id: true }).partial();
 
+/** The LoanInstallments tab's columns, in order. */
+export const LOAN_INSTALLMENT_COLUMNS: (keyof LoanInstallment)[] = [
+  "id",
+  "loanId",
+  "installmentNumber",
+  "dueDate",
+  "openingBalance",
+  "principalDue",
+  "interestDue",
+  "totalDue",
+  "status",
+  "amountPaid",
+  "paidDate",
+  "overdueCharge",
+  "paidFromAccountId",
+  "paidFromCardId",
+];
+
 export const loanInstallmentsRepository = createRepository<LoanInstallment>({
   sheetName: "LoanInstallments",
-  columns: [
-    "id",
-    "loanId",
-    "installmentNumber",
-    "dueDate",
-    "openingBalance",
-    "principalDue",
-    "interestDue",
-    "totalDue",
-    "status",
-    "amountPaid",
-    "paidDate",
-    "overdueCharge",
-    "paidFromAccountId",
-    "paidFromCardId",
-  ],
+  columns: LOAN_INSTALLMENT_COLUMNS,
   dateColumns: ["dueDate", "paidDate"],
   schema: loanInstallmentRowSchema,
 });

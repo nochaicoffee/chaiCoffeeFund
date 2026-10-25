@@ -9,6 +9,8 @@ import { BALANCE_SNAPSHOT_COLUMNS, balanceSnapshotRowSchema } from "@/lib/sheets
 import { CARD_COLUMNS, cardRowSchema } from "@/lib/sheets/cards";
 import { INCOME_ENTRY_COLUMNS, incomeEntryRowSchema } from "@/lib/sheets/incomeEntries";
 import { INCOME_SOURCE_COLUMNS, incomeSourceRowSchema } from "@/lib/sheets/incomeSources";
+import { LOAN_COLUMNS, loanRowSchema } from "@/lib/sheets/loans";
+import { LOAN_INSTALLMENT_COLUMNS, loanInstallmentRowSchema } from "@/lib/sheets/loanInstallments";
 import { SYNC_RUN_COLUMNS, syncRunRowSchema } from "@/lib/sheets/syncRuns";
 import { SUBSCRIPTION_PAYMENT_COLUMNS, subscriptionPaymentRowSchema } from "@/lib/sheets/subscriptionPayments";
 import { SUBSCRIPTION_COLUMNS, subscriptionRowSchema } from "@/lib/sheets/subscriptions";
@@ -26,6 +28,8 @@ const TABS = {
   SubscriptionPayments: () => columnSpecs(SUBSCRIPTION_PAYMENT_COLUMNS as string[], subscriptionPaymentRowSchema),
   IncomeSources: () => columnSpecs(INCOME_SOURCE_COLUMNS as string[], incomeSourceRowSchema),
   IncomeEntries: () => columnSpecs(INCOME_ENTRY_COLUMNS as string[], incomeEntryRowSchema),
+  Loans: () => columnSpecs(LOAN_COLUMNS as string[], loanRowSchema),
+  LoanInstallments: () => columnSpecs(LOAN_INSTALLMENT_COLUMNS as string[], loanInstallmentRowSchema),
 };
 
 /** Tabs the code needs that may not exist yet: the route creates them, with their Table, when they're missing. Existing tabs are never created over. */

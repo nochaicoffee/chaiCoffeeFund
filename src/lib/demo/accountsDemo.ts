@@ -70,7 +70,7 @@ export function demoAccountsData(today: string): AccountsData {
     statements,
     subscriptions: [],
     subscriptionPayments: [],
-    loans: [{ id: "demo-loan", name: "Personal loan", lenderName: "Axis Bank", category: "Personal", repaymentStructure: "Standard-Emi", principalAmount: 600000, annualInterestRate: 11, tenureMonths: 48, paymentFrequency: "Monthly", processingFee: 0, disbursementDate: `${year}-01-01`, accountId: "demo-axis", status: "Active" }],
+    loans: [{ id: "demo-loan", name: "Personal loan", lenderName: "Axis Bank", category: "Personal", repaymentStructure: "Standard-Emi", principalAmount: 600000, annualInterestRate: 11, tenureMonths: 48, paymentFrequency: "Monthly", processingFee: 0, disbursementDate: `${year}-01-01`, accountId: "demo-axis", status: "Active", firstEmiDate: `${year}-02-01`, stampDuty: 0, preEmiInterest: 0 }],
     installments,
     trades: [{ id: "demo-trade", tradeDate: `${year}-05-14`, symbol: "NTAP", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 10, price: 1200, total: 12000, assetType: "Equity", broker: "Zerodha", settlementAccountId: "demo-icici" }],
     incomeSources: [{ id: "demo-salary", name: "Salary", alias: "Salary", category: "Salary", frequency: "Monthly", expectedAmount: 168000, status: "Active" }],

@@ -343,6 +343,9 @@ export type LoanCategory = "Personal" | "Auto" | "Home" | "Other";
 export type RepaymentStructure = "Standard-Emi";
 export type LoanStatus = "Active" | "Closed";
 export type LoanInstallmentStatus = "Pending" | "Paid";
+// Bank EMIs are monthly. Quarterly and yearly were dropped (2026-10-25)
+// rather than given their own math, since no real loan uses them.
+export type LoanPaymentFrequency = "Monthly";
 
 export interface Loan {
   id: string;
@@ -353,11 +356,18 @@ export interface Loan {
   principalAmount: number;
   annualInterestRate: number;
   tenureMonths: number;
-  paymentFrequency: RecurrenceCycle;
+  paymentFrequency: LoanPaymentFrequency;
+  /** Processing fee including GST, taken out of the disbursal. */
   processingFee: number;
   disbursementDate: string;
   accountId: string;
   status: LoanStatus;
+  /** The first EMI's due date, from the sanction letter. Every later EMI falls on the same day of the month. */
+  firstEmiDate: string;
+  /** Stamp duty, taken out of the disbursal. */
+  stampDuty: number;
+  /** Interest from disbursement to the start of the EMI cycle ("pre-EMI" or "gap" interest), taken out of the disbursal. */
+  preEmiInterest: number;
 }
 
 export interface LoanInstallment {
