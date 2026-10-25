@@ -1,15 +1,20 @@
+"use client";
+
 import type { AttentionItem } from "@/app/income/views";
+import { FormTrigger, useIncomeForms } from "./forms/IncomeForms";
 
 /**
  * The strip under the Income greeting while money is past its expected date (docs/design/income.md): a line per
- * source saying how much, since when, and where it should have landed. Mark received and Edit come with the forms (#190).
+ * source saying how much, since when, and where it should have landed, with Mark received (#190).
  */
 export function AttentionStrip({ items }: { items: AttentionItem[] }) {
+  const { receive } = useIncomeForms();
   if (items.length === 0) return null;
   return (
     <section aria-label="Income that hasn't landed" className="flex flex-col gap-2 rounded-[18px] border border-warning/30 bg-warning-tint px-4 py-3 md:px-5">
       {items.map((item) => (
-        <p key={item.sourceId} className="flex items-start gap-2.5 text-[13px] font-semibold text-warning-text">
+        <div key={item.sourceId} className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <p className="flex min-w-0 flex-1 items-start gap-2.5 text-[13px] font-semibold text-warning-text">
           <svg className="mt-0.5 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
             <line x1="12" y1="9" x2="12" y2="13" />
@@ -22,6 +27,8 @@ export function AttentionStrip({ items }: { items: AttentionItem[] }) {
             {item.text}
           </span>
         </p>
+        <FormTrigger className="min-h-9 rounded-full bg-accent-tint px-4 text-xs font-extrabold text-accent-text hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-accent" label="Mark received" onClick={() => receive(item.sourceId)} />
+        </div>
       ))}
     </section>
   );

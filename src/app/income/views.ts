@@ -446,3 +446,74 @@ export function incomeYears(data: IncomeData, today: string): number[] {
   const start = Math.min(now, first ? Number(first.slice(0, 4)) : now);
   return Array.from({ length: now - start + 1 }, (_, i) => now - i);
 }
+
+// ---------- The forms ----------
+
+export interface FormSource {
+  id: string;
+  name: string;
+  alias: string;
+  category: IncomeSource["category"];
+  frequency: IncomeSource["frequency"];
+  expectedAmount: number;
+  /** What "Next expected" starts on: the next scheduled day (or the oldest owed one), else the schedule date. */
+  nextExpected: string;
+  color: NonNullable<IncomeSource["color"]>;
+  icon?: IncomeSource["icon"];
+  accountId?: string;
+  statementMatch?: string;
+  status: IncomeSource["status"];
+  /** How many payments deleting it would remove. */
+  entries: number;
+}
+
+export interface FormEntry {
+  id: string;
+  incomeSourceId: string;
+  expectedDate: string;
+  receivedDate: string;
+  amount: number;
+  tag: IncomeEntry["tag"];
+  accountId?: string;
+  fromStatement: boolean;
+}
+
+export interface IncomeFormsData {
+  demo: boolean;
+  today: string;
+  accounts: { id: string; name: string }[];
+  sources: FormSource[];
+  /** Payments owed, for Mark received: it opens on one. */
+  pending: { sourceId: string; expectedDate: string; amount: number }[];
+  entries: Record<string, FormEntry>;
+}
+
+export function incomeFormsData(data: IncomeData, today: string, demo: boolean): IncomeFormsData {
+  const pending = pendingPayments(data.sources, data.entries, today);
+  return {
+    demo,
+    today,
+    accounts: data.accounts.map((a) => ({ id: a.id, name: a.name })),
+    sources: data.sources.map((s) => ({
+      id: s.id,
+      name: s.name,
+      alias: s.alias,
+      category: s.category,
+      frequency: s.frequency,
+      expectedAmount: s.expectedAmount,
+      nextExpected: nextPayment(s, data.entries, today)?.expectedDate ?? s.scheduleDate ?? today,
+      color: sourceColor(s),
+      ...(s.icon && { icon: s.icon }),
+      ...(s.accountId && { accountId: s.accountId }),
+      ...(s.statementMatch && { statementMatch: s.statementMatch }),
+      status: s.status,
+      entries: data.entries.filter((e) => e.incomeSourceId === s.id).length,
+    })),
+    pending: pending.map((p) => ({ sourceId: p.sourceId, expectedDate: p.expectedDate, amount: p.amount })),
+    entries: Object.fromEntries(
+      data.entries
+        .filter((e) => e.status === "Received" && e.receivedDate)
+        .map((e) => [e.id, { id: e.id, incomeSourceId: e.incomeSourceId, expectedDate: e.expectedDate, receivedDate: e.receivedDate as string, amount: e.amount, tag: e.tag, ...(e.accountId && { accountId: e.accountId }), fromStatement: e.origin === "Statement" }]),
+    ),
+  };
+}

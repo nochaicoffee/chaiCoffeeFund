@@ -1,5 +1,8 @@
+"use client";
+
 import type { SourcesTable } from "@/app/income/lowerView";
 import { SourceIcon } from "./SourceIcon";
+import { FormTrigger, useIncomeForms } from "./forms/IncomeForms";
 
 const STATUS = {
   good: "bg-accent-tint text-accent-text",
@@ -10,14 +13,18 @@ const STATUS = {
 /**
  * Sources (IncomeZ1, F-IN-01): everything that pays you, a row each with its usual amount and what that is a month,
  * what it's paid this year, a year of months (dashed for what's still to come), when it's next, where it lands, and
- * how it's doing. Picking a row picks it for the cover. Add source comes with the forms (#190).
+ * how it's doing. Picking a row picks it for the cover; Add source opens the form (#190).
  */
 export function SourcesCard({ table, picked, onPick }: { table: SourcesTable; picked: string; onPick: (id: string) => void }) {
+  const { open } = useIncomeForms();
   return (
     <section aria-label="Sources" className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
-      <h2 className="text-[15px] font-extrabold">
-        Sources <small className="ml-2 text-xs font-semibold text-muted">everything that pays you · a month is what each is worth spread over its cycle</small>
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-[15px] font-extrabold">
+          Sources <small className="ml-2 text-xs font-semibold text-muted">everything that pays you · a month is what each is worth spread over its cycle</small>
+        </h2>
+        <FormTrigger className="min-h-9 rounded-full bg-fill px-4 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent" label="+ Add source" onClick={() => open({ kind: "add-source" })} />
+      </div>
       {table.rows.length === 0 ? (
         <p className="py-8 text-center text-sm font-semibold text-muted">No income sources yet.</p>
       ) : (

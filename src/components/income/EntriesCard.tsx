@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { EntriesCard as EntriesCardData, EntryRow, PayChangeRow } from "@/app/income/widgetsView";
 import { Segmented } from "../subscriptions/Segmented";
 import { SourceIcon } from "./SourceIcon";
+import { useIncomeForms } from "./forms/IncomeForms";
 
 const TONES = {
   good: "bg-accent-tint text-accent-text",
@@ -13,8 +14,8 @@ const TONES = {
 
 /**
  * The Entries card beside the income map (IncomeZ1): the latest payments for the pick, anything still owed on top,
- * with a switch to its pay changes (a payment 2% or more off the one before it). Mark received and Record income
- * come with the forms (#190); "All entries" with the Entries page (#191).
+ * with a switch to its pay changes (a payment 2% or more off the one before it). An owed one has Mark received; a
+ * payment opens Edit payment (#190). "All entries" comes with the Entries page (#191).
  */
 export function EntriesCard({ card, pickLabel }: { card: EntriesCardData; pickLabel: string }) {
   const [view, setView] = useState<"entries" | "changes">("entries");
@@ -63,10 +64,13 @@ export function EntriesCard({ card, pickLabel }: { card: EntriesCardData; pickLa
 }
 
 function Entry({ row }: { row: EntryRow }) {
+  const { open, receive, forms, disabledReason } = useIncomeForms();
+  const entry = forms.entries[row.key];
+  const act = disabledReason ? undefined : row.owed ? () => receive(row.sourceId, row.expectedDate) : entry ? () => open({ kind: "entry", start: { kind: "edit", entry } }) : undefined;
   return (
     <tr className="border-t border-divider">
       <td className="py-2 pr-3">
-        <span className="flex items-center gap-2.5">
+        <button type="button" onClick={act} disabled={!act} aria-label={`${row.owed ? "Mark received" : "Edit payment"}: ${row.name}, ${row.amount}, ${row.when}`} title={disabledReason} className="flex w-full cursor-pointer items-center gap-2.5 rounded-control text-left focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-default">
           <SourceIcon icon={row.icon} name={row.name} colorKey={row.colorKey} size={30} />
           <span className="min-w-0">
             <b className="block truncate font-extrabold">{row.name}</b>
@@ -75,7 +79,7 @@ function Entry({ row }: { row: EntryRow }) {
               {row.fromStatement ? " · from statement" : ""}
             </span>
           </span>
-        </span>
+        </button>
       </td>
       <td className="py-2 pr-3">
         <b className="block font-extrabold">{row.when}</b>
@@ -83,7 +87,14 @@ function Entry({ row }: { row: EntryRow }) {
       </td>
       <td className="py-2 text-right font-extrabold tabular-nums">{row.amount}</td>
       <td className="py-2 pl-4">
-        <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap ${TONES[row.status.tone]}`}>{row.status.text}</span>
+        <span className="flex items-center gap-2">
+          <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap ${TONES[row.status.tone]}`}>{row.status.text}</span>
+          {row.owed && !disabledReason && (
+            <button type="button" onClick={() => receive(row.sourceId, row.expectedDate)} className="min-h-8 rounded-full bg-accent-tint px-3 text-[11px] font-extrabold whitespace-nowrap text-accent-text hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-accent">
+              Mark received
+            </button>
+          )}
+        </span>
       </td>
     </tr>
   );

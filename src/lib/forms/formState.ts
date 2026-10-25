@@ -10,8 +10,8 @@ export type FormState =
   | { status: "invalid"; errors: FieldErrors; duplicate?: DuplicateStatement }
   /** The Sheet write failed; nothing was written. The dialog offers Try again, with the reason when there is one (lib/sheets/errors.ts). */
   | { status: "failed"; message?: string }
-  /** Saved; `at` makes every save a new state, so the dialog can close on it. */
-  | { status: "saved"; at: number };
+  /** Saved; `at` makes every save a new state, so the dialog can close on it. `undo` is what a toast can take back (Record income, #190). */
+  | { status: "saved"; at: number; undo?: { id: string; message: string } };
 
 /** An existing statement for the same card and statement date (the duplicate check warns, it doesn't block). */
 export interface DuplicateStatement {

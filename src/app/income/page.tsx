@@ -4,6 +4,8 @@ import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { AttentionStrip } from "@/components/income/AttentionStrip";
 import { GreetingSentence } from "@/components/income/GreetingSentence";
 import { IncomeDashboard } from "@/components/income/IncomeDashboard";
+import { AddFirstSource } from "@/components/income/forms/AddFirstSource";
+import { HeaderFormButtons, IncomeFormsProvider } from "@/components/income/forms/IncomeForms";
 import { YearSelect } from "@/components/income/YearSelect";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
@@ -11,7 +13,7 @@ import { greetingFor, todayIso } from "@/lib/format/date";
 import { formatInrCompact } from "@/lib/format/money";
 import { totalReceivedBetween } from "@/lib/aggregate/incomeYear";
 import { loadIncomeData } from "./loadIncomeData";
-import { ALL, attentionView, coverView, greetingView, incomeYears, summarySentence } from "./views";
+import { ALL, attentionView, coverView, greetingView, incomeFormsData, incomeYears, summarySentence } from "./views";
 import { lowerWidgets } from "./lowerView";
 import { incomeWidgets } from "./widgetsView";
 
@@ -35,6 +37,7 @@ export default async function IncomePage({ searchParams }: PageProps<"/income">)
   const yearOptions = years.map((y, i) => ({ value: i === 0 ? "" : String(y), label: i === 0 ? "This year" : String(y), meta: formatInrCompact(totalReceivedBetween(data.entries, `${y}-01-01`, `${y}-12-31`)) }));
 
   return (
+    <IncomeFormsProvider forms={incomeFormsData(data, today, demo)}>
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Income"
@@ -43,6 +46,7 @@ export default async function IncomePage({ searchParams }: PageProps<"/income">)
           <>
             <YearSelect options={yearOptions} value={year === years[0] ? "" : String(year)} />
             <RefreshButton iconOnly />
+            <HeaderFormButtons />
           </>
         }
       >
@@ -55,10 +59,14 @@ export default async function IncomePage({ searchParams }: PageProps<"/income">)
         <section className="rounded-[26px] border border-dashed border-divider bg-surface px-6 py-14 text-center">
           <p className="text-base font-extrabold">No income sources yet</p>
           <p className="mt-1 text-sm font-semibold text-muted">Your salary, interest, dividends and one-offs will show here, a column for every month.</p>
+          <div className="mt-5 flex justify-center">
+            <AddFirstSource />
+          </div>
         </section>
       ) : (
         <IncomeDashboard cover={cover} widgets={incomeWidgets(data, today, year, cover.picks.map((p) => p.id))} lower={lowerWidgets(data, today, year, cover.picks.map((p) => p.id))} today={today} initialPick={initialPick} />
       )}
     </div>
+    </IncomeFormsProvider>
   );
 }

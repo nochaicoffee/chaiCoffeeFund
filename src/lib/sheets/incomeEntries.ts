@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { createRepository } from "./repository";
-import { isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
+import { clearable, isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
 import { BALANCE_SOURCES, type IncomeEntry } from "./types";
 
 export const createIncomeEntrySchema = z.object({
@@ -18,7 +18,8 @@ export const createIncomeEntrySchema = z.object({
   statementRef: nonEmptyString.optional(),
 });
 
-export const updateIncomeEntrySchema = createIncomeEntrySchema.partial();
+/** An update can clear the account it landed in: "" blanks the cell (see `clearable`). */
+export const updateIncomeEntrySchema = createIncomeEntrySchema.partial().extend({ accountId: clearable(nonEmptyString).optional() });
 
 /**
  * A row as read back from the Sheet: a valid create, plus its id. Pending stays readable (and in the Sheet's dropdown)

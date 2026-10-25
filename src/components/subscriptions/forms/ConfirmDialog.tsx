@@ -23,6 +23,7 @@ export function ConfirmDialog({
   action,
   today,
   onClose,
+  alternative,
 }: {
   tone: "neutral" | "danger";
   icon: ReactNode;
@@ -36,6 +37,8 @@ export function ConfirmDialog({
   action: (previous: FormState, formData: FormData) => Promise<FormState>;
   today: string;
   onClose: () => void;
+  /** A gentler way out, on the left: Delete source offers Mark inactive instead (Income, #190). */
+  alternative?: { label: string; onClick: () => void };
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [state, formAction, pending] = useActionState(action, IDLE);
@@ -87,7 +90,12 @@ export function ConfirmDialog({
             {failed ? (state.message ?? "Couldn't save to the Sheet, so nothing was written. Try again.") : formError}
           </p>
         )}
-        <div className="flex justify-end gap-2.5">
+        <div className="flex flex-wrap justify-end gap-2.5">
+          {alternative && (
+            <button type="button" onClick={alternative.onClick} className="mr-auto min-h-11 rounded-full px-1 text-[13px] font-bold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent md:min-h-10">
+              {alternative.label}
+            </button>
+          )}
           <button type="button" onClick={() => ref.current?.close()} className="min-h-11 rounded-full bg-fill px-5 text-[13px] font-bold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:min-h-10">
             {keepLabel}
           </button>
