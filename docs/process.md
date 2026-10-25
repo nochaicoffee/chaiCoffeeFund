@@ -51,7 +51,7 @@ gh pr create --fill --base main --head feat/12-statement-form
 - CI must pass: lint, typecheck and unit tests (see [`.github/workflows/ci.yml`](../.github/workflows/ci.yml)).
 - Before merging, run a code review pass (`/code-review` in Claude Code) and fix or explicitly dismiss each finding.
 - Merge with **squash and merge**, so `main` gets one clean commit per PR.
-- **Working in a separate jj workspace** (`jj workspace add --name <name> -r main ../chaiCoffeeFund-ws/<name>`), so a long build doesn't share a working copy with other sessions: `node_modules` comes in as a symlink to the main checkout's, and Turbopack refuses a symlink that leaves the project, so run the dev server with `npx next dev --webpack -p <port>` there (and `CHAI_COFFEE_FUND_URL=http://localhost:<port> npm run check-sheet`). Link `secrets` and `.env.local` from the main checkout; both are gitignored.
+- **Working in a separate jj workspace** (`jj workspace add --name <name> -r main ../chaiCoffeeFund-ws/<name>`), so a long build doesn't share a working copy with other sessions. Link `node_modules`, `secrets` and `.env.local` from the main checkout (`ln -s ../../chaiCoffeeFund/node_modules node_modules`, and the same for the other two); all three are gitignored. Turbopack refuses a symlink that leaves the project, so run the dev server with `npx next dev --webpack -p <port>` there (and `CHAI_COFFEE_FUND_URL=http://localhost:<port> npm run check-sheet`). The `node_modules` link was tracked by mistake until #202: a workspace made before it loses its link when it moves onto a later `main`, so link it again.
 
 ## Done (Definition of Done)
 
