@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ALL, TAG_SEGMENTS, type CoverMonth, type CoverPick, type CoverSegment, type CoverView } from "@/app/income/views";
+import { niceTop } from "./chartScale";
 import { Segmented } from "@/components/subscriptions/Segmented";
 import { RollingNumber } from "@/components/motion/RollingNumber";
 import { RingTexture } from "@/components/RingTexture";
@@ -19,12 +20,6 @@ type Mode = "source" | "tag";
 
 const CHART_HEIGHT = 240;
 
-/** A round top for the scale, a little above the biggest column. */
-function niceTop(value: number): number {
-  if (value <= 0) return 100000;
-  const power = 10 ** Math.floor(Math.log10(value));
-  return ([1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].map((m) => m * power).find((m) => m >= value * 1.04) ?? 10 * power);
-}
 
 interface ShownMonth {
   month: CoverMonth;
