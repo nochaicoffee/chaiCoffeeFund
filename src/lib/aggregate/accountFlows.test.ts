@@ -40,7 +40,7 @@ describe("moneyItems: what counts as going out of an account", () => {
       // Skipped renewal: nothing charged.
       { id: "p3", subscriptionId: "sub-a", paymentDate: "2026-08-10", amount: 0, status: "Skipped" },
     ],
-    loans: [{ id: "l1", name: "Personal loan", lenderName: "HDFC", category: "Personal", repaymentStructure: "Standard-Emi", principalAmount: 500000, annualInterestRate: 11, tenureMonths: 36, paymentFrequency: "Monthly", processingFee: 0, disbursementDate: "2026-01-01", accountId: "sbi", status: "Active" }],
+    loans: [{ id: "l1", name: "Personal loan", lenderName: "HDFC", category: "Personal", repaymentStructure: "Standard-Emi", principalAmount: 500000, annualInterestRate: 11, tenureMonths: 36, paymentFrequency: "Monthly", processingFee: 0, disbursementDate: "2026-01-01", accountId: "sbi", status: "Active", firstEmiDate: "2026-02-01", stampDuty: 0, preEmiInterest: 0 }],
     installments: [
       { id: "i1", loanId: "l1", installmentNumber: 1, dueDate: "2026-09-05", openingBalance: 500000, principalDue: 12000, interestDue: 4583, totalDue: 16_583, status: "Paid", amountPaid: 16_583, paidDate: "2026-09-05", paidFromAccountId: "sbi" },
       { id: "i2", loanId: "l1", installmentNumber: 2, dueDate: "2026-10-05", openingBalance: 488000, principalDue: 12100, interestDue: 4473, totalDue: 16_583, status: "Paid", amountPaid: 16_583, paidDate: "2026-10-05", paidFromCardId: "c1" },
@@ -131,7 +131,7 @@ describe("comingUp (decision 14)", () => {
   const today = "2026-10-21";
   const d = data({
     snapshots: [snap("sbi", "2026-10-20", 10_000)],
-    loans: [{ id: "l1", name: "Personal loan", lenderName: "HDFC", category: "Personal", repaymentStructure: "Standard-Emi", principalAmount: 500000, annualInterestRate: 11, tenureMonths: 36, paymentFrequency: "Monthly", processingFee: 0, disbursementDate: "2026-01-01", accountId: "sbi", status: "Active" }],
+    loans: [{ id: "l1", name: "Personal loan", lenderName: "HDFC", category: "Personal", repaymentStructure: "Standard-Emi", principalAmount: 500000, annualInterestRate: 11, tenureMonths: 36, paymentFrequency: "Monthly", processingFee: 0, disbursementDate: "2026-01-01", accountId: "sbi", status: "Active", firstEmiDate: "2026-02-01", stampDuty: 0, preEmiInterest: 0 }],
     installments: [
       { id: "i3", loanId: "l1", installmentNumber: 3, dueDate: "2026-11-05", openingBalance: 475000, principalDue: 12200, interestDue: 4383, totalDue: 16_583, status: "Pending" },
       { id: "i4", loanId: "l1", installmentNumber: 4, dueDate: "2027-03-05", openingBalance: 470000, principalDue: 12200, interestDue: 4383, totalDue: 16_583, status: "Pending" },

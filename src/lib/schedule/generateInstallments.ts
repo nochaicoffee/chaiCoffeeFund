@@ -1,4 +1,4 @@
-import { addMonthsUTC, CYCLE_STEP_MONTHS } from "../aggregate/recurring";
+import { addMonthsUTC } from "../aggregate/recurring";
 import type { Loan, LoanInstallment } from "../sheets/types";
 
 function round2(value: number): number {
@@ -6,43 +6,44 @@ function round2(value: number): number {
 }
 
 /**
- * True reducing-balance EMI: a fixed total payment per period, where the
- * interest portion is computed on the shrinking outstanding balance (so
- * interest decreases and principal increases each period). The final
- * installment absorbs any rounding residue so the balance lands exactly on
- * zero.
+ * True reducing-balance EMI, rounded the way HDFC's own repayment schedule is
+ * (checked against a real HDFC personal loan in the test): the EMI to the
+ * paisa, each month's interest to the whole rupee on the outstanding balance,
+ * and the principal is the rest. The final installment repays whatever
+ * balance is left, so the principals add up to exactly the loan amount.
+ *
+ * The first EMI is a full month's interest, wherever the disbursement fell in
+ * the month: the bank collects the odd days before the EMI cycle up front, as
+ * the loan's preEmiInterest. Every due date counts from firstEmiDate itself,
+ * not from the previous due date, so an EMI on the 31st comes back to the 31st
+ * after a short month.
  */
 function generateStandardEmiSchedule(loan: Omit<Loan, "id">): Omit<LoanInstallment, "id">[] {
   const monthlyRate = loan.annualInterestRate / 12 / 100;
   const n = loan.tenureMonths;
-  const stepMonths = CYCLE_STEP_MONTHS[loan.paymentFrequency];
 
-  const emi =
+  const emi = round2(
     monthlyRate === 0
       ? loan.principalAmount / n
-      : (loan.principalAmount * monthlyRate * (1 + monthlyRate) ** n) /
-        ((1 + monthlyRate) ** n - 1);
+      : (loan.principalAmount * monthlyRate * (1 + monthlyRate) ** n) / ((1 + monthlyRate) ** n - 1),
+  );
 
   const installments: Omit<LoanInstallment, "id">[] = [];
-  let openingBalance = loan.principalAmount;
-  let dueDate = loan.disbursementDate;
+  let openingBalance = round2(loan.principalAmount);
 
   for (let installmentNumber = 1; installmentNumber <= n; installmentNumber++) {
-    dueDate = addMonthsUTC(dueDate, stepMonths);
-
-    const interestDue = round2(openingBalance * monthlyRate);
+    const interestDue = Math.round(openingBalance * monthlyRate);
     const isLast = installmentNumber === n;
-    const principalDue = isLast ? round2(openingBalance) : round2(emi - interestDue);
-    const totalDue = round2(principalDue + interestDue);
+    const principalDue = isLast ? openingBalance : round2(emi - interestDue);
 
     installments.push({
       loanId: "", // filled in by the caller once the parent Loan's id exists
       installmentNumber,
-      dueDate,
-      openingBalance: round2(openingBalance),
+      dueDate: addMonthsUTC(loan.firstEmiDate, installmentNumber - 1),
+      openingBalance,
       principalDue,
       interestDue,
-      totalDue,
+      totalDue: round2(principalDue + interestDue),
       status: "Pending",
     });
 

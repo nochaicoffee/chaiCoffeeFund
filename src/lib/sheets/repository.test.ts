@@ -222,7 +222,7 @@ describe("deleteLoanWithSchedule", () => {
   const installment = (id: string, loanId: string, totalDue: unknown) => [id, loanId, 1, AUG_5, 100000, 8000, 1000, totalDue, "Pending"];
 
   beforeEach(() => {
-    sheet.rows["Loans!A2:M"] = [["L1", "Car loan", "HDFC", "Auto", "Standard-Emi", 100000, 9, 12, "Monthly", 0, AUG_5, "acc", "Active"]];
+    sheet.rows["Loans!A2:P"] = [["L1", "Car loan", "HDFC", "Auto", "Standard-Emi", 100000, 9, 12, "Monthly", 0, AUG_5, "acc", "Active", AUG_5 + 31, 0, 0]];
   });
 
   it("deletes the loan's invalid installment rows along with the valid ones", async () => {

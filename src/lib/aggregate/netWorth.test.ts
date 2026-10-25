@@ -26,7 +26,7 @@ describe("computeNetWorth", () => {
     ];
 
     const loans: Loan[] = [
-      { id: "loan-1", name: "L", lenderName: "Bank", category: "Personal", repaymentStructure: "Standard-Emi", principalAmount: 50000, annualInterestRate: 10, tenureMonths: 12, paymentFrequency: "Monthly", processingFee: 0, disbursementDate: "2026-01-01", accountId: "acc-1", status: "Active" },
+      { id: "loan-1", name: "L", lenderName: "Bank", category: "Personal", repaymentStructure: "Standard-Emi", principalAmount: 50000, annualInterestRate: 10, tenureMonths: 12, paymentFrequency: "Monthly", processingFee: 0, disbursementDate: "2026-01-01", accountId: "acc-1", status: "Active", firstEmiDate: "2026-02-01", stampDuty: 0, preEmiInterest: 0 },
     ];
     const loanInstallments: LoanInstallment[] = [
       { id: "li-1", loanId: "loan-1", installmentNumber: 1, dueDate: "2026-09-01", openingBalance: 50000, principalDue: 30000, interestDue: 500, totalDue: 30500, status: "Pending" },

@@ -11,6 +11,15 @@ function installmentsForLoan(loanId: string, installments: LoanInstallment[]): L
   return installments.filter((i) => i.loanId === loanId);
 }
 
+/**
+ * What actually reached the account: the loan amount less the processing fee,
+ * stamp duty and pre-EMI interest the bank takes out of the disbursal. The EMIs
+ * are still on the full loan amount.
+ */
+export function netDisbursedAmount(loan: Pick<Loan, "principalAmount" | "processingFee" | "stampDuty" | "preEmiInterest">): number {
+  return Math.round((loan.principalAmount - loan.processingFee - loan.stampDuty - loan.preEmiInterest) * 100) / 100;
+}
+
 /** Remaining principal: the sum of principalDue across installments not yet paid. */
 export function outstandingBalance(loanId: string, installments: LoanInstallment[]): number {
   return installmentsForLoan(loanId, installments)

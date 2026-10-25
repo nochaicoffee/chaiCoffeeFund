@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { generateInstallments } from "../schedule/generateInstallments";
 import {
   computeLoanSummaries,
+  netDisbursedAmount,
   nextDueInstallment,
   outstandingBalance,
   totalDueThisMonth,
@@ -23,6 +24,9 @@ const loan: Omit<Loan, "id"> = {
   disbursementDate: "2026-08-01",
   accountId: "acc-1",
   status: "Active",
+  firstEmiDate: "2026-09-01",
+  stampDuty: 0,
+  preEmiInterest: 0,
 };
 const loanWithId: Loan = { ...loan, id: "loan-1" };
 
@@ -90,5 +94,16 @@ describe("totalDueThisMonth", () => {
     const installments = withLoanId(generateInstallments(loan));
     // The schedule's first installment is due 2026-09-01.
     expect(totalDueThisMonth([loanWithId], installments, "2026-09")).toBeCloseTo(installments[0].totalDue, 2);
+  });
+});
+
+describe("netDisbursedAmount", () => {
+  it("takes the fee, stamp duty and pre-EMI interest out of the loan amount (HDFC loan of 2026-07-04)", () => {
+    // The agreement's Key Fact Statement: ₹11,10,000 − ₹7,669 − ₹500 − ₹911 = ₹11,00,920.
+    expect(netDisbursedAmount({ principalAmount: 1110000, processingFee: 7669, stampDuty: 500, preEmiInterest: 911 })).toBe(1100920);
+  });
+
+  it("is the whole loan amount when nothing is deducted", () => {
+    expect(netDisbursedAmount({ principalAmount: 50000, processingFee: 0, stampDuty: 0, preEmiInterest: 0 })).toBe(50000);
   });
 });
