@@ -26,6 +26,8 @@ export interface StatementRow {
   amount: number;
   /** The balance after it, as the statement prints it. */
   balance: number;
+  /** What the bank says it was, with its spacing tidied ("NEFT CR-... NETAPP INDIA ..."), when the reader keeps it: income is matched on it (#187). */
+  narration?: string;
 }
 
 export interface AccountStatement {

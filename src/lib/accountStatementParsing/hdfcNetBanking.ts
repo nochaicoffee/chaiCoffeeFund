@@ -1,5 +1,5 @@
 import { orderRows, sameAmount, toPaise, type StatementRow } from "../aggregate/statementBalances";
-import { last4Of, parseRupees, parseSlashDate } from "./readers";
+import { last4Of, parseRupees, parseSlashDate, tidyNarration } from "./readers";
 import type { ParseResult } from "./types";
 
 /**
@@ -60,7 +60,7 @@ export function parseHdfcNetBanking(text: string): ParseResult {
     if (!date || out === null || inn === null || balance === null) return { ok: false, problem: "couldn't read a row's date or amount" };
     withdrawn += toPaise(out);
     deposited += toPaise(inn);
-    rows.push({ date, amount: (toPaise(inn) - toPaise(out)) / 100, balance });
+    rows.push({ date, amount: (toPaise(inn) - toPaise(out)) / 100, balance, narration: tidyNarration(m[2]) });
   }
 
   // The debit and credit totals must be the rows' two sums, whichever way round their labels came out.

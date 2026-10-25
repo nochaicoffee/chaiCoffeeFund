@@ -19,13 +19,17 @@ export async function POST(request: Request) {
   const field = (name: string) => (typeof body === "object" && body !== null ? (body as Record<string, unknown>)[name] : undefined);
   const trigger: SyncTrigger = field("trigger") === "Scheduled" ? "Scheduled" : "Manual";
   const dryRun = field("dryRun") === true;
+  // `{ "reread": true }` reads every labelled email again, done ones too: the income catch-up (#187).
+  const reread = field("reread") === true;
   try {
-    const result = await runAccountStatementSync({ trigger, dryRun });
+    const result = await runAccountStatementSync({ trigger, dryRun, reread });
     if (result.status === "done" && !result.dryRun) {
       revalidateTag(CACHE_TAGS.balanceSnapshots, "max");
       revalidateTag(CACHE_TAGS.balanceReviews, "max");
       // The import can fill in an account's last 4.
       revalidateTag(CACHE_TAGS.accounts, "max");
+      // Salary and other income read from the statements (#187).
+      revalidateTag(CACHE_TAGS.incomeEntries, "max");
     }
     return NextResponse.json(result);
   } catch (error) {

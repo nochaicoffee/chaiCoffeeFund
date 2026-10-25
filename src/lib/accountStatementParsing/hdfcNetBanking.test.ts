@@ -47,12 +47,18 @@ describe("parseHdfcNetBanking", () => {
 
   it("reads each row by its value date: a card payment posted 31 Dec and valued 1 Jan belongs to January; the interest posted 1 Apr and valued 31 Mar to March", () => {
     if (!result.ok) throw new Error(result.problem);
-    expect(result.parsed.statement.rows).toEqual([
+    expect(result.parsed.statement.rows).toMatchObject([
       { date: "2026-01-01", amount: -100, balance: 900 },
       { date: "2026-01-05", amount: 5000, balance: 5900 },
       { date: "2026-02-06", amount: -6500, balance: -600 },
       { date: "2026-03-31", amount: 50, balance: -550 },
     ]);
+  });
+
+  it("keeps each row's narration with its reference, the wrapped spaces tidied (#187)", () => {
+    if (!result.ok) throw new Error(result.problem);
+    expect(result.parsed.statement.rows[2].narration).toBe("NEFT DR-SOMEONE ELSE WITH A LONG NAME THAT WRA PS N123456789");
+    expect(result.parsed.statement.rows[3].narration).toBe("INTEREST PAID TILL 31-MAR-2026");
   });
 
   it("reads a negative closing balance, which an ACH debit before its reversal can leave", () => {

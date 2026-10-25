@@ -5,14 +5,17 @@ import { downloadAttachment, getHeader, getMessage, listMessagesWithLabel, listP
 import { decryptAndExtractText } from "@/lib/pdf/decryptAndExtractText";
 import { parseAccountStatements } from "@/lib/accountStatementParsing";
 import type { ParseResult } from "@/lib/accountStatementParsing/types";
+import { incomeFromStatement } from "@/lib/aggregate/incomeFromStatements";
 import type { ReviewRecord } from "@/lib/aggregate/statementBalances";
 import { todayIso } from "@/lib/format/date";
 import { accountsRepository } from "@/lib/sheets/accounts";
 import { accountStatementEmailsRepository } from "@/lib/sheets/accountStatementEmails";
 import { balanceReviewsRepository } from "@/lib/sheets/balanceReviews";
 import { balanceSnapshotsRepository } from "@/lib/sheets/balanceSnapshots";
+import { incomeEntriesRepository } from "@/lib/sheets/incomeEntries";
+import { incomeSourcesRepository } from "@/lib/sheets/incomeSources";
 import { syncRunsRepository } from "@/lib/sheets/syncRuns";
-import type { Account, BalanceReview, BalanceSnapshot, SyncTrigger } from "@/lib/sheets/types";
+import type { Account, BalanceReview, BalanceSnapshot, IncomeEntry, IncomeSource, SyncTrigger } from "@/lib/sheets/types";
 import { decideSyncTurn } from "@/lib/statementIngestion/syncTurn";
 import { withTimeout } from "@/lib/statementIngestion/withTimeout";
 import { accountLogEntry, planAccountEmails } from "./emailLog";
@@ -28,8 +31,14 @@ const RETRY_FAILED_AFTER_MS = 24 * 60 * 60 * 1000;
 
 export interface AccountSyncOptions {
   trigger: SyncTrigger;
-  /** Read and plan everything, write nothing: no balances, reviews, log or run rows. */
+  /** Read and plan everything, write nothing: no balances, reviews, income, log or run rows. */
   dryRun?: boolean;
+  /**
+   * Read every labelled email again, done or not: the catch-up after income matching was added (#187), so
+   * statements already read give their income too. Safe for balances: one already recorded comes back unchanged,
+   * and a disagreement already waiting doesn't open another review.
+   */
+  reread?: boolean;
   timeBudgetMs?: number;
   emailTimeoutMs?: number;
   /** The clock, for tests. */
@@ -46,7 +55,7 @@ export interface AccountSyncOptions {
  * What it never does: change a recorded balance. A statement that disagrees with one opens a review (BalanceReviews)
  * and the recorded balance stays until it's answered.
  */
-export async function runAccountStatementSync({ trigger, dryRun = false, timeBudgetMs = TIME_BUDGET_MS, emailTimeoutMs = EMAIL_TIMEOUT_MS, now = () => new Date() }: AccountSyncOptions): Promise<AccountSyncResult> {
+export async function runAccountStatementSync({ trigger, dryRun = false, reread = false, timeBudgetMs = TIME_BUDGET_MS, emailTimeoutMs = EMAIL_TIMEOUT_MS, now = () => new Date() }: AccountSyncOptions): Promise<AccountSyncResult> {
   const startedAt = now();
   let runId: string | undefined;
   if (!dryRun) {
@@ -68,7 +77,7 @@ export async function runAccountStatementSync({ trigger, dryRun = false, timeBud
 
   let result: Extract<AccountSyncResult, { status: "done" }>;
   try {
-    result = await syncEmails({ startedAt: startedAt.getTime(), timeBudgetMs, emailTimeoutMs, now, dryRun, trigger });
+    result = await syncEmails({ startedAt: startedAt.getTime(), timeBudgetMs, emailTimeoutMs, now, dryRun, trigger, reread });
   } catch (error) {
     if (runId) {
       const message = error instanceof Error ? error.message : String(error);
@@ -95,31 +104,39 @@ interface Pending {
   reviews: { tempId: string; input: Omit<BalanceReview, "id" | "createdAt"> }[];
   supersede: Set<string>;
   last4: { accountId: string; last4: string; outcome: StatementOutcome }[];
+  income: Omit<IncomeEntry, "id">[];
 }
 
 interface Working {
   accounts: Account[];
   snapshots: BalanceSnapshot[];
   reviews: ReviewRecord[];
+  /** Sources with a statement text, and the entries so far, including those planned in this sync (#187). */
+  incomeSources: IncomeSource[];
+  incomeEntries: Pick<IncomeEntry, "incomeSourceId" | "amount" | "receivedDate" | "statementRef">[];
   pending: Pending;
   seq: number;
 }
 
-async function syncEmails(o: { startedAt: number; timeBudgetMs: number; emailTimeoutMs: number; now: () => Date; dryRun: boolean; trigger: SyncTrigger }): Promise<Extract<AccountSyncResult, { status: "done" }>> {
+async function syncEmails(o: { startedAt: number; timeBudgetMs: number; emailTimeoutMs: number; now: () => Date; dryRun: boolean; trigger: SyncTrigger; reread: boolean }): Promise<Extract<AccountSyncResult, { status: "done" }>> {
   const gmail = getGmailClient();
-  const [accountRows, snapshotRows, reviewRows, log, messageRefs] = await Promise.all([
+  const [accountRows, snapshotRows, reviewRows, log, messageRefs, incomeSources, incomeEntries] = await Promise.all([
     accountsRepository.readAll(),
     balanceSnapshotsRepository.readAll(),
     balanceReviewsRepository.readAll(),
     accountStatementEmailsRepository.list(),
     listMessagesWithLabel(gmail, getAccountStatementLabel()),
+    incomeSourcesRepository.list(),
+    incomeEntriesRepository.list(),
   ]);
 
   const working: Working = {
     accounts: accountRows.records.map((a) => ({ ...a })),
     snapshots: [...snapshotRows.records],
     reviews: reviewRows.records.map((r) => ({ id: r.id, accountId: r.accountId, date: r.date, statementBalance: r.statementBalance, status: r.status })),
-    pending: { snapshots: [], reviews: [], supersede: new Set(), last4: [] },
+    incomeSources: incomeSources.filter((s) => s.statementMatch),
+    incomeEntries: [...incomeEntries],
+    pending: { snapshots: [], reviews: [], supersede: new Set(), last4: [], income: [] },
     seq: 0,
   };
   // Passwords from invalid account rows too, so their statements still open and are reported as what they are.
@@ -129,7 +146,7 @@ async function syncEmails(o: { startedAt: number; timeBudgetMs: number; emailTim
 
   // An unattended run leaves out emails that failed within the last day; the button retries every one.
   const skipFailedSince = o.trigger === "Scheduled" ? new Date(o.now().getTime() - RETRY_FAILED_AFTER_MS).toISOString() : undefined;
-  const planned = planAccountEmails(messageRefs.map((ref) => ref.id), log, { skipFailedSince });
+  const planned = planAccountEmails(messageRefs.map((ref) => ref.id), log, { skipFailedSince, everything: o.reread });
   const read: { outcome: EmailOutcome; logged: (typeof planned)[number]["logged"] }[] = [];
   for (const { messageId, logged } of planned) {
     // Always at least one, so every sync gets somewhere.
@@ -142,7 +159,8 @@ async function syncEmails(o: { startedAt: number; timeBudgetMs: number; emailTim
     read.push({ outcome, logged });
   }
 
-  const remaining = planned.slice(read.length).filter((email) => !email.logged).length;
+  // Rereading, every email not reached is still to read, done or not.
+  const remaining = planned.slice(read.length).filter((email) => o.reread || !email.logged).length;
   if (!o.dryRun) await writeAll(working, read, o.now);
   return { status: "done", outcomes: read.map((r) => r.outcome), remaining, dryRun: o.dryRun };
 }
@@ -154,6 +172,9 @@ async function writeAll(working: Working, read: { outcome: EmailOutcome; logged:
 
   const created = pending.snapshots.length > 0 ? await balanceSnapshotsRepository.createMany(pending.snapshots.map(({ accountId, date, balance }) => ({ accountId, date, balance, source: "Statement" as const }))) : [];
   const realId = new Map(pending.snapshots.map((s, i) => [s.tempId, created[i].id]));
+
+  // Income before the log too: an email logged done has given its income.
+  if (pending.income.length > 0) await incomeEntriesRepository.createMany(pending.income);
 
   if (pending.reviews.length > 0) {
     await balanceReviewsRepository.createMany(pending.reviews.map(({ input }) => ({ ...input, snapshotId: realId.get(input.snapshotId) ?? input.snapshotId, createdAt: timestamp() })));
@@ -230,6 +251,14 @@ async function processEmail(gmail: gmail_v1.Gmail, messageId: string, working: W
   for (const read of results) {
     const plan = planStatement(read, { accounts: working.accounts, snapshots: working.snapshots, reviews: working.reviews, today, singleStatement: results.length === 1 });
     applyToWorking(working, plan.writes, plan.outcome, messageId);
+    // A statement that's used (its numbers add up and it matched an account) also gives the income in it (#187).
+    if (read.ok && plan.outcome.result !== "skipped" && plan.outcome.accountId && working.incomeSources.length > 0) {
+      const income = incomeFromStatement(read.parsed.statement.rows, plan.outcome.accountId, working.incomeSources, working.incomeEntries);
+      working.pending.income.push(...income);
+      working.incomeEntries.push(...income);
+      plan.outcome.income = income.length;
+      if (income.length > 0) plan.outcome.result = "imported";
+    }
     statements.push(plan.outcome);
   }
   return summarizeEmail(base, statements);

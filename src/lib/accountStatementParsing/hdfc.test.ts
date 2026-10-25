@@ -45,11 +45,16 @@ describe("parseHdfc", () => {
 
   it("reads every row across pages: deposits minus withdrawals, with or without a Ref", () => {
     if (!result.ok) throw new Error(result.problem);
-    expect(result.parsed.statement.rows).toEqual([
+    expect(result.parsed.statement.rows).toMatchObject([
       { date: "2026-09-02", amount: -500, balance: 9500 },
       { date: "2026-09-03", amount: 90000, balance: 99500 },
       { date: "2026-09-30", amount: 1234.5, balance: 100734.5 },
     ]);
+  });
+
+  it("keeps each row's narration, its spacing tidied, for matching income (#187)", () => {
+    if (!result.ok) throw new Error(result.problem);
+    expect(result.parsed.statement.rows.map((r) => r.narration)).toEqual(["UPI-SHOP-shop@ybl-YESB0000001-222222222222-UPI", "NEFT Cr-SALARY SEP NetApp India Private Limited", "Interest paid till 30-SEP-2026"]);
   });
 
   it("gives a statement whose numbers add up, with the month's closing balance", () => {
@@ -70,7 +75,7 @@ describe("parseHdfc", () => {
     const late = head(ACC, "01/09/2026", "30/09/2026", "10,000.00") + COLUMNS + ` 01/10/2026   Interest paid till 30-SEP-2026 Value Dt 30/09/2026 0.00   1,234.50   11,234.50 Page 2 of 3`;
     const [r] = parseHdfc(text(late, last.replace("1,00,734.50", "11,234.50")));
     if (!r.ok) throw new Error(r.problem);
-    expect(r.parsed.statement.rows).toEqual([{ date: "2026-09-30", amount: 1234.5, balance: 11234.5 }]);
+    expect(r.parsed.statement.rows).toMatchObject([{ date: "2026-09-30", amount: 1234.5, balance: 11234.5 }]);
     expect(checkStatement(r.parsed.statement)).toEqual({ ok: true });
   });
 
@@ -95,7 +100,7 @@ describe("parseHdfc", () => {
     const neg = head(ACC, "01/09/2026", "30/09/2026", "100.00") + COLUMNS + " 02/09/2026   ACH D- SOMETHING Value Dt 02/09/2026 Ref 111111111111 250.00   0.00   -150.00 Page 2 of 3";
     const [r] = parseHdfc(text(neg, head(ACC, "01/09/2026", "30/09/2026", "100.00") + summary("-150.00", "100.00", "250.00", "0.00")));
     if (!r.ok) throw new Error(r.problem);
-    expect(r.parsed.statement.rows).toEqual([{ date: "2026-09-02", amount: -250, balance: -150 }]);
+    expect(r.parsed.statement.rows).toMatchObject([{ date: "2026-09-02", amount: -250, balance: -150 }]);
     expect(checkStatement(r.parsed.statement)).toEqual({ ok: true });
   });
 

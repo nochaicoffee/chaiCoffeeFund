@@ -258,7 +258,7 @@ Confirmed by Prathik on 2026-10-24 (he accepted the defaults the mockups show fo
 - **Against last year** compares Jan 1 to today in both years. **The financial year** (Apr–Mar) projection is received + pending + each active source's schedule to Mar 31 at its usual amount, with no bonus assumed.
 - **A pay change** is a payment 2% or more off the one before it from the same source and tag.
 - Loan disbursements and repayments, transfers between your own accounts, and sale proceeds are never income.
-- **The NetApp salary is read from the HDFC account statements** (#187): a deposit whose narration matches the source's statement text becomes a received entry, once. Everything else is recorded in the app.
+- **The NetApp salary is read from the HDFC account statements** (#187, ADR 0009): a deposit whose narration contains the source's statement text becomes a received entry, once, **always tagged Regular** (Prathik, 2026-10-25; a bonus is retagged by hand), expected on the nearest payday. Everything else is recorded in the app.
 - Sources get an optional colour, icon and the account they usually land in.
 
 ## 9. Non-functional requirements
@@ -326,3 +326,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.9 | 2026-10-24 | Income numbers defined (§8 F-IN-01/02): RSU and ESPP are not income, a month counts what landed, late after 3 days, pending computed not stored, the salary read from HDFC statements. Income design final: Z1 with the E1 Ledger and E3 Passbook (#184). |
 | 1.10 | 2026-10-24 | Income: pending counts every missed date after the latest received regular payment; only a Regular entry receives a scheduled payment (#186). Overview's pending income is computed from the schedules, a line per source. |
 | 1.11 | 2026-10-24 | The Income page (#188): the greeting whose figures point, the attention strip, and the Year in columns cover with a year pill and a source pick; a picked source's columns are drawn on their own scale. |
+| 1.12 | 2026-10-25 | Income from bank statements (#187, ADR 0009): the account statement sync records deposits matching a source's statement text, always Regular; `reread` catches up statements read before. |

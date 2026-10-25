@@ -46,6 +46,8 @@ export interface StatementOutcome {
   reviews: OpenedReview[];
   /** Anything else the import did, like filling in the account's last 4. */
   notes: string[];
+  /** Income entries it added (#187): deposits matching a source's statement text. */
+  income?: number;
 }
 
 /** What one email did: its statements', and one result for the log. */

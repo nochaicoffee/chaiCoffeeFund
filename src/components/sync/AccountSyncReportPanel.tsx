@@ -74,6 +74,11 @@ function ReportBody({ report }: { report: AccountSyncReport }) {
           </ul>
         </div>
       )}
+      {report.income > 0 && (
+        <p className="text-xs font-semibold text-fg">
+          Recorded {report.income} income {report.income === 1 ? "payment" : "payments"} from the statements, on the Income page.
+        </p>
+      )}
       {report.filledLast4.length > 0 && <p className="text-xs font-medium text-muted">Saved the last 4 digits of {report.filledLast4.join(", ")} from {report.filledLast4.length === 1 ? "its statement" : "their statements"}.</p>}
       {report.failed.length > 0 && (
         <div className="flex flex-col gap-2">
@@ -120,6 +125,7 @@ function Rows({ title, rows }: { title: string; rows: AccountSyncRow[] }) {
             </span>
             <span className="text-xs text-muted tabular-nums">
               {row.added} added{row.alreadyThere > 0 ? `, ${row.alreadyThere} already there` : ""}
+              {row.income > 0 ? `, ${row.income} income` : ""}
             </span>
           </li>
         ))}
