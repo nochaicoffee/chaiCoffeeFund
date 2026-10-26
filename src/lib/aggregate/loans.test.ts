@@ -9,6 +9,7 @@ import {
   loadZone,
   loanColor,
   loanFacts,
+  markPaidProblem,
   prepaymentLimits,
   timeUntil,
   whatIfPrepayment,
@@ -150,10 +151,6 @@ describe("the Loans page's sums", () => {
     expect(facts.end).toBe("2027-02-01");
   });
 
-  it("saves no interest while the schedule is the original one", () => {
-    expect(facts.interestSaved).toBe(0);
-  });
-
   it("adds up the active loans only", () => {
     const closed = loanFacts({ ...loanWithId, id: "loan-2", status: "Closed" }, installments.map((i) => ({ ...i, loanId: "loan-2" })), []);
     const book = bookFacts([facts, closed]);
@@ -250,5 +247,32 @@ describe("loanColor", () => {
   it("is the loan's own, else its category's", () => {
     expect(loanColor({ category: "Home" })).toBe("Sapphire");
     expect(loanColor({ category: "Home", color: "Ruby" })).toBe("Ruby");
+  });
+});
+
+describe("markPaidProblem", () => {
+  const rows = withLoanId(generateInstallments(loan));
+  const [first] = rows;
+
+  it("takes the EMI, within a rupee, or more", () => {
+    expect(markPaidProblem(first, rows, Math.round(first.totalDue))).toBeNull();
+    expect(markPaidProblem(first, rows, 30000)).toBeNull();
+  });
+
+  it("refuses less than the EMI, since part-payments aren't tracked", () => {
+    expect(markPaidProblem(first, rows, 1000)).toMatch(/^That's less than the EMI/);
+    expect(markPaidProblem(first, rows, first.totalDue, 300)).toMatch(/^That's less than the EMI and its charge/);
+  });
+
+  it("refuses extra when a later EMI is already paid", () => {
+    const paidAhead = rows.map((i, k) => (k === 3 ? { ...i, status: "Paid" as const } : i));
+    expect(markPaidProblem(first, paidAhead, 30000)).toMatch(/^EMI 4 is already paid/);
+    expect(markPaidProblem(first, paidAhead, first.totalDue)).toBeNull();
+  });
+
+  it("refuses more than the EMI and everything left", () => {
+    expect(markPaidProblem(first, rows, 130000)).toMatch(/more than the EMI and everything left/);
+    const left = rows.slice(1).reduce((t, i) => t + i.principalDue, 0);
+    expect(markPaidProblem(first, rows, first.totalDue + left)).toBeNull();
   });
 });

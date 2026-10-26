@@ -1,4 +1,4 @@
-import { generateInstallments, round2 } from "../schedule/generateInstallments";
+import { round2 } from "../schedule/generateInstallments";
 import { prepaymentCharge, rebuildSchedule, type Rebuild } from "../schedule/prepayments";
 import type { CardColor, Loan, LoanCategory, LoanInstallment, LoanPrepayment, LoanPrepaymentEffect, PrepaymentEffect } from "../sheets/types";
 import { daysBetween } from "./cardSpend";
@@ -132,8 +132,6 @@ export interface LoanFacts {
   next: LoanInstallment | null;
   /** The last installment's due date. */
   end: string;
-  /** Interest the original schedule had (regenerated from the loan's terms) less what the stored one has. */
-  interestSaved: number;
 }
 
 export function loanFacts(loan: Loan, allInstallments: LoanInstallment[], allPrepayments: LoanPrepayment[]): LoanFacts {
@@ -145,7 +143,6 @@ export function loanFacts(loan: Loan, allInstallments: LoanInstallment[], allPre
   const principalRepaid = round2(loan.principalAmount - outstanding);
   const interestTotal = sum(installments.map((i) => i.interestDue));
   const prepaymentCharges = sum(prepayments.map((p) => p.charge));
-  const originalInterest = sum(generateInstallments(loan).map((i) => i.interestDue));
   return {
     loan,
     installments,
@@ -169,7 +166,6 @@ export function loanFacts(loan: Loan, allInstallments: LoanInstallment[], allPre
     lateCharges: sum(paid.map((i) => i.overdueCharge ?? 0)),
     next: pending[0] ?? null,
     end: installments.at(-1)?.dueDate ?? loan.firstEmiDate,
-    interestSaved: installments.length > 0 ? round2(originalInterest - interestTotal) : 0,
   };
 }
 
@@ -321,4 +317,23 @@ export function prepaymentLimits(facts: Pick<LoanFacts, "loan" | "paidCount" | "
 export function excessOverEmi(installment: Pick<LoanInstallment, "totalDue">, amountPaid: number, overdueCharge = 0): number {
   const excess = round2(amountPaid - installment.totalDue - overdueCharge);
   return excess >= 1 ? excess : 0;
+}
+
+/**
+ * Why an EMI can't be marked paid with `amountPaid`, or null. Part-payments aren't tracked yet (system-design.md,
+ * Loan, "Still open"), so less than the EMI and its charge is refused rather than counted as the whole EMI. An amount
+ * over it becomes a prepayment, which can't rebuild the EMIs when a later one is already paid, and can't be more than
+ * everything left.
+ */
+export function markPaidProblem(installment: LoanInstallment, loanInstallments: LoanInstallment[], amountPaid: number, overdueCharge = 0): string | null {
+  const owed = round2(installment.totalDue + overdueCharge);
+  if (amountPaid < owed - 1) return `That's less than the EMI${overdueCharge ? " and its charge" : ""} (₹${Math.round(owed).toLocaleString("en-IN")}). Part-payments aren't tracked yet: mark it paid once all of it has gone`;
+  const excess = excessOverEmi(installment, amountPaid, overdueCharge);
+  if (!excess) return null;
+  const later = loanInstallments.filter((i) => i.loanId === installment.loanId && i.installmentNumber > installment.installmentNumber);
+  const paidLater = later.find((i) => i.status === "Paid");
+  if (paidLater) return `EMI ${paidLater.installmentNumber} is already paid, so the extra can't go into the EMIs from here. Enter this EMI's own amount, and add the extra with Add prepayment`;
+  const left = sum(later.map((i) => i.principalDue));
+  if (excess > left + 0.5) return `That's ₹${Math.round(excess - left).toLocaleString("en-IN")} more than the EMI and everything left on the loan (₹${Math.round(owed + left).toLocaleString("en-IN")} in all). Enter what the bank kept`;
+  return null;
 }

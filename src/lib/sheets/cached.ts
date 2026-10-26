@@ -134,6 +134,8 @@ export const getCachedLoanInstallments = cachedList(getCachedLoanInstallmentsTab
 export const getCachedLoanInstallmentById = cachedGetById(getCachedLoanInstallments);
 
 export const getCachedLoanPrepaymentsTab = cachedTab(loanPrepaymentsRepository, CACHE_TAGS.loanPrepayments);
+export const getCachedLoanPrepayments = cachedList(getCachedLoanPrepaymentsTab);
+export const getCachedLoanPrepaymentById = cachedGetById(getCachedLoanPrepayments);
 
 export const getCachedInvestmentTransactionsTab = cachedTab(investmentTransactionsRepository, CACHE_TAGS.investmentTransactions);
 export const getCachedInvestmentTransactions = cachedList(getCachedInvestmentTransactionsTab);
