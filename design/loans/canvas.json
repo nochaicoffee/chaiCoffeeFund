@@ -1,0 +1,208 @@
+{
+  "pages": [
+    {
+      "id": "r4",
+      "name": "Round 4: picks (payoff widget, colours)"
+    },
+    {
+      "id": "r3",
+      "name": "Round 3: one page, dark cover (N1–N3)"
+    },
+    {
+      "id": "forms",
+      "name": "Forms: add loan, mark paid, prepayment"
+    },
+    {
+      "id": "r2",
+      "name": "Round 2: Hands-on directions (M1–M4)"
+    },
+    {
+      "id": "r1",
+      "name": "Round 1: Dashboard directions (L1–L6)"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "LoansGauge.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1500,
+      "h": 1553,
+      "page": "r4"
+    },
+    {
+      "file": "LoansRings.dc.html",
+      "x": 1620,
+      "y": 0,
+      "w": 1500,
+      "h": 1527,
+      "page": "r4"
+    },
+    {
+      "file": "LoansPalettes.dc.html",
+      "x": 3240,
+      "y": 0,
+      "w": 1500,
+      "h": 1700,
+      "page": "r4"
+    },
+    {
+      "file": "LoansN1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 3651,
+      "page": "r3"
+    },
+    {
+      "file": "LoansN2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 3012,
+      "page": "r3"
+    },
+    {
+      "file": "LoansN3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 3725,
+      "page": "r3"
+    },
+    {
+      "file": "LoansForms.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1100,
+      "h": 3961,
+      "page": "forms"
+    },
+    {
+      "file": "LoansM1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1336,
+      "page": "r2"
+    },
+    {
+      "file": "LoansM2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 1570,
+      "page": "r2"
+    },
+    {
+      "file": "LoansM3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 1295,
+      "page": "r2"
+    },
+    {
+      "file": "LoansM4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 1339,
+      "page": "r2"
+    },
+    {
+      "file": "LoansL1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1800,
+      "page": "r1"
+    },
+    {
+      "file": "LoansL2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 2119,
+      "page": "r1"
+    },
+    {
+      "file": "LoansL3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 2459,
+      "page": "r1"
+    },
+    {
+      "file": "LoansL4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 2387,
+      "page": "r1"
+    },
+    {
+      "file": "LoansL5.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 1600,
+      "h": 2007,
+      "page": "r1"
+    },
+    {
+      "file": "LoansL6.dc.html",
+      "x": 8600,
+      "y": 0,
+      "w": 1600,
+      "h": 2612,
+      "page": "r1"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-1",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 4 (2026-10-25): Prathik liked the tiles cover (N1) but not the rings or the green and orange for principal and interest, and asked for widgets of a similar size laid out as on the other dashboards. Payoff widget: five ways (R1 clean rings, R2 half dial, R3 donut by what you owe, R4 capsules, R5 three dials). Palettes: six principal and interest colour pairs on the monthly chart. N1 is redone with equal halves everywhere, the Loans table full width, and a Payments card like Subscriptions' (a table, a Payments / Prepayments toggle, the 6 most recent, a hint line). Sample data, made up.",
+      "page": "r4"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Loans, round 3 (2026-10-25): the hero visuals of rounds 1 and 2 as widgets on ONE page. The page stays light; only the cover on top is dark, as on Subscriptions. Pick a loan (tiles, pills) and the whole page follows: the cover's background and the page's accent take the loan's colour, the charts fade the other loans, and the widgets that show one loan's own numbers switch to it. N1 Tiles cover (the cover holds the loan tiles, the descent and the rings), N2 Figures cover (pills, big figures and the descent), N3 Rings cover (rings on the left; four sections below). Widgets: the descent, EMI cliffs, payoff rings, time machine, EMI tally, cost anatomy, debt-free clock, EMI load gauge, what-if prepayment, inside an EMI. Sample data, made up.",
+      "page": "r3"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Loan forms (2026-10-25), following the prepayment design in system-design.md: Add loan (first EMI date, stamp duty, pre-EMI interest, the usual prepayment effect, charge and limits; the preview shows what reaches the account), Mark paid (anything above the EMI becomes a prepayment, in the same save), Add prepayment (effect, charge, the bank's own figures, limits as warnings), and the cost of borrowing with interest and charges apart. Sample data, made up; the first form uses the numbers from the HDFC agreement.",
+      "page": "forms"
+    },
+    {
+      "id": "note-4",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Loans, round 2 (2026-10-25): four hands-on directions with few visuals. Everything is a chip you can pick (hover and click in the preview). M1 Time machine (pick a date, past or future: a wall of ₹1L bricks, one colour per loan), M2 What if (pick a loan and an extra monthly amount: when it ends, interest saved; a what-if only, prepayment is not designed), M3 EMI anatomy (pick a loan and an EMI: how much of it is interest, on a curve of the whole loan), M4 Load gauge (a needle for the share of salary that goes to EMIs, today and after each loan ends). Sample data, made up.",
+      "page": "r2"
+    },
+    {
+      "id": "note-5",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Loans, round 1 (2026-10-25): the /loans dashboard, six directions with the same greeting and attention strip, each with its own idea for the hero, taken from the subject: L1 The descent (what you owe, stacked by loan, falling to the debt-free date), L2 EMI cliffs (what leaves each month, stepping down as loans end), L3 Payoff rings (a ring per loan, and a dot for how far through its term it is), L4 EMI tally (a tick for every EMI on one calendar), L5 Cost anatomy (what each ₹1 borrowed costs), L6 Debt-free clock (a countdown, and what each loan ending frees up). The widgets under each hero are the same shared ones in a different order; the real layout is picked after the hero. Sample data, made up; today is Oct 25, 2026.",
+      "page": "r1"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "r4"
+  }
+}
