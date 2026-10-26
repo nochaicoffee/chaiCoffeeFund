@@ -1,5 +1,16 @@
 # Loans page (`/loans`)
 
+## Built (2026-10-26)
+
+The final design is **N1** with Prathik's round 4 picks (R4 capsules, P6 solid and outline, G1 salary bar), built end to end: `src/app/loans/` (page, views, actions) and `src/components/loans/`. `/loans?demo` shows this canvas's sample loans in development. What the build added or settled:
+
+- **Open decisions took the mockups' defaults**: (1) N1; (2) a closed loan stays in the Loans table, dimmed; (3) a `color` column with the category's colour as the default, the icon from the category, and where the EMI leaves as `emiPaidFromAccountId` / `emiPaidFromCardId`; (4) EMI load is kept, from Income's active salary sources (it says so when there's no salary); (5) any day late counts as late.
+- **The pick** is `?loan=` in the address, as on Accounts and Income. The cover's background and the page's accent take the loan's colour.
+- **What if** has an amount you can type, and Close as a third effect. It's worked out in the browser with the same rebuild the app saves with.
+- **Not in the mockups, needed to use it**: Edit loan (the terms that drive the schedule can't change), Delete loan, Delete prepayment (in the Payments card's Prepayments view and on the Installments page), and the **Installments page** (`/loans/installments`, every EMI of every loan, the next loan due open).
+- **The EMI cliffs' flags** sit above the chart as chips rather than over it, so they never cover the steps.
+- Phone: the cover's tiles stack, every two-up row is one column, and the wide tables scroll sideways as Income's Sources table does.
+
 **Rounds 1 to 3 and the forms, 2026-10-25: heroes L1–L6, hands-on M1–M4, and one-page dashboards with a dark cover N1–N3; none picked yet.** Mockups: [`design/loans/`](../../design/loans/), built by [`design/loans/generator/`](../../design/loans/generator/) (a rebuild overwrites the artboards, so change the generator). Every loan, amount and date is made up; "today" is Oct 25, 2026.
 
 Every board has the shared greeting (whose figures point), an attention strip while an EMI is due within a week, one hero, then the same shared widgets in a different order. The real layout is picked after the hero, as Income did.
@@ -85,4 +96,4 @@ These are money rules; each needs a yes from Prathik and a test that proves the 
 
 ## Not done yet
 
-The Installments page (all installments, as Cards' Statements and Income's Entries), the Edit loan form, a list of a loan's prepayments, phone layouts and the empty / one-loan / all-closed states. Rate changes are not drawn.
+Everything in this list as of round 4 was built without its own mockup (see "Built" at the top): the Installments page, Edit loan, the prepayments list, the phone layout, and the no-loans and all-closed states. Rate changes are still not designed.

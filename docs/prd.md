@@ -133,9 +133,9 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 
 | ID | Feature | Pri | Status |
 |---|---|---|---|
-| F-LO-01 | Add a loan, which auto-generates its reducing-balance EMI schedule | P0 | Designed (API and schedule built, [ADR 0004](adr/0004-reducing-balance-emi-schedule.md)) |
-| F-LO-02 | Mark an installment paid (from an account or a card), and see outstanding balance and next due | P0 | Designed (computation built) |
-| F-LO-03 | Prepayments, rate changes, other repayment structures | P2 | Prepayments designed 2026-10-25 (`system-design.md`, Loan), not built. Rate changes and other structures not designed. |
+| F-LO-01 | Add a loan, which auto-generates its reducing-balance EMI schedule | P0 | Built 2026-10-26: the Loans page and its Add loan form ([ADR 0004](adr/0004-reducing-balance-emi-schedule.md), `docs/design/loans.md`) |
+| F-LO-02 | Mark an installment paid (from an account or a card), and see outstanding balance and next due | P0 | Built 2026-10-26: Mark paid, the Loans page and the Installments page |
+| F-LO-03 | Prepayments, rate changes, other repayment structures | P2 | Prepayments built 2026-10-26 (`system-design.md`, Loan). Rate changes and other structures not designed. |
 
 ### Fixed Income (`F-FI`)
 
