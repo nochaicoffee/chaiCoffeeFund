@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useEffect, useState, type FormEvent } from "react";
-import { markEmiPaid } from "@/app/loans/actions";
+import { editEmiPayment, markEmiPaid } from "@/app/loans/actions";
 import type { LoanFormsData } from "@/app/loans/views";
-import { excessOverEmi, markPaidProblem, usualEffect } from "@/lib/aggregate/loans";
+import { editPaymentProblem, excessOverEmi, markPaidProblem, usualEffect } from "@/lib/aggregate/loans";
 import { formatDate, formatShortDate } from "@/lib/format/date";
 import { formatInr, parseAmountText } from "@/lib/format/money";
 import { IDLE } from "@/lib/forms/formState";
@@ -21,19 +21,29 @@ import { LoanIcon } from "../parts";
  * its own amount and creates a prepayment for the extra in the same save; the form says so, asks what the extra
  * should do (the loan's usual effect to start with) and fills in the bank's charge on it. The preview's figures after
  * the prepayment are estimates (see rebuildSchedule).
+ *
+ * With `editing` it is Edit payment instead: the same form on an EMI already paid, to correct its date, amount, overdue
+ * charge or where it was paid from. The EMI can't be changed, and extra can't be added here (that's Add prepayment).
  */
-export function MarkPaidDialog({ forms, installmentId, onClose, onSaved }: { forms: LoanFormsData; installmentId?: string; onClose: () => void; onSaved: (undo: { id: string; message: string }) => void }) {
-  const [state, formAction, pending] = useActionState(markEmiPaid, IDLE);
-  const due = forms.loans
-    .filter((l) => l.loan.status === "Active")
-    .flatMap((l) => l.installments.filter((i) => i.status === "Pending").slice(0, 3).map((i) => ({ i, l })))
-    .sort((a, b) => (a.i.dueDate < b.i.dueDate ? -1 : 1));
+export function MarkPaidDialog({ forms, installmentId, editing = false, onClose, onSaved }: { forms: LoanFormsData; installmentId?: string; editing?: boolean; onClose: () => void; onSaved: (undo: { id: string; message: string }) => void }) {
+  const [state, formAction, pending] = useActionState(editing ? editEmiPayment : markEmiPaid, IDLE);
+  const due = editing
+    ? forms.loans.flatMap((l) => l.installments.filter((i) => i.id === installmentId && i.status === "Paid").map((i) => ({ i, l })))
+    : forms.loans
+        .filter((l) => l.loan.status === "Active")
+        .flatMap((l) => l.installments.filter((i) => i.status === "Pending").slice(0, 3).map((i) => ({ i, l })))
+        .sort((a, b) => (a.i.dueDate < b.i.dueDate ? -1 : 1));
   const first = due.find((d) => d.i.id === installmentId) ?? due[0];
-  const placeOf = (d?: (typeof due)[number]) => (d?.l.loan.emiPaidFromCardId ? `card:${d.l.loan.emiPaidFromCardId}` : d?.l.loan.emiPaidFromAccountId ? `account:${d.l.loan.emiPaidFromAccountId}` : "");
+  // Where the loan's EMIs usually come from; an EMI being edited starts at where it was paid from.
+  const placeOf = (d?: (typeof due)[number]) => {
+    const card = editing ? d?.i.paidFromCardId : d?.l.loan.emiPaidFromCardId;
+    const account = editing ? d?.i.paidFromAccountId : d?.l.loan.emiPaidFromAccountId;
+    return card ? `card:${card}` : account ? `account:${account}` : "";
+  };
   const [chosen, setChosen] = useState(first?.i.id ?? "");
-  const [paidDate, setPaidDate] = useState(forms.today);
-  const [amountPaid, setAmount] = useState(first ? String(Math.round(first.i.totalDue)) : "");
-  const [overdueCharge, setOverdue] = useState("");
+  const [paidDate, setPaidDate] = useState((editing && first?.i.paidDate) || forms.today);
+  const [amountPaid, setAmount] = useState(first ? String(editing ? (first.i.amountPaid ?? Math.round(first.i.totalDue)) : Math.round(first.i.totalDue)) : "");
+  const [overdueCharge, setOverdue] = useState(editing && first?.i.overdueCharge ? String(first.i.overdueCharge) : "");
   const [chargedTo, setChargedTo] = useState(placeOf(first));
   const [effect, setEffect] = useState<string>(first ? usualEffect(first.l.loan) : "Reduce-Tenure");
   const [charge, setCharge] = useState("");
@@ -42,11 +52,11 @@ export function MarkPaidDialog({ forms, installmentId, onClose, onSaved }: { for
   const picked = due.find((d) => d.i.id === chosen);
   const paid = parseAmountText(amountPaid) ?? 0;
   const extra = picked ? excessOverEmi(picked.i, paid, parseAmountText(overdueCharge) ?? 0) : 0;
-  const autoCharge = picked && extra ? prepaymentCharge(picked.l.loan, extra) : 0;
+  const autoCharge = picked && extra && !editing ? prepaymentCharge(picked.l.loan, extra) : 0;
   const values = { installmentId: chosen, paidDate, amountPaid, overdueCharge, chargedTo, effect, charge: chargeTouched ? charge : String(autoCharge) };
   const read = readMarkPaidForm(values, { accountIds: forms.accounts.map((a) => a.id), cardIds: forms.cards.map((c) => c.id), installmentIds: due.map((d) => d.i.id) }, forms.today);
   // The same rules the action checks: no part-payments, and no extra that can't go into the EMIs.
-  const problem = read.ok && picked ? markPaidProblem(picked.i, picked.l.installments, read.input.amountPaid, read.input.overdueCharge) : null;
+  const problem = read.ok && picked ? (editing ? editPaymentProblem(picked.i, read.input.amountPaid, read.input.overdueCharge) : markPaidProblem(picked.i, picked.l.installments, read.input.amountPaid, read.input.overdueCharge)) : null;
   const check: typeof read = problem ? { ok: false, errors: { amountPaid: problem } } : read;
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -83,10 +93,10 @@ export function MarkPaidDialog({ forms, installmentId, onClose, onSaved }: { for
   return (
     <FormDialog
       icon={<CheckIcon />}
-      title="Mark paid"
-      subtitle="An EMI, with anything extra"
+      title={editing ? "Edit payment" : "Mark paid"}
+      subtitle={editing ? "Correct how an EMI was paid" : "An EMI, with anything extra"}
       preview={
-        <PreviewPanel caption={after ? "The interest in the month of a prepayment follows a proposed rule, so the figures after it are estimates until a bank letter confirms them." : "Mark it paid once the debit has gone through."}>
+        <PreviewPanel caption={after ? "The interest in the month of a prepayment follows a proposed rule, so the figures after it are estimates until a bank letter confirms them." : editing ? "Only this payment changes. The EMI and the rest of the schedule stay as they are." : "Mark it paid once the debit has gone through."}>
           {picked ? (
             <>
               <div className="flex flex-col gap-3 rounded-[16px] bg-surface p-4">
@@ -101,7 +111,7 @@ export function MarkPaidDialog({ forms, installmentId, onClose, onSaved }: { for
                 </span>
                 <b className="text-[28px] leading-none font-extrabold tabular-nums">{paid ? formatInr(paid) : "₹—"}</b>
               </div>
-              {extra > 0 && (
+              {extra > 0 && !editing && (
                 <dl className="flex flex-col gap-1.5 rounded-[16px] bg-surface p-4 text-[12.5px] font-semibold">
                   <Line label="This EMI, recorded as" value={formatInr(picked.i.totalDue + (parseAmountText(overdueCharge) ?? 0))} />
                   <Line label="Prepayment (paid over the EMI)" value={formatInr(extra)} strong />
@@ -125,12 +135,12 @@ export function MarkPaidDialog({ forms, installmentId, onClose, onSaved }: { for
               )}
             </>
           ) : (
-            <p className="rounded-[16px] bg-surface p-4 text-sm font-semibold text-muted">No EMIs are due.</p>
+            <p className="rounded-[16px] bg-surface p-4 text-sm font-semibold text-muted">{editing ? "This EMI isn't paid." : "No EMIs are due."}</p>
           )}
         </PreviewPanel>
       }
-      footerNote={<span className="max-md:hidden">{extra ? "Both rows are saved together, so the extra is never lost inside the EMI's amount." : "You can undo it for a few seconds after saving."}</span>}
-      primaryLabel="Mark paid"
+      footerNote={<span className="max-md:hidden">{editing ? "" : extra ? "Both rows are saved together, so the extra is never lost inside the EMI's amount." : "You can undo it for a few seconds after saving."}</span>}
+      primaryLabel={editing ? "Save changes" : "Mark paid"}
       pending={pending}
       errorCount={count}
       saveFailed={state.status === "failed"}
@@ -147,7 +157,14 @@ export function MarkPaidDialog({ forms, installmentId, onClose, onSaved }: { for
       <div className="grid gap-x-3.5 gap-y-4 md:grid-cols-2">
         <div className="md:col-span-2">
           <Field id="installmentId" label="EMI" required error={errors.installmentId}>
+            {editing ? (
+              <>
+                <input type="hidden" name="installmentId" value={chosen} />
+                <p className="flex h-10 items-center rounded-[12px] bg-fill px-3.5 text-sm font-semibold">{picked ? `${picked.l.loan.name} · EMI ${picked.i.installmentNumber}` : "—"}</p>
+              </>
+            ) : (
             <SelectInput id="installmentId" name="installmentId" invalid={Boolean(errors.installmentId)} options={due.map((d) => ({ value: d.i.id, label: `${d.l.loan.name} · EMI ${d.i.installmentNumber}`, meta: `${formatInr(d.i.totalDue)} · ${formatShortDate(d.i.dueDate)}`, swatch: { background: `var(--card-${d.l.colorKey})` } }))} value={chosen} onChange={choose} placeholder="Choose the EMI" />
+            )}
           </Field>
         </div>
         <div className="flex flex-col gap-1.5">
@@ -157,16 +174,16 @@ export function MarkPaidDialog({ forms, installmentId, onClose, onSaved }: { for
         <Field id="paidDate" label="Paid on" required error={errors.paidDate}>
           <DateInput {...describedBy("paidDate", errors.paidDate, false)} label="Paid on" name="paidDate" value={paidDate} onChange={setPaidDate} onBlur={() => reveal("paidDate")} today={forms.today} invalid={Boolean(errors.paidDate)} />
         </Field>
-        <Field id="amountPaid" label="Amount paid" required help={picked ? `The EMI is ${formatInr(picked.i.totalDue)}. The form starts there.` : undefined} error={errors.amountPaid}>
+        <Field id="amountPaid" label="Amount paid" required help={picked ? (editing ? `The EMI is ${formatInr(picked.i.totalDue)}. Extra goes in with Add prepayment.` : `The EMI is ${formatInr(picked.i.totalDue)}. The form starts there.`) : undefined} error={errors.amountPaid}>
           <MoneyInput {...describedBy("amountPaid", errors.amountPaid, Boolean(picked))} data-autofocus name="amountPaid" value={amountPaid} onChange={(e) => setAmount(e.target.value)} onBlur={() => reveal("amountPaid")} invalid={Boolean(errors.amountPaid)} />
         </Field>
-        <Field id="overdueCharge" label="Overdue charge" help="Anything above the EMI and this is a prepayment." error={errors.overdueCharge}>
-          <MoneyInput {...describedBy("overdueCharge", errors.overdueCharge, true)} name="overdueCharge" value={overdueCharge} onChange={(e) => setOverdue(e.target.value)} onBlur={() => reveal("overdueCharge")} invalid={Boolean(errors.overdueCharge)} />
+        <Field id="overdueCharge" label="Overdue charge" help={editing ? undefined : "Anything above the EMI and this is a prepayment."} error={errors.overdueCharge}>
+          <MoneyInput {...describedBy("overdueCharge", errors.overdueCharge, !editing)} name="overdueCharge" value={overdueCharge} onChange={(e) => setOverdue(e.target.value)} onBlur={() => reveal("overdueCharge")} invalid={Boolean(errors.overdueCharge)} />
         </Field>
         <div className="md:col-span-2">
           <ChargedToField label="Paid from" value={chargedTo} onChange={setChargedTo} forms={{ cards: forms.cards, accounts: forms.accounts }} help="Where the debit came from." error={errors.chargedTo} />
         </div>
-        {extra > 0 && picked && (
+        {extra > 0 && picked && !editing && (
           <>
             <p role="status" className="rounded-[12px] bg-warning-tint px-3.5 py-2.5 text-xs font-semibold text-warning-text md:col-span-2">
               <b className="font-extrabold">{formatInr(extra)} above the EMI goes to principal as a prepayment.</b> The EMI is recorded at its own {formatInr(picked.i.totalDue)}, and the extra becomes a prepayment dated the same day.

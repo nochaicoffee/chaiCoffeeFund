@@ -3,12 +3,12 @@
 import Link from "next/link";
 import type { ScheduleRow, ScheduleView } from "@/app/loans/widgetsView";
 import { FormTrigger, useLoanForms } from "./forms/LoanForms";
-import { LINK, LoanCard, LoanIcon, SMALL_OK, StatusPill } from "./parts";
+import { LINK, LoanCard, LoanIcon, SMALL_OK, SMALL_SOFT, StatusPill } from "./parts";
 
 /**
  * Schedule (LoansN1): the picked loan's installments around the next one (with All loans, the loan due next): three
  * before it and five after, each with its opening balance, principal, interest and EMI, and whether it's paid, due or
- * later. The next one can be marked paid from here.
+ * later. The next one can be marked paid from here, and a paid one edited.
  */
 export function ScheduleCard({ schedule, allHref }: { schedule: ScheduleView; allHref: string }) {
   return (
@@ -68,6 +68,11 @@ export function ScheduleTable({ rows, wide = false }: { rows: ScheduleRow[]; wid
                   <span className="inline-flex items-center gap-1.5">
                     <StatusPill tone={r.status.tone}>{r.status.text}</StatusPill>
                     <FormTrigger className={SMALL_OK} label="Mark paid" onClick={() => open({ kind: "mark-paid", installmentId: r.id })} />
+                  </span>
+                ) : r.paid ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <StatusPill tone={r.status.tone}>{r.status.text}</StatusPill>
+                    <FormTrigger className={SMALL_SOFT} label="Edit" onClick={() => open({ kind: "edit-payment", installmentId: r.id })} />
                   </span>
                 ) : (
                   <StatusPill tone={r.status.tone}>{r.status.text}</StatusPill>

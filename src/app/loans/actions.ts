@@ -1,7 +1,7 @@
 "use server";
 
 import { updateTag } from "next/cache";
-import { excessOverEmi, markPaidProblem } from "@/lib/aggregate/loans";
+import { editPaymentProblem, excessOverEmi, markPaidProblem } from "@/lib/aggregate/loans";
 import { formatShortDate, todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import type { FormState } from "@/lib/forms/formState";
@@ -216,6 +216,60 @@ export async function markEmiPaid(_previous: FormState, formData: FormData): Pro
     updateTag(CACHE_TAGS.loanInstallments);
     return { status: "invalid", errors: { form: `The EMI is marked paid, but the ${formatInr(excess)} above it couldn't be saved as a prepayment. Add it with Add prepayment.` } };
   }
+}
+
+/**
+ * Edit payment: correct a paid EMI's date, amount (within the EMI and its charge), overdue charge or where it was paid
+ * from. If the EMI was paid over, its prepayment follows the new date and place and the EMIs after it are worked out
+ * again; if that fails both rows are put back.
+ */
+export async function editEmiPayment(_previous: FormState, formData: FormData): Promise<FormState> {
+  let installments: LoanInstallment[];
+  let loans: Loan[];
+  let prepayments: LoanPrepayment[];
+  let known: Awaited<ReturnType<typeof knownPlaces>>;
+  try {
+    [installments, loans, prepayments, known] = await Promise.all([loanInstallmentsRepository.list(), loansRepository.list(), loanPrepaymentsRepository.list(), knownPlaces()]);
+  } catch (error) {
+    return failed("editEmiPayment", error);
+  }
+  const paid = installments.filter((i) => i.status === "Paid");
+  const result = readMarkPaidForm(fields(formData), { ...known, installmentIds: paid.map((i) => i.id) }, todayIso());
+  if (!result.ok) return { status: "invalid", errors: result.errors };
+  const input = result.input;
+  const installment = paid.find((i) => i.id === input.installmentId)!;
+  const loan = loans.find((l) => l.id === installment.loanId);
+  if (!loan) return gone("loan");
+  const problem = editPaymentProblem(installment, input.amountPaid, input.overdueCharge);
+  if (problem) return { status: "invalid", errors: { amountPaid: problem } };
+  // Both places are named so the one not chosen is cleared.
+  const place = { paidFromAccountId: input.paidFromAccountId, paidFromCardId: input.paidFromCardId };
+  const before = { paidDate: installment.paidDate, amountPaid: installment.amountPaid, overdueCharge: installment.overdueCharge, paidFromAccountId: installment.paidFromAccountId, paidFromCardId: installment.paidFromCardId };
+  const linked = prepayments.find((p) => p.source === "Excess-Emi" && p.installmentId === installment.id);
+  try {
+    await loanInstallmentsRepository.update(installment.id, { paidDate: input.paidDate, amountPaid: input.amountPaid, overdueCharge: input.overdueCharge || undefined, ...place });
+  } catch (error) {
+    if (error instanceof NotFoundError) return gone("EMI");
+    return failed("editEmiPayment", error);
+  }
+  if (linked && (linked.date !== input.paidDate || linked.paidFromAccountId !== place.paidFromAccountId || linked.paidFromCardId !== place.paidFromCardId)) {
+    try {
+      await loanPrepaymentsRepository.update(linked.id, { date: input.paidDate, ...place });
+      await rebuildLoan(loan);
+    } catch (error) {
+      try {
+        await loanPrepaymentsRepository.update(linked.id, { date: linked.date, paidFromAccountId: linked.paidFromAccountId, paidFromCardId: linked.paidFromCardId });
+        await loanInstallmentsRepository.update(installment.id, before);
+        await rebuildLoan(loan);
+      } catch (undoError) {
+        console.error("[loans] couldn't put the payment back after a failed edit:", undoError instanceof Error ? undoError.message : String(undoError));
+      }
+      // The Sheet may not be as the pages last read it.
+      refreshed();
+      return failed("editEmiPayment", error);
+    }
+  }
+  return refreshed();
 }
 
 /** Undo for Mark paid: the prepayment it made (if any) goes, and the EMI is pending again, if nothing has changed since. */

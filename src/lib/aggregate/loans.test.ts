@@ -4,6 +4,7 @@ import {
   bookFacts,
   computeLoanSummaries,
   currentEmi,
+  editPaymentProblem,
   excessOverEmi,
   financialYear,
   loadZone,
@@ -247,6 +248,27 @@ describe("loanColor", () => {
   it("is the loan's own, else its category's", () => {
     expect(loanColor({ category: "Home" })).toBe("Sapphire");
     expect(loanColor({ category: "Home", color: "Ruby" })).toBe("Ruby");
+  });
+});
+
+describe("editPaymentProblem", () => {
+  const [first] = withLoanId(generateInstallments(loan));
+
+  it("keeps the amount at the EMI and its charge, within a rupee", () => {
+    expect(editPaymentProblem(first, Math.round(first.totalDue))).toBeNull();
+    expect(editPaymentProblem(first, Math.round(first.totalDue + 300), 300)).toBeNull();
+  });
+
+  it("refuses less, and refuses extra (that's a prepayment)", () => {
+    expect(editPaymentProblem(first, 1000)).toMatch(/^That's less than the EMI/);
+    expect(editPaymentProblem(first, first.totalDue + 5000)).toMatch(/^That's more than the EMI.*Add prepayment/);
+    expect(editPaymentProblem(first, first.totalDue, 300)).toMatch(/^That's less than the EMI and its charge/);
+  });
+
+  it("leaves an amount alone when it is the one saved, so the date can still be edited", () => {
+    const odd = { ...first, amountPaid: first.totalDue + 400 };
+    expect(editPaymentProblem(odd, odd.amountPaid)).toBeNull();
+    expect(editPaymentProblem(odd, odd.amountPaid + 1)).toMatch(/^That's more than the EMI/);
   });
 });
 

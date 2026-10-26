@@ -320,6 +320,21 @@ export function excessOverEmi(installment: Pick<LoanInstallment, "totalDue">, am
 }
 
 /**
+ * Why a paid EMI's payment can't be corrected to `amountPaid`, or null. Editing never makes or removes a prepayment (the
+ * rest of the schedule was built on what was saved), so the amount has to stay the EMI and its overdue charge, within a
+ * rupee: extra goes in with Add prepayment. An amount and charge left as they were saved are never refused, so a date
+ * or place can still be corrected on an EMI that was recorded at a different amount.
+ */
+export function editPaymentProblem(installment: Pick<LoanInstallment, "totalDue" | "amountPaid" | "overdueCharge">, amountPaid: number, overdueCharge = 0): string | null {
+  if (installment.amountPaid === amountPaid && (installment.overdueCharge ?? 0) === overdueCharge) return null;
+  const owed = round2(installment.totalDue + overdueCharge);
+  const rupees = `₹${Math.round(owed).toLocaleString("en-IN")}`;
+  if (amountPaid < owed - 1) return `That's less than the EMI${overdueCharge ? " and its charge" : ""} (${rupees}). Part-payments aren't tracked yet`;
+  if (excessOverEmi(installment, amountPaid, overdueCharge)) return `That's more than the EMI${overdueCharge ? " and its charge" : ""} (${rupees}). To record extra, use Add prepayment`;
+  return null;
+}
+
+/**
  * Why an EMI can't be marked paid with `amountPaid`, or null. Part-payments aren't tracked yet (system-design.md,
  * Loan, "Still open"), so less than the EMI and its charge is refused rather than counted as the whole EMI. An amount
  * over it becomes a prepayment, which can't rebuild the EMIs when a later one is already paid, and can't be more than

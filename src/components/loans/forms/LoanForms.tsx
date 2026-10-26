@@ -14,7 +14,7 @@ import { PrepaymentDialog } from "./PrepaymentDialog";
 
 /**
  * Opens the Loans forms (docs/design/loans.md, LoansForms) from anywhere on the page: Add and Edit loan, Delete loan,
- * Mark paid (on an EMI), Add prepayment (on a loan) and Delete prepayment. Something just saved gets a toast with
+ * Mark paid and Edit payment (on an EMI), Add prepayment (on a loan) and Delete prepayment. Something just saved gets a toast with
  * Undo for six seconds. With sample data every button shows disabled: it never reaches the Sheet.
  */
 
@@ -23,6 +23,7 @@ type Open =
   | { kind: "edit-loan"; id: string }
   | { kind: "delete-loan"; id: string }
   | { kind: "mark-paid"; installmentId?: string }
+  | { kind: "edit-payment"; installmentId: string }
   | { kind: "prepay"; loanId?: string }
   | { kind: "delete-prepayment"; id: string };
 
@@ -93,6 +94,7 @@ export function LoanFormsProvider({ forms, children }: { forms: LoanFormsData; c
       {open?.kind === "add-loan" && <LoanFormDialog forms={forms} onClose={close} onSaved={saved} />}
       {open?.kind === "edit-loan" && editing && <LoanFormDialog forms={forms} editing={editing} onClose={close} onSaved={saved} onDelete={() => setOpen({ kind: "delete-loan", id: editing.loan.id })} />}
       {open?.kind === "mark-paid" && <MarkPaidDialog forms={forms} installmentId={open.installmentId} onClose={close} onSaved={saved} />}
+      {open?.kind === "edit-payment" && <MarkPaidDialog forms={forms} installmentId={open.installmentId} editing onClose={close} onSaved={saved} />}
       {open?.kind === "prepay" && <PrepaymentDialog forms={forms} loanId={open.loanId} onClose={close} onSaved={saved} />}
       {open?.kind === "delete-loan" && editing && (
         <ConfirmDialog

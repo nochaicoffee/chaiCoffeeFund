@@ -56,7 +56,12 @@ export function PaymentsCard({ card, pickName, picked, allHref }: { card: Paymen
                     <td className="pr-3 font-semibold">{r.paidOn}</td>
                     <td className="pr-3 font-extrabold tabular-nums">{r.amount}</td>
                     <td className="max-w-[160px] truncate pr-3 font-semibold">{r.from ?? <span className="text-muted">—</span>}</td>
-                    <td className="text-right">{r.late ? <StatusPill tone="late" title={r.late}>Paid late</StatusPill> : <StatusPill tone="paid">Paid</StatusPill>}</td>
+                    <td className="text-right">
+                      <span className="inline-flex items-center gap-1.5">
+                        {r.late ? <StatusPill tone="late" title={r.late}>Paid late</StatusPill> : <StatusPill tone="paid">Paid</StatusPill>}
+                        <FormTrigger className="min-h-8 rounded-full px-3 text-xs font-bold text-muted hover:bg-fill hover:text-fg focus-visible:outline-2 focus-visible:outline-accent" label="Edit" onClick={() => open({ kind: "edit-payment", installmentId: r.id })} />
+                      </span>
+                    </td>
                   </tr>
                 ))}
                 {Array.from({ length: Math.max(0, 6 - card.rows.length) }, (_, k) => (
