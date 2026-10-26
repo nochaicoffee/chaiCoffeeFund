@@ -43,7 +43,7 @@ export function useLoanForms(): Controls {
   return controls;
 }
 
-/** Which undo an id is for: "loan:<id>", "paid:<installment>[:<prepayment>]" or "prepay:<id>". */
+/** Which undo an id is for: "loan:<id>", "paid:<installment>:<prepayment or blank>:<paid date>:<amount>" or "prepay:<id>". */
 function undoFor(undoId: string) {
   return undoId.startsWith("loan:") ? undoAddLoan : undoId.startsWith("paid:") ? undoMarkPaid : undoPrepayment;
 }

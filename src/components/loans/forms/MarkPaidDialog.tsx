@@ -3,7 +3,7 @@
 import { useActionState, useEffect, useState, type FormEvent } from "react";
 import { markEmiPaid } from "@/app/loans/actions";
 import type { LoanFormsData } from "@/app/loans/views";
-import { excessOverEmi, usualEffect } from "@/lib/aggregate/loans";
+import { excessOverEmi, markPaidProblem, usualEffect } from "@/lib/aggregate/loans";
 import { formatDate, formatShortDate } from "@/lib/format/date";
 import { formatInr, parseAmountText } from "@/lib/format/money";
 import { IDLE } from "@/lib/forms/formState";
@@ -44,7 +44,10 @@ export function MarkPaidDialog({ forms, installmentId, onClose, onSaved }: { for
   const extra = picked ? excessOverEmi(picked.i, paid, parseAmountText(overdueCharge) ?? 0) : 0;
   const autoCharge = picked && extra ? prepaymentCharge(picked.l.loan, extra) : 0;
   const values = { installmentId: chosen, paidDate, amountPaid, overdueCharge, chargedTo, effect, charge: chargeTouched ? charge : String(autoCharge) };
-  const check = readMarkPaidForm(values, { accountIds: forms.accounts.map((a) => a.id), cardIds: forms.cards.map((c) => c.id), installmentIds: due.map((d) => d.i.id) }, forms.today);
+  const read = readMarkPaidForm(values, { accountIds: forms.accounts.map((a) => a.id), cardIds: forms.cards.map((c) => c.id), installmentIds: due.map((d) => d.i.id) }, forms.today);
+  // The same rules the action checks: no part-payments, and no extra that can't go into the EMIs.
+  const problem = read.ok && picked ? markPaidProblem(picked.i, picked.l.installments, read.input.amountPaid, read.input.overdueCharge) : null;
+  const check: typeof read = problem ? { ok: false, errors: { amountPaid: problem } } : read;
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     if (check.ok) return markSubmitted();
@@ -69,7 +72,7 @@ export function MarkPaidDialog({ forms, installmentId, onClose, onSaved }: { for
 
   // What the extra would do, on this loan's schedule with this EMI paid.
   let after: ReturnType<typeof rebuildSchedule> | null = null;
-  if (picked && extra) {
+  if (picked && extra && !problem) {
     try {
       after = rebuildSchedule(picked.l.loan, picked.l.installments, { date: paidDate || forms.today, amount: extra, effect: effect as "Reduce-Tenure" | "Reduce-Emi", afterInstallment: picked.i.installmentNumber });
     } catch {

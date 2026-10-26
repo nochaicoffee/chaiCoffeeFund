@@ -35,11 +35,17 @@ export interface LoansData {
   salary: number | null;
 }
 
-/** Every loan's facts, active loans first (then by when they end), closed loans after. */
+const factsOf = new WeakMap<LoansData, LoanFacts[]>();
+
+/** Every loan's facts, active loans first (then by when they end), closed loans after. Worked out once per page's data. */
 export function allFacts(data: LoansData): LoanFacts[] {
-  return data.loans
+  const known = factsOf.get(data);
+  if (known) return known;
+  const facts = data.loans
     .map((loan) => loanFacts(loan, data.installments, data.prepayments))
     .sort((a, b) => (a.loan.status !== b.loan.status ? (a.loan.status === "Active" ? -1 : 1) : a.end < b.end ? 1 : a.end > b.end ? -1 : 0));
+  factsOf.set(data, facts);
+  return facts;
 }
 
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
@@ -161,25 +167,30 @@ export interface AttentionItem {
   overdue: boolean;
 }
 
-/** An EMI due within a week, or past its due date and not marked paid. */
+/**
+ * A line per loan with an EMI due within a week, or past its due date and not marked paid: the oldest one, and how many
+ * more are overdue behind it (a loan added after several EMIs have gone shows one line, not one a month).
+ */
 export function attentionView(data: LoansData, today: string): AttentionItem[] {
   const active = new Map(data.loans.filter((l) => l.status === "Active").map((l) => [l.id, l]));
-  return data.installments
-    .filter((i) => i.status === "Pending" && active.has(i.loanId) && daysBetween(today, i.dueDate) <= 7)
-    .sort((a, b) => (a.dueDate < b.dueDate ? -1 : 1))
-    .map((i) => {
-      const loan = active.get(i.loanId)!;
-      const from = paidFromName(data, emiPlace(loan));
-      const overdue = i.dueDate < today;
-      return {
-        installmentId: i.id,
-        loanId: loan.id,
-        name: loan.name,
-        amount: formatInr(i.totalDue),
-        overdue,
-        text: overdue ? `was due ${formatShortDate(i.dueDate)} (${inDays(today, i.dueDate)}) and isn't marked paid.` : `is due ${formatShortDate(i.dueDate)} (${inDays(today, i.dueDate)})${from ? ` and will be ${loan.emiPaidFromCardId ? "charged to" : "paid from"} ${from}` : ""}.`,
-      };
-    });
+  const soon = data.installments.filter((i) => i.status === "Pending" && active.has(i.loanId) && daysBetween(today, i.dueDate) <= 7).sort((a, b) => (a.dueDate < b.dueDate ? -1 : 1));
+  const firsts = soon.filter((i, k) => soon.findIndex((x) => x.loanId === i.loanId) === k);
+  return firsts.map((i) => {
+    const loan = active.get(i.loanId)!;
+    const from = paidFromName(data, emiPlace(loan));
+    const overdue = i.dueDate < today;
+    const more = soon.filter((x) => x.loanId === i.loanId && x.id !== i.id && x.dueDate < today).length;
+    return {
+      installmentId: i.id,
+      loanId: loan.id,
+      name: loan.name,
+      amount: formatInr(i.totalDue),
+      overdue,
+      text: overdue
+        ? `was due ${formatShortDate(i.dueDate)} (${inDays(today, i.dueDate)}) and isn't marked paid${more ? `, with ${plural(more, "more EMI")} overdue after it` : ""}.`
+        : `is due ${formatShortDate(i.dueDate)} (${inDays(today, i.dueDate)})${from ? ` and will be ${loan.emiPaidFromCardId ? "charged to" : "paid from"} ${from}` : ""}.`,
+    };
+  });
 }
 
 // ---------- The cover ----------

@@ -42,6 +42,12 @@ describe("the attention strip", () => {
     expect(items[0]).toMatchObject({ name: "Personal loan", amount: "₹9,893", overdue: false, text: "is due Oct 28 (in 3 days) and will be charged to HDFC Regalia (card)." });
   });
 
+  it("shows one line per loan, however many EMIs are overdue", () => {
+    const items = attentionView(data, "2026-12-30");
+    expect(items.map((i) => i.name)).toEqual(["Personal loan", "Car loan", "Home loan"]);
+    expect(items[0].text).toBe("was due Oct 28 (63 days ago) and isn't marked paid, with 2 more EMIs overdue after it.");
+  });
+
   it("calls one past its due date overdue", () => {
     const items = attentionView(data, "2026-10-30");
     expect(items[0]).toMatchObject({ overdue: true, text: "was due Oct 28 (2 days ago) and isn't marked paid." });

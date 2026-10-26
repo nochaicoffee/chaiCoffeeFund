@@ -1,7 +1,7 @@
 "use server";
 
 import { updateTag } from "next/cache";
-import { excessOverEmi } from "@/lib/aggregate/loans";
+import { excessOverEmi, markPaidProblem } from "@/lib/aggregate/loans";
 import { formatShortDate, todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import type { FormState } from "@/lib/forms/formState";
@@ -183,6 +183,8 @@ export async function markEmiPaid(_previous: FormState, formData: FormData): Pro
   const installment = pending.find((i) => i.id === input.installmentId)!;
   const loan = loans.find((l) => l.id === installment.loanId);
   if (!loan) return gone("loan");
+  const problem = markPaidProblem(installment, installments, input.amountPaid, input.overdueCharge);
+  if (problem) return { status: "invalid", errors: { amountPaid: problem } };
   const excess = excessOverEmi(installment, input.amountPaid, input.overdueCharge);
   const place = { paidFromAccountId: input.paidFromAccountId, paidFromCardId: input.paidFromCardId };
   try {
@@ -198,14 +200,16 @@ export async function markEmiPaid(_previous: FormState, formData: FormData): Pro
     return failed("markEmiPaid", error);
   }
   const label = `${loan.name} EMI ${installment.installmentNumber}`;
-  if (!excess) return refreshed({ id: `paid:${installment.id}`, message: `${label} paid · ${formatInr(input.amountPaid)}` });
-  // What's left after this EMI: a prepayment that covers it closes the loan.
+  // The undo id carries what was written, so a late Undo leaves a payment saved since alone.
+  const written = `${input.paidDate}:${excess ? Math.round((installment.totalDue + input.overdueCharge) * 100) / 100 : input.amountPaid}`;
+  if (!excess) return refreshed({ id: `paid:${installment.id}::${written}`, message: `${label} paid · ${formatInr(input.amountPaid)}` });
+  // What's left after this EMI (none of it paid, see markPaidProblem): a prepayment that covers it closes the loan.
   const after = pending.filter((i) => i.loanId === loan.id && i.installmentNumber > installment.installmentNumber);
   const left = after.reduce((t, i) => t + i.principalDue, 0);
   const closes = excess >= left - 0.5;
   try {
     const prepayment = await addPrepayment(loan, { loanId: loan.id, date: input.paidDate, amount: closes ? Math.round(left * 100) / 100 : excess, charge: input.charge, effect: closes ? "Close" : input.effect, source: "Excess-Emi", installmentId: installment.id, ...place }, closes);
-    return refreshed({ id: `paid:${installment.id}:${prepayment.id}`, message: `${label} paid · ${formatInr(excess)} prepaid${closes ? ", loan closed" : ""}` });
+    return refreshed({ id: `paid:${installment.id}:${prepayment.id}:${written}`, message: `${label} paid · ${formatInr(excess)} prepaid${closes ? ", loan closed" : ""}` });
   } catch (error) {
     // The EMI is marked paid; the extra isn't saved. Say so rather than lose it quietly.
     console.error("[loans] markEmiPaid saved the EMI but not the prepayment:", error instanceof Error ? error.message : String(error));
@@ -216,10 +220,11 @@ export async function markEmiPaid(_previous: FormState, formData: FormData): Pro
 
 /** Undo for Mark paid: the prepayment it made (if any) goes, and the EMI is pending again, if nothing has changed since. */
 export async function undoMarkPaid(undoId: string): Promise<{ ok: boolean; message: string }> {
-  const [, installmentId, prepaymentId] = undoId.split(":");
+  const [, installmentId, prepaymentId, paidDate, amountPaid] = undoId.split(":");
   try {
     const installment = await loanInstallmentsRepository.get(installmentId);
     if (!installment || installment.status !== "Paid") return { ok: true, message: "Already put back." };
+    if (installment.paidDate !== paidDate || installment.amountPaid !== Number(amountPaid)) return { ok: false, message: "This EMI has changed since, so it wasn't put back." };
     if (prepaymentId) await removePrepayment(prepaymentId);
     await loanInstallmentsRepository.update(installmentId, { status: "Pending", paidDate: undefined, amountPaid: undefined, overdueCharge: undefined, paidFromAccountId: undefined, paidFromCardId: undefined });
   } catch (error) {

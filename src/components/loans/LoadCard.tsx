@@ -11,6 +11,8 @@ const ZONE = { Comfortable: "bg-accent-tint text-accent-text", Stretched: "bg-wa
  * placeholders (docs/design/loans.md).
  */
 export function LoadCard({ load, picked }: { load: LoadView | null; picked: string | null }) {
+  // EMIs above the salary fill the bar rather than spill out of it.
+  const fit = load ? Math.max(1, load.segments.reduce((t, s) => t + s.share, 0)) : 1;
   return (
     <LoanCard label="EMI load" title="EMI load" note="share of salary · zones are placeholders">
       {!load ? (
@@ -30,7 +32,7 @@ export function LoadCard({ load, picked }: { load: LoadView | null; picked: stri
           <div className="pt-6">
             <div className="relative flex h-12 gap-[3px] rounded-[14px] bg-fill p-[3px]">
               {load.segments.map((s) => (
-                <div key={s.loan.id} title={`${s.loan.name} ${s.amount}`} className="rounded-[10px] motion-safe:transition-opacity" style={{ width: `${s.share * 100}%`, background: fillOf(s.loan.colorKey, 180), opacity: picked && picked !== s.loan.id ? 0.2 : 1 }} />
+                <div key={s.loan.id} title={`${s.loan.name} ${s.amount}`} className="rounded-[10px] motion-safe:transition-opacity" style={{ width: `${(s.share / fit) * 100}%`, background: fillOf(s.loan.colorKey, 180), opacity: picked && picked !== s.loan.id ? 0.2 : 1 }} />
               ))}
               {[30, 40].map((p) => (
                 <span key={p} aria-hidden="true">
@@ -40,7 +42,7 @@ export function LoadCard({ load, picked }: { load: LoadView | null; picked: stri
                   </span>
                 </span>
               ))}
-              <span className="ml-auto self-center pr-3 text-xs font-bold text-muted max-sm:hidden">left over {load.leftOver}</span>
+              {fit === 1 && <span className="ml-auto self-center pr-3 text-xs font-bold text-muted max-sm:hidden">left over {load.leftOver}</span>}
             </div>
             <div className="mt-2 flex justify-between text-xs font-semibold text-muted">
               <span>₹0</span>
