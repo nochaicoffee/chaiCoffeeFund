@@ -368,6 +368,56 @@ export interface Loan {
   stampDuty: number;
   /** Interest from disbursement to the start of the EMI cycle ("pre-EMI" or "gap" interest), taken out of the disbursal. */
   preEmiInterest: number;
+  // Added for the Loans page (docs/design/loans.md). All optional, so a row from before reads as the defaults.
+  /** What a prepayment usually does on this loan, and each prepayment's default. A row without one reduces the tenure. */
+  prepaymentEffect?: LoanPrepaymentEffect;
+  /** The loan's colour. A row without one shows its category's (loanColor in lib/aggregate/loans.ts). */
+  color?: CardColor;
+  /** Where the EMI usually leaves: an account, or a card it's charged to. Never both. */
+  emiPaidFromAccountId?: string;
+  emiPaidFromCardId?: string;
+  /** The bank's prepayment charge, as a percentage of the amount before GST (4 for HDFC's "4% + GST"). Blank is none. */
+  prepaymentChargePercent?: number;
+  // The bank's limits on part-payments. Warnings only, never blocks (system-design.md, Loan). Blank is no limit.
+  /** At most this percentage of the outstanding principal at a time (25 for HDFC). */
+  prepaymentMaxPercent?: number;
+  /** How many part-payments a financial year (April to March). */
+  prepaymentsPerYear?: number;
+  /** How many part-payments over the loan's life. */
+  prepaymentsInLoan?: number;
+  /** How many EMIs must be paid before the first part-payment (1 for HDFC: "only after the first EMI"). */
+  prepaymentAfterEmis?: number;
+}
+
+export const LOAN_PREPAYMENT_EFFECTS = ["Reduce-Tenure", "Reduce-Emi"] as const;
+/** What a prepayment does to the rest of the schedule: the same EMI for fewer months, or a lower EMI to the same end. */
+export type LoanPrepaymentEffect = (typeof LOAN_PREPAYMENT_EFFECTS)[number];
+/** A prepayment's effect, which can also close the loan (foreclosure). */
+export type PrepaymentEffect = LoanPrepaymentEffect | "Close";
+export type PrepaymentSource = "Manual" | "Excess-Emi";
+
+/**
+ * Principal paid off beyond the EMIs (system-design.md, Loan, "Prepayments"). Saving one rebuilds the pending
+ * installments after it; paid installments never change.
+ */
+export interface LoanPrepayment {
+  id: string;
+  loanId: string;
+  date: string;
+  /** The principal it pays off. */
+  amount: number;
+  /** The bank's charge with GST: a separate debit that doesn't reduce principal. */
+  charge: number;
+  effect: PrepaymentEffect;
+  /** Manual, or Excess-Emi when it's the part of an EMI payment above the EMI. */
+  source: PrepaymentSource;
+  /** The installment it was paid with, for Excess-Emi: the rebuild starts after that installment. */
+  installmentId?: string;
+  paidFromAccountId?: string;
+  paidFromCardId?: string;
+  /** The bank's own figures from its revised schedule. When set, the rebuild uses them instead of its own. */
+  bankEmi?: number;
+  bankInstallments?: number;
 }
 
 export interface LoanInstallment {

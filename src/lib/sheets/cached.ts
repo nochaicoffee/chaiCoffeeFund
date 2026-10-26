@@ -12,6 +12,7 @@ import { incomeSourcesRepository } from "./incomeSources";
 import { incomeEntriesRepository } from "./incomeEntries";
 import { loansRepository } from "./loans";
 import { loanInstallmentsRepository } from "./loanInstallments";
+import { loanPrepaymentsRepository } from "./loanPrepayments";
 import { investmentTransactionsRepository } from "./investmentTransactions";
 import { fixedDepositsRepository } from "./fixedDeposits";
 import { balanceReviewsRepository } from "./balanceReviews";
@@ -44,6 +45,7 @@ export const CACHE_TAGS = {
   incomeEntries: "incomeEntries",
   loans: "loans",
   loanInstallments: "loanInstallments",
+  loanPrepayments: "loanPrepayments",
   investmentTransactions: "investmentTransactions",
   fixedDeposits: "fixedDeposits",
   balanceReviews: "balanceReviews",
@@ -130,6 +132,8 @@ export const getCachedLoanById = cachedGetById(getCachedLoans);
 export const getCachedLoanInstallmentsTab = cachedTab(loanInstallmentsRepository, CACHE_TAGS.loanInstallments);
 export const getCachedLoanInstallments = cachedList(getCachedLoanInstallmentsTab);
 export const getCachedLoanInstallmentById = cachedGetById(getCachedLoanInstallments);
+
+export const getCachedLoanPrepaymentsTab = cachedTab(loanPrepaymentsRepository, CACHE_TAGS.loanPrepayments);
 
 export const getCachedInvestmentTransactionsTab = cachedTab(investmentTransactionsRepository, CACHE_TAGS.investmentTransactions);
 export const getCachedInvestmentTransactions = cachedList(getCachedInvestmentTransactionsTab);

@@ -3,6 +3,7 @@ import { revalidateTag } from "next/cache";
 import { handleRouteErrors } from "@/lib/api/createCrudRoutes";
 import { loansRepository, deleteLoanWithSchedule, updateLoanSchema } from "@/lib/sheets/loans";
 import { CACHE_TAGS } from "@/lib/sheets/cached";
+import type { Loan } from "@/lib/sheets/types";
 
 export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   return handleRouteErrors(async () => {
@@ -12,7 +13,8 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
     }
-    const updated = await loansRepository.update(id, parsed.data);
+    // "" clears an optional field (see `clearable`), which the repository blanks.
+    const updated = await loansRepository.update(id, parsed.data as Partial<Omit<Loan, "id">>);
     revalidateTag(CACHE_TAGS.loans, "max");
     return NextResponse.json(updated);
   });
