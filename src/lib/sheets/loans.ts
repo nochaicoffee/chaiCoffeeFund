@@ -2,9 +2,11 @@ import "server-only";
 import { z } from "zod";
 import { createRepository } from "./repository";
 import { loanInstallmentsRepository } from "./loanInstallments";
+import { loanPrepaymentsRepository } from "./loanPrepayments";
 import { generateInstallments } from "../schedule/generateInstallments";
-import { isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
-import type { Loan, LoanInstallment } from "./types";
+import { planSchedule } from "../schedule/prepayments";
+import { clearable, isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
+import { CARD_COLORS, LOAN_PREPAYMENT_EFFECTS, type Loan, type LoanInstallment } from "./types";
 
 /** A loan's fields. The repository reads column types from a plain object, so the cross-field check is added below. */
 const loanFields = z.object({
@@ -23,9 +25,19 @@ const loanFields = z.object({
   firstEmiDate: isoDate,
   stampDuty: nonNegativeNumber,
   preEmiInterest: nonNegativeNumber,
+  // Optional, added on the end for the Loans page.
+  prepaymentEffect: z.enum(LOAN_PREPAYMENT_EFFECTS).optional(),
+  color: z.enum(CARD_COLORS).optional(),
+  emiPaidFromAccountId: nonEmptyString.optional(),
+  emiPaidFromCardId: nonEmptyString.optional(),
+  prepaymentChargePercent: nonNegativeNumber.optional(),
+  prepaymentMaxPercent: z.number().gt(0).max(100).optional(),
+  prepaymentsPerYear: z.number().int().positive().optional(),
+  prepaymentsInLoan: z.number().int().positive().optional(),
+  prepaymentAfterEmis: z.number().int().min(0).optional(),
 });
 
-type LoanRules = Pick<Loan, "principalAmount" | "processingFee" | "stampDuty" | "preEmiInterest" | "disbursementDate" | "firstEmiDate">;
+type LoanRules = Pick<Loan, "principalAmount" | "processingFee" | "stampDuty" | "preEmiInterest" | "disbursementDate" | "firstEmiDate" | "emiPaidFromAccountId" | "emiPaidFromCardId">;
 
 /** Rules across a loan's fields, as [field, message] when one is broken. */
 function brokenLoanRule(loan: LoanRules): [keyof LoanRules, string] | null {
@@ -33,6 +45,7 @@ function brokenLoanRule(loan: LoanRules): [keyof LoanRules, string] | null {
   if (loan.processingFee + loan.stampDuty + loan.preEmiInterest >= loan.principalAmount) {
     return ["processingFee", "The fee, stamp duty and pre-EMI interest add up to more than the loan"];
   }
+  if (loan.emiPaidFromAccountId && loan.emiPaidFromCardId) return ["emiPaidFromCardId", "The EMI leaves an account or a card, not both"];
   return null;
 }
 
@@ -63,12 +76,23 @@ export const updateLoanSchema = loanFields
     firstEmiDate: true,
   })
   .partial()
+  .extend({
+    // "" clears an optional field (see `clearable`): taking the EMI off a card, or a limit the bank dropped.
+    color: clearable(z.enum(CARD_COLORS)).optional(),
+    emiPaidFromAccountId: clearable(nonEmptyString).optional(),
+    emiPaidFromCardId: clearable(nonEmptyString).optional(),
+    prepaymentChargePercent: clearable(nonNegativeNumber).optional(),
+    prepaymentMaxPercent: clearable(z.number().gt(0).max(100)).optional(),
+    prepaymentsPerYear: clearable(z.number().int().positive()).optional(),
+    prepaymentsInLoan: clearable(z.number().int().positive()).optional(),
+    prepaymentAfterEmis: clearable(z.number().int().min(0)).optional(),
+  })
   .strict();
 
 /** A row as read back from the Sheet: a valid create, plus its id. */
 export const loanRowSchema = loanFields.extend({ id: nonEmptyString });
 
-/** The Loans tab's columns, in order. firstEmiDate, stampDuty and preEmiInterest were added on the end (2026-10-25). */
+/** The Loans tab's columns, in order. firstEmiDate, stampDuty and preEmiInterest were added on the end (2026-10-25), and the rest for the Loans page. */
 export const LOAN_COLUMNS: (keyof Loan)[] = [
   "id",
   "name",
@@ -86,6 +110,15 @@ export const LOAN_COLUMNS: (keyof Loan)[] = [
   "firstEmiDate",
   "stampDuty",
   "preEmiInterest",
+  "prepaymentEffect",
+  "color",
+  "emiPaidFromAccountId",
+  "emiPaidFromCardId",
+  "prepaymentChargePercent",
+  "prepaymentMaxPercent",
+  "prepaymentsPerYear",
+  "prepaymentsInLoan",
+  "prepaymentAfterEmis",
 ];
 
 export const loansRepository = createRepository<Loan>({
@@ -129,7 +162,22 @@ export async function createLoanWithSchedule(
 }
 
 /**
- * Deletes a Loan and every installment that belongs to it. Without this,
+ * Brings a loan's stored installments to `target` (planSchedule: pending ones only, paid ones never change). New rows
+ * are written first, then changed ones in one batch, then the ones that are gone are deleted in one batch (bottom
+ * row first, so the positions don't shift). Used after a prepayment is saved, undone or deleted.
+ */
+export async function writeSchedule(loanId: string, stored: LoanInstallment[], target: Omit<LoanInstallment, "id">[]): Promise<void> {
+  const plan = planSchedule(stored, target.map((row) => ({ ...row, loanId })));
+  if (plan.create.length > 0) await loanInstallmentsRepository.createMany(plan.create);
+  if (plan.update.length > 0) await loanInstallmentsRepository.updateMany(plan.update);
+  if (plan.remove.length > 0) {
+    const gone = new Set(plan.remove);
+    await loanInstallmentsRepository.removeWhere((values) => typeof values.id === "string" && gone.has(values.id));
+  }
+}
+
+/**
+ * Deletes a Loan and every installment and prepayment that belongs to it. Without this,
  * deleting a loan through the plain repository would leave its
  * installments behind as orphaned rows pointing at a loanId that no
  * longer exists — the same "the pair should move together" reasoning as
@@ -156,5 +204,6 @@ export async function deleteLoanWithSchedule(loanId: string): Promise<void> {
   for (const id of ids) {
     await loanInstallmentsRepository.remove(id);
   }
+  await loanPrepaymentsRepository.removeWhere((values) => values.loanId === loanId);
   await loansRepository.remove(loanId);
 }

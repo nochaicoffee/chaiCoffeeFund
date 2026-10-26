@@ -222,13 +222,14 @@ describe("deleteLoanWithSchedule", () => {
   const installment = (id: string, loanId: string, totalDue: unknown) => [id, loanId, 1, AUG_5, 100000, 8000, 1000, totalDue, "Pending"];
 
   beforeEach(() => {
-    sheet.rows["Loans!A2:P"] = [["L1", "Car loan", "HDFC", "Auto", "Standard-Emi", 100000, 9, 12, "Monthly", 0, AUG_5, "acc", "Active", AUG_5 + 31, 0, 0]];
+    sheet.rows["Loans!A2:Y"] = [["L1", "Car loan", "HDFC", "Auto", "Standard-Emi", 100000, 9, 12, "Monthly", 0, AUG_5, "acc", "Active", AUG_5 + 31, 0, 0, "", "", "", "", "", "", "", "", ""]];
+    sheet.rows["LoanPrepayments!A2:L"] = [];
   });
 
   it("deletes the loan's invalid installment rows along with the valid ones", async () => {
     sheet.rows["LoanInstallments!A2:N"] = [installment("i1", "L1", 9000), installment("i2", "L1", ""), installment("i3", "L2", 9000)];
     await deleteLoanWithSchedule("L1");
-    // i1 (row 2), i2 (row 3), then the loan (row 2 of Loans). The fake Sheet doesn't shift rows after a delete.
+    // i1 (row 2), i2 (row 3), then the loan (row 2 of Loans); it has no prepayments. The fake Sheet doesn't shift rows after a delete.
     expect(sheet.deletes).toEqual([
       { startIndex: 1, endIndex: 2 },
       { startIndex: 2, endIndex: 3 },

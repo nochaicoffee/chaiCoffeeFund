@@ -1,8 +1,14 @@
 import { addMonthsUTC } from "../aggregate/recurring";
 import type { Loan, LoanInstallment } from "../sheets/types";
 
-function round2(value: number): number {
+export function round2(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+/** The reducing-balance EMI on `principal` over `n` monthly installments, to the paisa; an equal split when interest-free. */
+export function standardEmi(principal: number, annualInterestRate: number, n: number): number {
+  const r = annualInterestRate / 12 / 100;
+  return round2(r === 0 ? principal / n : (principal * r * (1 + r) ** n) / ((1 + r) ** n - 1));
 }
 
 /**
@@ -22,11 +28,7 @@ function generateStandardEmiSchedule(loan: Omit<Loan, "id">): Omit<LoanInstallme
   const monthlyRate = loan.annualInterestRate / 12 / 100;
   const n = loan.tenureMonths;
 
-  const emi = round2(
-    monthlyRate === 0
-      ? loan.principalAmount / n
-      : (loan.principalAmount * monthlyRate * (1 + monthlyRate) ** n) / ((1 + monthlyRate) ** n - 1),
-  );
+  const emi = standardEmi(loan.principalAmount, loan.annualInterestRate, n);
 
   const installments: Omit<LoanInstallment, "id">[] = [];
   let openingBalance = round2(loan.principalAmount);
