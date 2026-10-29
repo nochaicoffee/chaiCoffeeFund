@@ -37,6 +37,8 @@ const policyRules: { path: keyof PolicyRow; message: string; broken: (row: Polic
   { path: "endedOn", message: "An active policy hasn't ended: clear the date, or cancel it", broken: (row) => row.status === "Active" && Boolean(row.endedOn) },
   // Only a motor policy can have no cover figure (third party only has no IDV).
   { path: "sumInsured", message: "Enter the cover: only a motor policy can have none", broken: (row) => row.kind !== "Motor" && row.sumInsured === 0 },
+  // The browser is only ever sent the policy number cut to "…3850", so a form that sends it back must not overwrite the whole number with it.
+  { path: "policyNumber", message: "Enter the whole policy number, not the shortened one", broken: (row) => Boolean(row.policyNumber?.startsWith("…")) },
   { path: "documentUrl", message: "The document link must start with http:// or https://", broken: (row) => Boolean(row.documentUrl) && !/^https?:\/\/\S+$/.test(row.documentUrl as string) },
 ];
 

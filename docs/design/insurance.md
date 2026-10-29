@@ -66,6 +66,15 @@ Built in `lib/aggregate/insurance.ts` (#210) as pure functions with tests that p
 - **A financed thing with no policy** (decided): an active Auto loan with no motor policy held, or an active Home loan with no home policy held. It can't tell which vehicle a loan financed, and it says nothing about whether a policy is needed. A lapsed or cancelled policy isn't held.
 - **A premium paid on a card** counts once, as a premium, and not again as card spending (the cross-cutting principle in `system-design.md`).
 
+## The write side (built in #211)
+
+- **Routes:** `/api/policies` and `/api/policy-payments`, from the shared factories, with three custom handlers because each does more than one thing: deleting a policy deletes its payments too, and creating or changing a payment runs the same term guard as Renew (so the API can't record what the forms refuse). The policy routes send the policy number cut to its last four characters ("…3850"), and a number that starts with "…" can't be saved back over the whole one.
+- **Cache:** the tags `policies` and `policyPayments`, with cached list and by-id reads, and the Refresh button covers them.
+- **Add policy** writes the policy and its first term together; if the term can't be written the policy is taken back out. **Renew** records the next term (`lib/insurance/policyWrites.ts`), refuses one that starts on the same day as, or overlaps, a term already there, refuses a no-claim step on a policy that isn't motor, and refuses a cancelled policy (restart it first). A late renewal is allowed and the gap stays in the history. If the cover can't be moved the new term is taken back out. **Undo** takes the term out and puts the cover back.
+- **Cancel** stops a policy counting and keeps every payment. The reason goes on the policy's notes ("Cancelled: Vehicle sold"); the mockup's Refund and "Replaced by" boxes have no column and aren't stored. **Restart** sets it Active, and that alone clears the cancelled-on date.
+- **Edit** changes the policy only (the terms are Renew's). A blank optional box clears it, except the policy number: the browser never has it whole, so a blank number is left as it is.
+- **Delete** removes a policy's payments and then it, for a mistake. A policy that has ended is cancelled, not deleted.
+
 ## Open decisions (defaults are what the mockups show)
 
 1. Its own page, as drawn, or Subscriptions categories (the gap review's Q11). When those docs are committed, mark Q11 answered and rewrite item 8 to point here.

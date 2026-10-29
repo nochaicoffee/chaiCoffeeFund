@@ -1,6 +1,7 @@
 import { addMonthsUTC } from "./recurring";
 import { daysBetween, monthOf, monthRange, percentChange, type MonthKey } from "./cardSpend";
 import { addDays } from "./subscriptionRenewals";
+import { formatDate } from "../format/date";
 import { NCB_STEPS, type Loan, type Policy, type PolicyKind, type PolicyPayment } from "../sheets/types";
 
 /**
@@ -254,4 +255,49 @@ export function coverByKind(views: PolicyView[]): Record<PolicyKind, number> {
 export function uninsuredLoans<L extends Pick<Loan, "category" | "status">>(loans: L[], views: PolicyView[]): L[] {
   const held = new Set(views.filter(isLive).map((view) => view.policy.kind));
   return loans.filter((loan) => loan.status === "Active" && ((loan.category === "Auto" && !held.has("Motor")) || (loan.category === "Home" && !held.has("Home"))));
+}
+
+/** A new term as the Renew and Add forms send it. */
+export interface NewTerm {
+  periodStart: string;
+  years: number;
+  ncb?: number;
+}
+
+/**
+ * Whether a new term can be recorded against the terms a policy already has, in plain words, or null when it can. The repository
+ * checks one row at a time and can't see the others, so this is where pressing Renew twice, or a start inside an earlier term, is
+ * refused. A late start is fine: it leaves a gap, which `coverGaps` reports. A no-claim step belongs to a motor policy.
+ */
+export function checkNewTerm(policy: Pick<Policy, "kind">, terms: Term[], next: NewTerm): string | null {
+  const end = addMonthsUTC(next.periodStart, 12 * next.years);
+  const same = terms.find((term) => term.start === next.periodStart);
+  if (same) return `This policy already has a term that starts on ${formatDate(next.periodStart)}`;
+  const overlap = terms.find((term) => next.periodStart < term.renewsOn && end > term.start);
+  if (overlap) return `That overlaps the term from ${formatDate(overlap.start)} to ${formatDate(overlap.end)}`;
+  if (next.ncb !== undefined && policy.kind !== "Motor") return "A no-claim bonus is for a motor policy";
+  return null;
+}
+
+/** What the Renew form starts from. */
+export interface RenewalDefaults {
+  /** When the next term starts: the renewal date, or today when that has passed. */
+  start: string;
+  /** The same years as the last term. */
+  years: number;
+  /** What the last term cost, as a guide to the quote. */
+  lastAmount: number;
+  /** The next no-claim step, for a motor policy with one on its last term. */
+  ncb?: number;
+  /** Days with no cover if it starts on `start`: 0 when it renews on time. */
+  gapDays: number;
+}
+
+/** The defaults for renewing a policy today, or null for one with no term to renew from. */
+export function renewalDefaults(view: PolicyView, today: string): RenewalDefaults | null {
+  const latest = view.latest;
+  if (!latest || view.renewsOn === null) return null;
+  const start = view.renewsOn > today ? view.renewsOn : today;
+  const lastNcb = latest.payment.ncb;
+  return { start, years: latest.payment.years, lastAmount: latest.payment.amount, ...(lastNcb !== undefined && { ncb: nextNcb(lastNcb) }), gapDays: Math.max(0, daysBetween(view.renewsOn, start)) };
 }
