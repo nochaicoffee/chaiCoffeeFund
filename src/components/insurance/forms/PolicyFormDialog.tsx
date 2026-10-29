@@ -26,12 +26,12 @@ const ICON: Record<PolicyKind, "heart" | "user" | "car" | "home" | "shield"> = {
  * all of it, so a premium paid once for three years is one payment. Editing changes the policy only: the terms are Renew's, and a blank
  * policy number is left as it is, since the browser only ever has the last four digits.
  */
-export function PolicyFormDialog({ forms, editing, onClose, onSaved }: { forms: InsuranceFormsData; editing?: FormPolicy; onClose: () => void; onSaved: (undo: { id: string; message: string } | undefined, message: string) => void }) {
+export function PolicyFormDialog({ forms, editing, start, onClose, onSaved }: { forms: InsuranceFormsData; editing?: FormPolicy; start?: { policyKind?: PolicyKind; covers?: string }; onClose: () => void; onSaved: (undo: { id: string; message: string } | undefined, message: string) => void }) {
   const [state, formAction, pending] = useActionState(savePolicy, IDLE);
-  const [kind, setKind] = useState<PolicyKind>(editing?.kind ?? "Health");
+  const [kind, setKind] = useState<PolicyKind>(editing?.kind ?? start?.policyKind ?? "Health");
   const [name, setName] = useState(editing?.name ?? "");
   const [insurer, setInsurer] = useState(editing?.insurer ?? "");
-  const [covers, setCovers] = useState(editing?.covers ?? "");
+  const [covers, setCovers] = useState(editing?.covers ?? start?.covers ?? "");
   const [coversDetail, setCoversDetail] = useState(editing?.coversDetail ?? "");
   const [policyNumber, setPolicyNumber] = useState("");
   const [sumInsured, setSumInsured] = useState(editing ? String(editing.sumInsured || "") : "");

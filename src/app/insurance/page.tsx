@@ -3,7 +3,7 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { GreetingSentence } from "@/components/insurance/GreetingSentence";
 import { InsuranceDashboard } from "@/components/insurance/InsuranceDashboard";
-import { AddFirstPolicy } from "@/components/insurance/forms/AddFirstPolicy";
+import { AddFirstPolicy, EmptyKinds } from "@/components/insurance/forms/AddFirstPolicy";
 import { HeaderFormButtons, InsuranceFormsProvider } from "@/components/insurance/forms/InsuranceForms";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
@@ -18,7 +18,7 @@ export const metadata: Metadata = { title: "Insurance" };
 /**
  * The Insurance page (docs/design/insurance.md, InsFinal): the greeting, whose figures point, the attention strip while a policy has
  * lapsed or renews within a month, then the cover map. `?policy=` picks a policy, and `?demo` shows sample data in development
- * (`?demo=soon`, `?demo=lapsed` and `?demo=empty` show the other states).
+ * (the other `?demo=` states are listed in insuranceDemo.ts).
  */
 export default async function InsurancePage({ searchParams }: PageProps<"/insurance">) {
   const params = await searchParams;
@@ -48,10 +48,13 @@ export default async function InsurancePage({ searchParams }: PageProps<"/insura
       {data.policies.length > 0 ? (
         <InsuranceDashboard cover={coverView(data, today)} widgets={insuranceWidgets(data, today, ids)} attention={attentionView(data, today)} initialPick={initialPick} />
       ) : (
-        <section className="rounded-[26px] border border-dashed border-divider bg-surface px-6 py-14 text-center">
-          <p className="text-base font-extrabold">No policies yet</p>
-          <p className="mx-auto mt-1 max-w-[520px] text-sm font-semibold text-muted">Add a policy with its cover and the premium you paid, and this page shows what you&apos;re covered for, what it costs a year, and when each one renews.</p>
-          <div className="mt-5 flex justify-center">
+        <section aria-label="No policies yet" className="flex flex-col gap-5 rounded-[26px] border border-feature-tile-line bg-feature-tile p-5 md:p-7">
+          <div>
+            <p className="text-base font-extrabold">No policies yet</p>
+            <p className="mt-1 max-w-[560px] text-sm font-semibold text-muted">Add a policy with its cover and the premium you paid, and this page shows what you&apos;re covered for, what it costs a year, and when each one renews. Start from a kind:</p>
+          </div>
+          <EmptyKinds />
+          <div>
             <AddFirstPolicy />
           </div>
         </section>

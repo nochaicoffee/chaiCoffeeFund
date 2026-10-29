@@ -11,15 +11,17 @@ import type { Policy, PolicyPayment } from "../sheets/types";
  * cardsDemo.ts), and never written to the Sheet.
  *
  * `?demo=soon` has the accident cover renewing in 12 days, `?demo=lapsed` has the car policy lapsed 9 days ago, and
- * `?demo=empty` has no policies at all.
+ * `?demo=empty` has no policies at all, `?demo=lapsed-accident` has the accident cover lapsed 6 days ago (the bike's policy relies on it),
+ * `?demo=renewed` has the accident cover renewed on time for a second year, and `?demo=cancelled` has the car cancelled 5 days ago.
  */
-export type DemoVariant = "" | "soon" | "lapsed" | "empty";
+export const DEMO_VARIANTS = ["", "soon", "lapsed", "lapsed-accident", "renewed", "cancelled", "empty"] as const;
+export type DemoVariant = (typeof DEMO_VARIANTS)[number];
 
 const POLICIES: Policy[] = [
   { id: "demo-health", name: "Lifetime Health", kind: "Health", insurer: "ManipalCigna", covers: "You", sumInsured: 5000000, status: "Active", color: "Teal", addOns: "Health 360 Shield, Health 360 OPD, Cumulative bonus 15%" },
   { id: "demo-accident", name: "Owner-driver cover", kind: "Accident", insurer: "Digit", covers: "You", sumInsured: 1500000, status: "Active", color: "Violet" },
   { id: "demo-car", name: "Comprehensive Platinum", kind: "Motor", insurer: "Acko", covers: "Car", coversDetail: "Honda City", sumInsured: 442000, status: "Active", color: "Copper", addOns: "Consumables, Rat bite" },
-  { id: "demo-bike", name: "Long-term package", kind: "Motor", insurer: "Bajaj General", covers: "Bike", coversDetail: "Gixxer SF 250", sumInsured: 73545, status: "Active", color: "Ruby" },
+  { id: "demo-bike", name: "Long-term package", kind: "Motor", insurer: "Bajaj General", covers: "Bike", coversDetail: "Gixxer SF 250", sumInsured: 73545, status: "Active", color: "Ruby", notes: "Owner-driver cover is left out: the Digit accident cover has it." },
 ];
 
 export function demoInsuranceData(today: string, variant: DemoVariant = ""): InsuranceData {
@@ -27,16 +29,19 @@ export function demoInsuranceData(today: string, variant: DemoVariant = ""): Ins
   // A term of `years` that ends the day before it renews in `days` days.
   const startFor = (years: number, renewsInDays: number) => addMonthsUTC(addDays(today, renewsInDays), -12 * years);
   const pay = (policyId: string, years: number, renewsInDays: number, amount: number, extra: Partial<PolicyPayment> = {}): PolicyPayment => ({ id: `${policyId}-t1`, policyId, periodStart: startFor(years, renewsInDays), years, amount, status: "Paid", ...extra });
-  const accidentIn = variant === "soon" ? 12 : 143;
+  const accidentIn = variant === "soon" ? 12 : variant === "lapsed-accident" ? -6 : 143;
   const carIn = variant === "lapsed" ? -9 : 282;
-  const payments = [
+  const payments: PolicyPayment[] = [
     pay("demo-health", 3, 1050, 38427.59, { paidOn: startFor(3, 1050), paidFromAccountId: "demo-hdfc" }),
     pay("demo-accident", 1, accidentIn, 451, { paidOn: addDays(startFor(1, accidentIn), -3) }),
     pay("demo-car", 1, carIn, 5504, { ncb: 50 }),
     pay("demo-bike", 3, 870, 5241, { paidOn: addDays(startFor(3, 870), -3), ncb: 0, paidFromCardId: "demo-regalia" }),
   ];
+  // Renewed on time: a second year recorded after the first.
+  if (variant === "renewed") payments.push({ id: "demo-accident-t2", policyId: "demo-accident", periodStart: addDays(today, accidentIn), years: 1, amount: 473, status: "Paid", paidOn: addDays(today, -1) });
+  const policies = variant === "cancelled" ? POLICIES.map((p) => (p.id === "demo-car" ? { ...p, status: "Cancelled" as const, endedOn: addDays(today, -5) } : p)) : POLICIES;
   return {
-    policies: POLICIES,
+    policies,
     payments,
     loans: [{ id: "demo-home-loan", name: "Home loan", lenderName: "SBI", category: "Home", status: "Active" }],
     accounts: [{ id: "demo-hdfc", name: "HDFC Salary" }],

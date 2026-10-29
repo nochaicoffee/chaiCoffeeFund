@@ -186,6 +186,9 @@ export function greetingView(data: InsuranceData, today: string): InsuranceGreet
 
 // ---------- The attention strip ----------
 
+/** A note that says owner-driver cover is left out, excluded or already had from another policy: not one that only mentions it (an included owner-driver cover). */
+export const LEAVES_OWNER_DRIVER_OUT = /owner[- ]driver[^.;]*\b(left out|leaves? out|excluded|exempt(ed)?|not (included|covered)|relies|already (have|having|has))\b|\b(left out|excludes?|exempt(ed)?)\b[^.;]*owner[- ]driver|already having PA cover/i;
+
 export interface AttentionItem {
   policyId: string;
   name: string;
@@ -202,7 +205,15 @@ export function attentionView(data: InsuranceData, today: string): AttentionItem
     .map((v): AttentionItem => {
       const on = v.current!.renewsOn;
       const later = v.latest && v.latest.start > today ? ` The next term starts ${formatDate(v.latest.start)}.` : " No renewal is recorded.";
-      const effect = v.policy.kind === "Motor" ? " Driving without cover is illegal, and the no-claim bonus can be lost." : " Cover stopped when the term ended.";
+      // Motor policies whose notes say they leave owner-driver cover out (or rely on a PA cover): with this accident cover lapsed, nothing covers you as their driver.
+      const relying = v.policy.kind === "Accident" ? views.filter((o) => isLive(o) && o.policy.kind === "Motor" && LEAVES_OWNER_DRIVER_OUT.test(o.policy.notes ?? "")) : [];
+      const bare = relying.map((o) => o.policy.covers.toLowerCase());
+      const effect =
+        v.policy.kind === "Motor"
+          ? " Driving without cover is illegal, and the no-claim bonus can be lost."
+          : bare.length
+            ? ` The ${bare.join(" and ")} ${bare.length === 1 ? "policy leaves" : "policies leave"} owner-driver cover out because of this one, so nothing covers you as ${bare.length === 1 ? "its" : "their"} driver.`
+            : " Cover stopped when the term ended.";
       return { policyId: v.policy.id, name: v.policy.name, tone: "lapsed", text: `lapsed on ${formatDate(on)} (${inDays(-lapsedAgo(v, today))}).${later}${v.latest && v.latest.start > today ? "" : effect}` };
     });
   const soon = renewingWithin(views, RENEW_SOON_DAYS).map(
@@ -252,7 +263,8 @@ export interface CoverTile {
   yearly: string | null;
   boxes: PolicyBox[];
   /** A financed thing with no policy: the tile says so instead of holding boxes. */
-  gap?: { title: string; text: string };
+  /** `start` is what Add policy begins with for it: a home loan's policy is a Home one covering the home. */
+  gap?: { title: string; text: string; start: { policyKind: PolicyKind; covers?: string } };
 }
 
 export interface CoverFigure {
@@ -359,7 +371,7 @@ export function coverView(data: InsuranceData, today: string): CoverView {
       icon: loan.category === "Home" ? "home" : "car",
       yearly: null,
       boxes: [],
-      gap: { title: "No policy recorded", text: `${loan.lenderName}'s ${loan.name.toLowerCase()} is on your Loans page, and nothing here insures it.` },
+      gap: { title: "No policy recorded", text: `${loan.lenderName}'s ${loan.name.toLowerCase()} is on your Loans page, and nothing here insures it.`, start: loan.category === "Home" ? { policyKind: "Home", covers: "Home" } : { policyKind: "Motor" } },
     });
   }
 

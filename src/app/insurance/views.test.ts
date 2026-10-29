@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { sentenceText } from "@/app/cards/summarySentence";
 import { demoInsuranceData } from "@/lib/demo/insuranceDemo";
 import type { Policy, PolicyPayment } from "@/lib/sheets/types";
-import { ALL, attentionView, coverView, greetingView, pickIds, summarySentence, type InsuranceData } from "./views";
+import { ALL, LEAVES_OWNER_DRIVER_OUT, attentionView, coverView, greetingView, pickIds, summarySentence, type InsuranceData } from "./views";
 
 const TODAY = "2026-10-29";
 
@@ -173,5 +173,58 @@ describe("privacy", () => {
     expect(everything).not.toContain("9876543210");
     expect(everything).not.toContain("3210");
     expect(everything).not.toContain("policyNumber");
+  });
+});
+
+describe("the other states", () => {
+  it("says what a lapsed accident cover leaves bare when a motor policy relies on it", () => {
+    const [item] = attentionView(demoInsuranceData(TODAY, "lapsed-accident"), TODAY);
+    expect(item).toMatchObject({ policyId: "demo-accident", tone: "lapsed" });
+    expect(item.text).toContain("lapsed on Oct 23, 2026 (6 days ago)");
+    expect(item.text).toContain("The bike policy leaves owner-driver cover out because of this one, so nothing covers you as its driver.");
+  });
+
+  it("doesn't claim a motor policy leaves owner-driver cover out when its notes only say it has one", () => {
+    const data = demoInsuranceData(TODAY, "lapsed-accident");
+    const own: InsuranceData = { ...data, policies: data.policies.map((p) => (p.id === "demo-bike" ? { ...p, notes: "Owner-driver cover: included, ₹15L." } : p)) };
+    expect(attentionView(own, TODAY)[0].text).toContain("Cover stopped when the term ended.");
+    const wording = (notes: string) => LEAVES_OWNER_DRIVER_OUT.test(notes);
+    expect(wording("Owner-driver cover excluded: already having PA cover of Rs. 15 lac")).toBe(true);
+    expect(wording("PA owner-driver cover is left out")).toBe(true);
+    expect(wording("Deductible ₹100. 24x7 spot assistance.")).toBe(false);
+  });
+
+  it("names every motor policy that relies on it", () => {
+    const data = demoInsuranceData(TODAY, "lapsed-accident");
+    const both: InsuranceData = { ...data, policies: data.policies.map((p) => (p.kind === "Motor" ? { ...p, notes: "Owner-driver cover is left out." } : p)) };
+    expect(attentionView(both, TODAY)[0].text).toContain("The car and bike policies leave owner-driver cover out because of this one, so nothing covers you as their driver.");
+  });
+
+  it("says only that cover stopped when nothing relies on it", () => {
+    const data = demoInsuranceData(TODAY, "lapsed-accident");
+    const plain: InsuranceData = { ...data, policies: data.policies.map((p) => ({ ...p, notes: undefined })) };
+    expect(attentionView(plain, TODAY)[0].text).toContain("Cover stopped when the term ended.");
+  });
+
+  it("moves a renewed policy's date on by a year, with no strip", () => {
+    const data = demoInsuranceData(TODAY, "renewed");
+    expect(attentionView(data, TODAY)).toEqual([]);
+    const accident = coverView(data, TODAY).tiles[0].boxes[1];
+    expect(accident.footRight).toBe("Mar 21, 2028");
+    expect(data.payments.filter((p) => p.policyId === "demo-accident")).toHaveLength(2);
+  });
+
+  it("leaves a cancelled policy out of the count and the year, dimmed and on record", () => {
+    const data = demoInsuranceData(TODAY, "cancelled");
+    const view = coverView(data, TODAY);
+    expect(view.count).toBe(3);
+    const car = view.tiles.find((t) => t.name === "Car")!.boxes[0];
+    expect(car).toMatchObject({ badge: "cancelled", footRight: "stays on record" });
+    expect(sentenceText(summarySentence(data, TODAY))).toContain("You're covered by 3 policies");
+  });
+
+  it("starts Add policy for a loan with no policy as a Home policy covering the home", () => {
+    const home = coverView(demoInsuranceData(TODAY), TODAY).tiles.find((t) => t.gap);
+    expect(home?.gap?.start).toEqual({ policyKind: "Home", covers: "Home" });
   });
 });

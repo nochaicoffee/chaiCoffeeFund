@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { deletePolicyAction, restartPolicyAction, undoAction } from "@/app/insurance/actions";
 import type { InsuranceFormsData } from "@/app/insurance/formsView";
+import type { PolicyKind } from "@/lib/sheets/types";
 import { AlertIcon, CheckIcon } from "../../cards/forms/icons";
 import { FormTriggerButton, HEADER_GHOST_CLASS, HEADER_PRIMARY_CLASS, SMALL_OK } from "../../shell/FormTriggerButton";
 
@@ -19,7 +20,8 @@ import { RenewDialog } from "./RenewDialog";
  */
 
 type Open =
-  | { kind: "add" }
+  /** `start` is what the form begins with: the kind of policy, and what it covers (a loan's tile, an empty page's kind). */
+  | { kind: "add"; start?: { policyKind?: PolicyKind; covers?: string } }
   | { kind: "edit"; id: string }
   | { kind: "renew"; policyId?: string }
   | { kind: "cancel"; policyId?: string }
@@ -84,7 +86,7 @@ export function InsuranceFormsProvider({ forms, children }: { forms: InsuranceFo
   return (
     <FormsContext.Provider value={{ forms, disabledReason, open: (o) => !disabledReason && show(o) }}>
       {children}
-      {open?.kind === "add" && <PolicyFormDialog forms={forms} onClose={close} onSaved={saved} />}
+      {open?.kind === "add" && <PolicyFormDialog forms={forms} start={open.start} onClose={close} onSaved={saved} />}
       {open?.kind === "edit" && target && <PolicyFormDialog forms={forms} editing={target} onClose={close} onSaved={saved} />}
       {open?.kind === "renew" && <RenewDialog forms={forms} policyId={open.policyId} onClose={close} onSaved={saved} />}
       {open?.kind === "cancel" && <CancelDialog forms={forms} policyId={open.policyId} onClose={close} onSaved={saved} />}
