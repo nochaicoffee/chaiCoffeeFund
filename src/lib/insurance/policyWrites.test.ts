@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addPolicy, cancelPolicy, createTerm, deletePolicy, parseRenewalUndo, renewPolicy, renewalUndoToken, restartPolicy, undoRenewal, updateTerm, type InsuranceRepos } from "./policyWrites";
+import { addPolicy, cancelPolicy, createTerm, deletePolicy, editableFields, parsePolicyUndo, parseRenewalUndo, policyUndoToken, renewPolicy, renewalUndoToken, restartPolicy, undoRenewal, updateTerm, type InsuranceRepos } from "./policyWrites";
 import { checkPolicy } from "../sheets/policies";
 import { checkPolicyPayment } from "../sheets/policyPayments";
 import { InvalidRowError, NotFoundError } from "../sheets/repository";
@@ -284,5 +284,22 @@ describe("the Undo token", () => {
     for (const token of ["", "nope", "{}", '{"paymentId":"a","policyId":"","previousSumInsured":1}', '{"paymentId":"a","policyId":"b","previousSumInsured":"1"}', '{"paymentId":"a","policyId":"b","previousSumInsured":-1}', "null"]) {
       expect(parseRenewalUndo(token)).toBeNull();
     }
+  });
+});
+
+describe("the Undo tokens for add, cancel, restart and edit", () => {
+  it("reads back what it wrote, and refuses anything else", () => {
+    for (const undo of [{ undo: "add", policyId: "p1" }, { undo: "cancel", policyId: "p1" }, { undo: "restart", policyId: "p1", endedOn: "2026-10-01" }, { undo: "restart", policyId: "p1" }, { undo: "edit", policyId: "p1", previous: { name: "Old", sumInsured: 5 } }] as const) {
+      expect(parsePolicyUndo(policyUndoToken(undo))).toEqual(undo);
+    }
+    for (const bad of ["", "nope", "{}", '{"undo":"add"}', '{"undo":"add","policyId":""}', '{"undo":"drop","policyId":"p"}', '{"undo":"edit","policyId":"p","previous":[1]}', '{"undo":"edit","policyId":"p","previous":{"a":{"b":1}}}', '{"paymentId":"x","policyId":"p","previousSumInsured":1}']) {
+      expect(parsePolicyUndo(bad)).toBeNull();
+    }
+  });
+
+  it("an edit's token holds the fields as they were, never the policy number", () => {
+    const fields = editableFields({ id: "p", name: "Health", kind: "Health", insurer: "Insurer", covers: "You", sumInsured: 500000, status: "Active", policyNumber: "ZXCV1234567890", notes: "30-day wait" });
+    expect(fields).toMatchObject({ name: "Health", sumInsured: 500000, notes: "30-day wait", coversDetail: "", addOns: "", paidFromAccountId: "", paidFromCardId: "" });
+    expect(JSON.stringify(policyUndoToken({ undo: "edit", policyId: "p", previous: fields }))).not.toContain("1234567");
   });
 });

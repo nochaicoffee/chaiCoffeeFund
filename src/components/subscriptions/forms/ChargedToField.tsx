@@ -13,6 +13,7 @@ import { AlertIcon, InfoIcon } from "../../cards/forms/icons";
  * Switching between card and account clears the other's choice.
  */
 export function ChargedToField({
+  name = "chargedTo",
   label,
   value,
   onChange,
@@ -20,6 +21,8 @@ export function ChargedToField({
   help,
   error,
 }: {
+  /** The field's name in the form (and the base of its help and error ids): "chargedTo", or "paidFrom" on the Insurance forms. */
+  name?: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
@@ -38,18 +41,18 @@ export function ChargedToField({
   const none = kind === "card" ? "No cards yet" : "No accounts yet";
 
   return (
-    <fieldset className="flex min-w-0 flex-col gap-1.5" aria-describedby={error ? "chargedTo-error" : "chargedTo-help"}>
+    <fieldset className="flex min-w-0 flex-col gap-1.5" aria-describedby={error ? `${name}-error` : `${name}-help`}>
       <legend className="mb-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
         {label} <span className="ml-1 text-[10px] font-semibold tracking-[0.02em] text-muted/80">Optional</span>
       </legend>
-      <input type="hidden" name="chargedTo" value={value} />
+      <input type="hidden" name={name} value={value} />
       <div className="grid gap-2.5 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
         <div className="flex rounded-full bg-fill p-[3px]">
           {(["card", "account"] as const).map((k) => (
             <label key={k} className="relative flex-1">
               <input
                 type="radio"
-                name="chargedToKind"
+                name={`${name}Kind`}
                 value={k}
                 checked={kind === k}
                 onChange={() => {
@@ -75,12 +78,12 @@ export function ChargedToField({
         />
       </div>
       {error ? (
-        <p id="chargedTo-error" className="flex items-start gap-1.5 text-[11px] font-semibold text-negative">
+        <p id={`${name}-error`} className="flex items-start gap-1.5 text-[11px] font-semibold text-negative">
           <AlertIcon />
           {error}
         </p>
       ) : (
-        <p id="chargedTo-help" className="flex items-start gap-1.5 text-[11px] font-medium text-muted">
+        <p id={`${name}-help`} className="flex items-start gap-1.5 text-[11px] font-medium text-muted">
           <InfoIcon />
           <span>{help}</span>
         </p>

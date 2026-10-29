@@ -1,3 +1,4 @@
+import { cardColorKey } from "@/lib/format/colors";
 import { isDemoAllowed } from "@/lib/demo/cardsDemo";
 import { demoInsuranceData, type DemoVariant } from "@/lib/demo/insuranceDemo";
 import { getCachedAccounts, getCachedCards, getCachedLoansTab, getCachedPoliciesTab, getCachedPolicyPaymentsTab } from "@/lib/sheets/cached";
@@ -26,7 +27,7 @@ export async function loadInsuranceData(params: Record<string, string | string[]
       payments: payments.records,
       loans: loans.records.map((l) => ({ id: l.id, name: l.name, lenderName: l.lenderName, category: l.category, status: l.status })),
       accounts: accounts.map((a) => ({ id: a.id, name: a.name })),
-      cards: cards.map((c) => ({ id: c.id, name: c.alias || c.name })),
+      cards: cards.map((c) => ({ id: c.id, name: c.alias || c.name, color: cardColorKey(c.color) })),
     },
     skipped: [policies.skipped, payments.skipped, loans.skipped],
   };

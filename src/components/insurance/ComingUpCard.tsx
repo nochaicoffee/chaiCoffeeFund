@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { ComingUpView } from "@/app/insurance/widgetsView";
+import { FormTrigger, SMALL_OK, useInsuranceForms } from "./forms/InsuranceForms";
 import { WidgetCard } from "../shell/WidgetCard";
 import { Segmented } from "../subscriptions/Segmented";
 
@@ -11,6 +12,7 @@ const SHOWN = 5;
 /** Coming up (InsFinal): renewals, soonest first, a date block each, with a switch for all, within a month, or later. */
 export function ComingUpCard({ card, picked, onPick }: { card: ComingUpView; picked: string; onPick: (id: string) => void }) {
   const [show, setShow] = useState<Show>("all");
+  const { open } = useInsuranceForms();
   const rows = card.rows.filter((r) => (show === "all" ? true : show === "month" ? r.soon : !r.soon)).slice(0, SHOWN);
   return (
     <WidgetCard
@@ -25,8 +27,8 @@ export function ComingUpCard({ card, picked, onPick }: { card: ComingUpView; pic
       ) : (
         <ul className="flex flex-1 flex-col">
           {rows.map((r) => (
-            <li key={r.id} className={`border-t border-divider first:border-t-0 motion-safe:transition-opacity ${picked !== "all" && picked !== r.policyId ? "opacity-40" : ""}`}>
-              <button type="button" onClick={() => onPick(r.policyId)} className="flex w-full items-center gap-3.5 py-3.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
+            <li key={r.id} className={`flex items-center gap-3 border-t border-divider first:border-t-0 motion-safe:transition-opacity ${picked !== "all" && picked !== r.policyId ? "opacity-40" : ""}`}>
+              <button type="button" onClick={() => onPick(r.policyId)} className="flex min-w-0 flex-1 items-center gap-3.5 py-3.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                 <span className={`flex w-12 shrink-0 flex-col items-center rounded-[12px] py-1.5 ${r.soon ? "bg-warning-tint text-warning-text" : "bg-fill"}`}>
                   <b className="text-lg leading-none font-extrabold">{r.day}</b>
                   <span className="text-[10px] font-extrabold">{r.month}</span>
@@ -39,6 +41,7 @@ export function ComingUpCard({ card, picked, onPick }: { card: ComingUpView; pic
                 </span>
                 <b className="shrink-0 text-[15px] font-extrabold tabular-nums">{r.amount}</b>
               </button>
+              {r.soon && <FormTrigger className={`${SMALL_OK} shrink-0`} label="↻ Renew" onClick={() => open({ kind: "renew", policyId: r.policyId })} />}
             </li>
           ))}
         </ul>

@@ -24,6 +24,7 @@ export function ConfirmDialog({
   today,
   onClose,
   alternative,
+  onSaved,
 }: {
   tone: "neutral" | "danger";
   icon: ReactNode;
@@ -39,6 +40,8 @@ export function ConfirmDialog({
   onClose: () => void;
   /** A gentler way out, on the left: Delete source offers Mark inactive instead (Income, #190). */
   alternative?: { label: string; onClick: () => void };
+  /** Told when the action saves, with what a toast can offer to take back (Insurance's Restart). */
+  onSaved?: (undo?: { id: string; message: string }) => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const [state, formAction, pending] = useActionState(action, IDLE);
@@ -49,7 +52,12 @@ export function ConfirmDialog({
     if (dialog && !dialog.open) dialog.showModal();
   }, []);
   useEffect(() => {
-    if (state.status === "saved") ref.current?.close();
+    if (state.status === "saved") {
+      ref.current?.close();
+      onSaved?.(state.undo);
+    }
+    // Only when a save comes back.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
 
   // The date's own error sits under it; one about the whole change (it's changed since) goes in the alert.

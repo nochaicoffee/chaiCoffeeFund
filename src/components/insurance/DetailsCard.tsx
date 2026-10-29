@@ -2,6 +2,7 @@
 
 import type { DetailsView } from "@/app/insurance/widgetsView";
 import { WidgetCard } from "../shell/WidgetCard";
+import { FormTrigger, SMALL_OK, SMALL_SOFT, useInsuranceForms } from "./forms/InsuranceForms";
 import { TileMark } from "./parts";
 
 const STATE_PILL: Record<DetailsView["state"], string> = {
@@ -15,6 +16,7 @@ const STATE_PILL: Record<DetailsView["state"], string> = {
 
 /** Policy details (InsFinal), following the pick: what you'd look up when you need to claim. Under All policies it shows the next to renew. */
 export function DetailsCard({ view }: { view: DetailsView | null }) {
+  const { open } = useInsuranceForms();
   return (
     <WidgetCard label="Policy details" title="Policy details" note="what you'd look up when you need to claim" gap="gap-4">
       {!view ? (
@@ -60,9 +62,21 @@ export function DetailsCard({ view }: { view: DetailsView | null }) {
               </ul>
             </div>
           )}
-          <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3 text-xs font-semibold text-muted">
-            <span>{view.foot}</span>
-            {view.note && <span>{view.note}</span>}
+          <div className="mt-auto flex flex-col gap-3 border-t border-divider pt-3">
+            <div className="flex flex-wrap gap-2">
+              {view.state === "Cancelled" ? (
+                <FormTrigger className={SMALL_OK} label="↻ Restart" onClick={() => open({ kind: "restart", id: view.policyId })} />
+              ) : (
+                <FormTrigger className={SMALL_OK} label="↻ Renew" onClick={() => open({ kind: "renew", policyId: view.policyId })} />
+              )}
+              <FormTrigger className={SMALL_SOFT} label="Edit" onClick={() => open({ kind: "edit", id: view.policyId })} />
+              {view.state !== "Cancelled" && <FormTrigger className={SMALL_SOFT} label="Cancel policy" onClick={() => open({ kind: "cancel", policyId: view.policyId })} />}
+              <FormTrigger className={SMALL_SOFT} label="Delete" onClick={() => open({ kind: "delete", id: view.policyId })} />
+            </div>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-semibold text-muted">
+              <span>{view.foot}</span>
+              {view.note && <span>{view.note}</span>}
+            </div>
           </div>
         </>
       )}

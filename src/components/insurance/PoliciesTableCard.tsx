@@ -2,6 +2,7 @@
 
 import type { TableRow, TableView } from "@/app/insurance/widgetsView";
 import { WidgetCard } from "../shell/WidgetCard";
+import { FormTrigger, SMALL_SOFT, useInsuranceForms } from "./forms/InsuranceForms";
 import { TileMark, WARN_BAR } from "./parts";
 
 const COLS = "lg:grid-cols-[minmax(0,2.5fr)_minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1.1fr)_minmax(0,1.9fr)_minmax(0,1.2fr)]";
@@ -11,8 +12,9 @@ const TONE = { soon: "font-bold text-warning-text", lapsed: "font-bold text-nega
 
 /** The policies table (InsFinal): every policy with its cover, what was paid, a year of it, how far through its term, and when it renews. A row picks the policy. */
 export function PoliciesTableCard({ table, pickId, onPick }: { table: TableView; pickId: string; onPick: (id: string) => void }) {
+  const { open } = useInsuranceForms();
   return (
-    <WidgetCard label="Policies" title="Policies" note="everything you're insured under" gap="gap-3">
+    <WidgetCard label="Policies" title="Policies" note="everything you're insured under" gap="gap-3" right={<FormTrigger className={SMALL_SOFT} label="+ Add policy" onClick={() => open({ kind: "add" })} />}>
       <div className="min-w-0">
         <div className={`hidden gap-4 pb-2 text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase lg:grid ${COLS}`} aria-hidden="true">
           {HEADS.map((h) => (
