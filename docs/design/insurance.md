@@ -2,11 +2,11 @@
 
 ## Status (2026-10-29)
 
-**Designed on his real policies. The data layer (#209 to #211) and the page shell, greeting, attention strip and cover map (#212) are built; the widgets, forms, states and phone layout are not.** Prathik picked the **Cover map** as the hero. Mockups: [`design/insurance/`](../../design/insurance/), built by [`design/insurance/generator/`](../../design/insurance/generator/) (a rebuild overwrites the artboards, so change the generator).
+**Designed on his real policies, and built (#209 to #215): the data layer, the page, its widgets, the forms and the states. What's left is the PRD feature and the system-design section, which wait for the gap-review docs to be committed (#216).** Prathik picked the **Cover map** as the hero. Mockups: [`design/insurance/`](../../design/insurance/), built by [`design/insurance/generator/`](../../design/insurance/generator/) (a rebuild overwrites the artboards, so change the generator).
 
 The policies are his own, read on 2026-10-29 from the four PDFs in his Gmail `Insurance` label (read-only, with the app's Gmail credentials). Identifiers are cut to their last digits, and no address, date of birth, nominee, PAN or customer ID is in the repo. "Today" is Oct 29, 2026; dates after it and the 2027 renewal quotes are illustrative.
 
-This answers the open question from the 2026-10-27 gap review (PRD Q11 and `system-design.md` item 8, still uncommitted in the working docs when this was written): insurance as Subscriptions categories, or its own page. **its own page, one dashboard, not one per type.** Insurance asks different questions from a subscription: whether you're covered, for how much, and when it lapses.
+This answers the open question from the 2026-10-27 gap review (PRD Q11 and `system-design.md` item 8, still uncommitted in his working docs when this was written; the PRD feature (F-IS-01) and the system-design section are to be written once they're committed): insurance as Subscriptions categories, or its own page. **its own page, one dashboard, not one per type.** Insurance asks different questions from a subscription: whether you're covered, for how much, and when it lapses.
 
 ## His policies
 
@@ -40,7 +40,7 @@ Things the PDFs say that the design uses:
 
 The greeting's figures point, as on every dashboard (`pointLede` in `parts.mjs`).
 
-## Data model (proposed; needs a yes)
+## Data model (accepted: [ADR 0010](../adr/0010-insurance-terms-with-years.md))
 
 Like Subscriptions and its payments, and Loans and their installments: a master row and a row for each **term**.
 
