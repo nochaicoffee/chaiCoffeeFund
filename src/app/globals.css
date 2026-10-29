@@ -219,6 +219,9 @@
   --card-chip-deep: oklch(0.55 0.1 80);
   --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
   --tile-shadow-selected: 0 10px 26px oklch(0.3 0.09 155 / 0.35), 0 0 0 4px oklch(1 0 0 / 0.08), 0 0 18px oklch(1 0 0 / 0.2);
+  /* The same tiles on a light stage (the Accounts hero), where a white glow would vanish. */
+  --tile-shadow-soft: 0 10px 24px oklch(0.2 0.04 260 / 0.24);
+  --tile-shadow-soft-selected: 0 16px 34px oklch(0.2 0.04 260 / 0.3), 0 0 0 1px oklch(1 0 0 / 0.5);
 
   /* Motion on the card tiles (#102): the light that follows the pointer, the chip's glint, and a bill due soon. */
   --tile-glare: oklch(1 0 0 / 0.32);
