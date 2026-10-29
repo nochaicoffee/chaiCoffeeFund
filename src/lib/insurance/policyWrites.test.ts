@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addPolicy, cancelPolicy, createTerm, deletePolicy, editableFields, parsePolicyUndo, parseRenewalUndo, policyUndoToken, renewPolicy, renewalUndoToken, restartPolicy, undoRenewal, updateTerm, type InsuranceRepos } from "./policyWrites";
+import { addPolicy, cancelPolicy, createTerm, deletePolicy, editableFields, parsePolicyUndo, paymentFields, parseRenewalUndo, policyUndoToken, renewPolicy, renewalUndoToken, restartPolicy, undoRenewal, updateTerm, type InsuranceRepos } from "./policyWrites";
 import { checkPolicy } from "../sheets/policies";
 import { checkPolicyPayment } from "../sheets/policyPayments";
 import { InvalidRowError, NotFoundError } from "../sheets/repository";
@@ -265,6 +265,25 @@ describe("createTerm and updateTerm (the API's writes: the same guard as Renew)"
     expect(payments.rows.find((p) => p.id === second.id)?.periodStart).toBe("2027-03-21");
   });
 
+  it("updateTerm corrects the day paid or the amount of a term that already overlaps another, since that can't make it worse", async () => {
+    const { repos, payments } = setup();
+    const { policy, payment } = await addPolicy(repos, accident, firstTerm);
+    // A term recorded before the guard existed, overlapping the first.
+    payments.rows.push({ id: "old", policyId: policy.id, periodStart: "2026-09-01", years: 1, amount: 400, status: "Paid" });
+    await expect(updateTerm(repos, "old", { paidOn: "2026-09-01", amount: 410 })).resolves.toMatchObject({ amount: 410, paidOn: "2026-09-01" });
+    await expect(updateTerm(repos, "old", { periodStart: "2026-09-02" })).rejects.toThrow("overlaps");
+    await expect(updateTerm(repos, payment.id, { paidOn: "" })).resolves.toBeDefined();
+  });
+
+  it("updateTerm doesn't read again what the caller passes in", async () => {
+    const { repos } = setup();
+    const { policy, payment } = await addPolicy(repos, accident, firstTerm);
+    let reads = 0;
+    const counting: InsuranceRepos = { ...repos, payments: { ...repos.payments, get: async (id) => (reads++, repos.payments.get(id)) }, policies: { ...repos.policies, get: async (id) => (reads++, repos.policies.get(id)) } };
+    await updateTerm(counting, payment.id, { periodStart: "2026-03-22" }, { stored: payment, policy });
+    expect(reads).toBe(0);
+  });
+
   it("updateTerm leaves a change that isn't about the dates or cover alone, and doesn't count the term itself as overlapping", async () => {
     const { repos } = setup();
     const { policy } = await addPolicy(repos, accident, firstTerm);
@@ -292,7 +311,9 @@ describe("the Undo tokens for add, cancel, restart and edit", () => {
     for (const undo of [{ undo: "add", policyId: "p1" }, { undo: "cancel", policyId: "p1" }, { undo: "restart", policyId: "p1", endedOn: "2026-10-01" }, { undo: "restart", policyId: "p1" }, { undo: "edit", policyId: "p1", previous: { name: "Old", sumInsured: 5 } }] as const) {
       expect(parsePolicyUndo(policyUndoToken(undo))).toEqual(undo);
     }
-    for (const bad of ["", "nope", "{}", '{"undo":"add"}', '{"undo":"add","policyId":""}', '{"undo":"drop","policyId":"p"}', '{"undo":"edit","policyId":"p","previous":[1]}', '{"undo":"edit","policyId":"p","previous":{"a":{"b":1}}}', '{"paymentId":"x","policyId":"p","previousSumInsured":1}']) {
+    const payment = { undo: "payment", policyId: "p1", paymentId: "t1", previous: { amount: 5000, paidOn: "" } } as const;
+    expect(parsePolicyUndo(policyUndoToken(payment))).toEqual(payment);
+    for (const bad of ['{"undo":"payment","policyId":"p"}', '{"undo":"payment","policyId":"p","paymentId":"","previous":{}}', '{"undo":"payment","policyId":"p","paymentId":"t","previous":{"a":[1]}}', "", "nope", "{}", '{"undo":"add"}', '{"undo":"add","policyId":""}', '{"undo":"drop","policyId":"p"}', '{"undo":"edit","policyId":"p","previous":[1]}', '{"undo":"edit","policyId":"p","previous":{"a":{"b":1}}}', '{"paymentId":"x","policyId":"p","previousSumInsured":1}']) {
       expect(parsePolicyUndo(bad)).toBeNull();
     }
   });
@@ -301,5 +322,12 @@ describe("the Undo tokens for add, cancel, restart and edit", () => {
     const fields = editableFields({ id: "p", name: "Health", kind: "Health", insurer: "Insurer", covers: "You", sumInsured: 500000, status: "Active", policyNumber: "ZXCV1234567890", notes: "30-day wait" });
     expect(fields).toMatchObject({ name: "Health", sumInsured: 500000, notes: "30-day wait", coversDetail: "", addOns: "", paidFromAccountId: "", paidFromCardId: "" });
     expect(JSON.stringify(policyUndoToken({ undo: "edit", policyId: "p", previous: fields }))).not.toContain("1234567");
+  });
+});
+
+describe("paymentFields", () => {
+  it("holds a term as it is, with each cleared field blank so Undo clears it again", () => {
+    expect(paymentFields({ id: "t", policyId: "p", periodStart: "2026-07-05", years: 3, amount: 100, status: "Paid" })).toEqual({ periodStart: "2026-07-05", years: 3, amount: 100, paidOn: "", ncb: "", paidFromAccountId: "", paidFromCardId: "" });
+    expect(paymentFields({ id: "t", policyId: "p", periodStart: "2026-07-05", years: 1, amount: 100, status: "Paid", paidOn: "2026-07-01", ncb: 25, paidFromCardId: "c" })).toMatchObject({ paidOn: "2026-07-01", ncb: 25, paidFromCardId: "c" });
   });
 });

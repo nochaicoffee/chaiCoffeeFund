@@ -37,6 +37,16 @@ describe("the forms' data", () => {
     expect(insuranceFormsData(data, TODAY, false).policies[0].policyNumber).toBe("");
   });
 
+  it("lists every recorded term to edit, with the term before it to compare with", () => {
+    const forms = insuranceFormsData(demoInsuranceData(TODAY, "renewed"), TODAY, false);
+    const terms = forms.payments.filter((p) => p.policyId === "demo-accident");
+    expect(terms).toHaveLength(2);
+    expect(terms[0].before).toBeNull();
+    expect(terms[1].before).toEqual({ years: 1, amount: 451 });
+    const health = forms.payments.find((p) => p.policyId === "demo-health")!;
+    expect(health).toMatchObject({ years: 3, paidFrom: "account:demo-hdfc", ncb: "" });
+  });
+
   it("has nothing for an empty book", () => {
     const forms = insuranceFormsData(demoInsuranceData(TODAY, "empty"), TODAY, true);
     expect(forms).toMatchObject({ demo: true, covers: [], policies: [], yearlyAll: 0 });

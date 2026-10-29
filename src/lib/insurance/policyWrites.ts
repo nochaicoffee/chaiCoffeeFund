@@ -49,14 +49,20 @@ export async function createTerm(repos: InsuranceRepos, input: Omit<PolicyPaymen
   return repos.payments.create(term);
 }
 
-/** Change a term through the API (PATCH /api/policy-payments/[id]): what it would be once merged must still fit the policy's other terms. */
-export async function updateTerm(repos: InsuranceRepos, id: string, patch: Partial<Omit<PolicyPayment, "id">>): Promise<PolicyPayment> {
-  const stored = await repos.payments.get(id);
+/**
+ * Change a term (PATCH /api/policy-payments/[id], and Edit payment): what it would be once merged must still fit the policy's other terms,
+ * checked only when the change moves the term (its start, its years, its no-claim step or its status). Correcting the day paid, the amount
+ * or where it came from can't make it overlap anything, so a term that already overlaps another can still be corrected. `known` is what the
+ * caller has just read (the term, its policy), so they aren't read again.
+ */
+export async function updateTerm(repos: InsuranceRepos, id: string, patch: Partial<Omit<PolicyPayment, "id">>, known?: { stored?: PolicyPayment; policy?: Policy }): Promise<PolicyPayment> {
+  const stored = known?.stored ?? (await repos.payments.get(id));
   if (!stored) throw new NotFoundError("This term isn't in the PolicyPayments tab any more.");
   const change = updatePolicyPaymentSchema.parse(patch) as Partial<Omit<PolicyPayment, "id">>;
   const merged = { ...stored, ...change };
-  if (merged.status === "Paid" && (change.periodStart !== undefined || change.years !== undefined || change.ncb !== undefined || change.status !== undefined)) {
-    const policy = await repos.policies.get(stored.policyId);
+  const moved = (["periodStart", "years", "ncb", "status"] as const).some((key) => key in change && change[key] !== stored[key]);
+  if (merged.status === "Paid" && moved) {
+    const policy = known?.policy ?? (await repos.policies.get(stored.policyId));
     if (!policy) throw new NotFoundError(GONE);
     await assertTermFits(repos, policy, merged, id);
   }
@@ -189,7 +195,9 @@ export type PolicyUndo =
   | { undo: "add"; policyId: string }
   | { undo: "cancel"; policyId: string }
   | { undo: "restart"; policyId: string; endedOn?: string }
-  | { undo: "edit"; policyId: string; previous: Record<string, string | number> };
+  | { undo: "edit"; policyId: string; previous: Record<string, string | number> }
+  /** Edit payment: the term's fields as they were. */
+  | { undo: "payment"; policyId: string; paymentId: string; previous: Record<string, string | number> };
 
 export const policyUndoToken = (undo: PolicyUndo): string => JSON.stringify(undo);
 
@@ -199,6 +207,10 @@ export function parsePolicyUndo(token: string): PolicyUndo | null {
     if (typeof value.policyId !== "string" || value.policyId === "") return null;
     if (value.undo === "add" || value.undo === "cancel") return { undo: value.undo, policyId: value.policyId };
     if (value.undo === "restart") return { undo: "restart", policyId: value.policyId, ...(typeof value.endedOn === "string" && value.endedOn !== "" && { endedOn: value.endedOn }) };
+    if (value.undo === "payment" && typeof (value as { paymentId?: unknown }).paymentId === "string" && (value as { paymentId: string }).paymentId !== "" && value.previous && typeof value.previous === "object" && !Array.isArray(value.previous)) {
+      const entries = Object.entries(value.previous as Record<string, unknown>);
+      if (entries.every(([, v]) => typeof v === "string" || typeof v === "number")) return { undo: "payment", policyId: value.policyId, paymentId: (value as { paymentId: string }).paymentId, previous: Object.fromEntries(entries) as Record<string, string | number> };
+    }
     if (value.undo === "edit" && value.previous && typeof value.previous === "object" && !Array.isArray(value.previous)) {
       const entries = Object.entries(value.previous as Record<string, unknown>);
       if (entries.every(([, v]) => typeof v === "string" || typeof v === "number")) return { undo: "edit", policyId: value.policyId, previous: Object.fromEntries(entries) as Record<string, string | number> };
@@ -225,5 +237,18 @@ export function editableFields(policy: Policy): Record<string, string | number> 
     paidFromAccountId: policy.paidFromAccountId ?? "",
     paidFromCardId: policy.paidFromCardId ?? "",
     ...(policy.color !== undefined && { color: policy.color }),
+  };
+}
+
+/** A term's editable fields as they are now, for an Undo of its edit: a cleared one is blank so Undo clears it again. */
+export function paymentFields(payment: PolicyPayment): Record<string, string | number> {
+  return {
+    periodStart: payment.periodStart,
+    years: payment.years,
+    amount: payment.amount,
+    paidOn: payment.paidOn ?? "",
+    ncb: payment.ncb ?? "",
+    paidFromAccountId: payment.paidFromAccountId ?? "",
+    paidFromCardId: payment.paidFromCardId ?? "",
   };
 }

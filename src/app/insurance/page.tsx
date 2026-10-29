@@ -46,7 +46,7 @@ export default async function InsurancePage({ searchParams }: PageProps<"/insura
         <SkippedRowsNotice tabs={skipped} />
       </PageHeader>
       {data.policies.length > 0 ? (
-        <InsuranceDashboard cover={coverView(data, today)} widgets={insuranceWidgets(data, today, ids)} attention={attentionView(data, today)} initialPick={initialPick} />
+        <InsuranceDashboard cover={coverView(data, today)} widgets={insuranceWidgets(data, today, ids)} attention={attentionView(data, today)} initialPick={initialPick} demo={demo} />
       ) : (
         <section aria-label="No policies yet" className="flex flex-col gap-5 rounded-[26px] border border-feature-tile-line bg-feature-tile p-5 md:p-7">
           <div>

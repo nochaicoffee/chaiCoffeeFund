@@ -16,6 +16,15 @@ import type { Loan, Policy, PolicyKind, PolicyPayment } from "@/lib/sheets/types
 
 export const ALL = "all";
 
+/** An Insurance page's address, keeping `?demo` bare (or `?demo=lapsed`) and leaving out the default pick (all policies). */
+export function insuranceHref(path: "/insurance" | "/insurance/payments", { demo, policy }: { demo: string | null; policy?: string }): string {
+  const q = new URLSearchParams();
+  if (demo !== null) q.set("demo", demo);
+  if (policy && policy !== ALL) q.set("policy", policy);
+  const text = q.toString().replace(/(^|&)demo=(&|$)/, "$1demo$2");
+  return `${path}${text ? `?${text}` : ""}`;
+}
+
 export interface InsuranceData {
   policies: Policy[];
   payments: PolicyPayment[];

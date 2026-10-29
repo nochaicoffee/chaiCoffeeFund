@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { policyEditPatch, readCancelForm, readPolicyForm, readRenewForm } from "./insuranceForms";
+import { policyEditPatch, readCancelForm, readPaymentForm, readPolicyForm, readRenewForm } from "./insuranceForms";
 
 const known = { accountIds: ["acc-1"], cardIds: ["card-1"] };
 const health = { name: "Health · Lifetime Health", kind: "Health", insurer: "ManipalCigna", covers: "You", sumInsured: "50,00,000", periodStart: "2026-07-05", years: "3", amount: "38,427.59", paidOn: "" };
@@ -133,5 +133,27 @@ describe("policyEditPatch", () => {
 
   it("carries the fields that were typed", () => {
     expect(read({ notes: "Waiting periods apply" })).toMatchObject({ name: "Health", kind: "Health", insurer: "ManipalCigna", covers: "You", sumInsured: 5_000_000, notes: "Waiting periods apply" });
+  });
+});
+
+describe("readPaymentForm", () => {
+  const KNOWN = { accountIds: ["a1"], cardIds: ["c1"] };
+  const fields = { paymentId: "t1", periodStart: "2026-07-05", years: "3", amount: "38,427.59", paidOn: "2026-07-05", ncb: "", paidFrom: "account:a1" };
+
+  it("reads a corrected term, with blank optional boxes as the blank that clears them", () => {
+    const read = readPaymentForm({ ...fields, paidOn: "", paidFrom: "" }, KNOWN, false);
+    expect(read).toEqual({ ok: true, input: { paymentId: "t1", patch: { periodStart: "2026-07-05", years: 3, amount: 38427.59, paidOn: "", ncb: "", paidFromAccountId: "", paidFromCardId: "" } } });
+  });
+
+  it("reads where it was paid from as an account or a card, and a no-claim step for a motor policy", () => {
+    expect(readPaymentForm(fields, KNOWN, false)).toMatchObject({ ok: true, input: { patch: { paidFromAccountId: "a1", paidFromCardId: "", paidOn: "2026-07-05" } } });
+    expect(readPaymentForm({ ...fields, paidFrom: "card:c1", ncb: "25" }, KNOWN, true)).toMatchObject({ ok: true, input: { patch: { paidFromCardId: "c1", paidFromAccountId: "", ncb: 25 } } });
+  });
+
+  it("says what's wrong in plain words", () => {
+    const bad = readPaymentForm({ ...fields, amount: "", years: "9", ncb: "25", paidFrom: "account:nope" }, KNOWN, false);
+    expect(bad.ok).toBe(false);
+    if (!bad.ok) expect(Object.keys(bad.errors).sort()).toEqual(["amount", "ncb", "paidFrom", "years"]);
+    expect(readPaymentForm({ ...fields, paymentId: "" }, KNOWN, false).ok).toBe(false);
   });
 });

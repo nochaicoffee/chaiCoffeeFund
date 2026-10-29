@@ -1,6 +1,6 @@
 "use client";
 
-import { ALL, type AttentionItem, type CoverView } from "@/app/insurance/views";
+import { ALL, insuranceHref, type AttentionItem, type CoverView } from "@/app/insurance/views";
 import type { InsuranceWidgets } from "@/app/insurance/widgetsView";
 import { usePickInAddress } from "../usePickInAddress";
 import { AttentionStrip } from "./AttentionStrip";
@@ -20,7 +20,7 @@ import { TimelineCard } from "./TimelineCard";
  * Policy details; the timeline (7) beside the no-claim bonus (5, or the timeline alone with no motor policy); What cover costs.
  * One pick drives the page, kept in the address as `?policy=` (usePickInAddress); Premiums paid and Policy details follow it.
  */
-export function InsuranceDashboard({ cover, widgets, attention, initialPick }: { cover: CoverView; widgets: InsuranceWidgets; attention: AttentionItem[]; initialPick: string }) {
+export function InsuranceDashboard({ cover, widgets, attention, initialPick, demo }: { cover: CoverView; widgets: InsuranceWidgets; attention: AttentionItem[]; initialPick: string; demo: string | null }) {
   const [pickId, choose] = usePickInAddress("policy", initialPick, cover.picks, (id) => id === ALL);
   const picked = pickId === ALL ? null : (widgets.table.rows.find((r) => r.id === pickId) ?? null);
   const row = "grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-12";
@@ -39,7 +39,7 @@ export function InsuranceDashboard({ cover, widgets, attention, initialPick }: {
       <PoliciesTableCard table={widgets.table} pickId={pickId} onPick={choose} />
       <div className={row}>
         <div className="xl:col-span-6">
-          <PaymentsCard view={widgets.payments[pickId] ?? widgets.payments[ALL]} pickName={picked?.name ?? ""} picked={picked !== null} />
+          <PaymentsCard view={widgets.payments[pickId] ?? widgets.payments[ALL]} pickName={picked?.name ?? ""} picked={picked !== null} allHref={insuranceHref("/insurance/payments", { demo, policy: pickId })} />
         </div>
         <div className="xl:col-span-6">
           <DetailsCard view={widgets.details[pickId] ?? widgets.details[ALL]} />

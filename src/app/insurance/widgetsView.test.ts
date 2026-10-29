@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { demoInsuranceData } from "@/lib/demo/insuranceDemo";
+import { demoInsuranceData, type DemoVariant } from "@/lib/demo/insuranceDemo";
 import type { Policy, PolicyPayment } from "@/lib/sheets/types";
 import { ALL, pickIds, type InsuranceData } from "./views";
-import { comingUpView, costView, detailsView, insuranceWidgets, ncbView, paymentsView, runwayView, tableView, timelineView } from "./widgetsView";
+import { paymentsPageView, comingUpView, costView, detailsView, insuranceWidgets, ncbView, paymentsView, runwayView, tableView, timelineView } from "./widgetsView";
 
 const TODAY = "2026-10-29";
-const demo = (variant: "" | "soon" | "lapsed" | "empty" = "") => demoInsuranceData(TODAY, variant);
+const demo = (variant: DemoVariant = "") => demoInsuranceData(TODAY, variant);
 
 describe("the premium runway", () => {
   it("shows a premium paid once for three years as one tall bar, and a renewal still to come as dashed", () => {
@@ -195,6 +195,33 @@ describe("coming up with many policies", () => {
     expect(rows).toHaveLength(8);
     expect(rows.filter((r) => !r.soon)).toHaveLength(8 - rows.filter((r) => r.soon).length);
     expect(rows.map((r) => r.policyId)).toEqual(policies.map((p) => p.id));
+  });
+});
+
+describe("the payments page", () => {
+  it("has a section for each policy with every term, and says what was paid in all and this year", () => {
+    const view = paymentsPageView(demo(), TODAY);
+    expect(view.sections.map((s) => s.id)).toEqual(["demo-health", "demo-accident", "demo-car", "demo-bike"]);
+    expect(view.sections.every((s) => s.open)).toBe(true);
+    expect(view.sections[0].summary).toBe("1 payment · ₹38,428 paid in all · 3 years of cover");
+    expect(view.sections[0].rows[0]).toMatchObject({ amount: "₹38,428", from: "HDFC Salary" });
+    expect(view.sentence).toContain("4 premiums paid, ₹49,624 in all. ₹49,624 left in 2026");
+    expect(view.sentence).toContain("dated by the day cover began");
+  });
+
+  it("shows one policy, open, when one is picked, and nothing with no policies", () => {
+    const one = paymentsPageView(demo(), TODAY, "demo-car");
+    expect(one.sections).toHaveLength(1);
+    expect(one.sections[0].open).toBe(true);
+    expect(one.sections[0].rows[0].ncb).toBe("50%");
+    expect(paymentsPageView(demo("empty"), TODAY)).toEqual({ sections: [], sentence: "No premium is recorded yet." });
+  });
+
+  it("lists a renewed policy's terms newest first, each against the one before", () => {
+    const rows = paymentsPageView(demo("renewed"), TODAY, "demo-accident").sections[0].rows;
+    expect(rows).toHaveLength(2);
+    expect(rows[0].change.text).toBe("+4.9%");
+    expect(rows[1].change.text).toBe("first");
   });
 });
 
