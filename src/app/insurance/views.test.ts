@@ -29,12 +29,12 @@ describe("the greeting", () => {
   });
 
   it("leaves a figure with nothing behind it plain: no cards without cover in force, no 'paid' card before anything is paid", () => {
-    const lapsedOnly: InsuranceData = { policies: [policy({ id: "p" })], payments: [term({ id: "t", policyId: "p", periodStart: "2024-01-01" })], loans: [] };
+    const lapsedOnly: InsuranceData = { policies: [policy({ id: "p" })], payments: [term({ id: "t", policyId: "p", periodStart: "2024-01-01" })], loans: [], accounts: [], cards: [] };
     expect(greetingView(lapsedOnly, TODAY)).toEqual({});
     expect(points(summarySentence(lapsedOnly, TODAY))).toEqual([]);
     expect(sentenceText(summarySentence(lapsedOnly, TODAY))).toContain("Nothing is in force right now. The health cover lapsed");
 
-    const unpaid: InsuranceData = { policies: [policy({ id: "p" })], payments: [term({ id: "t", policyId: "p", periodStart: "2025-12-01", paidOn: "2025-11-20" })], loans: [] };
+    const unpaid: InsuranceData = { policies: [policy({ id: "p" })], payments: [term({ id: "t", policyId: "p", periodStart: "2025-12-01", paidOn: "2025-11-20" })], loans: [], accounts: [], cards: [] };
     expect(Object.keys(greetingView(unpaid, TODAY))).not.toContain("paid");
     expect(points(summarySentence(unpaid, TODAY))).not.toContain("paid");
   });
@@ -63,6 +63,8 @@ describe("review fixes", () => {
     policies: [policy({ id: "a", kind: "Motor", covers: "Car" }), policy({ id: "b", kind: "Health", covers: "you" }), policy({ id: "c", kind: "Accident", covers: "You " })],
     payments: [term({ id: "ta", policyId: "a", periodStart: "2025-10-20" }), term({ id: "tb", policyId: "b", periodStart: "2025-09-19" }), term({ id: "tc", policyId: "c", periodStart: "2026-03-21" })],
     loans: [{ id: "l", name: "SBI Home Loan", lenderName: "SBI", category: "Home", status: "Active" }],
+    accounts: [],
+    cards: [],
   };
 
   it("gives each lapsed policy its own days, and writes a loan's name as it is", () => {
@@ -76,7 +78,7 @@ describe("review fixes", () => {
   });
 
   it("describes a term that hasn't started as starting, not as days left", () => {
-    const later: InsuranceData = { policies: [policy({ id: "p" })], payments: [term({ id: "t", policyId: "p", periodStart: "2026-11-15" })], loans: [] };
+    const later: InsuranceData = { policies: [policy({ id: "p" })], payments: [term({ id: "t", policyId: "p", periodStart: "2026-11-15" })], loans: [], accounts: [], cards: [] };
     const [box] = coverView(later, TODAY).tiles[0].boxes;
     expect(box.footLeft).toBe("Starts Nov 15");
     expect(box.tip.total).toBe("Starts Nov 15");
@@ -108,7 +110,7 @@ describe("the attention strip", () => {
     const data: InsuranceData = {
       policies: [policy({ id: "p", kind: "Motor", covers: "Car" })],
       payments: [term({ id: "t1", policyId: "p", periodStart: "2025-09-01" }), term({ id: "t2", policyId: "p", periodStart: "2026-11-15" })],
-      loans: [],
+      loans: [], accounts: [], cards: [],
     };
     const [item] = attentionView(data, TODAY);
     expect(item.tone).toBe("lapsed");

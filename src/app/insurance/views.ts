@@ -21,6 +21,9 @@ export interface InsuranceData {
   payments: PolicyPayment[];
   /** Only what the gap check reads: an Auto or Home loan with nothing against it. */
   loans: Pick<Loan, "id" | "name" | "lenderName" | "category" | "status">[];
+  /** Names only, for where a premium was paid from. */
+  accounts: { id: string; name: string }[];
+  cards: { id: string; name: string }[];
 }
 
 const viewsOf = new WeakMap<InsuranceData, Map<string, PolicyView[]>>();
@@ -46,13 +49,13 @@ export const policyColor = (policy: Pick<Policy, "color" | "kind">): ColorKey =>
 
 /** What a policy is called in a sentence: "the health cover", or for a vehicle what it covers ("the car cover"). */
 export const coverName = (policy: Pick<Policy, "kind" | "covers">) => `${policy.kind === "Motor" ? policy.covers.toLowerCase() : policy.kind.toLowerCase()} cover`;
-const coverWord = (policy: Pick<Policy, "kind">) => (policy.kind === "Motor" ? "IDV" : policy.kind === "Life" ? "Sum assured" : "Sum insured");
-const paidText = (payment: Pick<PolicyPayment, "amount" | "years">) => (payment.years > 1 ? `${formatInr(payment.amount)} once, for ${payment.years} years` : `${formatInr(payment.amount)} for the year`);
-const inDays = (n: number) => (n === 0 ? "today" : n === 1 ? "tomorrow" : n > 0 ? `in ${n} days` : n === -1 ? "yesterday" : `${-n} days ago`);
+export const coverWord = (policy: Pick<Policy, "kind">) => (policy.kind === "Motor" ? "IDV" : policy.kind === "Life" ? "Sum assured" : "Sum insured");
+export const paidText = (payment: Pick<PolicyPayment, "amount" | "years">) => (payment.years > 1 ? `${formatInr(payment.amount)} once, for ${payment.years} years` : `${formatInr(payment.amount)} for the year`);
+export const inDays = (n: number) => (n === 0 ? "today" : n === 1 ? "tomorrow" : n > 0 ? `in ${n} days` : n === -1 ? "yesterday" : `${-n} days ago`);
 /** A day without its year when it falls in this one. */
-const dayIn = (today: string, date: string) => (date.slice(0, 4) === today.slice(0, 4) ? formatShortDate(date) : formatDate(date));
+export const dayIn = (today: string, date: string) => (date.slice(0, 4) === today.slice(0, 4) ? formatShortDate(date) : formatDate(date));
 /** Days since a lapsed policy lapsed: cover ended the day before its term's renewal date, and the lapse is counted from that date. */
-const lapsedAgo = (view: PolicyView, today: string) => (view.current ? daysBetween(view.current.renewsOn, today) : 0);
+export const lapsedAgo = (view: PolicyView, today: string) => (view.current ? daysBetween(view.current.renewsOn, today) : 0);
 
 // ---------- The greeting ----------
 
@@ -317,11 +320,12 @@ function boxOf(view: PolicyView, today: string): PolicyBox {
   };
 }
 
-const tileIcon = (covers: string, first: Policy): TileIcon => {
-  const key = covers.toLowerCase();
+/** A thing's icon: by what it covers ("You", "Car"), else by the kind of its policy. */
+export const tileIcon = (covers: string, kind: PolicyKind): TileIcon => {
+  const key = covers.trim().toLowerCase();
   if (key === YOU) return "user";
   if (key === "car" || key === "bike" || key === "home") return key;
-  return first.kind === "Health" ? "heart" : first.kind === "Motor" ? "car" : first.kind === "Home" ? "home" : "shield";
+  return kind === "Health" ? "heart" : kind === "Motor" ? "car" : kind === "Home" ? "home" : "shield";
 };
 
 export function coverView(data: InsuranceData, today: string): CoverView {
@@ -342,7 +346,7 @@ export function coverView(data: InsuranceData, today: string): CoverView {
       key,
       name: covers,
       sub: group.find((v) => v.policy.coversDetail)?.policy.coversDetail ?? (key === YOU ? "Self" : plural(group.length, "policy", "policies")),
-      icon: tileIcon(covers, group[0].policy),
+      icon: tileIcon(covers, group[0].policy.kind),
       yearly: group.filter(isLive).length > 1 ? formatInr(heldYearly) : null,
       boxes: group.map((v) => boxOf(v, today)),
     };
@@ -386,4 +390,14 @@ export function coverView(data: InsuranceData, today: string): CoverView {
 /** The picks: all policies, then each policy (any state: a lapsed one is worth opening). */
 export function pickIds(data: InsuranceData): string[] {
   return [ALL, ...data.policies.map((p) => p.id)];
+}
+
+/** Where a premium was paid from, by name; undefined when it isn't recorded. */
+export function paidFromName(data: Pick<InsuranceData, "accounts" | "cards">, place: { paidFromAccountId?: string; paidFromCardId?: string }): string | undefined {
+  if (place.paidFromCardId) {
+    const card = data.cards.find((c) => c.id === place.paidFromCardId);
+    return card ? `${card.name} (card)` : "A card";
+  }
+  if (place.paidFromAccountId) return data.accounts.find((a) => a.id === place.paidFromAccountId)?.name ?? "An account";
+  return undefined;
 }

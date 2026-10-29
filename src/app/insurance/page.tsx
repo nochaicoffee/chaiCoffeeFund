@@ -8,6 +8,7 @@ import { appConfig } from "@/lib/appConfig";
 import { greetingFor, todayIso } from "@/lib/format/date";
 import { loadInsuranceData } from "./loadInsuranceData";
 import { ALL, attentionView, coverView, greetingView, pickIds, summarySentence } from "./views";
+import { insuranceWidgets } from "./widgetsView";
 
 export const metadata: Metadata = { title: "Insurance" };
 
@@ -32,7 +33,7 @@ export default async function InsurancePage({ searchParams }: PageProps<"/insura
         <SkippedRowsNotice tabs={skipped} />
       </PageHeader>
       {data.policies.length > 0 ? (
-        <InsuranceDashboard cover={coverView(data, today)} attention={attentionView(data, today)} initialPick={initialPick} />
+        <InsuranceDashboard cover={coverView(data, today)} widgets={insuranceWidgets(data, today, ids)} attention={attentionView(data, today)} initialPick={initialPick} />
       ) : (
         <section className="rounded-[26px] border border-dashed border-divider bg-surface px-6 py-14 text-center">
           <p className="text-base font-extrabold">No policies yet</p>
