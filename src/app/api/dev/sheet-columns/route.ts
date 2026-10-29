@@ -12,6 +12,8 @@ import { INCOME_SOURCE_COLUMNS, incomeSourceRowSchema } from "@/lib/sheets/incom
 import { LOAN_COLUMNS, loanRowSchema } from "@/lib/sheets/loans";
 import { LOAN_INSTALLMENT_COLUMNS, loanInstallmentRowSchema } from "@/lib/sheets/loanInstallments";
 import { LOAN_PREPAYMENT_COLUMNS, loanPrepaymentRowSchema } from "@/lib/sheets/loanPrepayments";
+import { POLICY_COLUMNS, policyRowSchema } from "@/lib/sheets/policies";
+import { POLICY_PAYMENT_COLUMNS, policyPaymentRowSchema } from "@/lib/sheets/policyPayments";
 import { SYNC_RUN_COLUMNS, syncRunRowSchema } from "@/lib/sheets/syncRuns";
 import { SUBSCRIPTION_PAYMENT_COLUMNS, subscriptionPaymentRowSchema } from "@/lib/sheets/subscriptionPayments";
 import { SUBSCRIPTION_COLUMNS, subscriptionRowSchema } from "@/lib/sheets/subscriptions";
@@ -32,10 +34,12 @@ const TABS = {
   Loans: () => columnSpecs(LOAN_COLUMNS as string[], loanRowSchema),
   LoanInstallments: () => columnSpecs(LOAN_INSTALLMENT_COLUMNS as string[], loanInstallmentRowSchema),
   LoanPrepayments: () => columnSpecs(LOAN_PREPAYMENT_COLUMNS as string[], loanPrepaymentRowSchema),
+  Policies: () => columnSpecs(POLICY_COLUMNS as string[], policyRowSchema),
+  PolicyPayments: () => columnSpecs(POLICY_PAYMENT_COLUMNS as string[], policyPaymentRowSchema),
 };
 
 /** Tabs the code needs that may not exist yet: the route creates them, with their Table, when they're missing. Existing tabs are never created over. */
-const CREATABLE = new Set(["AccountStatementEmails", "BalanceReviews", "LoanPrepayments"]);
+const CREATABLE = new Set(["AccountStatementEmails", "BalanceReviews", "LoanPrepayments", "Policies", "PolicyPayments"]);
 
 type Plan =
   | { error: string }
