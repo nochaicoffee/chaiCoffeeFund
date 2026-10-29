@@ -77,10 +77,11 @@ Built in `lib/aggregate/insurance.ts` (#210) as pure functions with tests that p
 
 ## The page (built in #212)
 
-- **`/insurance`** after Loans in the sidebar. `loadInsuranceData` reads the Policies, PolicyPayments and Loans tabs in parallel (the loans only for the "financed thing with no policy" check); `?demo` shows sample data in development, `?demo=soon`, `?demo=lapsed` and `?demo=empty` the other states, and nothing from a demo is read from or written to the Sheet.
+- **`/insurance`** after Loans in the sidebar. `loadInsuranceData` reads the Policies, PolicyPayments and Loans tabs in parallel (the loans only for the "financed thing with no policy" check); `?demo` shows sample data in development, `?demo=soon`, `lapsed`, `lapsed-accident`, `renewed`, `cancelled` and `empty` the other states (InsStates), and nothing from a demo is read from or written to the Sheet.
 - **The greeting** is a `SentencePart[]` built in `app/insurance/views.ts` with a `greetingView` keyed by the same points (`policies`, a kind's cover, `vehicles`, `year`, `paid`, `next`, `gap`); a test checks that every figure has a card and every card a figure. With nothing in force there are no figures and the sentence is plain.
 - **The attention strip**: a policy that has lapsed (red, first), then each renewing within 30 days (amber). Its button, See policy, picks the policy; Renew joins it in #214 with the forms.
 - **The cover map** groups policies by their `covers` text (You first, then in Sheet order), one tile per thing, a box per policy with its cover (sum insured, or IDV), a term bar with its own hover card, days left, and what it cost. A loan with nothing insuring it gets a dashed tile. The pick is `?policy=` (default all); the widgets under the map follow it as #213 adds them.
+- **The states** (#215): the empty page offers four kinds to start from; a lapsed accident cover's strip says what it leaves bare when a live motor policy's notes say it leaves owner-driver cover out (`LEAVES_OWNER_DRIVER_OUT`), so write that in the motor policy's notes; a loan with no policy offers Add policy starting as a Home (or Motor) policy.
 - **Lapsed is counted from the renewal date**, as decided: "lapsed 9 days ago" is nine days since the day the term would have renewed.
 - **Privacy**: the page works from the views alone, which carry no policy number; a test sends a number through every view and looks for it.
 

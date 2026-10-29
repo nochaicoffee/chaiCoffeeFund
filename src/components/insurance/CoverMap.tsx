@@ -73,7 +73,7 @@ export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: 
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:[grid-template-columns:repeat(var(--cols),minmax(0,1fr))]" style={{ "--cols": columns } as CSSProperties}>
         {cover.tiles.map((tile) => (
-          <Tile key={tile.key} tile={tile} pickId={pickId} onPick={onPick} onAdd={() => open({ kind: "add" })} />
+          <Tile key={tile.key} tile={tile} pickId={pickId} onPick={onPick} onAdd={() => open({ kind: "add", start: tile.gap?.start })} />
         ))}
         <div className="flex min-w-0 flex-col gap-3.5 rounded-[22px] border-[1.5px] border-dashed border-fg/20 p-[18px]">
           <div className="flex items-center gap-3">
