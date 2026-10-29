@@ -23,21 +23,23 @@ const POLICIES: Policy[] = [
 ];
 
 export function demoInsuranceData(today: string, variant: DemoVariant = ""): InsuranceData {
-  if (variant === "empty") return { policies: [], payments: [], loans: [] };
+  if (variant === "empty") return { policies: [], payments: [], loans: [], accounts: [], cards: [] };
   // A term of `years` that ends the day before it renews in `days` days.
   const startFor = (years: number, renewsInDays: number) => addMonthsUTC(addDays(today, renewsInDays), -12 * years);
   const pay = (policyId: string, years: number, renewsInDays: number, amount: number, extra: Partial<PolicyPayment> = {}): PolicyPayment => ({ id: `${policyId}-t1`, policyId, periodStart: startFor(years, renewsInDays), years, amount, status: "Paid", ...extra });
   const accidentIn = variant === "soon" ? 12 : 143;
   const carIn = variant === "lapsed" ? -9 : 282;
   const payments = [
-    pay("demo-health", 3, 1050, 38427.59, { paidOn: startFor(3, 1050) }),
+    pay("demo-health", 3, 1050, 38427.59, { paidOn: startFor(3, 1050), paidFromAccountId: "demo-hdfc" }),
     pay("demo-accident", 1, accidentIn, 451, { paidOn: addDays(startFor(1, accidentIn), -3) }),
     pay("demo-car", 1, carIn, 5504, { ncb: 50 }),
-    pay("demo-bike", 3, 870, 5241, { paidOn: addDays(startFor(3, 870), -3), ncb: 0 }),
+    pay("demo-bike", 3, 870, 5241, { paidOn: addDays(startFor(3, 870), -3), ncb: 0, paidFromCardId: "demo-regalia" }),
   ];
   return {
     policies: POLICIES,
     payments,
     loans: [{ id: "demo-home-loan", name: "Home loan", lenderName: "SBI", category: "Home", status: "Active" }],
+    accounts: [{ id: "demo-hdfc", name: "HDFC Salary" }],
+    cards: [{ id: "demo-regalia", name: "HDFC Regalia" }],
   };
 }

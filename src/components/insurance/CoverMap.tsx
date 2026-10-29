@@ -1,9 +1,10 @@
 "use client";
 
 import type { CSSProperties } from "react";
-import { ALL, type CoverTile, type CoverView, type PolicyBox, type TileIcon } from "@/app/insurance/views";
+import { ALL, type CoverTile, type CoverView, type PolicyBox } from "@/app/insurance/views";
 import { Tip, TipBody } from "../shell/Tip";
 import { RingTexture } from "../RingTexture";
+import { TileMark, WARN_BAR } from "./parts";
 
 /**
  * The Insurance page's hero, the cover map (docs/design/insurance.md, InsFinal; Prathik's pick I2): a light card whose top says how
@@ -12,28 +13,6 @@ import { RingTexture } from "../RingTexture";
  * address as `?policy=` by the dashboard. Each term bar has its own hover card. A financed thing with no policy gets a dashed tile.
  */
 
-const ICONS: Record<TileIcon, string[]> = {
-  user: ["M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z", "M4 21a8 8 0 0 1 16 0"],
-  car: ["M5 17h14", "M3 17v-4l2-5h14l2 5v4", "M7 17v2M17 17v2", "M7 13h.01M17 13h.01"],
-  bike: ["M6 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6z", "M18 18a3 3 0 1 0 0-6 3 3 0 0 0 0 6z", "M6 15l4-7h5l3 7", "M10 8H8"],
-  home: ["M3 11l9-7 9 7", "M5 10v10h14V10", "M10 20v-5h4v5"],
-  shield: ["M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6l8-3z"],
-  heart: ["M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"],
-};
-
-function TileMark({ icon, size = 40 }: { icon: TileIcon; size?: number }) {
-  return (
-    <span aria-hidden="true" className="flex shrink-0 items-center justify-center bg-ink text-on-ink" style={{ width: size, height: size, borderRadius: Math.round(size * 0.3) }}>
-      <svg width={Math.round(size * 0.5)} height={Math.round(size * 0.5)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        {ICONS[icon].map((d) => (
-          <path key={d} d={d} />
-        ))}
-      </svg>
-    </span>
-  );
-}
-
-const WARN_BAR = "repeating-linear-gradient(135deg, oklch(0.72 0.14 75) 0 5px, oklch(0.8 0.12 78) 5px 10px)";
 
 const BADGE: Record<NonNullable<PolicyBox["badge"]>, { text: string; className: string }> = {
   lapsed: { text: "lapsed", className: "bg-negative-tint text-negative" },
