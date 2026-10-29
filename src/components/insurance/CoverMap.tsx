@@ -4,6 +4,7 @@ import type { CSSProperties } from "react";
 import { ALL, type CoverTile, type CoverView, type PolicyBox } from "@/app/insurance/views";
 import { Tip, TipBody } from "../shell/Tip";
 import { RingTexture } from "../RingTexture";
+import { FormTrigger, SMALL_SOFT, useInsuranceForms } from "./forms/InsuranceForms";
 import { TileMark, WARN_BAR } from "./parts";
 
 /**
@@ -31,6 +32,7 @@ const columnsFor = (tiles: CoverTile[]) => {
 
 export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: string; onPick: (id: string) => void }) {
   const columns = columnsFor(cover.tiles);
+  const { open } = useInsuranceForms();
   return (
     <section id="cover-map" aria-label="Your cover" className="relative isolate flex min-w-0 scroll-mt-6 flex-col gap-5 rounded-[26px] border border-feature-tile-line bg-feature-tile p-5 text-fg md:p-7">
       <RingTexture width={1416} height={640} dx={60} dy={60} first={60} step={30} stroke="var(--rings-ink)" opacity={0.09} />
@@ -71,7 +73,7 @@ export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: 
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:[grid-template-columns:repeat(var(--cols),minmax(0,1fr))]" style={{ "--cols": columns } as CSSProperties}>
         {cover.tiles.map((tile) => (
-          <Tile key={tile.key} tile={tile} pickId={pickId} onPick={onPick} />
+          <Tile key={tile.key} tile={tile} pickId={pickId} onPick={onPick} onAdd={() => open({ kind: "add" })} />
         ))}
         <div className="flex min-w-0 flex-col gap-3.5 rounded-[22px] border-[1.5px] border-dashed border-fg/20 p-[18px]">
           <div className="flex items-center gap-3">
@@ -88,6 +90,7 @@ export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: 
           <div className="flex flex-1 flex-col justify-center gap-1.5 rounded-2xl bg-surface/50 p-3.5">
             <b className="text-sm font-extrabold">Nothing else yet</b>
             <p className="text-xs leading-normal font-semibold text-muted">Parents&apos; health, a term plan, the home.</p>
+            <FormTrigger className={`${SMALL_SOFT} w-fit`} label="+ Add policy" onClick={() => open({ kind: "add" })} />
           </div>
         </div>
       </div>
@@ -109,7 +112,7 @@ export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: 
   );
 }
 
-function Tile({ tile, pickId, onPick }: { tile: CoverTile; pickId: string; onPick: (id: string) => void }) {
+function Tile({ tile, pickId, onPick, onAdd }: { tile: CoverTile; pickId: string; onPick: (id: string) => void; onAdd: () => void }) {
   const wide = tile.boxes.length > 1;
   return (
     <div className={`flex min-w-0 flex-col gap-3.5 rounded-[22px] p-[18px] ${tile.gap ? "border-[1.5px] border-dashed border-fg/20" : "border border-surface-line bg-surface/60 shadow-soft"} ${wide ? "sm:col-span-2" : ""}`}>
@@ -130,6 +133,7 @@ function Tile({ tile, pickId, onPick }: { tile: CoverTile; pickId: string; onPic
         <div className="flex flex-1 flex-col justify-center gap-1.5 rounded-2xl bg-surface/50 p-3.5">
           <b className="text-sm font-extrabold">{tile.gap.title}</b>
           <p className="text-xs leading-normal font-semibold text-muted">{tile.gap.text}</p>
+          <FormTrigger className={`${SMALL_SOFT} w-fit`} label="+ Add a policy" onClick={onAdd} />
         </div>
       ) : (
         <div className={`grid flex-1 grid-cols-1 gap-2.5 ${wide ? "sm:grid-cols-2" : ""}`}>

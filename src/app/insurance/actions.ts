@@ -3,7 +3,7 @@
 import { updateTag } from "next/cache";
 import type { FormState } from "@/lib/forms/formState";
 import { policyEditPatch, readCancelForm, readPolicyForm, readRenewForm } from "@/lib/forms/insuranceForms";
-import { addPolicy, cancelPolicy, deletePolicy, parseRenewalUndo, renewPolicy, renewalUndoToken, restartPolicy, undoRenewal, type InsuranceRepos } from "@/lib/insurance/policyWrites";
+import { addPolicy, cancelPolicy, deletePolicy, editableFields, parsePolicyUndo, parseRenewalUndo, policyUndoToken, renewPolicy, renewalUndoToken, restartPolicy, undoRenewal, type InsuranceRepos } from "@/lib/insurance/policyWrites";
 import { CACHE_TAGS, getCachedAccounts, getCachedCards } from "@/lib/sheets/cached";
 import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
 import { policiesRepository, updatePolicySchema } from "@/lib/sheets/policies";
@@ -72,12 +72,13 @@ export async function savePolicy(_previous: FormState, formData: FormData): Prom
     if (existing) {
       await policiesRepository.update(existing.id, updatePolicySchema.parse(policyEditPatch(policy)) as Partial<Omit<Policy, "id">>);
     } else {
-      await addPolicy(repos, { ...policy, status: "Active" }, term!);
+      const added = await addPolicy(repos, { ...policy, status: "Active" }, term!);
+      return refreshed({ id: policyUndoToken({ undo: "add", policyId: added.policy.id }), message: `${added.policy.name} added` });
     }
   } catch (error) {
     return written("savePolicy", error);
   }
-  return refreshed();
+  return refreshed(existing ? { id: policyUndoToken({ undo: "edit", policyId: existing.id, previous: editableFields(existing) }), message: `${policy.name} saved` } : undefined);
 }
 
 /** Renew: the next term, with Undo for the toast (it takes the term out and puts back the cover it changed). */
@@ -120,11 +121,13 @@ export async function cancelPolicyForm(_previous: FormState, formData: FormData)
   const result = readCancelForm(fields(formData));
   if (!result.ok) return { status: "invalid", errors: result.errors };
   try {
+    const policy = await policiesRepository.get(result.input.policyId);
+    if (!policy) return GONE;
     await cancelPolicy(repos, result.input.policyId, result.input);
+    return refreshed({ id: policyUndoToken({ undo: "cancel", policyId: policy.id }), message: `${policy.name} cancelled` });
   } catch (error) {
     return written("cancelPolicyForm", error);
   }
-  return refreshed();
 }
 
 /** Restart a cancelled policy. */
@@ -132,11 +135,13 @@ export async function restartPolicyAction(_previous: FormState, formData: FormDa
   const policyId = String(formData.get("policyId") ?? "");
   if (!policyId) return GONE;
   try {
+    const policy = await policiesRepository.get(policyId);
+    if (!policy) return GONE;
     await restartPolicy(repos, policyId);
+    return refreshed({ id: policyUndoToken({ undo: "restart", policyId, ...(policy.endedOn && { endedOn: policy.endedOn }) }), message: `${policy.name} restarted` });
   } catch (error) {
     return written("restartPolicyAction", error);
   }
-  return refreshed();
 }
 
 /** Delete policy (for a mistake: a cancelled one stays on record): its payments first, then it. */
@@ -149,4 +154,25 @@ export async function deletePolicyAction(_previous: FormState, formData: FormDat
     return failed("deletePolicyAction", error);
   }
   return refreshed();
+}
+
+/**
+ * Undo from a toast, for whatever it was offered on: a renewal, an added policy, a cancel, a restart or an edit. The token comes from
+ * the browser, so it's parsed and refused when it isn't one of these. An edit puts its fields back through the same schema as any
+ * update; it leaves a policy number that was changed, since the old one was never sent.
+ */
+export async function undoAction(token: string): Promise<{ ok: boolean; message: string }> {
+  const change = parsePolicyUndo(token);
+  if (!change) return undoRenewalAction(token);
+  try {
+    if (change.undo === "add") await deletePolicy(repos, change.policyId);
+    else if (change.undo === "cancel") await restartPolicy(repos, change.policyId);
+    else if (change.undo === "restart") await cancelPolicy(repos, change.policyId, { endedOn: change.endedOn });
+    else await policiesRepository.update(change.policyId, updatePolicySchema.parse(change.previous) as Partial<Omit<Policy, "id">>);
+  } catch (error) {
+    console.error("[insurance] undo failed:", error instanceof Error ? error.message : String(error));
+    return { ok: false, message: "Couldn't undo that. Change it from the policy's details." };
+  }
+  refreshed();
+  return { ok: true, message: { add: "Policy removed", cancel: "Policy restarted", restart: "Policy cancelled again", edit: "Edit undone" }[change.undo] };
 }

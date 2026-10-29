@@ -40,6 +40,6 @@ export function demoInsuranceData(today: string, variant: DemoVariant = ""): Ins
     payments,
     loans: [{ id: "demo-home-loan", name: "Home loan", lenderName: "SBI", category: "Home", status: "Active" }],
     accounts: [{ id: "demo-hdfc", name: "HDFC Salary" }],
-    cards: [{ id: "demo-regalia", name: "HDFC Regalia" }],
+    cards: [{ id: "demo-regalia", name: "HDFC Regalia", color: "ruby" }],
   };
 }

@@ -89,5 +89,5 @@ export function ShareBar({ share, colorKey, className = "h-2", style }: { share:
 
 export const SMALL_PRIMARY = "inline-flex min-h-9 items-center gap-1.5 rounded-full bg-ink px-4 text-xs font-extrabold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 export const SMALL_SOFT = "inline-flex min-h-9 items-center gap-1.5 rounded-full bg-fill px-4 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent";
-export const SMALL_OK = "inline-flex min-h-8 items-center gap-1.5 rounded-full bg-accent-tint px-3.5 text-xs font-extrabold text-accent-text hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-accent";
+export { SMALL_OK } from "../shell/FormTriggerButton";
 export const LINK = "inline-flex items-center gap-1 text-[13px] font-extrabold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent";

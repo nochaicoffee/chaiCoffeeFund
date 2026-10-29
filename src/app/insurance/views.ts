@@ -23,7 +23,7 @@ export interface InsuranceData {
   loans: Pick<Loan, "id" | "name" | "lenderName" | "category" | "status">[];
   /** Names only, for where a premium was paid from. */
   accounts: { id: string; name: string }[];
-  cards: { id: string; name: string }[];
+  cards: { id: string; name: string; color: ColorKey }[];
 }
 
 const viewsOf = new WeakMap<InsuranceData, Map<string, PolicyView[]>>();

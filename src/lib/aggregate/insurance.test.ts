@@ -6,6 +6,7 @@ import {
   cashPaidIn,
   coverByKind,
   coverGaps,
+  gapDays,
   monthlyCover,
   nextNcb,
   nextRenewal,
@@ -13,10 +14,12 @@ import {
   premiumOverCover,
   premiumRunway,
   priceChanges,
+  quoteChange,
   renewalDefaults,
   renewalsToComeIn,
   renewingWithin,
   termOf,
+  termPreview,
   uninsuredLoans,
   upcomingRenewals,
   viewPolicies,
@@ -451,5 +454,24 @@ describe("renewalDefaults", () => {
 
   it("has nothing to renew from when there is no term", () => {
     expect(renewalDefaults(viewPolicy(policy("p", "Home", 1), [], TODAY), TODAY)).toBeNull();
+  });
+});
+
+describe("what the forms preview", () => {
+  it("counts the days with no cover when a term starts after the last one's renewal date, and none when it's on time or early", () => {
+    expect(gapDays("2026-10-20", "2026-10-29")).toBe(9);
+    expect(gapDays("2026-10-20", "2026-10-20")).toBe(0);
+    expect(gapDays("2026-10-20", "2026-10-01")).toBe(0);
+  });
+
+  it("compares a quote's cost of a year with the last term's, so one premium for three years isn't three times dearer", () => {
+    expect(quoteChange({ amount: 9900, years: 3 }, { amount: 9000, years: 3 })).toBeCloseTo(0.1, 6);
+    expect(quoteChange({ amount: 3300, years: 1 }, { amount: 9000, years: 3 })).toBeCloseTo(0.1, 6);
+    expect(quoteChange({ amount: 5000, years: 1 }, null)).toBeNull();
+  });
+
+  it("works out a term's last day, a year of it, and a year over the cover", () => {
+    expect(termPreview({ start: "2026-08-05", years: 3, amount: 9000, cover: 500000 })).toEqual({ end: "2029-08-04", perYear: 3000, ratio: 0.006 });
+    expect(termPreview({ start: "2026-08-06", years: 1, amount: 5504, cover: 0 })).toMatchObject({ end: "2027-08-05", ratio: null });
   });
 });

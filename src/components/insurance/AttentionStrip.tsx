@@ -1,12 +1,14 @@
 "use client";
 
 import type { AttentionItem } from "@/app/insurance/views";
+import { FormTrigger, SMALL_OK, useInsuranceForms } from "./forms/InsuranceForms";
 
 /**
  * The strip under the Insurance greeting while a policy has lapsed (red) or renews within a month (amber), one line each,
  * lapsed first (docs/design/insurance.md). See policy picks the policy and brings the cover map into view.
  */
 export function AttentionStrip({ items, onSee }: { items: AttentionItem[]; onSee: (policyId: string) => void }) {
+  const { open } = useInsuranceForms();
   if (items.length === 0) return null;
   const lapsed = items.some((item) => item.tone === "lapsed");
   return (
@@ -23,6 +25,7 @@ export function AttentionStrip({ items, onSee }: { items: AttentionItem[]; onSee
               <b className="font-extrabold">{item.name}</b> {item.text}
             </span>
           </p>
+          <FormTrigger className={SMALL_OK} label="↻ Renew" onClick={() => open({ kind: "renew", policyId: item.policyId })} />
           <button
             type="button"
             onClick={() => {

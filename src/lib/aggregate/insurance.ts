@@ -299,5 +299,17 @@ export function renewalDefaults(view: PolicyView, today: string): RenewalDefault
   if (!latest || view.renewsOn === null) return null;
   const start = view.renewsOn > today ? view.renewsOn : today;
   const lastNcb = latest.payment.ncb;
-  return { start, years: latest.payment.years, lastAmount: latest.payment.amount, ...(lastNcb !== undefined && { ncb: nextNcb(lastNcb) }), gapDays: Math.max(0, daysBetween(view.renewsOn, start)) };
+  return { start, years: latest.payment.years, lastAmount: latest.payment.amount, ...(lastNcb !== undefined && { ncb: nextNcb(lastNcb) }), gapDays: gapDays(view.renewsOn, start) };
+}
+
+/** Days with no cover when a term starts on `start` after the last one's renewal date: none when it starts on time or early. */
+export const gapDays = (renewsOn: string, start: string): number => Math.max(0, daysBetween(renewsOn, start));
+
+/** How a quoted term's cost of a year compares with the last term's, as a fraction (0.1 is 10% more), or null with no last term. */
+export const quoteChange = (quote: { amount: number; years: number }, last: { amount: number; years: number } | null): number | null => (last ? percentChange(quote.amount / quote.years, last.amount / last.years) : null);
+
+/** What the Add and Renew forms preview for a term: its last day, a year of it, and a year over the cover (null with no cover figure). */
+export function termPreview(term: { start: string; years: number; amount: number; cover: number }): { end: string; perYear: number; ratio: number | null } {
+  const perYear = term.amount / term.years;
+  return { end: addDays(addMonthsUTC(term.start, 12 * term.years), -1), perYear, ratio: term.cover > 0 ? perYear / term.cover : null };
 }

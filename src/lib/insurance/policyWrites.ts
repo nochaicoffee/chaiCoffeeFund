@@ -179,3 +179,51 @@ export function parseRenewalUndo(token: string): RenewalUndo | null {
     return null;
   }
 }
+
+/**
+ * What Undo needs for the other changes a toast offers to take back, as the one string its `undo.id` carries: an added policy (delete
+ * it), a cancel (restart it), a restart (cancel it again, on the day it had been cancelled), and an edit (put its fields back, except
+ * the policy number, which the browser never has to send). Read back with `parsePolicyUndo`, which refuses anything else.
+ */
+export type PolicyUndo =
+  | { undo: "add"; policyId: string }
+  | { undo: "cancel"; policyId: string }
+  | { undo: "restart"; policyId: string; endedOn?: string }
+  | { undo: "edit"; policyId: string; previous: Record<string, string | number> };
+
+export const policyUndoToken = (undo: PolicyUndo): string => JSON.stringify(undo);
+
+export function parsePolicyUndo(token: string): PolicyUndo | null {
+  try {
+    const value = JSON.parse(token) as Partial<PolicyUndo> & { endedOn?: unknown; previous?: unknown };
+    if (typeof value.policyId !== "string" || value.policyId === "") return null;
+    if (value.undo === "add" || value.undo === "cancel") return { undo: value.undo, policyId: value.policyId };
+    if (value.undo === "restart") return { undo: "restart", policyId: value.policyId, ...(typeof value.endedOn === "string" && value.endedOn !== "" && { endedOn: value.endedOn }) };
+    if (value.undo === "edit" && value.previous && typeof value.previous === "object" && !Array.isArray(value.previous)) {
+      const entries = Object.entries(value.previous as Record<string, unknown>);
+      if (entries.every(([, v]) => typeof v === "string" || typeof v === "number")) return { undo: "edit", policyId: value.policyId, previous: Object.fromEntries(entries) as Record<string, string | number> };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/** The editable fields of a policy as they are now, for an Undo of its edit: not the policy number, and with each cleared field as blank so Undo clears it again. */
+export function editableFields(policy: Policy): Record<string, string | number> {
+  return {
+    name: policy.name,
+    kind: policy.kind,
+    insurer: policy.insurer,
+    covers: policy.covers,
+    coversDetail: policy.coversDetail ?? "",
+    sumInsured: policy.sumInsured,
+    addOns: policy.addOns ?? "",
+    claimsPhone: policy.claimsPhone ?? "",
+    documentUrl: policy.documentUrl ?? "",
+    notes: policy.notes ?? "",
+    paidFromAccountId: policy.paidFromAccountId ?? "",
+    paidFromCardId: policy.paidFromCardId ?? "",
+    ...(policy.color !== undefined && { color: policy.color }),
+  };
+}
