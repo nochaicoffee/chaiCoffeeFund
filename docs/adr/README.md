@@ -17,6 +17,7 @@ ADRs 0001–0006 were backfilled on 2026-10-16 from decisions made between 2026-
 | [0007](0007-hosted-with-login.md) | Host the app with a login so it works on a phone | Proposed |
 | [0008](0008-bank-account-statements-from-gmail.md) | Update bank account balances from emailed statements | Accepted |
 | [0009](0009-income-from-bank-statements.md) | Record income from the bank statements the sync already reads | Accepted |
+| [0010](0010-insurance-terms-with-years.md) | Record insurance as a policy plus a payment for each term, with the years a premium buys | Accepted |
 
 ## Template
 
