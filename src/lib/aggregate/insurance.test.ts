@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   RENEW_SOON_DAYS,
   byRenewal,
+  checkNewTerm,
   cashPaidIn,
   coverByKind,
   coverGaps,
@@ -12,6 +13,7 @@ import {
   premiumOverCover,
   premiumRunway,
   priceChanges,
+  renewalDefaults,
   renewalsToComeIn,
   renewingWithin,
   termOf,
@@ -398,5 +400,56 @@ describe("uninsuredLoans keeps the caller's loan", () => {
     const loan = { id: "l", name: "Home loan", lenderName: "SBI", category: "Home" as const, status: "Active" as const };
     const [gap] = uninsuredLoans([loan], at(TODAY));
     expect(gap.lenderName).toBe("SBI");
+  });
+});
+
+describe("checkNewTerm", () => {
+  const terms = paidTerms("accident", PAYMENTS);
+
+  it("accepts the renewal that starts the day the last term ends, and a late one (which leaves a gap)", () => {
+    expect(checkNewTerm(accident, terms, { periodStart: "2027-03-21", years: 1 })).toBeNull();
+    expect(checkNewTerm(accident, terms, { periodStart: "2027-03-27", years: 1 })).toBeNull();
+  });
+
+  it("refuses a term that starts the same day as one already recorded, as pressing Renew twice would", () => {
+    expect(checkNewTerm(accident, terms, { periodStart: "2026-03-21", years: 1 })).toBe("This policy already has a term that starts on Mar 21, 2026");
+  });
+
+  it("refuses a term that starts inside an earlier one, or that runs into a later one", () => {
+    expect(checkNewTerm(accident, terms, { periodStart: "2026-12-01", years: 1 })).toBe("That overlaps the term from Mar 21, 2026 to Mar 20, 2027");
+    const later = [...terms, termOf(payment("accident", "2028-03-21", 1, 460))];
+    expect(checkNewTerm(accident, later, { periodStart: "2027-03-21", years: 2 })).toContain("overlaps the term from Mar 21, 2028");
+    expect(checkNewTerm(accident, later, { periodStart: "2027-03-21", years: 1 })).toBeNull();
+  });
+
+  it("a three-year term overlaps for three years", () => {
+    const health3 = paidTerms("health", PAYMENTS);
+    expect(checkNewTerm(health, health3, { periodStart: "2028-07-05", years: 1 })).toContain("overlaps");
+    expect(checkNewTerm(health, health3, { periodStart: "2029-07-05", years: 3 })).toBeNull();
+  });
+
+  it("only a motor policy takes a no-claim step", () => {
+    expect(checkNewTerm(health, paidTerms("health", PAYMENTS), { periodStart: "2029-07-05", years: 1, ncb: 20 })).toBe("A no-claim bonus is for a motor policy");
+    expect(checkNewTerm(car, paidTerms("car", PAYMENTS), { periodStart: "2027-08-06", years: 1, ncb: 50 })).toBeNull();
+  });
+});
+
+describe("renewalDefaults", () => {
+  it("starts the next term on the renewal date, for the same years, with the next no-claim step", () => {
+    expect(renewalDefaults(view("car", TODAY), TODAY)).toEqual({ start: "2027-08-06", years: 1, lastAmount: 5_504, ncb: 50, gapDays: 0 });
+    expect(renewalDefaults(view("bike", TODAY), TODAY)).toEqual({ start: "2029-03-21", years: 3, lastAmount: 5_241, ncb: 20, gapDays: 0 });
+  });
+
+  it("a policy with no no-claim step has none to suggest", () => {
+    expect(renewalDefaults(view("health", TODAY), TODAY)).toEqual({ start: "2029-07-05", years: 3, lastAmount: 38_427.59, gapDays: 0 });
+  });
+
+  it("a lapsed policy starts today, and says how many days it was without cover", () => {
+    expect(renewalDefaults(view("accident", "2027-03-27"), "2027-03-27")).toMatchObject({ start: "2027-03-27", gapDays: 6 });
+    expect(renewalDefaults(view("accident", "2027-03-21"), "2027-03-21")).toMatchObject({ start: "2027-03-21", gapDays: 0 });
+  });
+
+  it("has nothing to renew from when there is no term", () => {
+    expect(renewalDefaults(viewPolicy(policy("p", "Home", 1), [], TODAY), TODAY)).toBeNull();
   });
 });
