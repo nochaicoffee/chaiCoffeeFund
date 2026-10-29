@@ -51,13 +51,19 @@ Like Subscriptions and its payments, and Loans and their installments: a master 
 
 ## Numbers (definitions)
 
-Each needs a yes and a test that proves the math before it's built (CLAUDE.md); all go in `lib/aggregate/insurance.ts` as pure functions.
+Built in `lib/aggregate/insurance.ts` (#210) as pure functions with tests that prove the math. Prathik answered the four open points on 2026-10-29, each with the default below.
 
-- **State** of a policy: **In force**, **Renew soon** (the renewal is within 30 days), **Lapsed** (the renewal date has passed with no payment recorded), **Cancelled**. It's worked out from the dates, never typed in. The 30 days is a placeholder.
-- **A year of cover** is each policy's last premium over the years it bought (`premium ÷ years`); **a month** is that over 12. **Paid this year** is the cash that left in the calendar year, so it can be far more than a year of cover. The page says why when they differ.
-- **Cover** is shown by kind: health and accident are separate, and a vehicle shows its IDV. It's never one grand total of unlike things. Two health policies wouldn't pool: each covers its own people.
-- **A year ÷ cover** is a policy's price against its own history, not a comparison between kinds.
-- **No-claim bonus** goes up one step (0, 20, 25, 35, 45, 50%) at renewal after a term without a claim, and back to 0 after one. The app can't see claims, so the next step is what it expects and the certificate is the truth. The car is at the top step; the bike's first comes with its renewal in 2029.
+- **A term** is a Paid payment: it buys `years` of cover from `periodStart`, and its last day is the day before the start plus its years. A Pending payment is a quote and counts for nothing.
+- **State** of a policy: **In force**, **Renew soon** (30 days or fewer to the renewal date), **Lapsed**, **Cancelled**, and two edge states, **Not started** (every term starts after today) and **No term** (a policy with no Paid term). (confirmed 2026-10-29) It's worked out from the dates, never typed in. The 30 days is `RENEW_SOON_DAYS`, a placeholder.
+- **Lapsed is on the renewal date** (decided): cover ends on the last day, so from the renewal date on, with no later term, it has lapsed, and 0 days left reads as lapsed. There is no grace period; a health policy's 30-day grace isn't shown.
+- **Renewal date and days left** use the end of the **latest recorded term** (decided), so recording an early renewal moves it at once. The term "in force" is the latest one that has started, and "gone by" is measured on it. A term recorded for a start after today's term ends leaves a gap, and the policy is lapsed in the gap (confirmed 2026-10-29). The renewal date is the latest end of any term, so a shorter term inside a longer one can't pull it in.
+- **A year of cover** is the in-force term's premium over its years (a single premium is spread evenly); **a month** is that over 12. Lapsed, cancelled, not-started and no-term policies are left out of every total.
+- **Paid this year** is the cash that left in the **calendar year** (decided), up to today: each Paid term by its paid-on day, or by its start when the day isn't known, with the amount dated by a guess reported beside it. A Paid term with no paid-on day whose cover starts later (an early renewal) was paid by today, so it's dated today (confirmed 2026-10-29); a paid-on day later than today is a scheduled one and isn't counted yet. A three-year premium is all in the year it was paid, so it can be far more than a year of cover. **Still to pay** is the renewals to come in the year at each held policy's last premium.
+- **Premiums by month** (the runway) are the Paid terms by the day the money left, then each held policy stepping on from its renewal date by its latest term's years, at that term's amount. A cancelled or lapsed policy keeps its history and has no future bars.
+- **Price change** compares each term's cost of a year with the term before it, so a three-year premium isn't three times dearer.
+- **Cover** is shown by kind (health, accident, a vehicle's IDV on its own); unlike things are never added into one grand total. **A year ÷ cover** is a policy's price against its own history, and none when there is no cover figure.
+- **No-claim bonus** goes up one step (0, 20, 25, 35, 45, 50%) at renewal after a term without a claim, and the top step stays. The app can't see claims, so the next step is what it expects and the certificate is the truth.
+- **A financed thing with no policy** (decided): an active Auto loan with no motor policy held, or an active Home loan with no home policy held. It can't tell which vehicle a loan financed, and it says nothing about whether a policy is needed. A lapsed or cancelled policy isn't held.
 - **A premium paid on a card** counts once, as a premium, and not again as card spending (the cross-cutting principle in `system-design.md`).
 
 ## Open decisions (defaults are what the mockups show)
