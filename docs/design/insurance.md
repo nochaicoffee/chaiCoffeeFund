@@ -2,7 +2,7 @@
 
 ## Status (2026-10-29)
 
-**Designed on his real policies, not built.** Prathik picked the **Cover map** as the hero. Mockups: [`design/insurance/`](../../design/insurance/), built by [`design/insurance/generator/`](../../design/insurance/generator/) (a rebuild overwrites the artboards, so change the generator).
+**Designed on his real policies. The data layer (#209 to #211) and the page shell, greeting, attention strip and cover map (#212) are built; the widgets, forms, states and phone layout are not.** Prathik picked the **Cover map** as the hero. Mockups: [`design/insurance/`](../../design/insurance/), built by [`design/insurance/generator/`](../../design/insurance/generator/) (a rebuild overwrites the artboards, so change the generator).
 
 The policies are his own, read on 2026-10-29 from the four PDFs in his Gmail `Insurance` label (read-only, with the app's Gmail credentials). Identifiers are cut to their last digits, and no address, date of birth, nominee, PAN or customer ID is in the repo. "Today" is Oct 29, 2026; dates after it and the 2027 renewal quotes are illustrative.
 
@@ -74,6 +74,15 @@ Built in `lib/aggregate/insurance.ts` (#210) as pure functions with tests that p
 - **Cancel** stops a policy counting and keeps every payment. The reason goes on the policy's notes ("Cancelled: Vehicle sold"); the mockup's Refund and "Replaced by" boxes have no column and aren't stored. **Restart** sets it Active, and that alone clears the cancelled-on date.
 - **Edit** changes the policy only (the terms are Renew's). A blank optional box clears it, except the policy number: the browser never has it whole, so a blank number is left as it is.
 - **Delete** removes a policy's payments and then it, for a mistake. A policy that has ended is cancelled, not deleted.
+
+## The page (built in #212)
+
+- **`/insurance`** after Loans in the sidebar. `loadInsuranceData` reads the Policies, PolicyPayments and Loans tabs in parallel (the loans only for the "financed thing with no policy" check); `?demo` shows sample data in development, `?demo=soon`, `?demo=lapsed` and `?demo=empty` the other states, and nothing from a demo is read from or written to the Sheet.
+- **The greeting** is a `SentencePart[]` built in `app/insurance/views.ts` with a `greetingView` keyed by the same points (`policies`, a kind's cover, `vehicles`, `year`, `paid`, `next`, `gap`); a test checks that every figure has a card and every card a figure. With nothing in force there are no figures and the sentence is plain.
+- **The attention strip**: a policy that has lapsed (red, first), then each renewing within 30 days (amber). Its button, See policy, picks the policy; Renew joins it in #214 with the forms.
+- **The cover map** groups policies by their `covers` text (You first, then in Sheet order), one tile per thing, a box per policy with its cover (sum insured, or IDV), a term bar with its own hover card, days left, and what it cost. A loan with nothing insuring it gets a dashed tile. The pick is `?policy=` (default all); the widgets under the map follow it as #213 adds them.
+- **Lapsed is counted from the renewal date**, as decided: "lapsed 9 days ago" is nine days since the day the term would have renewed.
+- **Privacy**: the page works from the views alone, which carry no policy number; a test sends a number through every view and looks for it.
 
 ## Open decisions (defaults are what the mockups show)
 

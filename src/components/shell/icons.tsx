@@ -65,6 +65,12 @@ export const icons = {
       <circle cx="17.5" cy="17.5" r="2.5" />
     </Icon>
   ),
+  insurance: (
+    <Icon>
+      <path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6l8-3z" />
+      <polyline points="9 12 11 14 15 10" />
+    </Icon>
+  ),
   fixedIncome: (
     <Icon>
       <rect x="4" y="10" width="16" height="10" rx="2" />
