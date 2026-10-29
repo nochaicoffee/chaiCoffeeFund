@@ -12,6 +12,8 @@ import { incomeEntriesRepository } from "./incomeEntries";
 import { loansRepository } from "./loans";
 import { loanInstallmentsRepository } from "./loanInstallments";
 import { loanPrepaymentsRepository } from "./loanPrepayments";
+import { policiesRepository } from "./policies";
+import { policyPaymentsRepository } from "./policyPayments";
 import { investmentTransactionsRepository } from "./investmentTransactions";
 import { fixedDepositsRepository } from "./fixedDeposits";
 import { statementEmailsRepository } from "./statementEmails";
@@ -32,6 +34,8 @@ export const checkedRepositories = [
   loansRepository,
   loanInstallmentsRepository,
   loanPrepaymentsRepository,
+  policiesRepository,
+  policyPaymentsRepository,
   investmentTransactionsRepository,
   fixedDepositsRepository,
   statementEmailsRepository,

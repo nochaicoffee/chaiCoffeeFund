@@ -8,6 +8,13 @@ export const nonNegativeNumber = z.number().min(0);
 
 export const nonEmptyString = z.string().min(1);
 
+/** Paid from a card or from a bank account, never both: setting one in an update clears the other, so a row merged with it never has both. */
+export function onePaidFrom<T extends { paidFromAccountId?: string; paidFromCardId?: string }>(value: T): T {
+  if (value.paidFromAccountId) return { ...value, paidFromCardId: "" };
+  if (value.paidFromCardId) return { ...value, paidFromAccountId: "" };
+  return value;
+}
+
 /**
  * An optional field that an update can clear: "" blanks its cell, which reads back as
  * unset. JSON has no undefined, so a PATCH body can't clear a field any other way.

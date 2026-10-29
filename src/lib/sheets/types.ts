@@ -437,6 +437,81 @@ export interface LoanInstallment {
   paidFromCardId?: string;
 }
 
+// --- Insurance ---
+
+/**
+ * What a policy insures, as the Policies tab's kind dropdown lists it. Accident is a personal
+ * accident cover, such as the owner-driver cover that goes with a vehicle. The kind decides which
+ * fields the forms ask for (a vehicle has an IDV and a no-claim step); the Sheet keeps one shape.
+ */
+export const POLICY_KINDS = ["Health", "Life", "Motor", "Home", "Accident"] as const;
+export type PolicyKind = (typeof POLICY_KINDS)[number];
+
+/** A cancelled policy is left out of every total and keeps its payments, as a cancelled subscription does. Lapsed is worked out from the dates, never stored. */
+export const POLICY_STATUSES = ["Active", "Cancelled"] as const;
+export type PolicyStatus = (typeof POLICY_STATUSES)[number];
+/** Nothing in the app writes Pending yet (a quote not yet paid); it stays so a row that has it still reads. */
+export const POLICY_PAYMENT_STATUSES = ["Pending", "Paid"] as const;
+export type PolicyPaymentStatus = (typeof POLICY_PAYMENT_STATUSES)[number];
+
+/** The colours a policy can be given: the whole palette, as for a subscription. */
+export const POLICY_COLORS = COLORS;
+export type PolicyColor = Color;
+
+/** A term can buy one to five years of cover (a single premium for several years is one payment). */
+export const MAX_POLICY_YEARS = 5;
+/** The no-claim bonus steps of a motor policy, in percent. The insurer's certificate is the truth; the app can't see claims. */
+export const NCB_STEPS = [0, 20, 25, 35, 45, 50] as const;
+
+export interface Policy {
+  id: string;
+  name: string;
+  kind: PolicyKind;
+  insurer: string;
+  /** Kept whole in the private Sheet. A view must cut it to its last four characters before the page gets it: never hand a whole Policy to a client component. */
+  policyNumber?: string;
+  /** What it covers, as the page groups policies: "You", "Parents", "Car", "Bike", "Home". */
+  covers: string;
+  /** More about what it covers, such as a vehicle's model and the end of its registration. */
+  coversDetail?: string;
+  /** The sum insured, or the IDV for a vehicle: what the current term covers. */
+  sumInsured: number;
+  status: PolicyStatus;
+  /** The day it was cancelled. Optional: a policy can be cancelled without a date. */
+  endedOn?: string;
+  color?: PolicyColor;
+  /** Where it's usually paid from, at most one set. New payments start from it. */
+  paidFromAccountId?: string;
+  paidFromCardId?: string;
+  /** The add-ons and extra covers, separated by commas. */
+  addOns?: string;
+  claimsPhone?: string;
+  documentUrl?: string;
+  /** Anything to look up when claiming: waiting periods, deductible, what it excludes. */
+  notes?: string;
+}
+
+/** One term of a policy: the cover a premium bought and what it cost. Renewing records the next one. */
+export interface PolicyPayment {
+  id: string;
+  policyId: string;
+  /** The first day of the cover this premium bought. The last day is `years` later, less one day. */
+  periodStart: string;
+  /** How many years the premium buys. A single premium for three years is one payment with years 3. */
+  years: number;
+  /** What was paid, in all, with GST. */
+  amount: number;
+  /** Blank when the day isn't known: the term start stands in, and the page marks it assumed. */
+  paidOn?: string;
+  status: PolicyPaymentStatus;
+  paidFromAccountId?: string;
+  paidFromCardId?: string;
+  /** What this term covered (the IDV for a vehicle), when it differs from the policy's current one. */
+  sumInsured?: number;
+  /** A motor policy's no-claim bonus step on this term, in percent. */
+  ncb?: number;
+}
+
 // --- Investments ---
 // Positions/holdings are never stored as raw rows — they're computed in
 // lib/aggregate/investments.ts from this transaction log.
