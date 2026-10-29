@@ -262,6 +262,8 @@ export interface PaymentRow {
   amount: string;
   change: { text: string; tone: "up" | "down" | "flat" | "first" };
   from: string | null;
+  /** The no-claim step on the term, for a motor policy. */
+  ncb: string | null;
 }
 
 export interface PaymentsView {
@@ -291,6 +293,7 @@ function paymentRows(data: InsuranceData, views: PolicyView[]): { row: PaymentRo
         amount: formatInr(t.payment.amount),
         change: c === null ? { text: "first", tone: "first" } : Math.abs(c) < 0.0005 ? { text: "same", tone: "flat" } : { text: `${c > 0 ? "+" : "−"}${Math.abs(c * 100).toFixed(Math.abs(c) < 0.1 ? 1 : 0)}%`, tone: c > 0 ? "up" : "down" },
         from: place ?? null,
+        ncb: t.payment.ncb !== undefined ? `${t.payment.ncb}%` : null,
       };
       return { row, day: t.cashDay, amount: t.payment.amount, years: t.payment.years };
     });
@@ -536,5 +539,52 @@ export function insuranceWidgets(data: InsuranceData, today: string, pickIds: st
     timeline: timelineView(data, today),
     ncb: ncbView(data, today),
     cost: costView(data, today),
+  };
+}
+
+// ---------- The premium payments page ----------
+
+export interface PaymentsPageSection extends PolicyBadge {
+  icon: TileIcon;
+  sub: string;
+  summary: string;
+  rows: PaymentRow[];
+  /** Open when it's the picked policy, or when there are few enough payments overall to read at a glance. */
+  open: boolean;
+}
+
+export interface PaymentsPageView {
+  sections: PaymentsPageSection[];
+  /** Under the title: what was paid in all, and this year. */
+  sentence: string;
+}
+
+/** Every term of every policy (or of one), a section each, newest first: what Premiums paid shows six of. */
+export function paymentsPageView(data: InsuranceData, today: string, policyId?: string): PaymentsPageView {
+  const views = allViews(data, today).filter((v) => !policyId || v.policy.id === policyId);
+  const year = Number(today.slice(0, 4));
+  const fewPayments = views.reduce((t, v) => t + v.terms.length, 0) <= 12;
+  const sections = views
+    .filter((v) => v.terms.length > 0)
+    .map((v): PaymentsPageSection => {
+      const rows = paymentRows(data, [v]).sort((a, b) => (a.day < b.day ? 1 : a.day > b.day ? -1 : 0));
+      const total = rows.reduce((t, r) => t + r.amount, 0);
+      return {
+        ...badge(v),
+        icon: kindIcon(v),
+        sub: `${v.policy.insurer} · ${v.policy.covers}`,
+        summary: `${plural(rows.length, "payment")} · ${formatInr(total)} paid in all · ${rows.reduce((t, r) => t + r.years, 0)} years of cover`,
+        rows: rows.map((r) => r.row),
+        open: Boolean(policyId) || fewPayments,
+      };
+    });
+  const all = views.flatMap((v) => v.terms.map((t) => t.payment));
+  const paidAll = all.reduce((t, p) => t + p.amount, 0);
+  const paidYear = cashPaidIn(year, all, today);
+  return {
+    sections,
+    sentence: all.length
+      ? `${plural(all.length, "premium")} paid, ${formatInr(paidAll)} in all. ${formatInr(paidYear.total)} left in ${year}${paidYear.assumed > 0 ? `, ${formatInr(paidYear.assumed)} of it dated by the day cover began because the day paid isn't recorded` : ""}.`
+      : "No premium is recorded yet.",
   };
 }

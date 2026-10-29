@@ -1,8 +1,10 @@
 "use client";
 
 import { createContext, useContext, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import { deletePolicyAction, restartPolicyAction, undoAction } from "@/app/insurance/actions";
+import { deletePaymentAction, deletePolicyAction, restartPolicyAction, undoAction } from "@/app/insurance/actions";
 import type { InsuranceFormsData } from "@/app/insurance/formsView";
+import { formatDate } from "@/lib/format/date";
+import { formatInr } from "@/lib/format/money";
 import type { PolicyKind } from "@/lib/sheets/types";
 import { AlertIcon, CheckIcon } from "../../cards/forms/icons";
 import { FormTriggerButton, HEADER_GHOST_CLASS, HEADER_PRIMARY_CLASS, SMALL_OK } from "../../shell/FormTriggerButton";
@@ -10,6 +12,7 @@ import { FormTriggerButton, HEADER_GHOST_CLASS, HEADER_PRIMARY_CLASS, SMALL_OK }
 export { SMALL_OK };
 import { ConfirmDialog } from "../../subscriptions/forms/ConfirmDialog";
 import { CancelDialog } from "./CancelDialog";
+import { EditPaymentDialog } from "./EditPaymentDialog";
 import { PolicyFormDialog } from "./PolicyFormDialog";
 import { RenewDialog } from "./RenewDialog";
 
@@ -26,7 +29,9 @@ type Open =
   | { kind: "renew"; policyId?: string }
   | { kind: "cancel"; policyId?: string }
   | { kind: "restart"; id: string }
-  | { kind: "delete"; id: string };
+  | { kind: "delete"; id: string }
+  | { kind: "edit-payment"; id: string }
+  | { kind: "delete-payment"; id: string };
 
 type Toast = { kind: "saved"; undoId: string; message: string; key: number } | { kind: "done" | "error"; message: string; key: number };
 
@@ -81,7 +86,9 @@ export function InsuranceFormsProvider({ forms, children }: { forms: InsuranceFo
   }, [toast]);
 
   const policyOf = (id: string) => forms.policies.find((p) => p.id === id);
-  const target = open && "id" in open ? policyOf(open.id) : undefined;
+  const paymentOf = open?.kind === "edit-payment" || open?.kind === "delete-payment" ? forms.payments.find((p) => p.id === open.id) : undefined;
+  const paymentPolicy = paymentOf ? policyOf(paymentOf.policyId) : undefined;
+  const target = open && "id" in open && open.kind !== "edit-payment" && open.kind !== "delete-payment" ? policyOf(open.id) : undefined;
 
   return (
     <FormsContext.Provider value={{ forms, disabledReason, open: (o) => !disabledReason && show(o) }}>
@@ -103,6 +110,22 @@ export function InsuranceFormsProvider({ forms, children }: { forms: InsuranceFo
           today={forms.today}
           onClose={close}
           onSaved={(undo) => saved(undo, `${target.name} restarted`)}
+        />
+      )}
+      {open?.kind === "edit-payment" && paymentOf && paymentPolicy && <EditPaymentDialog forms={forms} payment={paymentOf} policy={paymentPolicy} onClose={close} onSaved={saved} />}
+      {open?.kind === "delete-payment" && paymentOf && paymentPolicy && (
+        <ConfirmDialog
+          tone="danger"
+          icon={<AlertIcon />}
+          title="Delete this payment?"
+          body={`The ${formatInr(paymentOf.amount)} term from ${formatDate(paymentOf.periodStart)} on ${paymentPolicy.name} is removed from the Sheet, and that can't be undone. The policy stays${forms.payments.filter((p) => p.policyId === paymentOf.policyId).length === 1 ? ", with no term recorded until you renew it" : ""}.`}
+          hidden={{ paymentId: paymentOf.id }}
+          keepLabel="Keep it"
+          confirmLabel="Delete payment"
+          action={deletePaymentAction}
+          today={forms.today}
+          onClose={close}
+          onSaved={() => saved(undefined, "Payment deleted")}
         />
       )}
       {open?.kind === "delete" && target && (

@@ -126,3 +126,23 @@ export function policyEditPatch(policy: PolicyFormInput["policy"]): Record<strin
     ...(color !== undefined && { color }),
   };
 }
+
+export interface PaymentFormInput {
+  paymentId: string;
+  /** What an edit writes for the term: a blank optional box clears its column ("" is how a patch clears one). */
+  patch: { periodStart: string; years: number; amount: number; paidOn: string; ncb: number | ""; paidFromAccountId: string; paidFromCardId: string };
+}
+
+/**
+ * Edit payment: a recorded term corrected after the fact (the day it was paid, what it cost, where it came from, its no-claim step, or its
+ * dates). It can't change which policy it belongs to. `motor` says whether a no-claim step is allowed (the policy's kind).
+ */
+export function readPaymentForm(fields: FormFields, known: Known, motor: boolean): FormResult<PaymentFormInput> {
+  const f = new FieldReader(fields);
+  const paymentId = f.text("paymentId", "Choose the payment");
+  const term = readTerm(f, motor, "Enter when the cover starts");
+  const paid = readPaidFrom(f, "paidFrom", known);
+  if (!f.ok || !paymentId) return { ok: false, errors: f.errors };
+  const { periodStart, years, amount, paidOn, ncb } = term as TermFields;
+  return { ok: true, input: { paymentId, patch: { periodStart, years, amount, paidOn: paidOn ?? "", ncb: ncb ?? "", paidFromAccountId: paid.paidFromAccountId ?? "", paidFromCardId: paid.paidFromCardId ?? "" } } };
+}

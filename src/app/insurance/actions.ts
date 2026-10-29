@@ -2,14 +2,14 @@
 
 import { updateTag } from "next/cache";
 import type { FormState } from "@/lib/forms/formState";
-import { policyEditPatch, readCancelForm, readPolicyForm, readRenewForm } from "@/lib/forms/insuranceForms";
-import { addPolicy, cancelPolicy, deletePolicy, editableFields, parsePolicyUndo, parseRenewalUndo, policyUndoToken, renewPolicy, renewalUndoToken, restartPolicy, undoRenewal, type InsuranceRepos } from "@/lib/insurance/policyWrites";
+import { policyEditPatch, readCancelForm, readPaymentForm, readPolicyForm, readRenewForm } from "@/lib/forms/insuranceForms";
+import { addPolicy, cancelPolicy, deletePolicy, editableFields, paymentFields, parsePolicyUndo, parseRenewalUndo, policyUndoToken, renewPolicy, renewalUndoToken, restartPolicy, undoRenewal, updateTerm, type InsuranceRepos } from "@/lib/insurance/policyWrites";
 import { CACHE_TAGS, getCachedAccounts, getCachedCards } from "@/lib/sheets/cached";
 import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
 import { policiesRepository, updatePolicySchema } from "@/lib/sheets/policies";
 import { policyPaymentsRepository } from "@/lib/sheets/policyPayments";
 import { InvalidRowError, NotFoundError } from "@/lib/sheets/repository";
-import type { Policy } from "@/lib/sheets/types";
+import type { Policy, PolicyPayment } from "@/lib/sheets/types";
 import { formatDate } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 
@@ -22,6 +22,7 @@ import { formatInr } from "@/lib/format/money";
 
 const repos: InsuranceRepos = { policies: policiesRepository, payments: policyPaymentsRepository };
 const fields = (formData: FormData) => Object.fromEntries(formData.entries());
+const GONE_PAYMENT: FormState = { status: "invalid", errors: { form: "This payment isn't in the PolicyPayments tab any more. Close this and refresh." } };
 const GONE: FormState = { status: "invalid", errors: { form: "This policy isn't in the Policies tab any more. Close this and refresh." } };
 
 /** Logs a failed read or write without the form's values, and says why in words when it's the quota. */
@@ -156,6 +157,39 @@ export async function deletePolicyAction(_previous: FormState, formData: FormDat
   return refreshed();
 }
 
+/** Edit payment: a recorded term corrected (the day paid, its cost, where it came from, its dates). It goes through the same guard as Renew, and offers Undo. */
+export async function savePaymentAction(_previous: FormState, formData: FormData): Promise<FormState> {
+  const paymentId = String(formData.get("paymentId") ?? "");
+  let payment: PolicyPayment | null, policy: Policy | null, known: Awaited<ReturnType<typeof knownPlaces>>;
+  try {
+    payment = paymentId ? await policyPaymentsRepository.get(paymentId) : null;
+    [policy, known] = await Promise.all([payment ? policiesRepository.get(payment.policyId) : Promise.resolve(null), knownPlaces()]);
+  } catch (error) {
+    return failed("savePaymentAction", error);
+  }
+  if (!payment || !policy) return GONE_PAYMENT;
+  const result = readPaymentForm(fields(formData), known, policy.kind === "Motor");
+  if (!result.ok) return { status: "invalid", errors: result.errors };
+  try {
+    await updateTerm(repos, paymentId, result.input.patch as unknown as Partial<Omit<PolicyPayment, "id">>, { stored: payment, policy });
+  } catch (error) {
+    return written("savePaymentAction", error);
+  }
+  return refreshed({ id: policyUndoToken({ undo: "payment", policyId: policy.id, paymentId, previous: paymentFields(payment) }), message: `${policy.name} payment saved` });
+}
+
+/** Delete payment: a term recorded by mistake. The policy and its other terms stay; a policy left with no term shows as having none. */
+export async function deletePaymentAction(_previous: FormState, formData: FormData): Promise<FormState> {
+  const paymentId = String(formData.get("paymentId") ?? "");
+  if (!paymentId) return GONE_PAYMENT;
+  try {
+    await policyPaymentsRepository.remove(paymentId);
+  } catch (error) {
+    return failed("deletePaymentAction", error);
+  }
+  return refreshed();
+}
+
 /**
  * Undo from a toast, for whatever it was offered on: a renewal, an added policy, a cancel, a restart or an edit. The token comes from
  * the browser, so it's parsed and refused when it isn't one of these. An edit puts its fields back through the same schema as any
@@ -168,11 +202,17 @@ export async function undoAction(token: string): Promise<{ ok: boolean; message:
     if (change.undo === "add") await deletePolicy(repos, change.policyId);
     else if (change.undo === "cancel") await restartPolicy(repos, change.policyId);
     else if (change.undo === "restart") await cancelPolicy(repos, change.policyId, { endedOn: change.endedOn });
+    else if (change.undo === "payment") {
+      // The token comes from the browser: it only puts back a term that is this policy's.
+      const stored = await policyPaymentsRepository.get(change.paymentId);
+      if (!stored || stored.policyId !== change.policyId) throw new InvalidRowError("That payment belongs to a different policy");
+      await updateTerm(repos, change.paymentId, change.previous as Partial<Omit<PolicyPayment, "id">>);
+    }
     else await policiesRepository.update(change.policyId, updatePolicySchema.parse(change.previous) as Partial<Omit<Policy, "id">>);
   } catch (error) {
     console.error("[insurance] undo failed:", error instanceof Error ? error.message : String(error));
     return { ok: false, message: "Couldn't undo that. Change it from the policy's details." };
   }
   refreshed();
-  return { ok: true, message: { add: "Policy removed", cancel: "Policy restarted", restart: "Policy cancelled again", edit: "Edit undone" }[change.undo] };
+  return { ok: true, message: { add: "Policy removed", cancel: "Policy restarted", restart: "Policy cancelled again", edit: "Edit undone", payment: "Payment put back" }[change.undo] };
 }

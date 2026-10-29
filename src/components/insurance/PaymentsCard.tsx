@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import type { PaymentRow, PaymentsView } from "@/app/insurance/widgetsView";
 import { WidgetCard } from "../shell/WidgetCard";
@@ -12,7 +13,7 @@ const CHANGE: Record<PaymentRow["change"]["tone"], string> = { up: "text-negativ
  * Premiums paid (InsFinal), following the pick: every term paid for, newest first, with what it cost against the term before and
  * where it was paid from. Under a picked policy three tiles say what it has cost in all. Six rows, then Show all.
  */
-export function PaymentsCard({ view, pickName, picked }: { view: PaymentsView; pickName: string; picked: boolean }) {
+export function PaymentsCard({ view, pickName, picked, allHref }: { view: PaymentsView; pickName: string; picked: boolean; allHref: string }) {
   const [all, setAll] = useState(false);
   const rows = all ? view.rows : view.rows.slice(0, SHOWN);
   return (
@@ -92,11 +93,18 @@ export function PaymentsCard({ view, pickName, picked }: { view: PaymentsView; p
       )}
       <div className={`flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3 text-xs font-semibold text-muted ${view.tiles ? "" : "mt-auto"}`}>
         <span>{view.foot}</span>
-        {view.rows.length > SHOWN && (
-          <button type="button" onClick={() => setAll((v) => !v)} className="font-extrabold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">
-            {all ? "Show fewer" : `Show all ${view.rows.length}`}
-          </button>
-        )}
+        <span className="flex items-center gap-4">
+          {view.rows.length > SHOWN && (
+            <button type="button" onClick={() => setAll((v) => !v)} className="font-extrabold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">
+              {all ? "Show fewer" : `Show all ${view.rows.length}`}
+            </button>
+          )}
+          {view.rows.length > 0 && (
+            <Link href={allHref} className="font-extrabold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">
+              Payments page →
+            </Link>
+          )}
+        </span>
       </div>
     </WidgetCard>
   );
