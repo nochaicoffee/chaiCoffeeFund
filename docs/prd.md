@@ -141,14 +141,14 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 
 | ID | Feature | Pri | Status |
 |---|---|---|---|
-| F-FI-01 | Fixed deposits: add one, see estimated current value, maturity date and amount | P0 | Designed (repository and computation built). Schema tightened 2026-10-26 (dates, amounts and payout frequency checked). The Sheet's dropdowns still need setting up. |
+| F-FI-01 | Fixed deposits: add one, see estimated current value, maturity date and amount | P0 | Designed (repository and computation built). Schema tightened 2026-10-26 (dates, amounts and payout frequency checked). The Sheet's dropdowns are set (2026-10-31). |
 | F-FI-02 | EPF, PPF, NSC and RD (recurring-contribution holdings) | P1 | Designed loosely. The data model is open (Q1). Proposed 2026-10-27: add NPS and widen it to "valued assets" (see Proposed additions, Q9). |
 
 ### Investments (`F-IV`)
 
 | ID | Feature | Pri | Status |
 |---|---|---|---|
-| F-IV-01 | Log a buy or sell: IND or US, Market/RSU/ESPP source, FX rate frozen at the trade date | P0 | Designed (repository built, [ADR 0003](adr/0003-inr-base-currency-frozen-fx.md)). Schema tightened 2026-10-26: asset type is a fixed list, currency must match the market, rate only on US trades. The Sheet's dropdowns still need setting up. |
+| F-IV-01 | Log a buy or sell: IND or US, Market/RSU/ESPP source, FX rate frozen at the trade date | P0 | Designed (repository built, [ADR 0003](adr/0003-inr-base-currency-frozen-fx.md)). Schema tightened 2026-10-26: asset type is a fixed list, currency must match the market, rate only on US trades. The Sheet's dropdowns are set (2026-10-31). |
 | F-IV-02 | Holdings grouped by category (Indian Equity, US Stocks, RSUs, Debt Fund), with cost basis | P0 | Designed (computation built). Fixed 2026-10-26: same-day trades no longer depend on entry order, and an oversell is reported. RSU is a source, not a category: vested and bought shares of one symbol are one holding. |
 | F-IV-03 | Live prices and today's FX rate, for market value and gain or loss | P0 | Not started. Source decided (Q2): Yahoo, AMFI and Frankfurter behind `lib/prices/`. |
 
@@ -387,3 +387,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.18 | 2026-10-27 | Q2 answered: prices come from a code module (Yahoo, AMFI, Frankfurter) saved to a `PriceSnapshots` log; `GOOGLEFINANCE` dropped. Based on a spike run on 2026-10-27. |
 | 1.19 | 2026-10-29 | Goals designed (`docs/design/goals.md`): F-GO-01 to F-GO-05 and an M6 milestone. Minor/Major is a time horizon picked per goal; a goal is an earmark and never changes net worth. Round 1 mockups; the hero is not picked yet. |
 | 1.20 | 2026-10-31 | Insurance (F-IS-01) written into the PRD as built, and Q11 answered: insurance is its own page, not a Subscriptions category. F-SU-03 now covers rent and fees only. |
+| 1.21 | 2026-10-31 | The InvestmentTransactions and FixedDeposits dropdowns are set on the real Sheet from their schemas (#234); `check-sheet` passes on every tab. No scope change. |

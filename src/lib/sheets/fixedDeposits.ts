@@ -60,22 +60,25 @@ export const updateFixedDepositSchema = fixedDepositFields.partial().extend({
 /** A row as read back from the Sheet: a valid create, plus its id. */
 export const fixedDepositRowSchema = fixedDepositFields.extend({ id: nonEmptyString }).superRefine(depositRules.refine);
 
+/** The FixedDeposits tab's columns, in order. */
+export const FIXED_DEPOSIT_COLUMNS: (keyof FixedDeposit)[] = [
+  "id",
+  "name",
+  "bankName",
+  "principalAmount",
+  "interestRate",
+  "compoundingType",
+  "payoutFrequency",
+  "startDate",
+  "maturityDate",
+  "maturityAmount",
+  "accountId",
+  "status",
+];
+
 export const fixedDepositsRepository = createRepository<FixedDeposit>({
   sheetName: "FixedDeposits",
-  columns: [
-    "id",
-    "name",
-    "bankName",
-    "principalAmount",
-    "interestRate",
-    "compoundingType",
-    "payoutFrequency",
-    "startDate",
-    "maturityDate",
-    "maturityAmount",
-    "accountId",
-    "status",
-  ],
+  columns: FIXED_DEPOSIT_COLUMNS,
   dateColumns: ["startDate", "maturityDate"],
   schema: fixedDepositRowSchema,
   check: checkFixedDeposit,

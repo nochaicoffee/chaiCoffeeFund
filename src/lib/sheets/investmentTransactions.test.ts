@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { columnSpecs } from "./tableColumns";
+import { INVESTMENT_ASSET_TYPES } from "./types";
 import {
+  INVESTMENT_TRANSACTION_COLUMNS,
   checkInvestmentTransaction,
   createInvestmentTransactionSchema,
   investmentTransactionRowSchema,
@@ -102,5 +105,19 @@ describe("updateInvestmentTransactionSchema", () => {
 
   it("leaves the stored rate alone when the update doesn't mention it", () => {
     expect(Object.hasOwn(updateInvestmentTransactionSchema.parse({ quantity: 5 }), "fxRateToInr")).toBe(false);
+  });
+});
+
+describe("the InvestmentTransactions tab's dropdowns", () => {
+  it("come from the schema, so the Sheet and the code can't drift apart", () => {
+    const specs = columnSpecs(INVESTMENT_TRANSACTION_COLUMNS as string[], investmentTransactionRowSchema);
+    const options = (name: string) => specs.find((spec) => spec.name === name)?.options;
+    expect(options("market")).toEqual(["IND", "US"]);
+    expect(options("currency")).toEqual(["INR", "USD"]);
+    expect(options("tradeType")).toEqual(["Buy", "Sell"]);
+    expect(options("source")).toEqual(["Market", "RSU", "ESPP"]);
+    expect(options("assetType")).toEqual([...INVESTMENT_ASSET_TYPES]);
+    expect(specs.find((spec) => spec.name === "tradeDate")?.type).toBe("DATE");
+    expect(specs.find((spec) => spec.name === "fxRateToInr")?.type).toBe("DOUBLE");
   });
 });

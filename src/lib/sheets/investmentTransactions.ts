@@ -62,24 +62,27 @@ export const updateInvestmentTransactionSchema = investmentTransactionFields.par
 /** A row as read back from the Sheet: a valid create, plus its id. */
 export const investmentTransactionRowSchema = investmentTransactionFields.extend({ id: nonEmptyString }).superRefine(tradeRules.refine);
 
+/** The InvestmentTransactions tab's columns, in order. */
+export const INVESTMENT_TRANSACTION_COLUMNS: (keyof InvestmentTransaction)[] = [
+  "id",
+  "tradeDate",
+  "symbol",
+  "market",
+  "currency",
+  "tradeType",
+  "source",
+  "quantity",
+  "price",
+  "total",
+  "assetType",
+  "broker",
+  "settlementAccountId",
+  "fxRateToInr",
+];
+
 export const investmentTransactionsRepository = createRepository<InvestmentTransaction>({
   sheetName: "InvestmentTransactions",
-  columns: [
-    "id",
-    "tradeDate",
-    "symbol",
-    "market",
-    "currency",
-    "tradeType",
-    "source",
-    "quantity",
-    "price",
-    "total",
-    "assetType",
-    "broker",
-    "settlementAccountId",
-    "fxRateToInr",
-  ],
+  columns: INVESTMENT_TRANSACTION_COLUMNS,
   dateColumns: ["tradeDate"],
   schema: investmentTransactionRowSchema,
   check: checkInvestmentTransaction,

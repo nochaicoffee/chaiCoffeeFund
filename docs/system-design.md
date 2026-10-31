@@ -353,7 +353,7 @@ The real Sheet's tab names and columns are ground truth, and `createRepository`'
   - Accounts' `startDate` has no type.
   - Subscriptions' `category` is a dropdown, but the code takes any text. Its `billingCycle` dropdown has `Quaterly` for `Quarterly`.
   - IncomeSources' `frequency` dropdown has `Quaterly` and `OneTime` for `Quarterly` and `One-Time`. Fixed 2026-10-24 (#185).
-  - Loans, LoanInstallments, InvestmentTransactions and FixedDeposits still have the placeholder dropdown values `Option 1` and `Option 2`. (Loans and LoanInstallments were fixed through `/api/dev/sheet-columns` on 2026-10-25, when Loans also gained `firstEmiDate`, `stampDuty` and `preEmiInterest`.) InvestmentTransactions' `assetType` is a dropdown, but the code takes any text.
+  - Loans, LoanInstallments, InvestmentTransactions and FixedDeposits had the placeholder dropdown values `Option 1` and `Option 2`. Loans and LoanInstallments were fixed through `/api/dev/sheet-columns` on 2026-10-25 (when Loans also gained `firstEmiDate`, `stampDuty` and `preEmiInterest`); InvestmentTransactions and FixedDeposits on 2026-10-31 (#234), with `assetType` now a fixed list in the code too. After the change `npm run check-sheet` passes on every tab, and a real create, update (including the cross-field rules and clearing an FD's payout frequency), read and delete round trip was run on both and cleaned up.
 
 ## Backend architecture
 
