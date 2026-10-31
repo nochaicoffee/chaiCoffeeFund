@@ -1,0 +1,831 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Manrope:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500;1,6..72,600&display=swap">
+  <style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.chai-app {
+  --page: oklch(0.965 0.004 90); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06); --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+  --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+  --accent: oklch(0.72 0.19 145); --accent-tint: oklch(0.93 0.06 145); --accent-text: oklch(0.42 0.14 145); --on-accent: oklch(0.99 0 0);
+  --accent-edge: oklch(0.72 0.19 145 / 0.45); --accent-ring: oklch(0.72 0.19 145 / 0.22); --negative-ring: oklch(0.55 0.16 25 / 0.18);
+  --ink: oklch(0.16 0.008 260); --on-ink: oklch(0.99 0 0);
+  --positive: oklch(0.42 0.14 145); --warning: oklch(0.72 0.14 75); --warning-text: oklch(0.47 0.1 70); --warning-tint: oklch(0.95 0.05 85);
+  --negative: oklch(0.55 0.16 25); --negative-tint: oklch(0.95 0.035 40);
+  --feature-tile: oklch(0.935 0.052 148); --feature-tile-line: oklch(0.62 0.15 150 / 0.24); --feature-tile-glow: oklch(1 0 0 / 0.55);
+  --rings-ink: oklch(0.42 0.1 152); --rings-light: oklch(1 0 0); --bar-glow: oklch(1 0 0 / 0.26);
+  --heat-1: oklch(0.95 0.03 150); --heat-2: oklch(0.87 0.07 150); --heat-3: oklch(0.76 0.11 151); --heat-4: oklch(0.6 0.12 153); --heat-5: oklch(0.42 0.1 156);
+  --heat-ink: oklch(0.24 0.05 152); --heat-no-data: oklch(0 0 0 / 0.04); --heat-upcoming: oklch(0 0 0 / 0.13); --trend-no-data: oklch(0 0 0 / 0.1); --trend-peak-shadow: oklch(0.3 0.09 155 / 0.26);
+  --card-emerald-from: oklch(0.42 0.11 155); --card-emerald-to: oklch(0.24 0.07 162); --card-emerald: oklch(0.6 0.12 153);
+  --card-sapphire-from: oklch(0.32 0.09 258); --card-sapphire-to: oklch(0.16 0.05 258); --card-sapphire: oklch(0.48 0.1 258);
+  --card-ruby-from: oklch(0.3 0.11 20); --card-ruby-to: oklch(0.15 0.07 20); --card-ruby: oklch(0.57 0.13 22);
+  --card-onyx-from: oklch(0.28 0.02 75); --card-onyx-to: oklch(0.15 0.01 75); --card-onyx: oklch(0.56 0.04 75);
+  --card-violet-from: oklch(0.31 0.1 300); --card-violet-to: oklch(0.16 0.06 300); --card-violet: oklch(0.53 0.13 300);
+  --card-teal-from: oklch(0.32 0.07 200); --card-teal-to: oklch(0.16 0.04 200); --card-teal: oklch(0.56 0.09 200);
+  --card-copper-from: oklch(0.33 0.09 50); --card-copper-to: oklch(0.16 0.05 50); --card-copper: oklch(0.6 0.12 50);
+  --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
+  --on-card: oklch(0.95 0.004 260); --on-card-muted: oklch(1 0 0 / 0.6); --on-card-faint: oklch(1 0 0 / 0.5); --on-card-fill: oklch(1 0 0 / 0.16); --on-card-line: oklch(1 0 0 / 0.12); --on-card-line-top: oklch(1 0 0 / 0.22); --on-card-lime: oklch(0.88 0.17 138);
+  --card-chip: oklch(0.8 0.13 80); --card-chip-mid: oklch(0.68 0.13 80); --card-chip-deep: oklch(0.55 0.1 80);
+  --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
+  --tile-shadow-selected: 0 10px 26px oklch(0.3 0.09 155 / 0.35), 0 0 0 4px oklch(1 0 0 / 0.08), 0 0 18px oklch(1 0 0 / 0.2);
+  --due-pulse-ring: oklch(0.82 0.12 40 / 0.2); --due-pulse-fill: oklch(0.7 0.14 35 / 0.55);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative; overflow: hidden; font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; background: var(--page); color: var(--fg);
+  font-size: 13px; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+}
+.chai-app h1, .chai-app h2, .chai-app h3, .chai-app p { margin: 0; }
+.glass { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); }
+.glass-strong { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); }
+.muted { color: var(--muted); }
+.strong { color: var(--fg); font-weight: 800; }
+.row { display: flex; align-items: center; gap: 10px; }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.grow { flex: 1; min-width: 0; }
+
+/* ---- Shell ---- */
+.desk { display: flex; gap: 20px; padding: 24px; }
+.rail { width: 64px; flex-shrink: 0; border-radius: 999px; display: flex; flex-direction: column; align-items: center; padding: 18px 0; gap: 10px; }
+.rail-item { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; color: var(--muted); }
+.rail-item.active { background: var(--ink); color: var(--on-ink); }
+.rail-me { margin-top: auto; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+.main { flex: 1; min-width: 0; border-radius: 36px; padding: 26px; display: flex; flex-direction: column; gap: 20px; }
+.ph { display: flex; flex-direction: column; border-radius: 34px; border: 1px solid var(--fill-strong); }
+.ph-status { height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; font-size: 14px; font-weight: 700; }
+.ph-icons { display: flex; gap: 4px; } .ph-icons i { width: 16px; height: 9px; border-radius: 3px; background: var(--fg); opacity: 0.85; }
+.ph-bar { height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 16px; border-bottom: 1px solid var(--divider); font-size: 16px; font-weight: 800; }
+.ph-menu { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.ph-body { flex: 1; min-height: 0; padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ---- Header ---- */
+.pg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.pg-text { display: flex; flex-direction: column; gap: 10px; max-width: 980px; }
+.eyebrow { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.pg-head h1 { font-size: 30px; font-weight: 800; line-height: 1.15; }
+.lede { font-size: 16px; font-weight: 500; line-height: 1.7; color: var(--muted); text-wrap: pretty; }
+.lede b { color: var(--fg); font-weight: 700; }
+.pg-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-top: 4px; }
+.ph-head { flex-direction: column; gap: 14px; }
+.ph-head h1 { font-size: 26px; }
+.ph-head .lede { font-size: 15px; line-height: 1.6; }
+.ph-head .pg-actions { flex-wrap: wrap; margin-top: 0; }
+
+/* ---- Buttons, pills, segmented, chips ---- */
+.btn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 18px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; user-select: none; }
+.btn-primary { background: var(--ink); color: var(--on-ink); position: relative; overflow: hidden; }
+.btn-primary::after { content: ""; position: absolute; top: -60%; left: -30%; width: 46%; height: 220%; background: linear-gradient(100deg, transparent, oklch(1 0 0 / 0.25), transparent); transform: rotate(14deg); pointer-events: none; }
+.btn-ghost { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--fg); }
+.btn-soft { background: var(--fill); color: var(--fg); }
+.btn-accent { background: var(--accent-tint); color: var(--accent-text); }
+.btn-danger { background: var(--negative-tint); color: var(--negative); }
+.btn-icon { width: 40px; padding: 0; justify-content: center; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--muted); }
+.btn-sm { min-height: 30px; padding: 0 12px; font-size: 12px; gap: 6px; }
+.btn-xs { min-height: 26px; padding: 0 10px; font-size: 11px; gap: 5px; }
+.ph .btn { min-height: 44px; }
+.ph .btn-sm { min-height: 36px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.pill-on { background: var(--accent-tint); color: var(--accent-text); }
+.pill-off { background: var(--fill); color: var(--muted); }
+.pill-soon { background: var(--warning-tint); color: var(--warning-text); }
+.pill-due { background: var(--negative-tint); color: var(--negative); animation: due-pulse 2.2s ease-in-out infinite; }
+.pill-warn { background: var(--warning-tint); color: var(--warning-text); }
+.pill-ink { background: var(--ink); color: var(--on-ink); }
+@keyframes due-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px var(--due-pulse-ring); } }
+@media (prefers-reduced-motion: reduce) { .pill-due { animation: none; } }
+.chg { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.chg-up { color: var(--negative); } .chg-down { color: var(--positive); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--fill); gap: 2px; }
+.seg-i { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.seg-i em { font-style: normal; font-size: 11px; color: var(--muted); font-weight: 700; }
+.seg-i.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--fill); color: var(--fg); white-space: nowrap; }
+.chip.on { background: var(--ink); color: var(--on-ink); }
+.chip i { width: 8px; height: 8px; border-radius: 3px; display: inline-block; }
+.chip em { font-style: normal; color: var(--muted); font-size: 11px; }
+.chip.on em { color: oklch(1 0 0 / 0.6); }
+.sample { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--warning-tint); color: var(--warning-text); font-size: 11px; font-weight: 800; letter-spacing: 0.01em; white-space: nowrap; }
+.sample::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--warning); }
+.tag-new { display: inline-flex; padding: 2px 7px; border-radius: 999px; font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: oklch(0.93 0.05 258); color: oklch(0.42 0.1 258); vertical-align: 1px; }
+
+/* ---- Monograms, card chips ---- */
+.mono { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--on-card); font-weight: 800; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18), 0 2px 6px oklch(0 0 0 / 0.18); }
+.mono-off { filter: grayscale(1); opacity: 0.55; }
+.via { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--fg); white-space: nowrap; }
+.minitile { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2); }
+.minibank { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--fill-strong); color: var(--muted); }
+
+/* ---- Cards (surfaces) ---- */
+.card { border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.card-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.card-t { font-size: 15px; font-weight: 800; }
+.card-t small { font-size: 12px; font-weight: 600; color: var(--muted); margin-left: 8px; }
+.card-note { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.55; }
+.link { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--accent-text); white-space: nowrap; }
+.tex { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; z-index: -1; pointer-events: none; }
+.tex svg, .tex .sheen { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.textured { position: relative; isolation: isolate; }
+
+/* Summary tiles, as on the Statements page: one feature tile in mint with rings. */
+.tiles { display: grid; gap: 16px; }
+.stile { position: relative; isolation: isolate; border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.stile .k { font-size: 12px; font-weight: 600; color: var(--muted); }
+.stile .v { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+.stile .v small { font-size: 14px; font-weight: 700; color: var(--muted); letter-spacing: 0; }
+.stile .s { font-size: 12px; color: var(--muted); font-weight: 500; }
+.stile .s b { color: var(--fg); font-weight: 700; }
+.feature { background: var(--feature-tile); border: 1px solid var(--feature-tile-line); }
+.feature .k, .feature .s { color: oklch(0.38 0.06 152); }
+
+/* Dark tiles, like the card tiles */
+.dtile { position: relative; isolation: isolate; flex-shrink: 0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow); }
+.dtile .dt-muted { color: var(--on-card-muted); font-size: 11px; font-weight: 600; }
+.dtile .dt-faint { color: var(--on-card-faint); font-size: 10px; font-weight: 600; }
+.dtile.sel { border: 1.5px solid var(--accent); box-shadow: var(--tile-shadow-selected); }
+.dtile .dt-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--on-card-fill); white-space: nowrap; }
+.dtile .dt-pill.due { background: oklch(0.7 0.14 35 / 0.55); animation: due-pulse 2.2s ease-in-out infinite; }
+.dtile .dt-pill.soon { background: oklch(0.8 0.13 80 / 0.35); }
+.dtile.off { filter: grayscale(0.85); opacity: 0.6; box-shadow: none; }
+.dtile .tick { display: none; } .dtile.sel .tick { display: flex; }
+.tick { position: absolute; top: -9px; right: -9px; width: 21px; height: 21px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px oklch(0 0 0 / 0.4); }
+.addtile { flex-shrink: 0; border-radius: 22px; border: 1.5px dashed var(--fill-strong); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 700; }
+
+/* ---- Fitting neatly: rows of cards end level, and content fills the card ---- */
+.stack-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.stack-col > :last-child { flex: 1 1 auto; }
+.spread { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+.foot { margin-top: auto; }
+.card > .tmap { flex: 1 1 auto; }
+
+/* ---- Tables ---- */
+.th { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.tgroup { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 8px; border-bottom: 1px solid var(--divider); font-size: 13px; font-weight: 800; }
+.tgroup span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.cell-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cell-name b { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cell-name small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+.num { font-weight: 800; }
+.sub2 { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+
+/* ---- Bars ---- */
+.track { height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.track > span { display: block; height: 100%; border-radius: inherit; }
+.stack { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; }
+.stack > span { display: block; height: 100%; position: relative; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.legend b { color: var(--fg); font-weight: 700; }
+
+/* ---- Notice ---- */
+.notice { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); color: var(--warning-text); font-size: 13px; font-weight: 600; }
+.notice b { color: oklch(0.36 0.08 65); font-weight: 800; }
+.notice .grow { color: oklch(0.4 0.08 68); }
+.notice svg { flex-shrink: 0; }
+
+/* ---- Dropdown (the app's own, #112) ---- */
+.sel { position: relative; display: inline-block; }
+.sel > summary { list-style: none; } .sel > summary::-webkit-details-marker { display: none; }
+.sel-trigger { position: relative; display: flex; align-items: center; gap: 8px; border: 1px solid var(--surface-line); background: var(--surface); cursor: pointer; text-align: left; max-width: 100%; }
+.sel-value { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sel-chev { flex-shrink: 0; color: var(--muted); display: flex; transition: transform 160ms var(--ease-out); }
+.sel[open] .sel-chev { transform: rotate(180deg); }
+.sel-icon { display: flex; color: var(--muted); }
+.sel--pill .sel-trigger { min-height: 40px; border-radius: 999px; box-shadow: var(--soft-shadow); padding: 9px 15px; font-size: 13px; font-weight: 700; }
+.sel--pill[open] .sel-trigger { border-color: var(--accent-edge); }
+.sel--small .sel-trigger { min-height: 34px; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; background: var(--fill); border-color: transparent; }
+.sel--field { display: block; }
+.sel--field .sel-trigger { width: 100%; height: 40px; border-radius: 12px; padding: 0 12px 0 14px; font-size: 14px; font-weight: 600; }
+.sel--field[open] .sel-trigger { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.ph .sel--field .sel-trigger { height: 44px; } .ph .sel--pill .sel-trigger { min-height: 44px; }
+.is-placeholder { color: var(--muted); font-weight: 500; }
+.pop { position: absolute; z-index: 20; top: calc(100% + 8px); left: 0; background: var(--surface); border: 1px solid var(--surface-line); border-radius: 16px; box-shadow: var(--pop-shadow); padding: 6px; min-width: 100%; }
+.pop.align-end { left: auto; right: 0; }
+.sel[open] .pop { animation: pop-in 150ms var(--ease-out) both; }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@media (prefers-reduced-motion: reduce) { .sel[open] .pop { animation: none; } .sel-chev { transition: none; } }
+.lb { min-width: 210px; max-height: 300px; overflow-y: auto; }
+.sel--field .lb { min-width: 0; }
+.lb-group { padding: 8px 12px 4px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.lb-divider { height: 1px; margin: 6px 8px; background: var(--divider); }
+.opt { display: flex; align-items: center; gap: 12px; min-height: 36px; padding: 0 10px 0 12px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--fg); cursor: pointer; }
+.sel--field .opt { font-size: 14px; font-weight: 600; }
+.opt:hover { background: var(--fill); }
+.opt-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.opt-meta { flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+.opt-check { flex-shrink: 0; width: 14px; color: var(--accent-text); visibility: hidden; display: flex; }
+.opt[aria-selected="true"] { background: var(--accent-tint); color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-meta { color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-check { visibility: visible; }
+.ph .opt { min-height: 44px; }
+
+/* ---- Light hover card (#104/#105) ---- */
+.hc { width: 250px; border-radius: 16px; padding: 14px; background: var(--surface); color: var(--fg); box-shadow: var(--pop-shadow); border: 1px solid var(--surface-line); }
+.hc .h { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.hc .t { font-size: 22px; font-weight: 800; line-height: 1.25; margin-top: 2px; }
+.hc .d { font-size: 12px; font-weight: 700; margin-top: 2px; color: var(--muted); }
+.hc ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.hc li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+.hc li .nm { flex: 1; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc li b { font-weight: 800; }
+.hc .f { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--divider); font-size: 11px; font-weight: 600; color: var(--muted); }
+.hc-arrow { position: absolute; width: 12px; height: 12px; background: var(--surface); border: 1px solid var(--surface-line); border-top: none; border-left: none; transform: rotate(45deg); }
+.hov { position: relative; }
+.hov > .hc-wrap { position: absolute; z-index: 30; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 160ms ease, transform 240ms var(--ease-out); }
+.hov:hover > .hc-wrap, .hov.is-open > .hc-wrap { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .hov > .hc-wrap { transition: none; transform: none; } }
+
+/* ---- Heatmap ---- */
+.heat { display: grid; gap: 8px; align-items: center; }
+.heat-m { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.heat-m.now { color: var(--fg); }
+.hcell { position: relative; isolation: isolate; height: 54px; border-radius: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.ph .hcell .cap { display: none; }
+.hcell .cap { font-size: 9px; font-weight: 600; opacity: 0.85; margin-top: 1px; white-space: nowrap; }
+.hcell.up { border: 1.5px dashed var(--heat-upcoming); color: var(--muted); background: transparent; }
+.hcell.up.big { border-color: oklch(0.6 0.12 153 / 0.6); color: var(--heat-ink); background: oklch(0.95 0.03 150 / 0.5); }
+.hcell.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); }
+.hcell.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* ---- Forms (as docs/design/cards-forms.md) ---- */
+.dlg { position: relative; background: var(--surface); border-radius: 28px; box-shadow: var(--pop-shadow); display: flex; flex-direction: column; }
+.dlg-h { display: flex; align-items: flex-start; gap: 14px; padding: 26px 28px 0; }
+.dlg-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-tint); color: var(--accent-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dlg-h h3 { font-size: 18px; font-weight: 800; } .dlg-h p { font-size: 13px; color: var(--muted); font-weight: 500; margin-top: 3px; }
+.dlg-x { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--fg); flex-shrink: 0; }
+.dlg-b { display: grid; grid-template-columns: 320px 1fr; gap: 24px; padding: 20px 28px; }
+.dlg-f { display: flex; align-items: center; gap: 10px; padding: 16px 28px 22px; border-top: 1px solid var(--divider); }
+.dlg-f .note { flex: 1; font-size: 12px; color: var(--muted); font-weight: 500; }
+.preview { position: relative; isolation: isolate; border-radius: 20px; background: var(--feature-tile); border: 1px solid var(--feature-tile-line); padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.pv-k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: oklch(0.38 0.1 150); }
+.pv-box { background: oklch(1 0 0 / 0.72); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
+.pv-box .between span:first-child { color: var(--muted); font-weight: 600; }
+.pv-box .between span:last-child { font-weight: 700; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 14px; align-content: start; }
+.fld { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.fld.full { grid-column: 1 / -1; }
+.lbl { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.lbl .req { color: var(--negative); margin-left: 2px; }
+.lbl .opt-tag { font-size: 10px; font-weight: 700; color: var(--muted); opacity: 0.8; margin-left: 6px; letter-spacing: 0.04em; }
+.inp { height: 40px; border-radius: 12px; border: 1px solid var(--surface-line); background: var(--surface); box-shadow: inset 0 1px 1px oklch(0 0 0 / 0.02); padding: 0 14px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.ph .inp { height: 44px; }
+.inp .pre { color: var(--muted); font-weight: 600; } .inp .suf { color: var(--muted); font-weight: 500; font-size: 13px; }
+.inp.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.inp.err { border-color: var(--negative); box-shadow: 0 0 0 3px var(--negative-ring); }
+.inp .ph-text { color: var(--muted); font-weight: 500; }
+.help { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.45; }
+.help svg { flex-shrink: 0; margin-top: 2px; }
+.help.err { color: var(--negative); font-weight: 600; }
+.help.warn { color: var(--warning-text); font-weight: 600; }
+.fseg { display: flex; padding: 3px; border-radius: 13px; background: var(--fill); gap: 2px; }
+.fseg span { flex: 1; text-align: center; padding: 9px 8px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.fseg span.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.ph .fseg span { padding: 11px 6px; }
+.checkrow { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); font-size: 13px; color: oklch(0.36 0.08 65); font-weight: 600; line-height: 1.45; }
+.box { width: 18px; height: 18px; border-radius: 6px; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.box.off { background: var(--surface); border: 1.5px solid var(--fill-strong); }
+.scrim { position: absolute; inset: 0; background: oklch(0.16 0.008 260 / 0.38); }
+
+/* ---- Canvas furniture (labels on the boards themselves) ---- */
+.board { padding: 48px; display: flex; flex-direction: column; gap: 36px; }
+.board-h h2 { font-size: 28px; font-weight: 800; }
+.board-h p { font-size: 14px; color: var(--muted); font-weight: 500; line-height: 1.6; margin-top: 8px; max-width: 1100px; }
+.board-h p b { color: var(--fg); }
+.sec-h { display: flex; gap: 12px; align-items: flex-start; }
+.sec-n { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sec-h h3 { font-size: 16px; font-weight: 800; }
+.sec-h p { font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.55; margin-top: 3px; max-width: 980px; }
+.frame-l { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+.stage { position: relative; border-radius: 28px; background: oklch(0.9 0.005 90); overflow: hidden; }
+.callout { position: absolute; z-index: 40; display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: oklch(0.55 0.2 300); color: white; font-size: 11px; font-weight: 800; box-shadow: 0 4px 12px oklch(0.3 0.15 300 / 0.35); white-space: nowrap; }
+.callout::before { content: attr(data-n); width: 16px; height: 16px; border-radius: 50%; background: white; color: oklch(0.45 0.2 300); display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+
+/* ===================== Accounts additions ===================== */
+.pill-stale { background: var(--warning-tint); color: var(--warning-text); }
+.pill-stale.pulse { animation: stale-pulse 2.6s ease-in-out infinite; }
+@keyframes stale-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px oklch(0.72 0.14 75 / 0.22); } }
+.pill-derived { background: oklch(0.94 0.03 258); color: oklch(0.42 0.1 258); }
+.chg-up { color: var(--positive); } .chg-down { color: var(--negative); }
+.chg-out { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .pill-stale.pulse { animation: none; } }
+
+/* Hidden radios that hold the pick (All or an account) */
+.pk-in { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+label.pk, label.sx { cursor: pointer; }
+
+/* Cover flow (as the Subscriptions final design) */
+.cstage { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; outline: none; border-radius: 18px; }
+.cstage:active { cursor: grabbing; }
+.cstage:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.cstage .sx { transition: transform 520ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 380ms, filter 380ms !important; -webkit-user-drag: none; }
+.chint { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 70; display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; background: oklch(1 0 0 / 0.72); border: 1px solid var(--surface-line); font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); pointer-events: none; }
+.chint kbd { font: inherit; font-weight: 800; padding: 0 5px; border-radius: 5px; background: var(--fill); color: var(--fg); }
+.stg { position: absolute; inset: 0; border-radius: inherit; opacity: 0; z-index: -2; transition: opacity 650ms ease; pointer-events: none; }
+.stage-dark { --fg: oklch(0.97 0.004 260); --muted: oklch(1 0 0 / 0.62); --divider: oklch(1 0 0 / 0.14); --fill: oklch(1 0 0 / 0.12); --fill-strong: oklch(1 0 0 / 0.22); --accent-text: var(--on-card-lime); --surface: oklch(0.22 0.012 260); --surface-line: oklch(1 0 0 / 0.1); color: var(--fg); border-color: transparent !important; }
+.stage-dark .btn-soft { background: oklch(1 0 0 / 0.14); color: var(--fg); }
+.stage-dark .btn-icon { background: oklch(1 0 0 / 0.14); color: var(--fg); border-color: transparent; }
+.stage-dark .chint { background: oklch(0 0 0 / 0.35); border-color: oklch(1 0 0 / 0.12); }
+.stage-dark .pill-off { background: oklch(1 0 0 / 0.14); color: var(--fg); }
+.stage-dark .pill-stale { background: oklch(0.8 0.13 80 / 0.28); color: oklch(0.93 0.09 85); }
+.stage-deep .pk-bar { background: var(--pick-soft, var(--on-card-lime)) !important; transition: background 500ms; }
+.stage-deep .btn-primary { background: var(--pick-soft, var(--on-card-lime)); color: var(--pick-ink, var(--ink)); transition: background 500ms, color 500ms; }
+.stage-deep .chint kbd { background: var(--pick-soft, var(--fill)); color: var(--pick-ink, var(--fg)); }
+.cnav { display: none; }
+@media (prefers-reduced-motion: reduce) { .cstage .sx, .stg { transition: none !important; } }
+
+/* The hero panes: one per pick, only the picked one shows */
+.hp { display: none; }
+
+/* Hero stats */
+.hstat { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.hstat .k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.hstat .v { font-size: 17px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hstat .s { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Account tiles (the Cards tiles' grammar) */
+.atile { position: relative; isolation: isolate; flex-shrink: 0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow); overflow: hidden; }
+.atile .t-muted { color: var(--on-card-muted); font-size: 11px; font-weight: 600; }
+.atile .t-faint { color: var(--on-card-faint); font-size: 10.5px; font-weight: 600; }
+.atile .t-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--on-card-fill); white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.atile .t-pill.stale { background: oklch(0.8 0.13 80 / 0.38); color: oklch(0.97 0.05 90); animation: stale-pulse 2.6s ease-in-out infinite; }
+.atile.off { filter: grayscale(0.85); opacity: 0.62; box-shadow: none; }
+.atile .bank { width: 28px; height: 28px; border-radius: 9px; background: var(--on-card-fill); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+.tilewrap { position: relative; flex-shrink: 0; display: block; }
+.tilewrap .tick { display: none; }
+@media (prefers-reduced-motion: reduce) { .atile .t-pill.stale { animation: none; } }
+
+/* Treemap ("Where it sits") */
+.tmap { position: relative; }
+.tblock { position: absolute; border-radius: 14px; padding: 12px 14px; color: var(--on-card); overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; isolation: isolate; transition: transform 160ms var(--ease-out), opacity 240ms, filter 240ms; }
+.tblock b { font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tblock .tb-s { font-size: 11px; font-weight: 600; color: var(--on-card-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tblock .tb-v { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.tblock .tb-p { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 700; color: var(--on-card-faint); }
+label.tblock:hover { transform: translateY(-2px); }
+.tgroup-l { position: absolute; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+
+/* Charts */
+.chart { display: block; overflow: visible; }
+.chart text { font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; }
+.acm { transition: opacity 260ms ease, filter 260ms ease; }
+.axis-t { font-size: 10.5px; font-weight: 700; fill: var(--muted); }
+.axis-l { stroke: var(--divider); stroke-dasharray: 3 4; }
+.vlabel { font-size: 11px; font-weight: 800; fill: var(--fg); }
+.hatch-fill { fill: url(#hatch); }
+
+/* Snapshot calendar */
+.scal { display: grid; gap: 6px; align-items: center; }
+.scal .sc-h { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.scal .sc-h.now { color: var(--fg); }
+.scell { position: relative; height: 44px; border-radius: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 800; transition: opacity 240ms; }
+.scell small { font-size: 9px; font-weight: 700; opacity: 0.8; margin-top: 1px; }
+.scell.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); font-weight: 700; }
+.scell.stale { background: repeating-linear-gradient(135deg, oklch(0.95 0.05 85) 0 6px, oklch(0.98 0.02 85) 6px 12px); color: var(--warning-text); border: 1.5px dashed oklch(0.72 0.14 75 / 0.6); }
+.scell.closed { background: var(--fill); color: var(--muted); font-weight: 700; }
+.scell.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* Account rows (direction C) */
+.arow { display: grid; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--divider); }
+.arow:last-child { border-bottom: 0; }
+.qinp { height: 36px; border-radius: 11px; border: 1px solid var(--surface-line); background: var(--surface); padding: 0 12px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; box-shadow: inset 0 1px 1px oklch(0 0 0 / 0.02); }
+.qinp .pre { color: var(--muted); font-weight: 600; }
+.qinp.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.qinp.ghost { color: var(--muted); font-weight: 600; }
+
+/* Passbooks (direction D) */
+.pbook { position: relative; isolation: isolate; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; transition: transform 160ms var(--ease-out), box-shadow 200ms, opacity 240ms; }
+label.pbook:hover { transform: translateY(-2px); }
+.pbook .spine { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
+
+/* Paper laid on the green stage: back to the light tokens */
+.on-paper { --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --divider: oklch(0 0 0 / 0.08); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07); --accent-text: oklch(0.42 0.14 145); color: var(--fg); }
+.stage-dark .on-paper .btn-soft { background: var(--fill); color: var(--fg); }
+.stage-dark .on-paper .btn-icon { background: var(--surface); color: var(--muted); border-color: var(--surface-line); }
+.stage-dark .on-paper .pill-off { background: var(--fill); color: var(--muted); }
+.stage-dark .on-paper .pill-stale { background: var(--warning-tint); color: var(--warning-text); }
+
+/* ===================== Shared with Income ===================== */
+.pill-late { background: var(--warning-tint); color: var(--warning-text); }
+.pill-derived { background: oklch(0.94 0.03 258); color: oklch(0.42 0.1 258); }
+.minibank { width: 18px; height: 18px; border-radius: 6px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; color: var(--on-card); font-size: 9.5px; font-weight: 800; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2); }
+.pk-in { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+label.pk, label.sx { cursor: pointer; }
+.lede .pt { position: relative; display: inline-block; }
+.lede .pt > b { cursor: help; border-bottom: 1.5px dotted var(--accent-text); padding-bottom: 1px; transition: background 160ms; border-radius: 4px; }
+.lede .pt:hover > b, .lede .pt:focus-visible > b { background: var(--accent-tint); }
+.lede .hc-wrap { font-weight: 500; font-size: 13px; line-height: 1.4; color: var(--fg); }
+.lede .warn-b { color: var(--warning-text); }
+
+/* Ring texture on marks (the app's RingTexture, as CSS) */
+.rt { position: relative; overflow: hidden; }
+.rt::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: repeating-radial-gradient(circle at calc(100% + 10px) calc(100% + 18px), oklch(1 0 0 / 0.26) 0 1px, transparent 1px 15px); }
+.rt.rt-dark::after { background: repeating-radial-gradient(circle at calc(100% + 10px) calc(100% + 18px), oklch(0 0 0 / 0.14) 0 1px, transparent 1px 15px); }
+
+/* Hero furniture shared by the four variations */
+.hero { position: relative; isolation: isolate; border-radius: 28px; overflow: hidden; }
+.hk { font-size: 11px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.hbig { font-size: 64px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.02; }
+.hbig small { font-size: 28px; font-weight: 700; letter-spacing: -0.01em; margin-right: 2px; opacity: 0.8; }
+.hsub { font-size: 13px; font-weight: 600; color: var(--muted); }
+.hfig { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.hfig .k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.hfig .v { font-size: 20px; font-weight: 800; white-space: nowrap; letter-spacing: -0.01em; }
+.hfig .s { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.hfig .v.warn { color: var(--warning-text); }
+.delta { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; background: oklch(1 0 0 / 0.6); color: var(--positive); }
+
+/* Payday river (I1) */
+.river { display: grid; grid-template-columns: 150px 1fr 96px; align-items: stretch; }
+.river .ax { grid-column: 2; position: relative; height: 38px; }
+.river .ax span { position: absolute; top: 20px; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+.river .ax span.now { color: var(--fg); }
+.lane { display: contents; }
+.lane > * { transition: opacity 240ms; }
+.lane .ll { display: flex; align-items: center; gap: 10px; height: var(--lh, 54px); cursor: pointer; border-radius: 14px; padding-right: 6px; }
+.lane .ll b { font-size: 13px; font-weight: 800; display: block; line-height: 1.2; }
+.lane .ll small { font-size: 11px; font-weight: 600; color: var(--muted); display: block; }
+.lane .lp { position: relative; height: var(--lh, 54px); }
+.lane .lp::before { content: ""; position: absolute; left: 0; width: var(--now, 81%); top: var(--ly, 50%); height: 0; border-top: 1.5px solid var(--lane, var(--muted)); opacity: 0.3; }
+.lane .lp::after { content: ""; position: absolute; left: var(--now, 81%); right: 0; top: var(--ly, 50%); height: 0; border-top: 1.5px dashed var(--lane, var(--muted)); opacity: 0.5; }
+.lane .lt { display: flex; align-items: center; justify-content: flex-end; font-size: 13px; font-weight: 800; height: var(--lh, 54px); }
+.bead { position: absolute; border-radius: 50%; transform: translate(-50%, -50%); display: flex; align-items: center; justify-content: center; color: var(--on-card); font-size: 9.5px; font-weight: 800; box-shadow: 0 2px 6px oklch(0.3 0.09 155 / 0.28), inset 0 1px 0 oklch(1 0 0 / 0.28); }
+.bead.late { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px oklch(0.72 0.14 75), 0 2px 6px oklch(0.3 0.09 155 / 0.28); }
+.bead.pend { background: var(--warning-tint) !important; border: 2px dashed oklch(0.72 0.14 75); color: var(--warning-text); box-shadow: none; animation: due-pulse 2.2s ease-in-out infinite; }
+.bead.soon { background: oklch(1 0 0 / 0.5) !important; border: 1.5px dashed var(--lane); color: var(--fg); box-shadow: none; }
+.bead-l { position: absolute; transform: translate(0, -50%); font-size: 11px; font-weight: 800; white-space: nowrap; color: var(--fg); pointer-events: none; }
+.bead-l.soon { color: var(--muted); font-weight: 700; }
+.bead-wrap { position: absolute; top: 50%; left: 0; width: 0; height: 0; }
+.bead-wrap.hov > .hc-wrap { left: 50%; margin-left: -125px; bottom: calc(100% + 20px); }
+.todayline { position: absolute; top: 0; bottom: 0; width: 0; border-left: 1.5px solid var(--ink); z-index: 4; pointer-events: none; }
+.todaytag { position: absolute; top: -2px; transform: translateX(-50%); z-index: 5; padding: 3px 9px; border-radius: 999px; background: var(--ink); color: var(--on-ink); font-size: 10px; font-weight: 800; white-space: nowrap; letter-spacing: 0.02em; }
+@keyframes due-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px oklch(0.72 0.14 75 / 0.25); } }
+
+/* Month columns (stacked bars) */
+.mb { display: flex; align-items: flex-end; gap: 14px; position: relative; padding-left: 40px; }
+.mcol { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: stretch; justify-content: flex-end; position: relative; }
+.mstack { display: flex; flex-direction: column-reverse; gap: 2px; justify-content: flex-start; }
+.mseg { border-radius: 4px; min-height: 3px; transition: opacity 260ms, filter 260ms; }
+.mseg:last-child { border-top-left-radius: 9px; border-top-right-radius: 9px; }
+.mseg.ghost { border: 1.5px dashed var(--c); background: color-mix(in oklch, var(--c) 12%, transparent); }
+.mseg.pend { background: repeating-linear-gradient(135deg, oklch(0.9 0.08 85) 0 5px, oklch(0.96 0.04 85) 5px 10px); border: 1.5px dashed oklch(0.72 0.14 75); }
+.mval { text-align: center; font-size: 11px; font-weight: 800; padding-bottom: 6px; white-space: nowrap; }
+.mval.muted { color: var(--muted); font-weight: 700; }
+.mlab { text-align: center; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); padding-top: 9px; }
+.mlab.now { color: var(--fg); }
+.mcol.nowcol .mstack { filter: drop-shadow(0 0 0 transparent); }
+.mcol.nowcol::before { content: ""; position: absolute; left: -7px; right: -7px; top: -4px; bottom: -6px; border-radius: 14px; background: var(--fill); z-index: -1; }
+.mline { position: absolute; left: 0; right: 0; border-top: 1.5px dashed oklch(0.45 0.1 152 / 0.55); pointer-events: none; z-index: 3; }
+.mline span { position: absolute; right: 0; top: -22px; font-size: 11px; font-weight: 800; color: var(--positive); background: var(--surface); padding: 1px 8px; border-radius: 999px; border: 1px solid var(--surface-line); }
+.mgrid { position: absolute; left: 0; right: 0; z-index: 0; border-top: 1px dashed var(--divider); pointer-events: none; }
+.mgrid span { position: absolute; left: 0; top: -17px; font-size: 10px; font-weight: 700; color: var(--muted); }
+.mcol.hov > .hc-wrap { bottom: auto; top: 0; }
+
+/* Source rows */
+.srow { display: grid; align-items: center; gap: 16px; padding: 13px 0; border-bottom: 1px solid var(--divider); }
+.srow:last-child { border-bottom: 0; }
+.srow.off { opacity: 0.55; }
+.spark { display: flex; align-items: flex-end; gap: 3px; height: 28px; }
+.spark i { flex: 1; min-width: 4px; border-radius: 2px; background: var(--c); min-height: 2px; }
+.spark i.z { background: var(--fill-strong); height: 2px !important; }
+.spark i.f { background: transparent; border: 1px dashed var(--c); opacity: 0.6; }
+
+/* Coming up rows */
+.cu { display: grid; grid-template-columns: 46px 1fr auto; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--divider); }
+.cu:last-of-type { border-bottom: 0; }
+.cu .dd { width: 46px; border-radius: 12px; padding: 5px 0; background: var(--fill); text-align: center; line-height: 1.1; }
+.cu .dd b { display: block; font-size: 17px; font-weight: 800; }
+.cu .dd span { font-size: 10px; font-weight: 800; color: var(--muted); letter-spacing: 0.05em; }
+.cu .dd.late { background: var(--warning-tint); } .cu .dd.late span { color: var(--warning-text); }
+.cu .tt { font-size: 13.5px; font-weight: 700; } .cu .ss { font-size: 12px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+.cu .amt { font-size: 15px; font-weight: 800; color: var(--positive); text-align: right; }
+.cu .amt small { display: block; font-size: 11px; font-weight: 700; color: var(--muted); }
+
+/* Bars with ring texture */
+.hbar { height: 10px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.hbar > span { display: block; height: 100%; border-radius: inherit; }
+
+/* Legend dots */
+.lg { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.lg i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.lg i.dash { border: 1.5px dashed var(--muted); background: transparent; }
+.lg i.hat { background: repeating-linear-gradient(135deg, oklch(0.9 0.08 85) 0 3px, oklch(0.96 0.04 85) 3px 6px); border: 1px dashed oklch(0.72 0.14 75); }
+
+/* Round 3 visuals: pickable blocks, tiles and bubbles keep their hover cards (the ring texture needs no clipping) */
+.pickable.rt { overflow: visible !important; }
+.bt { position: relative; isolation: isolate; display: flex; flex-direction: column; padding: 16px; border-radius: 22px; color: var(--on-card); min-width: 0; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.22); }
+.dt-pill { display: inline-flex; align-items: center; font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: oklch(1 0 0 / 0.18); white-space: nowrap; color: var(--on-card); }
+/* Dark stage for the wheel (I3) */
+.stage-deep { background: linear-gradient(155deg, var(--card-emerald-from), var(--card-emerald-to)); color: var(--on-card); --fg: oklch(0.97 0.004 260); --muted: oklch(1 0 0 / 0.62); --divider: oklch(1 0 0 / 0.14); --fill: oklch(1 0 0 / 0.1); --fill-strong: oklch(1 0 0 / 0.2); --surface: oklch(0.22 0.04 160); --surface-line: oklch(1 0 0 / 0.14); --accent-text: var(--on-card-lime); --accent-tint: oklch(1 0 0 / 0.14); }
+.stage-deep .btn-primary { background: var(--on-card-lime); color: var(--ink); }
+.stage-deep .btn-ghost { background: oklch(1 0 0 / 0.14); color: var(--fg); border-color: transparent; box-shadow: none; }
+.stage-deep .hc { --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --divider: oklch(0 0 0 / 0.08); }
+.stage-deep .hc * { color: inherit; }
+.stage-deep .hc .h, .stage-deep .hc .d, .stage-deep .hc li .nm, .stage-deep .hc .f { color: var(--muted); }
+.stage-deep .pill-on { background: oklch(0.88 0.12 145 / 0.22); color: var(--on-card-lime); }
+.stage-deep .pill-late { background: oklch(0.85 0.12 85 / 0.25); color: oklch(0.94 0.09 88); }
+.stage-deep .pill-due { background: oklch(0.7 0.14 35 / 0.45); color: oklch(0.97 0.04 60); }
+.mchip { display: inline-flex; flex-direction: column; align-items: center; gap: 4px; padding: 7px 0; width: 54px; border-radius: 14px; font-size: 11px; font-weight: 800; letter-spacing: 0.03em; color: var(--muted); cursor: pointer; transition: background 160ms, color 160ms; text-transform: uppercase; }
+.mchip i { width: 20px; height: 4px; border-radius: 2px; background: currentColor; opacity: 0.35; }
+.mchip:hover { background: var(--fill); }
+.mpane { display: none; }
+.pbar { height: 8px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+
+/* Entries ledger */
+.erow { display: grid; align-items: center; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--divider); }
+.erow:last-child { border-bottom: 0; }
+.erow .dim { color: var(--muted); font-weight: 600; }
+.tag { display: inline-flex; align-items: center; padding: 2px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800; background: var(--fill); color: var(--muted); }
+.tag.bonus { background: oklch(0.94 0.04 300); color: oklch(0.42 0.12 300); }
+.tag.other { background: var(--fill); color: var(--muted); }
+.toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.search { height: 40px; min-width: 250px; border-radius: 999px; background: var(--fill); display: flex; align-items: center; gap: 8px; padding: 0 16px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.pager .pgb { display: inline-flex; align-items: center; gap: 8px; }
+.pager .pgb i { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--surface-line); display: flex; align-items: center; justify-content: center; background: var(--surface); color: var(--fg); font-style: normal; box-shadow: var(--soft-shadow); }
+.mgrp { display: flex; align-items: center; justify-content: space-between; padding: 16px 0 8px; border-bottom: 1px solid var(--divider); font-size: 13px; font-weight: 800; }
+.mgrp span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.menu { position: absolute; z-index: 20; right: 0; top: calc(100% + 6px); width: 190px; padding: 6px; border-radius: 16px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--pop-shadow); display: flex; flex-direction: column; }
+.menu span { padding: 9px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 9px; }
+.menu span.on { background: var(--fill); } .menu span.dng { color: var(--negative); }
+.mini-btn { display: inline-flex; align-items: center; gap: 6px; padding: 0 12px; min-height: 30px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.mini-btn.ok { background: var(--accent-tint); color: var(--accent-text); }
+.mini-btn.warn { background: var(--warning-tint); color: var(--warning-text); }
+.mini-btn.ghost { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); }
+
+/* Dialog helpers for the forms board */
+.sw { display: inline-flex; gap: 8px; }
+.sw i { width: 26px; height: 26px; border-radius: 9px; display: inline-block; }
+.sw i.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+
+.chai-app { --solid: oklch(0.995 0 0); --grid: oklch(0.3 0.09 155 / 0.18); --need: oklch(0.5 0.14 28); --need-tint: oklch(0.95 0.035 35); --want: oklch(0.45 0.1 258); --want-tint: oklch(0.945 0.03 258); }
+.pgcol { display: flex; flex-direction: column; gap: 20px; }
+.g12 { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 20px; align-items: stretch; }
+.g12 > * { display: flex; flex-direction: column; min-width: 0; }
+.g12 > * > .card { flex: 1 1 auto; }
+
+/* Badges: why (Need/Want) and how long (Minor/Major) */
+.nb { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800; letter-spacing: 0.02em; white-space: nowrap; }
+.nb-need { background: var(--need-tint); color: var(--need); }
+.nb-want { background: var(--want-tint); color: var(--want); }
+.sb { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 10.5px; font-weight: 800; white-space: nowrap; border: 1px solid var(--divider); color: var(--muted); }
+.sb-major { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.pill-fixed { background: var(--negative-tint); color: var(--negative); }
+.gtile { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--on-card); box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18), 0 2px 6px oklch(0 0 0 / 0.18); }
+.gtile.off { filter: grayscale(0.85); opacity: 0.6; }
+.dot { width: 8px; height: 8px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+.subrow { padding-left: 30px; position: relative; }
+.subrow::before { content: ""; position: absolute; left: 14px; top: -14px; bottom: 50%; width: 10px; border-left: 1.5px solid var(--divider); border-bottom: 1.5px solid var(--divider); border-bottom-left-radius: 8px; }
+.srow.dropped { opacity: 0.45; } .srow.dropped .cell-name b { text-decoration: line-through; }
+.gbar { height: 10px; border-radius: 999px; background: var(--fill); position: relative; overflow: visible; }
+.gbar > .f { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; }
+.gbar > .e { position: absolute; top: -3px; bottom: -3px; width: 2px; border-radius: 2px; background: var(--ink); opacity: 0.55; }
+.gbar.over > .f { background: var(--positive) !important; }
+
+/* G1 Tanks */
+.bays { display: grid; gap: 14px; }
+.bay { border-radius: 22px; background: color-mix(in oklch, var(--bc) 7%, var(--surface)); border: 1px solid color-mix(in oklch, var(--bc) 24%, transparent); padding: 14px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.bay-h { display: flex; align-items: center; gap: 10px; min-width: 0; min-height: 40px; }
+.bay-h b { font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.bay-h small { display: block; font-size: 11px; font-weight: 600; color: var(--muted); }
+.tanks { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 10px; flex: 1; align-items: start; }
+.tk { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.tk-v { position: relative; height: 210px; border-radius: 18px 18px 14px 14px; background: oklch(0 0 0 / 0.045); overflow: hidden; border: 1px solid var(--surface-line); box-shadow: inset 0 2px 6px oklch(0 0 0 / 0.05); }
+.tk-w { position: absolute; left: 0; right: 0; bottom: 0; height: var(--p); background: linear-gradient(180deg, color-mix(in oklch, var(--tc) 78%, white), var(--tc)); }
+.tk-w::before { content: ""; position: absolute; top: -7px; left: -12%; width: 124%; height: 14px; border-radius: 50%; background: color-mix(in oklch, var(--tc) 62%, white); opacity: 0.85; }
+.tk-pace { position: absolute; left: 0; right: 0; bottom: var(--e); height: 0; border-top: 2px dashed var(--ink); opacity: 0.7; z-index: 2; }
+.tk-pace span { position: absolute; right: 4px; top: -17px; font-size: 9px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--fg); background: oklch(1 0 0 / 0.78); padding: 1px 5px; border-radius: 6px; }
+.tk-pct { position: absolute; top: 9px; left: 0; right: 0; text-align: center; font-size: 19px; font-weight: 800; z-index: 3; letter-spacing: -0.01em; }
+.tk-pct.in { top: auto; bottom: 8px; color: var(--on-card); }
+.tk-v.off { filter: grayscale(0.7); opacity: 0.7; }
+.tk-n { font-size: 12px; font-weight: 800; line-height: 1.25; min-height: 30px; overflow: hidden; text-overflow: ellipsis; }
+.tk-s { min-height: 32px; font-size: 11px; font-weight: 600; color: var(--muted); line-height: 1.35; }
+.tk-s b { color: var(--fg); font-weight: 800; }
+
+/* G2 Runway */
+.rw { position: relative; display: flex; flex-direction: column; }
+.rw-row { display: grid; grid-template-columns: 250px minmax(0, 1fr) 150px; align-items: center; min-height: 42px; border-bottom: 1px solid var(--divider); }
+.rw-row:last-child { border-bottom: 0; }
+.rw-lab { display: flex; align-items: center; gap: 10px; min-width: 0; padding-right: 10px; }
+.rw-lab b { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.rw-lab small { display: block; font-size: 11px; font-weight: 600; color: var(--muted); }
+.rw-lab.sub { padding-left: 28px; }
+.rw-track { position: relative; height: 42px; }
+.rw-bar { position: absolute; top: 12px; height: 18px; border-radius: 999px; background: color-mix(in oklch, var(--tc) 20%, transparent); border: 1px solid color-mix(in oklch, var(--tc) 40%, transparent); }
+.rw-bar.par { top: 17px; height: 8px; background: color-mix(in oklch, var(--tc) 14%, transparent); }
+.rw-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 999px; background: linear-gradient(90deg, color-mix(in oklch, var(--tc) 80%, white), var(--tc)); }
+.rw-proj { position: absolute; top: 7px; width: 0; height: 28px; border-left: 2px dotted var(--ink); z-index: 2; }
+.rw-proj::after { content: ""; position: absolute; top: -3px; left: -5px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }
+.rw-pin { position: absolute; top: 4px; width: 22px; height: 34px; margin-left: -11px; z-index: 3; display: flex; flex-direction: column; align-items: center; color: var(--negative); }
+.rw-pin i { width: 3px; flex: 1; background: var(--negative); border-radius: 2px; }
+.rw-pin svg { background: var(--negative); color: white; border-radius: 6px; padding: 2px; width: 16px; height: 16px; }
+.rw-now { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px solid var(--accent); z-index: 4; pointer-events: none; }
+.rw-now span { position: absolute; top: -22px; left: -18px; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--accent-text); background: var(--accent-tint); padding: 2px 7px; border-radius: 999px; }
+.rw-end { text-align: right; padding-left: 10px; font-size: 12px; font-weight: 700; }
+.rw-end small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+.rw-axis { position: relative; height: 26px; margin-left: 250px; margin-right: 150px; border-bottom: 1px solid var(--divider); }
+.rw-axis span { position: absolute; top: 4px; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; color: var(--muted); }
+.rw-axis i { position: absolute; bottom: 0; height: 7px; border-left: 1px solid var(--divider); }
+.rw-grid { position: absolute; top: 26px; bottom: 0; left: 250px; right: 150px; pointer-events: none; }
+.rw-grid i { position: absolute; top: 0; bottom: 0; border-left: 1px dashed var(--grid); opacity: 0.6; }
+
+/* G3 Funding plan */
+.fp-chips { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.fp-chips label.chip { cursor: pointer; padding: 8px 14px; font-size: 13px; }
+.fp-chips label.chip em { font-size: 11px; }
+.fp-view { display: none; }
+.fp-row { display: grid; grid-template-columns: 210px minmax(0, 1fr) 150px; align-items: center; min-height: 36px; }
+.fp-track { position: relative; height: 36px; }
+.fp-bar { position: absolute; top: 9px; height: 18px; left: 0; border-radius: 999px; background: linear-gradient(90deg, color-mix(in oklch, var(--tc) 78%, white), var(--tc)); }
+.fp-bar.late { background: repeating-linear-gradient(135deg, var(--tc) 0 6px, color-mix(in oklch, var(--tc) 60%, white) 6px 12px); box-shadow: 0 0 0 2px var(--warning); }
+.fp-due { position: absolute; top: 3px; height: 30px; width: 2px; background: var(--ink); opacity: 0.6; z-index: 2; }
+.fp-due.fx { background: var(--negative); opacity: 1; width: 3px; }
+.fp-res { font-size: 12px; font-weight: 800; text-align: right; }
+.fp-res small { display: block; font-weight: 600; color: var(--muted); font-size: 11px; margin-top: 1px; }
+.fp-stack { display: flex; align-items: flex-end; gap: 3px; height: 130px; }
+.fp-stack > div { flex: 1; display: flex; flex-direction: column-reverse; min-width: 0; border-radius: 4px 4px 2px 2px; overflow: hidden; }
+.fp-stack > div > i { display: block; }
+.fp-big { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+.fp-big small { font-size: 14px; font-weight: 700; color: var(--muted); letter-spacing: 0; margin-left: 4px; }
+
+/* G4 Matrix */
+.mx { display: grid; grid-template-columns: 74px minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: auto auto auto; gap: 12px; }
+.mx-h { display: flex; flex-direction: column; justify-content: center; gap: 2px; }
+.mx-h b { font-size: 14px; font-weight: 800; } .mx-h small { font-size: 11px; font-weight: 600; color: var(--muted); }
+.mx-h.row { align-items: flex-start; }
+.mx-cell { border-radius: 20px; padding: 12px; display: flex; flex-direction: column; gap: 10px; min-height: 120px; border: 1px solid var(--surface-line); }
+.mx-cell.need { background: color-mix(in oklch, var(--need-tint) 70%, var(--surface)); }
+.mx-cell.want { background: color-mix(in oklch, var(--want-tint) 70%, var(--surface)); }
+.mx-cell .mx-t { display: flex; align-items: center; justify-content: space-between; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.mx-card { background: var(--surface); border-radius: 16px; padding: 12px 14px; box-shadow: var(--soft-shadow); display: flex; flex-direction: column; gap: 9px; border-left: 4px solid var(--tc); }
+.mx-card .top { display: flex; align-items: center; gap: 10px; }
+.mx-card .top b { font-size: 13.5px; font-weight: 800; display: block; } .mx-card .top small { font-size: 11px; font-weight: 600; color: var(--muted); display: block; }
+.mx-card .nums { display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; }
+.mx-card .nums span:last-child { color: var(--muted); font-weight: 600; }
+.mx-sub { display: flex; flex-wrap: wrap; gap: 6px; }
+.mx-sub span { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: var(--fill); font-size: 11px; font-weight: 700; }
+.mx-sub span i { width: 6px; height: 6px; border-radius: 50%; background: var(--tc); }
+.mx-sub span.want { color: var(--want); } .mx-sub span.need { color: var(--need); }
+.mx-empty { flex: 1; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: var(--muted); text-align: center; padding: 10px; }
+
+/* Small widgets */
+.split2 { display: flex; height: 18px; border-radius: 999px; overflow: hidden; gap: 2px; }
+.split2 > span { display: block; height: 100%; }
+.kv { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 12.5px; font-weight: 600; padding: 7px 0; border-bottom: 1px solid var(--divider); }
+.kv:last-child { border-bottom: 0; } .kv span:first-child { color: var(--muted); } .kv b { font-weight: 800; }
+.cu { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--divider); }
+.cu:last-child { border-bottom: 0; }
+.cu b { font-size: 13px; font-weight: 700; display: block; } .cu small { font-size: 11px; font-weight: 600; color: var(--muted); display: block; margin-top: 2px; }
+.cu .d { text-align: right; font-size: 12px; font-weight: 800; } .cu .d small { font-weight: 600; }
+.cu.risk { background: color-mix(in oklch, var(--negative-tint) 60%, transparent); box-shadow: inset 3px 0 0 var(--negative); margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: 8px; }
+.stack3 { display: flex; flex-direction: column; gap: 10px; }
+.meter { position: relative; height: 16px; border-radius: 999px; background: var(--fill); }
+.meter > i { position: absolute; top: 0; bottom: 0; left: 0; border-radius: inherit; display: block; }
+.meter > b { position: absolute; top: -5px; bottom: -5px; width: 2px; background: var(--ink); border-radius: 2px; }
+.meter-l { position: relative; height: 16px; font-size: 10.5px; font-weight: 700; color: var(--muted); }
+.meter-l span { position: absolute; white-space: nowrap; }
+.sw { display: inline-flex; gap: 8px; } .sw i { width: 26px; height: 26px; border-radius: 9px; display: inline-block; } .sw i.on { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--ink); }
+.nsec { display: flex; gap: 14px; align-items: flex-start; margin-top: 10px; }
+/* G5 This month */
+.mt-row { display: grid; grid-template-columns: minmax(0, 2.4fr) 0.9fr minmax(0, 2fr) 1fr 1.4fr; align-items: center; gap: 18px; padding: 12px 0; border-bottom: 1px solid var(--divider); }
+.mt-row:last-child { border-bottom: 0; }
+/* G6 Skyline */
+.sk { position: relative; border-radius: 22px; padding: 30px 30px 0; background: linear-gradient(180deg, oklch(0.27 0.04 265), oklch(0.36 0.06 280) 70%, oklch(0.5 0.09 40)); overflow: hidden; color: oklch(0.97 0 0); }
+.sk-stars { position: absolute; inset: 0; background: radial-gradient(1.2px 1.2px at 12% 20%, white, transparent), radial-gradient(1px 1px at 30% 12%, white, transparent), radial-gradient(1.4px 1.4px at 55% 18%, white, transparent), radial-gradient(1px 1px at 78% 10%, white, transparent), radial-gradient(1.2px 1.2px at 91% 26%, white, transparent), radial-gradient(1px 1px at 66% 34%, white, transparent); opacity: 0.7; }
+.sk-row { position: relative; display: flex; align-items: flex-end; justify-content: space-around; gap: 26px; min-height: 470px; padding-bottom: 0; }
+.sk-ground { position: relative; height: 0; }
+.sk-b { position: relative; display: flex; flex-direction: column; justify-content: flex-end; flex-shrink: 0; }
+.sk-top { position: relative; height: 34px; display: flex; justify-content: center; align-items: flex-end; }
+.sk-spire { position: absolute; bottom: 0; width: 3px; height: 34px; background: oklch(0.85 0.02 260); }
+.sk-spire::after { content: ""; position: absolute; top: -3px; left: -3px; width: 9px; height: 9px; border-radius: 50%; background: oklch(0.72 0.19 25); box-shadow: 0 0 10px oklch(0.72 0.19 25); }
+.sk-flag { position: absolute; bottom: 6px; left: 50%; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 4px; background: var(--negative); color: white; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 8px; white-space: nowrap; }
+.sk-body { display: flex; flex-direction: column; border-radius: 6px 6px 0 0; overflow: hidden; border: 1px solid oklch(1 0 0 / 0.12); border-bottom: 0; background: oklch(0.22 0.03 265); }
+.sk-f { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; padding: 7px 9px; font-size: 11px; font-weight: 800; border-top: 2px solid oklch(0.16 0.03 265); overflow: hidden;
+  background:
+    radial-gradient(circle at 6px 6px, oklch(1 0 0 / 0.16) 2px, transparent 2.4px) 0 0 / 14px 14px,
+    linear-gradient(to top, color-mix(in oklch, var(--tc) 72%, white) var(--lit), oklch(0.25 0.03 265) var(--lit)); }
+.sk-f:first-child { border-top: 0; }
+.sk-f::after { content: ""; position: absolute; left: 0; right: 0; bottom: var(--lit); height: 2px; background: white; opacity: 0.6; }
+.sk-f span { position: relative; z-index: 1; text-shadow: 0 1px 2px oklch(0 0 0 / 0.5); }
+.sk-f em { position: relative; z-index: 1; font-style: normal; opacity: 0.85; text-shadow: 0 1px 2px oklch(0 0 0 / 0.5); }
+.sk-l { position: relative; z-index: 1; margin: 0 -6px; padding: 10px 6px 14px; text-align: center; background: oklch(0.15 0.03 265); border-radius: 0 0 8px 8px; }
+.sk-l b { display: block; font-size: 13.5px; font-weight: 800; } .sk-l small { display: block; font-size: 11px; opacity: 0.75; font-weight: 600; margin-top: 2px; }
+.sk-l .row { justify-content: center; }
+.sk .nb-need { background: oklch(0.45 0.12 28 / 0.55); color: oklch(0.92 0.05 30); } .sk .nb-want { background: oklch(0.45 0.1 258 / 0.55); color: oklch(0.92 0.04 258); } .sk .sb { color: oklch(0.9 0 0); border-color: oklch(1 0 0 / 0.25); } .sk .sb-major { background: white; color: var(--ink); }
+.sk .hc { background: var(--solid); color: var(--fg); }
+/* G7 Queue */
+.q-focus { border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 16px; color: var(--on-card); background: linear-gradient(155deg, var(--card-teal-from), var(--card-teal-to)); box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18); }
+.q-focus .gbar { background: oklch(1 0 0 / 0.22); } .q-focus .gbar > .e { background: white; opacity: 0.9; }
+.q-kv { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; padding: 7px 0; border-bottom: 1px solid oklch(1 0 0 / 0.18); opacity: 0.95; } .q-kv b { font-weight: 800; }
+.q-row { display: grid; grid-template-columns: 22px 30px minmax(0, 1fr) 90px 130px; align-items: center; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--divider); }
+.q-row:last-child { border-bottom: 0; }
+.q-n { font-size: 12px; font-weight: 800; color: var(--muted); }
+/* G8 Staircase */
+.st-lab { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 800; background: var(--surface); padding: 3px 9px; border-radius: 999px; box-shadow: var(--soft-shadow); white-space: nowrap; }
+
+.st-lab.dk { background: oklch(0 0 0 / 0.35); color: white; box-shadow: none; backdrop-filter: blur(6px); }
+/* Round 3: coloured cards (the Queue's focus card, Subscriptions' cover, Accounts' cards) */
+.cc { position: relative; border-radius: 22px; padding: 16px; color: var(--on-card); display: flex; flex-direction: column; gap: 12px; overflow: hidden; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.16), 0 6px 16px oklch(0 0 0 / 0.12); }
+.cc .nb, .cc .sb, .tk2 .nb, .tk2 .sb { background: oklch(1 0 0 / 0.18); color: inherit; border-color: transparent; }
+.cc .sb-major, .tk2 .sb-major { background: oklch(1 0 0 / 0.92); color: var(--ink); }
+.cc-gb { position: relative; border-radius: 999px; background: oklch(1 0 0 / 0.24); } .cc-gb > i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: inherit; background: oklch(1 0 0 / 0.95); } .cc-gb > b { position: absolute; top: -3px; bottom: -3px; width: 2px; border-radius: 2px; background: oklch(0.95 0.15 90); }
+.cc-big { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.1; } .cc-big small { font-size: 13px; font-weight: 700; opacity: 0.8; margin-left: 5px; letter-spacing: 0; }
+.cc .hc-wrap, .tm .hc-wrap { color: var(--fg); }
+.cc.hov > .hc-wrap, .tm.hov > .hc-wrap { bottom: auto; top: 12px; left: 50%; margin-left: -115px; }
+.q-focus.rt { position: relative; } .q-focus .cc-gb { background: oklch(1 0 0 / 0.22); }
+/* G9 cover */
+.h9 { border: 1px solid oklch(1 0 0 / 0.12); }
+.h9-bg { position: absolute; inset: 0; z-index: -2; opacity: 0; transition: opacity 650ms ease; } .h9-bg-all { opacity: 1; }
+.h9-rings { position: absolute; inset: 0; z-index: -1; pointer-events: none; background: repeating-radial-gradient(circle at calc(100% + 40px) calc(100% + 60px), oklch(1 0 0 / 0.09) 0 1px, transparent 1px 30px); }
+.h9-fp { border: 1.5px solid oklch(1 0 0 / 0.5); border-radius: 26px; padding: 24px; display: flex; flex-direction: column; background: oklch(0 0 0 / 0.1); min-height: 330px; }
+.h9-f { display: none; flex-direction: column; gap: 12px; flex: 1; } .h9-f-all { display: flex; } .h9dir:has(input:checked:not(#p9-all)) .h9-f-all { display: none; }
+.h9-big { font-size: 58px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; }
+.h9-chip { display: inline-flex; align-items: center; gap: 5px; padding: 5px 11px; border-radius: 999px; background: oklch(1 0 0 / 0.18); font-size: 12px; font-weight: 700; color: white; white-space: nowrap; }
+.h9-pill { padding: 4px 12px; border-radius: 999px; background: oklch(1 0 0 / 0.18); font-size: 11px; font-weight: 800; }
+.vcs { display: flex; gap: 12px; align-items: stretch; }
+.vc { position: relative; flex: 1; border-radius: 22px; overflow: hidden; cursor: pointer; display: flex; flex-direction: column; align-items: center; padding: 14px 6px 12px; gap: 6px; color: white; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2), 0 8px 18px oklch(0 0 0 / 0.25); }
+.vc-f { position: absolute; left: 0; right: 0; bottom: 0; background: oklch(1 0 0 / 0.18); border-top: 2px solid oklch(1 0 0 / 0.55); }
+.vc-t, .vc-p, .vc-n { position: relative; } .vc-p { font-size: 17px; font-weight: 800; margin-top: 4px; }
+.vc-n { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 14px; font-weight: 800; margin-top: auto; white-space: nowrap; }
+.h9-chart { border-radius: 20px; padding: 16px 20px 0; background: oklch(0 0 0 / 0.14); }
+.h9-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; border-top: 1px solid oklch(1 0 0 / 0.2); padding-top: 18px; }
+.h9-stats > div { display: flex; flex-direction: column; gap: 3px; } .h9-stats b { font-size: 21px; font-weight: 800; } .h9-stats small { font-size: 12px; opacity: 0.8; font-weight: 600; }
+/* G10 map */
+.tmap2 { display: grid; grid-template-columns: 51fr 49fr; grid-template-rows: 56fr 44fr; grid-template-areas: "m c" "m s"; gap: 10px; height: 556px; }
+.tmap2 > div { min-height: 0; min-width: 0; } .tmap2 .tm { height: 100%; }
+.tm { position: relative; border-radius: 20px; overflow: hidden; color: var(--on-card); box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.16); min-width: 0; }
+.tm-fill { position: absolute; left: 0; right: 0; bottom: 0; background: oklch(1 0 0 / 0.2); border-top: 2px solid oklch(1 0 0 / 0.5); }
+.tm-in { position: relative; z-index: 1; height: 100%; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+.tm-n { font-size: 17px; font-weight: 800; display: block; } .tm small { display: block; font-size: 11.5px; font-weight: 600; opacity: 0.85; margin-top: 2px; }
+.tm-p { font-size: 13px; font-weight: 800; background: oklch(1 0 0 / 0.18); padding: 3px 10px; border-radius: 999px; }
+.tm-foot b { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+.tm .nb { background: oklch(1 0 0 / 0.18); color: inherit; }
+.tm-grid { flex: 1; display: grid; grid-template-columns: 1.5fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 8px; grid-template-areas: "r s a" "r t m"; min-height: 0; }
+.tm.mini { border-radius: 14px; background: oklch(0 0 0 / 0.2); border: 1px solid oklch(1 0 0 / 0.18); }
+.tm.mini .tm-in { padding: 10px 12px; } .tm.mini .tm-foot b { font-size: 15px; } .tm.mini .tm-foot small { font-size: 10.5px; }
+.q-mini { display: grid; grid-template-columns: 18px 14px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--divider); } .q-mini:last-child { border-bottom: 0; }
+.q-mini b { font-size: 12.5px; font-weight: 700; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .q-mini small { font-size: 10.5px; color: var(--muted); font-weight: 600; display: block; }
+/* G11 board */
+.lanes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+.lane { display: flex; flex-direction: column; gap: 12px; border-radius: 22px; padding: 14px; background: var(--fill); }
+.lane-h { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 2px 4px; }
+.lane-h b { font-size: 15px; font-weight: 800; display: block; } .lane-h small { display: block; font-size: 11.5px; color: var(--muted); font-weight: 600; margin-top: 2px; }
+.lane-b { flex: 1; display: flex; flex-direction: column; gap: 12px; } .lane-b > .cc { flex: 1; justify-content: space-between; }
+/* G12 tickets */
+.tk2 { position: relative; display: grid; grid-template-columns: 20px 32px minmax(0, 1.5fr) minmax(0, 1.1fr) 90px 130px; align-items: center; gap: 14px; padding: 12px 18px; border-radius: 18px; color: var(--on-card); box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.16), 0 3px 10px oklch(0 0 0 / 0.1); }
+.tk2-n { font-size: 12px; font-weight: 800; opacity: 0.8; } .tk2-end { text-align: right; border-left: 1.5px dashed oklch(1 0 0 / 0.4); padding-left: 14px; } .tk2-end b { font-size: 14px; font-weight: 800; display: block; } .tk2-end span { font-size: 11px; font-weight: 700; opacity: 0.85; }
+
+.formgrid { display: flex; flex-direction: column; gap: 30px; align-items: center; padding: 40px; }
+.formgrid .dlg { width: 1020px; }
+</style>
+</helmet>
+<div class="chai-app desk" style="width:1600px;height:3059px"><nav class="rail glass-strong"><span class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5"></rect><rect x="14" y="3" width="7" height="7" rx="1.5"></rect><rect x="3" y="14" width="7" height="7" rx="1.5"></rect><rect x="14" y="14" width="7" height="7" rx="1.5"></rect></svg></span><span class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h18"></path><path d="M5 21V10"></path><path d="M19 21V10"></path><path d="M3 10l9-6 9 6"></path><path d="M9 21v-6"></path><path d="M15 21v-6"></path></svg></span><span class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="6" width="20" height="14" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg></span><span class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 2l4 4-4 4"></path><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><path d="M7 22l-4-4 4-4"></path><path d="M21 13v2a4 4 0 0 1-4 4H3"></path></svg></span><span class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 17 9 11 13 15 21 7"></polyline><polyline points="14 7 21 7 21 14"></polyline></svg></span><span class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="19" y1="5" x2="5" y2="19"></line><circle cx="6.5" cy="6.5" r="2.5"></circle><circle cx="17.5" cy="17.5" r="2.5"></circle></svg></span><span class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="10" width="16" height="10" rx="2"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3"></path></svg></span><span class="rail-item"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="20" x2="4" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="20" y1="20" x2="20" y2="14"></line></svg></span><span class="rail-item active"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.2"></circle></svg></span><span class="rail-me">P</span></nav><main class="main glass"><div class="pgcol"><header class="pg-head"><div class="pg-text"><div class="eyebrow">Goals · Today</div><h1>Good afternoon, Prathik</h1><div class="lede">You're saving for 5 goals, and <span class="hov pt" tabindex="0"><b>₹3.15L</b><span class="hc-wrap" style="top:calc(100% + 8px);left:0"><div class="hc" style="width:250px"><div class="h"><span>Set aside so far</span></div><div class="t">₹3,14,500</div><div class="d">27% of the ₹11,72,800 your goals add up to</div><ul><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-copper);flex-shrink:0"></i><span class="nm">Car upgrade</span><b>₹76,500</b></li><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-violet);flex-shrink:0"></i><span class="nm">iPad Pro</span><b>₹42,000</b></li><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-teal);flex-shrink:0"></i><span class="nm">New fridge</span><b>₹45,000</b></li><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-ruby);flex-shrink:0"></i><span class="nm">Goa trip</span><b>₹21,000</b></li><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-sapphire);flex-shrink:0"></i><span class="nm">Masters course</span><b>₹1,30,000</b></li></ul><div class="f">The sum of every set-aside, less anything taken back. It is not new money: it is already in your accounts</div></div></span></span> of the <span class="hov pt" tabindex="0"><b>₹11.73L</b><span class="hc-wrap" style="top:calc(100% + 8px);left:0"><div class="hc" style="width:250px"><div class="h"><span>All goals add up to</span></div><div class="t">₹11,72,800</div><div class="d">5 goals, 5 sub-goals inside them</div><ul><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-copper);flex-shrink:0"></i><span class="nm">Car upgrade</span><b>₹3,45,000</b></li><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-violet);flex-shrink:0"></i><span class="nm">iPad Pro</span><b>₹80,800</b></li><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-teal);flex-shrink:0"></i><span class="nm">New fridge</span><b>₹62,000</b></li><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-ruby);flex-shrink:0"></i><span class="nm">Goa trip</span><b>₹85,000</b></li><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-sapphire);flex-shrink:0"></i><span class="nm">Masters course</span><b>₹6,00,000</b></li></ul><div class="f">A goal's total is its own part plus its sub-goals. Dropped sub-goals aren't counted</div></div></span></span> is set aside. Paying each on its own schedule takes <span class="hov pt" tabindex="0"><b>₹73,690</b><span class="hc-wrap" style="top:calc(100% + 8px);left:0"><div class="hc" style="width:250px"><div class="h"><span>Paid on its own schedule</span></div><div class="t">₹73,690 a month</div><div class="d">What each piece needs, spread evenly to its own date</div><ul><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-copper);flex-shrink:0"></i><span class="nm">Car upgrade</span><b>₹23,159</b></li><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-violet);flex-shrink:0"></i><span class="nm">iPad Pro</span><b>₹9,700</b></li><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-teal);flex-shrink:0"></i><span class="nm">New fridge</span><b>₹17,000</b></li><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-ruby);flex-shrink:0"></i><span class="nm">Goa trip</span><b>₹9,143</b></li><li><i style="width:8px;height:8px;border-radius:3px;background:var(--card-sapphire);flex-shrink:0"></i><span class="nm">Masters course</span><b>₹14,688</b></li></ul><div class="f">Left to save, over the whole months left, for every goal at once. It falls as goals finish</div></div></span></span> a month, but <span class="hov pt" tabindex="0"><b>₹27,000</b><span class="hc-wrap" style="top:calc(100% + 8px);left:0"><div class="hc" style="width:250px"><div class="h"><span>Funded in order</span></div><div class="t">₹27,000 a month</div><div class="d">Enough to hit every date if money goes to Fixed dates first, then Needs, then the soonest</div><div class="f">Because goals finish and free their money for the next. See the Funding plan</div></div></span></span> would hit every date if they're funded in order, and you plan <span class="hov pt" tabindex="0"><b>₹65,000</b><span class="hc-wrap" style="top:calc(100% + 8px);left:0"><div class="hc" style="width:250px"><div class="h"><span>What you plan</span></div><div class="t">₹65,000 a month</div><div class="d">Of the ₹67,500 left after obligations</div><ul><li><span class="nm">Income</span><b>₹1,38,500</b></li><li><span class="nm">Obligations</span><b>−₹71,000</b></li><li><span class="nm">Left</span><b>₹67,500</b></li><li><span class="nm">Planned for goals</span><b>₹65,000</b></li></ul><div class="f">Not a true surplus: UPI and cash spending aren't tracked</div></div></span></span>. The <span class="hov pt" tabindex="0"><b>new fridge</b><span class="hc-wrap" style="top:calc(100% + 8px);right:0"><div class="hc" style="width:250px"><div class="h"><span>New fridge · due soon</span><span class="pill pill-fixed" style="padding:2px 8px;font-size:10px">Fixed</span></div><div class="t">₹17,000</div><div class="d">still to set aside by Dec 20, 2026</div><ul><li><span class="nm">Saved</span><b>₹45,000</b></li><li><span class="nm">Target</span><b>₹62,000</b></li><li><span class="nm">Planned a month</span><b>₹15,000</b></li><li><span class="nm">Needed a month</span><b>₹17,000</b></li></ul><div class="f">A Fixed date can't slip: the old one is failing</div></div></span></span> is next, due Dec 20 with ₹17,000 still to set aside.</div></div><div class="pg-actions"><span class="btn btn-ghost "><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>Add goal</span><span class="btn btn-primary "><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.2"></circle></svg>Set aside</span></div></header><div class="notice"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg><div class="grow"><b>New fridge · Fixed date Dec 20</b> (in 52 days): ₹17,000 still to set aside, and you plan ₹15,000 a month. It's a Need.</div><span class="mini-btn ok"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="5"></circle><circle cx="12" cy="12" r="1.2"></circle></svg> Set aside</span><span class="mini-btn ghost">See plan</span></div><section class="card glass " style="gap:12px;"><div class="card-h"><div class="card-t">The runway<small>from the day saving began to the date, filled to what's set aside</small></div><span class="row" style="gap:10px"><span class="pill pill-derived"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a4 4 0 0 0 5.66 0l3-3a4 4 0 0 0-5.66-5.66l-1 1"></path><path d="M14 10a4 4 0 0 0-5.66 0l-3 3a4 4 0 0 0 5.66 5.66l1-1"></path></svg> Dotted line: where your plan finishes it</span><span class="seg "><span class="seg-i on">Runway</span><span class="seg-i">List</span></span></span></div>
+  <div class="rw" style="padding-top:22px"><div class="rw-axis"><span style="left:0%;padding-left:6px">2026</span><i style="left:0%"></i><span style="left:27.90519877675841%;padding-left:6px">2027</span><i style="left:27.90519877675841%"></i><span style="left:55.81039755351682%;padding-left:6px">2028</span><i style="left:55.81039755351682%"></i><span style="left:83.79204892966361%;padding-left:6px">2029</span><i style="left:83.79204892966361%"></i><i style="left:6.8807339449541285%;height:4px"></i><i style="left:34.785932721712534%;height:4px"></i><i style="left:62.76758409785933%;height:4px"></i><i style="left:90.67278287461774%;height:4px"></i><i style="left:13.837920489296637%;height:4px"></i><i style="left:41.74311926605505%;height:4px"></i><i style="left:69.72477064220183%;height:4px"></i><i style="left:97.62996941896024%;height:4px"></i><i style="left:20.871559633027523%;height:4px"></i><i style="left:48.776758409785934%;height:4px"></i><i style="left:76.75840978593273%;height:4px"></i><i style="left:104.66360856269112%;height:4px"></i></div><div class="rw-grid"><i style="left:6.8807339449541285%"></i><i style="left:34.785932721712534%"></i><i style="left:62.76758409785933%"></i><i style="left:90.67278287461774%"></i><i style="left:13.837920489296637%"></i><i style="left:41.74311926605505%"></i><i style="left:69.72477064220183%"></i><i style="left:97.62996941896024%"></i><i style="left:20.871559633027523%"></i><i style="left:48.776758409785934%"></i><i style="left:76.75840978593273%"></i><i style="left:104.66360856269112%"></i></div><span class="rw-now" style="left:calc(250px + (100% - 400px) * 0.2301223241590214);top:0"><span>Today</span></span><div class="rw-row"><div class="rw-lab"><span class="gtile" style="width:32px;height:32px;border-radius:10px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div style="min-width:0"><b>Car upgrade</b><small>₹77k of ₹3.5L</small></div></div>
+  <div class="rw-track hov" tabindex="0" style="--tc:var(--card-copper)"><span class="rw-bar par" style="left:4.510703363914373%;width:65.13761467889908%"><span class="rw-fill" style="width:22.2%"></span></span><span class="rw-proj" style="left:60.321100917431195%"></span><span class="hc-wrap" style="bottom:calc(100% + 8px);left:50%;margin-left:-120px"><div class="hc" style="width:250px"><div class="h"><span>Car upgrade</span></div><div class="t">₹76,500 of ₹3,45,000</div><div class="d">Mar 1 → Jun 30, 2028</div><ul><li><span class="nm">Planned a month</span><b>₹17,500</b></li><li><span class="nm">At that plan it ends</span><b>Feb 29, 2028</b></li><li><span class="nm">Date</span><b>plan makes it</b></li></ul><div class="f">The dotted line is where your plan finishes the goal</div></div></span></div>
+  <div class="rw-end">Jun 30<small>Behind</small></div></div><div class="rw-row"><div class="rw-lab sub"><span class="gtile" style="width:26px;height:26px;border-radius:8px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div style="min-width:0"><b>The rest</b><small>₹21k of ₹1.5L</small></div></div>
+  <div class="rw-track hov" tabindex="0" style="--tc:var(--card-copper)"><span class="rw-bar" style="left:4.510703363914373%;width:65.13761467889908%"><span class="rw-fill" style="width:14.0%"></span></span><span class="rw-proj" style="left:99.77064220183486%"></span><span class="hc-wrap" style="bottom:calc(100% + 8px);left:50%;margin-left:-120px"><div class="hc" style="width:250px"><div class="h"><span>The rest</span></div><div class="t">₹21,000 of ₹1,50,000</div><div class="d">Mar 1 → Jun 30, 2028</div><ul><li><span class="nm">Planned a month</span><b>₹4,000</b></li><li><span class="nm">At that plan it ends</span><b>Jul 29, 2029</b></li><li><span class="nm">Date</span><b>plan runs past it</b></li></ul><div class="f">The dotted line is where your plan finishes the goal</div></div></span></div>
+  <div class="rw-end">Jun 30<small><span style="color:var(--warning-text);font-weight:800">plan ends Jul 2029</span></small></div></div><div class="rw-row"><div class="rw-lab sub"><span class="gtile" style="width:26px;height:26px;border-radius:8px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div style="min-width:0"><b>Suspension</b><small>₹20k of ₹45k</small></div></div>
+  <div class="rw-track hov" tabindex="0" style="--tc:var(--card-copper)"><span class="rw-bar" style="left:4.510703363914373%;width:31.345565749235476%"><span class="rw-fill" style="width:44.4%"></span></span><span class="rw-proj" style="left:34.5565749235474%"></span><span class="hc-wrap" style="bottom:calc(100% + 8px);left:50%;margin-left:-120px"><div class="hc" style="width:250px"><div class="h"><span>Suspension</span></div><div class="t">₹20,000 of ₹45,000</div><div class="d">Mar 1 → Apr 15, 2027</div><ul><li><span class="nm">Planned a month</span><b>₹5,000</b></li><li><span class="nm">At that plan it ends</span><b>Mar 29, 2027</b></li><li><span class="nm">Date</span><b>plan makes it</b></li></ul><div class="f">The dotted line is where your plan finishes the goal</div></div></span></div>
+  <div class="rw-end">Apr 15<small>on plan</small></div></div><div class="rw-row"><div class="rw-lab sub"><span class="gtile" style="width:26px;height:26px;border-radius:8px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div style="min-width:0"><b>New tyres</b><small>₹28k of ₹38k</small></div></div>
+  <div class="rw-track hov" tabindex="0" style="--tc:var(--card-copper)"><span class="rw-bar" style="left:4.510703363914373%;width:24.082568807339452%"><span class="rw-fill" style="width:73.7%"></span></span><span class="rw-proj" style="left:27.675840978593275%"></span><span class="hc-wrap" style="bottom:calc(100% + 8px);left:50%;margin-left:-120px"><div class="hc" style="width:250px"><div class="h"><span>New tyres</span></div><div class="t">₹28,000 of ₹38,000</div><div class="d">Mar 1 → Jan 10, 2027</div><ul><li><span class="nm">Planned a month</span><b>₹5,000</b></li><li><span class="nm">At that plan it ends</span><b>Dec 29, 2026</b></li><li><span class="nm">Date</span><b>plan makes it</b></li></ul><div class="f">The dotted line is where your plan finishes the goal</div></div></span></div>
+  <div class="rw-end">Jan 10<small>on plan</small></div></div><div class="rw-row"><div class="rw-lab sub"><span class="gtile" style="width:26px;height:26px;border-radius:8px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div style="min-width:0"><b>Alloy wheels</b><small>₹8k of ₹52k</small></div></div>
+  <div class="rw-track hov" tabindex="0" style="--tc:var(--card-copper)"><span class="rw-bar" style="left:11.54434250764526%;width:44.189602446483185%"><span class="rw-fill" style="width:14.4%"></span></span><span class="rw-proj" style="left:53.28746177370031%"></span><span class="hc-wrap" style="bottom:calc(100% + 8px);left:50%;margin-left:-120px"><div class="hc" style="width:250px"><div class="h"><span>Alloy wheels</span></div><div class="t">₹7,500 of ₹52,000</div><div class="d">Jun 1 → Dec 31, 2027</div><ul><li><span class="nm">Planned a month</span><b>₹3,500</b></li><li><span class="nm">At that plan it ends</span><b>Nov 29, 2027</b></li><li><span class="nm">Date</span><b>plan makes it</b></li></ul><div class="f">The dotted line is where your plan finishes the goal</div></div></span></div>
+  <div class="rw-end">Dec 31<small>on plan</small></div></div><div class="rw-row"><div class="rw-lab sub"><span class="gtile" style="width:26px;height:26px;border-radius:8px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div style="min-width:0"><b>Music system</b><small>₹0 of ₹60k</small></div></div>
+  <div class="rw-track hov" tabindex="0" style="--tc:var(--card-copper)"><span class="rw-bar" style="left:20.871559633027523%;width:41.81957186544343%"><span class="rw-fill" style="width:0.0%"></span></span><span class="hc-wrap" style="bottom:calc(100% + 8px);left:50%;margin-left:-120px"><div class="hc" style="width:250px"><div class="h"><span>Music system</span></div><div class="t">₹0 of ₹60,000</div><div class="d">Oct 1 → Mar 31, 2028</div><ul><li><span class="nm">Planned a month</span><b>none</b></li><li><span class="nm">At that plan it ends</span><b>never (no plan)</b></li><li><span class="nm">Date</span><b>plan makes it</b></li></ul><div class="f">The dotted line is where your plan finishes the goal</div></div></span></div>
+  <div class="rw-end">Mar 31<small>on plan</small></div></div><div class="rw-row"><div class="rw-lab"><span class="gtile" style="width:32px;height:32px;border-radius:10px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div style="min-width:0"><b>iPad Pro</b><small>₹42k of ₹81k</small></div></div>
+  <div class="rw-track hov" tabindex="0" style="--tc:var(--card-violet)"><span class="rw-bar par" style="left:13.837920489296637%;width:18.501529051987767%"><span class="rw-fill" style="width:52.0%"></span></span><span class="rw-proj" style="left:34.5565749235474%"></span><span class="hc-wrap" style="bottom:calc(100% + 8px);left:50%;margin-left:-120px"><div class="hc" style="width:250px"><div class="h"><span>iPad Pro</span></div><div class="t">₹42,000 of ₹80,800</div><div class="d">Jul 1 → Feb 28, 2027</div><ul><li><span class="nm">Planned a month</span><b>₹9,500</b></li><li><span class="nm">At that plan it ends</span><b>Mar 29, 2027</b></li><li><span class="nm">Date</span><b>plan runs past it</b></li></ul><div class="f">The dotted line is where your plan finishes the goal</div></div></span></div>
+  <div class="rw-end">Feb 28<small><span style="color:var(--warning-text);font-weight:800">plan ends Mar 2027</span></small></div></div><div class="rw-row"><div class="rw-lab sub"><span class="gtile" style="width:26px;height:26px;border-radius:8px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div style="min-width:0"><b>The iPad</b><small>₹36k of ₹69k</small></div></div>
+  <div class="rw-track hov" tabindex="0" style="--tc:var(--card-violet)"><span class="rw-bar" style="left:13.837920489296637%;width:18.501529051987767%"><span class="rw-fill" style="width:52.2%"></span></span><span class="rw-proj" style="left:34.5565749235474%"></span><span class="hc-wrap" style="bottom:calc(100% + 8px);left:50%;margin-left:-120px"><div class="hc" style="width:250px"><div class="h"><span>The iPad</span></div><div class="t">₹36,000 of ₹68,900</div><div class="d">Jul 1 → Feb 28, 2027</div><ul><li><span class="nm">Planned a month</span><b>₹8,000</b></li><li><span class="nm">At that plan it ends</span><b>Mar 29, 2027</b></li><li><span class="nm">Date</span><b>plan runs past it</b></li></ul><div class="f">The dotted line is where your plan finishes the goal</div></div></span></div>
+  <div class="rw-end">Feb 28<small><span style="color:var(--warning-text);font-weight:800">plan ends Mar 2027</span></small></div></div><div class="rw-row"><div class="rw-lab sub"><span class="gtile" style="width:26px;height:26px;border-radius:8px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div style="min-width:0"><b>Apple Pencil</b><small>₹6k of ₹12k</small></div></div>
+  <div class="rw-track hov" tabindex="0" style="--tc:var(--card-violet)"><span class="rw-bar" style="left:18.577981651376145%;width:13.761467889908257%"><span class="rw-fill" style="width:50.4%"></span></span><span class="rw-proj" style="left:32.3394495412844%"></span><span class="hc-wrap" style="bottom:calc(100% + 8px);left:50%;margin-left:-120px"><div class="hc" style="width:250px"><div class="h"><span>Apple Pencil</span></div><div class="t">₹6,000 of ₹11,900</div><div class="d">Sep 1 → Feb 28, 2027</div><ul><li><span class="nm">Planned a month</span><b>₹1,500</b></li><li><span class="nm">At that plan it ends</span><b>Feb 28, 2027</b></li><li><span class="nm">Date</span><b>plan makes it</b></li></ul><div class="f">The dotted line is where your plan finishes the goal</div></div></span></div>
+  <div class="rw-end">Feb 28<small>on plan</small></div></div><div class="rw-row"><div class="rw-lab"><span class="gtile" style="width:32px;height:32px;border-radius:10px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"></rect><line x1="6" y1="10" x2="18" y2="10"></line><line x1="9" y1="5.5" x2="9" y2="7.5"></line><line x1="9" y1="13" x2="9" y2="16"></line></svg></span><div style="min-width:0"><b>New fridge</b><small>₹45k of ₹62k</small></div></div>
+  <div class="rw-track hov" tabindex="0" style="--tc:var(--card-teal)"><span class="rw-bar" style="left:17.2782874617737%;width:9.709480122324159%"><span class="rw-fill" style="width:72.6%"></span></span><span class="rw-proj" style="left:27.675840978593275%"></span><span class="rw-pin" style="left:26.98776758409786%"><i></i><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11Z"></path><circle cx="12" cy="10" r="2"></circle></svg></span><span class="hc-wrap" style="bottom:calc(100% + 8px);left:50%;margin-left:-120px"><div class="hc" style="width:250px"><div class="h"><span>New fridge</span></div><div class="t">₹45,000 of ₹62,000</div><div class="d">Aug 15 → Dec 20, 2026</div><ul><li><span class="nm">Planned a month</span><b>₹15,000</b></li><li><span class="nm">At that plan it ends</span><b>Dec 29, 2026</b></li><li><span class="nm">Date</span><b>plan runs past it</b></li></ul><div class="f">The dotted line is where your plan finishes the goal</div></div></span></div>
+  <div class="rw-end">Dec 20<small><span style="color:var(--warning-text);font-weight:800">plan ends Dec 2026</span></small></div></div><div class="rw-row"><div class="rw-lab"><span class="gtile" style="width:32px;height:32px;border-radius:10px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 16l20-6-20-6 4 6-4 6Z"></path><path d="M6 10h8"></path></svg></span><div style="min-width:0"><b>Goa trip</b><small>₹21k of ₹85k</small></div></div>
+  <div class="rw-track hov" tabindex="0" style="--tc:var(--card-ruby)"><span class="rw-bar" style="left:16.207951070336392%;width:23.92966360856269%"><span class="rw-fill" style="width:24.7%"></span></span><span class="rw-proj" style="left:41.59021406727829%"></span><span class="hc-wrap" style="bottom:calc(100% + 8px);left:50%;margin-left:-120px"><div class="hc" style="width:250px"><div class="h"><span>Goa trip</span></div><div class="t">₹21,000 of ₹85,000</div><div class="d">Aug 1 → Jun 10, 2027</div><ul><li><span class="nm">Planned a month</span><b>₹8,000</b></li><li><span class="nm">At that plan it ends</span><b>Jun 29, 2027</b></li><li><span class="nm">Date</span><b>plan runs past it</b></li></ul><div class="f">The dotted line is where your plan finishes the goal</div></div></span></div>
+  <div class="rw-end">Jun 10<small><span style="color:var(--warning-text);font-weight:800">plan ends Jun 2027</span></small></div></div><div class="rw-row"><div class="rw-lab"><span class="gtile" style="width:32px;height:32px;border-radius:10px;background:linear-gradient(155deg,var(--card-sapphire-from),var(--card-sapphire-to))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5Z"></path><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"></path></svg></span><div style="min-width:0"><b>Masters course</b><small>₹1.3L of ₹6L</small></div></div>
+  <div class="rw-track hov" tabindex="0" style="--tc:var(--card-sapphire)"><span class="rw-bar" style="left:0%;width:97.55351681957187%"><span class="rw-fill" style="width:21.7%"></span></span><span class="rw-proj" style="left:97.47706422018348%"></span><span class="hc-wrap" style="bottom:calc(100% + 8px);left:50%;margin-left:-120px"><div class="hc" style="width:250px"><div class="h"><span>Masters course</span></div><div class="t">₹1,30,000 of ₹6,00,000</div><div class="d">Jan 1 → Jun 30, 2029</div><ul><li><span class="nm">Planned a month</span><b>₹15,000</b></li><li><span class="nm">At that plan it ends</span><b>Jun 29, 2029</b></li><li><span class="nm">Date</span><b>plan makes it</b></li></ul><div class="f">The dotted line is where your plan finishes the goal</div></div></span></div>
+  <div class="rw-end">Jun 30<small>on plan</small></div></div></div></section><div class="g12" style="gap:20px"><div style="grid-column:span 12"><section class="card glass " style="gap:6px;"><div class="card-h"><div class="card-t">Goals<small>sub-goals sit inside their goal · the line on a bar is where saving should be by now</small></div><span class="row" style="gap:8px"><span class="seg "><span class="seg-i on">Active<em>5</em></span><span class="seg-i">All<em>7</em></span></span></span></div><div><div class="srow" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr;padding:0 0 8px"><span class="th">Goal</span><span class="th">Why</span><span class="th">Horizon</span><span class="th">Set aside</span><span class="th">Target</span><span class="th">Due</span><span class="th">Per month</span><span class="th">Standing</span></div><div class="srow" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name"><span class="gtile" style="width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div><b>Car upgrade</b><small>Vehicle · 4 sub-goals</small></div></div><div><span class="nb nb-want">Want</span></div><div><span class="sb sb-major">Major</span></div><div><div class="gbar" style="height:10px"><span class="f rt" style="width:22.17391304347826%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-copper) 80%,white),var(--card-copper))"></span><span class="e" style="left:28.4%"></span></div><span class="sub2" style="margin-top:5px">₹76,500 · 22%</span></div><div class="num">₹3,45,000</div><div><b>Jun 30</b><span class="sub2">20 months left</span></div><div><b class="num">₹17,500</b><span class="sub2">needs ₹23,159</span></div><div><span class="pill pill-warn">Behind</span></div></div><div class="srow" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name subrow"><span class="gtile" style="width:28px;height:28px;border-radius:8px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div><b>Suspension</b><small>Vehicle</small></div></div><div><span class="nb nb-need">Need</span></div><div><span class="sb sb-minor">Minor</span></div><div><div class="gbar" style="height:10px"><span class="f rt" style="width:44.44444444444444%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-copper) 80%,white),var(--card-copper))"></span><span class="e" style="left:59.0%"></span></div><span class="sub2" style="margin-top:5px">₹20,000 · 44%</span></div><div class="num">₹45,000</div><div><b>Apr 15</b><span class="sub2">5 months left</span></div><div><b class="num">₹5,000</b><span class="sub2">needs ₹5,000</span></div><div><span class="pill pill-on">On track</span></div></div><div class="srow" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name subrow"><span class="gtile" style="width:28px;height:28px;border-radius:8px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div><b>New tyres</b><small>Vehicle</small></div></div><div><span class="nb nb-need">Need</span></div><div><span class="sb sb-minor">Minor</span></div><div><div class="gbar" style="height:10px"><span class="f rt" style="width:73.68421052631578%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-copper) 80%,white),var(--card-copper))"></span><span class="e" style="left:76.8%"></span></div><span class="sub2" style="margin-top:5px">₹28,000 · 74%</span></div><div class="num">₹38,000</div><div><b>Jan 10</b><span class="sub2">2 months left</span></div><div><b class="num">₹5,000</b><span class="sub2">needs ₹5,000</span></div><div><span class="pill pill-on">On track</span></div></div><div class="srow" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name subrow"><span class="gtile" style="width:28px;height:28px;border-radius:8px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div><b>Alloy wheels</b><small>Vehicle</small></div></div><div><span class="nb nb-want">Want</span></div><div><span class="sb sb-minor">Minor</span></div><div><div class="gbar" style="height:10px"><span class="f rt" style="width:14.423076923076922%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-copper) 80%,white),var(--card-copper))"></span><span class="e" style="left:26.0%"></span></div><span class="sub2" style="margin-top:5px">₹7,500 · 14%</span></div><div class="num">₹52,000</div><div><b>Dec 31</b><span class="sub2">14 months left</span></div><div><b class="num">₹3,500</b><span class="sub2">needs ₹3,179</span></div><div><span class="pill pill-on">On track</span></div></div><div class="srow" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name subrow"><span class="gtile" style="width:28px;height:28px;border-radius:8px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div><b>Music system</b><small>Vehicle</small></div></div><div><span class="nb nb-want">Want</span></div><div><span class="sb sb-minor">Minor</span></div><div><div class="gbar" style="height:10px"><span class="f rt" style="width:0%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-copper) 80%,white),var(--card-copper))"></span><span class="e" style="left:5.1%"></span></div><span class="sub2" style="margin-top:5px">₹0 · 0%</span></div><div class="num">₹60,000</div><div><b>Mar 31</b><span class="sub2">17 months left</span></div><div><b class="num">–</b><span class="sub2">needs ₹3,530</span></div><div><span class="pill pill-off">No plan</span></div></div><div class="srow dropped" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name subrow"><span class="gtile off" style="width:28px;height:28px;border-radius:8px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div><b>Dashcam</b><small>Vehicle</small></div></div><div><span class="nb nb-want">Want</span></div><div><span class="sb sb-minor">Minor</span></div><div><div class="gbar" style="height:10px"><span class="f rt" style="width:0%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-copper) 80%,white),var(--card-copper))"></span></div><span class="sub2" style="margin-top:5px">₹0 · ₹4,000 released</span></div><div class="num">₹9,000</div><div><b>Dec 31</b><span class="sub2"></span></div><div><span class="sub2">–</span></div><div><span class="pill pill-off">Dropped</span></div></div><div class="srow" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name"><span class="gtile" style="width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div><b>iPad Pro</b><small>Gadget · 1 sub-goal</small></div></div><div><span class="nb nb-want">Want</span></div><div><span class="sb sb-minor">Minor</span></div><div><div class="gbar" style="height:10px"><span class="f rt" style="width:51.98019801980198%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-violet) 80%,white),var(--card-violet))"></span><span class="e" style="left:49.6%"></span></div><span class="sub2" style="margin-top:5px">₹42,000 · 52%</span></div><div class="num">₹80,800</div><div><b>Feb 28</b><span class="sub2">4 months left</span></div><div><b class="num">₹9,500</b><span class="sub2">needs ₹9,700</span></div><div><span class="pill pill-warn">Behind</span></div></div><div class="srow" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name subrow"><span class="gtile" style="width:28px;height:28px;border-radius:8px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div><b>Apple Pencil</b><small>Gadget</small></div></div><div><span class="nb nb-want">Want</span></div><div><span class="sb sb-minor">Minor</span></div><div><div class="gbar" style="height:10px"><span class="f rt" style="width:50.42016806722689%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-violet) 80%,white),var(--card-violet))"></span><span class="e" style="left:32.2%"></span></div><span class="sub2" style="margin-top:5px">₹6,000 · 50%</span></div><div class="num">₹11,900</div><div><b>Feb 28</b><span class="sub2">4 months left</span></div><div><b class="num">₹1,500</b><span class="sub2">needs ₹1,475</span></div><div><span class="pill pill-on">On track</span></div></div><div class="srow" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name"><span class="gtile" style="width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to))"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"></rect><line x1="6" y1="10" x2="18" y2="10"></line><line x1="9" y1="5.5" x2="9" y2="7.5"></line><line x1="9" y1="13" x2="9" y2="16"></line></svg></span><div><b>New fridge</b><small>Appliance</small></div></div><div><span class="nb nb-need">Need</span></div><div><span class="sb sb-minor">Minor</span></div><div><div class="gbar" style="height:10px"><span class="f rt" style="width:72.58064516129032%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-teal) 80%,white),var(--card-teal))"></span><span class="e" style="left:59.1%"></span></div><span class="sub2" style="margin-top:5px">₹45,000 · 73%</span></div><div class="num">₹62,000</div><div><b>Dec 20</b><span class="sub2"><span style="color:var(--negative);font-weight:800">Fixed</span> · 1 month left</span></div><div><b class="num">₹15,000</b><span class="sub2">needs ₹17,000</span></div><div><span class="pill pill-warn">Behind</span></div></div><div class="srow" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name"><span class="gtile" style="width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 16l20-6-20-6 4 6-4 6Z"></path><path d="M6 10h8"></path></svg></span><div><b>Goa trip</b><small>Travel</small></div></div><div><span class="nb nb-want">Want</span></div><div><span class="sb sb-minor">Minor</span></div><div><div class="gbar" style="height:10px"><span class="f rt" style="width:24.705882352941178%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-ruby) 80%,white),var(--card-ruby))"></span><span class="e" style="left:28.4%"></span></div><span class="sub2" style="margin-top:5px">₹21,000 · 25%</span></div><div class="num">₹85,000</div><div><b>Jun 10</b><span class="sub2">7 months left</span></div><div><b class="num">₹8,000</b><span class="sub2">needs ₹9,143</span></div><div><span class="pill pill-warn">Behind</span></div></div><div class="srow" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name"><span class="gtile" style="width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--card-sapphire-from),var(--card-sapphire-to))"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5Z"></path><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"></path></svg></span><div><b>Masters course</b><small>Education</small></div></div><div><span class="nb nb-want">Want</span></div><div><span class="sb sb-major">Major</span></div><div><div class="gbar" style="height:10px"><span class="f rt" style="width:21.666666666666668%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-sapphire) 80%,white),var(--card-sapphire))"></span><span class="e" style="left:23.6%"></span></div><span class="sub2" style="margin-top:5px">₹1,30,000 · 22%</span></div><div class="num">₹6,00,000</div><div><b>Jun 30</b><span class="sub2">32 months left</span></div><div><b class="num">₹15,000</b><span class="sub2">needs ₹14,688</span></div><div><span class="pill pill-on">On track</span></div></div><div class="srow off" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name"><span class="gtile off" style="width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div><b>Mirrorless camera</b><small>Gadget</small></div></div><div><span class="nb nb-want">Want</span></div><div><span class="sb sb-minor">Minor</span></div><div><div class="gbar" style="height:10px"><span class="f rt" style="width:16%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-violet) 80%,white),var(--card-violet))"></span></div><span class="sub2" style="margin-top:5px">₹12,000 · 16%</span></div><div class="num">₹75,000</div><div><b>Someday</b><span class="sub2"></span></div><div><span class="sub2">paused</span></div><div><span class="pill pill-off"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"></rect><rect x="14" y="5" width="4" height="14" rx="1"></rect></svg>Paused</span></div></div><div class="srow off" style="grid-template-columns:2.5fr 0.8fr 0.8fr 1.9fr 1fr 1.1fr 1.2fr 1fr"><div class="cell-name"><span class="gtile" style="width:34px;height:34px;border-radius:10px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div><b>Noise-cancelling headphones</b><small>Gadget</small></div></div><div><span class="nb nb-want">Want</span></div><div><span class="sb sb-minor">Minor</span></div><div><b class="num">₹26,499</b><span class="sub2">paid Sep 12 · ₹1,501 under</span></div><div class="num">₹28,000</div><div><b>Sep 12</b></div><div class="sub2">–</div><div><span class="pill pill-ink">Done</span></div></div></div></section></div></div><div class="g12" style="gap:20px"><div style="grid-column:span 7"><section class="card glass " style="gap:6px;"><div class="card-h"><div class="card-t">Coming up<small>the next dates, soonest first</small></div><span class="link">All goals<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="13 6 19 12 13 18"></polyline></svg></span></div><div><div class="cu risk"><span class="gtile" style="width:32px;height:32px;border-radius:10px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"></rect><line x1="6" y1="10" x2="18" y2="10"></line><line x1="9" y1="5.5" x2="9" y2="7.5"></line><line x1="9" y1="13" x2="9" y2="16"></line></svg></span><div><b>New fridge</b><small>₹17,000 to go · plan ₹15,000 of ₹17,000 a month</small></div><div class="d">Dec 20<small><span style="color:var(--negative);font-weight:800">Fixed</span> · in 52 days</small></div></div><div class="cu"><span class="gtile" style="width:32px;height:32px;border-radius:10px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div><b>New tyres</b><small>₹10,000 to go · plan ₹5,000 of ₹5,000 a month</small></div><div class="d">Jan 10<small>in 73 days</small></div></div><div class="cu"><span class="gtile" style="width:32px;height:32px;border-radius:10px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div><b>iPad Pro (the iPad itself)</b><small>₹32,900 to go · plan ₹8,000 of ₹8,225 a month</small></div><div class="d">Feb 28<small>in 122 days</small></div></div><div class="cu"><span class="gtile" style="width:32px;height:32px;border-radius:10px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div><b>Apple Pencil</b><small>₹5,900 to go · plan ₹1,500 of ₹1,475 a month</small></div><div class="d">Feb 28<small>in 122 days</small></div></div><div class="cu"><span class="gtile" style="width:32px;height:32px;border-radius:10px;background:linear-gradient(155deg,var(--card-copper-from),var(--card-copper-to))"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 16V11l2-5h10l2 5v5"></path><path d="M3 16h18v3H3z"></path><circle cx="7.5" cy="16" r="0.6"></circle><circle cx="16.5" cy="16" r="0.6"></circle></svg></span><div><b>Suspension</b><small>₹25,000 to go · plan ₹5,000 of ₹5,000 a month</small></div><div class="d">Apr 15<small>in 168 days</small></div></div></div></section></div><div style="grid-column:span 5"><section class="card glass " style="gap:16px;"><div class="card-h"><div class="card-t">What your money allows<small>income less obligations, not a true surplus</small></div></div>
+  <div class="stack3"><div class="meter"><i style="width:81.6734769781316%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-emerald) 80%,white),var(--card-emerald))"></i><b style="left:84.81476455421358%"></b></div>
+  <div class="meter-l"><span style="left:0">planned ₹65,000</span><span style="left:calc(84.81476455421358% - 54px)">left ₹67,500</span></div></div>
+  <div class="stack3"><div class="meter"><i style="width:92.59259259259258%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-ruby) 80%,white),var(--card-ruby))"></i><b style="left:84.81476455421358%"></b></div>
+  <div class="meter-l"><span style="left:0">each on its own schedule ₹73,690</span></div></div>
+  <div class="kv"><span>Income</span><b>₹1,38,500</b></div><div class="kv"><span>Obligations (EMIs, subscriptions, card bills)</span><b>−₹71,000</b></div><div class="kv"><span>Left after obligations</span><b>₹67,500</b></div>
+  <div class="card-note">₹65,000 planned is 96% of what's left. Funded in order, ₹27,000 is enough.</div></section></div></div><div class="g12" style="gap:20px"><div style="grid-column:span 6"><section class="card glass " style="gap:6px;"><div class="card-h"><div class="card-t">Set aside lately<small>the latest entries</small></div><span class="link">All set-asides<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="13 6 19 12 13 18"></polyline></svg></span></div><div><div class="cu"><span class="gtile" style="width:30px;height:30px;border-radius:9px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to))"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"></rect><line x1="6" y1="10" x2="18" y2="10"></line><line x1="9" y1="5.5" x2="9" y2="7.5"></line><line x1="9" y1="13" x2="9" y2="16"></line></svg></span><div><b>New fridge</b><small>from HDFC Salary</small></div><div class="d" style="">+₹15,000<small>Oct 20</small></div></div><div class="cu"><span class="gtile" style="width:30px;height:30px;border-radius:9px;background:linear-gradient(155deg,var(--card-sapphire-from),var(--card-sapphire-to))"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 9l10-5 10 5-10 5Z"></path><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"></path></svg></span><div><b>Masters course</b><small>from ICICI Invest</small></div><div class="d" style="">+₹13,000<small>Oct 5</small></div></div><div class="cu"><span class="gtile" style="width:30px;height:30px;border-radius:9px;background:linear-gradient(155deg,var(--card-ruby-from),var(--card-ruby-to))"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 16l20-6-20-6 4 6-4 6Z"></path><path d="M6 10h8"></path></svg></span><div><b>Goa trip</b><small>no account named</small></div><div class="d" style="">+₹7,000<small>Oct 5</small></div></div><div class="cu"><span class="gtile" style="width:30px;height:30px;border-radius:9px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div><b>Apple Pencil</b><small>no account named</small></div><div class="d" style="">+₹3,000<small>Oct 5</small></div></div><div class="cu"><span class="gtile" style="width:30px;height:30px;border-radius:9px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div><b>iPad Pro</b><small>from ICICI Invest</small></div><div class="d" style="">+₹9,000<small>Oct 5</small></div></div><div class="cu"><span class="gtile" style="width:30px;height:30px;border-radius:9px;background:linear-gradient(155deg,var(--card-teal-from),var(--card-teal-to))"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2" width="12" height="20" rx="2"></rect><line x1="6" y1="10" x2="18" y2="10"></line><line x1="9" y1="5.5" x2="9" y2="7.5"></line><line x1="9" y1="13" x2="9" y2="16"></line></svg></span><div><b>New fridge</b><small>from HDFC Salary</small></div><div class="d" style="">+₹15,000<small>Sep 20</small></div></div><div class="cu"><span class="gtile" style="width:30px;height:30px;border-radius:9px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div><b>Noise-cancelling headphones</b><small>no account named</small></div><div class="d" style="">+₹7,000<small>Sep 5</small></div></div></div></section></div><div style="grid-column:span 6"><section class="card glass " style="gap:16px;"><div class="card-h"><div class="card-t">Needs and wants<small>by what each part is for, and for how long</small></div></div>
+  <div class="stack3"><div class="between"><b style="font-size:13px">Why</b><span class="sub2">₹11,72,800 in all</span></div><div class="split2"><span style="width:12.363574351978173%;background:var(--need)"></span><span style="width:87.63642564802183%;background:var(--want)"></span></div>
+  <div class="between" style="font-size:12px;font-weight:700"><span><i class="dot" style="background:var(--need)"></i> Needs ₹1,45,000 <span style="color:var(--muted)">· 12%</span></span><span><i class="dot" style="background:var(--want)"></i> Wants ₹10,27,800</span></div></div>
+  <div class="stack3"><div class="between"><b style="font-size:13px">How long</b></div><div class="split2"><span style="width:19.423601637107776%;background:var(--muted)"></span><span style="width:80.57639836289222%;background:var(--ink)"></span></div>
+  <div class="between" style="font-size:12px;font-weight:700"><span><i class="dot" style="background:var(--muted)"></i> Minor ₹2,27,800</span><span><i class="dot" style="background:var(--ink)"></i> Major ₹9,45,000 <span style="color:var(--muted)">· 81%</span></span></div></div>
+  <div class="stack3"><div class="between"><b style="font-size:13px">By category</b></div><div style="display:grid;grid-template-columns:86px 1fr 70px;gap:10px;align-items:center;font-size:12px;font-weight:700"><span>Vehicle</span><span class="hbar" style="height:8px"><span style="width:57.49999999999999%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-copper) 80%,white),var(--card-copper))"></span></span><span style="text-align:right">₹3.5L</span></div><div style="display:grid;grid-template-columns:86px 1fr 70px;gap:10px;align-items:center;font-size:12px;font-weight:700"><span>Gadget</span><span class="hbar" style="height:8px"><span style="width:13.466666666666665%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-violet) 80%,white),var(--card-violet))"></span></span><span style="text-align:right">₹81k</span></div><div style="display:grid;grid-template-columns:86px 1fr 70px;gap:10px;align-items:center;font-size:12px;font-weight:700"><span>Appliance</span><span class="hbar" style="height:8px"><span style="width:10.333333333333334%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-teal) 80%,white),var(--card-teal))"></span></span><span style="text-align:right">₹62k</span></div><div style="display:grid;grid-template-columns:86px 1fr 70px;gap:10px;align-items:center;font-size:12px;font-weight:700"><span>Travel</span><span class="hbar" style="height:8px"><span style="width:14.166666666666666%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-ruby) 80%,white),var(--card-ruby))"></span></span><span style="text-align:right">₹85k</span></div><div style="display:grid;grid-template-columns:86px 1fr 70px;gap:10px;align-items:center;font-size:12px;font-weight:700"><span>Education</span><span class="hbar" style="height:8px"><span style="width:100%;background:linear-gradient(90deg,color-mix(in oklch,var(--card-sapphire) 80%,white),var(--card-sapphire))"></span></span><span style="text-align:right">₹6L</span></div></div>
+  <div class="card-note">Minor is short-term, Major a long-term commitment. You pick it per goal.</div></section></div></div><div class="g12" style="gap:20px"><div style="grid-column:span 12"><section class="card glass " style="gap:16px;"><div class="card-h"><div class="card-t">Finished<small>estimate against what it cost</small></div></div>
+  <div class="cu"><span class="gtile" style="width:36px;height:36px;border-radius:11px;background:linear-gradient(155deg,var(--card-violet-from),var(--card-violet-to))"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><line x1="11" y1="18" x2="13" y2="18"></line></svg></span><div><b>Noise-cancelling headphones</b><small>bought Sep 12 · paid on HDFC Regalia (card)</small></div><div class="d">₹26,499<small>of ₹28,000</small></div></div>
+  <div class="between" style="background:var(--accent-tint);color:var(--accent-text);padding:12px 14px;border-radius:14px;font-size:13px;font-weight:700"><span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg> Came in ₹1,501 under the estimate</span><span>5.4%</span></div>
+  <div class="card-note">The ₹28,000 you'd set aside is released back to you: nothing is left in the goal.</div></section></div></div></div></main></div>
+</x-dc>
+</body>
+</html>

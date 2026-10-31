@@ -23,7 +23,7 @@ Every feature goes through these stages in order. Small fixes can skip to step 4
   - **Task:** an issue linked to its epic. Each task is about a day of work or less, small enough for one PR.
 - **Labels:**
   - Type: `feat`, `bug`, `chore`, `docs`, `design`
-  - Area: `area:cards`, `area:accounts`, `area:subscriptions`, `area:income`, `area:loans`, `area:fixed-income`, `area:investments`, `area:overview`, `area:platform`
+  - Area: `area:cards`, `area:accounts`, `area:subscriptions`, `area:income`, `area:loans`, `area:fixed-income`, `area:investments`, `area:goals`, `area:overview`, `area:platform`
   - Priority: `P0` (must ship in the milestone), `P1` (should), `P2` (nice to have)
 
 ## Ready to start (Definition of Ready)
