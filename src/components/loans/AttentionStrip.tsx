@@ -27,6 +27,7 @@ export function AttentionStrip({ items, onSchedule }: { items: AttentionItem[]; 
                 {item.name} · {item.amount}
               </b>{" "}
               {item.text}
+              {item.short && <span className="ml-2 inline-block rounded-full bg-negative-tint px-2 py-0.5 align-middle text-[10.5px] font-extrabold text-negative">{item.short} can&rsquo;t cover this</span>}
             </span>
           </p>
           <FormTrigger className={SMALL_OK} label="✓ Mark paid" onClick={() => open({ kind: "mark-paid", installmentId: item.installmentId })} />

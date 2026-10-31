@@ -54,5 +54,10 @@ export function demoLoansData(today: string): LoansData {
     ],
     cards: [{ id: "demo-regalia", name: "HDFC Regalia", color: "ruby" }],
     salary: 138500,
+    // HDFC Salary holds less than the Home loan's EMI, so the demo shows the warning.
+    balances: [
+      { accountId: "demo-hdfc", balance: 18_000, date: today },
+      { accountId: "demo-icici", balance: 240_000, date: today },
+    ],
   };
 }

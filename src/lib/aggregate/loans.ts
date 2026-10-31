@@ -352,3 +352,13 @@ export function markPaidProblem(installment: LoanInstallment, loanInstallments: 
   if (excess > left + 0.5) return `That's ₹${Math.round(excess - left).toLocaleString("en-IN")} more than the EMI and everything left on the loan (₹${Math.round(owed + left).toLocaleString("en-IN")} in all). Enter what the bank kept`;
   return null;
 }
+
+/**
+ * Whether an EMI paid from an account is more than the account holds. Used by Loans and by Accounts' Coming up
+ * (nothing else is assumed to land first). An account with no balance recorded (`held` null) is unknown, not empty, so
+ * it isn't flagged. The EMI is taken in whole rupees, as the bank debits it (₹97,581.47 leaves as ₹97,581), so an
+ * account holding exactly ₹97,581 covers it.
+ */
+export function emiExceedsBalance(amount: number, held: number | null): boolean {
+  return held !== null && Math.round(amount) > held;
+}
