@@ -70,6 +70,6 @@ try {
   ws.close();
 } finally {
   proc.kill();
-  rmSync(profile, { recursive: true, force: true });
+  try { rmSync(profile, { recursive: true, force: true, maxRetries: 8, retryDelay: 400 }); } catch {}
 }
 console.log(JSON.stringify(results));
