@@ -60,6 +60,7 @@ export function statesBoardNew() {
     section(5, "A closed account", "YES Old Salary closed on Mar 31. Its card is grey and stamped CLOSED, the figure is ₹0, and Reopen replaces Update balance.", hero("yes", `${rowOf(shut("hdfc"), shut("kotak"), shut("axis"), openOf(f5, { stamp: `<span class="stamp grey">CLOSED</span>` }))}${lineStats(f5, "dd")}`)),
     section(6, "Added, no balance yet", "A new account without a balance: its card shows as soon as it's added, the figure says No balance yet, and the button says Add its first balance. It counts as ₹0 and isn't stale.", hero("hdfc", `${rowOf(shut("all"), tile({ g: NEWG, initial: "I", shortName: "IDFC Travel" }), tile({ g: NEWG, open: true, chip: purposeChip("Spending"), eyebrow: "Your balance · IDFC FIRST Bank", fig: "No balance yet", name: "IDFC Travel", sub: "Added just now · counts as ₹0 and isn't stale", actions: `<span class="row" style="gap:8px">${btn("Add its first balance", { kind: "primary", cls: "btn-sm", icon: I.check(11) })}${btn("Edit", { kind: "soft", cls: "btn-sm", icon: I.edit(11) })}</span>` }), shut("hdfc"))}${placeholder("Its line starts with the first balance")}`)),
     section(7, "Just after saving a balance", "The figure and the line take the new balance, the stale stamp goes, the stage stays on the account, and a toast offers Undo for 6 seconds.", hero("sbi", `${rowOf(shut("all"), openOf(f7), shut("icici"), shut("hdfc"), shut("kotak"), shut("axis"))}${whiteLine(f7, { w: 1440, h: 150, ph: false, key: "dg", mono: true })}${toast("SBI Rainy Day: ₹6,61,400 saved for Oct 21")}`)),
+    section(8, "Cash at a broker (a dollar account)", `A Brokerage account with a currency (2026-11-04, PRD F-AC-05). Its balance is kept in dollars and counted in rupees at today's rate (₹${L.RATE}), so the figure is the rupee value and the line under the name gives the dollars. The rupee's move is not a deposit, and nothing here is gain: cash has no cost. It counts once in the total, and the Investments page shows it beside the holdings.`, hero("vested", `${rowOf(shut("all"), shut("sbi"), openOf(FACTS.vested), shut("icici"), shut("hdfc"), shut("zerodha"), shut("kotak"))}${lineStats(FACTS.vested, "dh")}`)),
   ];
   return board({ w: 1700, title: "Final page: states", sub: "Every state of the hero, with the cards as the hero. Sample data, made up. These replace the earlier States board, which still showed the dropdown hero.", body: `${C.DEFS()}${ANIM}${S.CSS("zz")}${CSS2("zz")}${OPEN}${RT}${s.join("")}` });
 }
@@ -72,7 +73,7 @@ function addAccount() {
   const fields = [
     F.fld(`${F.lbl("Name", { req: true })}${F.inp("IDFC Travel")}${F.help("Shown on its card and in the mix.")}`),
     F.fld(`${F.lbl("Bank", { req: true })}${select({ value: "IDFC FIRST Bank", kind: "field", options: F.bankOptions("IDFC FIRST Bank") })}`),
-    F.fld(`${F.lbl("Type", { req: true })}${F.fseg(["Savings", "Current"], "Savings")}`),
+    F.fld(`${F.lbl("Type", { req: true })}${F.fseg(["Savings", "Current", "Brokerage"], "Savings")}${F.help("Brokerage is for cash at a broker. It asks for a currency (next form).")}`),
     F.fld(`${F.lbl("Opened on", { req: true })}${F.dateInp("Mar 12, 2024")}`),
     F.fld(`${F.lbl("Purpose", { req: true })}${F.purposeCards("Spending")}${F.help("Groups it in the mix's By purpose view. Every account counts in your total.")}`, true),
     F.fld(`${F.lbl("Colour", { isNew: true })}${F.swatches("sapphire")}${F.help("The card's colour, and the stage's colour when it's picked.")}`, true),
@@ -80,6 +81,22 @@ function addAccount() {
     F.fld(`${F.lbl("As of")}${F.dateInp("Today, Oct 21")}`),
   ].join("");
   return F.dialog({ title: "Add account", sub: "Fill it in and watch its card appear", preview: preview({ g: gr("sapphire"), name: "IDFC Travel", bank: "IDFC FIRST Bank", initial: "I", purpose: "Spending", fig: inr(38200), sub: `Oct 21 · total becomes ${inr(L.TOTAL + 38200)}` }, [["Your accounts hold now", inr(L.TOTAL)], ["With this one", `<b style="color:var(--accent-text)">${inr(L.TOTAL + 38200)}</b>`]]), fields, note: "Saves to the Accounts tab, and its first balance to BalanceSnapshots", actions: `${btn("Cancel", { kind: "soft" })}${btn("Add account", { kind: "primary" })}` });
+}
+/** A broker's cash: Type Brokerage asks for a currency; a dollar balance is typed in dollars and counted in rupees at today's rate. */
+function addBroker() {
+  const vf = FACTS.vested, rup = Math.round(3000 * L.RATE), before = L.TOTAL - vf.balance - L.latest("zerodha").balance;
+  const fields = [
+    F.fld(`${F.lbl("Name", { req: true })}${F.inp("Vested cash")}${F.help("Shown on its card and in the mix.")}`),
+    F.fld(`${F.lbl("Bank or broker", { req: true })}${select({ value: "Vested", kind: "field" })}`),
+    F.fld(`${F.lbl("Type", { req: true })}${F.fseg(["Savings", "Current", "Brokerage"], "Brokerage")}`),
+    F.fld(`${F.lbl("Currency", { req: true, isNew: true })}${F.fseg(["INR", "USD"], "USD")}${F.help(`A dollar balance is counted in rupees at today's rate, ₹${L.RATE}. Cash has no cost, so the rupee's move is not shown as gain.`)}`),
+    F.fld(`${F.lbl("Opened on", { req: true })}${F.dateInp("Jul 1, 2023")}`),
+    F.fld(`${F.lbl("Purpose", { req: true })}${F.purposeCards("Investment")}${F.help("Investment groups it with ICICI Invest. The Investments page shows it as cash beside the holdings.")}`, true),
+    F.fld(`${F.lbl("Colour", { isNew: true })}${F.swatches("sapphire")}`, true),
+    F.fld(`${F.lbl("Balance today", { opt: true })}${F.inp("3,000.00", { pre: "$" })}${F.help("In dollars. Saved as its first balance.")}`),
+    F.fld(`${F.lbl("As of")}${F.dateInp("Oct 19, 2026")}${F.help("The day of the statement, or today if you counted it yourself.")}`),
+  ].join("");
+  return F.dialog({ title: "Add a broker's cash", sub: "A Brokerage account with a currency, for money lying uninvested at a broker", preview: preview({ g: gr("sapphire"), name: "Vested cash", bank: "Vested", initial: "V", purpose: "Investment", fig: inr(rup), sub: `$3,000.00 at ₹${L.RATE} · Oct 19` }, [["Your accounts hold now", inr(before)], ["With this one", `<b style="color:var(--accent-text)">${inr(before + rup)}</b>`], ["Counted at", `₹${L.RATE} a dollar, today's rate`]]) + `<span class="card-note" style="color:oklch(0.38 0.06 152)">Update it like any balance: from a statement or by hand, in dollars. A buy on the Investments page can be paid from it.</span>`, fields, note: "Saves to the Accounts tab (type Brokerage, currency USD), and its first balance to BalanceSnapshots in dollars", actions: `${btn("Cancel", { kind: "soft" })}${btn("Add account", { kind: "primary" })}` });
 }
 function updateBalance() {
   const f = FACTS.sbi;
@@ -97,7 +114,7 @@ function editAccount() {
   const fields = [
     F.fld(`${F.lbl("Name", { req: true })}${F.inp("HDFC Salary")}`),
     F.fld(`${F.lbl("Bank", { req: true })}${select({ value: "HDFC Bank", kind: "field", options: F.bankOptions("HDFC Bank") })}`),
-    F.fld(`${F.lbl("Type", { req: true })}${F.fseg(["Savings", "Current"], "Savings")}`),
+    F.fld(`${F.lbl("Type", { req: true })}${F.fseg(["Savings", "Current", "Brokerage"], "Savings")}`),
     F.fld(`${F.lbl("Opened on", { req: true })}${F.dateInp("Jul 1, 2019")}${F.help("Its first balance is Nov 30, 2024, so any date up to then works.")}`),
     F.fld(`${F.lbl("Purpose", { req: true })}${F.purposeCards("Spending")}`, true),
     F.fld(`${F.lbl("Colour", { isNew: true })}${F.swatches("sapphire")}`, true),
@@ -108,10 +125,10 @@ function checkIn() {
   const typed = { sbi: 661400, kotak: 54200, axis: 21350 };
   const rows = P.ORDER.filter((a) => L.isOn(a)).sort((x, y) => L.isStale(y) - L.isStale(x)).map((a) => {
     const f = FACTS[a.id], v = typed[a.id], focus = a.id === "icici", d = v ? v - f.balance : null;
-    return `<div class="arow" style="grid-template-columns:1.3fr 0.9fr 170px 110px;padding:10px 0"><span class="cell-name">${L.mono(a, 30)}<span style="min-width:0"><b>${a.name}</b><small>${a.bank}</small></span></span><span style="font-size:12px;font-weight:600;color:${f.stale ? "var(--warning-text)" : "var(--muted)"}">${f.stale ? I.clock(10) + " " : ""}${inr(f.balance)} on ${fmt(f.asOf)}</span><span class="qinp${focus ? " focus" : v ? "" : " ghost"}"><span class="pre">₹</span>${v ? v.toLocaleString("en-IN") : focus ? `<span style="width:1.5px;height:16px;background:var(--fg)"></span>` : `<span style="font-weight:500">Same as before?</span>`}</span><span style="text-align:right">${d == null ? `<span class="card-note">${focus ? "" : "Skipped"}</span>` : L.chg(d)}</span></div>`;
+    return `<div class="arow" style="grid-template-columns:1.3fr 0.9fr 170px 110px;padding:10px 0"><span class="cell-name">${L.mono(a, 30)}<span style="min-width:0"><b>${a.name}</b><small>${a.bank}</small></span></span><span style="font-size:12px;font-weight:600;color:${f.stale ? "var(--warning-text)" : "var(--muted)"}">${f.stale ? I.clock(10) + " " : ""}${f.ccy === "USD" ? L.usdTxt(f.native) : inr(f.balance)} on ${fmt(f.asOf)}</span><span class="qinp${focus ? " focus" : v ? "" : " ghost"}"><span class="pre">${f.ccy === "USD" ? "$" : "₹"}</span>${v ? v.toLocaleString("en-IN") : focus ? `<span style="width:1.5px;height:16px;background:var(--fg)"></span>` : `<span style="font-weight:500">Same as before?</span>`}</span><span style="text-align:right">${d == null ? `<span class="card-note">${focus ? "" : "Skipped"}</span>` : L.chg(d)}</span></div>`;
   }).join("");
   const after = L.TOTAL + Object.entries(typed).reduce((t, [id, v]) => t + v - L.latest(id).balance, 0);
-  const pre = preview({ g: gr("emerald"), name: "All accounts", bank: "5 accounts", initial: "⌂", chip: "After these 3", fig: inr(after), sub: `${signed(after - L.TOTAL)} on ${inr(L.TOTAL)} now` }, [["Typed", "3 of 5"], ["Skipped", "2 keep their balances"], ["Still stale after", "None"]]) + `<span class="card-note" style="color:oklch(0.38 0.06 152)">The stale one comes first. Tab moves down the list; Enter on the last saves.</span>`;
+  const pre = preview({ g: gr("emerald"), name: "All accounts", bank: `${L.ACTIVE.length} accounts`, initial: "⌂", chip: "After these 3", fig: inr(after), sub: `${signed(after - L.TOTAL)} on ${inr(L.TOTAL)} now` }, [["Typed", `3 of ${L.ACTIVE.length}`], ["Skipped", `${L.ACTIVE.length - 3} keep their balances`], ["Still stale after", "None"], ["A dollar account", `typed in dollars, counted at ₹${L.RATE}`]]) + `<span class="card-note" style="color:oklch(0.38 0.06 152)">The stale one comes first. Tab moves down the list; Enter on the last saves.</span>`;
   const fields = F.fld(`<div class="between" style="margin-bottom:4px">${F.lbl("Balances on", { req: true })}${select({ value: "Today, Oct 21", kind: "small", icon: I.cal(12) })}</div><div style="border-top:1px solid var(--divider)">${rows}</div>`, true);
   return F.dialog({ icon: I.check(18), title: "Update balances", sub: "Your monthly check-in: every account at once", preview: pre, fields, note: "Adds 3 rows to BalanceSnapshots", actions: `${btn("Cancel", { kind: "soft" })}${btn("Save 3 balances", { kind: "primary" })}` });
 }
@@ -129,6 +146,7 @@ export function formsBoardNew() {
     section(4, "Edit account", "The same fields as Add. Close account sits on the left of the footer, apart from Save. Balances are never edited here; each one is edited from its row (section 6).", stage(editAccount())),
     section(5, "Update balances: the monthly check-in", "Every active account at once, for one date. The stale one comes first. Blank rows are skipped, so it saves only what you typed. The card shows your total after these.", stage(checkIn())),
     section(6, "Editing one balance", "The pencil on a Balance history row opens this, with the account's card showing the balance as you type it. Delete asks nothing; a toast offers Undo for 6 seconds, as on Cards.", `<div class="stage" style="padding:40px;display:flex;justify-content:center">${editBalance()}</div>`),
+    section(7, "Add a broker's cash", "Choosing Type Brokerage asks for a currency. The card is drawn at its rupee value with the dollars under it, and the total after shows what it adds (₹2,70,450). INR cash at an Indian broker is the same form with ₹ and no rate.", stage(addBroker())),
   ];
-  return board({ w: 1300, title: "Final page: forms", sub: "The forms with the account's card as their preview, replacing the monogram tile. All six forms use the card.", body: `${C.DEFS()}${S.CSS("zz")}${s.join("")}` });
+  return board({ w: 1300, title: "Final page: forms", sub: "The forms with the account's card as their preview, replacing the monogram tile. All seven forms use the card, and the broker's cash form (2026-11-04) adds a currency.", body: `${C.DEFS()}${S.CSS("zz")}${s.join("")}` });
 }

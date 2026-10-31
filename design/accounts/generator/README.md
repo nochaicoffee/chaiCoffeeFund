@@ -48,3 +48,7 @@ checks that cards side by side end level and that no card has empty space inside
 ## Rounds 11 to 16 (2026-10-22): the final page
 
 `r11.mjs` (the widgets: money in and out, the band and strip, the mix, the pointing greeting, `RT` ring texture), `r11pages.mjs` (the W1 pages), `r12.mjs` (card-strip selectors S1 to S5), `r13.mjs` (the hero: H1 to H5, `h4Stage`, the phone hero), `r14.mjs` (**the final page**, desktop and phone), `r15.mjs` (phone states and forms), `r16.mjs` (desktop states and forms). `widgets.mjs` and `wparts.mjs` are round 10's pages and widget library. Build one board with `node build.mjs --only=AccountsFinalPage`; `shoot.sh` takes `Name@sty-s2+hdfc` to set more than one radio (a style and a pick). The spec's last section, "The final design", is the source of truth.
+
+## Broker cash (2026-11-04)
+
+`lib.mjs` now has two Brokerage accounts, **Vested cash** (USD, $3,000, kept in dollars as `native` and counted in rupees at `RATE` = ₹90.15) and **Zerodha cash** (INR, ₹1,00,000), so any board that lists the accounts shows seven. Only the six final boards (`AccountsFinalPage*`) were rebuilt for it (`node build.mjs --only=AccountsFinalPage`); the exploration boards keep their five-account artboards until someone runs a full build. Where it shows: `parts.mjs` (`whenLine` gives the dollars, Balance history rows show dollars with the rupees under), `r16.mjs` (state 8, the Brokerage type, the Add a broker's cash form, the check-in) and `r15.mjs` (the phone state and sheet).
