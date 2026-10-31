@@ -15,11 +15,16 @@ const fillBg = (c) => L.fill(c, 90);
 
 // ---------- G5 This month ----------
 const MONTH = L.TODAY.slice(0, 7);
-export function monthCard() {
+/** What this month's plan says and what's been set aside: one source for the This month card and every board that quotes it. */
+export function monthStats() {
   const pieces = L.TOPS.flatMap((x) => piecesOf(x).map((p) => ({ ...p, top: x, color: L.gColor(x) })));
   const rows = pieces.map((p) => ({ ...p, plan: p.plannedMonthly ?? 0, got: sum(L.CONTRIBUTIONS.filter((c) => c.goalId === p.id && c.date.startsWith(MONTH)).map((c) => (c.kind === "Set-aside" ? c.amount : -c.amount))), when: L.CONTRIBUTIONS.filter((c) => c.goalId === p.id && c.date.startsWith(MONTH)).map((c) => c.date).sort().at(-1) })).filter((r) => r.plan || r.got)
     .sort((a, b) => (a.necessity === "Need" ? 0 : 1) - (b.necessity === "Need" ? 0 : 1) || (a.due ?? "9").localeCompare(b.due ?? "9"));
   const plan = sum(rows.map((r) => r.plan)), got = sum(rows.map((r) => r.got)), counted = sum(rows.map((r) => Math.min(r.got, r.plan))), todo = rows.filter((r) => r.got < r.plan);
+  return { rows, plan, got, counted, todo };
+}
+export function monthCard() {
+  const { rows, plan, got, counted, todo } = monthStats();
   const daysLeft = L.daysBetween(L.TODAY, L.addDays(`${MONTH}-01`, 31).slice(0, 7) + "-01") - 0;
   const strip = `<div style="display:flex;height:22px;border-radius:999px;overflow:hidden;gap:2px;background:var(--fill)">${rows.map((r) => `<span style="width:${(r.plan / plan) * 100}%;position:relative;background:color-mix(in oklch,var(--card-${r.color}) 18%,transparent)"><span style="position:absolute;left:0;top:0;bottom:0;width:${Math.min(100, (r.got / r.plan) * 100)}%;background:${fillBg(r.color)}"></span></span>`).join("")}</div>`;
   const line = (r) => {

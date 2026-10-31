@@ -69,7 +69,8 @@ try {
   }
   ws.close();
 } finally {
-  proc.kill();
-  rmSync(profile, { recursive: true, force: true });
+  // Wait for Edge to exit before removing its profile: removing it while Edge is still writing is what failed with ENOTEMPTY.
+  if (proc.exitCode === null) { const exited = new Promise((r) => proc.once("exit", r)); proc.kill(); await Promise.race([exited, new Promise((r) => setTimeout(r, 5000))]); }
+  try { rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 300 }); } catch (e) { console.error(`could not remove ${profile}: ${e.message}`); }
 }
 console.log(JSON.stringify(results));
