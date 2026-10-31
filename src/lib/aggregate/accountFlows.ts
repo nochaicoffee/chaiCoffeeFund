@@ -102,18 +102,37 @@ export interface Flows {
   saved: number;
   /** Saved − invested. */
   keptInBank: number;
+  /** Everything that left the account: expenses and what was invested. */
+  leftBank: number;
 }
 
-const sum = (items: MoneyItem[], kind: MoneyItem["kind"]) => items.filter((i) => i.kind === kind).reduce((total, i) => total + i.amount, 0);
+/** What `flows` needs of a movement, so the hero can carry them to the browser without their labels. */
+export type FlowItem = Pick<MoneyItem, "kind" | "date" | "amount" | "accountId">;
+
+const sum = (items: FlowItem[], kind: MoneyItem["kind"]) => items.filter((i) => i.kind === kind).reduce((total, i) => total + i.amount, 0);
 
 /** What came in and went out, for one account or (null) all of them, between two days. */
-export function flows(items: MoneyItem[], accountId: string | null): Flows {
+export function flows(items: FlowItem[], accountId: string | null): Flows {
   const mine = accountId === null ? items : items.filter((i) => i.accountId === accountId);
   const out = { "Card bills": sum(mine, "Card bills"), Subscriptions: sum(mine, "Subscriptions"), EMIs: sum(mine, "EMIs"), Investments: sum(mine, "Investments") };
   const cameIn = sum(mine, "Came in");
   const expenses = out["Card bills"] + out.Subscriptions + out.EMIs;
   const saved = cameIn - expenses;
-  return { cameIn, out, expenses, invested: out.Investments, sold: sum(mine, "Sold"), saved, keptInBank: saved - out.Investments };
+  return { cameIn, out, expenses, invested: out.Investments, sold: sum(mine, "Sold"), saved, keptInBank: saved - out.Investments, leftBank: expenses + out.Investments };
+}
+
+/** The movements after `after` up to and including `to`: the stretch between two readings of a line. Without `after`, everything up to `to`. */
+export function itemsBetween<T extends FlowItem>(items: T[], after: string | null, to: string): T[] {
+  return items.filter((i) => (after === null || i.date > after) && i.date <= to);
+}
+
+/**
+ * What came in and went out over a stretch of the hero's line, between the readings on two of its days. A stretch that
+ * starts at the line's first day takes everything from the start of the period, and one that ends at its last day takes
+ * everything to the end, so measuring the whole line gives the whole period's figures.
+ */
+export function flowsOverStretch(items: FlowItem[], accountId: string | null, line: { first: string; last: string }, from: string, to: string): Flows {
+  return flows(itemsBetween(items, from <= line.first ? null : from, to >= line.last ? "9999-12-31" : to), accountId);
 }
 
 /** Each month's flows, oldest first, for the paired columns. */

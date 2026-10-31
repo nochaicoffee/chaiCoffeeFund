@@ -9,7 +9,12 @@ import { accountsRepository, createAccountSchema, updateAccountSchema } from "@/
 import { balanceSnapshotsRepository, updateBalanceSnapshotSchema } from "@/lib/sheets/balanceSnapshots";
 import { CACHE_TAGS } from "@/lib/sheets/cached";
 import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
+import { cardsRepository } from "@/lib/sheets/cards";
+import { fixedDepositsRepository } from "@/lib/sheets/fixedDeposits";
+import { incomeSourcesRepository } from "@/lib/sheets/incomeSources";
+import { loansRepository } from "@/lib/sheets/loans";
 import { InvalidRowError, NotFoundError } from "@/lib/sheets/repository";
+import { subscriptionsRepository } from "@/lib/sheets/subscriptions";
 import type { Account, BalanceSnapshot } from "@/lib/sheets/types";
 
 /**
@@ -186,4 +191,46 @@ export async function deleteBalance(_previous: FormState, formData: FormData): P
     return failed("deleteBalance", error);
   }
   return refreshed(CACHE_TAGS.balanceSnapshots);
+}
+
+/**
+ * What still points at an account as a setting, so deleting it would leave an id that matches
+ * nothing: a loan paid from it, a card or subscription that defaults to it, an income source
+ * that lands in it, a deposit linked to it. Past payments keep their "paid from": that's history.
+ */
+async function whatUsesAccount(id: string): Promise<string | null> {
+  const [loans, cards, subscriptions, sources, deposits] = await Promise.all([
+    loansRepository.list(),
+    cardsRepository.list(),
+    subscriptionsRepository.list(),
+    incomeSourcesRepository.list(),
+    fixedDepositsRepository.list(),
+  ]);
+  if (loans.some((l) => l.accountId === id)) return "a loan's EMIs are paid from it";
+  if (cards.some((c) => c.defaultPaidFromAccountId === id)) return "a card pays its bills from it by default";
+  if (subscriptions.some((s) => s.defaultPaidFromAccountId === id)) return "a subscription is charged to it by default";
+  if (sources.some((s) => s.accountId === id)) return "an income source lands in it";
+  if (deposits.some((d) => d.accountId === id)) return "a fixed deposit is linked to it";
+  return null;
+}
+
+/**
+ * Delete an account for good: its balances first (in one write), then the account, so a
+ * failure half way leaves it there to try again rather than balances with no account. Anything
+ * that still uses it as a setting blocks the delete.
+ */
+export async function deleteAccount(_previous: FormState, formData: FormData): Promise<FormState> {
+  const id = String(formData.get("id") ?? "");
+  if (!id) return GONE;
+  try {
+    if (!(await accountsRepository.get(id))) return refreshed(CACHE_TAGS.accounts, CACHE_TAGS.balanceSnapshots);
+    const user = await whatUsesAccount(id);
+    if (user) return { status: "invalid", errors: { form: `Choose another account first: ${user}.` } };
+    await balanceSnapshotsRepository.removeWhere((values) => values.accountId === id);
+    await accountsRepository.remove(id);
+  } catch (error) {
+    if (error instanceof NotFoundError) return refreshed(CACHE_TAGS.accounts, CACHE_TAGS.balanceSnapshots);
+    return failed("deleteAccount", error);
+  }
+  return refreshed(CACHE_TAGS.accounts, CACHE_TAGS.balanceSnapshots);
 }

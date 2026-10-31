@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useRef, useState, type ReactNode, type Ref } from "react";
-import { closeAccount, deleteBalance, reopenAccount } from "@/app/accounts/actions";
+import { closeAccount, deleteAccount, deleteBalance, reopenAccount } from "@/app/accounts/actions";
 import type { AccountsFormsData, HistoryRow } from "@/app/accounts/views";
 import { formatInr } from "@/lib/format/money";
 import { AlertIcon } from "../../cards/forms/icons";
@@ -15,7 +15,7 @@ import { FormTriggerButton, HEADER_GHOST_CLASS, HEADER_PRIMARY_CLASS } from "../
 
 /**
  * Opens the Accounts forms (#165) from anywhere on the page: Add and Edit account, Update
- * balance, the monthly check-in, Close and Reopen, and editing or deleting one balance. With
+ * balance, the monthly check-in, Close, Reopen and Delete, and editing or deleting one balance. With
  * sample data every button shows disabled: it never reaches the Sheet.
  */
 
@@ -26,6 +26,7 @@ type Open =
   | { kind: "check-in" }
   | { kind: "close"; id: string }
   | { kind: "reopen"; id: string }
+  | { kind: "delete-account"; id: string }
   | { kind: "edit-balance"; row: HistoryRow }
   | { kind: "delete-balance"; row: HistoryRow };
 
@@ -96,6 +97,20 @@ export function AccountFormsProvider({ forms, children }: { forms: AccountsForms
           onClose={() => close()}
         />
       )}
+      {open?.kind === "delete-account" && account && (
+        <ConfirmDialog
+          tone="danger"
+          icon={<AlertIcon />}
+          title={`Delete ${account.name}?`}
+          body={`${account.name} and every balance it has are removed from the Sheet, and can't be undone. To keep its history, close it instead. If a loan, card, subscription, income source or deposit uses it, you'll be asked to choose another account for that first.`}
+          hidden={{ id: account.id }}
+          keepLabel="Keep it"
+          confirmLabel="Delete account"
+          action={deleteAccount}
+          today={forms.today}
+          onClose={() => close()}
+        />
+      )}
       {open?.kind === "edit-balance" && balance && <EditBalanceDialog row={balance} amount={balance.balance} forms={forms} onDelete={() => setOpen({ kind: "delete-balance", row: balance })} onClose={() => close()} />}
       {open?.kind === "delete-balance" && balance && (
         <ConfirmDialog
@@ -158,6 +173,7 @@ export function HeroButtons({ pickId, kind, closed }: { pickId: string; kind: "a
       )}
       <FormTrigger className={HERO_SOFT} label="Edit" onClick={() => open({ kind: "edit", id: pickId })} />
       {!closed && <FormTrigger className={HERO_SOFT} label="Close" onClick={() => open({ kind: "close", id: pickId })} />}
+      <FormTrigger className={HERO_SOFT} label="Delete" onClick={() => open({ kind: "delete-account", id: pickId })} />
     </div>
   );
 }

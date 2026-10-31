@@ -1,5 +1,6 @@
 import { createItemRoute } from "@/lib/api/createCrudRoutes";
+import { toClientAccount } from "@/lib/forms/clientAccount";
 import { accountsRepository, updateAccountSchema } from "@/lib/sheets/accounts";
 import { CACHE_TAGS } from "@/lib/sheets/cached";
 
-export const { PATCH, DELETE } = createItemRoute(accountsRepository, CACHE_TAGS.accounts, updateAccountSchema);
+export const { PATCH, DELETE } = createItemRoute(accountsRepository, CACHE_TAGS.accounts, updateAccountSchema, toClientAccount);

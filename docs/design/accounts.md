@@ -205,6 +205,115 @@ Prathik said the hero's animation didn't match the design and wasn't smooth, and
 
 Not mocked: the phone (unchanged: the picked card full width, the rest as chips under it). Decisions to make: which motion (A, B or C, they combine: C's peek on A's glide), line morph / draw / jump, flat fade or spill, and which cover layout, if any, replaces the spines. Reduced motion should turn all of it off in the build, as elsewhere.
 
+## Round 19 (2026-10-24): Prathik's picks (dock, wallet, side pills), taken further
+
+He liked the dock, the wallet stack and the side pills that widen, and asked for variations of each, more ideas for what the open card shows, and for the dock to reveal the bank and balance on hover before anything is picked. `design/accounts-interactions/AccountsInteractions2.html` (the same engine and tokens as round 1; 3 / 6 / 12 accounts switch, Slow-mo, Play it for me).
+
+| Area | Options |
+|---|---|
+| 1 · Dock (hover reveals bank and balance first) | **1** label chip (glides between items, digits roll); **2** mini card preview (account colour, name, balance, line); **3** share rings with balances written under each monogram, hover adds share and "not read in N days"; **4** vertical dock on the card's side (wraps into columns) |
+| 2 · Wallet | **1** lift and reveal (a hovered strip lifts and opens a second line, the others slide down); **2** upside down (pile above, open card below); **3** grouped by purpose with headings; **4** rich strips (line, share, change) |
+| 3 · Side pills | **1** spines that open to a 236px peek (share fill kept); **2** pill column (round pills beside the card, hover stretches one over the card; two columns past five); **3** books on a shelf (lift and balance written up the spine); **4** pill bar on top (picked pill open, others open on hover) |
+| 4 · Inside the card | **A** money through it (came in / went out, 1 or 3 months); **B** the next 30 days (projected balance, a dot per EMI, bill or salary, "short by ₹X on Nov 1", amber below zero); **C** runway (days or months it lasts, what-if −20% / +20%, six-month goal for the emergency fund); **D** drag back through the year (the balance rolls to any week, Back to now); **E** update where it's written (the balance becomes the field, live difference, Enter saves, Saved · Undo for six seconds; All has none) |
+
+What each would need from the data: B needs the upcoming EMIs, card bills and salary per account (Coming up already works them out, but per account they would need the account on each); A and C need money in and out per account (A from the records already kept; C also a monthly expense figure for the emergency fund, set at ₹60,000 in the mock). D and the line need the recorded balances (already there). E is the existing Update balance form done in place. All the figures in the mock are samples. Not mocked: the phone (unchanged). Decisions to make: which dock tip (1-4), whether the wallet or the dock or the side pills is the cover, and which of A-E go in the card (they combine, but the card should stay to one idea).
+
+## Round 20 (2026-10-24): rich strips, and what goes on the right
+
+Prathik liked the wallet with **rich strips** (round 19, wallet 4) and asked for variations of its right side (the line and the four figures) with interactions. `design/accounts-interactions/AccountsInteractions3.html`. The left side stays as is; the right is one of five, mostly tied to the strips:
+
+| Option | Idea and interactions |
+|---|---|
+| 0 | As it is now, for comparison |
+| A · Time machine | Hover the line and the open card, every strip and the four figures roll back to that day; click to hold it, Back to now; 3M / 6M / 1Y; picking another account keeps the date |
+| B · Layers | Every account stacked through the year in its colour; hovering a band lifts its strip and hovering a strip lights its band; click a band to open it; Rupees / Share morph |
+| C · Compare | A + on each strip lays its line over the open account's (the + turns into ×); Shape / Share of total; a table under the chart follows the pointer; chips to remove |
+| D · Chart tabs and tiles | One chart, three views (the year, money in and out by month, next 30 days), switched from four tiles under it (since Jan 1, this month, coming up, runway) or from tabs |
+| E · Peek on the right | Hovering a strip draws its line dashed beside the open account's, tints the chart, switches the figures to its numbers and says how far it is from the open one |
+
+Engine changes in the mock: a panel can be mounted in the right column and gets pick and hover events; the cover can be told to hover an account from outside, and what balance to show for an account (for the time machine). Needs from the data are the same as round 19 (money in and out per account, what's coming up per account); B needs every account's recorded balances week by week, which the Balance history already holds. The figures are samples; the phone is not mocked.
+
+## Round 21 (2026-10-24): other visuals for the rich strip
+
+**Not wanted:** this round varied the left strips, which Prathik had already finalized (the rich strips with the stepped line). He wanted variations of the right section; see Round 22. Kept only as an exploration.
+
+The rich strip's stepped line is accurate but busy; Prathik asked for a smoothed version, a progress bar or other visuals. `design/accounts-interactions/AccountsInteractions4.html`: a live wallet with a switcher for the strip's visual, and a side-by-side of all nine for any one account.
+
+| Style | What the strip shows | Interaction |
+|---|---|---|
+| Stepped (today) | each balance carried forward | none |
+| Smooth line | the year blurred (triangular, 3 weeks) and drawn as a monotone cubic with a soft fill: the trend, not the exact days | move along it: the date and balance replace the line under the name |
+| Line behind | the same line across the whole strip, behind the text | crosshair and read-out |
+| Ring monogram | the monogram's ring is the share of the total, drawing itself in, plus a small smooth line | scrub as above |
+| Share bar | a progress bar of the share of the total (All: split in each account's colour) | hover swaps the % for its rank |
+| Year range | a bar from the year's low to its high with a marker for now and a tick for Jan 1 | hover says how far up the range it is |
+| Freshness | 30 ticks that dim as the balance ages; amber when not read in a month | hover sweeps the lit ticks |
+| Month columns | ten month-end balances, green when up on the month before | move across to read a month |
+| Year grid | 44 weekly squares shaded by level, this week outlined | move over to read a week |
+
+The big line on the right can be smoothed the same way (a switch in the mock). Smoothing is a presentation choice: balances are recorded on particular days, so the smooth versions show the trend and the stepped one shows the days. Share, range and freshness need nothing new (balances and when each was read are already kept). Not mocked: the phone.
+
+## Round 22 (2026-10-24): the right section, with the left strips untouched
+
+**The left side is final:** the wallet with rich strips (the open card on top, the others as strips with the stepped line, share and change). Prathik asked for variations of the **right section** (the graph and the information), including a smoothed version and progress bars. `design/accounts-interactions/AccountsInteractions5.html`; every option sits beside the unchanged strips, and most talk to them.
+
+| Option | What it shows | Interactions |
+|---|---|---|
+| A · Smoothed area | the year as a smooth gradient area (blurred 2 weeks, monotone cubic), a pulsing dot for today | read any week; Smooth / Exact switch; 1Y / 6M / 3M |
+| B · Pick a stretch | the same chart with a brush | drag to select, pull the edges, drag the stretch; the figures become change (with %), low, high, average; Month / Quarter / Half / Year presets |
+| C · Six progress bars | a short smooth line, then bars for share, place in the year's range, freshness, runway, this month in and out, bills against the balance | bars fill; hover for what each means, click to keep open; amber when it needs attention |
+| D · Three rings | share, freshness, runway | point at a ring or its row, the centre says what it is; click to hold |
+| E · Month columns | ten month-end balances from zero, average line | Balance / Change slides the bars to monthly change around a zero line; hover a month |
+| F · All accounts ranked | a league table of bars for every account | Balance / Growth / Share re-sorts the rows; hovering a row lifts its strip and the other way round; click to open |
+| G · How this month got here | a waterfall from a month ago to now (came in, card bills, EMIs, subscriptions, other) | bars build in sequence; hover for amounts; Replay |
+
+Data needed beyond what exists: money in and out per account and a split of what went out (card bills, EMIs, subscriptions) for G, E and C; bills and EMIs due per account for C; the runway target (a month, or six months for the emergency fund) for C and D. Balances, last-read dates and the year's range come from what is already kept. The figures in the mock are samples. At 3 accounts the right side is taller than the left; at 6 and 12 they end level. Not mocked: the phone.
+
+## Round 23 (2026-10-24): a light hero, in the Income dashboards' style
+
+Prathik asked for variations **without the colour background** (the stage that takes the pick's colour), taking inspiration from the Income mockups (`design/income/`, `docs/design/income.md`). What those do: colour belongs to the data (muted fills with the ring texture, a dark rounded tile per source, a very pale tint behind the Payday river), the page and the hero card are white; each widget opens with a small uppercase label, a title, four small facts across the top (value, caption) and chips or a pill switch to light one thing. `design/accounts-interactions/AccountsInteractions6.html`: the **left side is untouched** (the open card and the rich strips, still the coloured cards, now on a light stage); two switchers combine a stage with a right section.
+
+**Stage:** white card (Income's hero card exactly); a pale tint of the pick (12%, gliding to the next on a pick, as the river's green); warm paper; plain white with a tint only behind the cards.
+
+**Right section** (each opens with the label, a title, four facts, and talks to the strips): **Year in columns** (stacked month columns in muted fills with the ring texture, a dashed average month, By account / By purpose, chips that light one account); **Lanes** (Income's Payday river: a tile and a lane per account, a bead a month sized by the balance, an amber dashed run for an account not read); **Accounts table** (Income's Sources list: tile, name and what's next, a year of months in miniature, balance, change since Jan 1 in a pill; sorts by balance, change or name); **This year and last** (ink against dashed, the gap shaded green or amber, a pill with the difference); **Check-in calendar** (Income's Pay calendar: accounts by months, a dot per reading, hatched where never read; click a cell for the readings).
+
+Data: the last year's balances for This year and last (not kept per account today, so it needs the Balance history to reach back a year), money in and out is not used here; the readings come from Balance history. The figures in the mock are samples. Not mocked: the phone.
+
+## Round 24 (2026-10-24): six more right sections on the light hero
+
+Prathik asked for a few more variations of the right section. `design/accounts-interactions/AccountsInteractions7.html` is the round 6 light hero (left cards and strips untouched; four stages) with eleven right sections one press apart: the five from round 6 and six new ones, again borrowed from the Income dashboards:
+
+| New | What it shows | Interactions |
+|---|---|---|
+| Trend | the year as a smooth gradient area in the account's colour, a pulsing ring at today | hover to read a week; drag to measure a stretch (the rest fades, the four facts become that stretch); 1Y / 6M / 3M; Smooth / Exact |
+| Money flow | sources (salary, RSUs, dividends, other) into the accounts, out to card bills, EMIs, subscriptions, invested and stayed (Income's Money flow) | hover a node or ribbon to follow it; click an account to open it; the open account's ribbons are strongest |
+| Coming up | the next 30 days as dots sized by amount, and a list with what's left after each payment, amber when it takes the account below zero | Open account / Everyone; hover a row or dot; click a row (Everyone) to open that account |
+| Wheel | a spoke a month stacked by account, Nov and Dec dashed, a dashed average ring (Income's wheel) | hover a spoke for the month, click to hold; the list names the accounts |
+| Health bars | a short smooth line and six bars (share, place in the year's range, freshness, runway, this month in and out, bills against the balance) | hover for what each means, click to keep open; amber when it needs a look |
+| Waterfall | how a month or three got from the balance then to now (came in, card bills, EMIs, subscriptions, other) | bars build in sequence, hover, Replay, This month / 3 months |
+
+Same data needs as rounds 19 to 23: money in and out per account, the split of what went out, and what's due per account. Money flow also needs a source for each deposit (the Income entries and which account they landed in, which Income's own Sheet will hold). The figures in the mock are samples. Not mocked: the phone.
+
+## Built: the light hero (2026-10-24)
+
+Prathik picked the wallet with rich strips for the left (round 19), **Trend on a pale tint of the pick** for the right (rounds 23 and 24), asked for the Trend's range to follow the page's period pill (no picker in the hero), for **Check-ins** in place of the Exact switch, and for the money that moved through the account in the section. Built in `AccountsHero.tsx`, `WalletCards.tsx`, `HeroTrend.tsx` and `CheckInCalendar.tsx`; the old coloured stage, the spines and the white line with its four figures are gone.
+
+- **The stage** is the Income hero card (surface, hairline, soft shadow) with a 12% tint of the pick's colour that glides to the next one (650ms). No gradient, no ring texture on the stage.
+- **The wallet** (left): the open card on top, the others as 80px strips overlapping so 62px of each shows (less with many accounts, `stripPitch`), each narrower than the one above. A strip has the monogram, name, share of the total, its period as a step line, its balance and last change; a not-read account says so in amber. One element per account that never unmounts, so a pick glides: the open face is laid out at the card's full width and its parts rise in one after another, and the open card's digits roll from the figure it replaces. Positions come from the pick alone (CSS variable `--open-h`, taller on a phone). On a phone the strips stay under the card and the right section stacks below.
+- **Trend** (right): the pick's line over the page's period, smoothed (a 2-week triangular blur and a monotone cubic, `trendChart.ts`), a pulsing ring at the end. Hover reads a week; drag across it to measure a stretch (the rest fades; click to clear). Arrow keys read a week, shift and the arrows measure, Escape clears. The line morphs when the pick changes (not for reduced motion).
+- **The four facts** are the money that went through the account over the period, or over the measured stretch: **Came in**, **Spent** (card bills, subscriptions, EMIs), **Invested** (shares bought) and **Left the bank** (spent plus invested). They are worked out from the other pages' records (`flows` over `flowItems`, the period's movements carried to the browser without their labels), never read from the bank. For a stretch, the movements after its first day up to and including its last (`itemsBetween`). The sentence under the title gives the balance's change over the same stretch.
+- **Check-ins** (the other button): accounts by months over the last 12 months of the period, a dot per reading, hatched where a month was never read, dashed for the month still going, blank before an account existed or after it closed (`checkInGrid`). Press a cell for the readings; press a name to open the account. Four facts: readings, quiet months, longest gap (counted to the period's end while the account is open) and who is read most.
+- **Not changed:** everything under the hero (the mix, Balance history, This year in and out, Over time, Money in and out, Coming up). This year in and out now repeats Came in, Expenses and Invested next to the hero's facts; it could go.
+
+Tests: `accountCheckIns`, `accountTrend` (including a stretch's money in and out), `trendChart` and the page view's new fields. Checked in the browser on the sample data (`/accounts?demo`) at desktop and phone width: hover, drag, both views, picking from a strip and from the calendar. Not checked against the real Sheet.
+
+## Built: Balance history as a table, and the mix as the cost map (2026-10-24)
+
+Prathik pointed out that the dashboard's Balance history was a list while Cards' Statements and Subscriptions' Payments are tables, and that the mix ("Where it sits") was misaligned and didn't look or feel like the Subscriptions cost map.
+
+- **Balance history** (`HistoryCard.tsx`) is now laid out as Payments is: the title with what it covers (Every account, or the account with its mark), a header row (Account when All is open, Read on, Balance, Change, After the one before, Source), six rows on hairlines with the account's mark in the first column for All, Edit at the row's end, a line saying "The 6 most recent of N", and View all balances →. Where a statement disagreed with a balance, the Needs attention chip takes the Source's place. Beside the map it keeps one height whatever's picked (six unseen rows hold it, as Payments does) and says "Pick a block in the map for one account's balances", or offers All accounts.
+- **Where it sits** (`MixCard.tsx`) is built the way the cost map is, from the same pieces: its layout (`costMap.ts`), the hover card's shell (`CostMapHover`, which now accepts what to say for a block and a category), the toggle, the ring texture and the rolling digits. A block has the account's name, "Spending · HDFC Bank", its share, the balance large, "Updated Oct 21" or an amber "Not read · 83 days" pill; hovering or focusing a block or a purpose's tile lifts it, steps the rest back and shows the light card (balance, share bar, purpose, updated, last change); the open account has the ring and tick; By purpose glides the blocks into a tile per purpose with a legend under. The map fills the height its card has (360px minimum, 440px from md), which now matches Balance history, so the two end level. A purpose tile too narrow to read stays plain.
+
 ## Statement sync: needs attention (built 2026-10-23, no design board)
 Built from the existing card, dialog and chip styles after Prathik asked for it to be built directly; a board for it in `design/accounts/` is still to be drawn if he wants one. Where a bank statement disagrees with a recorded balance (ADR 0008): the greeting sentence ends "N balances from your statements need a look" (the figure points, with a card of each day, both balances and the gap); a warm card under the header lists them with a Review button; the balance's row in Balance history (the card and the full page, desktop and phone) carries a "Needs attention" chip; Review opens a dialog with "On your Sheet" beside "On the statement" and **Keep ₹X** or **Use ₹Y**. "Sync statements" sits beside Refresh in the header, its report under the greeting. With `?demo`, one sample review shows and every button is disabled.
 

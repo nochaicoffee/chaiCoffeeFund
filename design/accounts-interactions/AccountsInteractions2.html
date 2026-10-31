@@ -1,0 +1,1756 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Accounts Interactions 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+:root {
+  color-scheme: light;
+
+  --page: oklch(0.965 0.004 90);
+  --surface: oklch(0.995 0 0);
+  --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260);
+  --muted: oklch(0.52 0.012 260);
+  --fill: oklch(0 0 0 / 0.055);
+  --fill-strong: oklch(0 0 0 / 0.09);
+  --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+  --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+
+  --accent: oklch(0.72 0.19 145);
+  --accent-tint: oklch(0.93 0.06 145);
+  --accent-text: oklch(0.42 0.14 145);
+  --on-accent: oklch(0.99 0 0);
+  --ink: oklch(0.16 0.008 260);
+  --on-ink: oklch(0.99 0 0);
+
+  /* Semantic states: good / attention / bad. Separate from the accent. */
+  --positive: oklch(0.42 0.14 145);
+  --warning: oklch(0.72 0.14 75);
+  /* A softer attention state: a renewal not recorded, a pending payment (the Subscriptions design). */
+  --warning-tint: oklch(0.95 0.05 85);
+  --warning-text: oklch(0.47 0.1 70);
+  --negative: oklch(0.55 0.16 25);
+  --negative-tint: oklch(0.95 0.035 40);
+
+  /* The one highlighted summary tile on a page (the Statements page's Due now). */
+  --feature-tile: oklch(0.935 0.052 148);
+  --feature-tile-line: oklch(0.62 0.15 150 / 0.24);
+  --feature-tile-glow: oklch(1 0 0 / 0.55);
+  --feature-tile-rings: oklch(0.45 0.11 152 / 0.1);
+
+  /*
+   * The texture on chart marks (RingTexture): faint rings, ink on light marks
+   * and light on dark ones, each drawn at its mark's opacity from the design,
+   * and a white sheen in the top-right corner of some.
+   */
+  --rings-ink: oklch(0.42 0.1 152);
+  --rings-light: oklch(1 0 0);
+  --bar-glow: oklch(1 0 0 / 0.26);
+  --range-glow: oklch(1 0 0 / 0.55);
+  --due-glow: oklch(1 0 0 / 0.3);
+
+  /* Statement trend: the stripes on a month with no statements, and the peak bar's shadow. */
+  --trend-no-data: oklch(0 0 0 / 0.1);
+  --trend-peak-shadow: oklch(0.3 0.09 155 / 0.26);
+
+  /* Spend heatmap, low to high. */
+  --heat-1: oklch(0.95 0.03 150);
+  --heat-2: oklch(0.87 0.07 150);
+  --heat-3: oklch(0.76 0.11 151);
+  --heat-4: oklch(0.6 0.12 153);
+  --heat-5: oklch(0.42 0.1 156);
+  /* Text on the light shades (1–3); the dark shades (4–5) use --on-accent. */
+  --heat-ink: oklch(0.24 0.05 152);
+  --heat-no-data: oklch(0 0 0 / 0.04);
+  --heat-upcoming: oklch(0 0 0 / 0.13);
+  --heat-glow: oklch(1 0 0 / 0.26);
+
+  /*
+   * The card palette: one list for every dashboard (COLORS in src/lib/sheets/types.ts). Each colour
+   * is a 155° gradient (from, to) for tiles and covers, plus a solid swatch for chart marks and
+   * legend dots; all are dark, with white text. Each hue has a standard colour and a darker, quieter
+   * "dusk" twin. Emerald is also All Cards' colour. Adding one: its name in COLORS, its three tokens
+   * here, and its name in the Sheet's colour dropdowns (docs/system-design.md).
+   */
+  --card-ruby-from: oklch(0.35 0.15 25);
+  --card-ruby-to: oklch(0.17 0.083 25);
+  --card-ruby: oklch(0.58 0.18 25);
+  --card-burgundy-from: oklch(0.25 0.075 25);
+  --card-burgundy-to: oklch(0.12 0.045 25);
+  --card-burgundy: oklch(0.46 0.098 25);
+  --card-coral-from: oklch(0.38 0.13 35);
+  --card-coral-to: oklch(0.18 0.072 35);
+  --card-coral: oklch(0.626 0.156 35);
+  --card-copper-from: oklch(0.37 0.12 55);
+  --card-copper-to: oklch(0.18 0.066 55);
+  --card-copper: oklch(0.606 0.144 55);
+  --card-rust-from: oklch(0.26 0.06 55);
+  --card-rust-to: oklch(0.125 0.036 55);
+  --card-rust: oklch(0.476 0.078 55);
+  --card-amber-from: oklch(0.44 0.115 85);
+  --card-amber-to: oklch(0.215 0.063 85);
+  --card-amber: oklch(0.697 0.138 85);
+  --card-bronze-from: oklch(0.295 0.058 85);
+  --card-bronze-to: oklch(0.142 0.035 85);
+  --card-bronze: oklch(0.532 0.075 85);
+  --card-olive-from: oklch(0.42 0.1 120);
+  --card-olive-to: oklch(0.205 0.055 120);
+  --card-olive: oklch(0.671 0.12 120);
+  --card-moss-from: oklch(0.285 0.05 120);
+  --card-moss-to: oklch(0.138 0.03 120);
+  --card-moss: oklch(0.516 0.065 120);
+  --card-emerald-from: oklch(0.42 0.11 155);
+  --card-emerald-to: oklch(0.24 0.07 162);
+  --card-emerald: oklch(0.6 0.12 153);
+  --card-pine-from: oklch(0.255 0.055 152);
+  --card-pine-to: oklch(0.122 0.033 152);
+  --card-pine: oklch(0.468 0.072 152);
+  --card-teal-from: oklch(0.35 0.09 187);
+  --card-teal-to: oklch(0.17 0.05 187);
+  --card-teal: oklch(0.58 0.108 187);
+  --card-spruce-from: oklch(0.25 0.045 187);
+  --card-spruce-to: oklch(0.12 0.027 187);
+  --card-spruce: oklch(0.46 0.058 187);
+  --card-ocean-from: oklch(0.35 0.1 221);
+  --card-ocean-to: oklch(0.17 0.055 221);
+  --card-ocean: oklch(0.58 0.12 221);
+  --card-navy-from: oklch(0.25 0.05 221);
+  --card-navy-to: oklch(0.12 0.03 221);
+  --card-navy: oklch(0.46 0.065 221);
+  --card-sapphire-from: oklch(0.35 0.13 252);
+  --card-sapphire-to: oklch(0.17 0.072 252);
+  --card-sapphire: oklch(0.58 0.156 252);
+  --card-cobalt-from: oklch(0.25 0.065 252);
+  --card-cobalt-to: oklch(0.12 0.039 252);
+  --card-cobalt: oklch(0.46 0.085 252);
+  --card-violet-from: oklch(0.35 0.15 285);
+  --card-violet-to: oklch(0.17 0.083 285);
+  --card-violet: oklch(0.58 0.18 285);
+  --card-aubergine-from: oklch(0.25 0.075 285);
+  --card-aubergine-to: oklch(0.12 0.045 285);
+  --card-aubergine: oklch(0.46 0.098 285);
+  --card-plum-from: oklch(0.35 0.14 318);
+  --card-plum-to: oklch(0.17 0.077 318);
+  --card-plum: oklch(0.58 0.168 318);
+  --card-mulberry-from: oklch(0.25 0.07 318);
+  --card-mulberry-to: oklch(0.12 0.042 318);
+  --card-mulberry: oklch(0.46 0.091 318);
+  --card-pink-from: oklch(0.38 0.15 352);
+  --card-pink-to: oklch(0.185 0.083 352);
+  --card-pink: oklch(0.619 0.18 352);
+  --card-raspberry-from: oklch(0.265 0.075 352);
+  --card-raspberry-to: oklch(0.128 0.045 352);
+  --card-raspberry: oklch(0.484 0.098 352);
+  --card-onyx-from: oklch(0.28 0.02 75);
+  --card-onyx-to: oklch(0.15 0.01 75);
+  --card-onyx: oklch(0.56 0.04 75);
+  --card-slate-from: oklch(0.34 0.025 250);
+  --card-slate-to: oklch(0.17 0.015 250);
+  --card-slate: oklch(0.6 0.03 250);
+  --card-mocha-from: oklch(0.32 0.04 55);
+  --card-mocha-to: oklch(0.17 0.025 50);
+  --card-mocha: oklch(0.54 0.05 55);
+  --card-honey-from: oklch(0.41 0.12 70);
+  --card-honey-to: oklch(0.2 0.066 70);
+  --card-honey: oklch(0.658 0.144 70);
+  --card-jade-from: oklch(0.36 0.1 170);
+  --card-jade-to: oklch(0.175 0.055 170);
+  --card-jade: oklch(0.593 0.12 170);
+  --card-sky-from: oklch(0.36 0.1 205);
+  --card-sky-to: oklch(0.175 0.055 205);
+  --card-sky: oklch(0.593 0.12 205);
+  --card-azure-from: oklch(0.35 0.12 237);
+  --card-azure-to: oklch(0.17 0.066 237);
+  --card-azure: oklch(0.58 0.144 237);
+  --card-orchid-from: oklch(0.35 0.15 300);
+  --card-orchid-to: oklch(0.17 0.083 300);
+  --card-orchid: oklch(0.58 0.18 300);
+  --card-magenta-from: oklch(0.35 0.17 335);
+  --card-magenta-to: oklch(0.17 0.094 335);
+  --card-magenta: oklch(0.58 0.204 335);
+  --card-graphite-from: oklch(0.3 0.012 285);
+  --card-graphite-to: oklch(0.15 0.008 285);
+  --card-graphite: oklch(0.52 0.02 285);
+  --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
+
+  /* Kept from before the palette was widened, so saved rows in them look as they did. */
+  --card-rose-from: oklch(0.33 0.11 355);
+  --card-rose-to: oklch(0.16 0.07 355);
+  --card-rose: oklch(0.62 0.15 355);
+  --card-forest-from: oklch(0.33 0.08 138);
+  --card-forest-to: oklch(0.16 0.05 145);
+  --card-forest: oklch(0.6 0.12 138);
+  --card-indigo-from: oklch(0.3 0.12 278);
+  --card-indigo-to: oklch(0.15 0.07 278);
+  --card-indigo: oklch(0.52 0.16 278);
+
+  /* Text, marks and edges on the card tiles, which are dark in both themes. */
+  --on-card: oklch(0.95 0.004 260);
+  --on-card-muted: oklch(1 0 0 / 0.6);
+  --on-card-faint: oklch(1 0 0 / 0.5);
+  --on-card-fill: oklch(1 0 0 / 0.16);
+  --on-card-line: oklch(1 0 0 / 0.12);
+  --on-card-line-top: oklch(1 0 0 / 0.22);
+  --on-card-lime: oklch(0.88 0.17 138);
+  --card-chip: oklch(0.8 0.13 80);
+  --card-chip-mid: oklch(0.68 0.13 80);
+  --card-chip-deep: oklch(0.55 0.1 80);
+  --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
+  --tile-shadow-selected: 0 10px 26px oklch(0.3 0.09 155 / 0.35), 0 0 0 4px oklch(1 0 0 / 0.08), 0 0 18px oklch(1 0 0 / 0.2);
+
+  /* Motion on the card tiles (#102): the light that follows the pointer, the chip's glint, and a bill due soon. */
+  --tile-glare: oklch(1 0 0 / 0.32);
+  --chip-glint: oklch(1 0 0 / 0.75);
+  --due-pulse-ring: oklch(0.82 0.12 40 / 0.2);
+  --due-pulse-fill: oklch(0.7 0.14 35 / 0.55);
+
+  /* The hover cards on the heatmap and trend (#104, #105), which float over the chart. */
+  --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+
+  /* The details card's interactions (#117): the free part of the limit, lit while Available is pointed at, and the limit bar's readout. */
+  --limit-free: oklch(0.88 0.17 138 / 0.18);
+  --limit-free-edge: oklch(0.88 0.17 138 / 0.75);
+  --limit-free-glow: oklch(0.88 0.17 138 / 0.35);
+  --readout-shadow: 0 4px 12px oklch(0 0 0 / 0.25);
+}
+:root {
+  --sp: 1;
+  --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --e-move: cubic-bezier(0.22, 1, 0.36, 1);
+  --t-move: calc(640ms * var(--sp));
+}
+* { box-sizing: border-box; }
+html, body { background: var(--page); color: var(--fg); }
+body { margin: 0; font-family: var(--font); font-size: 14px; line-height: 1.5; padding: 0 max(16px, env(safe-area-inset-left)) 80px; -webkit-font-smoothing: antialiased; font-variant-numeric: tabular-nums; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ---------- page furniture (same as the Cards / Subscriptions interaction pages) ---------- */
+.bar { position: sticky; top: 0; z-index: 50; margin: 0 -16px; padding: 10px 16px; background: color-mix(in oklab, var(--page) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--divider); }
+.bar-in { max-width: 1240px; margin: 0 auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.bar a { text-decoration: none; color: var(--fg); background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); border-radius: 99px; padding: 4px 12px; font-size: 12px; font-weight: 700; }
+.bar .spacer { flex: 1; }
+.bar .lbl { font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 44px; padding-top: 28px; }
+.intro { display: flex; flex-direction: column; gap: 10px; max-width: 820px; }
+.eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+h1 { margin: 0; font-size: 30px; line-height: 1.15; font-weight: 800; text-wrap: balance; }
+.intro p { margin: 0; font-size: 15px; font-weight: 500; color: var(--muted); }
+.intro p b { color: var(--fg); }
+.why { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); border-radius: 20px; padding: 16px 20px; max-width: 820px; font-size: 14px; color: var(--muted); }
+.why b { color: var(--fg); }
+.why ul { margin: 8px 0 0; padding-left: 18px; display: grid; gap: 4px; }
+.area { display: flex; flex-direction: column; gap: 18px; }
+.area-head h2 { margin: 0; font-size: 22px; font-weight: 800; }
+.area-head p { margin: 4px 0 0; max-width: 780px; color: var(--muted); font-weight: 500; }
+.options { display: flex; flex-direction: column; gap: 22px; }
+.option { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); border-radius: 28px; padding: 20px; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.opt-head { display: flex; gap: 12px; align-items: flex-start; }
+.opt-head h3 { margin: 0; font-size: 16px; font-weight: 800; }
+.opt-head p { margin: 2px 0 0; color: var(--muted); font-weight: 500; font-size: 13.5px; max-width: 860px; }
+.opt-head p b { color: var(--fg); }
+.tag { flex: none; width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
+.tag.ref { background: var(--fill-strong); color: var(--muted); }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.pill { border: 1px solid var(--surface-line); background: var(--surface); box-shadow: var(--soft-shadow); border-radius: 99px; padding: 5px 14px; font-size: 12px; font-weight: 800; }
+.pill[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+.pill.play::before { content: "▶"; font-size: 9px; margin-right: 6px; }
+.pill.play[aria-pressed="true"]::before { content: "■"; }
+.seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 99px; background: var(--fill); }
+.seg button { border: 0; background: transparent; border-radius: 99px; padding: 4px 12px; font-size: 12px; font-weight: 800; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: var(--soft-shadow); }
+.hint { font-size: 12px; font-weight: 600; color: var(--muted); }
+.notes { margin: 0; padding-left: 18px; font-size: 12.5px; color: var(--muted); font-weight: 500; display: grid; gap: 2px; }
+.notes b { color: var(--fg); }
+
+/* ---------- the stage: what the Accounts hero is drawn on ---------- */
+.stage { --fg: oklch(0.97 0.004 260); --muted: oklch(1 0 0 / 0.62); --divider: oklch(1 0 0 / 0.14); --fill: oklch(1 0 0 / 0.12);
+  position: relative; isolation: isolate; overflow: hidden; border-radius: 36px; padding: 28px; color: var(--fg); box-shadow: var(--card-shadow); }
+.st-layer { position: absolute; inset: 0; z-index: -2; pointer-events: none; }
+.st-rings { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.st-main { display: block; }
+.st-main.side { display: grid; grid-template-columns: var(--cw) minmax(0, 1fr); gap: 32px; align-items: start; }
+.st-side { min-width: 0; }
+.st-line { position: relative; margin-top: 16px; }
+.side .st-line { margin-top: 0; }
+.st-line svg { display: block; width: 100%; overflow: visible; }
+.st-months { position: relative; height: 16px; margin-top: 4px; font-size: 11px; font-weight: 700; color: var(--muted); }
+.st-months span { position: absolute; }
+.st-dot { position: absolute; right: -4px; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px oklch(1 0 0 / .22), 0 0 18px oklch(1 0 0 / .8); }
+.st-figs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px 16px; border-top: 1px solid var(--divider); padding-top: 14px; margin: 16px 0 0; }
+.side .st-figs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.st-figs div { min-width: 0; }
+.st-figs dt { font-size: 11px; font-weight: 700; color: var(--muted); transition: opacity calc(200ms * var(--sp)); }
+.st-figs dd { margin: 2px 0 0; font-size: 20px; line-height: 1.2; font-weight: 800; white-space: nowrap; }
+.st-figs.swap dt { opacity: 0; }
+
+/* ---------- the cover: the row / stack of account cards ---------- */
+.cover { position: relative; outline-offset: 6px; }
+.cover:focus-visible { outline: 2px solid oklch(1 0 0 / .7); border-radius: 30px; }
+.card { position: absolute; left: 0; top: 0; overflow: hidden; isolation: isolate; border-radius: 26px; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow);
+  transform-origin: 50% 100%;
+  transition: left var(--t-move) var(--e-move), top var(--t-move) var(--e-move), width var(--t-move) var(--e-move), height var(--t-move) var(--e-move), transform var(--t-move) var(--e-move), opacity calc(380ms * var(--sp)) ease, box-shadow calc(480ms * var(--sp)) ease, border-color calc(480ms * var(--sp)) ease, border-radius calc(520ms * var(--sp)) var(--e-move); }
+.card.is-open { border-color: oklch(1 0 0 / .6); box-shadow: var(--tile-shadow-selected); }
+.noanim .card, .noanim .card * { transition: none !important; }
+.m-today .card, .m-today .card * { transition: none !important; }
+.card-rings { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+.ring { display: inline-flex; align-items: center; justify-content: center; border: 1px solid oklch(1 0 0 / .42); border-radius: 50%; font-weight: 800; flex: none; }
+.fold { position: absolute; inset: 0; opacity: 1; transition: opacity calc(200ms * var(--sp)) ease calc(280ms * var(--sp)); }
+.is-open .fold { opacity: 0; transition-delay: 0ms; transition-duration: calc(120ms * var(--sp)); pointer-events: none; }
+  .fold > :not(.fold-btn) { pointer-events: none; }
+.fold-btn { position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; margin: 0; border: 0; background: none; text-align: left; color: inherit; border-radius: inherit; }
+.fold-btn:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
+.fold-btn:active { background: oklch(1 0 0 / .06); }
+
+/* the open face: everything is placed from the top-left so it never reflows while the card widens */
+.open { position: absolute; left: 0; top: 0; height: 100%; width: var(--ow, 480px); }
+.open > * { position: absolute; opacity: 0; transform: translateY(10px); transition: opacity calc(140ms * var(--sp)) ease, transform calc(140ms * var(--sp)) ease; }
+.is-open .open > * { opacity: 1; transform: none; transition: opacity calc(420ms * var(--sp)) ease calc((220ms + var(--i, 0) * 55ms) * var(--sp)), transform calc(620ms * var(--sp)) var(--e-move) calc((220ms + var(--i, 0) * 55ms) * var(--sp)); }
+.o-eyebrow { left: 22px; top: 20px; font-size: 12px; font-weight: 700; color: var(--on-card-muted); }
+.o-bal { left: 22px; top: 40px; font-size: 56px; line-height: 64px; font-weight: 800; letter-spacing: -.02em; white-space: nowrap; }
+.o-name { left: 22px; top: 118px; font-size: 16px; line-height: 20px; font-weight: 800; white-space: nowrap; display: flex; gap: 8px; align-items: baseline; }
+.o-name small { font-size: 12px; font-weight: 600; color: var(--on-card-faint); }
+.o-upd { left: 22px; top: 142px; font-size: 12px; font-weight: 600; color: var(--on-card-muted); white-space: nowrap; }
+.o-upd.stale { color: var(--card-copper); }
+.o-chg { left: 22px; top: 160px; font-size: 12px; font-weight: 600; color: var(--on-card-muted); white-space: nowrap; }
+.o-chg.up { color: var(--on-card-lime); }
+.o-btns { left: 22px; top: 190px; display: flex; gap: 8px; }
+.o-btns button { height: 38px; padding: 0 16px; border: 0; border-radius: 99px; background: var(--on-card-fill); color: inherit; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.o-btns button.p { background: #fff; color: var(--deep); font-weight: 800; }
+.o-chip-wrap { left: calc(var(--ow, 480px) - 16px); top: 16px; transform: translate(-100%, 10px); }
+.is-open .o-chip-wrap { transform: translate(-100%, 0); }
+.chip { display: inline-block; border-radius: 99px; background: var(--on-card-fill); padding: 4px 12px; font-size: 11px; font-weight: 700; }
+.stamp { right: 18px; top: 58px; left: auto !important; border: 2px solid var(--card-copper); color: var(--card-copper); border-radius: 4px; padding: 1px 8px; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; transform: rotate(6deg) translateY(10px); }
+.is-open .stamp { transform: rotate(6deg); }
+.dotwarn { position: absolute; right: 8px; top: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--card-copper); }
+
+/* rolling digits (the app's RollingNumber) */
+.roll { display: inline-block; line-height: 1; white-space: nowrap; }
+.rc { position: relative; display: inline-block; clip-path: inset(0 -0.1em); }
+.rc .inv { visibility: hidden; }
+.rc .strip { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-direction: column; align-items: center; transition: transform calc(760ms * var(--sp)) cubic-bezier(.2, .8, .2, 1); }
+.rc .strip span { height: 1lh; }
+.rc.nt .strip { transition: none; }
+
+/* ---------- spines ---------- */
+.l-spines .f-ini { position: absolute; left: 16px; top: 16px; width: 32px; height: 32px; font-size: 14px; }
+.l-spines .f-vname { position: absolute; left: 22px; top: 222px; transform-origin: 0 0; transform: rotate(-90deg); white-space: nowrap; font-size: 12px; line-height: 20px; font-weight: 800; letter-spacing: .02em; }
+.f-weight { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(to top, oklch(1 0 0 / .2), oklch(1 0 0 / .03)); border-top: 1px solid oklch(1 0 0 / .28); pointer-events: none; }
+.l-spines .f-weight { display: none; }
+.l-spines.weights .f-weight { display: block; }
+.peek { position: absolute; left: 64px; right: 10px; top: 50%; transform: translateY(-50%); display: none; flex-direction: column; gap: 2px; }
+.m-peek .peek { display: flex; opacity: 0; transition: opacity calc(160ms * var(--sp)) ease; }
+.m-peek .is-peek:not(.is-open) .peek { opacity: 1; transition-delay: calc(140ms * var(--sp)); }
+.peek b { font-size: 16px; font-weight: 800; white-space: nowrap; }
+.peek small { font-size: 11px; font-weight: 700; color: var(--on-card-lime); white-space: nowrap; }
+.peek small.dn { color: var(--on-card-muted); }
+.peek em { font-style: normal; margin-top: 6px; font-size: 11px; font-weight: 800; color: var(--on-card-muted); }
+
+/* travel: one name and one monogram per card that move between the two states */
+.tr-ini { pointer-events: none; position: absolute; left: 16px; top: 16px; width: 32px; height: 32px; font-size: 14px; z-index: 3;
+  transition: left var(--t-move) var(--e-move), top var(--t-move) var(--e-move), width var(--t-move) var(--e-move), height var(--t-move) var(--e-move), font-size var(--t-move) var(--e-move), background-color var(--t-move) ease; }
+.is-open .tr-ini { left: 20px; top: 16px; width: 22px; height: 22px; font-size: 11px; background: var(--on-card-fill); }
+.tr-name { position: absolute; left: 0; top: 0; z-index: 3; transform-origin: 0 0; transform: translate(22px, 222px) rotate(-90deg); font-size: 12px; line-height: 20px; font-weight: 800; letter-spacing: .02em; white-space: nowrap; display: flex; align-items: baseline; pointer-events: none;
+  transition: transform var(--t-move) var(--e-move), font-size var(--t-move) var(--e-move); }
+.is-open .tr-name { transform: translate(22px, 118px) rotate(0deg); font-size: 16px; }
+.tr-name small { font-size: 12px; font-weight: 600; color: var(--on-card-faint); max-width: 0; overflow: hidden; opacity: 0; margin-left: 0; transition: max-width var(--t-move) ease, opacity calc(300ms * var(--sp)) ease calc(300ms * var(--sp)), margin var(--t-move) ease; }
+.is-open .tr-name small { max-width: 80px; opacity: 1; margin-left: 8px; }
+.m-travel .fold .f-ini, .m-travel .fold .f-vname { display: none; }
+.m-travel .o-eyebrow { left: 52px; }
+.m-travel .o-name { visibility: hidden; }
+
+/* ---------- hand of cards ---------- */
+.h-ini { position: absolute; left: 14px; top: 14px; width: 30px; height: 30px; font-size: 13px; }
+.h-name { position: absolute; left: 14px; top: 54px; right: 12px; font-size: 12px; line-height: 15px; font-weight: 800; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.h-bal { position: absolute; left: 14px; bottom: 14px; font-size: 13px; font-weight: 800; }
+.l-hand .card.is-hover:not(.is-open) { box-shadow: 0 16px 30px oklch(0 0 0 / .5); }
+
+/* ---------- wallet stack ---------- */
+.w-row { position: absolute; inset: 0; display: flex; align-items: flex-start; gap: 12px; padding: 13px 16px 0; }
+.w-ini { width: 26px; height: 26px; font-size: 12px; }
+.w-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 800; line-height: 26px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.w-name small { margin-left: 8px; font-size: 11px; font-weight: 600; color: var(--on-card-faint); }
+.w-bal { font-size: 14px; font-weight: 800; line-height: 26px; }
+
+/* ---------- ledger rows ---------- */
+.g-row { position: absolute; inset: 0; display: flex; align-items: center; gap: 14px; padding: 0 18px 0 14px; }
+.g-ini { width: 30px; height: 30px; font-size: 13px; }
+.g-name { flex: 1.3; min-width: 0; font-size: 13px; font-weight: 800; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.g-name small { display: block; font-size: 11px; font-weight: 600; color: var(--on-card-faint); }
+.g-share { flex: 1; height: 6px; border-radius: 9px; background: oklch(1 0 0 / .12); overflow: hidden; min-width: 40px; }
+.g-share i { display: block; height: 100%; border-radius: 9px; background: oklch(1 0 0 / .75); }
+.g-pct { width: 34px; text-align: right; font-size: 11px; font-weight: 700; color: var(--on-card-muted); }
+.g-bal { width: 92px; text-align: right; font-size: 14px; font-weight: 800; }
+.l-ledger .card.is-hover:not(.is-open) { border-color: oklch(1 0 0 / .4); }
+
+/* ---------- dock ---------- */
+.dock { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); display: flex; align-items: flex-end; gap: 10px; padding: 10px 14px; border-radius: 99px; background: oklch(1 0 0 / .1); border: 1px solid oklch(1 0 0 / .16); backdrop-filter: blur(6px); }
+.dock button { position: relative; width: 48px; height: 48px; padding: 0; border: 1px solid oklch(1 0 0 / .3); border-radius: 50%; color: #fff; font-weight: 800; font-size: 16px; transform-origin: 50% 100%; transform: scale(var(--s, 1)); transition: transform 90ms ease-out, box-shadow calc(300ms * var(--sp)) ease; box-shadow: 0 6px 14px oklch(0 0 0 / .35); }
+.dock button[aria-pressed="true"] { box-shadow: 0 0 0 3px #fff, 0 6px 14px oklch(0 0 0 / .35); }
+.dock button[aria-pressed="true"]::after { content: ""; position: absolute; left: 50%; bottom: -9px; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: #fff; }
+.dock button .tip { position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translateX(-50%) scale(calc(1 / var(--s, 1))); transform-origin: 50% 100%; white-space: nowrap; background: oklch(0.16 0.008 260 / .92); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; opacity: 0; pointer-events: none; transition: opacity 120ms; }
+.dock button:hover .tip, .dock button:focus-visible .tip { opacity: 1; }
+.l-dock .card:not(.is-open) { pointer-events: none; }
+
+.narrow-note { display: none; margin: 0; padding: 12px 16px; border-radius: 16px; background: var(--warning-tint); color: var(--warning-text); font-size: 13px; font-weight: 600; }
+
+/* ---------- spring and ripple ---------- */
+.m-ripple { --e-move: cubic-bezier(0.34, 1.28, 0.5, 1); }
+.m-ripple .card { transition-delay: calc(var(--rd, 0ms) * var(--sp)), calc(var(--rd, 0ms) * var(--sp)), calc(var(--rd, 0ms) * var(--sp)), calc(var(--rd, 0ms) * var(--sp)), calc(var(--rd, 0ms) * var(--sp)), 0ms, 0ms, 0ms; }
+
+/* ---------- centred strip ---------- */
+.l-strip .card { cursor: default; }
+.l-strip .card:not(.is-open) .fold-btn { cursor: pointer; }
+.s-body { position: absolute; top: 0; bottom: 0; width: 120px; padding: 18px 0; display: flex; flex-direction: column; justify-content: space-between; }
+.card[data-side="r"] .s-body { right: 14px; align-items: flex-end; text-align: right; }
+.card[data-side="l"] .s-body { left: 14px; align-items: flex-start; }
+.s-ini { width: 34px; height: 34px; font-size: 14px; }
+.s-name { font-size: 12px; line-height: 15px; font-weight: 800; max-height: 30px; overflow: hidden; }
+.s-bal { font-size: 18px; font-weight: 800; }
+
+/* ---------- card + tile grid ---------- */
+.t-ini { position: absolute; left: 12px; top: 12px; width: 28px; height: 28px; font-size: 12px; }
+.t-name { position: absolute; left: 12px; right: 10px; top: 46px; font-size: 12px; line-height: 15px; font-weight: 800; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.t-bal { position: absolute; right: 12px; top: 14px; font-size: 13px; font-weight: 800; }
+.card.tiny .t-name { display: none; }
+.card.short .t-name { -webkit-line-clamp: 1; top: 44px; }
+.card.tiny .t-bal { left: 12px; right: auto; top: 46px; }
+.l-bento .card.is-hover:not(.is-open) { border-color: oklch(1 0 0 / .45); }
+
+/* ---------- card + rail ---------- */
+.rl-row { position: absolute; inset: 0; display: flex; align-items: center; gap: 10px; padding: 0 12px; }
+.rl-ini { width: 30px; height: 30px; font-size: 13px; }
+.rl-txt { display: flex; flex-direction: column; min-width: 0; }
+.rl-nm { font-size: 11px; font-weight: 700; color: var(--on-card-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rl-bal { font-size: 14px; font-weight: 800; white-space: nowrap; }
+.card.tiny .rl-nm { display: none; }
+.card.tiny .rl-row { gap: 6px; padding: 0 8px; }
+.card.tiny .rl-bal { font-size: 12px; }
+
+/* ---------- the open card, redesigned ---------- */
+.mw { position: relative; display: inline-flex; }
+.menu { position: absolute; left: 0; bottom: calc(100% + 8px); min-width: 160px; padding: 6px; border-radius: 16px; background: oklch(0.14 0.012 260 / .96); box-shadow: 0 12px 30px oklch(0 0 0 / .5); display: flex; flex-direction: column; opacity: 0; pointer-events: none; transform: translateY(6px); transition: opacity 140ms, transform 140ms; z-index: 9; }
+.menu.show { opacity: 1; pointer-events: auto; transform: none; }
+.o-btns .menu button { height: 34px; border-radius: 10px; background: none; text-align: left; padding: 0 12px; }
+.o-btns .menu button:hover { background: oklch(1 0 0 / .1); }
+.o-btns .menu .danger { color: oklch(0.78 0.14 25); }
+.o-btns button.ic, .o-btns .more { width: 38px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; }
+.o-btns button.p { display: inline-flex; align-items: center; gap: 8px; }
+.stale-chip { border: 1.5px solid var(--card-copper); color: var(--card-copper); border-radius: 99px; padding: 1px 9px; font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.o-upd.stale, .stale { color: var(--card-copper); }
+.cover[class*="face-"] .card { min-width: 0; }
+
+/* A · real card */
+.face-real .o-eyebrow { left: 376px; top: 26px; }
+.face-real .o-bal { left: 376px; top: 46px; font-size: 52px; }
+.face-real .o-chg { left: 376px; top: 118px; }
+.face-real .o-upd { left: 376px; top: 138px; }
+.face-real .o-btns { left: 376px; top: 182px; }
+.face-real .stamp { top: 110px; }
+.r-card { left: 28px; top: 26px; width: 312px; height: 192px; perspective: 900px; cursor: pointer; border-radius: 20px; }
+.r-card:focus-visible { outline: 2px solid #fff; outline-offset: 4px; }
+.r-in { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateX(var(--rx, 0deg)) rotateY(calc(var(--ry, 0deg) + var(--fl, 0deg))); transition: transform calc(520ms * var(--sp)) var(--e-move); }
+.r-card.flipped { --fl: 180deg; }
+.r-face { position: absolute; inset: 0; border-radius: 20px; backface-visibility: hidden; -webkit-backface-visibility: hidden; overflow: hidden; border: 1px solid oklch(1 0 0 / .3); box-shadow: 0 16px 34px oklch(0 0 0 / .4); }
+.r-back { transform: rotateY(180deg); }
+.r-front::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at var(--mx, 30%) var(--my, 0%), oklch(1 0 0 / .3), transparent 52%); opacity: var(--sh, 0); transition: opacity .3s; pointer-events: none; }
+.r-front > span, .r-front > svg { position: absolute; }
+.emv { left: 22px; top: 54px; width: 44px; height: 33px; border-radius: 7px; background: linear-gradient(135deg, var(--card-chip), var(--card-chip-mid) 50%, var(--card-chip-deep)); border: 1px solid oklch(0 0 0 / .3); }
+.emv::before { content: ""; position: absolute; inset: 6px 10px; border: 1px solid oklch(0 0 0 / .3); border-radius: 3px; }
+.r-nfc { left: 76px; top: 56px; }
+.r-bk { right: 20px; top: 20px; font-size: 12px; font-weight: 800; letter-spacing: .02em; }
+.r-num { left: 22px; top: 108px; font-size: 17px; letter-spacing: .14em; font-weight: 700; text-shadow: 0 1px 2px oklch(0 0 0 / .4); white-space: nowrap; }
+.r-nm { left: 22px; bottom: 20px; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; font-weight: 800; }
+.r-ini { right: 20px; bottom: 16px; width: 32px; height: 32px; font-size: 13px; }
+.r-front .r-ini { position: absolute; }
+.r-mix { left: 22px; top: 56px; width: 268px; height: 12px; border-radius: 99px; overflow: hidden; display: flex; gap: 2px; }
+.r-mix i { display: block; height: 100%; }
+.r-stripe { position: absolute; left: 0; right: 0; top: 24px; height: 38px; background: oklch(0 0 0 / .72); }
+.r-det { position: absolute; left: 22px; right: 22px; top: 80px; display: grid; gap: 7px; font-size: 12px; }
+.r-det div { display: flex; justify-content: space-between; gap: 10px; }
+.r-det span { color: var(--on-card-muted); font-weight: 600; }
+.r-det b { font-weight: 800; }
+.r-hint { left: 28px; top: 226px; font-size: 10.5px; font-weight: 700; color: var(--on-card-faint); letter-spacing: .02em; }
+
+/* B · pulse */
+.face-pulse .o-eyebrow { top: 20px; }
+.face-pulse .o-bal { top: 36px; font-size: 58px; line-height: 66px; }
+.face-pulse .o-name { top: 112px; }
+.face-pulse .o-chg { top: 136px; }
+.face-pulse .o-upd { top: 154px; }
+.face-pulse .o-btns { top: 188px; }
+.p-spark { left: calc(var(--ow) - 400px); top: 64px; width: 380px; height: 150px; }
+.p-spark svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.p-end { position: absolute; right: -4px; width: 9px; height: 9px; margin-top: -4.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px oklch(1 0 0 / .2), 0 0 14px oklch(1 0 0 / .8); transition: opacity .2s; }
+.p-spark.scrub .p-end { opacity: .3; }
+.p-cx { position: absolute; top: -4px; bottom: -4px; width: 1px; background: oklch(1 0 0 / .55); opacity: 0; transition: opacity .15s; }
+.p-dot { position: absolute; width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px oklch(1 0 0 / .25); opacity: 0; transition: opacity .15s; }
+.p-tip { position: absolute; top: -34px; transform: translateX(-50%); background: oklch(0.14 0.012 260 / .9); border-radius: 12px; padding: 3px 10px; font-size: 11px; font-weight: 700; line-height: 1.25; white-space: nowrap; text-align: center; opacity: 0; transition: opacity .15s; pointer-events: none; color: var(--on-card-muted); }
+.p-tip b { display: block; color: #fff; font-size: 13px; }
+.p-spark.scrub .p-cx, .p-spark.scrub .p-dot, .p-spark.scrub .p-tip { opacity: 1; }
+.p-spark:focus-visible { outline: 2px solid #fff; outline-offset: 4px; border-radius: 8px; }
+.face-pulse .o-chip-wrap { top: 14px; }
+
+/* C · split */
+.face-split .o-eyebrow { top: 22px; }
+.face-split .o-bal { top: 40px; font-size: 52px; }
+.face-split .o-name { top: 112px; }
+.face-split .o-upd { top: 136px; }
+.face-split .o-chg { top: 154px; }
+.face-split .o-btns { top: 190px; }
+.s-panel { left: calc(var(--ow) - 348px); top: 16px; width: 332px; bottom: 16px; border-radius: 22px; background: oklch(1 0 0 / .09); border: 1px solid oklch(1 0 0 / .14); padding: 14px 16px; }
+.s-top { display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--on-card-muted); }
+.s-top .chip { letter-spacing: 0; text-transform: none; font-weight: 700; }
+.s-body2 { display: flex; align-items: center; gap: 18px; margin-top: 12px; }
+.donut { position: relative; width: 104px; height: 104px; flex: none; }
+.donut svg { width: 100%; height: 100%; overflow: visible; }
+.s-arc { stroke-dasharray: 0 240; transition: stroke-dasharray calc(900ms * var(--sp)) var(--e-move) calc(380ms * var(--sp)); }
+.is-open .s-arc { stroke-dasharray: var(--len) 240; }
+.d-c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+.d-c b { font-size: 21px; font-weight: 800; }
+.d-c small { font-size: 10px; font-weight: 700; color: var(--on-card-muted); }
+.s-body2 dl { margin: 0; display: grid; gap: 10px; min-width: 0; }
+.s-body2 dt { font-size: 11px; font-weight: 700; color: var(--on-card-muted); }
+.s-body2 dd { margin: 0; font-size: 16px; font-weight: 800; white-space: nowrap; }
+
+/* D · calm */
+.c-wm { right: 18px; bottom: -44px; font-size: 250px; line-height: 1; font-weight: 800; color: oklch(1 0 0 / .07); pointer-events: none; }
+.face-calm .c-eb { left: 28px; top: 24px; letter-spacing: .08em; text-transform: uppercase; font-size: 11px; font-weight: 800; }
+.face-calm .o-bal { left: 28px; top: 40px; font-size: 76px; line-height: 84px; font-weight: 700; letter-spacing: -.035em; }
+.c-pill { left: 28px; top: 134px; display: flex; align-items: center; gap: 10px; }
+.c-pill .ring { width: 26px; height: 26px; font-size: 12px; }
+.c-nm { font-size: 17px; font-weight: 800; }
+.c-pill small { font-size: 12px; font-weight: 600; color: var(--on-card-faint); }
+.c-line { left: 28px; top: 166px; font-size: 12.5px; font-weight: 600; color: var(--on-card-muted); white-space: nowrap; }
+.c-line .up { color: var(--on-card-lime); }
+.face-calm .o-btns { left: 28px; top: 192px; }
+.face-calm .o-btns button.p { height: 40px; padding: 0 20px; }
+.face-calm .o-btns button.ic, .face-calm .o-btns .more { width: 40px; height: 40px; }
+.face-calm .o-chip-wrap { display: none; }
+.face-calm .stamp { top: 120px; }
+
+/* E · passbook */
+.b-head { left: 22px; top: 18px; right: 22px; display: flex; align-items: center; gap: 12px; }
+.b-head .ring { width: 32px; height: 32px; font-size: 13px; }
+.b-head b { font-size: 16px; font-weight: 800; display: block; line-height: 1.15; }
+.b-head small { font-size: 12px; font-weight: 600; color: var(--on-card-faint); }
+.b-head .chip { margin-left: auto; }
+.b-book { left: 22px; top: 70px; width: 380px; border-radius: 16px; background: oklch(0 0 0 / .18); border: 1px solid oklch(1 0 0 / .1); padding: 4px 14px 6px; }
+.b-th, .b-row { display: grid; grid-template-columns: 1.1fr 1.2fr .9fr; gap: 8px; align-items: center; font-size: 12.5px; }
+.b-th { padding: 6px 0 5px; font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--on-card-faint); border-bottom: 1px dashed oklch(1 0 0 / .18); }
+.b-th span:last-child, .b-row > :last-child { text-align: right; }
+.b-row { height: 28px; border-bottom: 1px dotted oklch(1 0 0 / .1); font-weight: 700; }
+.b-row:last-child { border-bottom: 0; }
+.b-row span { color: var(--on-card-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.b-row b { font-weight: 800; }
+.b-row em { font-style: normal; font-size: 12px; color: var(--on-card-muted); }
+.b-row em.up { color: var(--on-card-lime); }
+.b-row i { display: block; height: 5px; border-radius: 9px; background: oklch(1 0 0 / .12); overflow: hidden; }
+.b-row i b { display: block; height: 100%; background: oklch(1 0 0 / .75); border-radius: 9px; }
+.b-row:hover { background: oklch(1 0 0 / .05); }
+.face-book .b-eb { left: 440px; top: 74px; }
+.face-book .o-bal { left: 440px; top: 94px; font-size: 46px; line-height: 54px; }
+.face-book .o-chg { left: 440px; top: 154px; }
+.face-book .o-upd { left: 440px; top: 172px; }
+.face-book .o-btns { left: 22px; top: 202px; }
+.face-book .o-btns button { height: 34px; }
+
+
+/* =========================================================
+   ROUND 2
+   ========================================================= */
+/* docks: the tip that opens over an item */
+.dk-tip { position: absolute; z-index: 30; pointer-events: none; opacity: 0; transform: translate(-50%, 6px); color: #fff;
+  transition: left calc(260ms * var(--sp)) var(--e-move), top calc(260ms * var(--sp)) var(--e-move), opacity 150ms ease, transform calc(260ms * var(--sp)) var(--e-move); }
+.dk-tip.on { opacity: 1; transform: translate(-50%, 0); }
+.dk-tip.snap { transition: none !important; }
+.dk-side { transform: translate(6px, -50%); }
+.dk-side.on { transform: translate(0, -50%); }
+.dk-chip { min-width: 156px; padding: 9px 16px 10px; border-radius: 16px; text-align: center; background: oklch(0.14 0.012 260 / .95); box-shadow: 0 12px 28px oklch(0 0 0 / .45); display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.dk-chip::after { content: ""; position: absolute; left: 50%; bottom: -5px; width: 10px; height: 10px; background: oklch(0.14 0.012 260); transform: translateX(-50%) rotate(45deg); border-radius: 2px; }
+.dk-chip.dk-side { align-items: flex-start; text-align: left; }
+.dk-chip.dk-side::after { left: -5px; bottom: auto; top: 50%; margin-top: -5px; transform: rotate(45deg); }
+.tp-bk { font-size: 13px; font-weight: 800; }
+.tp-ac { font-size: 11px; font-weight: 600; color: var(--on-card-muted); white-space: nowrap; }
+.tp-row { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; }
+.tp-bal { font-size: 21px; font-weight: 800; line-height: 1; }
+.tp-ch { font-size: 11px; font-weight: 700; color: var(--on-card-muted); }
+.tp-ch.up { color: var(--on-card-lime); }
+.tp-share { font-size: 11px; font-weight: 600; color: var(--on-card-muted); margin-top: 2px; }
+.dk-card { width: 236px; padding: 12px 14px 10px; border-radius: 20px; overflow: hidden; isolation: isolate; box-shadow: 0 14px 32px oklch(0 0 0 / .5); border: 1px solid oklch(1 0 0 / .3); display: flex; flex-direction: column; gap: 6px; }
+.dk-card::after { display: none; }
+.tp-bgs { position: absolute; inset: 0; z-index: -1; }
+.tp-bgs i { position: absolute; inset: 0; opacity: 0; transition: opacity calc(300ms * var(--sp)) ease; }
+.tp-top { display: flex; align-items: center; gap: 10px; }
+.tp-ini { width: 28px; height: 28px; font-size: 12px; }
+.tp-who { display: flex; flex-direction: column; min-width: 0; line-height: 1.2; }
+.tp-mid { display: flex; align-items: baseline; gap: 8px; }
+.tp-mid .tp-bal { font-size: 26px; }
+.tp-spark svg { display: block; width: 100%; height: 30px; opacity: .85; }
+.tp-go { align-self: flex-end; font-size: 10px; font-weight: 700; color: var(--on-card-faint); }
+.dock button.hov { box-shadow: 0 0 0 2px oklch(1 0 0 / .55), 0 6px 14px oklch(0 0 0 / .35); }
+.dock button[aria-pressed="true"].hov { box-shadow: 0 0 0 3px #fff, 0 6px 14px oklch(0 0 0 / .35); }
+.dk-warn { position: absolute; right: -2px; top: -2px; width: 10px; height: 10px; border-radius: 50%; background: var(--card-copper); border: 2px solid oklch(0.18 0 0); }
+.dk-rings { padding: 12px 18px 28px; gap: 16px; border-radius: 32px; }
+.dk-rings button { margin: 5px; }
+.dk-ring { position: absolute; inset: -5px; width: 58px; height: 58px; pointer-events: none; }
+.dk-arc { transition: stroke-dasharray calc(700ms * var(--sp)) var(--e-move); }
+.dk-lab { position: absolute; top: calc(100% + 10px); left: 50%; transform: translateX(-50%) scale(calc(1 / var(--s, 1))); font-size: 11px; font-weight: 700; color: var(--on-card-muted); white-space: nowrap; transform-origin: 50% 0; }
+.dk-rings button[aria-pressed="true"]::after { display: none; }
+.dk-rings button[aria-pressed="true"] .dk-lab { color: #fff; }
+.dk-rings button[aria-pressed="true"] { box-shadow: 0 0 0 2px oklch(0.2 0.02 260), 0 0 0 3.5px #fff, 0 6px 14px oklch(0 0 0 / .35); }
+.dock.dk-v { left: 0; top: 0; bottom: auto; transform: none; flex-direction: column; flex-wrap: wrap; align-content: center; justify-content: center; align-items: center; gap: 12px; height: 244px; padding: 14px 8px; border-radius: 34px; overflow: visible; }
+.dock.dk-v::-webkit-scrollbar { display: none; }
+.dk-v button { flex: none; transform-origin: 50% 50%; }
+.dk-v button:hover, .dk-v button:focus-visible { --s: 1.14; }
+.dk-v button[aria-pressed="true"]::after { left: -10px; bottom: auto; top: 50%; margin: -2px 0 0; }
+.dk-v button { margin: 0; }
+
+/* pill bar */
+.pb { position: absolute; left: 0; right: 0; top: 0; display: flex; gap: 8px; height: 46px; }
+.pb-p { position: relative; flex: none; display: flex; align-items: center; gap: 10px; height: 46px; max-width: 46px; padding: 0 6px; border: 1px solid oklch(1 0 0 / .3); border-radius: 99px; color: #fff; overflow: hidden; white-space: nowrap; text-align: left; box-shadow: 0 6px 14px oklch(0 0 0 / .35);
+  transition: max-width calc(520ms * var(--sp)) var(--e-move), padding calc(520ms * var(--sp)) var(--e-move), box-shadow calc(300ms * var(--sp)) ease; }
+.pb-p:hover, .pb-p:focus-visible, .pb-p[aria-pressed="true"] { max-width: 240px; padding-right: 18px; }
+.pb-p[aria-pressed="true"] { box-shadow: 0 0 0 2px #fff, 0 6px 14px oklch(0 0 0 / .35); }
+.pb-i { width: 32px; height: 32px; font-size: 13px; flex: none; }
+.pb-t { display: flex; flex-direction: column; line-height: 1.2; opacity: 0; transition: opacity calc(160ms * var(--sp)) ease; }
+.pb-p:hover .pb-t, .pb-p:focus-visible .pb-t, .pb-p[aria-pressed="true"] .pb-t { opacity: 1; transition: opacity calc(280ms * var(--sp)) ease calc(160ms * var(--sp)); }
+.pb-t b { font-size: 11.5px; font-weight: 700; color: var(--on-card-muted); }
+.pb-t i { font-style: normal; font-size: 14px; font-weight: 800; }
+
+/* wallets */
+.w-sub { position: absolute; left: 54px; right: 16px; top: 48px; display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 600; color: var(--on-card-muted); }
+.w-sub .up, .wr-b .up { color: var(--on-card-lime); }
+.wg-label { position: absolute; left: 6px; font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; line-height: 24px; color: var(--muted); opacity: 0; pointer-events: none; transition: top var(--t-move) var(--e-move), opacity calc(300ms * var(--sp)) ease; }
+.wr-row { position: absolute; inset: 0; display: flex; align-items: flex-start; gap: 12px; padding: 12px 16px; }
+.wr-n { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.25; }
+.wr-n b { font-size: 13px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.wr-n small, .wr-b small { font-size: 11px; font-weight: 600; color: var(--on-card-muted); white-space: nowrap; }
+.wr-sp svg { display: block; width: 84px; height: 26px; margin-top: 3px; opacity: .85; }
+.wr-b { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; min-width: 70px; }
+.wr-b b { font-size: 14px; font-weight: 800; }
+
+/* side pills */
+.peek.pk-rich { gap: 3px; }
+.pk-bk { font-size: 11px !important; font-weight: 700 !important; color: var(--on-card-muted) !important; }
+.pk-sp svg { display: block; width: 120px; height: 22px; opacity: .9; margin: 1px 0; }
+.l-spines .peek.pk-rich b { font-size: 18px; }
+.f-vbal { position: absolute; left: 52px; top: 222px; transform-origin: 0 0; transform: rotate(-90deg); font-size: 12px; line-height: 20px; font-weight: 700; color: var(--on-card-muted); white-space: nowrap; opacity: 0; transition: opacity calc(200ms * var(--sp)) ease; }
+.l-shelf .card.is-hover:not(.is-open) .f-vbal { opacity: 1; transition-delay: calc(140ms * var(--sp)); }
+.l-shelf .card.is-hover:not(.is-open) { box-shadow: 0 18px 30px oklch(0 0 0 / .55); }
+.l-railpills .card:not(.is-open) { border-radius: 99px; }
+.pr-row { position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; gap: 12px; padding: 0 6px; }
+.pr-i { height: calc(100% - 12px); aspect-ratio: 1 / 1; flex: none; font-size: 12px; }
+.pr-t { display: flex; flex-direction: column; text-align: right; line-height: 1.2; white-space: nowrap; opacity: 0; transition: opacity calc(120ms * var(--sp)) ease; }
+.card.is-hover .pr-t { opacity: 1; transition: opacity calc(260ms * var(--sp)) ease calc(150ms * var(--sp)); }
+.pr-t b { font-size: 11.5px; font-weight: 700; color: var(--on-card-muted); }
+.pr-t i { font-style: normal; font-size: 15px; font-weight: 800; }
+.l-railpills .card.is-hover { border-color: oklch(1 0 0 / .5); box-shadow: 0 10px 26px oklch(0 0 0 / .5); }
+
+/* faces, round 2 */
+.seg2 { display: inline-flex; padding: 2px; border-radius: 99px; background: oklch(1 0 0 / .1); text-transform: none; letter-spacing: 0; }
+.seg2 button { border: 0; background: none; color: var(--on-card-muted); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+.seg2 button.on { background: oklch(1 0 0 / .22); color: #fff; }
+.s-panel { overflow: hidden; }
+.fl-r { display: grid; grid-template-columns: 64px 1fr auto; align-items: center; gap: 10px; margin-top: 16px; font-size: 12px; font-weight: 700; color: var(--on-card-muted); }
+.fl-r i { display: block; height: 8px; border-radius: 9px; background: oklch(1 0 0 / .1); overflow: hidden; }
+.fl-r i b { display: block; height: 100%; width: 0; border-radius: 9px; transition: width calc(800ms * var(--sp)) var(--e-move) calc(120ms * var(--sp)); }
+.fl-bi { background: var(--on-card-lime); }
+.fl-bo { background: oklch(1 0 0 / .8); }
+.is-open .fl-bi { width: var(--wi); }
+.is-open .fl-bo { width: var(--wo); }
+.fl-r em { font-style: normal; font-size: 14px; font-weight: 800; color: #fff; min-width: 84px; text-align: right; }
+.fl-net { display: flex; justify-content: space-between; align-items: baseline; margin-top: 18px; padding-top: 10px; border-top: 1px dashed oklch(1 0 0 / .18); font-size: 12px; font-weight: 700; color: var(--on-card-muted); }
+.fl-nv { font-size: 20px; font-weight: 800; color: #fff; }
+.fl-nv.up { color: var(--on-card-lime); }
+.ah-st { font-size: 11px; font-weight: 700; letter-spacing: 0; text-transform: none; color: var(--on-card-lime); }
+.ah-st.warn { color: var(--card-copper); }
+.ah-chart { position: relative; margin-top: 10px; height: 56px; }
+.ah-chart svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; clip-path: inset(-8px 100% -8px 0); transition: clip-path calc(1000ms * var(--sp)) cubic-bezier(.3, .6, .2, 1) calc(300ms * var(--sp)); }
+.is-open .ah-chart svg { clip-path: inset(-8px 0 -8px 0); }
+.ah-m { position: absolute; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; background: #fff; border: 2px solid oklch(0.24 0.04 260); transition: transform .15s ease, box-shadow .2s ease; }
+.ah-m.in { background: var(--on-card-lime); }
+.ah-m.hl { transform: scale(1.6); box-shadow: 0 0 0 4px oklch(1 0 0 / .25); }
+.ah-today { position: absolute; left: 0; bottom: -17px; font-size: 10px; font-weight: 700; color: var(--on-card-faint); }
+.ah-rows { margin-top: 22px; display: grid; gap: 0; }
+.ah-r { display: grid; grid-template-columns: 46px 1fr auto; gap: 8px; align-items: center; font-size: 12px; padding: 2px 6px; margin: 0 -6px; border-radius: 8px; transition: background .15s ease; }
+.ah-r.hl { background: oklch(1 0 0 / .11); }
+.ah-r span { color: var(--on-card-muted); font-weight: 600; }
+.ah-r b { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ah-r em { font-style: normal; font-weight: 800; }
+.ah-r em.up { color: var(--on-card-lime); }
+.ah-more { font-size: 11px; font-weight: 700; color: var(--on-card-faint); padding-top: 1px; }
+.rn-big { margin-top: 12px; display: flex; align-items: baseline; gap: 4px; }
+.rn-n { font-size: 42px; font-weight: 800; line-height: 1; letter-spacing: -.02em; }
+.rn-u { font-size: 15px; font-weight: 700; color: var(--on-card-muted); }
+.rn-meter { position: relative; height: 8px; border-radius: 9px; background: oklch(1 0 0 / .12); margin-top: 22px; }
+.rn-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: 9px; background: linear-gradient(90deg, oklch(1 0 0 / .35), #fff); transition: width calc(900ms * var(--sp)) var(--e-move) calc(300ms * var(--sp)); }
+.is-open .rn-fill { width: var(--w); }
+.rn-mk { position: absolute; top: -5px; left: 0; width: 4px; height: 18px; margin-left: -2px; border-radius: 3px; background: #fff; box-shadow: 0 0 12px oklch(1 0 0 / .9); transition: left calc(900ms * var(--sp)) var(--e-move) calc(300ms * var(--sp)); }
+.is-open .rn-mk { left: var(--w); }
+.rn-t { position: absolute; top: 14px; transform: translateX(-50%); font-size: 10px; font-weight: 700; color: var(--on-card-faint); }
+.rn-goal { position: absolute; left: 85.7%; top: -5px; width: 2px; height: 18px; background: var(--card-copper); }
+.rn-goal small { position: absolute; bottom: 20px; right: -4px; font-size: 10px; font-weight: 800; color: var(--card-copper); white-space: nowrap; }
+.rn-cap { margin-top: 30px; font-size: 11.5px; line-height: 1.4; font-weight: 600; color: var(--on-card-muted); }
+.face-rewind .o-eyebrow { top: 20px; }
+.face-rewind .o-bal { top: 36px; font-size: 64px; line-height: 72px; }
+.rw-dl { left: 22px; top: 110px; }
+.face-rewind .o-name { top: 132px; }
+.rw-act { left: calc(var(--ow) - 22px); top: 56px; transform: translate(-100%, 10px); display: flex; gap: 8px; }
+.is-open .rw-act { transform: translate(-100%, 0); }
+.rw-act button { height: 38px; padding: 0 16px; border: 0; border-radius: 99px; background: var(--on-card-fill); color: inherit; font-size: 13px; font-weight: 700; white-space: nowrap; }
+.rw-act button.p { background: #fff; color: var(--deep); font-weight: 800; }
+.rw-act button.ic, .rw-act .more { width: 38px; padding: 0; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; }
+.rw-now { left: calc(var(--ow) - 22px); top: 106px; transform: translate(-100%, 10px); height: 28px; padding: 0 12px; border: 1px solid oklch(1 0 0 / .4); border-radius: 99px; background: none; color: #fff; font-size: 12px; font-weight: 700; white-space: nowrap; visibility: hidden; }
+.is-open .rw-now { transform: translate(-100%, 0); }
+.rewound .rw-now { visibility: visible; }
+.rw-track { left: 22px; top: 176px; width: calc(var(--ow) - 44px); height: 34px; cursor: ew-resize; touch-action: none; }
+.rw-track:focus-visible { outline: 2px solid #fff; outline-offset: 6px; border-radius: 6px; }
+.rw-track svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.rw-fill { position: absolute; left: 0; bottom: -2px; height: 3px; width: 100%; border-radius: 3px; background: #fff; }
+.rw-knob { position: absolute; top: -4px; bottom: -4px; left: 100%; width: 3px; margin-left: -1.5px; border-radius: 3px; background: #fff; box-shadow: 0 0 12px oklch(1 0 0 / .85); }
+.rw-lab { position: absolute; top: -30px; left: 100%; transform: translateX(-100%); padding: 2px 10px; border-radius: 99px; background: #fff; color: var(--deep); font-size: 11px; font-weight: 800; opacity: 0; transition: opacity .15s ease; white-space: nowrap; }
+.rewound .rw-lab, .scrubbing .rw-lab { opacity: 1; }
+.rw-ms { position: absolute; left: 0; right: 0; top: 40px; display: flex; justify-content: space-between; font-size: 10px; font-weight: 700; color: var(--on-card-faint); }
+.scrubbing .rc .strip, .rewound .rc .strip { transition-duration: calc(260ms * var(--sp)); }
+.ed-bal { width: 440px; }
+.ed-in { position: absolute; left: 0; top: 0; width: 100%; height: 100%; padding: 0; border: 0; border-bottom: 2px dashed oklch(1 0 0 / .5); background: none; color: #fff; font: inherit; letter-spacing: inherit; outline: 0; opacity: 0; pointer-events: none; caret-color: var(--on-card-lime); }
+.editing .ed-in { opacity: 1; pointer-events: auto; }
+.editing .ed-bal .roll { opacity: 0; }
+.o-btns .bt-view, .o-btns .bt-edit { display: flex; gap: 8px; align-items: center; }
+.bt-edit { display: none !important; }
+.editing .bt-edit { display: flex !important; }
+.editing .bt-view { display: none !important; }
+.o-chg.cu { color: #fff; }
+.ed-ok { left: calc(var(--ow) - 22px); top: 74px; transform: translate(-100%, 0); display: inline-flex; align-items: center; gap: 8px; padding: 5px 6px 5px 8px; border-radius: 99px; background: oklch(0.3 0.07 150 / .9); border: 1px solid oklch(0.88 0.17 138 / .5); font-size: 12px; font-weight: 700; visibility: hidden; }
+.is-open .ed-ok { transform: translate(-100%, 0); }
+.ed-ok.show { visibility: visible; animation: ed-pop calc(420ms * var(--sp)) var(--e-move) both; }
+@keyframes ed-pop { from { opacity: 0; transform: translate(-100%, 8px) scale(.92); } }
+.ed-tick { width: 18px; height: 18px; border-radius: 50%; background: var(--on-card-lime); color: #10240c; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; }
+.ed-undo { border: 0; border-radius: 99px; background: oklch(1 0 0 / .18); color: #fff; padding: 3px 10px; font-size: 11px; font-weight: 800; }
+
+@media (max-width: 900px) {
+  .narrow-note { display: block; }
+  .st-main.side { grid-template-columns: 1fr; }
+  .st-figs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cover { overflow-x: auto; }
+}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <a href="#dock">1 · Dock</a><a href="#wallet">2 · Wallet</a><a href="#pills">3 · Side pills</a><a href="#faces">4 · Inside the card</a>
+  <span class="spacer"></span>
+  <span class="lbl">Accounts</span>
+  <div class="seg" id="count" role="group" aria-label="Number of accounts"><button type="button" aria-pressed="false" data-n="3">3</button><button type="button" aria-pressed="true" data-n="6">6</button><button type="button" aria-pressed="false" data-n="12">12</button></div>
+  <span class="lbl">Speed</span>
+  <div class="seg" id="speed" role="group" aria-label="Speed"><button type="button" aria-pressed="true" data-sp="1">Normal</button><button type="button" aria-pressed="false" data-sp="4">Slow-mo ×4</button></div>
+</div></div>
+
+<main class="wrap">
+  <header class="intro">
+    <div class="eyebrow">Accounts · interactions, round 2</div>
+    <h1>Your picks, taken further: the dock, the wallet, the side pills, and what the card says</h1>
+    <p>You liked the <b>dock</b>, the <b>wallet stack</b> and the <b>side pills that widen</b>, so each has four variations here, and the open card has <b>five new ideas for what it shows</b>. Everything is live: hover, click, use the arrow keys or press <b>Play it for me</b>. <b>Slow-mo</b> shows the choreography; the <b>Accounts</b> switch (3 / 6 / 12) tests each layout with more or fewer accounts. The first round is still on <code>AccountsInteractions.html</code>.</p>
+    <p><b>New everywhere:</b> hovering an account in a dock or a pill now shows <b>which bank it is and what it holds before you pick it</b>. Where a card isn't open yet, the hover is how you read it. A stale account (Canara, 73 days) shows an amber dot.</p>
+  </header>
+
+  <!-- ===================== 1 ===================== -->
+  <section class="area" id="dock">
+    <div class="area-head"><h2>1 · The dock</h2><p>The same dock, four ways of answering "what is this one?" before you click. Every one glides between items as the pointer moves, and the balance rolls from the last item's to the next.</p></div>
+    <div class="options">
+      <article class="option"><div class="opt-head"><span class="tag">1</span><div><h3>Label chip</h3><p>A small chip rides above the item under the pointer: <b>bank, account, balance and what changed</b>. It glides from item to item and the digits roll. The quickest to read and the least on screen.</p></div></div><div id="d1"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">2</span><div><h3>Mini card preview</h3><p>The item opens into <b>a small card in that account's own colour</b>: bank, name, balance, change and its year as a line. The colour crossfades as you move along the dock, so it feels like holding the card up to look at it.</p></div></div><div id="d2"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">3</span><div><h3>Share rings and balances</h3><p>The dock already says something before you hover: <b>a ring around each monogram shows its share of the total</b>, and its balance is written underneath. Hovering adds the bank, the exact balance, the share and, for a stale one, how long since it was read.</p></div></div><div id="d3"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">4</span><div><h3>Dock on the card's side</h3><p>A <b>vertical dock down the left edge</b> of the card, which scrolls when it is long, with the label opening to the right. It frees the space under the card, so the line and the figures sit closer.</p></div></div><div id="d4"></div></article>
+    </div>
+  </section>
+
+  <!-- ===================== 2 ===================== -->
+  <section class="area" id="wallet">
+    <div class="area-head"><h2>2 · The wallet</h2><p>The idea stays: the open card on top, the others as overlapping strips, the line and the figures beside it. Four ways to improve the stack.</p></div>
+    <div class="options">
+      <article class="option"><div class="opt-head"><span class="tag">1</span><div><h3>Lift and reveal</h3><p>Hovering a strip <b>lifts it and opens a second line</b> (what it's for, when it was read, what changed) while the strips below slide down to make room. Nothing is picked until you click.</p></div></div><div id="w1"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">2</span><div><h3>Upside down</h3><p>The pile sits <b>above</b> the open card, which is nearest your hand. Picking one pulls a strip out of the pile and the old card goes back in at its place. It keeps the open card low on the page, next to the line.</p></div></div><div id="w2"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">3</span><div><h3>Grouped by purpose</h3><p>The strips are gathered under <b>Spending, Investment, Emergency fund and Loan payments</b>, with small headings that appear and vanish as cards move. The headings are what makes this one hold up at 12 accounts.</p></div></div><div id="w3"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">4</span><div><h3>Rich strips</h3><p>Each strip also carries <b>the account's line, its share of the total and its change</b>, for when you want the whole picture from the pile without opening anything. Taller, so it suits fewer accounts.</p></div></div><div id="w4"></div></article>
+    </div>
+  </section>
+
+  <!-- ===================== 3 ===================== -->
+  <section class="area" id="pills">
+    <div class="area-head"><h2>3 · Side pills that widen</h2><p>The spines that widen as you hover, in four forms. All four show the bank and the balance on hover, and none of them needs a click to read.</p></div>
+    <div class="options">
+      <article class="option"><div class="opt-head"><span class="tag">1</span><div><h3>Spines that open to a peek</h3><p>Today's spines, now with a share fill. Hovering <b>widens one to a 236px peek</b>: bank, balance, its year as a line and its change. The neighbours ease aside and the open card gives up the room.</p></div></div><div id="p1"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">2</span><div><h3>Pill column</h3><p>The other accounts are <b>round pills in a column beside the card</b>. Hover one and it stretches leftwards over the card's edge into a pill with the bank and the balance. It goes to two columns past five accounts.</p></div></div><div id="p2"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">3</span><div><h3>Books on a shelf</h3><p>The spines stand like books. A hovered one <b>lifts out of the row and writes its balance up the spine</b> beside its name. The quietest of the four: nothing opens until you click.</p></div></div><div id="p3"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">4</span><div><h3>Pill bar on top</h3><p>A row of pills <b>above the card</b>: the picked account's pill is open with its bank and balance, the others are round monograms that open the same way on hover. The row reshuffles smoothly as the pick changes, and it holds any number.</p></div></div><div id="p4"></div></article>
+    </div>
+  </section>
+
+  <!-- ===================== 4 ===================== -->
+  <section class="area" id="faces">
+    <div class="area-head"><h2>4 · What the open card says</h2><p>Five more ideas for the inside of the card, all on the dock with label chips. Each has <b>one idea and one small animation</b>, so none of them is busy. They are drawn at the card's widest, 760px; try <b>Jupiter</b> (nearly empty, so it runs short), <b>Canara</b> (the emergency fund, not read in 73 days) and <b>All</b>.</p></div>
+    <div class="options">
+      <article class="option"><div class="opt-head"><span class="tag">A</span><div><h3>Money through it</h3><p>A panel shows <b>what came in and what went out</b> this month or over three months, as two bars that grow in, and what is left in the account. Switching the range slides the bars and rolls the three figures. The figures row under the line is no longer needed.</p></div></div><div id="f1"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">B</span><div><h3>The next 30 days</h3><p>A projected line of the balance with <b>a dot for every EMI, card bill or salary</b> coming up, drawn in left to right. It says in words whether the balance covers them, and shades <b>amber below zero</b> if not. Hovering a dot or a row lights its partner.</p></div></div><div id="f2"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">C</span><div><h3>How long it lasts</h3><p>The balance as a <b>runway</b>: how many days or months it covers at the pace of recent spending, on a meter with a marker that slides into place. <b>Spend −20%</b> or <b>+20%</b> re-runs it. The emergency fund shows its six-month goal and how far along it is.</p></div></div><div id="f3"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">D</span><div><h3>Drag back through the year</h3><p>The balance sits above a <b>strip of the year</b>. Drag the knob, or use the arrow keys, and the number <b>rolls to what it was that week</b> with the date and how much it has changed since. Back to now returns it. The one that makes the card feel alive.</p></div></div><div id="f4"></div></article>
+      <article class="option"><div class="opt-head"><span class="tag">E</span><div><h3>Update where it's written</h3><p>Press Update balance and <b>the balance itself becomes the field</b>, in the same large type, with a dashed underline. As you type it says how much that is above or below now. Enter saves: the number rolls, the line says Updated today, and a <b>Saved · Undo</b> chip stays for six seconds. (All has no single balance to edit.)</p></div></div><div id="f5"></div></article>
+    </div>
+  </section>
+</main>
+
+<script>
+/* =========================================================
+   Data (sample figures; the colours are each bank's pick)
+   ========================================================= */
+const BASE = [
+  { id: "hdfc",    name: "HDFC Bank Account",    bank: "HDFC Bank",    initial: "H", last4: "4421", color: "sapphire", bal: 342180, prev: 339100, purpose: "Spending",       upd: "Updated Oct 21" },
+  { id: "slice",   name: "Slice Bank Account",   bank: "Slice",        initial: "S", last4: "9032", color: "plum",     bal: 18450,  prev: 21000,  purpose: "Spending",       upd: "Updated Oct 18" },
+  { id: "jupiter", name: "Jupiter Bank Account", bank: "Federal Bank", initial: "J", last4: "7188", color: "copper",   bal: 974,    prev: 39,     purpose: "Spending",       upd: "Updated Oct 23" },
+  { id: "canara",  name: "Canara Bank Account",  bank: "Canara Bank",  initial: "C", last4: "2260", color: "forest",   bal: 96300,  prev: 96300,  purpose: "Emergency fund", upd: "Updated Aug 11", stale: true, days: 73 },
+  { id: "sbi",     name: "SBI Bank Account",     bank: "State Bank of India", initial: "S", last4: "5517", color: "ocean", bal: 648420, prev: 640000, purpose: "Investment", upd: "Updated Oct 20" },
+  { id: "axis",    name: "Axis Bank Account",    bank: "Axis Bank",    initial: "A", last4: "8830", color: "ruby",     bal: 52400,  prev: 51000,  purpose: "Spending",       upd: "Updated Oct 19" },
+  { id: "icici",   name: "ICICI Savings",        bank: "ICICI Bank",   initial: "I", last4: "1904", color: "amber",    bal: 120900, prev: 118000, purpose: "Spending",       upd: "Updated Oct 22" },
+  { id: "kotak",   name: "Kotak 811",            bank: "Kotak Bank",   initial: "K", last4: "6671", color: "violet",   bal: 8800,   prev: 9300,   purpose: "Spending",       upd: "Updated Oct 17" },
+  { id: "idfc",    name: "IDFC First Account",   bank: "IDFC First",   initial: "I", last4: "3305", color: "teal",     bal: 41200,  prev: 40000,  purpose: "Loan payments",  upd: "Updated Oct 20" },
+  { id: "fi",      name: "Fi Money",             bank: "Federal Bank", initial: "F", last4: "7742", color: "magenta",  bal: 15100,  prev: 14000,  purpose: "Spending",       upd: "Updated Oct 21" },
+  { id: "paytm",   name: "Paytm Payments Bank",  bank: "Paytm Bank",   initial: "P", last4: "9918", color: "navy",     bal: 2300,   prev: 2300,   purpose: "Spending",       upd: "Updated Oct 12" },
+  { id: "union",   name: "Union Bank Account",   bank: "Union Bank",   initial: "U", last4: "4408", color: "mocha",    bal: 77400,  prev: 77400,  purpose: "Emergency fund", upd: "Updated Oct 14" },
+];
+const WEEKS = 44;
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"];
+const inr = (n) => "₹" + Math.round(n).toLocaleString("en-IN");
+const signed = (n) => (n >= 0 ? "+" : "−") + inr(Math.abs(n));
+const compact = (n) => (n >= 1e5 ? "₹" + (n / 1e5).toFixed(1).replace(/\.0$/, "") + "L" : n >= 1e3 ? "₹" + Math.round(n / 1e3) + "K" : "₹" + n);
+const hash = (s) => [...s].reduce((h, c) => (h * 31 + c.charCodeAt(0)) >>> 0, 7);
+function rng(seed) { let s = seed >>> 0; return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296); }
+
+function buildAccounts(n) {
+  const base = BASE.slice(0, n - 1).map((a) => {
+    const r = rng(hash(a.id)); let v = 1; const raw = [];
+    for (let i = 0; i < WEEKS; i++) { if (r() < 0.38) v *= 1 + (r() - 0.46) * 0.55; raw.push(Math.max(0.2, v)); }
+    const vals = raw.map((x) => (x * a.bal) / raw[WEEKS - 1]);
+    vals[WEEKS - 1] = a.bal; vals[WEEKS - 2] = a.prev; vals[WEEKS - 3] = a.prev; // the last change is the one the card says
+    return { ...a, kind: "acct", vals };
+  });
+  const total = base.reduce((s, a) => s + a.bal, 0);
+  const allVals = Array.from({ length: WEEKS }, (_, i) => base.reduce((s, a) => s + a.vals[i], 0));
+  const stale = base.filter((a) => a.stale).length;
+  const all = { id: "all", name: "All accounts", bank: "", initial: "Σ", last4: "", color: "emerald", bal: total, prev: allVals[WEEKS - 5], kind: "all", purpose: "", upd: `${base.length} accounts · ${base.length - stale} up to date`, vals: allVals };
+  const list = [all, ...base];
+  list.forEach((a) => {
+    const lo = Math.min(...a.vals), hi = Math.max(...a.vals);
+    a.norm = a.vals.map((v) => (hi === lo ? 0.5 : (v - lo) / (hi - lo)));
+    a.share = a.bal / total; a.start = a.vals[0]; a.high = hi;
+  });
+  return list;
+}
+const grad = (c) => `linear-gradient(155deg, var(--card-${c}-from), var(--card-${c}-to))`;
+const cardBg = (a) => (a.kind === "all" ? `radial-gradient(circle at 92% 6%, var(--card-emerald-glow), transparent 42%), linear-gradient(150deg, var(--card-emerald-from), var(--card-emerald-to))` : grad(a.color));
+const stageBg = (c) => `radial-gradient(circle at 50% -10%, oklch(1 0 0 / 0.2), transparent 55%), linear-gradient(165deg, var(--card-${c}-from), var(--card-${c}-to))`;
+
+const SP = { v: 1 };
+const ms = (n) => n * SP.v;
+const reflow = (el) => void el.offsetWidth;
+
+/* =========================================================
+   Rolling digits (the app's RollingNumber, columns keyed by place from the right)
+   ========================================================= */
+class Rolling {
+  constructor(el) { this.el = el; this.cols = []; el.classList.add("roll"); }
+  set(text, instant = false) {
+    const chars = [...text], n = chars.length;
+    for (let p = 0; p < n; p++) {
+      const ch = chars[n - 1 - p], isD = /\d/.test(ch);
+      let c = this.cols[p];
+      if (!c || c.isD !== isD) {
+        if (c) c.node.remove();
+        const node = document.createElement("span");
+        if (isD) { node.className = "rc nt"; node.innerHTML = `<span class="inv">0</span><span class="strip">${[0,1,2,3,4,5,6,7,8,9].map((d) => `<span>${d}</span>`).join("")}</span>`; }
+        c = this.cols[p] = { node, isD, strip: node.querySelector(".strip") };
+        this.el.insertBefore(node, this.cols[p - 1] ? this.cols[p - 1].node : null);
+        if (isD) { c.strip.style.transform = `translateY(calc(${ch} * -1lh))`; reflow(node); node.classList.remove("nt"); continue; }
+      }
+      if (isD) {
+        if (instant) c.node.classList.add("nt");
+        c.strip.style.transitionDelay = ms(p * 40) + "ms";
+        c.strip.style.transform = `translateY(calc(${ch} * -1lh))`;
+      } else c.node.textContent = ch;
+    }
+    while (this.cols.length > n) this.cols.pop().node.remove();
+    if (instant) { reflow(this.el); this.cols.forEach((c) => c.isD && c.node.classList.remove("nt")); }
+  }
+}
+
+/* =========================================================
+   The stage: colour, the white line, the four figures
+   ========================================================= */
+function ringsSvg(w, h, cx, cy, first, step, count, op) {
+  let c = ""; for (let k = 0; k < count; k++) c += `<circle cx="${cx}" cy="${cy}" r="${first + k * step}"/>`;
+  return `<g fill="none" stroke="var(--rings-light)" stroke-opacity="${op}" stroke-width="1">${c}</g>`;
+}
+const easeIO = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2);
+
+class Stage {
+  constructor(host, o) {
+    this.o = o; this.host = host;
+    host.classList.add("stage");
+    host.style.background = stageBg("emerald");
+    const side = o.side;
+    host.innerHTML = `
+      <svg class="st-rings" viewBox="0 0 1100 560" preserveAspectRatio="none" aria-hidden="true">${ringsSvg(1100, 560, 1160, 600, 90, 60, 14, 0.07)}</svg>
+      <div class="st-main ${side ? "side" : ""}" ${side ? `style="--cw:${o.coverW}px"` : ""}>
+        <div class="st-cover"></div>
+        ${o.line || o.figs ? `<div class="st-side">
+          ${o.line ? `<div class="st-line"><svg viewBox="0 0 1000 ${o.lineH}" preserveAspectRatio="none" style="height:${o.lineH}px"><defs><linearGradient id="g${o.uid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><path class="ar" fill="url(#g${o.uid})"/><path class="gl" fill="none" stroke="#fff" stroke-opacity=".18" stroke-width="9" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><path class="ln" fill="none" stroke="#fff" stroke-width="2.5" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg><i class="st-dot"></i><div class="st-months">${MONTHS.map((m, i) => `<span style="left:${(i / 9) * 96}%">${m}</span>`).join("")}</div></div>` : ""}
+          ${o.figs ? `<dl class="st-figs">${[0, 1, 2, 3].map(() => `<div><dt></dt><dd></dd></div>`).join("")}</dl>` : ""}
+        </div>` : ""}
+      </div>`;
+    this.coverSlot = host.querySelector(".st-cover");
+    this.bgCur = "emerald";
+    if (o.line) { this.svg = host.querySelector(".st-line svg"); this.dot = host.querySelector(".st-dot"); this.cur = null; }
+    if (o.figs) this.figs = [...host.querySelectorAll(".st-figs > div")].map((d) => ({ dt: d.querySelector("dt"), dd: d.querySelector("dd"), roll: new Rolling(d.querySelector("dd")), text: "" }));
+  }
+  figuresFor(a, accts) {
+    if (a.kind === "all") {
+      const m = a.vals[WEEKS - 1] - a.vals[WEEKS - 5];
+      return [["This month", signed(m)], ["High point", inr(a.high)], ["Out to bills", inr(118400)], ["Up to date", `${accts.length - 1 - accts.filter((x) => x.stale).length} of ${accts.length - 1}`]];
+    }
+    return [["Since Jan 1", signed(a.bal - a.start)], ["Share of total", Math.round(a.share * 100) + "%"], ["Out to bills", inr(Math.round(a.bal * 0.31))], ["Updated", a.upd.replace("Updated ", "")]];
+  }
+  setPick(a, accts, origin, first) {
+    const o = this.o;
+    // stage colour
+    const key = a.kind === "all" ? "emerald" : a.color;
+    if (key !== this.bgCur) {
+      this.finishBg();
+      const next = stageBg(key), prevBg = stageBg(this.bgCur);
+      this.bgCur = key;
+      if (first) this.host.style.background = next;
+      else if (o.bg === "spill" && origin) {
+        const hr = this.host.getBoundingClientRect();
+        const x = origin.x - hr.left, y = origin.y - hr.top;
+        const layer = document.createElement("span"); layer.className = "st-layer"; layer.style.background = next; layer.style.zIndex = -2;
+        this.host.prepend(layer);
+        const far = Math.hypot(Math.max(x, hr.width - x), Math.max(y, hr.height - y));
+        const anim = layer.animate([{ clipPath: `circle(0px at ${x}px ${y}px)` }, { clipPath: `circle(${far + 20}px at ${x}px ${y}px)` }], { duration: ms(900), easing: "cubic-bezier(.3,.7,.2,1)", fill: "both" });
+        this.pending = { layer, next, anim };
+        anim.onfinish = () => this.finishBg();
+      } else {
+        this.host.style.background = next;
+        const layer = document.createElement("span"); layer.className = "st-layer"; layer.style.background = prevBg;
+        this.host.prepend(layer);
+        const anim = layer.animate([{ opacity: 1 }, { opacity: 0 }], { duration: ms(650), easing: "cubic-bezier(.2,.8,.2,1)", fill: "both" });
+        this.pending = { layer, next, anim, fade: true };
+        anim.onfinish = () => this.finishBg();
+      }
+    }
+    if (o.line) this.setLine(a, first);
+    if (o.figs) this.setFigs(a, accts, first);
+  }
+  finishBg() {
+    const p = this.pending; if (!p) return;
+    this.pending = null; p.anim.onfinish = null; p.anim.cancel();
+    this.host.style.background = p.next; p.layer.remove();
+  }
+  path(v) {
+    const H = this.o.lineH, PAD = 22, n = v.length, W = 1000;
+    const y = (t) => PAD + (1 - t) * (H - PAD * 2), x = (i) => (i / (n - 1)) * W;
+    let d = `M 0 ${y(v[0])}`;
+    for (let i = 1; i < n; i++) d += ` L ${x(i)} ${y(v[i - 1])} L ${x(i)} ${y(v[i])}`;
+    return { d, endY: y(v[n - 1]) / H };
+  }
+  drawLine(v) {
+    const { d, endY } = this.path(v), H = this.o.lineH;
+    this.svg.querySelector(".ln").setAttribute("d", d); this.svg.querySelector(".gl").setAttribute("d", d);
+    this.svg.querySelector(".ar").setAttribute("d", `${d} L 1000 ${H} L 0 ${H} Z`);
+    this.dot.style.top = endY * 100 + "%"; this.cur = v;
+  }
+  setLine(a, first) {
+    const mode = this.o.lineMode || "morph";
+    cancelAnimationFrame(this.raf); this.svg.getAnimations().forEach((x) => x.cancel());
+    if (first || !this.cur || mode === "jump") return this.drawLine(a.norm);
+    if (mode === "draw") {
+      this.drawLine(a.norm);
+      this.svg.animate([{ clipPath: "inset(-12px 100% -12px 0)" }, { clipPath: "inset(-12px 0 -12px 0)" }], { duration: ms(1000), easing: "cubic-bezier(.3,.6,.2,1)" });
+      this.dot.animate([{ opacity: 0 }, { opacity: 0, offset: .88 }, { opacity: 1 }], { duration: ms(1000) });
+      return;
+    }
+    const from = this.cur.slice(), to = a.norm, t0 = performance.now(), dur = ms(820);
+    const step = (t) => {
+      const k = Math.min(1, (t - t0) / dur), e = easeIO(k);
+      this.drawLine(to.map((v, i) => from[i] + (v - from[i]) * e));
+      if (k < 1) this.raf = requestAnimationFrame(step);
+    };
+    this.raf = requestAnimationFrame(step);
+  }
+  setFigs(a, accts, first) {
+    const f = this.figuresFor(a, accts);
+    const labelChanged = this.figs.some((x, i) => x.dt.textContent !== f[i][0]);
+    this.figs.forEach((x, i) => {
+      if (!first && labelChanged && !this.o.noSwap) {
+        x.dt.style.opacity = 0; clearTimeout(x.t);
+        x.t = setTimeout(() => { x.dt.textContent = f[i][0]; x.dt.style.opacity = 1; }, ms(160));
+      } else x.dt.textContent = f[i][0];
+      x.roll.set(f[i][1], !!first);
+    });
+  }
+}
+
+/* =========================================================
+   Layouts: where each card goes for a given pick
+   ========================================================= */
+const H = 244;
+const LAYOUTS = {
+  spines: {
+    side: false,
+    openW(c) { const sp = 64, gap = 10; return Math.max(340, Math.min(720, c.W - (c.n - 1) * (sp + gap) - c.extra)); },
+    place(i, c) {
+      const sp = 64, gap = 10, hw = c.motion === "peek" ? 176 : 92;
+      let x = 0;
+      for (let j = 0; j < i; j++) x += (j === c.pick ? this.openW(c) : j === c.hover ? hw : sp) + gap;
+      const open = i === c.pick, w = open ? this.openW(c) : i === c.hover ? hw : sp;
+      return { x, y: 0, w, h: H, z: open ? 2 : i === c.hover ? 3 : 1, open };
+    },
+    hoverExtra(c) { return c.hover >= 0 && c.hover !== c.pick ? (c.motion === "peek" ? 176 : 92) - 64 : 0; },
+    hostH() { return H; },
+    folded(a, o) {
+      const peek = a.kind === "all" ? `<b>${inr(a.bal)}</b><small>${signed(a.bal - a.prev)}</small><em>Open ›</em>` : `<b>${inr(a.bal)}</b><small class="${a.bal >= a.prev ? "" : "dn"}">${signed(a.bal - a.prev)}</small><em>Open ›</em>`;
+      return `<span class="ring f-ini">${a.initial}</span><span class="f-vname">${a.name}</span>${a.kind === "all" ? "" : `<i class="f-weight" style="height:${(8 + a.share * 130).toFixed(1)}%"></i>`}<span class="peek">${peek}</span>`;
+    },
+  },
+  hand: {
+    side: false,
+    cw(c) { return Math.min(440, c.W - 28 - (c.n - 1) * 56); },
+    strip(c) { return Math.max(52, Math.min(98, (c.W - this.cw(c) - 48) / (c.n - 1))); },
+    openW(c) { return this.cw(c); },
+    place(i, c) {
+      const s = this.strip(c), cw = this.cw(c), open = i === c.pick;
+      const off = Math.max(0, (c.W - ((c.n - 1) * s + cw + 28)) / 2);
+      const x = off + (i <= c.pick ? i * s : c.pick * s + cw + (i - c.pick - 1) * s);
+      const hov = i === c.hover && !open;
+      return { x, y: 18, w: open ? cw : s + 28, h: H, z: open ? 50 : i, rot: open ? 0 : Math.max(-6, Math.min(6, (i - c.pick) * 1.5)), ty: open ? 0 : hov ? -14 : 4, open };
+    },
+    hostH() { return H + 30; },
+    folded(a) { return `<span class="ring h-ini">${a.initial}</span><span class="h-name">${a.name}</span><span class="h-bal">${compact(a.bal)}</span>`; },
+  },
+  wallet: {
+    side: true, coverW: 440,
+    openW(c) { return c.W; },
+    pitch(c) { return Math.max(34, Math.min(50, 300 / Math.max(1, c.n - 2))); },
+    place(i, c) {
+      if (i === c.pick) return { x: 0, y: 0, w: c.W, h: H, z: 60, open: true };
+      const k = i - (i > c.pick ? 1 : 0), p = this.pitch(c), inset = Math.min(k * 5, 30);
+      const hov = i === c.hover;
+      return { x: inset, y: H + 14 + k * p + (hov ? -6 : 0), w: c.W - inset * 2, h: 64, z: 10 + k, open: false };
+    },
+    hostH(c) { return H + 14 + Math.max(0, c.n - 2) * this.pitch(c) + 64; },
+    folded(a) { return `<div class="w-row"><span class="ring w-ini">${a.initial}</span><span class="w-name">${a.name}${a.last4 ? `<small>•••• ${a.last4}</small>` : ""}</span><span class="w-bal">${inr(a.bal)}</span></div>`; },
+  },
+  dock: {
+    side: false,
+    openW(c) { return Math.min(c.W, 760); },
+    place(i, c) {
+      const w = this.openW(c), x = (c.W - w) / 2, open = i === c.pick;
+      return { x, y: 0, w, h: H, z: open ? 5 : 1, tx: open ? 0 : Math.sign(i - c.pick) * 90, s: open ? 1 : 0.95, o: open ? 1 : 0, open };
+    },
+    hostH() { return H + 18 + 74; },
+    folded() { return ""; },
+    mount(cover) {
+      const dock = document.createElement("div"); dock.className = "dock"; dock.setAttribute("role", "group"); dock.setAttribute("aria-label", "Accounts");
+      cover.accts.forEach((a, i) => {
+        const b = document.createElement("button"); b.type = "button"; b.dataset.i = i; b.style.background = cardBg(a);
+        b.innerHTML = `${a.kind === "all" ? "Σ" : a.initial}<span class="tip">${a.name}</span>`;
+        b.setAttribute("aria-label", a.name); b.setAttribute("aria-pressed", i === cover.pick);
+        b.addEventListener("click", (e) => cover.setPick(i, e.currentTarget));
+        dock.append(b);
+      });
+      dock.addEventListener("pointermove", (e) => {
+        if (e.pointerType !== "mouse") return;
+        [...dock.children].forEach((b) => { const r = b.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2); b.style.setProperty("--s", (1 + 0.5 * Math.exp(-((dx / 62) ** 2))).toFixed(3)); });
+      });
+      dock.addEventListener("pointerleave", () => [...dock.children].forEach((b) => b.style.setProperty("--s", 1)));
+      cover.host.append(dock); cover.dock = dock;
+    },
+    afterPick(cover) { [...cover.dock.children].forEach((b, i) => b.setAttribute("aria-pressed", i === cover.pick)); },
+  },
+  ledger: {
+    side: true, coverW: 560,
+    openW(c) { return c.W; },
+    rowH: 50, gap: 6,
+    place(i, c) {
+      let y = 0; for (let j = 0; j < i; j++) y += (j === c.pick ? H : this.rowH) + this.gap;
+      const open = i === c.pick;
+      return { x: 0, y, w: c.W, h: open ? H : this.rowH, z: open ? 3 : 1, open };
+    },
+    hostH(c) { return H + (c.n - 1) * (this.rowH + this.gap); },
+    folded(a) { return `<div class="g-row"><span class="ring g-ini">${a.initial}</span><span class="g-name">${a.name}<small>${a.kind === "all" ? a.upd : a.purpose + " · •••• " + a.last4}</small></span><span class="g-share"><i style="width:${a.kind === "all" ? 100 : Math.max(4, a.share * 100)}%"></i></span><span class="g-pct">${a.kind === "all" ? "" : Math.round(a.share * 100) + "%"}</span><span class="g-bal">${inr(a.bal)}</span></div>`; },
+  },
+};
+
+/* ---------- more layouts ---------- */
+LAYOUTS.strip = {
+  side: false,
+  cw(c) { return Math.min(560, c.W - 150); },
+  openW(c) { return this.cw(c); },
+  place(i, c) {
+    const cw = this.cw(c), x0 = (c.W - cw) / 2, d = i - c.pick, ad = Math.abs(d), open = d === 0;
+    if (open) return { x: x0, y: 12, w: cw, h: H, z: 20, open: true };
+    const s = Math.max(0.7, 1 - 0.14 * Math.min(ad, 2)), sd = Math.min(ad, 2), sign = Math.sign(d);
+    const vis = cw * s;
+    const edge = sign > 0 ? x0 + cw - 0.78 * vis + (sd - 1) * 0.17 * cw : x0 + 0.78 * vis - (sd - 1) * 0.17 * cw;
+    const centre = sign > 0 ? edge + vis / 2 : edge - vis / 2;
+    return { x: centre - cw / 2, y: 12, w: cw, h: H, z: 20 - ad, s, o: ad > 2 ? 0 : ad === 1 ? 0.9 : 0.55, side: sign > 0 ? "r" : "l", open: false };
+  },
+  hostH() { return H + 24; },
+  folded(a) { return `<span class="s-body"><span class="ring s-ini">${a.initial}</span><span class="s-name">${a.name}</span><span class="s-bal">${inr(a.bal)}</span></span>`; },
+};
+LAYOUTS.bento = {
+  side: false,
+  ow(c) { return Math.max(380, Math.min(600, c.W * 0.52)); },
+  openW(c) { return this.ow(c); },
+  grid(c) {
+    const m = c.n - 1, cols = m <= 4 ? 2 : m <= 9 ? 3 : 4, rows = Math.ceil(m / cols), gap = 10, gw = c.W - this.ow(c) - 14;
+    return { cols, rows, gap, tw: (gw - gap * (cols - 1)) / cols, th: (H - gap * (rows - 1)) / rows };
+  },
+  place(i, c) {
+    if (i === c.pick) return { x: 0, y: 0, w: this.ow(c), h: H, z: 5, open: true };
+    const g = this.grid(c), m = c.n - 1, k = i - (i > c.pick ? 1 : 0), col = k % g.cols, row = Math.floor(k / g.cols);
+    const inRow = Math.min(g.cols, m - row * g.cols), gw = c.W - this.ow(c) - 14, tw = (gw - g.gap * (inRow - 1)) / inRow; // the last row's tiles stretch to fill it
+    return { x: this.ow(c) + 14 + col * (tw + g.gap), y: row * (g.th + g.gap), w: tw, h: g.th, z: 1, ty: i === c.hover ? -4 : 0, tiny: tw < 118, short: g.th < 90, open: false };
+  },
+  hostH() { return H; },
+  folded(a) { return `<span class="ring t-ini">${a.initial}</span><span class="t-name">${a.name}</span><span class="t-bal">${compact(a.bal)}</span>`; },
+};
+LAYOUTS.rail = {
+  side: false,
+  ow(c) { return Math.min(c.W, 820); },
+  openW(c) { return this.ow(c); },
+  tile(c) { const m = c.n - 1; return Math.max(96, Math.min(180, (c.W - 10 * (m - 1)) / m)); },
+  place(i, c) {
+    if (i === c.pick) return { x: (c.W - this.ow(c)) / 2, y: 0, w: this.ow(c), h: H, z: 5, open: true };
+    const k = i - (i > c.pick ? 1 : 0), w = this.tile(c), total = (c.n - 1) * w + (c.n - 2) * 10;
+    return { x: (c.W - total) / 2 + k * (w + 10), y: H + 18 + (i === c.hover ? -4 : 0), w, h: 62, z: 1, tiny: w < 130, open: false };
+  },
+  hostH() { return H + 18 + 62; },
+  folded(a) { return `<span class="rl-row"><span class="ring rl-ini">${a.initial}</span><span class="rl-txt"><span class="rl-nm">${a.name}</span><span class="rl-bal">${inr(a.bal)}</span></span></span>`; },
+};
+
+/* ---------- open-card redesigns ---------- */
+const D0 = new Date(2026, 9, 23);
+const dateOf = (i) => { const d = new Date(D0); d.setDate(d.getDate() - 7 * (WEEKS - 1 - i)); return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); };
+const eyebrowOf = (a) => (a.kind === "all" ? "Your balance" : "Your balance · " + a.bank);
+const deltaOf = (a) => (a.kind === "all" ? a.bal - a.vals[0] : a.bal - a.prev);
+const deltaText = (a) => (a.kind === "all" ? signed(deltaOf(a)) + " since Jan 1" : deltaOf(a) === 0 ? "No change since the balance before" : signed(deltaOf(a)) + " since the balance before");
+const palette = (a) => (a.kind === "all" ? "emerald" : a.color);
+const IC = {
+  refresh: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>`,
+  edit: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>`,
+  lock: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`,
+  trash: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg>`,
+  plus: `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>`,
+};
+const menu = (a) => (a.kind === "all" ? "" : `<span class="mw"><button class="more" type="button" aria-label="More actions" aria-haspopup="menu">⋯</button><span class="menu" role="menu"><button type="button" role="menuitem">Close account</button><button type="button" role="menuitem" class="danger">Delete</button></span></span>`);
+const btnsShort = (a) => `<div class="o-btns" style="--i:5">${a.kind === "all" ? `<button class="p" type="button">Update balances</button><button type="button">Add account</button>` : `<button class="p" type="button">Update balance</button><button type="button">Edit</button>${menu(a)}`}</div>`;
+const chipOf = (a, i = 2) => (a.purpose && a.kind !== "all" ? `<div class="o-chip-wrap" style="--i:${i}"><span class="chip">${a.purpose}</span></div>` : "");
+const staleChip = (a) => (a.stale ? `<span class="stale-chip">Not read · ${a.days} days</span>` : "");
+const updTxt = (a) => `<div class="o-upd ${a.stale ? "stale" : ""}" style="--i:3">${a.upd}</div>`;
+const chgTxt = (a) => `<div class="o-chg ${deltaOf(a) > 0 ? "up" : ""}" style="--i:4">${deltaText(a)}</div>`;
+const balEl = (i = 1) => `<div class="o-bal" style="--i:${i}"><span class="bal-n"></span></div>`;
+const nameEl = (a, i = 2) => `<div class="o-name" style="--i:${i}"><span>${a.name}</span>${a.last4 ? `<small>•••• ${a.last4}</small>` : ""}</div>`;
+const figuresOf = (a, accts) => Stage.prototype.figuresFor.call(null, a, accts);
+const sparkD = (norm, w, h, pad) => { const n = norm.length, y = (t) => pad + (1 - t) * (h - pad * 2), x = (i) => (i / (n - 1)) * w; let d = `M 0 ${y(norm[0]).toFixed(1)}`; for (let i = 1; i < n; i++) d += ` L ${x(i).toFixed(1)} ${y(norm[i - 1]).toFixed(1)} L ${x(i).toFixed(1)} ${y(norm[i]).toFixed(1)}`; return d; };
+const DONUT_C = 2 * Math.PI * 38;
+
+const FACES = {
+  /* A: a bank card you can flip, balance beside it */
+  real: {
+    html(a, accts) {
+      const c = palette(a), bg = `linear-gradient(135deg, var(--card-${c}) -20%, var(--card-${c}-from) 55%, var(--card-${c}-to))`;
+      const mix = a.kind === "all" ? accts.slice(1).map((x) => `<i style="flex:${Math.max(x.bal, 4000)};background:var(--card-${x.color})"></i>`).join("") : "";
+      const front = a.kind === "all"
+        ? `<span class="r-bk">${accts.length - 1} accounts</span><span class="r-mix">${mix}</span><span class="r-num">All accounts</span><span class="r-nm">${inr(a.bal)} together</span><span class="ring r-ini">Σ</span>`
+        : `<span class="emv"></span><svg class="r-nfc" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="1.8" stroke-linecap="round"><path d="M8 8a6 6 0 0 1 0 8M12 5a10 10 0 0 1 0 14M16 2.5a14 14 0 0 1 0 19"/></svg><span class="r-bk">${a.bank}</span><span class="r-num">•••• •••• •••• ${a.last4}</span><span class="r-nm">${a.name}</span><span class="ring r-ini">${a.initial}</span>`;
+      const back = a.kind === "all"
+        ? `<span class="r-stripe"></span><div class="r-det">${accts.slice(1).map((x) => `<div><span>${x.name}</span><b>${inr(x.bal)}</b></div>`).slice(0, 5).join("")}</div>`
+        : `<span class="r-stripe"></span><div class="r-det"><div><span>Bank</span><b>${a.bank}</b></div><div><span>Account</span><b>•••• ${a.last4}</b></div><div><span>Purpose</span><b>${a.purpose}</b></div><div><span>Last read</span><b>${a.upd.replace("Updated ", "")}</b></div></div>`;
+      return `<div class="r-card" style="--i:0" role="button" tabindex="0" aria-label="Flip the card"><div class="r-in"><div class="r-face r-front" style="background:${bg}">${front}</div><div class="r-face r-back" style="background:${bg}">${back}</div></div></div>
+        <span class="r-hint" style="--i:2">Click the card to flip it</span>
+        <div class="o-eyebrow" style="--i:0">${eyebrowOf(a)}</div>${balEl()}${chgTxt(a)}${updTxt(a)}${btnsShort(a)}${chipOf(a)}${a.stale ? `<div class="stamp" style="--i:3">Not read · ${a.days} days</div>` : ""}`;
+    },
+    init(card) {
+      const rc = card.el.querySelector(".r-card"), inn = rc.querySelector(".r-in"), front = rc.querySelector(".r-front");
+      rc.addEventListener("pointermove", (e) => {
+        if (e.pointerType !== "mouse") return; const r = rc.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+        inn.style.setProperty("--ry", ((px - 0.5) * 16).toFixed(1) + "deg"); inn.style.setProperty("--rx", ((0.5 - py) * 12).toFixed(1) + "deg");
+        front.style.setProperty("--mx", px * 100 + "%"); front.style.setProperty("--my", py * 100 + "%"); front.style.setProperty("--sh", 1);
+      });
+      rc.addEventListener("pointerleave", () => { inn.style.setProperty("--ry", "0deg"); inn.style.setProperty("--rx", "0deg"); front.style.setProperty("--sh", 0); });
+      const flip = () => rc.classList.toggle("flipped");
+      rc.addEventListener("click", flip); rc.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } });
+    },
+  },
+  /* B: the account's shape is the card; move along it to read any week */
+  pulse: {
+    html(a) {
+      const W = 380, Hh = 150, d = sparkD(a.norm, W, Hh, 14), endY = 14 + (1 - a.norm[WEEKS - 1]) * (Hh - 28);
+      return `<div class="p-spark" style="--i:1" tabindex="0" aria-label="Balance across the year; move along it to read any week">
+          <svg viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none"><path d="${d} L ${W} ${Hh} L 0 ${Hh} Z" fill="oklch(1 0 0 / .1)"/><path d="${d}" fill="none" stroke="#fff" stroke-opacity=".2" stroke-width="8" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><path d="${d}" fill="none" stroke="#fff" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>
+          <i class="p-end" style="top:${(endY / Hh) * 100}%"></i><i class="p-cx"></i><i class="p-dot"></i><span class="p-tip"></span></div>
+        <div class="o-eyebrow" style="--i:0">${eyebrowOf(a)}</div>${balEl()}${nameEl(a, 2)}${chgTxt(a)}${updTxt(a)}
+        <div class="o-btns" style="--i:5">${a.kind === "all" ? `<button class="p" type="button">${IC.refresh}Update balances</button><button class="ic" type="button" title="Add account" aria-label="Add account">${IC.plus}</button>` : `<button class="p" type="button">${IC.refresh}Update balance</button><button class="ic" type="button" title="Edit" aria-label="Edit">${IC.edit}</button><button class="ic" type="button" title="Close account" aria-label="Close account">${IC.lock}</button><button class="ic" type="button" title="Delete" aria-label="Delete">${IC.trash}</button>`}</div>${chipOf(a)}`;
+    },
+    init(card) {
+      const a = card.a, sp = card.el.querySelector(".p-spark"), cx = sp.querySelector(".p-cx"), dot = sp.querySelector(".p-dot"), tip = sp.querySelector(".p-tip"), Hh = 150, n = WEEKS;
+      const show = (f) => {
+        const i = Math.max(0, Math.min(n - 1, Math.round(f * (n - 1)))), r = sp.getBoundingClientRect(), x = (i / (n - 1)) * r.width, y = ((14 + (1 - a.norm[i]) * (Hh - 28)) / Hh) * r.height;
+        cx.style.left = x + "px"; dot.style.left = x + "px"; dot.style.top = y + "px";
+        tip.style.left = Math.max(60, Math.min(r.width - 60, x)) + "px"; tip.innerHTML = `${dateOf(i)}<b>${inr(a.vals[i])}</b>`; sp.classList.add("scrub");
+      };
+      sp.addEventListener("pointermove", (e) => { const r = sp.getBoundingClientRect(); show((e.clientX - r.left) / r.width); });
+      sp.addEventListener("pointerleave", () => sp.classList.remove("scrub"));
+      sp.addEventListener("keydown", (e) => { if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return; e.stopPropagation(); e.preventDefault(); sp._f = Math.max(0, Math.min(1, (sp._f ?? 1) + (e.key === "ArrowRight" ? 1 : -1) / (n - 1))); show(sp._f); });
+      sp.addEventListener("blur", () => sp.classList.remove("scrub"));
+    },
+  },
+  /* C: the four figures move into the card, with where the money sits */
+  split: {
+    html(a, accts) {
+      const f = figuresOf(a, accts), others = accts.slice(1), total = accts[0].bal;
+      let off = 0, arcs = "";
+      if (a.kind === "all") others.forEach((x) => { const len = Math.max(2, (x.bal / total) * DONUT_C - 2); arcs += `<circle class="s-arc" cx="50" cy="50" r="38" style="--len:${len.toFixed(1)}px;stroke:var(--card-${x.color});stroke-dashoffset:${(-off).toFixed(1)}"/>`; off += (x.bal / total) * DONUT_C; });
+      else arcs = `<circle class="s-arc" cx="50" cy="50" r="38" style="--len:${Math.max(3, a.share * DONUT_C).toFixed(1)}px;stroke:#fff"/>`;
+      const center = a.kind === "all" ? `<b>${others.length}</b><small>accounts</small>` : `<b>${Math.round(a.share * 100)}%</b><small>of total</small>`;
+      const rows = (a.kind === "all" ? [f[0], f[1], f[2]] : [f[0], f[2], f[3]]).map(([k, v], idx) => `<div><dt>${k}</dt><dd class="${a.stale && k === "Updated" ? "stale" : ""}">${v}</dd></div>`).join("");
+      return `<div class="o-eyebrow" style="--i:0">${eyebrowOf(a)}</div>${balEl()}${nameEl(a, 2)}${updTxt(a)}${chgTxt(a)}${btnsShort(a)}
+        <div class="s-panel" style="--i:2"><div class="s-top"><span>${a.kind === "all" ? "Where it sits" : "This account"}</span>${a.purpose && a.kind !== "all" ? `<span class="chip">${a.purpose}</span>` : ""}</div>
+          <div class="s-body2"><span class="donut"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="38" fill="none" stroke="oklch(1 0 0 / .12)" stroke-width="9"/><g fill="none" stroke-width="9" transform="rotate(-90 50 50)">${arcs}</g></svg><span class="d-c">${center}</span></span><dl>${rows}</dl></div></div>`;
+    },
+  },
+  /* D: quiet and large, one button, the rest in a menu, the bank's initial as a watermark */
+  calm: {
+    html(a) {
+      return `<span class="c-wm" style="--i:0" aria-hidden="true">${a.initial}</span>
+        <div class="o-eyebrow c-eb" style="--i:0">${(a.purpose || "All accounts")}${a.kind === "all" ? "" : " · " + a.bank}</div>${balEl()}
+        <div class="c-pill" style="--i:2"><span class="ring">${a.initial}</span><span class="c-nm">${a.name}</span>${a.last4 ? `<small>•••• ${a.last4}</small>` : ""}${staleChip(a)}</div>
+        <div class="c-line ${a.stale ? "stale" : ""}" style="--i:3">${a.upd} · <span class="${deltaOf(a) > 0 ? "up" : ""}">${a.kind === "all" ? deltaText(a) : deltaOf(a) === 0 ? "no change" : signed(deltaOf(a)) + " since last"}</span></div>
+        <div class="o-btns" style="--i:5">${a.kind === "all" ? `<button class="p" type="button">Update balances</button><button class="ic" type="button" title="Add account" aria-label="Add account">${IC.plus}</button>` : `<button class="p" type="button">Update balance</button><button class="ic" type="button" title="Edit" aria-label="Edit">${IC.edit}</button>${menu(a)}`}</div>`;
+    },
+  },
+  /* E: a passbook page: its last recorded balances written out under the name */
+  book: {
+    html(a, accts) {
+      let rows = "";
+      if (a.kind === "all") {
+        rows = accts.slice(1).slice().sort((x, y) => y.bal - x.bal).slice(0, 3).map((x) => `<div class="b-row"><span>${x.name}</span><i><b style="width:${Math.max(4, x.share * 100)}%"></b></i><b>${inr(x.bal)}</b></div>`).join("");
+      } else {
+        const idx = []; for (let i = WEEKS - 1; i > 0 && idx.length < 3; i--) if (Math.abs(a.vals[i] - a.vals[i - 1]) > 1) idx.push(i);
+        rows = idx.map((i) => { const ch = a.vals[i] - a.vals[i - 1]; return `<div class="b-row"><span>${dateOf(i)}</span><b>${inr(a.vals[i])}</b><em class="${ch > 0 ? "up" : ""}">${signed(ch)}</em></div>`; }).join("") || `<div class="b-row"><span>No change recorded</span></div>`;
+      }
+      return `<div class="b-head" style="--i:0"><span class="ring">${a.initial}</span><div><b>${a.name}</b><small>${a.kind === "all" ? a.upd : a.bank + " · •••• " + a.last4}</small></div>${a.purpose && a.kind !== "all" ? `<span class="chip">${a.purpose}</span>` : ""}</div>
+        <div class="b-book" style="--i:2"><div class="b-th">${a.kind === "all" ? "<span>Biggest accounts</span><span></span><span>Balance</span>" : "<span>Date</span><span>Balance</span><span>Change</span>"}</div>${rows}</div>
+        <div class="o-eyebrow b-eb" style="--i:1">${eyebrowOf(a)}</div>${balEl()}${chgTxt(a)}${updTxt(a)}${btnsShort(a)}`;
+    },
+  },
+};
+document.addEventListener("click", (e) => {
+  const more = e.target.closest(".more");
+  document.querySelectorAll(".menu.show").forEach((m) => { if (!more || m !== more.nextElementSibling) m.classList.remove("show"); });
+  if (more) more.nextElementSibling.classList.toggle("show");
+});
+
+/* =========================================================
+   ROUND 2 — data the new faces need (sample figures)
+   ========================================================= */
+const UPS = {
+  hdfc: [{ d: 4, label: "HDFC card bill", amt: -18400 }, { d: 7, label: "Home loan EMI", amt: -12500 }, { d: 9, label: "Index SIP", amt: -5000 }, { d: 22, label: "Interest", amt: 2100 }],
+  slice: [{ d: 3, label: "Slice card bill", amt: -6200 }, { d: 15, label: "Wi-Fi", amt: -1199 }],
+  jupiter: [{ d: 3, label: "Netflix", amt: -649 }, { d: 9, label: "Phone bill", amt: -499 }],
+  canara: [],
+  sbi: [{ d: 7, label: "Salary", amt: 185000 }, { d: 8, label: "Index SIP", amt: -25000 }, { d: 20, label: "Insurance", amt: -14200 }],
+};
+BASE.forEach((a) => { a.ups = UPS[a.id] || [{ d: 6, label: "Card bill", amt: -Math.round((a.bal * 0.2) / 100) * 100 }]; });
+const dayLabel = (d) => { const x = new Date(D0); x.setDate(x.getDate() + d); return x.toLocaleDateString("en-US", { month: "short", day: "numeric" }); };
+const eventsOf = (a, accts) => (a.kind === "all" ? accts.slice(1).flatMap((x) => x.ups.map((u) => ({ ...u, label: u.label + " · " + x.initial }))) : a.ups).slice().sort((p, q) => p.d - q.d);
+const flowOf = (a, accts, months) => {
+  if (a.kind === "all") return accts.slice(1).reduce((s, x) => { const f = flowOf(x, accts, months); return { inn: s.inn + f.inn, out: s.out + f.out }; }, { inn: 0, out: 0 });
+  if (a.stale) return { inn: 0, out: 0 };
+  const r = rng(hash(a.id + "flow")), mIn = Math.max(1500, Math.round((a.bal * (0.25 + r() * 0.2)) / 100) * 100), mOut = Math.round((mIn * (0.7 + r() * 0.45)) / 100) * 100;
+  return { inn: mIn * months, out: Math.round(mOut * months * (months === 3 ? 0.96 : 1)) };
+};
+const monthlyOut = (a, accts) => (a.purpose === "Emergency fund" ? 60000 : flowOf(a, accts, 1).out);
+
+/* =========================================================
+   Docks: hovering an account reveals its bank and balance before you pick it
+   ========================================================= */
+function sparkSvg(norm, w, h, pad = 3) {
+  const d = sparkD(norm, w, h, pad);
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" width="${w}" height="${h}"><path d="${d}" fill="none" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>`;
+}
+function buildDock(cover, o) {
+  const host = cover.host, accts = cover.accts;
+  const dock = document.createElement("div"); dock.className = "dock" + (o.vertical ? " dk-v" : "") + (o.rings ? " dk-rings" : "");
+  dock.setAttribute("role", "group"); dock.setAttribute("aria-label", "Accounts");
+  const btns = accts.map((a, i) => {
+    const b = document.createElement("button"); b.type = "button"; b.dataset.i = i; b.style.background = cardBg(a);
+    const ring = o.rings ? `<svg class="dk-ring" viewBox="0 0 58 58" aria-hidden="true"><circle cx="29" cy="29" r="27" fill="none" stroke="oklch(1 0 0 / .16)" stroke-width="3"/><circle class="dk-arc" cx="29" cy="29" r="27" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-dasharray="${((a.kind === "all" ? 1 : Math.max(0.03, a.share)) * 169.6).toFixed(1)} 170" transform="rotate(-90 29 29)"/></svg>` : "";
+    b.innerHTML = `${a.kind === "all" ? "Σ" : a.initial}${ring}${o.labels ? `<span class="dk-lab">${compact(a.bal)}</span>` : ""}${a.stale ? `<i class="dk-warn"></i>` : ""}`;
+    b.setAttribute("aria-label", `${a.kind === "all" ? "All accounts" : a.bank + ", " + a.name}, ${inr(a.bal)}`); b.setAttribute("aria-pressed", i === cover.pick);
+    b.addEventListener("click", (e) => cover.setPick(i, e.currentTarget));
+    dock.append(b); return b;
+  });
+  // the tip that opens over the hovered item
+  const tip = document.createElement("div"); tip.className = "dk-tip " + (o.tip === "card" ? "dk-card" : "dk-chip") + (o.vertical ? " dk-side" : ""); tip.setAttribute("aria-hidden", "true");
+  if (o.tip === "card") tip.innerHTML = `<span class="tp-bgs">${accts.map((a) => `<i style="background:${cardBg(a)}"></i>`).join("")}</span><span class="tp-top"><span class="ring tp-ini"></span><span class="tp-who"><b class="tp-bk"></b><small class="tp-ac"></small></span></span><span class="tp-mid"><span class="tp-bal"></span><span class="tp-ch"></span></span><span class="tp-spark"></span><small class="tp-go">Click to open</small>`;
+  else tip.innerHTML = `<b class="tp-bk"></b><small class="tp-ac"></small><span class="tp-row"><span class="tp-bal"></span><span class="tp-ch"></span></span>${o.rings ? `<small class="tp-share"></small>` : ""}`;
+  const roll = new Rolling(tip.querySelector(".tp-bal"));
+  let hideT = null, on = false, bgs = tip.querySelectorAll(".tp-bgs i");
+  const show = (i) => {
+    clearTimeout(hideT); const a = accts[i], hr = host.getBoundingClientRect(), br = btns[i].getBoundingClientRect(), dr = dock.getBoundingClientRect();
+    const d = deltaOf(a), tw = o.tip === "card" ? 236 : 188;
+    if (!on) tip.classList.add("snap");
+    if (o.vertical) { tip.style.top = br.top + br.height / 2 - hr.top + "px"; tip.style.left = dr.right - hr.left + 12 + "px"; }
+    else { tip.style.left = Math.max(tw / 2, Math.min(hr.width - tw / 2, br.left + br.width / 2 - hr.left)) + "px"; tip.style.bottom = hr.bottom - dr.top + 10 + "px"; }
+    tip.querySelector(".tp-bk").textContent = a.kind === "all" ? "All accounts" : a.bank;
+    tip.querySelector(".tp-ac").textContent = a.kind === "all" ? `${accts.length - 1} accounts` : `${a.name} · •••• ${a.last4}`;
+    const ch = tip.querySelector(".tp-ch"); ch.textContent = (a.kind === "all" ? "" : d === 0 ? "no change" : signed(d)); ch.className = "tp-ch" + (d > 0 ? " up" : "");
+    roll.set(inr(a.bal), !on);
+    if (o.tip === "card") { tip.querySelector(".tp-ini").textContent = a.kind === "all" ? "Σ" : a.initial; tip.querySelector(".tp-spark").innerHTML = sparkSvg(a.norm, 200, 30); bgs.forEach((x, k) => (x.style.opacity = k === i ? 1 : 0)); }
+    if (o.rings) tip.querySelector(".tp-share").textContent = a.kind === "all" ? "Everything together" : Math.round(a.share * 100) + "% of the total" + (a.stale ? " · not read in " + a.days + " days" : "");
+    if (!on) { reflow(tip); tip.classList.remove("snap"); }
+    tip.classList.add("on"); on = true; btns.forEach((b, k) => b.classList.toggle("hov", k === i));
+  };
+  const hide = () => { hideT = setTimeout(() => { tip.classList.remove("on"); on = false; btns.forEach((b) => b.classList.remove("hov")); }, 90); };
+  btns.forEach((b, i) => { b.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") show(i); }); b.addEventListener("focus", () => show(i)); b.addEventListener("pointerleave", hide); b.addEventListener("blur", hide); });
+  if (!o.vertical) {
+    dock.addEventListener("pointermove", (e) => { if (e.pointerType !== "mouse") return; btns.forEach((b) => { const r = b.getBoundingClientRect(), dx = e.clientX - (r.left + r.width / 2); b.style.setProperty("--s", (1 + 0.5 * Math.exp(-((dx / 62) ** 2))).toFixed(3)); }); });
+    dock.addEventListener("pointerleave", () => btns.forEach((b) => b.style.setProperty("--s", 1)));
+  }
+  host.append(dock, tip); cover.dock = dock; cover.dockBtns = btns;
+}
+const dockAfterPick = (cover) => cover.dockBtns.forEach((b, i) => b.setAttribute("aria-pressed", i === cover.pick));
+LAYOUTS.dockChip = Object.assign({}, LAYOUTS.dock, { base: "dock", mount(c) { buildDock(c, { tip: "chip" }); }, afterPick: dockAfterPick });
+LAYOUTS.dockCard = Object.assign({}, LAYOUTS.dock, { base: "dock", mount(c) { buildDock(c, { tip: "card" }); }, afterPick: dockAfterPick });
+LAYOUTS.dockRings = Object.assign({}, LAYOUTS.dock, { base: "dock", hostH() { return H + 18 + 92; }, mount(c) { buildDock(c, { tip: "chip", rings: true, labels: true }); }, afterPick: dockAfterPick });
+LAYOUTS.dockSide = Object.assign({}, LAYOUTS.dock, {
+  base: "dock",
+  cols(c) { return Math.ceil(c.n / 3); },
+  off(c) { return this.cols(c) * 60 + 32; },
+  openW(c) { return Math.min(c.W - this.off(c), 760); },
+  place(i, c) { const w = this.openW(c), open = i === c.pick; return { x: this.off(c) + (c.W - this.off(c) - w) / 2, y: 0, w, h: H, z: open ? 5 : 1, tx: open ? 0 : Math.sign(i - c.pick) * 90, s: open ? 1 : 0.95, o: open ? 1 : 0, open }; },
+  hostH() { return H; },
+  mount(c) { buildDock(c, { tip: "chip", vertical: true }); c.dock.style.width = this.cols({ n: c.accts.length }) * 60 + 20 + "px"; },
+  afterPick: dockAfterPick,
+});
+LAYOUTS.pillbar = Object.assign({}, LAYOUTS.dock, {
+  base: "dock",
+  place(i, c) { const w = this.openW(c), x = (c.W - w) / 2, open = i === c.pick; return { x, y: 64, w, h: H, z: open ? 5 : 1, tx: open ? 0 : Math.sign(i - c.pick) * 90, s: open ? 1 : 0.95, o: open ? 1 : 0, open }; },
+  hostH() { return H + 64; },
+  mount(c) {
+    const bar = document.createElement("div"); bar.className = "pb"; bar.setAttribute("role", "group"); bar.setAttribute("aria-label", "Accounts");
+    c.dockBtns = c.accts.map((a, i) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "pb-p"; b.style.background = cardBg(a); b.setAttribute("aria-pressed", i === c.pick);
+      b.innerHTML = `<span class="ring pb-i">${a.kind === "all" ? "Σ" : a.initial}</span><span class="pb-t"><b>${a.kind === "all" ? "All accounts" : a.bank}</b><i>${inr(a.bal)}</i></span>${a.stale ? `<i class="dk-warn"></i>` : ""}`;
+      b.addEventListener("click", (e) => c.setPick(i, e.currentTarget)); bar.append(b); return b;
+    });
+    c.host.append(bar);
+  },
+  afterPick: dockAfterPick,
+});
+
+/* =========================================================
+   Wallets
+   ========================================================= */
+const walletStrip = (a, sub) => `<div class="w-row"><span class="ring w-ini">${a.initial}</span><span class="w-name">${a.name}${a.last4 ? `<small>•••• ${a.last4}</small>` : ""}</span><span class="w-bal">${inr(a.bal)}</span></div>${sub || ""}`;
+const othersOrder = (c) => Array.from({ length: c.n }, (_, i) => i).filter((i) => i !== c.pick);
+LAYOUTS.walletLift = Object.assign({}, LAYOUTS.wallet, {
+  base: "wallet",
+  place(i, c) {
+    if (i === c.pick) return { x: 0, y: 0, w: c.W, h: H, z: 60, open: true };
+    const ord = othersOrder(c), k = ord.indexOf(i), hk = ord.indexOf(c.hover), p = this.pitch(c), inset = Math.min(k * 5, 30), hov = i === c.hover;
+    const push = hk >= 0 && k > hk ? 36 : 0;
+    return { x: hov ? 0 : inset, y: H + 14 + k * p + push - (hov ? 4 : 0), w: hov ? c.W : c.W - inset * 2, h: hov ? 100 : 64, z: hov ? 40 : 10 + k, open: false };
+  },
+  hostH(c) { return H + 14 + Math.max(0, c.n - 2) * this.pitch(c) + 64 + 36; },
+  folded(a) { const ch = deltaOf(a); return walletStrip(a, `<div class="w-sub"><span>${a.kind === "all" ? a.upd : a.purpose + " · " + a.upd}</span><span class="${ch > 0 ? "up" : ""}">${a.kind === "all" ? "" : ch === 0 ? "no change" : signed(ch)}</span></div>`); },
+});
+LAYOUTS.walletInv = Object.assign({}, LAYOUTS.wallet, {
+  base: "wallet",
+  place(i, c) {
+    const ord = othersOrder(c), p = this.pitch(c), last = Math.max(0, ord.length - 1);
+    if (i === c.pick) return { x: 0, y: last * p + 64 + 16, w: c.W, h: H, z: 60, open: true };
+    const k = ord.indexOf(i), inset = Math.min((last - k) * 5, 30);
+    return { x: inset, y: k * p + (i === c.hover ? -5 : 0), w: c.W - inset * 2, h: 64, z: 10 + k, open: false };
+  },
+  hostH(c) { return Math.max(0, c.n - 2) * this.pitch(c) + 64 + 16 + H; },
+});
+const PURPOSES = ["Spending", "Investment", "Emergency fund", "Loan payments"];
+LAYOUTS.walletGroups = Object.assign({}, LAYOUTS.wallet, {
+  base: "wallet",
+  info(c) {
+    const accts = c.accts, p = 48, ys = {}, labels = {}; let y = H + 16;
+    const take = (list, label) => { if (!list.length) return; if (label) { labels[label] = y; y += 24; } list.forEach((i) => { ys[i] = y; y += p; }); y += 22; };
+    const ord = othersOrder(c);
+    take(ord.filter((i) => accts[i].kind === "all"), null);
+    PURPOSES.forEach((pu) => take(ord.filter((i) => accts[i].kind !== "all" && accts[i].purpose === pu), pu));
+    return { ys, labels, total: y - 22 + 14 };
+  },
+  place(i, c) {
+    if (i === c.pick) return { x: 0, y: 0, w: c.W, h: H, z: 60, open: true };
+    const inf = this.info(c);
+    return { x: 0, y: inf.ys[i] + (i === c.hover ? -4 : 0), w: c.W, h: 62, z: 10 + i, open: false };
+  },
+  hostH(c) { return c.accts ? this.info({ ...c, hover: -1 }).total : H + 14 + (c.n - 2) * 48 + 64; },
+  mount(cover) {
+    cover.labels = PURPOSES.map((pu) => { const el = document.createElement("div"); el.className = "wg-label"; el.textContent = pu; cover.host.append(el); return el; });
+  },
+  afterApply(cover, c) { const inf = this.info(c); PURPOSES.forEach((pu, k) => { const el = cover.labels[k], y = inf.labels[pu]; el.style.opacity = y === undefined ? 0 : 1; if (y !== undefined) el.style.top = y + "px"; }); },
+});
+LAYOUTS.walletRich = Object.assign({}, LAYOUTS.wallet, {
+  base: "wallet", coverW: 520,
+  pitch(c) { return Math.max(46, Math.min(62, 330 / Math.max(1, c.n - 2))); },
+  place(i, c) {
+    if (i === c.pick) return { x: 0, y: 0, w: c.W, h: H, z: 60, open: true };
+    const ord = othersOrder(c), k = ord.indexOf(i), p = this.pitch(c), inset = Math.min(k * 4, 24);
+    return { x: inset, y: H + 14 + k * p + (i === c.hover ? -5 : 0), w: c.W - inset * 2, h: 80, z: 10 + k, open: false };
+  },
+  hostH(c) { return H + 14 + Math.max(0, c.n - 2) * this.pitch(c) + 80; },
+  folded(a) {
+    const ch = deltaOf(a);
+    return `<div class="wr-row"><span class="ring w-ini">${a.initial}</span><span class="wr-n"><b>${a.name}</b><small>${a.kind === "all" ? a.upd : a.purpose + " · " + Math.round(a.share * 100) + "% of total"}</small></span><span class="wr-sp">${sparkSvg(a.norm, 84, 26)}</span><span class="wr-b"><b>${inr(a.bal)}</b><small class="${ch > 0 ? "up" : ""}">${a.kind === "all" ? "" : ch === 0 ? "no change" : signed(ch)}</small></span></div>`;
+  },
+});
+
+/* =========================================================
+   Side pills
+   ========================================================= */
+const richPeek = (a) => { const ch = deltaOf(a); return `<small class="pk-bk">${a.kind === "all" ? "All accounts" : a.bank}</small><b>${inr(a.bal)}</b><span class="pk-sp">${sparkSvg(a.norm, 120, 22)}</span><small class="${ch > 0 ? "up" : "dn"}">${a.kind === "all" ? signed(ch) + " this year" : ch === 0 ? "no change" : signed(ch)}</small><em>Open ›</em>`; };
+const spinesWith = (hw, ty, foldedExtra) => ({
+  base: "spines",
+  hoverExtra(c) { return c.hover >= 0 && c.hover !== c.pick ? hw - 64 : 0; },
+  place(i, c) {
+    const sp = 64, gap = 10; let x = 0;
+    for (let j = 0; j < i; j++) x += (j === c.pick ? this.openW(c) : j === c.hover ? hw : sp) + gap;
+    const open = i === c.pick, w = open ? this.openW(c) : i === c.hover ? hw : sp;
+    return { x, y: 0, w, h: H, z: open ? 2 : i === c.hover ? 3 : 1, ty: i === c.hover && !open ? ty : 0, open };
+  },
+  folded(a) { return LAYOUTS.spines.folded(a) + (foldedExtra ? foldedExtra(a) : ""); },
+});
+LAYOUTS.pills = Object.assign({}, LAYOUTS.spines, spinesWith(236, 0), { folded(a) { return `<span class="ring f-ini">${a.kind === "all" ? "Σ" : a.initial}</span><span class="f-vname">${a.name}</span><span class="peek pk-rich">${richPeek(a)}</span>`; } });
+LAYOUTS.shelf = Object.assign({}, LAYOUTS.spines, spinesWith(92, -16, (a) => `<span class="f-vbal">${compact(a.bal)}</span>`));
+LAYOUTS.railPills = {
+  side: false, base: "railpills",
+  cols(c) { return c.n - 1 <= 5 ? 1 : 2; },
+  ph(c) { const m = c.n - 1, rows = Math.ceil(m / this.cols(c)); return Math.min(46, (H - (rows - 1) * 8) / rows); },
+  colsW(c) { const h = this.ph(c), k = this.cols(c); return k * h + (k - 1) * 8; },
+  openW(c) { return Math.min(c.W - this.colsW(c) - 16, 760); },
+  place(i, c) {
+    const ow = this.openW(c);
+    if (i === c.pick) return { x: 0, y: 0, w: ow, h: H, z: 2, open: true };
+    const m = c.n - 1, k = i - (i > c.pick ? 1 : 0), cols = this.cols(c), h = this.ph(c), rows = Math.ceil(m / cols), col = k % cols, row = Math.floor(k / cols);
+    const x0 = ow + 16 + col * (h + 8), y = (H - (rows * h + (rows - 1) * 8)) / 2 + row * (h + 8), hov = i === c.hover;
+    const w = hov ? 236 : h;
+    return { x: hov ? x0 + h - w : x0, y, w, h, z: hov ? 9 : 1, open: false };
+  },
+  hostH() { return H; },
+  folded(a) { return `<span class="pr-row"><span class="pr-t"><b>${a.kind === "all" ? "All accounts" : a.bank}</b><i>${inr(a.bal)}</i></span><span class="ring pr-i">${a.kind === "all" ? "Σ" : a.initial}</span></span>`; },
+};
+
+/* =========================================================
+   Open-card faces, round 2
+   ========================================================= */
+const seg2 = (items) => `<span class="seg2">${items.map(([k, t], i) => `<button type="button" data-k="${k}" class="${i === 0 ? "on" : ""}">${t}</button>`).join("")}</span>`;
+Object.assign(FACES, {
+  /* money through the account */
+  flow: {
+    html(a) {
+      return `<div class="o-eyebrow" style="--i:0">${eyebrowOf(a)}</div>${balEl()}${nameEl(a, 2)}${updTxt(a)}${chgTxt(a)}${btnsShort(a)}
+        <div class="s-panel fl" style="--i:2"><div class="s-top"><span>Money through it</span>${seg2([["1", "This month"], ["3", "3 months"]])}</div>
+          <div class="fl-r"><span>Came in</span><i><b class="fl-bi"></b></i><em class="fl-in"></em></div>
+          <div class="fl-r"><span>Went out</span><i><b class="fl-bo"></b></i><em class="fl-out"></em></div>
+          <div class="fl-net"><span>Left in the account</span><b class="fl-nv"></b></div></div>`;
+    },
+    init(card, cover) {
+      const el = card.el, a = card.a, rin = new Rolling(el.querySelector(".fl-in")), rout = new Rolling(el.querySelector(".fl-out")), rnet = new Rolling(el.querySelector(".fl-nv")), panel = el.querySelector(".fl");
+      const render = (m, first) => {
+        const f = flowOf(a, cover.accts, m), mx = Math.max(f.inn, f.out, 1);
+        panel.style.setProperty("--wi", (f.inn / mx) * 100 + "%"); panel.style.setProperty("--wo", (f.out / mx) * 100 + "%");
+        rin.set(inr(f.inn), first); rout.set(inr(f.out), first); rnet.set(signed(f.inn - f.out), first); el.querySelector(".fl-nv").className = "fl-nv roll" + (f.inn - f.out > 0 ? " up" : "");
+      };
+      render(1, true);
+      panel.querySelectorAll(".seg2 button").forEach((b) => b.addEventListener("click", () => { panel.querySelectorAll(".seg2 button").forEach((x) => x.classList.toggle("on", x === b)); render(+b.dataset.k); }));
+    },
+  },
+  /* the next 30 days */
+  ahead: {
+    html(a, accts) {
+      const ev = eventsOf(a, accts), W = 300, Hh = 64, pts = [[0, a.bal]]; let bal = a.bal;
+      ev.forEach((e) => { pts.push([e.d, bal]); bal += e.amt; pts.push([e.d, bal]); }); pts.push([30, bal]);
+      const vals = pts.map((p) => p[1]), lo = Math.min(0, ...vals), hi = Math.max(0, ...vals), span = hi - lo || 1;
+      const X = (d) => (d / 30) * W, Y = (v) => 6 + (1 - (v - lo) / span) * (Hh - 12), y0 = Y(0);
+      const d = pts.map((p, i) => `${i ? "L" : "M"} ${X(p[0]).toFixed(1)} ${Y(p[1]).toFixed(1)}`).join(" ");
+      let run = a.bal, firstShort = null, minBal = a.bal; ev.forEach((e) => { run += e.amt; minBal = Math.min(minBal, run); if (run < 0 && !firstShort) firstShort = { d: e.d, by: -run }; });
+      const status = !ev.length ? "Nothing due in the next 30 days" : firstShort ? `Short by ${inr(firstShort.by)} on ${dayLabel(firstShort.d)}` : `Covers all ${ev.length} coming up · lowest ${inr(minBal)}`;
+      const markers = ev.map((e, k) => { let before = a.bal; for (let j = 0; j < k; j++) before += ev[j].amt; return `<i class="ah-m ${e.amt > 0 ? "in" : ""}" data-k="${k}" style="left:${(e.d / 30) * 100}%;top:${(Y(before + e.amt) / Hh) * 100}%" title="${e.label}"></i>`; }).join("");
+      const rows = ev.slice(0, 3).map((e, k) => `<div class="ah-r" data-k="${k}"><span>${dayLabel(e.d)}</span><b>${e.label}</b><em class="${e.amt > 0 ? "up" : ""}">${signed(e.amt)}</em></div>`).join("") + (ev.length > 3 ? `<div class="ah-more">+${ev.length - 3} more</div>` : "");
+      return `<div class="o-eyebrow" style="--i:0">${eyebrowOf(a)}</div>${balEl()}${nameEl(a, 2)}${updTxt(a)}${chgTxt(a)}${btnsShort(a)}
+        <div class="s-panel ah" style="--i:2"><div class="s-top"><span>Next 30 days</span><span class="ah-st ${firstShort ? "warn" : ""}">${status}</span></div>
+          <div class="ah-chart"><svg viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none">${lo < 0 ? `<rect x="0" y="${y0}" width="${W}" height="${Hh - y0}" fill="var(--card-copper)" fill-opacity=".22"/>` : ""}<line x1="0" x2="${W}" y1="${y0}" y2="${y0}" stroke="#fff" stroke-opacity=".25" stroke-dasharray="3 4" vector-effect="non-scaling-stroke"/><path class="ah-line" d="${d}" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round" vector-effect="non-scaling-stroke"/></svg>${markers}<span class="ah-today">Today</span></div>
+          <div class="ah-rows">${rows}</div></div>`;
+    },
+    init(card) {
+      const p = card.el.querySelector(".ah"), set = (k, on) => p.querySelectorAll(`[data-k="${k}"]`).forEach((x) => x.classList.toggle("hl", on));
+      p.addEventListener("pointerover", (e) => { const t = e.target.closest("[data-k]"); if (t) set(t.dataset.k, true); });
+      p.addEventListener("pointerout", (e) => { const t = e.target.closest("[data-k]"); if (t) set(t.dataset.k, false); });
+    },
+  },
+  /* how long it lasts, with a what-if */
+  runway: {
+    html(a, accts) {
+      return `<div class="o-eyebrow" style="--i:0">${eyebrowOf(a)}</div>${balEl()}${nameEl(a, 2)}${updTxt(a)}${chgTxt(a)}${btnsShort(a)}
+        <div class="s-panel rn" style="--i:2"><div class="s-top"><span>Runway</span>${seg2([["1", "As now"], ["0.8", "Spend −20%"], ["1.2", "+20%"]])}</div>
+          <div class="rn-big"><span class="rn-n"></span><span class="rn-u"></span></div>
+          <div class="rn-meter"><i class="rn-fill"></i><i class="rn-mk"></i>${a.purpose === "Emergency fund" ? `<i class="rn-goal"><small>6-month goal</small></i>` : ""}<span class="rn-t" style="left:3.3%">1w</span><span class="rn-t" style="left:14.3%">1m</span><span class="rn-t" style="left:42.9%">3m</span><span class="rn-t" style="left:85.7%">6m</span></div>
+          <div class="rn-cap"></div></div>`;
+    },
+    init(card, cover) {
+      const el = card.el, a = card.a, panel = el.querySelector(".rn"), roll = new Rolling(el.querySelector(".rn-n")), out = monthlyOut(a, cover.accts);
+      const render = (f, first) => {
+        const daily = (out * f) / 30, days = daily > 0 ? a.bal / daily : Infinity, months = days >= 60;
+        roll.set(!isFinite(days) ? "—" : months ? (days / 30).toFixed(1) : String(Math.max(0, Math.round(days))), first);
+        el.querySelector(".rn-u").textContent = !isFinite(days) ? "" : months ? " months" : " days";
+        panel.style.setProperty("--w", Math.min(1, isFinite(days) ? days / 210 : 0) * 100 + "%");
+        el.querySelector(".rn-cap").textContent = !out ? "Nothing goes out of this one." : `Covers about ${months ? (days / 30).toFixed(1) + " months" : Math.round(days) + " days"} at ${inr(daily)} a day${a.purpose === "Emergency fund" ? `. Six months needs ${inr(out * 6)}: you're at ${Math.round((a.bal / (out * 6)) * 100)}%.` : "."}`;
+      };
+      render(1, true);
+      panel.querySelectorAll(".seg2 button").forEach((b) => b.addEventListener("click", () => { panel.querySelectorAll(".seg2 button").forEach((x) => x.classList.toggle("on", x === b)); render(+b.dataset.k); }));
+    },
+  },
+  /* drag back through the year and the number rolls */
+  rewind: {
+    html(a) {
+      const W = 700, Hh = 34;
+      return `<div class="o-eyebrow" style="--i:0"><span class="rw-ebt">${eyebrowOf(a)}</span></div>${balEl()}
+        <div class="rw-dl o-chg ${deltaOf(a) > 0 ? "up" : ""}" style="--i:3">${deltaText(a)}</div>${nameEl(a, 2)}
+        <div class="rw-act" style="--i:4">${a.kind === "all" ? `<button class="p" type="button">Update balances</button>` : `<button class="p" type="button">Update balance</button><button class="ic" type="button" title="Edit" aria-label="Edit">${IC.edit}</button>${menu(a)}`}</div>
+        ${chipOf(a)}
+        <div class="rw-track" style="--i:5" role="slider" tabindex="0" aria-label="Balance through the year" aria-valuemin="0" aria-valuemax="${WEEKS - 1}" aria-valuenow="${WEEKS - 1}"><svg viewBox="0 0 ${W} ${Hh}" preserveAspectRatio="none">${`<path d="${sparkD(a.norm, W, Hh, 4)}" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1.6" vector-effect="non-scaling-stroke"/>`}</svg><i class="rw-fill"></i><i class="rw-knob"></i><span class="rw-lab"></span><span class="rw-ms">${MONTHS.map((m) => `<span>${m}</span>`).join("")}</span></div>
+        <button class="rw-now" type="button" style="--i:4">Back to now</button>`;
+    },
+    init(card) {
+      const el = card.el, a = card.a, tr = el.querySelector(".rw-track"), knob = tr.querySelector(".rw-knob"), fill = tr.querySelector(".rw-fill"), lab = tr.querySelector(".rw-lab"), now = el.querySelector(".rw-now"), eb = el.querySelector(".rw-ebt"), dl = el.querySelector(".rw-dl"), n = WEEKS;
+      let idx = n - 1;
+      const show = (i, quick) => {
+        idx = Math.max(0, Math.min(n - 1, i)); const f = idx / (n - 1);
+        knob.style.left = f * 100 + "%"; fill.style.width = f * 100 + "%"; lab.style.left = f * 100 + "%"; lab.style.transform = f > 0.9 ? "translateX(-100%)" : f < 0.1 ? "none" : "translateX(-50%)"; lab.textContent = idx === n - 1 ? "Today" : dateOf(idx);
+        card.roll.set(inr(a.vals[idx])); tr.setAttribute("aria-valuenow", idx); el.classList.toggle("rewound", idx !== n - 1);
+        eb.textContent = idx === n - 1 ? eyebrowOf(a) : "Balance on " + dateOf(idx);
+        const d = a.bal - a.vals[idx]; dl.textContent = idx === n - 1 ? deltaText(a) : (d === 0 ? "Same as today" : signed(d) + " since then"); dl.classList.toggle("up", idx === n - 1 ? deltaOf(a) > 0 : d > 0);
+      };
+      show(n - 1);
+      const at = (e) => { const r = tr.getBoundingClientRect(); return Math.round(((e.clientX - r.left) / r.width) * (n - 1)); };
+      let drag = false;
+      tr.addEventListener("pointerdown", (e) => { drag = true; tr.setPointerCapture(e.pointerId); el.classList.add("scrubbing"); show(at(e)); });
+      tr.addEventListener("pointermove", (e) => { if (drag) show(at(e)); });
+      const up = () => { drag = false; el.classList.remove("scrubbing"); };
+      tr.addEventListener("pointerup", up); tr.addEventListener("pointercancel", up);
+      tr.addEventListener("keydown", (e) => { const k = e.key; if (k === "ArrowLeft" || k === "ArrowRight") { e.stopPropagation(); e.preventDefault(); el.classList.add("scrubbing"); show(idx + (k === "ArrowRight" ? 1 : -1)); } else if (k === "Home") { e.preventDefault(); show(0); } else if (k === "End") { e.preventDefault(); show(n - 1); } });
+      now.addEventListener("click", () => show(n - 1));
+    },
+  },
+  /* change the balance right where it's written */
+  edit: {
+    html(a) {
+      return `<div class="o-eyebrow" style="--i:0">${eyebrowOf(a)}</div>
+        <div class="o-bal ed-bal" style="--i:1"><span class="bal-n"></span><input class="ed-in" inputmode="numeric" autocomplete="off" aria-label="New balance"></div>${nameEl(a, 2)}${updTxt(a)}${chgTxt(a)}
+        <div class="o-btns" style="--i:5">${a.kind === "all" ? `<button class="p" type="button">Update balances</button><button type="button">Add account</button>` : `<span class="bt-view"><button class="p ed-start" type="button">${IC.edit}Update balance</button><button type="button">Edit</button>${menu(a)}</span><span class="bt-edit"><button class="p ed-save" type="button">Save balance</button><button class="ed-cancel" type="button">Cancel</button></span>`}</div>
+        ${a.kind === "all" ? "" : `<div class="ed-ok" style="--i:3"><span class="ed-tick">✓</span> Saved <button class="ed-undo" type="button">Undo</button></div>`}${chipOf(a)}${a.stale ? `<div class="stamp" style="--i:3">Not read · ${a.days} days</div>` : ""}`;
+    },
+    init(card, cover) {
+      const a = card.a; if (a.kind === "all") return;
+      const el = card.el, inp = el.querySelector(".ed-in"), chg = el.querySelector(".o-chg"), upd = el.querySelector(".o-upd"), ok = el.querySelector(".ed-ok"), stamp = el.querySelector(".stamp");
+      let undo = null, t = null; const orig = { bal: a.bal, prev: a.prev, upd: a.upd, stale: a.stale };
+      const fmt = (v) => (v === null ? "" : "₹" + v.toLocaleString("en-IN")), parse = (s) => { const d = s.replace(/\D/g, ""); return d ? Math.min(+d, 999999999) : null; };
+      const refresh = () => { chg.textContent = deltaText(a); chg.classList.toggle("up", deltaOf(a) > 0); upd.textContent = a.upd; upd.classList.toggle("stale", !!a.stale); if (stamp) stamp.style.display = a.stale ? "" : "none"; };
+      const start = () => { el.classList.add("editing"); inp.value = fmt(a.bal); inp.focus(); inp.select(); clearTimeout(t); ok.classList.remove("show"); };
+      const stop = () => { el.classList.remove("editing"); chg.textContent = deltaText(a); chg.classList.toggle("up", deltaOf(a) > 0); chg.classList.remove("cu"); };
+      const save = () => { const v = parse(inp.value); if (v === null || v === a.bal) return stop(); undo = { bal: a.bal, prev: a.prev, upd: a.upd, stale: a.stale }; a.prev = a.bal; a.bal = v; a.upd = "Updated today"; a.stale = false; card.roll.set(inr(v)); el.classList.remove("editing"); refresh(); ok.classList.add("show"); clearTimeout(t); t = setTimeout(() => ok.classList.remove("show"), ms(6000)); };
+      el.querySelector(".ed-start").addEventListener("click", start);
+      el.querySelector(".ed-cancel").addEventListener("click", stop);
+      el.querySelector(".ed-save").addEventListener("click", save);
+      el.querySelector(".ed-undo").addEventListener("click", () => { if (!undo) return; Object.assign(a, undo); card.roll.set(inr(a.bal)); refresh(); ok.classList.remove("show"); undo = null; });
+      inp.addEventListener("input", () => { const v = parse(inp.value); inp.value = fmt(v); if (v !== null) { const d = v - a.bal; chg.textContent = d === 0 ? "Same as now" : signed(d) + " from the current balance"; chg.classList.add("cu"); chg.classList.toggle("up", d > 0); } });
+      inp.addEventListener("keydown", (e) => { e.stopPropagation(); if (e.key === "Enter") save(); if (e.key === "Escape") stop(); });
+    },
+  },
+});
+/* =========================================================
+   The cover: one element per account, never unmounted
+   ========================================================= */
+class Cover {
+  constructor(host, accts, cfg) {
+    this.host = host; this.accts = accts; this.cfg = cfg; this.motion = cfg.motion; this.L = LAYOUTS[cfg.layout];
+    this.pick = cfg.pick; this.hover = -1; this.onPick = cfg.onPick;
+    host.classList.add("cover", "l-" + cfg.layout, "m-" + cfg.motion); if (this.L.base) host.classList.add("l-" + this.L.base); if (cfg.weights) host.classList.add("weights"); if (cfg.face) host.classList.add("face-" + cfg.face);
+    host.tabIndex = 0; host.setAttribute("role", "group"); host.setAttribute("aria-label", "Accounts: use the arrow keys to move between them");
+    this.cards = accts.map((a, i) => this.makeCard(a, i));
+    this.L.mount && this.L.mount(this);
+    host.addEventListener("keydown", (e) => {
+      const k = e.key, step = k === "ArrowRight" || k === "ArrowDown" ? 1 : k === "ArrowLeft" || k === "ArrowUp" ? -1 : 0;
+      if (!step) return; e.preventDefault();
+      this.setPick(Math.max(0, Math.min(this.accts.length - 1, this.pick + step)), this.cards[this.pick].el);
+    });
+    this.ro = new ResizeObserver(() => { host.classList.add("noanim"); this.apply(); reflow(host); host.classList.remove("noanim"); });
+    this.ro.observe(host.parentElement);
+    host.classList.add("noanim"); this.apply(); reflow(host); host.classList.remove("noanim");
+  }
+  ctx() { return { n: this.accts.length, W: Math.max(300, this.host.parentElement.clientWidth), pick: this.pick, hover: this.hover, motion: this.motion, extra: 0, accts: this.accts }; }
+  makeCard(a, i) {
+    const el = document.createElement("div"); el.className = "card"; el.dataset.id = a.id;
+    el.style.background = cardBg(a); el.style.setProperty("--deep", a.kind === "all" ? "var(--card-emerald-from)" : `var(--card-${a.color}-from)`);
+    const travel = this.motion === "travel";
+    const chg = a.bal - a.prev, allChg = a.kind === "all" ? a.bal - a.vals[0] : chg;
+    const openInner = this.cfg.face ? FACES[this.cfg.face].html(a, this.accts) : `
+        <div class="o-eyebrow" style="--i:0">${a.kind === "all" ? "Your balance" : "Your balance · " + a.bank}</div>
+        <div class="o-bal" style="--i:1"><span class="bal-n"></span></div>
+        <div class="o-name" style="--i:2"><span>${a.name}</span>${a.last4 ? `<small>•••• ${a.last4}</small>` : ""}</div>
+        <div class="o-upd ${a.stale ? "stale" : ""}" style="--i:3">${a.kind === "all" ? a.upd : a.upd}</div>
+        <div class="o-chg ${(a.kind === "all" ? allChg : chg) > 0 ? "up" : ""}" style="--i:4">${a.kind === "all" ? signed(allChg) + " since Jan 1" : chg === 0 ? "No change since the balance before" : signed(chg) + " since the balance before"}</div>
+        <div class="o-btns" style="--i:5">${a.kind === "all" ? `<button class="p" type="button">Update balances</button><button type="button">Add account</button>` : `<button class="p" type="button">Update balance</button><button type="button">Edit</button><button type="button">Close</button><button type="button">Delete</button>`}</div>
+        ${a.purpose && a.kind !== "all" ? `<div class="o-chip-wrap" style="--i:2"><span class="chip">${a.purpose}</span></div>` : ""}
+        ${a.stale ? `<div class="stamp" style="--i:3">Not read · ${a.days} days</div>` : ""}
+      `;
+    el.innerHTML = `
+      <svg class="card-rings" viewBox="0 0 480 244" preserveAspectRatio="xMaxYMax slice" aria-hidden="true">${ringsSvg(480, 244, 490, 264, 45, 26, 14, 0.08)}</svg>
+      <div class="fold"><button type="button" class="fold-btn" aria-label="${a.name}"></button>${this.L.folded(a)}</div>
+      ${travel ? `<span class="ring tr-ini">${a.initial}</span><span class="tr-name">${a.name}<small>${a.last4 ? "•••• " + a.last4 : ""}</small></span>` : ""}
+      <div class="open" inert>${openInner}      </div>
+      ${a.stale ? `<i class="dotwarn"></i>` : ""}`;
+    this.host.append(el);
+    const c = { el, a, roll: new Rolling(el.querySelector(".bal-n")), open: el.querySelector(".open"), fold: el.querySelector(".fold") };
+    c.roll.set(inr(a.bal), true);
+    if (this.cfg.face && FACES[this.cfg.face].init) FACES[this.cfg.face].init(c, this);
+    el.querySelector(".fold-btn").addEventListener("click", (e) => this.setPick(i, el));
+    el.addEventListener("pointerenter", (e) => { if (e.pointerType !== "mouse") return; clearTimeout(this.ht); this.ht = setTimeout(() => { if (i !== this.pick) { this.hover = i; this.apply(); } }, this.motion === "peek" ? 70 : 0); });
+    el.addEventListener("pointerleave", () => { clearTimeout(this.ht); this.ht = setTimeout(() => { if (this.hover === i) { this.hover = -1; this.apply(); } }, 40); });
+    return c;
+  }
+  apply(rip) {
+    const c = this.ctx(), L = this.L;
+    c.extra = L.hoverExtra ? L.hoverExtra(c) : 0;
+    const ow = L.openW(c);
+    this.cards.forEach((card, i) => {
+      const p = L.place(i, c), el = card.el;
+      el.style.left = p.x + "px"; el.style.top = p.y + "px"; el.style.width = p.w + "px"; el.style.height = p.h + "px";
+      el.style.zIndex = p.z; el.style.opacity = p.o === undefined ? 1 : p.o;
+      el.style.transform = `translate(${p.tx || 0}px, ${p.ty || 0}px) rotate(${p.rot || 0}deg) scale(${p.s || 1})`;
+      el.style.setProperty("--ow", ow + "px");
+      el.classList.toggle("is-open", p.open);
+      el.classList.toggle("is-hover", i === c.hover);
+      el.classList.toggle("is-peek", i === c.hover && this.motion === "peek");
+      el.classList.toggle("tiny", !!p.tiny); el.classList.toggle("short", !!p.short);
+      if (p.side) el.dataset.side = p.side; else delete el.dataset.side;
+      el.style.setProperty("--rd", (rip && this.motion === "ripple" ? Math.abs(i - this.pick) * 40 : 0) + "ms");
+      card.open.toggleAttribute("inert", !p.open); card.fold.toggleAttribute("inert", p.open);
+      el.setAttribute("aria-current", p.open ? "true" : "false");
+    });
+    this.host.style.height = L.hostH(c) + "px";
+    L.afterApply && L.afterApply(this, c);
+  }
+  setPick(i, source) {
+    if (i === this.pick) return;
+    const prev = this.accts[this.pick], card = this.cards[i];
+    this.pick = i; this.hover = -1;
+    // the balance rolls from the figure you were just looking at
+    if (this.motion !== "today") { card.roll.set(inr(prev.bal), true); }
+    this.apply(true);
+    if (this.motion !== "today") requestAnimationFrame(() => card.roll.set(inr(card.a.bal)));
+    this.L.afterPick && this.L.afterPick(this);
+    const r = source.getBoundingClientRect();
+    this.onPick && this.onPick(this.accts[i], { x: r.left + r.width / 2, y: r.top + r.height / 2 });
+  }
+  destroy() { this.ro.disconnect(); }
+}
+
+/* =========================================================
+   Mounting a demo
+   ========================================================= */
+let uid = 0;
+const demos = [];
+function mountDemo(sel, o) {
+  const root = document.querySelector(sel); root.innerHTML = "";
+  const n = o.count || 6, accts = buildAccounts(n), L = LAYOUTS[o.layout || "spines"];
+  const pick = Math.min(accts.length - 1, Math.floor(accts.length / 2));
+  const tools = document.createElement("div"); tools.className = "tools";
+  const play = document.createElement("button"); play.type = "button"; play.className = "pill play"; play.textContent = "Play it for me"; play.setAttribute("aria-pressed", "false");
+  tools.append(play);
+  const hint = document.createElement("span"); hint.className = "hint"; hint.textContent = o.hint || "Click a card, hover one, or use the arrow keys."; tools.append(hint);
+  const stageEl = document.createElement("div");
+  const ctrl = { lineMode: o.lineMode || "morph" };
+  if (o.lineControl) {
+    const seg = document.createElement("div"); seg.className = "seg"; seg.setAttribute("role", "group"); seg.setAttribute("aria-label", "How the line changes");
+    [["morph", "Morph"], ["draw", "Draw"], ["jump", "Jump (today)"]].forEach(([k, t]) => { const b = document.createElement("button"); b.type = "button"; b.textContent = t; b.setAttribute("aria-pressed", k === ctrl.lineMode); b.onclick = () => { ctrl.lineMode = k; stage.o.lineMode = k; [...seg.children].forEach((x) => x.setAttribute("aria-pressed", x === b)); }; seg.append(b); });
+    tools.prepend(seg);
+  }
+  root.append(tools, stageEl);
+  const stage = new Stage(stageEl, { uid: ++uid, side: L.side, coverW: L.coverW, line: !!o.line, figs: !!o.figs, lineH: L.side ? Math.max(140, L.hostH({ n, pick, accts }) - 190) : (o.lineH || 150), bg: o.bg || "fade", lineMode: ctrl.lineMode });
+  const coverHost = document.createElement("div"); stage.coverSlot.append(coverHost);
+  const cover = new Cover(coverHost, accts, { layout: o.layout || "spines", motion: o.motion || "glide", pick, weights: o.weights, face: o.face, onPick: (a, origin) => stage.setPick(a, accts, origin) });
+  stage.setPick(accts[pick], accts, null, true);
+  let timer = null, idx = pick;
+  const stop = () => { clearInterval(timer); timer = null; play.setAttribute("aria-pressed", "false"); play.lastChild.textContent = "Play it for me"; };
+  play.onclick = () => {
+    if (timer) return stop();
+    play.setAttribute("aria-pressed", "true"); play.textContent = "Stop";
+    const order = [1, 2, 4, 0, 3].map((k) => Math.min(accts.length - 1, k)); let k = 0;
+    const go = () => { cover.setPick(order[k % order.length], cover.cards[cover.pick].el); k++; };
+    go(); timer = setInterval(go, ms(2300));
+  };
+  const d = { cover, stage, stop };
+  demos.push(d);
+  return d;
+}
+
+function mountAll() {
+  demos.splice(0).forEach((d) => { d.stop(); d.cover.destroy(); });
+  const n = +document.querySelector("#count [aria-pressed=true]").dataset.n;
+  const full = { line: true, figs: true, motion: "glide", count: n };
+  mountDemo("#d1", { ...full, layout: "dockChip", hint: "Hover along the dock: the bank and balance open before you click." });
+  mountDemo("#d2", { ...full, layout: "dockCard", hint: "Hover along the dock; the card changes colour as you move." });
+  mountDemo("#d3", { ...full, layout: "dockRings", hint: "Hover an item for the bank, balance and share." });
+  mountDemo("#d4", { ...full, layout: "dockSide", hint: "Hover down the dock on the left." });
+  mountDemo("#w1", { ...full, layout: "walletLift", hint: "Hover a strip to lift it and read a second line." });
+  mountDemo("#w2", { ...full, layout: "walletInv" });
+  mountDemo("#w3", { ...full, layout: "walletGroups" });
+  mountDemo("#w4", { ...full, layout: "walletRich" });
+  mountDemo("#p1", { ...full, layout: "pills", motion: "peek", weights: true, hint: "Hover a spine for the peek, click to open." });
+  mountDemo("#p2", { ...full, layout: "railPills", hint: "Hover a pill to stretch it over the card." });
+  mountDemo("#p3", { ...full, layout: "shelf", weights: true, hint: "Hover a spine: it lifts and writes its balance." });
+  mountDemo("#p4", { ...full, layout: "pillbar", hint: "Hover the pills along the top." });
+  const face = { line: false, figs: false, layout: "dockChip", motion: "glide", count: 6 };
+  mountDemo("#f1", { ...face, face: "flow", hint: "Switch This month / 3 months. Pick All to see everything together." });
+  mountDemo("#f2", { ...face, face: "ahead", hint: "Pick Jupiter to see it run short. Hover a dot or a row." });
+  mountDemo("#f3", { ...face, face: "runway", hint: "Try Spend −20%. Pick Canara for the six-month goal." });
+  mountDemo("#f4", { ...face, face: "rewind", hint: "Drag along the strip, or focus it and use ← →." });
+  mountDemo("#f5", { ...face, face: "edit", hint: "Press Update balance, type a number, press Enter." });
+}
+document.querySelectorAll("#speed button").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll("#speed button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+  SP.v = +b.dataset.sp; document.documentElement.style.setProperty("--sp", SP.v);
+}));
+document.querySelectorAll("#count button").forEach((b) => b.addEventListener("click", () => {
+  document.querySelectorAll("#count button").forEach((x) => x.setAttribute("aria-pressed", x === b));
+  mountAll();
+}));
+(document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(mountAll);
+</script>
+</body>
+</html>
