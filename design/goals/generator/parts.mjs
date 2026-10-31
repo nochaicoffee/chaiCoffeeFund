@@ -33,7 +33,7 @@ export const prog = (x, { h = 10 } = {}) => {
 export const MIN_BUDGET = (() => { for (let b = 1000; b < 200000; b += 500) { const p = L.fundingPlan(b, 80); if (p.order.every((u) => !u.due || (p.done[u.id] ?? 99) <= Math.max(1, L.monthsTo(u.due)))) return b; } return null; })();
 
 // ---------- The greeting, pointing ----------
-const pt = (text, card2, { x = "l" } = {}) => `<span class="hov pt" tabindex="0"><b>${text}</b>${tip(card2, { w: 270, x, y: "down" })}</span>`;
+export const pt = (text, card2, { x = "l" } = {}) => `<span class="hov pt" tabindex="0"><b>${text}</b>${tip(card2, { w: 270, x, y: "down" })}</span>`;
 const byGoal = (fn) => L.TOPS.map((x) => [x.name, fn(x), L.col(L.gColor(x))]);
 export function pointLede() {
   const nx = L.NEXT_DUE, nu = L.UNITS.find((u) => u.id === nx.id);

@@ -1,12 +1,12 @@
 # Goals page (`/goals`)
 
-**Status: planned 2026-10-29, Q1 to Q8 answered the same day (see "Decisions"). Designed in four rounds of mockups (G1 to G16 and the forms, `design/goals/`); **the hero is picked (G14 Orbit, 2026-10-31)** and nothing is built.** This started as the Define and Plan stage of [process.md](../process.md) for a new section. F-GO-01 to F-GO-05 and the M6 milestone are in the PRD.
+**Status: planned 2026-10-29, Q1 to Q8 answered the same day (see "Decisions"). Designed in four rounds of mockups (G1 to G16 and the forms, `design/goals/`); the hero was picked on 2026-10-31 (G14 Orbit, see "The pick"), and nothing is built.** This started as the Define and Plan stage of [process.md](../process.md) for a new section. F-GO-01 to F-GO-05 and the M6 milestone are in the PRD.
 
 ## Mockups (round 1, 2026-10-29)
 
 [`design/goals/`](../../design/goals/), built by [`design/goals/generator/`](../../design/goals/generator/) (a rebuild overwrites the artboards, so change the generator). Every goal, amount and date is made up; "today" is Oct 29, 2026. The sample has a car upgrade with four live sub-goals and one dropped (its money released), an iPad Pro with a sub-goal, a Fixed-date fridge, a trip, a long-term course, a paused camera and a finished pair of headphones.
 
-Every board has the shared greeting (whose figures point), an attention strip, one hero, then the goals table, Coming up, What your money allows, Set aside lately, Needs and wants, and Finished. **The hero isn't picked yet.**
+Every board has the shared greeting (whose figures point), an attention strip, one hero, then the goals table, Coming up, What your money allows, Set aside lately, Needs and wants, and Finished. **The hero was picked in round 4 (Orbit): see "The pick" below.**
 
 | Artboard | The hero's idea |
 |---|---|
@@ -45,7 +45,7 @@ Every board has the shared greeting (whose figures point), an attention strip, o
 
 The set-aside day on G16 is an assumption (the sample's set-asides all fall on the 5th); the real app has no such setting yet.
 
-Not yet designed: phone, states (no goals, all funded, overdue, over-funded), Edit, Pause, Drop, Delete, Take back, and the Overview attention items. These follow the pick, per the "update all boards" rule.
+Designed after the pick (2026-10-31), per the "update all boards" rule: phone, states, and the Edit, Take back, Pause, Drop and Delete forms (see "The pick" below). Not yet designed: the Overview attention items beyond the one drawn.
 
 **Rules the sample assumes, each needing his yes before it's built** (they're in `design/goals/generator/lib.mjs` and `parts.mjs`):
 - **Months left** is whole months from today to the date, at least 1 while the date is ahead. A goal due Dec 20 has 1 month left on Oct 29.
@@ -66,11 +66,14 @@ Prathik chose **G14 Orbit**. [`design/goals/`](../../design/goals/) now has the 
 | `GoalsForms2` | The goal's ⋯ menu, Edit, Take back, Pause, Drop and Delete (Delete explains Drop as the safer choice and has Undo for six seconds). The first four forms (Add goal, Add sub-goal, Set aside, Mark bought) still apply. |
 
 What the sky means, and the rules it adds (each needs his yes before it's built, like the others above):
-- **Ring = whole months left** (the months-left rule above), on a square-root scale so the near rings aren't crammed: 1, 3, 6, 12 months, 2 and 3 years. Planet size follows the amount. The arc is saved over target, never above 100%.
+- **Ring = whole months left** (the months-left rule above), on a square-root scale so the near rings aren't crammed: 1, 3, 6, 12 months, 2 years, and a last ring for 3 years or more (anything further sits on it, so a long goal never leaves the sky). Planet size follows the amount. The arc is saved over target, never above 100%.
 - **Overdue** is its own ring nearer than 1 month. **Paused or no date** sits on a "someday" ring, dimmed.
 - **Position round the ring** is only for legibility (the sample's angles are hand-placed); the app needs a stable rule that keeps planets and labels apart, for example by funding order.
 - **The sky draws pieces, not goals**: a goal with sub-goals is several planets of its colour (the car is five), so each piece sits on its own date's ring.
 - **Set-aside day** (G16's idea) was not carried over.
+
+- **Keyboard:** the pick is a radio group, so the arrow keys move between goals and the picked planet shows a focus ring. The built page should use real radios or buttons for it.
+- **Greeting:** each state's and the phone's greeting figures point, like the page's.
 
 Still to do before building: the Overview attention items beyond the one drawn, and the `?goal=` pick for a goal deep in the address.
 

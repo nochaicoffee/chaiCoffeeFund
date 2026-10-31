@@ -7,21 +7,12 @@
 import * as L from "./lib.mjs";
 import * as P from "./parts.mjs";
 import { piecesOf } from "./dash.mjs";
-import { monthCard, stairCard } from "./dash2.mjs";
+import { monthCard, monthStats, stairCard } from "./dash2.mjs";
+import { sky, allSun, sideAll } from "./orbit.mjs";
+import { gr, PIECES, exp, pct, plan, needPer, byDue, state, pieceTile, nm, tipOf } from "./shared4.mjs";
 const { I, inr, inrL, inrS, fmt, plural, sum } = L;
 const { card, cardHead, link, grid, tile, needBadge, scaleBadge, fixedPill } = P;
 export const page = (hero, rest) => P.page(`${P.greeting()}${P.attention()}${hero}${rest}`);
-export const gr = (c, a = 155) => `linear-gradient(${a}deg,var(--card-${c}-from),var(--card-${c}-to))`;
-export const PIECES = L.TOPS.flatMap((x) => piecesOf(x).map((p) => ({ ...p, top: x, color: L.gColor(x) })));
-export const exp = (p) => { if (!p.due) return null; const a = L.daysBetween(p.startDate, L.TODAY), b = L.daysBetween(p.startDate, p.due); return b <= 0 ? 1 : Math.max(0, Math.min(1, a / b)); };
-export const pct = (p) => (p.amount ? Math.min(1, p.saved / p.amount) : 0);
-export const plan = (p) => p.plannedMonthly ?? 0;
-export const needPer = (p) => (p.left && p.due ? Math.ceil(p.left / Math.max(1, L.monthsLeft(p.due))) : 0);
-export const byDue = (a, b) => (a.due ?? "9") .localeCompare(b.due ?? "9") || b.amount - a.amount;
-export const state = (p) => { const n = needPer(p), q = plan(p); return !n ? ["Funded", "pill-on"] : !q ? ["No plan", "pill-off"] : q >= n ? ["On track", "pill-on"] : ["Behind", "pill-warn"]; };
-export const pieceTile = (p, s) => tile({ ...p, status: "Active" }, s);
-export const nm = (p) => p.label.replace(/^The rest$/, "The rest of the car");
-export const tipOf = (p, w = 230) => P.tip(P.hc({ h: nm(p), hr: needBadge(p), t: `${inr(p.saved)} of ${inr(p.amount)}`, d: p.due ? `due ${L.fmtY(p.due)}` : "no date", rows: [["Planned a month", plan(p) ? inr(plan(p)) : "none", ""], ["Needed a month", needPer(p) ? inr(needPer(p)) : "–", ""], ["Left to set aside", inr(p.left), ""]], f: "The white tick is where saving should be by now" }), { w, y: "down" });
 export const rest = (...rows) => rows.join("");
 
 // ---------- G13 Flow ----------
@@ -64,35 +55,9 @@ export function g13() {
 }
 
 // ---------- G14 Orbit ----------
-// Hand-placed so no two planets or labels touch and the ring labels at the top stay clear (the golden-angle spread collided).
-const ANG = { "New fridge": 10, "New tyres": 190, "The iPad": 235, "Apple Pencil": 70, "Suspension": 320, "Goa trip": 150, "Alloy wheels": 100, "Music system": 200, "The rest of the car": 330, "Masters course": 60 };
+// The round 4 board, drawn by the same sky as the picked page (orbit.mjs), without the pick.
 export function g14() {
-  const S = 780, C = S / 2, rad = (m) => 104 + 38 * Math.sqrt(m), pr = (a) => 7 + Math.sqrt(a) / 22;
-  const ps = [...PIECES].filter((p) => p.due).sort(byDue);
-  const ms = (p) => Math.max(1, L.monthsLeft(p.due));
-  const marks = [1, 3, 6, 12, 24, 36];
-  const rings = marks.map((m) => `<circle cx="${C}" cy="${C}" r="${rad(m)}" fill="none" stroke="oklch(1 0 0/.16)" stroke-dasharray="2 6"></circle>`).join("");
-  const rl = marks.map((m) => `<span class="or-ring" style="left:${C}px;top:${C - rad(m)}px">${m < 12 ? `${m} mo` : `${m / 12} yr`}</span>`).join("");
-  const seen = {};
-  const stars = Array.from({ length: 70 }, (_, i) => { const a = (i * 2654435761) % 1000, b = (i * 40503 + 977) % 1000; return `<i style="left:${a / 10}%;top:${b / 10}%;width:${1 + (i % 3 === 0 ? 1 : 0)}px;height:${1 + (i % 3 === 0 ? 1 : 0)}px;opacity:${0.25 + (i % 5) * 0.12}"></i>`; }).join("");
-  const planets = ps.map((p, i) => {
-    const m = ms(p), r = rad(m), k = (seen[m] = (seen[m] ?? 0) + 1) - 1;
-    let deg = ANG[nm(p)] ?? ANG[p.label] ?? (i * 137.5) % 360; const ang = (deg * Math.PI) / 180, x = C + r * Math.cos(ang), y = C + r * Math.sin(ang), d = pr(p.amount) * 2, ring = d + 12, pc = pct(p);
-    const below = Math.sin(ang) < 0.7;
-    return `<div class="or-p hov" tabindex="0" style="left:${x.toFixed(1)}px;top:${y.toFixed(1)}px;width:${ring}px;height:${ring}px;margin:${-ring / 2}px 0 0 ${-ring / 2}px;background:conic-gradient(white ${(pc * 360).toFixed(1)}deg,oklch(1 0 0/.2) 0)"><span class="or-core rt" style="background:${gr(p.color, 150)}">${pieceTile(p, Math.max(14, Math.round(d * 0.55)))}</span>${p.dateType === "Fixed" ? `<span class="or-flag">${I.pin(10)}</span>` : ""}<span class="or-n" style="${below ? "top:calc(100% + 4px)" : "bottom:calc(100% + 4px)"}"><b>${nm(p).replace(/^The rest of the car$/, "Car: the rest")}</b><small>${inrS(p.left)} to go · ${fmt(p.due)}</small></span>${tipOf(p, 230)}</div>`;
-  }).join("");
-  const sky = `<div class="or-sky"><div class="or-stars">${stars}</div><svg width="${S}" height="${S}" style="position:absolute;inset:0">${rings}</svg>${rl}
-    <div class="or-sun" style="left:${C}px;top:${C}px"><span class="hk" style="color:inherit;opacity:.75">Set aside</span><b>${inrL(L.SAVED)}</b><small>of ${inrL(L.TARGET)} · ${Math.round((L.SAVED / L.TARGET) * 100)}%</small></div>${planets}
-    <div class="or-key"><span><i class="dot" style="background:white;border-radius:50%"></i> the arc is what's set aside</span><span>${I.pin(10)} Fixed date</span><span>bigger planet, bigger amount</span></div></div>`;
-  const bands = [["Within 3 months", (m) => m <= 3], ["3 to 12 months", (m) => m > 3 && m <= 12], ["1 to 2 years", (m) => m > 12 && m <= 24], ["Further out", (m) => m > 24]];
-  const rows = bands.map(([t, f]) => {
-    const inB = ps.filter((p) => f(ms(p))), togo = sum(inB.map((p) => p.left)), mo = sum(inB.map(needPer));
-    return `<div class="or-row"><div><b>${t}</b><small>${inB.length ? plural(inB.length, "piece") : "nothing yet"}</small></div><div class="or-dots">${inB.map((p) => `<i class="dot" style="background:var(--card-${p.color});width:12px;height:12px;border-radius:50%"></i>`).join("")}</div><div style="text-align:right"><b>${inr(togo)}</b><small>${mo ? `${inr(mo)} a month` : "–"}</small></div></div>`;
-  }).join("");
-  const nx = ps[0], big = [...ps].sort((a, b) => b.left - a.left)[0];
-  const stat = (k, p, line) => `<div class="cc rt hov" tabindex="0" style="background:${gr(p.color, 150)};flex:1;justify-content:space-between"><div class="between"><span class="hk" style="color:inherit;opacity:.8">${k}</span>${pieceTile(p, 30)}</div><div><b style="font-size:18px;font-weight:800;display:block">${nm(p)}</b><div class="cc-big" style="margin-top:4px">${inr(p.left)}<small>to go</small></div><div style="font-size:12px;font-weight:600;opacity:.85;margin-top:4px">${line}</div></div><div><div class="cc-gb" style="height:8px"><i style="width:${(pct(p) * 100).toFixed(1)}%"></i>${exp(p) != null ? `<b style="left:${(exp(p) * 100).toFixed(1)}%"></b>` : ""}</div><div class="between" style="font-size:11.5px;font-weight:700;margin-top:6px;opacity:.9"><span>${inrS(p.saved)} of ${inrS(p.amount)}</span><span>${plan(p) ? `${inr(plan(p))} planned · ` : "no plan · "}needs ${inr(needPer(p))}</span></div></div>${tipOf(p, 230)}</div>`;
-  const side = `<div style="display:flex;flex-direction:column;gap:14px;min-width:0"><div class="stack3"><b style="font-size:15px;font-weight:800">How far out</b><span class="card-note">Each ring is a distance in months from today. The date picks the ring, so a goal moves inward as it nears.</span></div><div>${rows}</div>${stat("Closest", nx, `${fmt(nx.due)} · ${nx.dateType === "Fixed" ? "Fixed, " : ""}${L.monthsLeft(nx.due)} month left`)}${stat("Furthest to go", big, `${inr(big.amount)} in all · ${Math.round(pct(big) * 100)}% saved · due ${fmt(big.due)}`)}</div>`;
-  const hero = card(`${cardHead("Your goals in orbit", "the nearer its date, the closer to the middle · hover a planet", `<span class="row" style="gap:8px">${L.derivedTag("Ring = months left")}${L.seg([{ label: "By date", on: true }, { label: "By amount left" }])}</span>`)}<div class="or-grid">${sky}${side}</div>`, { gap: 18 });
+  const hero = card(`${cardHead("Your goals in orbit", "the nearer its date, the closer to the middle · hover a planet", `<span class="row" style="gap:8px">${L.derivedTag("Ring = months left")}${L.seg([{ label: "By date", on: true }, { label: "By amount left" }])}</span>`)}<div class="or-grid">${sky({ sun: allSun, pick: false })}<div class="or-side" style="display:flex">${sideAll()}</div></div>`, { gap: 18 });
   return page(hero, rest(grid([[12, P.goalsTable()]]), grid([[12, monthCard()]]), grid([[6, P.comingUp({ n: 5 })], [6, P.affordCard()]]), grid([[12, stairCard({ Hh: 240 })]]), grid([[6, P.needsWants()], [6, P.setAsides({ n: 7 })]]), grid([[12, P.finishedCard()]])));
 }
 
@@ -109,8 +74,8 @@ export function g15() {
     <div class="rc-rule"></div><div class="rc-t"><span>NEEDS</span><b>${inr(need)}</b></div><div class="rc-t"><span>WANTS</span><b>${inr(want)}</b></div><div class="rc-rule dbl"></div>
     <div class="rc-t big"><span>TOTAL OF THE LIST</span><b>${inr(L.TARGET)}</b></div><div class="rc-t"><span>SET ASIDE</span><b>${inr(L.SAVED)}</b></div><div class="rc-t big"><span>STILL TO GO</span><b>${inr(L.TARGET - L.SAVED)}</b></div>
     <div class="rc-rule"></div><div class="rc-f">NOTHING HERE IS SPENT.<br>IT IS ALL EARMARKED IN YOUR ACCOUNTS.</div><div class="rc-bar">${bars}</div></div>`;
-  const nextMonth = sum(L.UNITS.map((u) => (u.left && u.due ? Math.ceil(u.left / Math.max(1, L.monthsLeft(u.due))) : 0)));
-  const checkout = `<div class="cc rt" style="background:${gr("emerald", 155)};flex:1.25;justify-content:space-between"><div class="between"><span class="hk" style="color:inherit;opacity:.8">At the till · October</span><span class="h9-chip">${I.cal(12)} ${L.inDays("2026-11-05")}</span></div><div><div class="cc-big" style="font-size:40px">${inr(20500)}<small>left to set aside this month</small></div><div style="font-size:13px;font-weight:600;opacity:.85;margin-top:6px">${inr(44500)} of the ${inr(L.PLAN_TOTAL)} plan is done · ${plural(6, "goal")} still to do</div></div><div class="cc-gb" style="height:10px"><i style="width:68%"></i></div><div class="row" style="gap:8px"><span class="btn" style="background:oklch(1 0 0/.92);color:var(--ink)">${I.goals(14)} Set aside what's left</span><span class="btn" style="background:oklch(1 0 0/.16);color:inherit">${I.plus(13)} Add goal</span></div></div>`;
+  const { plan: monthPlan, counted: monthDone, todo: monthTodo } = monthStats(), monthLeft = monthPlan - monthDone;
+  const checkout = `<div class="cc rt" style="background:${gr("emerald", 155)};flex:1.25;justify-content:space-between"><div class="between"><span class="hk" style="color:inherit;opacity:.8">At the till · October</span><span class="h9-chip">${I.cal(12)} ${L.inDays("2026-11-05")}</span></div><div><div class="cc-big" style="font-size:40px">${inr(monthLeft)}<small>left to set aside this month</small></div><div style="font-size:13px;font-weight:600;opacity:.85;margin-top:6px">${inr(monthDone)} of the ${inr(monthPlan)} plan is done · ${plural(monthTodo.length, "goal")} still to do</div></div><div class="cc-gb" style="height:10px"><i style="width:${Math.round((monthDone / monthPlan) * 100)}%"></i></div><div class="row" style="gap:8px"><span class="btn" style="background:oklch(1 0 0/.92);color:var(--ink)">${I.goals(14)} Set aside what's left</span><span class="btn" style="background:oklch(1 0 0/.16);color:inherit">${I.plus(13)} Add goal</span></div></div>`;
   const sect = (title, c, items2, k) => `<div class="cc rt" style="background:${gr(c, 150)};flex:1;justify-content:space-between"><div class="between"><span class="hk" style="color:inherit;opacity:.8">${title}</span><b style="font-size:20px;font-weight:800">${inrL(k)}</b></div><div class="rc-mini">${items2.map((p) => `<div><i class="rc-sw" style="background:white;opacity:.9"></i><span>${nm(p)}</span><b>${inrS(p.left)}</b><em>${p.due ? fmt(p.due) : ""}</em><div class="cc-gb" style="height:5px;grid-column:2 / 5"><i style="width:${(pct(p) * 100).toFixed(1)}%"></i>${exp(p) != null ? `<b style="left:${(exp(p) * 100).toFixed(1)}%"></b>` : ""}</div></div>`).join("")}</div></div>`;
   const nds = PIECES.filter((p) => p.necessity === "Need").sort(byDue), wnt = PIECES.filter((p) => p.necessity === "Want" && p.left).sort(byDue).slice(0, 4);
   const right = `<div class="rc-right">${checkout}${sect("Needs first", "ruby", nds, sum(nds.map((p) => p.left)))}${sect("The next wants", "sapphire", wnt, sum(PIECES.filter((p) => p.necessity === "Want").map((p) => p.left)))}</div>`;
@@ -134,8 +99,8 @@ export function g16() {
       cells.push(`<span class="ca-d hov${today ? " today" : ""}${dueHere.length ? " has-due" : ""}" tabindex="0"><em>${d}</em>${inner}${tip}</span>`);
     }
     const dues = [...Array(n)].map((_, i) => `${k}-${String(i + 1).padStart(2, "0")}`).flatMap((iso) => due(iso));
-    const need = sum(dues.map((p) => p.left)), setMo = k === "2026-11" ? 0 : 0;
-    const foot = `<div class="ca-f"><div class="between"><span class="hk">Set aside on the ${SETDAY}th</span><b>${k === L.TODAY.slice(0, 7) ? `${inr(44500)} of ${inr(L.PLAN_TOTAL)}` : inr(L.PLAN_TOTAL)}</b></div>${dues.length ? dues.map((p) => `<div class="ca-due-l" style="background:${gr(p.color, 100)}">${pieceTile(p, 24)}<div><b>${nm(p)}</b><small>${fmt(p.due)} · ${inr(p.left)} still to go</small></div>${p.dateType === "Fixed" ? fixedPill() : ""}</div>`).join("") : `<div class="ca-none">Nothing falls due</div>`}</div>`;
+    const need = sum(dues.map((p) => p.left));
+    const foot = `<div class="ca-f"><div class="between"><span class="hk">Set aside on the ${SETDAY}th</span><b>${k === L.TODAY.slice(0, 7) ? `${inr(monthStats().counted)} of ${inr(monthStats().plan)}` : inr(L.PLAN_TOTAL)}</b></div>${dues.length ? dues.map((p) => `<div class="ca-due-l" style="background:${gr(p.color, 100)}">${pieceTile(p, 24)}<div><b>${nm(p)}</b><small>${fmt(p.due)} · ${inr(p.left)} still to go</small></div>${p.dateType === "Fixed" ? fixedPill() : ""}</div>`).join("") : `<div class="ca-none">Nothing falls due</div>`}</div>`;
     return `<div class="ca-m"><div class="ca-mh"><b>${L.monFull(k)} ${k.slice(0, 4)}</b><span>${dues.length ? `${plural(dues.length, "date")} · ${inrL(need)} due` : "quiet month"}</span></div><div class="ca-w">${["M", "T", "W", "T", "F", "S", "S"].map((d) => `<span>${d}</span>`).join("")}</div><div class="ca-g">${cells.join("")}</div>${foot}</div>`;
   };
   const later = PIECES.filter((p) => p.due && p.due > "2027-01-31" && p.left).sort(byDue);
