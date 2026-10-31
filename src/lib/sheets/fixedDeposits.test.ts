@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { checkFixedDeposit, createFixedDepositSchema, fixedDepositRowSchema, updateFixedDepositSchema } from "./fixedDeposits";
+import { columnSpecs } from "./tableColumns";
+import { FIXED_DEPOSIT_COLUMNS, checkFixedDeposit, createFixedDepositSchema, fixedDepositRowSchema, updateFixedDepositSchema } from "./fixedDeposits";
 
 const cumulative = {
   name: "HDFC 1 year",
@@ -80,5 +81,17 @@ describe("updateFixedDepositSchema", () => {
     const merged = { ...nonCumulative, id: "fd-3", ...patch };
     expect(merged.payoutFrequency).toBeUndefined();
     expect(checkFixedDeposit(merged as never)).toBeNull();
+  });
+});
+
+describe("the FixedDeposits tab's dropdowns", () => {
+  it("come from the schema, so the Sheet and the code can't drift apart", () => {
+    const specs = columnSpecs(FIXED_DEPOSIT_COLUMNS as string[], fixedDepositRowSchema);
+    const options = (name: string) => specs.find((spec) => spec.name === name)?.options;
+    expect(options("compoundingType")).toEqual(["Cumulative", "Non-Cumulative"]);
+    expect(options("payoutFrequency")).toEqual(["Monthly", "Quarterly", "Yearly"]);
+    expect(options("status")).toEqual(["Active", "Matured", "Closed"]);
+    expect(specs.find((spec) => spec.name === "startDate")?.type).toBe("DATE");
+    expect(specs.find((spec) => spec.name === "principalAmount")?.type).toBe("DOUBLE");
   });
 });

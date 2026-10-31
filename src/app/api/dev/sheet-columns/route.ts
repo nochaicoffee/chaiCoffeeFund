@@ -7,6 +7,8 @@ import { ACCOUNT_STATEMENT_EMAIL_COLUMNS, accountStatementEmailRowSchema } from 
 import { BALANCE_REVIEW_COLUMNS, balanceReviewRowSchema } from "@/lib/sheets/balanceReviews";
 import { BALANCE_SNAPSHOT_COLUMNS, balanceSnapshotRowSchema } from "@/lib/sheets/balanceSnapshots";
 import { CARD_COLUMNS, cardRowSchema } from "@/lib/sheets/cards";
+import { FIXED_DEPOSIT_COLUMNS, fixedDepositRowSchema } from "@/lib/sheets/fixedDeposits";
+import { INVESTMENT_TRANSACTION_COLUMNS, investmentTransactionRowSchema } from "@/lib/sheets/investmentTransactions";
 import { INCOME_ENTRY_COLUMNS, incomeEntryRowSchema } from "@/lib/sheets/incomeEntries";
 import { INCOME_SOURCE_COLUMNS, incomeSourceRowSchema } from "@/lib/sheets/incomeSources";
 import { LOAN_COLUMNS, loanRowSchema } from "@/lib/sheets/loans";
@@ -34,6 +36,8 @@ const TABS = {
   Loans: () => columnSpecs(LOAN_COLUMNS as string[], loanRowSchema),
   LoanInstallments: () => columnSpecs(LOAN_INSTALLMENT_COLUMNS as string[], loanInstallmentRowSchema),
   LoanPrepayments: () => columnSpecs(LOAN_PREPAYMENT_COLUMNS as string[], loanPrepaymentRowSchema),
+  InvestmentTransactions: () => columnSpecs(INVESTMENT_TRANSACTION_COLUMNS as string[], investmentTransactionRowSchema),
+  FixedDeposits: () => columnSpecs(FIXED_DEPOSIT_COLUMNS as string[], fixedDepositRowSchema),
   Policies: () => columnSpecs(POLICY_COLUMNS as string[], policyRowSchema),
   PolicyPayments: () => columnSpecs(POLICY_PAYMENT_COLUMNS as string[], policyPaymentRowSchema),
 };
