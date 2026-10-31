@@ -1,9 +1,10 @@
 import "server-only";
 import { z } from "zod";
 import { createRepository } from "./repository";
-import { isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
-import type { InvestmentTransaction } from "./types";
+import { clearable, clearableToUnset, isoDate, nonEmptyString, nonNegativeNumber, positiveNumber, rowRules } from "./validation";
+import { INVESTMENT_ASSET_TYPES, type InvestmentTransaction } from "./types";
 
+/** A trade's fields. The repository reads column types from a plain object, so the rules across fields are added below. */
 const investmentTransactionFields = z.object({
   tradeDate: isoDate,
   symbol: nonEmptyString,
@@ -11,29 +12,55 @@ const investmentTransactionFields = z.object({
   currency: z.enum(["INR", "USD"]),
   tradeType: z.enum(["Buy", "Sell"]),
   source: z.enum(["Market", "RSU", "ESPP"]),
-  quantity: nonNegativeNumber,
+  /** Shares or fund units: fractions are fine, zero and below aren't. */
+  quantity: positiveNumber,
+  /** Zero is allowed: shares that cost nothing (a bonus issue) are a real trade. */
   price: nonNegativeNumber,
   total: nonNegativeNumber,
-  assetType: nonEmptyString,
+  assetType: z.enum(INVESTMENT_ASSET_TYPES),
   broker: nonEmptyString,
   settlementAccountId: nonEmptyString.optional(),
-  fxRateToInr: nonNegativeNumber.optional(),
+  fxRateToInr: positiveNumber.optional(),
 });
 
-/** A US-market trade needs its USD→INR rate, captured once on the trade date. */
-function requireFxRateForUs<T extends z.ZodType<{ market: string; fxRateToInr?: number }>>(schema: T): T {
-  return schema.refine((data) => data.market !== "US" || data.fxRateToInr !== undefined, {
-    message: "fxRateToInr is required for US-market transactions",
-    path: ["fxRateToInr"],
-  }) as T;
-}
+const CURRENCY_OF_MARKET = { IND: "INR", US: "USD" } as const;
 
-export const createInvestmentTransactionSchema = requireFxRateForUs(investmentTransactionFields);
+const tradeRules = rowRules<Pick<InvestmentTransaction, "market" | "currency" | "fxRateToInr">>([
+  {
+    // `currency` is derivable from `market`, so a row that disagrees would be costed in the wrong money.
+    path: "currency",
+    message: "An IND trade is in INR and a US trade is in USD",
+    broken: (row) => row.currency !== CURRENCY_OF_MARKET[row.market],
+  },
+  {
+    // A US trade needs its USD→INR rate on the trade date, captured once (ADR 0003).
+    path: "fxRateToInr",
+    message: "A US trade needs its USD→INR rate on the trade date",
+    broken: (row) => row.market === "US" && row.fxRateToInr === undefined,
+  },
+  {
+    path: "fxRateToInr",
+    message: "Only a US trade has an exchange rate: leave it blank for an IND trade",
+    broken: (row) => row.market === "IND" && row.fxRateToInr !== undefined,
+  },
+]);
 
-export const updateInvestmentTransactionSchema = investmentTransactionFields.partial();
+/** The same rules on a whole row, which the repository runs on each new row and on the row after an update is merged over the stored one. */
+export const checkInvestmentTransaction = tradeRules.check;
+
+export const createInvestmentTransactionSchema = investmentTransactionFields.superRefine(tradeRules.refine);
+
+/**
+ * A partial update, merged over the stored row. "" clears an optional field, which an update
+ * from IND to US (or back) needs: the rate has to be set or blanked with the market.
+ */
+export const updateInvestmentTransactionSchema = investmentTransactionFields.partial().extend({
+  settlementAccountId: clearable(nonEmptyString).optional(),
+  fxRateToInr: clearableToUnset(positiveNumber).optional(),
+});
 
 /** A row as read back from the Sheet: a valid create, plus its id. */
-export const investmentTransactionRowSchema = requireFxRateForUs(investmentTransactionFields.extend({ id: nonEmptyString }));
+export const investmentTransactionRowSchema = investmentTransactionFields.extend({ id: nonEmptyString }).superRefine(tradeRules.refine);
 
 export const investmentTransactionsRepository = createRepository<InvestmentTransaction>({
   sheetName: "InvestmentTransactions",
@@ -55,4 +82,5 @@ export const investmentTransactionsRepository = createRepository<InvestmentTrans
   ],
   dateColumns: ["tradeDate"],
   schema: investmentTransactionRowSchema,
+  check: checkInvestmentTransaction,
 });

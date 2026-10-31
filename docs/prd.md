@@ -141,16 +141,55 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 
 | ID | Feature | Pri | Status |
 |---|---|---|---|
-| F-FI-01 | Fixed deposits: add one, see estimated current value, maturity date and amount | P0 | Designed (repository and computation built) |
-| F-FI-02 | EPF, PPF, NSC and RD (recurring-contribution holdings) | P1 | Designed loosely. The data model is open (Q1). |
+| F-FI-01 | Fixed deposits: add one, see estimated current value, maturity date and amount | P0 | Designed (repository and computation built). Schema tightened 2026-10-26 (dates, amounts and payout frequency checked). The Sheet's dropdowns still need setting up. |
+| F-FI-02 | EPF, PPF, NSC and RD (recurring-contribution holdings) | P1 | Designed loosely. The data model is open (Q1). Proposed 2026-10-27: add NPS and widen it to "valued assets" (see Proposed additions, Q9). |
 
 ### Investments (`F-IV`)
 
 | ID | Feature | Pri | Status |
 |---|---|---|---|
-| F-IV-01 | Log a buy or sell: IND or US, Market/RSU/ESPP source, FX rate frozen at the trade date | P0 | Designed (repository built, [ADR 0003](adr/0003-inr-base-currency-frozen-fx.md)) |
-| F-IV-02 | Holdings grouped by category (Indian Equity, US Stocks, RSUs, Debt Fund), with cost basis | P0 | Designed (computation built) |
-| F-IV-03 | Live prices and today's FX rate, for market value and gain or loss | P0 | Not started. The source is open (Q2). |
+| F-IV-01 | Log a buy or sell: IND or US, Market/RSU/ESPP source, FX rate frozen at the trade date | P0 | Designed (repository built, [ADR 0003](adr/0003-inr-base-currency-frozen-fx.md)). Schema tightened 2026-10-26: asset type is a fixed list, currency must match the market, rate only on US trades. The Sheet's dropdowns still need setting up. |
+| F-IV-02 | Holdings grouped by category (Indian Equity, US Stocks, RSUs, Debt Fund), with cost basis | P0 | Designed (computation built). Fixed 2026-10-26: same-day trades no longer depend on entry order, and an oversell is reported. RSU is a source, not a category: vested and bought shares of one symbol are one holding. |
+| F-IV-03 | Live prices and today's FX rate, for market value and gain or loss | P0 | Not started. Source decided (Q2): Yahoo, AMFI and Frankfurter behind `lib/prices/`. |
+
+### Goals (`F-GO`)
+
+Designed 2026-10-29 (`docs/design/goals.md`, mockups in [`design/goals/`](../design/goals/)). A goal is an earmark, not money: it never changes net worth, and "set aside" is derived from a log. Q1 to Q8 of that doc are answered.
+
+| ID | Feature | Pri | Status |
+|---|---|---|---|
+| F-GO-01 | Add, edit, pause, drop and finish a goal: name, category, Need or Want, Minor (short-term) or Major (long-term), amount, optional date (Fixed or Flexible) and planned monthly | P1 | Designed (round 1 mockups G1 to G4 and the forms; the hero is not picked) |
+| F-GO-02 | Sub-goals, one level deep: a goal's total is its own part plus its sub-goals | P1 | Designed |
+| F-GO-03 | Set aside and take back money against a goal, with an optional account; saved, funded and standing are derived | P1 | Designed |
+| F-GO-04 | The monthly figures: required a month, on track or behind, and a funding plan that serves Fixed dates, then Needs, then the soonest | P1 | Designed. The funding-plan rule and the month-counting rule need his yes before they're built. |
+| F-GO-05 | Goals on Overview's "What needs attention": a Fixed date at risk, an earmark an account can't cover | P2 | Designed |
+
+### Proposed additions (gap review, 2026-10-27)
+
+**Proposals only: none are decided, and none are built.** They come from a review of the PRD and `system-design.md` ("Gap review") for kinds of source the app doesn't yet cover. The priorities are proposed too. The last column says whether §10 already put it out of scope.
+
+**P1: the numbers are understated, or can't be rebuilt later**
+
+| ID | Feature | Depends on | §10 |
+|---|---|---|---|
+| F-OV-07 | Monthly net-worth snapshots, and a price and FX snapshot log once prices land. Past prices and rates can't be reconstructed, so this is the capture side of F-OV-06. | Q2 (for prices) | Net worth history is out of scope, and F-OV-06 stays P2. This is only the capture. |
+| F-FI-02 | Valued assets: EPF, PPF, NPS, NSC, insurance surrender value, property and vehicle as a dated value read off a statement | Q1, Q9 | Not excluded |
+| F-AC-05 | Foreign-currency balances: a USD account (cash at the US broker), valued at today's rate | Q2 | Not excluded |
+| F-IN-03 | Dividend and interest capture: savings and FD interest and Indian dividends from bank statements, US dividends in USD with tax withheld | F-AC-05, ADR 0009 | Not excluded |
+| F-IV-04 | Investing costs: what a trade's `total` means once there are fees, so cost basis includes them | Decide with F-IV-01 | Not excluded |
+
+**P2: later**
+
+| ID | Feature | Depends on | §10 |
+|---|---|---|---|
+| F-IV-05 | Other asset kinds: REITs, bonds and T-bills, crypto | A holding to track | Not excluded |
+| F-IV-06 | Upcoming RSU vests: a list of the next vests, not in net worth | Q10 | **Narrowly reopens "vesting schedules".** A list only, with no grant lifecycle or tax lots. |
+| F-SU-03 | Insurance, rent and fees as recurring obligations (proposed: reuse Subscriptions) | Q11 | Not excluded |
+| F-OV-08 | Goals and health metrics: emergency-fund months, allocation against a target, a benchmark for XIRR, debt-to-income | F-OV-07, Q2 | Not excluded |
+| F-IV-07 | Imports for holdings: the NSDL/CDSL and CAMS/KFintech consolidated statements, and stock-plan statements for RSU and ESPP | An ADR for each | Not excluded |
+| F-IV-08 | Foreign-asset disclosure data for India's yearly return (opening, peak and closing value) | F-OV-07 | **Out of scope (tax reporting).** Listed only so the price-history design doesn't rule it out. |
+
+**Not proposed (already out of scope, unchanged):** spending by UPI, debit and cash (statement totals only), tax lots and tax reporting, lending to others, and an automatic bank-data aggregator.
 
 ## 8. Requirements for the first milestone (M1: Cards end-to-end)
 
@@ -293,19 +332,23 @@ Confirmed by Prathik on 2026-10-24 (he accepted the defaults the mockups show fo
 | **M3 · Everyday money** | Accounts, Subscriptions, Income, Loans (P0 features) | No Sheet editing needed for these four areas. |
 | **M4 · Wealth** | Fixed Income, Investments, live prices (F-IV-03) | Net worth uses market value, not cost basis. |
 | **M5 · v1.0** | Overview redesign (F-OV-05), edit and delete (F-PL-07), polish | Every P0 and P1 item is done, and the §5 metrics are met for a month. |
+| **M6 · Goals** | F-GO-01 to F-GO-05, after Investments in the sidebar (decided 2026-10-29) | A goal can be added with sub-goals, set aside against and finished, and every figure on the page agrees with its tested function. |
 
 ## 12. Open questions
 
 | # | Question | Blocks, or the answer |
 |---|---|---|
-| Q1 | Fixed Income: how should recurring-contribution holdings (EPF, PPF, RD) be modelled, given that an FD is a single lump sum? | F-FI-02 |
-| Q2 | Where do live prices and FX rates come from: a `GOOGLEFINANCE` Prices tab or a market-data API? And does Indian ticker coverage hold up? | F-IV-01 (FX at entry), F-IV-03 |
+| Q1 | Fixed Income: how should recurring-contribution holdings (EPF, PPF, RD) be modelled, given that an FD is a single lump sum? | F-FI-02. **Proposed 2026-10-26, not yet answered:** EPF and PPF as contributions plus dated passbook balances; an RD as an FD with a generated deposit schedule (`system-design.md`, FixedDeposit). |
+| Q2 | Where do live prices and FX rates come from: a `GOOGLEFINANCE` Prices tab or a market-data API? And does Indian ticker coverage hold up? | F-IV-01 (FX at entry), F-IV-03. **Answered 2026-10-27:** a price module in code (`lib/prices/`), not a `GOOGLEFINANCE` tab. Yahoo's chart API for stocks, ETFs, indices and today's USD/INR; AMFI's NAV file for Indian mutual funds; Frankfurter (ECB) for the USD/INR rate on a past trade date, as an editable prefill. Results are saved in a `PriceSnapshots` log, and the last one is used (marked stale) when a source is down. `GOOGLEFINANCE` is dropped: it breaks ADR 0002 and was never tested. Spike on a representative basket, not his holdings (the tabs are empty); to re-run on his real tickers before building F-IV-03. Details in `system-design.md`. |
 | Q3 | Where do statement PDF passwords live? | **Answered 2026-10-17:** in the Cards Sheet tab (`statementPdfPassword`), as built. The Sheet is private to Prathik and the service account, and this keeps adding passwords inside the app. |
 | Q4 | Hosting platform and login method (ADR 0007) | F-PL-01, F-PL-02, F-CC-04 |
 | Q5 | Which banks are your current cards with? | **Answered 2026-10-17:** HDFC, ICICI, Axis, YES and CSB/Jupiter. All five have parsers. |
 | Q6 | Cards design: which merged-widget option (J–O)? | **Answered 2026-10-17:** none. A new final design replaced them (see §8). |
 | Q7 | Phone layouts: per epic, or a mobile design pass up front? | **Answered 2026-10-17:** per epic. M1 sets the shared phone patterns. |
 | Q8 | Overview design: needs a mockup in the new design language | F-OV-05 |
+| Q9 | Valued assets (EPF, PPF, NPS, NSC, insurance, property, vehicle): one `ValuedAssets` entity with dated valuations for all of them, or one per kind? Proposed: one. | F-FI-02 |
+| Q10 | Upcoming RSU vests: reopen "vesting schedules" in §10 for a list of the next vests (date and shares, not in net worth), or leave it out? | F-IV-06 |
+| Q11 | Insurance, rent and fees: add them to Subscriptions as new categories (proposed), or give them their own page? Insurance has been designed as its own page (2026-10-29, `docs/design/insurance.md`), and Prathik picked its hero. | F-SU-03 |
 
 Each open question is also a GitHub issue labelled `question`, in the milestone it blocks. When one is answered, record the answer here (and in an ADR, if it's a hard-to-reverse decision), then close its issue.
 
@@ -330,3 +373,7 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.13 | 2026-10-25 | The Income page's widgets (#189): the income heatmap, the income map beside Entries, Trends (this year and last, month by month, pay rhythm), Sources, the Pay calendar and Pay changes, all following the pick. |
 | 1.14 | 2026-10-25 | Income forms (#190): Add and Edit source (with Next expected, where it lands, the statement text, colour and icon), Record income, Mark received on a payment that's owed, Edit and delete a payment, Mark inactive, Delete source (with its payments; Mark inactive offered instead), and Undo for six seconds after recording. |
 | 1.15 | 2026-10-25 | The Income Entries page (#191): the Ledger for every source and a source's Passbook. F-IN-01 and F-IN-02 built. |
+| 1.16 | 2026-10-26 | Review of the Investments and Fixed Income design against the code: a holdings bug fixed (same-day trades, oversells, float dust), the trade and FD schemas tightened, and the rest recorded as proposals in `system-design.md`. No scope change. |
+| 1.17 | 2026-10-27 | Gap review of what the app doesn't yet cover: proposed additions F-OV-07, F-AC-05, F-IN-03, F-IV-04 (P1) and F-IV-05 to F-IV-08, F-SU-03, F-OV-08 (P2), F-FI-02 widened, and open questions Q9 to Q11. All proposals; see `system-design.md`, "Gap review". |
+| 1.18 | 2026-10-27 | Q2 answered: prices come from a code module (Yahoo, AMFI, Frankfurter) saved to a `PriceSnapshots` log; `GOOGLEFINANCE` dropped. Based on a spike run on 2026-10-27. |
+| 1.19 | 2026-10-29 | Goals designed (`docs/design/goals.md`): F-GO-01 to F-GO-05 and an M6 milestone. Minor/Major is a time horizon picked per goal; a goal is an earmark and never changes net worth. Round 1 mockups; the hero is not picked yet. |

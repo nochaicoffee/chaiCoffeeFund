@@ -33,7 +33,7 @@ describe("computeNetWorth", () => {
     ];
 
     const investmentTransactions: InvestmentTransaction[] = [
-      { id: "tx-1", tradeDate: "2026-01-01", symbol: "AAA", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 10, price: 1000, total: 10000, assetType: "India-Equity", broker: "B" },
+      { id: "tx-1", tradeDate: "2026-01-01", symbol: "AAA", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 10, price: 1000, total: 10000, assetType: "Equity", broker: "B" },
     ];
 
     const fixedDeposits: FixedDeposit[] = [

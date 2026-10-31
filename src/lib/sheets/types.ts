@@ -523,6 +523,13 @@ export type TradeType = "Buy" | "Sell";
 // a normal Buy (quantity + price = FMV at vest, or the discounted purchase
 // price) — this field just tags which kind, it doesn't change the row shape.
 export type InvestmentSource = "Market" | "RSU" | "ESPP";
+/**
+ * What kind of holding it is. The market (IND or US) already says where, so these don't repeat
+ * it: an Indian equity is `Equity` on `IND`, a US stock `Equity` on `US`. RSU is a `source`, not
+ * an asset type: vested NTAP and NTAP bought on the market are one holding.
+ */
+export const INVESTMENT_ASSET_TYPES = ["Equity", "ETF", "Mutual-Fund", "Debt-Fund", "Gold", "Other"] as const;
+export type InvestmentAssetType = (typeof INVESTMENT_ASSET_TYPES)[number];
 
 export interface InvestmentTransaction {
   id: string;
@@ -535,7 +542,7 @@ export interface InvestmentTransaction {
   quantity: number;
   price: number;
   total: number;
-  assetType: string;
+  assetType: InvestmentAssetType;
   broker: string;
   /** Debited for a Buy, credited for a Sell. */
   settlementAccountId?: string;
