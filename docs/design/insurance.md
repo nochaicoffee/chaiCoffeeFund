@@ -1,12 +1,12 @@
 # Insurance page (`/insurance`)
 
-## Status (2026-10-29)
+## Status (2026-10-31)
 
-**Designed on his real policies, and built (#209 to #215): the data layer, the page, its widgets, the forms and the states. What's left is the PRD feature and the system-design section, which wait for the gap-review docs to be committed (#216).** Prathik picked the **Cover map** as the hero. Mockups: [`design/insurance/`](../../design/insurance/), built by [`design/insurance/generator/`](../../design/insurance/generator/) (a rebuild overwrites the artboards, so change the generator).
+**Designed on his real policies, and built (#209 to #215): the data layer, the page, its widgets, the forms and the states. The PRD feature (F-IS-01), the system-design section and ADR 0010 are written (#216).** Prathik picked the **Cover map** as the hero. Mockups: [`design/insurance/`](../../design/insurance/), built by [`design/insurance/generator/`](../../design/insurance/generator/) (a rebuild overwrites the artboards, so change the generator).
 
 The policies are his own, read on 2026-10-29 from the four PDFs in his Gmail `Insurance` label (read-only, with the app's Gmail credentials). Identifiers are cut to their last digits, and no address, date of birth, nominee, PAN or customer ID is in the repo. "Today" is Oct 29, 2026; dates after it and the 2027 renewal quotes are illustrative.
 
-This answers the open question from the 2026-10-27 gap review (PRD Q11 and `system-design.md` item 8, still uncommitted in his working docs when this was written; the PRD feature (F-IS-01) and the system-design section are to be written once they're committed): insurance as Subscriptions categories, or its own page. **its own page, one dashboard, not one per type.** Insurance asks different questions from a subscription: whether you're covered, for how much, and when it lapses.
+This answers the open question from the 2026-10-27 gap review (PRD Q11 and `system-design.md` item 8, both now answered): insurance as Subscriptions categories, or its own page. **its own page, one dashboard, not one per type.** Insurance asks different questions from a subscription: whether you're covered, for how much, and when it lapses.
 
 ## His policies
 
@@ -88,7 +88,7 @@ Built in `lib/aggregate/insurance.ts` (#210) as pure functions with tests that p
 
 ## Open decisions (defaults are what the mockups show)
 
-1. Its own page, as drawn, or Subscriptions categories (the gap review's Q11). When those docs are committed, mark Q11 answered and rewrite item 8 to point here.
+1. ~~Its own page, as drawn, or Subscriptions categories (the gap review's Q11).~~ Answered: its own page (PRD Q11, F-IS-01).
 2. The 30-day "renew soon" window.
 3. What "covers" is: its own tab, or a text column.
 4. Storing the insurer's claims number and a link to the policy PDF (drawn, optional). The PDFs gave the claims numbers, so they're filled in.

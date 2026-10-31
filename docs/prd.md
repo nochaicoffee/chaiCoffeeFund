@@ -164,6 +164,14 @@ Designed 2026-10-29 (`docs/design/goals.md`, mockups in [`design/goals/`](../des
 | F-GO-04 | The monthly figures: required a month, on track or behind, and a funding plan that serves Fixed dates, then Needs, then the soonest | P1 | Designed. The funding-plan rule and the month-counting rule need his yes before they're built. |
 | F-GO-05 | Goals on Overview's "What needs attention": a Fixed date at risk, an earmark an account can't cover | P2 | Designed |
 
+### Insurance (`F-IS`)
+
+Designed and built 2026-10-29 as its own page (epic #208; design in `docs/design/insurance.md`, the multi-year term model in [ADR 0010](adr/0010-insurance-terms-with-years.md)). It answers Q11: insurance is not a Subscriptions category.
+
+| ID | Feature | Pri | Status |
+|---|---|---|---|
+| F-IS-01 | Insurance: policies, renewals and what's covered. Add a policy of any kind with its first term; the cover map, the runway of premiums, what renews next and what has lapsed; Renew (with Undo), Cancel and Restart, Edit, and a payments page. A policy's state (In force, Renew soon, Lapsed, Cancelled) is worked out from its dates, never typed in. | P1 | Built (#209 to #215 and the payments page, #225). The 30-day "renew soon" window is a placeholder. A Gmail import of the policy PDFs is not built (it would need its own ADR and a parser per insurer). |
+
 ### Proposed additions (gap review, 2026-10-27)
 
 **Proposals only: none are decided, and none are built.** They come from a review of the PRD and `system-design.md` ("Gap review") for kinds of source the app doesn't yet cover. The priorities are proposed too. The last column says whether §10 already put it out of scope.
@@ -184,7 +192,7 @@ Designed 2026-10-29 (`docs/design/goals.md`, mockups in [`design/goals/`](../des
 |---|---|---|---|
 | F-IV-05 | Other asset kinds: REITs, bonds and T-bills, crypto | A holding to track | Not excluded |
 | F-IV-06 | Upcoming RSU vests: a list of the next vests, not in net worth | Q10 | **Narrowly reopens "vesting schedules".** A list only, with no grant lifecycle or tax lots. |
-| F-SU-03 | Insurance, rent and fees as recurring obligations (proposed: reuse Subscriptions) | Q11 | Not excluded |
+| F-SU-03 | Rent and fees as recurring obligations (proposed: reuse Subscriptions). Insurance left this row: it is its own page, F-IS-01. | Q11 (answered) | Not excluded |
 | F-OV-08 | Goals and health metrics: emergency-fund months, allocation against a target, a benchmark for XIRR, debt-to-income | F-OV-07, Q2 | Not excluded |
 | F-IV-07 | Imports for holdings: the NSDL/CDSL and CAMS/KFintech consolidated statements, and stock-plan statements for RSU and ESPP | An ADR for each | Not excluded |
 | F-IV-08 | Foreign-asset disclosure data for India's yearly return (opening, peak and closing value) | F-OV-07 | **Out of scope (tax reporting).** Listed only so the price-history design doesn't rule it out. |
@@ -332,6 +340,7 @@ Confirmed by Prathik on 2026-10-24 (he accepted the defaults the mockups show fo
 | **M3 · Everyday money** | Accounts, Subscriptions, Income, Loans (P0 features) | No Sheet editing needed for these four areas. |
 | **M4 · Wealth** | Fixed Income, Investments, live prices (F-IV-03) | Net worth uses market value, not cost basis. |
 | **M5 · v1.0** | Overview redesign (F-OV-05), edit and delete (F-PL-07), polish | Every P0 and P1 item is done, and the §5 metrics are met for a month. |
+| **M5b · Insurance** | F-IS-01 (P1). Built 2026-10-29, between M3 and M4 in practice | A policy can be added, renewed, cancelled and restarted, and every figure on the page agrees with its tested function. Met 2026-10-29: the Policies and PolicyPayments tabs pass `check-sheet` and his real policies are entered. |
 | **M6 · Goals** | F-GO-01 to F-GO-05, after Investments in the sidebar (decided 2026-10-29) | A goal can be added with sub-goals, set aside against and finished, and every figure on the page agrees with its tested function. |
 
 ## 12. Open questions
@@ -348,7 +357,7 @@ Confirmed by Prathik on 2026-10-24 (he accepted the defaults the mockups show fo
 | Q8 | Overview design: needs a mockup in the new design language | F-OV-05 |
 | Q9 | Valued assets (EPF, PPF, NPS, NSC, insurance, property, vehicle): one `ValuedAssets` entity with dated valuations for all of them, or one per kind? Proposed: one. | F-FI-02 |
 | Q10 | Upcoming RSU vests: reopen "vesting schedules" in §10 for a list of the next vests (date and shares, not in net worth), or leave it out? | F-IV-06 |
-| Q11 | Insurance, rent and fees: add them to Subscriptions as new categories (proposed), or give them their own page? Insurance has been designed as its own page (2026-10-29, `docs/design/insurance.md`), and Prathik picked its hero. | F-SU-03 |
+| Q11 | Insurance, rent and fees: add them to Subscriptions as new categories (proposed), or give them their own page? | **Answered 2026-10-29 for insurance:** its own page (F-IS-01), with a `Policies` master and a `PolicyPayments` row per term, because it asks whether you're covered and when it lapses, not what you pay each period. Rent and fees stay proposed for Subscriptions (F-SU-03). |
 
 Each open question is also a GitHub issue labelled `question`, in the milestone it blocks. When one is answered, record the answer here (and in an ADR, if it's a hard-to-reverse decision), then close its issue.
 
@@ -377,3 +386,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.17 | 2026-10-27 | Gap review of what the app doesn't yet cover: proposed additions F-OV-07, F-AC-05, F-IN-03, F-IV-04 (P1) and F-IV-05 to F-IV-08, F-SU-03, F-OV-08 (P2), F-FI-02 widened, and open questions Q9 to Q11. All proposals; see `system-design.md`, "Gap review". |
 | 1.18 | 2026-10-27 | Q2 answered: prices come from a code module (Yahoo, AMFI, Frankfurter) saved to a `PriceSnapshots` log; `GOOGLEFINANCE` dropped. Based on a spike run on 2026-10-27. |
 | 1.19 | 2026-10-29 | Goals designed (`docs/design/goals.md`): F-GO-01 to F-GO-05 and an M6 milestone. Minor/Major is a time horizon picked per goal; a goal is an earmark and never changes net worth. Round 1 mockups; the hero is not picked yet. |
+| 1.20 | 2026-10-31 | Insurance (F-IS-01) written into the PRD as built, and Q11 answered: insurance is its own page, not a Subscriptions category. F-SU-03 now covers rent and fees only. |
