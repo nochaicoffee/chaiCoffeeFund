@@ -133,6 +133,17 @@ Entities:
 
 Every entity gets a stable **`id`** (short UUID, generated on creation) as its primary key. The old sheet joined tabs by matching on human-readable names (e.g. "Card Name" text) — fragile, since renaming a card silently breaks every linked statement. Master tabs keep their `name` column for human readability when Prathik looks at the raw Sheet, but all cross-tab references and all app-level lookups use `id`.
 
+### Insurance (F-IS-01, built 2026-10-29, [ADR 0010](adr/0010-insurance-terms-with-years.md))
+
+A master and a row per period, like Subscriptions and their payments: a **`Policies`** row (kind, insurer, what it covers, the sum insured or IDV, status, paid-from, add-ons, notes) and a **`PolicyPayments`** row for each **term**, with `years` (1 to 5): the cover that one premium buys. The full column lists are in `docs/design/insurance.md`.
+
+- **Derived, never stored:** a term's last day (start plus years, less a day), a policy's renewal date (the latest end of any Paid term), its state (In force, Renew soon, Lapsed, Cancelled, Not started, No term) and every figure on the page. They live in `lib/aggregate/insurance.ts`, pure and tested; a stored "lapsed" flag or end date would go stale the day after it was written.
+- **A year of cover is not cash paid.** A year of cover is a term's premium over its years; cash paid is by the calendar year of the day paid. A three-year premium is all in the year it was paid, and the page says why that differs.
+- **Renewing is recording the next term.** There is no Skipped status: a term nobody paid for is a lapse, worked out from the dates, including a gap before a late renewal. Cancel keeps every payment; only Delete (for a mistake) removes a policy and its payments, payments first.
+- **Writes** go through `lib/insurance/policyWrites.ts`: Add writes the policy and its first term together and takes the policy back out if the term fails; Renew refuses an overlapping term and takes the term back out if the cover can't be moved.
+- **The policy number is kept whole in the private Sheet and shortened to its last four characters on the server** before anything reaches the browser; a number that starts with "…" is refused on save, so the shortened one can't overwrite the whole.
+- **Not built:** importing the policy PDFs from Gmail (a parser per insurer and an ADR of its own), claims, tax deductions, and premiums paid in instalments inside one term.
+
 ## Where business logic lives (key decision)
 
 The old sheet's worst bugs came from putting logic in two unreliable places: Apps Script triggers overwriting cells, and cross-tab spreadsheet formulas that silently broke or were left half-finished. This design moves **all aggregation and computation into the Next.js app's TypeScript code**, and keeps the Sheet as a plain, dumb data store:
@@ -220,8 +231,8 @@ Original recommendation: start with `GOOGLEFINANCE` for both (matches "reuse wha
    - **`PlannedVests`:** `symbol`, `date`, `quantity`, entered from the grant letter. When the vest's Buy is logged, the plan row is matched and closed, the way renewals are matched.
    - **This narrowly reopens §10's "vesting schedules"**: a list, with no grant lifecycle and no tax lots. Open (Q10).
 8. **Insurance, rent and fees as obligations (F-SU-03).**
-   - **Proposed:** reuse Subscriptions, not a new entity. Add categories (`Insurance`, `Rent`, `Education`) and an optional `coverAmount`. Its renewal schedule already handles yearly anchors, paid-from and skipped payments, and Overview's monthly obligations would include them.
-   - **Open (Q11), design 2026-10-29:** insurance is now **designed as its own page** (`docs/design/insurance.md`, on his real policies, cover map picked 2026-10-29): a `Policies` master and a `PolicyPayments` row per term with a `years` length (two of his policies are single premiums for three years), not Subscriptions categories. Rent and fees stay in Subscriptions.
+   - **Proposed (rent and fees only; insurance left, see the answer below):** reuse Subscriptions, not a new entity. Add categories (`Rent`, `Education`; `Insurance` is no longer one) and an optional `coverAmount`. Its renewal schedule already handles yearly anchors, paid-from and skipped payments, and Overview's monthly obligations would include them.
+   - **Answered (Q11), 2026-10-29:** insurance is **its own page** (F-IS-01, built; see "Insurance" in the domain model and `docs/design/insurance.md`): a `Policies` master and a `PolicyPayments` row per term with a `years` length (two of his policies are single premiums for three years), not Subscriptions categories. Only rent and fees stay proposed for Subscriptions, and the `Insurance` category is no longer wanted.
    - **EMIs converted on a card** are already in that card's statement total, so tracking them separately would double count (the payment-source principle above). They stay out unless they're a bank loan.
 9. **Goals and health metrics (F-OV-08).** Pure functions in `lib/aggregate` with tests, each from data already held:
    - Emergency-fund cover in months: the balance of accounts whose purpose is `Emergency-Fund`, over the monthly money-out the Accounts page defines.
@@ -242,8 +253,8 @@ Spending by UPI, debit and cash (statement totals only, decided 2026-10-16: Acco
 
 One tab per entity, `id`-keyed:
 
-**Master/definition tabs:** `Accounts`, `Cards`, `Subscriptions`, `IncomeSources`, `Loans`, `FixedDeposits`
-**Log tabs:** `BalanceSnapshots`, `Statements`, `SubscriptionPayments`, `IncomeEntries`, `LoanInstallments`, `InvestmentTransactions`
+**Master/definition tabs:** `Accounts`, `Cards`, `Subscriptions`, `IncomeSources`, `Loans`, `FixedDeposits`, `Policies`
+**Log tabs:** `BalanceSnapshots`, `Statements`, `SubscriptionPayments`, `IncomeEntries`, `LoanInstallments`, `InvestmentTransactions`, `PolicyPayments`
 **Log tab (investments, once prices land):** `PriceSnapshots` — date, symbol, price, currency, USD→INR rate, source, written by the app's price fetch (Q2, decided 2026-10-27). The earlier plan of a `GOOGLEFINANCE` `Prices` support tab is dropped.
 
 Each log tab's rows carry a foreign-key column back to its parent (e.g. `cardId` on `Statements`) instead of a name string, plus — where the entity represents a real payment — the `accountId`/`cardId` pair described above. Column-level detail (which fields per tab) gets finalized when we implement the Sheets layer — the shapes above are already grounded in what worked in the old sheet, just re-keyed by `id`, de-duplicated (Loans replacing Debt+Lending), and with the derived/ambiguous columns (Opening Balance, Monthly Average/Equivalent, a single overloaded date field) removed in favor of computing them or splitting them, per the fixes above.
