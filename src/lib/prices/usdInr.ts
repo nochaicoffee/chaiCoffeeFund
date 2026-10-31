@@ -10,19 +10,11 @@ import { CACHE_TAGS } from "@/lib/sheets/cached";
  * result says so, and the caller leaves the dollar account out of its totals and tells the user:
  * never a rate the app made up, and never an old one kept quietly.
  */
-export type UsdInr = { ok: true; rate: number; date: string } | { ok: false; reason: string };
+import { parseUsdInr, type UsdInr } from "./usdInrParse";
+
+export { parseUsdInr, type UsdInr };
 
 export const USD_INR_URL = "https://api.frankfurter.dev/v1/latest?base=USD&symbols=INR";
-
-/** Frankfurter's body: `{ amount, base, date, rates: { INR } }`. Anything that isn't a positive, finite rate with a date is a failure. */
-export function parseUsdInr(body: unknown): UsdInr {
-  if (typeof body !== "object" || body === null) return { ok: false, reason: "the rate service sent something that isn't a rate" };
-  const { rates, date } = body as { rates?: unknown; date?: unknown };
-  const rate = typeof rates === "object" && rates !== null ? (rates as { INR?: unknown }).INR : undefined;
-  if (typeof rate !== "number" || !Number.isFinite(rate) || rate <= 0) return { ok: false, reason: "the rate service sent no USD to INR rate" };
-  if (typeof date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return { ok: false, reason: "the rate service sent no date for the rate" };
-  return { ok: true, rate, date };
-}
 
 /** A failure whose message is already plain language for the page; anything else (a network error, a timeout) becomes a generic reason. */
 class RateError extends Error {}
