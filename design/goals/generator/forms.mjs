@@ -2,13 +2,13 @@
 import * as L from "./lib.mjs";
 import * as P from "./parts.mjs";
 const { I, inr, btn, seg } = L;
-const fld = (label, inner, { full = false, req = false, opt = false, help = "" } = {}) => `<div class="fld${full ? " full" : ""}"><span class="lbl">${label}${req ? '<span class="req">*</span>' : ""}${opt ? '<span class="opt-tag">OPTIONAL</span>' : ""}</span>${inner}${help ? `<div class="help">${I.info(12)}<span>${help}</span></div>` : ""}</div>`;
-const inp = (v, { pre = "", suf = "", focus = false, ph = false } = {}) => `<div class="inp${focus ? " focus" : ""}">${pre ? `<span class="pre">${pre}</span>` : ""}<span class="${ph ? "ph-text" : ""}">${v}</span>${suf ? `<span class="suf">${suf}</span>` : ""}</div>`;
-const sel = (v) => `<div class="inp" style="justify-content:space-between"><span>${v}</span>${I.chev()}</div>`;
+export const fld = (label, inner, { full = false, req = false, opt = false, help = "" } = {}) => `<div class="fld${full ? " full" : ""}"><span class="lbl">${label}${req ? '<span class="req">*</span>' : ""}${opt ? '<span class="opt-tag">OPTIONAL</span>' : ""}</span>${inner}${help ? `<div class="help">${I.info(12)}<span>${help}</span></div>` : ""}</div>`;
+export const inp = (v, { pre = "", suf = "", focus = false, ph = false } = {}) => `<div class="inp${focus ? " focus" : ""}">${pre ? `<span class="pre">${pre}</span>` : ""}<span class="${ph ? "ph-text" : ""}">${v}</span>${suf ? `<span class="suf">${suf}</span>` : ""}</div>`;
+export const sel = (v) => `<div class="inp" style="justify-content:space-between"><span>${v}</span>${I.chev()}</div>`;
 const sw = (on = 2) => `<span class="sw">${["copper", "violet", "teal", "ruby", "sapphire", "onyx"].map((c, i) => `<i class="${i === on ? "on" : ""}" style="background:${L.grad(c)}"></i>`).join("")}</span>`;
-const dlg = ({ icon, title, sub, preview, fields, note, cta }) => `<div class="dlg"><div class="dlg-h"><div class="dlg-ic">${icon}</div><div><h3>${title}</h3><p>${sub}</p></div><span class="dlg-x">${I.x(14)}</span></div><div class="dlg-b"><div class="preview">${preview}</div><div class="fields">${fields}</div></div><div class="dlg-f"><span class="note">${note}</span>${btn("Cancel")}${cta}</div></div>`;
-const pvk = (t) => `<div class="pv-k">${t}</div>`;
-const box = (rows) => `<div class="pv-box">${rows.map(([a, b]) => `<div class="between"><span>${a}</span><span>${b}</span></div>`).join("")}</div>`;
+export const dlg = ({ icon, title, sub, preview, fields, note, cta }) => `<div class="dlg"><div class="dlg-h"><div class="dlg-ic">${icon}</div><div><h3>${title}</h3><p>${sub}</p></div><span class="dlg-x">${I.x(14)}</span></div><div class="dlg-b"><div class="preview">${preview}</div><div class="fields">${fields}</div></div><div class="dlg-f"><span class="note">${note}</span>${btn("Cancel")}${cta}</div></div>`;
+export const pvk = (t) => `<div class="pv-k">${t}</div>`;
+export const box = (rows) => `<div class="pv-box">${rows.map(([a, b]) => `<div class="between"><span>${a}</span><span>${b}</span></div>`).join("")}</div>`;
 
 const addGoal = dlg({
   icon: I.goals(20), title: "Add a goal", sub: "Something you're saving a sum of money for.",

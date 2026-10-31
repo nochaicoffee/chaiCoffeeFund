@@ -378,4 +378,5 @@ const GOALS = String.raw`
 .formgrid { display: flex; flex-direction: column; gap: 30px; align-items: center; padding: 40px; }
 .formgrid .dlg { width: 1020px; }
 `;
-export const CSS = BASE + SHARED + GOALS;
+import { CSS4 } from "./css4.mjs";
+export const CSS = BASE + SHARED + GOALS + CSS4;

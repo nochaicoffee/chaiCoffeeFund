@@ -1,6 +1,14 @@
 {
   "pages": [
     {
+      "id": "final",
+      "name": "Picked: Orbit (final page, states, phone, forms)"
+    },
+    {
+      "id": "r4",
+      "name": "Round 4: Flow, Orbit, Receipt, Calendar (G13–G16)"
+    },
+    {
       "id": "r3",
       "name": "Round 3: Coloured cards, full widgets (G9–G12)"
     },
@@ -18,6 +26,70 @@
     }
   ],
   "artboards": [
+    {
+      "file": "GoalsFinal.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 4601,
+      "page": "final"
+    },
+    {
+      "file": "GoalsStates.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1460,
+      "h": 6575,
+      "page": "final"
+    },
+    {
+      "file": "GoalsPhone.dc.html",
+      "x": 3300,
+      "y": 0,
+      "w": 1380,
+      "h": 1759,
+      "page": "final"
+    },
+    {
+      "file": "GoalsForms2.dc.html",
+      "x": 4800,
+      "y": 0,
+      "w": 1100,
+      "h": 2557,
+      "page": "final"
+    },
+    {
+      "file": "GoalsG13.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 4571,
+      "page": "r4"
+    },
+    {
+      "file": "GoalsG14.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 4601,
+      "page": "r4"
+    },
+    {
+      "file": "GoalsG15.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 3689,
+      "page": "r4"
+    },
+    {
+      "file": "GoalsG16.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 4356,
+      "page": "r4"
+    },
     {
       "file": "GoalsG9.dc.html",
       "x": 0,
@@ -129,11 +201,27 @@
       "x": 0,
       "y": -90,
       "w": 1100,
+      "text": "Goals, the pick (2026-10-31): Prathik chose G14 Orbit. GoalsFinal is the page: pick a planet (or All goals) and the sky dims the rest while the side opens that goal, with its pieces or latest set-asides. GoalsStates: no goals, one goal, all funded, overdue, over-funded, paused/dropped/bought, and the Overview attention item. GoalsPhone: the sky small with numbered planets, the picked goal, and Set aside as a bottom sheet. GoalsForms2: the goal's menu, Edit, Take back, Pause, Drop and Delete. The earlier forms (Add goal, Add sub-goal, Set aside, Mark bought) still apply. The other rounds are kept as history. Sample data, made up; today is Oct 29, 2026.",
+      "page": "final"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Goals, round 4 (2026-10-31): Prathik asked to explore a few more variations. Four ideas the first rounds hadn't tried, all with coloured cards and the full widget set underneath. G13 Flow (a Sankey: October's income, less obligations, into what you plan for goals, fanning out to every piece), G14 Orbit (a night sky: the nearer a piece's date, the closer to the middle; the bigger the amount, the bigger the planet; an arc fills as it is set aside), G15 Receipt (the whole list as a till receipt with sub-goals indented, beside checkout cards for this month, Needs and the next Wants), G16 Calendar (the next four months as real calendars with the set-aside day and the due dates). Sample data, made up; today is Oct 29, 2026.",
+      "page": "r4"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
       "text": "Goals, round 3 (2026-10-29): Prathik asked for more variations, with a full set of widgets again (as the other dashboards have), and liked the Queue's coloured card. Each hero is built from coloured cards in the style of Subscriptions' cover, Accounts' cards and the Queue's focus card. G9 Cover (Accounts-style: a focus panel and a tall card per goal; pick a goal and the whole cover takes its colour; the staircase runs along the bottom), G10 Map (a coloured tile per goal sized by amount, the car's sub-goals inside it, beside the funding order), G11 Board (three date lanes of coloured cards), G12 Tickets (the focus card, and the funding order as a coloured ticket per piece). Widgets underneath: goals table, coming up, this month, the staircase, needs and wants, set aside lately, what your money allows, finished. Sample data, made up; today is Oct 29, 2026.",
       "page": "r3"
     },
     {
-      "id": "note-2",
+      "id": "note-4",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -141,7 +229,7 @@
       "page": "r2"
     },
     {
-      "id": "note-3",
+      "id": "note-5",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -149,7 +237,7 @@
       "page": "forms"
     },
     {
-      "id": "note-4",
+      "id": "note-6",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -159,6 +247,6 @@
   ],
   "launch": {
     "view": "canvas",
-    "page": "r3"
+    "page": "final"
   }
 }

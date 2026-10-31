@@ -12,4 +12,4 @@ node build.mjs            # all boards (--only=GoalsG1 for one), writes heights.
 
 - `lib.mjs`: the sample goals and set-asides (the proposed `Goals` and `GoalContributions` shapes), the sums `lib/aggregate/goals.ts` will hold, the funding plan, formatting, icons and the shell.
 - `parts.mjs`: the shared widgets (greeting that points, attention strip, goals table, coming up, needs and wants, set-asides, what your money allows, finished).
-- `dash.mjs`: the four heroes G1 to G4. `forms.mjs`: the forms. `boards.mjs`: every board and the canvas page notes. `css.mjs`: the stylesheet.
+- `dash.mjs`: the four heroes G1 to G4. `dash2.mjs`/`dash3.mjs`: G5 to G12. `dash4.mjs` (with `css4.mjs`): G13 Flow, G14 Orbit, G15 Receipt, G16 Calendar. `forms.mjs`: the forms. `boards.mjs`: every board and the canvas page notes. `css.mjs`: the stylesheet.
