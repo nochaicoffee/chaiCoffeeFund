@@ -380,9 +380,22 @@ describe("totals", () => {
 });
 
 describe("earmarks", () => {
+  const live = (...goalIds: string[]): GoalsData => ({ goals: goalIds.map((id) => goal({ id, name: id, amount: 1000 })), contributions: [] });
   it("adds set-asides and takes back take-backs per account, and ignores ones with no account", () => {
-    const e = earmarksByAccount([set("a", 100, "2026-09-01", { accountId: "x" }), set("a", 50, "2026-09-02", { accountId: "x" }), take("a", 30), { ...take("a", 20), accountId: "x" }, set("a", 999)]);
-    expect(e).toEqual({ x: 130 });
+    const data = live("a");
+    data.contributions = [set("a", 100, "2026-09-01", { accountId: "x" }), set("a", 50, "2026-09-02", { accountId: "x" }), take("a", 30), { ...take("a", 20), accountId: "x" }, set("a", 999)];
+    expect(earmarksByAccount(data)).toEqual({ x: 130 });
+  });
+  it("a bought or dropped goal holds nothing, and a paused one still does", () => {
+    const data = live("a", "b", "c");
+    data.goals[1].status = "Done";
+    data.goals[1].doneOn = TODAY;
+    data.goals[2].status = "Paused";
+    data.contributions = [set("a", 100, "2026-09-01", { accountId: "x" }), set("b", 700, "2026-09-01", { accountId: "x" }), set("c", 50, "2026-09-01", { accountId: "x" })];
+    expect(earmarksByAccount(data)).toEqual({ x: 150 });
+    data.goals[1].status = "Active";
+    data.goals[1].doneOn = undefined;
+    expect(earmarksByAccount(data)).toEqual({ x: 850 });
   });
   it("flags only accounts whose earmarks pass their balance, biggest first", () => {
     const problems = earmarkProblems({ a: 100, b: 500, c: 300, d: 10 }, { a: 100, b: 400, c: 100 });
@@ -392,6 +405,9 @@ describe("earmarks", () => {
     expect(earmarkProblems({ a: 100 }, {})).toEqual([]);
   });
   it("the sample's HDFC earmarks are the tyres and the fridge", () => {
-    expect(earmarksByAccount(sample().contributions).hdfc).toBe(28000 + 45000);
+    expect(earmarksByAccount(sample()).hdfc).toBe(28000 + 45000);
+  });
+  it("the sample's ICICI earmarks leave out the bought headphones", () => {
+    expect(earmarksByAccount(sample()).icici).toBe(36000 + 130000);
   });
 });

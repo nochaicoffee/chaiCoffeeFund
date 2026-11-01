@@ -274,10 +274,15 @@ export function minimumBudget(units: FundingUnit[], today: string, step = BUDGET
 
 // --- Earmarks ---
 
-/** What's set aside against each account (set-asides less take-backs). Contributions with no account aren't in it. */
-export function earmarksByAccount(contributions: GoalContribution[]): Record<string, number> {
+/**
+ * What's set aside against each account (set-asides less take-backs). Contributions with no account aren't in it, and a
+ * goal that's been bought or dropped holds nothing: its money is released, so it stops being earmarked without a take-back
+ * being recorded (which keeps Reopen and Restore a status change and nothing else).
+ */
+export function earmarksByAccount(data: GoalsData): Record<string, number> {
+  const held = new Set(data.goals.filter((goal) => goal.status === "Active" || goal.status === "Paused").map((goal) => goal.id));
   const earmarks: Record<string, number> = {};
-  for (const c of contributions) if (c.accountId) earmarks[c.accountId] = (earmarks[c.accountId] ?? 0) + (c.kind === "Set-aside" ? c.amount : -c.amount);
+  for (const c of data.contributions) if (c.accountId && held.has(c.goalId)) earmarks[c.accountId] = (earmarks[c.accountId] ?? 0) + (c.kind === "Set-aside" ? c.amount : -c.amount);
   return earmarks;
 }
 
