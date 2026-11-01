@@ -512,6 +512,73 @@ export interface PolicyPayment {
   ncb?: number;
 }
 
+// --- Goals ---
+// A goal is an earmark, not money: the money already sits in an account the app counts, so a goal never changes
+// net worth. What's saved is derived from GoalContributions, never typed as a total (docs/design/goals.md).
+
+/** The fixed category list. Each has a colour and an icon on the page, so there's no icon column. */
+export const GOAL_CATEGORIES = ["Vehicle", "Home", "Appliance", "Gadget", "Travel", "Education", "Family", "Health", "Other"] as const;
+export type GoalCategory = (typeof GOAL_CATEGORIES)[number];
+/** Need: something breaks or a duty is missed without it. Want: everything else. It decides who gets money first. */
+export const GOAL_NECESSITIES = ["Need", "Want"] as const;
+export type GoalNecessity = (typeof GOAL_NECESSITIES)[number];
+/** The time horizon, picked per goal (Prathik, 2026-10-29): Major is a long-term financial commitment, Minor a short-term thing. Not derived from the amount or the dates. */
+export const GOAL_SCALES = ["Minor", "Major"] as const;
+export type GoalScale = (typeof GOAL_SCALES)[number];
+/** A Fixed date can't slip (a wedding, the old fridge is dead) and is served first; a Flexible one slides if money is short. */
+export const GOAL_DATE_TYPES = ["Fixed", "Flexible"] as const;
+export type GoalDateType = (typeof GOAL_DATE_TYPES)[number];
+/** Funded, overdue, on track and behind are worked out, never stored (the FD `Matured` lesson). */
+export const GOAL_STATUSES = ["Active", "Paused", "Done", "Dropped"] as const;
+export type GoalStatus = (typeof GOAL_STATUSES)[number];
+/** A Take-back releases money from a goal: when it's dropped, or the plan changes. */
+export const GOAL_CONTRIBUTION_KINDS = ["Set-aside", "Take-back"] as const;
+export type GoalContributionKind = (typeof GOAL_CONTRIBUTION_KINDS)[number];
+export const GOAL_COLORS = COLORS;
+export type GoalColor = Color;
+
+export interface Goal {
+  id: string;
+  name: string;
+  /** A top-level goal's id. A goal with a parent can't have children: one level only. */
+  parentId?: string;
+  category: GoalCategory;
+  necessity: GoalNecessity;
+  scale: GoalScale;
+  /** This goal's own part. A leaf must be above 0; a parent's can be 0 (its sub-goals hold the rest). */
+  amount: number;
+  /** Blank is "someday". */
+  targetDate?: string;
+  /** A row without one reads as Flexible. */
+  dateType?: GoalDateType;
+  /** When saving began: the expected-pace line counts from it. */
+  startDate: string;
+  /** What you intend to put aside each month. */
+  plannedMonthly?: number;
+  status: GoalStatus;
+  /** Set when Done: the day it was bought, what it cost, and where it was paid from (an account or a card, at most one). */
+  doneOn?: string;
+  actualCost?: number;
+  paidFromAccountId?: string;
+  paidFromCardId?: string;
+  /** A row without one shows its category's colour. */
+  color?: GoalColor;
+  link?: string;
+  notes?: string;
+}
+
+export interface GoalContribution {
+  id: string;
+  goalId: string;
+  date: string;
+  /** Above 0. */
+  amount: number;
+  kind: GoalContributionKind;
+  /** Where the money actually sits, for the earmark check. */
+  accountId?: string;
+  note?: string;
+}
+
 // --- Investments ---
 // Positions/holdings are never stored as raw rows — they're computed in
 // lib/aggregate/investments.ts from this transaction log.
