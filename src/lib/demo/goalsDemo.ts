@@ -5,16 +5,17 @@ import type { Goal, GoalContribution } from "../sheets/types";
 
 /**
  * Sample goals from the final design (design/goals/, GoalsFinal), for previewing the Goals page in development with `/goals?demo`
- * before any real goals are entered: a car upgrade with four live sub-goals and one dropped, an iPad Pro with a sub-goal, a
+ * before any real goals are entered: a car upgrade with four live parts and one dropped, an iPad Pro with a part, a
  * Fixed-date fridge, a trip, a long-term course, a paused camera and a finished pair of headphones. Every goal, amount and date is
  * made up. The sample is dated as of 2026-10-29 and every date is moved by however many days `today` is from that, so the page reads
  * the same on any day. Never used in production (isDemoAllowed in cardsDemo.ts), and never written to the Sheet.
  *
  * `?demo=empty` has no goals, `?demo=one` only the fridge, `?demo=funded` every goal funded, `?demo=overdue` the fridge's Fixed date
  * 9 days gone, `?demo=over` the fridge with ₹3,100 more set aside than it needs, and `?demo=earmark` an account holding less than
- * goals have earmarked in it.
+ * goals have earmarked in it. `?demo=pot` is the car with ₹2,00,000 set aside on it and given to its parts by hand: tyres, suspension, alloy
+ * wheels and the music system covered, ₹5,000 left over for the rest of the car (Prathik's own example).
  */
-export const DEMO_VARIANTS = ["", "empty", "one", "funded", "overdue", "over", "earmark"] as const;
+export const DEMO_VARIANTS = ["", "empty", "one", "funded", "overdue", "over", "earmark", "pot"] as const;
 export type DemoVariant = (typeof DEMO_VARIANTS)[number];
 
 const SAMPLE_TODAY = "2026-10-29";
@@ -45,6 +46,12 @@ const monthly = (goalId: string, from: string, count: number, each: number, extr
     const d = new Date(Date.UTC(Number(from.slice(0, 4)), Number(from.slice(5, 7)) - 1 + i, 5));
     return entry(goalId, d.toISOString().slice(0, 10), each, extra);
   });
+
+/** The car's pot gives a part its share: the same two entries the Edit form writes. */
+const give = (partId: string, amount: number): GoalContribution[] => [
+  entry("car", "2026-10-20", amount, { kind: "Take-back", note: `Given to ${GOALS.find((x) => x.id === partId)?.name}` }),
+  entry(partId, "2026-10-20", amount, { note: "From the pot of Car upgrade" }),
+];
 
 const contributions = (): GoalContribution[] => [
   ...monthly("car", "2026-03", 7, 3000),
@@ -81,6 +88,10 @@ export function demoGoalsData(today: string, variant: DemoVariant | string = "")
     goals = goals.map((goal) => (goal.id === "fridge" ? { ...goal, targetDate: addDays(today, -9) } : goal));
   } else if (variant === "over") {
     entries.push(entry("fridge", today, 62000 - 45000 + 3100));
+  } else if (variant === "pot") {
+    const car = new Set(["car", "susp", "tyres", "alloy", "music", "dash"]);
+    const pot = [...monthly("car", "2026-03", 8, 25000), ...give("tyres", 38000), ...give("susp", 45000), ...give("alloy", 52000), ...give("music", 60000)];
+    entries = [...entries.filter((c) => !car.has(c.goalId)), ...pot.map((c) => ({ ...c, date: shift(c.date) as string }))];
   }
   return {
     goals,

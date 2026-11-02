@@ -1,8 +1,9 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { ALL } from "@/app/goals/views";
 import type { AffordView, ComingUpRow, EntryCard, FinishedRow, MonthView, NeedsWantsView, StairView, TableRow } from "@/app/goals/widgetsView";
+import { formatShortDate } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import { WidgetCard } from "../shell/WidgetCard";
 import { ActionButton, useGoalsForms } from "./forms/GoalsForms";
@@ -10,11 +11,20 @@ import { FixedPill, GoalTile, NeedBadge, ProgressBar, ScaleBadge, StandingPill }
 
 const dim = (pick: string, topId: string) => (pick !== ALL && pick !== topId ? "opacity-40" : "");
 
-/** Goals (the table): every goal with its sub-goals inside, the line on a bar is where saving should be by now. */
+/**
+ * Goals (the table): main goals only. A goal with parts shows a count; tap it and the parts open under the goal, each with what the pot covers of it
+ * (docs/design/goals.md, "Round 5", L1). The line on a bar is where saving should be by now.
+ */
 export function GoalsTableCard({ rows, pick, onPick }: { rows: TableRow[]; pick: string; onPick: (id: string) => void }) {
   const cols = "grid-cols-[minmax(0,2.5fr)_0.8fr_0.8fr_minmax(0,1.9fr)_1fr_1.1fr_1.2fr_1fr]";
+  const [openIds, setOpenIds] = useState<ReadonlySet<string>>(new Set());
+  const toggle = (id: string) => setOpenIds((now) => {
+    const next = new Set(now);
+    if (!next.delete(id)) next.add(id);
+    return next;
+  });
   return (
-    <WidgetCard label="Goals" title="Goals" note="sub-goals sit inside their goal · the line on a bar is where saving should be by now" gap="gap-2">
+    <WidgetCard label="Goals" title="Goals" note="main goals only · a goal's parts are inside it · the line on a bar is where saving should be by now" gap="gap-2">
       <div className="overflow-x-auto">
         <div className="min-w-[980px]">
           <div className={`grid ${cols} gap-3 pb-2 text-[11px] font-extrabold tracking-[0.04em] text-muted uppercase`}>
@@ -27,47 +37,90 @@ export function GoalsTableCard({ rows, pick, onPick }: { rows: TableRow[]; pick:
             <span>Per month</span>
             <span>Standing</span>
           </div>
-          {rows.map((r) => (
-            <div key={r.id} className={`grid ${cols} items-center gap-3 border-t border-divider py-2.5 ${r.off ? "opacity-60" : ""} ${dim(pick, r.topId)}`}>
-              <button type="button" onClick={() => onPick(r.topId)} className={`flex min-w-0 items-center gap-3 text-left focus-visible:outline-2 focus-visible:outline-accent ${r.sub ? "pl-6" : ""}`}>
-                <GoalTile category={r.category} colorKey={r.colorKey} size={r.sub ? 28 : 34} off={r.off} />
-                <span className="min-w-0">
-                  <b className={`block truncate text-[13px] font-extrabold ${r.standing === "Dropped" ? "line-through" : ""}`}>{r.name}</b>
-                  <small className="block truncate text-[11px] font-semibold text-muted">{r.note}</small>
-                </span>
-              </button>
-              <span>
-                <NeedBadge need={r.need} />
-              </span>
-              <span>
-                <ScaleBadge scale={r.scale} />
-              </span>
-              <span className="min-w-0">
-                {r.settled ? <span className="text-[11.5px] font-semibold text-muted">{r.settled}</span> : <ProgressBar progress={r.progress} expected={r.expected} colorKey={r.colorKey} />}
-                {!r.settled && <small className="mt-1 block text-[11px] font-semibold text-muted">{r.savedText}</small>}
-                {r.settled && r.standing === "Done" && <small className="block text-[11px] font-semibold text-muted">{r.savedText}</small>}
-              </span>
-              <b className="text-right text-[13px] font-extrabold tabular-nums">{r.target}</b>
-              <span>
-                <b className="block text-[13px] font-extrabold">{r.due}</b>
-                <small className="block text-[11px] font-semibold text-muted">
-                  {r.fixed && (
-                    <>
-                      <FixedPill />{" "}
-                    </>
-                  )}
-                  {r.dueNote}
-                </small>
-              </span>
-              <span>
-                <b className="block text-[13px] font-extrabold tabular-nums">{r.perMonth}</b>
-                <small className="block text-[11px] font-semibold text-muted">{r.perMonthNote}</small>
-              </span>
-              <span>
-                <StandingPill standing={r.standing} />
-              </span>
-            </div>
-          ))}
+          {rows.map((r) => {
+            const expanded = openIds.has(r.id);
+            return (
+              <div key={r.id} className={`border-t border-divider ${r.off ? "opacity-60" : ""} ${dim(pick, r.topId)}`}>
+                <div className={`grid ${cols} items-center gap-3 py-2.5`}>
+                  <span className="flex min-w-0 items-center gap-3">
+                    <button type="button" onClick={() => onPick(r.topId)} aria-label={`Open ${r.name}`} className="shrink-0 focus-visible:outline-2 focus-visible:outline-accent">
+                      <GoalTile category={r.category} colorKey={r.colorKey} size={34} off={r.off} />
+                    </button>
+                    <span className="min-w-0">
+                      <button type="button" onClick={() => onPick(r.topId)} className={`block max-w-full truncate text-left text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-accent ${r.standing === "Dropped" ? "line-through" : ""}`}>
+                        {r.name}
+                      </button>
+                      <small className="flex items-center gap-1.5 truncate text-[11px] font-semibold text-muted">
+                        {r.note}
+                        {r.parts.length > 0 && (
+                          <button type="button" onClick={() => toggle(r.id)} aria-expanded={expanded} aria-controls={`parts-${r.id}`} className="inline-flex min-h-5 items-center gap-1 rounded-full bg-ink px-2 text-[10.5px] font-extrabold text-on-ink focus-visible:outline-2 focus-visible:outline-accent">
+                            {r.parts.length} {r.parts.length === 1 ? "part" : "parts"}
+                            <span aria-hidden="true" className={expanded ? "rotate-180" : ""}>⌄</span>
+                          </button>
+                        )}
+                      </small>
+                    </span>
+                  </span>
+                  <span>
+                    <NeedBadge need={r.need} />
+                  </span>
+                  <span>
+                    <ScaleBadge scale={r.scale} />
+                  </span>
+                  <span className="min-w-0">
+                    {r.settled ? <span className="text-[11.5px] font-semibold text-muted">{r.settled}</span> : <ProgressBar progress={r.progress} expected={r.expected} colorKey={r.colorKey} />}
+                    {!r.settled && <small className="mt-1 block text-[11px] font-semibold text-muted">{r.savedText}</small>}
+                    {r.settled && r.standing === "Done" && <small className="block text-[11px] font-semibold text-muted">{r.savedText}</small>}
+                  </span>
+                  <b className="text-right text-[13px] font-extrabold tabular-nums">{r.target}</b>
+                  <span>
+                    <b className="block text-[13px] font-extrabold">{r.due}</b>
+                    <small className="block text-[11px] font-semibold text-muted">
+                      {r.fixed && (
+                        <>
+                          <FixedPill />{" "}
+                        </>
+                      )}
+                      {r.dueNote}
+                    </small>
+                  </span>
+                  <span>
+                    <b className="block text-[13px] font-extrabold tabular-nums">{r.perMonth}</b>
+                    <small className="block text-[11px] font-semibold text-muted">{r.perMonthNote}</small>
+                  </span>
+                  <span>
+                    <StandingPill standing={r.standing} />
+                  </span>
+                </div>
+                {expanded && (
+                  <div id={`parts-${r.id}`} className="mb-2 flex flex-col gap-1 rounded-[14px] bg-fill px-3 py-1.5">
+                    {r.parts.map((part) => (
+                      <div key={part.key} className={`grid ${cols} items-center gap-3 py-2`}>
+                        <span className="flex min-w-0 items-center gap-2.5 pl-4">
+                          <span aria-hidden="true" className="flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full text-[10px] font-extrabold text-white" style={{ background: `var(--card-${part.colorKey})` }}>
+                            {part.n}
+                          </span>
+                          <b className="truncate text-[12.5px] font-extrabold">{part.name}</b>
+                        </span>
+                        <span>
+                          <NeedBadge need={part.need} />
+                        </span>
+                        <span />
+                        <span className="min-w-0">
+                          <ProgressBar progress={part.progress} expected={null} colorKey={part.colorKey} height={7} />
+                          <small className="mt-1 block text-[11px] font-semibold text-muted">{part.covered ? "covered" : part.text}</small>
+                        </span>
+                        <b className="text-right text-[12.5px] font-extrabold tabular-nums">{formatInr(part.amount)}</b>
+                        <span className="text-[12.5px] font-bold">{part.due ? formatShortDate(part.due) : "Someday"}</span>
+                        <span />
+                        <span />
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </WidgetCard>

@@ -41,14 +41,31 @@ describe("the picks and the sky", () => {
     expect(ids[0]).toBe(ALL);
     expect(ids).toEqual([ALL, "fridge", "car", "ipad", "goa", "masters", "camera"]);
   });
-  it("draws a planet per piece, each with its own ring and angle and its name, and the sun reads what's saved", () => {
+  it("draws a planet per main goal, each with its own ring and angle and its name, and the sun reads what's saved", () => {
     const sky = skyView(data, TODAY);
-    expect(sky.planets).toHaveLength(11);
-    expect(new Set(sky.planets.map((p) => p.key)).size).toBe(11);
+    expect(sky.planets.map((p) => p.key).sort()).toEqual(["camera", "car", "fridge", "goa", "ipad", "masters"]);
     expect(sky.sun).toMatchObject({ saved: "₹3.1L", of: "of ₹11.7L · 27%", empty: false, done: false });
     expect(sky.hasSomeday).toBe(true);
     expect(sky.hasOverdue).toBe(false);
-    expect(sky.planets.find((p) => p.key === "car#own")?.label).toBe("Car upgrade · the rest");
+  });
+  it("the car is one planet on the ring of its last date, with its five parts as moons and the rest of the car last", () => {
+    const car = skyView(data, TODAY).planets.find((p) => p.key === "car");
+    expect(car).toMatchObject({ topId: "car", label: "Car upgrade", ring: 20 });
+    expect(car?.moons.map((m) => [m.n, m.name])).toEqual([[1, "New tyres"], [2, "Suspension"], [3, "Alloy wheels"], [4, "Music system"], [5, "Car upgrade · the rest"]]);
+    expect(car?.moons.at(-1)?.goalId).toBeNull();
+    expect(skyView(data, TODAY).planets.find((p) => p.key === "fridge")?.moons).toEqual([]);
+  });
+  it("with ₹2,00,000 in the car's pot, the parts it was given are covered and the rest of the car holds what's left", () => {
+    const pot = sample("pot");
+    const car = skyView(pot, TODAY).planets.find((p) => p.key === "car");
+    expect(car?.moons.map((m) => m.text)).toEqual(["covered", "covered", "covered", "covered", "₹5.0k of ₹1.5L"]);
+    expect(car?.tip.total).toBe("₹2,00,000 of ₹3,45,000");
+    expect(car?.tip.rows[0]).toEqual({ name: "Parts", amount: "4 of 5 covered" });
+    const side = goalSides(pot, TODAY).car;
+    expect(side.pot).toMatchObject({ free: "₹5,000" });
+    expect(side.parts.map((p) => p.goalId)).toEqual(["tyres", "susp", "alloy", "music", null]);
+    // Giving money to a part only moved it: the lately list shows the eight set-asides and none of the moves.
+    expect(side.entries.every((e) => !e.note.startsWith("Given to") && !e.note.startsWith("From the pot"))).toBe(true);
   });
   it("a late goal sits on the overdue ring and draws red; an over-funded one shows the extra", () => {
     const late = skyView(sample("overdue"), TODAY);
@@ -78,11 +95,11 @@ describe("the side of the sky", () => {
     expect(side.closest?.name).toBe("New fridge");
     expect(side.furthest?.name).toBe("Masters course");
   });
-  it("each picked goal's side: the car's five pieces, the fridge's set-asides, and the paused camera", () => {
+  it("each picked goal's side: the car's five parts, the fridge's set-asides, and the paused camera", () => {
     const sides = goalSides(data, TODAY);
     expect(Object.keys(sides)).toEqual(["fridge", "car", "ipad", "goa", "masters", "camera"]);
     expect(sides.car).toMatchObject({ hasKids: true, big: "₹2,68,500", standing: "Behind" });
-    expect(sides.car.pieces).toHaveLength(5);
+    expect(sides.car.parts).toHaveLength(5);
     expect(sides.fridge).toMatchObject({ hasKids: false, fixed: true, need: true, big: "₹17,000" });
     expect(sides.fridge.entries.map((e) => e.amount)).toEqual(["+₹15,000", "+₹15,000", "+₹15,000"]);
     expect(sides.camera).toMatchObject({ status: "Paused", bigNote: "set aside · paused", facts: [] });

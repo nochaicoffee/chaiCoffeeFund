@@ -2,15 +2,22 @@ import type { SentencePart } from "@/app/cards/summarySentence";
 import type { GreetingRowData } from "@/components/shell/GreetingParts";
 import {
   dueOf,
+  effectiveDue,
   excessOf,
   expectedProgress,
+  freePot,
   isFunded,
+  isPotMove,
   leftOf,
+  liveKids,
   monthsLeft,
+  ownCovered,
+  partsInOrder,
   plannedOf,
   progressOf,
   requiredMonthly,
   savedOf,
+  savedOwn,
   standing,
   targetOf,
   topGoals,
@@ -19,7 +26,7 @@ import {
   type GoalsData,
   type GoalsTotals,
 } from "@/lib/aggregate/goals";
-import { MAX_RING_MONTHS, OVERDUE_RING, SOMEDAY_RING, placePlanets, planetRadius, skyPieces, type SkyPiece } from "@/lib/aggregate/goalsOrbit";
+import { MAX_RING_MONTHS, OVERDUE_RING, SOMEDAY_RING, placePlanets, planetRadius, ringOf, skyPieces, type SkyPiece } from "@/lib/aggregate/goalsOrbit";
 import { formatDate, formatShortDate } from "@/lib/format/date";
 import { inDays } from "@/lib/goals/attention";
 import { goalColorKey } from "@/lib/format/goalLabels";
@@ -110,7 +117,7 @@ function allCards(data: GoalsPageData, today: string, d: GoalsDerived): GoalsGre
   const byGoal = (amount: (g: Goal) => number, note?: (g: Goal) => string | undefined): GreetingRowData[] => active.map((g) => ({ key: g.id, name: g.name, colorKey: colorOf(g), amount: formatInr(amount(g)), note: note?.(g) }));
   const cards: GoalsGreetingCards = {
     saved: { title: "Set aside so far", total: formatInr(t.saved), rows: byGoal((g) => savedOf(data, g), (g) => pct(progressOf(data, g))), note: `${pct(t.target ? t.saved / t.target : 0)} of ${formatInr(t.target)}. Not new money: it's already in your accounts` },
-    target: { title: "All goals add up to", total: formatInr(t.target), rows: byGoal((g) => targetOf(data, g)), note: "A goal's total is its own part plus its sub-goals. Dropped and bought sub-goals aren't counted" },
+    target: { title: "All goals add up to", total: formatInr(t.target), rows: byGoal((g) => targetOf(data, g)), note: "A goal's total is its own part plus its parts. Dropped and bought parts aren't counted" },
   };
   if (t.requiredTotal > 0) cards.required = { title: "Each on its own schedule", total: `${formatInr(t.requiredTotal)} a month`, rows: byGoal((g) => requiredMonthly(data, g, today)), note: "What's left to save over the whole months left, for every goal at once. It falls as goals finish" };
   if (t.minimumMonthly) cards.minimum = { title: "Funded in order", total: `${formatInr(t.minimumMonthly)} a month`, rows: [], note: "Enough to hit every date if money goes to Fixed dates first, then Needs, then the soonest, then the smaller. Rounded up to ₹500" };
@@ -170,6 +177,36 @@ export interface PlanetView {
   /** Under the name: "₹17k to go · Dec 20". */
   note: string;
   tip: { head: string; need: boolean; total: string; detail: string; rows: { name: string; amount: string }[] };
+  /** Its parts, which go round it like moons when it's picked (empty for a goal with none). */
+  moons: PartLine[];
+}
+
+/** A part of a goal as the moons, the side panel and the table list it: what it costs, what the pot has put in it and where it stands. The goal's own part (what isn't itemised) has no `goalId`. */
+export interface PartLine {
+  /** 1, 2, 3 ...: the number on its moon, in the order money fills them (the goal's own part last). */
+  n: number;
+  key: string;
+  /** The part's goal id, or null for the goal's own part. */
+  goalId: string | null;
+  name: string;
+  colorKey: ColorKey;
+  category: GoalCategory;
+  need: boolean;
+  /** "Need · due Jan 10": the second line. */
+  note: string;
+  due: string | null;
+  amount: number;
+  saved: number;
+  /** Covered, from 0 to 1. */
+  share: number;
+  covered: boolean;
+  /** "covered", "₹5k of ₹1.5L" or "not reached yet". */
+  text: string;
+  progress: number;
+  expected: number | null;
+  savedText: string;
+  left: string;
+  standing: "On track" | "Behind" | "No plan" | "Funded" | "Paused";
 }
 
 export interface SkyView {
@@ -184,60 +221,111 @@ export interface SkyView {
 /** A piece's name as it's printed: the part of a goal that isn't itemised reads 'Car upgrade · the rest'. */
 export const pieceLabel = (name: string) => name.replace(/: the rest$/, " · the rest");
 
-/** A piece draws in its own colour if it was given one, otherwise in its goal's: a sub-goal follows its parent. */
+/** A piece draws in its own colour if it was given one, otherwise in its goal's: a part follows its goal. */
 export const pieceColor = (data: GoalsPageData, piece: SkyPiece): ColorKey => {
   const own = goalOf(data, piece.goalId);
   return colorOf(own?.color ? own : goalOf(data, piece.topId)!);
 };
 
+/** A goal's parts in the order money fills them (its own part, what isn't itemised, last), with what the pot covers of each. Empty for a goal with no parts. */
+export function partLines(data: GoalsPageData, goal: Goal, today: string, d: GoalsDerived): PartLine[] {
+  if (liveKids(data, goal.id).length === 0) return [];
+  const pieces = new Map(d.pieces.filter((p) => p.topId === goal.id).map((p) => [p.key, p]));
+  const make = (n: number, g: Goal, own: boolean): PartLine => {
+    const piece = pieces.get(own ? `${g.id}#own` : g.id);
+    const saved = own ? ownCovered(data, g) : savedOwn(data, g.id);
+    const amount = g.amount;
+    const share = amount > 0 ? Math.min(1, saved / amount) : 0;
+    const due = piece?.due ?? effectiveDue(data, g);
+    const paused = piece?.paused ?? false;
+    const name = own ? `${goal.name} · the rest` : g.name;
+    return {
+      n,
+      key: own ? `${g.id}#own` : g.id,
+      goalId: own ? null : g.id,
+      name,
+      colorKey: pieceColor(data, { goalId: g.id, topId: goal.id } as SkyPiece),
+      category: g.category,
+      need: g.necessity === "Need",
+      note: `${g.necessity}${due ? ` · due ${formatShortDate(due)}` : " · someday"}${g.dateType === "Fixed" ? " · Fixed" : ""}`,
+      due,
+      amount,
+      saved,
+      share,
+      covered: amount > 0 && saved >= amount,
+      text: share >= 1 ? "covered" : saved > 0 ? `${formatInrCompact(saved)} of ${formatInrCompact(amount)}` : "not reached yet",
+      progress: share,
+      expected: expectedProgress(data, g, today),
+      savedText: `${formatInrCompact(saved)} of ${formatInrCompact(amount)}`,
+      left: formatInr(Math.max(0, amount - saved)),
+      standing: paused ? "Paused" : saved >= amount ? "Funded" : !(piece?.planned ?? 0) ? "No plan" : (piece?.planned ?? 0) >= (piece?.required ?? 0) ? "On track" : "Behind",
+    };
+  };
+  const kids = partsInOrder(data, goal);
+  return [...kids.map((kid, index) => make(index + 1, kid, false)), ...(goal.amount > 0 ? [make(kids.length + 1, goal, true)] : [])];
+}
+
+/** The sky: one planet per main goal, on the ring of its last date. Its parts go round it as moons when it's picked. */
 export function skyView(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): SkyView {
   const pieces = d.pieces;
   const open = topGoals(data).filter((goal) => goal.status === "Active" || goal.status === "Paused");
   const active = open.filter((goal) => goal.status === "Active");
   const saved = sum(active.map((goal) => savedOf(data, goal)));
   const target = sum(active.map((goal) => targetOf(data, goal)));
-  const angles = placePlanets(pieces.map((piece) => ({ ring: piece.ring, radius: planetRadius(piece.amount) })));
-  const planets = pieces.map((piece, index): PlanetView => {
-    const goal = goalOf(data, piece.goalId)!;
-    const progress = piece.amount > 0 ? Math.min(1, piece.saved / piece.amount) : 0;
-    const over = piece.saved - piece.amount;
-    const late = piece.ring === OVERDUE_RING && piece.left > 0;
+  const goals = pickIds(data, today, d).filter((id) => id !== ALL).map((id) => goalOf(data, id) as Goal);
+  const radii = goals.map((goal) => planetRadius(targetOf(data, goal)));
+  const rings = goals.map((goal) => ringOf(dueOf(data, goal), goal.status === "Paused", today));
+  const angles = placePlanets(goals.map((_, index) => ({ ring: rings[index], radius: radii[index] })));
+  const planets = goals.map((goal, index): PlanetView => {
+    const mine = pieces.filter((p) => p.topId === goal.id);
+    const total = targetOf(data, goal);
+    const held = savedOf(data, goal);
+    const left = leftOf(data, goal);
+    const due = dueOf(data, goal);
+    const paused = goal.status === "Paused";
+    const ring = rings[index];
+    const progress = total > 0 ? Math.min(1, held / total) : 0;
+    const over = held - total;
+    const late = ring === OVERDUE_RING && left > 0;
+    const moons = partLines(data, goal, today, d);
     return {
-      key: piece.key,
-      topId: piece.topId,
-      name: piece.name,
-      label: pieceLabel(piece.name),
-      colorKey: pieceColor(data, piece),
+      key: goal.id,
+      topId: goal.id,
+      name: goal.name,
+      label: goal.name,
+      colorKey: colorOf(goal),
       category: goal.category,
-      radius: planetRadius(piece.amount),
+      radius: radii[index],
       progress,
       over: over > 0 ? `+${formatInrCompact(over)}` : null,
-      fixed: piece.dateType === "Fixed" && !piece.paused,
+      fixed: mine.some((p) => p.dateType === "Fixed") && !paused,
       late,
-      paused: piece.paused,
-      ring: piece.ring,
+      paused,
+      ring,
       angle: angles[index].angle,
       nameAbove: angles[index].nameAbove,
-      note: piece.paused ? `paused · ${formatInrCompact(piece.left)} to go` : piece.left === 0 ? "funded" : `${formatInrCompact(piece.left)} to go${piece.due ? ` · ${formatShortDate(piece.due)}` : ""}`,
+      note: paused ? `paused · ${formatInrCompact(left)} to go` : left === 0 ? "funded" : `${formatInrCompact(left)} to go${due ? ` · ${formatShortDate(due)}` : ""}`,
       tip: {
-        head: piece.name,
-        need: piece.necessity === "Need",
-        total: `${formatInr(piece.saved)} of ${formatInr(piece.amount)}`,
-        detail: piece.due ? `due ${formatDate(piece.due)}` : "no date",
+        head: goal.name,
+        need: goal.necessity === "Need",
+        total: `${formatInr(held)} of ${formatInr(total)}`,
+        detail: due ? `due ${formatDate(due)}` : "no date",
         rows: [
-          { name: "Planned a month", amount: piece.planned ? formatInr(piece.planned) : "none" },
-          { name: "Needed a month", amount: piece.required ? formatInr(piece.required) : "–" },
-          { name: "Left to set aside", amount: formatInr(piece.left) },
+          ...(moons.length ? [{ name: "Parts", amount: `${moons.filter((m) => m.covered).length} of ${moons.length} covered` }] : []),
+          { name: "Planned a month", amount: plannedOf(data, goal) && !paused ? formatInr(plannedOf(data, goal)) : "none" },
+          { name: "Needed a month", amount: !paused && requiredMonthly(data, goal, today) ? formatInr(requiredMonthly(data, goal, today)) : "–" },
+          { name: "Left to set aside", amount: formatInr(left) },
         ],
       },
+      moons,
     };
   });
   return {
     planets,
     sun: { saved: formatInrCompact(saved), of: target > 0 ? `of ${formatInrCompact(target)} · ${pct(saved / target)}` : "no goals yet", empty: open.length === 0, done: active.length > 0 && active.every((goal) => isFunded(data, goal)) },
     rings: [1, 3, 6, 12, 24, MAX_RING_MONTHS],
-    hasOverdue: pieces.some((p) => p.ring === OVERDUE_RING),
-    hasSomeday: pieces.some((p) => p.ring === SOMEDAY_RING),
+    hasOverdue: rings.includes(OVERDUE_RING),
+    hasSomeday: rings.includes(SOMEDAY_RING),
   };
 }
 
@@ -263,19 +351,6 @@ export interface StatCardView {
   expected: number | null;
   savedText: string;
   planText: string;
-}
-
-export interface PieceRow {
-  key: string;
-  name: string;
-  colorKey: ColorKey;
-  category: GoalCategory;
-  note: string;
-  progress: number;
-  expected: number | null;
-  savedText: string;
-  left: string;
-  standing: "On track" | "Behind" | "No plan" | "Funded" | "Paused";
 }
 
 export interface EntryRow {
@@ -304,7 +379,9 @@ export interface GoalSideView {
   savedText: string;
   pctText: string;
   facts: { name: string; value: string }[];
-  pieces: PieceRow[];
+  /** Its parts (empty for a goal with none), and what's in its pot that no part has been given. */
+  parts: PartLine[];
+  pot: { free: string; note: string } | null;
   entries: EntryRow[];
   hasKids: boolean;
 }
@@ -354,15 +431,15 @@ export function goalSideView(data: GoalsPageData, goal: Goal, today: string, d: 
   const left = leftOf(data, goal);
   const stand = standing(data, goal, today);
   const facts = paused ? [] : [{ name: "You plan a month", value: planned ? formatInr(planned) : "nothing" }, { name: "It needs a month", value: needs ? formatInr(needs) : "–" }, ...(planned && needs && planned < needs ? [{ name: "Short of what it needs", value: `${formatInr(needs - planned)} a month` }] : [])];
-  const pieces = d.pieces.filter((p) => p.topId === goal.id);
-  const kids = data.goals.filter((g) => g.parentId === goal.id && g.status !== "Dropped");
-  const showPieces = kids.length > 0;
-  const entryIds = new Set([goal.id, ...kids.map((k) => k.id)]);
+  const parts = partLines(data, goal, today, d);
+  const entryIds = new Set([goal.id]);
+  // What moved between the pot and a part only changed hands, so it isn't listed as money set aside or taken back.
   const entries = data.contributions
-    .filter((c) => entryIds.has(c.goalId))
+    .filter((c) => entryIds.has(c.goalId) && !isPotMove(c))
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
     .slice(0, 4)
     .map((c): EntryRow => ({ id: c.id, kind: c.kind, amount: `${c.kind === "Take-back" ? "−" : "+"}${formatInr(c.amount)}`, date: formatShortDate(c.date), note: c.accountId ? `from ${data.accounts.find((a) => a.id === c.accountId)?.name ?? "an account"}${c.note ? ` · ${c.note}` : ""}` : c.note || "no account named" }));
+  const free = freePot(data, goal);
   return {
     id: goal.id,
     name: goal.name,
@@ -381,14 +458,9 @@ export function goalSideView(data: GoalsPageData, goal: Goal, today: string, d: 
     savedText: `${formatInr(saved)} of ${formatInr(target)}`,
     pctText: pct(progressOf(data, goal)),
     facts: excessOf(data, goal) > 0 ? [{ name: "More than it needs", value: formatInr(excessOf(data, goal)) }, ...facts] : facts,
-    hasKids: showPieces,
-    pieces: showPieces
-      ? pieces.map((p): PieceRow => {
-          const g = goalOf(data, p.goalId)!;
-          const tone: PieceRow["standing"] = p.paused ? "Paused" : p.left === 0 ? "Funded" : !p.planned ? "No plan" : p.planned >= p.required ? "On track" : "Behind";
-          return { key: p.key, name: p.name, colorKey: pieceColor(data, p), category: g.category, note: `${p.necessity}${p.due ? ` · due ${formatShortDate(p.due)}` : " · someday"}${p.dateType === "Fixed" ? " · Fixed" : ""}`, progress: p.amount ? Math.min(1, p.saved / p.amount) : 0, expected: expectedProgress(data, g, today), savedText: `${formatInrCompact(p.saved)} of ${formatInrCompact(p.amount)}`, left: formatInr(p.left), standing: tone };
-        })
-      : [],
+    hasKids: parts.length > 0,
+    parts,
+    pot: parts.length ? { free: formatInr(free), note: free <= 0 ? "Every rupee set aside is given to a part." : free > goal.amount ? "More than its own part needs, so some covers nothing yet." : "Covers its own part, the last one." } : null,
     entries,
   };
 }

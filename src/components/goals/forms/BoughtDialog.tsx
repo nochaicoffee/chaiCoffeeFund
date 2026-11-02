@@ -22,7 +22,7 @@ const Line = ({ label, value, strong = false }: { label: string; value: string; 
 
 /**
  * Mark bought (GoalsForms 4): what it really cost, the day, and where it was paid from (an account or a card, never both). The preview sets the cost
- * against the estimate. A goal with an open sub-goal can't be bought: it asks to finish or drop them first. Its money is released when it's bought.
+ * against the estimate. A goal with an open part can't be bought: it asks to finish or drop them first. Its money is released when it's bought.
  */
 export function BoughtDialog({ forms, goal, onClose, onSaved }: { forms: GoalsFormsData; goal: FormGoal; onClose: () => void; onSaved: (undo: { id: string; message: string } | undefined, message: string) => void }) {
   const [state, formAction, pending] = useActionState(boughtGoalForm, IDLE);
@@ -81,7 +81,7 @@ export function BoughtDialog({ forms, goal, onClose, onSaved }: { forms: GoalsFo
       <input type="hidden" name="goalId" value={goal.id} />
       {(blocked || (state.status === "invalid" && state.errors.form)) && (
         <p role="alert" className="rounded-[12px] bg-negative-tint px-3.5 py-2.5 text-xs font-semibold text-negative">
-          {blocked ? `${goal.name} still has ${goal.openKids} open sub-goal${goal.openKids === 1 ? "" : "s"}. Finish or drop them first.` : state.status === "invalid" ? state.errors.form : ""}
+          {blocked ? `${goal.name} still has ${goal.openKids} open part${goal.openKids === 1 ? "" : "s"}. Finish or drop them first.` : state.status === "invalid" ? state.errors.form : ""}
         </p>
       )}
       <div className="grid gap-x-3.5 gap-y-4 md:grid-cols-2">

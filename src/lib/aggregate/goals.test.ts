@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  fillInOrder,
   type GoalsData,
   earmarkProblems,
   earmarksByAccount,
@@ -411,5 +412,27 @@ describe("review findings", () => {
     expect(plannedTotal(data)).toBe(65000);
     byId(data, "car").status = "Paused";
     expect(plannedTotal(data)).toBe(65000 - 4000 - 5000 - 5000 - 3500);
+  });
+});
+
+describe("filling a goal's parts from its pot", () => {
+  const parts = [
+    { id: "alloy", amount: 52000, saved: 0, necessity: "Want" as const, due: "2027-12-31" },
+    { id: "susp", amount: 45000, saved: 0, necessity: "Need" as const, due: "2027-04-15" },
+    { id: "tyres", amount: 38000, saved: 0, necessity: "Need" as const, due: "2027-01-10" },
+    { id: "music", amount: 60000, saved: 0, necessity: "Want" as const, due: "2028-03-31" },
+  ];
+  it("serves Needs first, then the soonest, however the parts were entered", () => {
+    expect(fillInOrder(parts, 200000)).toEqual({ tyres: 38000, susp: 45000, alloy: 52000, music: 60000 });
+    expect(fillInOrder(parts, 50000)).toEqual({ tyres: 38000, susp: 12000 });
+  });
+  it("gives each part only what it still lacks, and keeps what nothing can take", () => {
+    expect(fillInOrder(parts.map((p) => (p.id === "tyres" ? { ...p, saved: 30000 } : p)), 10000)).toEqual({ tyres: 8000, susp: 2000 });
+    expect(fillInOrder(parts, 1_000_000)).toEqual({ tyres: 38000, susp: 45000, alloy: 52000, music: 60000 });
+    expect(fillInOrder(parts, 0)).toEqual({});
+  });
+  it("a Fixed date comes before a Need", () => {
+    const fixed = parts.map((p) => (p.id === "music" ? { ...p, dateType: "Fixed" as const } : p));
+    expect(fillInOrder(fixed, 70000)).toEqual({ music: 60000, tyres: 10000 });
   });
 });

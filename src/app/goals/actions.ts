@@ -1,15 +1,16 @@
 "use server";
 
 import { updateTag } from "next/cache";
-import { goalEditPatch, readBoughtForm, readEntryForm, readGoalForm } from "@/lib/forms/goalForms";
+import { readBoughtForm, readEntryForm, readGoalForm } from "@/lib/forms/goalForms";
 import type { FormState } from "@/lib/forms/formState";
 import { goalUndoToken, parseGoalUndo } from "@/lib/goals/goalUndo";
-import { addContribution, addGoal, deleteGoal, dropGoal, editGoal, goalEditableFields, markBought, pauseGoal, removeContribution, reopenGoal, restoreDeleted, restoreGoal, resumeGoal, snapshotGoal, undoStatus, type GoalRepos, type StatusChange } from "@/lib/goals/goalWrites";
-import { formatShortDate } from "@/lib/format/date";
+import { addContribution, deleteGoal, dropGoal, editGoal, goalEditableFields, markBought, pauseGoal, removeContribution, reopenGoal, restoreDeleted, restoreGoal, resumeGoal, snapshotGoal, undoStatus, type GoalRepos, type StatusChange } from "@/lib/goals/goalWrites";
+import { formatShortDate, todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import { CACHE_TAGS, getCachedAccounts, getCachedCards } from "@/lib/sheets/cached";
 import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
 import { goalContributionsRepository } from "@/lib/sheets/goalContributions";
+import { setAsideAndGive, saveGoalWithParts } from "@/lib/goals/partWrites";
 import { goalsRepository } from "@/lib/sheets/goals";
 import { InvalidRowError, NotFoundError } from "@/lib/sheets/repository";
 import type { Goal } from "@/lib/sheets/types";
@@ -46,28 +47,31 @@ function refreshed(undo?: { id: string; message: string }): FormState {
 
 const statusUndo = (changes: StatusChange[], message: string) => ({ id: goalUndoToken({ undo: "status", changes }), message });
 
-/** Add goal, Add sub-goal (the form carries a `parentId`), or Edit goal when it carries an id. Editing changes the goal's own fields; its parent stays. */
+/**
+ * Add goal or Edit goal (when the form carries an id), with the parts in its Parts section: one write that adds, changes and removes the parts and moves
+ * each part's share of the pot (lib/goals/partWrites.ts). A part is part of its goal, so there's no separate form for one. Undo covers a change to the
+ * goal's own fields and a plain add; once parts or the pot's shares moved there's nothing to put back in one step.
+ */
 export async function saveGoal(_previous: FormState, formData: FormData): Promise<FormState> {
   const id = formData.get("id");
   const editing = typeof id === "string" && id !== "";
-  let all: Goal[];
-  try {
-    all = await goalsRepository.list();
-  } catch (error) {
-    return failed("saveGoal", error);
-  }
-  const existing = editing ? (all.find((g) => g.id === id) ?? null) : null;
-  if (editing && !existing) return GONE;
-  const hasOpenKids = existing !== null && all.some((g) => g.parentId === existing.id && (g.status === "Active" || g.status === "Paused"));
-  const result = readGoalForm(fields(formData), all.filter((g) => !g.parentId).map((g) => g.id), { allowZeroAmount: hasOpenKids });
-  if (!result.ok) return { status: "invalid", errors: result.errors };
-  try {
-    if (existing) {
-      await editGoal(repos, existing.id, goalEditPatch(result.input));
-      return refreshed({ id: goalUndoToken({ undo: "edit", goalId: existing.id, previous: goalEditableFields(existing) }), message: `${result.input.name} saved` });
+  let existing: Goal | null = null;
+  if (editing) {
+    try {
+      existing = await goalsRepository.get(id);
+    } catch (error) {
+      return failed("saveGoal", error);
     }
-    const added = await addGoal(repos, { ...result.input, status: "Active" });
-    return refreshed({ id: goalUndoToken({ undo: "add", goalId: added.id }), message: `${added.name} added` });
+    if (!existing) return GONE;
+  }
+  const result = readGoalForm(fields(formData), []);
+  if (!result.ok) return { status: "invalid", errors: result.errors };
+  const { parts, ...goal } = result.input;
+  try {
+    const saved = await saveGoalWithParts(repos, existing?.id ?? null, { goal, parts }, todayIso());
+    if (existing)
+      return refreshed(saved.touchedParts ? undefined : { id: goalUndoToken({ undo: "edit", goalId: existing.id, previous: goalEditableFields(existing) }), message: `${goal.name} saved` });
+    return refreshed(parts.length ? undefined : { id: goalUndoToken({ undo: "add", goalId: saved.goal.id }), message: `${saved.goal.name} added` });
   } catch (error) {
     return written("saveGoal", error);
   }
@@ -85,10 +89,11 @@ export async function saveEntry(_previous: FormState, formData: FormData): Promi
   const result = readEntryForm(fields(formData), { goalIds: known.goals.map((g) => g.id), accountIds: known.accountIds });
   if (!result.ok) return { status: "invalid", errors: result.errors };
   try {
-    const entry = await addContribution(repos, result.input);
+    const give = result.input.kind === "Set-aside" && formData.get("give") === "on";
+    const { entry, moved } = give ? await setAsideAndGive(repos, result.input, todayIso()) : { entry: await addContribution(repos, result.input), moved: [] as string[] };
     const goal = known.goals.find((g) => g.id === entry.goalId);
     const verb = entry.kind === "Take-back" ? `${formatInr(entry.amount)} taken back from` : `${formatInr(entry.amount)} set aside for`;
-    return refreshed({ id: goalUndoToken({ undo: "entry", entryId: entry.id }), message: `${verb} ${goal?.name ?? "the goal"}` });
+    return refreshed({ id: goalUndoToken({ undo: "entry", entryId: entry.id, ...(moved.length && { moved }) }), message: `${verb} ${goal?.name ?? "the goal"}` });
   } catch (error) {
     return written("saveEntry", error);
   }
@@ -132,7 +137,7 @@ function statusAction(name: string, run: (goalId: string) => Promise<StatusChang
 
 export const pauseGoalAction = statusAction("pauseGoal", (id) => pauseGoal(repos, id), (g) => `${g.name} paused`);
 export const resumeGoalAction = statusAction("resumeGoal", (id) => resumeGoal(repos, id), (g) => `${g.name} resumed`);
-export const dropGoalAction = statusAction("dropGoal", (id) => dropGoal(repos, id), (g) => `${g.name} dropped: its money is released`);
+export const dropGoalAction = statusAction("dropGoal", (id) => dropGoal(repos, id, todayIso()), (g) => (g.parentId ? `${g.name} dropped: its money is back in the pot` : `${g.name} dropped: its money is released`));
 export const restoreGoalAction = statusAction("restoreGoal", (id) => restoreGoal(repos, id), (g) => `${g.name} restored`);
 export const reopenGoalAction = statusAction("reopenGoal", (id) => reopenGoal(repos, id), (g) => `${g.name} reopened`);
 
@@ -161,7 +166,11 @@ export async function undoAction(token: string): Promise<{ ok: boolean; message:
       if (snapshot && (snapshot.goals.length > 1 || snapshot.contributions.length > 0)) return { ok: false, message: "It has money or sub-goals in it now: delete it from its menu if you mean to." };
       await deleteGoal(repos, change.goalId);
     }
-    else if (change.undo === "entry") await removeContribution(repos, change.entryId);
+    else if (change.undo === "entry") {
+      // What was given to the parts goes first, last given first, so the set-aside underneath can come out.
+      for (const movedId of [...(change.moved ?? [])].reverse()) await removeContribution(repos, movedId);
+      await removeContribution(repos, change.entryId);
+    }
     else if (change.undo === "status") await undoStatus(repos, change.changes);
     else if (change.undo === "edit") await editGoal(repos, change.goalId, change.previous as Partial<Omit<Goal, "id">>);
     else await restoreDeleted(repos, { goals: change.goals as unknown as Goal[], contributions: change.contributions as never });

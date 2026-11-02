@@ -80,7 +80,7 @@ Still to do before building: the Overview attention items beyond the one drawn, 
 
 ## Round 5 (2026-11-03): a part is part of its goal
 
-After using the built page, Prathik found that **a sub-goal isn't really separate from its main goal**. He set aside ₹2,00,000 on the car and a ₹45,000 suspension should have come under that money; the list repeated sub-goals as if they were goals; parts could be added only as a separate "Add sub-goal"; and the sky showed parts as planets of their own. Four boards in [`design/goals/`](../../design/goals/) (built by the same generator, `dash5.mjs`) show the way out. **Nothing here is picked or built yet.**
+After using the built page, Prathik found that **a sub-goal isn't really separate from its main goal**. He set aside ₹2,00,000 on the car and a ₹45,000 suspension should have come under that money; the list repeated sub-goals as if they were goals; parts could be added only as a separate "Add sub-goal"; and the sky showed parts as planets of their own. Four boards in [`design/goals/`](../../design/goals/) (built by the same generator, `dash5.mjs`) showed the way out. **Picked and built 2026-11-03: pot B (one pot you give out by hand), moons on pick (M2), the list with parts opening under the goal (L1), and parts inside the goal's form.**
 
 | Board | The choice |
 |---|---|
@@ -89,11 +89,17 @@ After using the built page, Prathik found that **a sub-goal isn't really separat
 | `GoalsR5List` | The goals table with **main goals only** and a count of parts: **L1** the parts open under the goal, **L2** the count opens a small card, **L3** the set-aside bar is cut into parts. |
 | `GoalsR5Forms` | **Parts live inside the main goal's own form** (Add goal and Edit goal have a Parts section), and "Add sub-goal" goes. Set aside shows what the pot covers. |
 
-If A is picked, the data changes: `GoalContributions` are only ever on a main goal; a part's saved and funded are worked out from the pot, so its own set-asides go and the existing ones (none in the real Sheet) would be folded into the main goal. That is the money rule that needs his yes before it's built, like the others.
+**What was built (B, M2, L1, Parts in the form):**
+
+- **One pot, given out by hand.** Money is set aside on the main goal. A part's share is moved out of that pot, so the goal's total saved never changes when money is given to a part. The move is two ledger entries in the same account (a take-back on the goal, a set-aside on the part, with a note that marks them as a move), so earmarks, Undo and the bought and dropped rules are the ones they were. What's left in the pot covers the goal's **own part** (the rest of the car that isn't itemised), last. A part takes no set-aside of its own: the write refuses one, and says to set the money aside on the goal.
+- **Giving.** The goal's **Edit** form has a *Given from the pot* box per part and a *Fill in order* button (Fixed dates, then Needs, then the soonest, then the smaller). **Set aside** on a goal with parts has a tick, on by default, that gives the new money to the parts in that order; what no part can take stays in the pot. A take-back only comes from what's free in the pot, never from a part's share, so lower the part's share in Edit first.
+- **Parts live in the goal's form** (Add goal and Edit goal have a Parts section; "Add sub-goal" is gone). One save adds, changes and removes parts and moves the shares, and puts everything back if a write fails half way. A part taken off returns its money to the pot first. Dropping a part from the side panel does the same; buying a part spends its share (it leaves the goal's total and the earmarks).
+- **The list shows main goals only,** each with a count of parts (the count includes the goal's own part when it has one). Tap it and the parts open under the goal with what the pot covers of each. **The sky has a planet per main goal,** on the ring of its last date; pick it and its parts go round it as numbered moons (their arcs show what's covered), and the side panel lists the same numbers. Other planets carry a count chip.
+- **Not changed:** the maths of saved, target, required a month, standing, the funding plan and earmarks. `?demo=pot` shows the car with ₹2,00,000 in its pot.
 
 ## What it is
 
-A page for monetary goals you save towards: a car upgrade, an iPad, a fridge. A goal can be split into sub-goals (the car upgrade has suspension, tyres, alloy wheels). Each goal says why it exists (**Need** or **Want**), how long a commitment it is (**Minor**, short-term, or **Major**, long-term), when it's wanted, and how much is set aside so far. The page answers three questions:
+A page for monetary goals you save towards: a car upgrade, an iPad, a fridge. A goal can have parts (the car upgrade has suspension, tyres, alloy wheels), made in the goal's own form. Each goal says why it exists (**Need** or **Want**), how long a commitment it is (**Minor**, short-term, or **Major**, long-term), when it's wanted, and how much is set aside so far. The page answers three questions:
 
 1. **What am I saving for, and how far along is each thing?**
 2. **What does it take each month to hit the dates?**

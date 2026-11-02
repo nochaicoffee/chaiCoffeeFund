@@ -149,6 +149,77 @@ export function necessitySplit(data: GoalsData, goal: Goal): { need: number; wan
   return { need, want: sum(parts.map((part) => part.amount)) - need };
 }
 
+// --- A goal's pot and its parts ---
+
+/**
+ * A goal with parts is one pot (Prathik, 2026-11-03: "a sub-goal is part of its main goal"). Everything is set aside on the goal itself; he
+ * then gives each part its share by hand, which moves money from the goal's own set-asides to the part's. So what a goal holds (`savedOwn`) is the
+ * free pot that covers its own part (the rest of the car that isn't itemised) and anything left over, and each part holds what it was given.
+ * Nothing about saved, funded or earmarks changed to make this true: the parts' totals and the account earmarks are the same ledger as before.
+ */
+
+/** What's in a goal's pot and not given to a part: the money its own part is covered by. */
+export const freePot = (data: GoalsData, goal: Goal): number => savedOwn(data, goal.id);
+
+/** What a move between a goal's pot and a part writes in the entries' notes, so the lists of entries can leave the moves out (the money didn't come or go, it only changed hands). */
+export const moveNotes = {
+  given: (part: string) => `Given to ${part}`,
+  from: (main: string) => `From the pot of ${main}`,
+  back: (main: string) => `Back to the pot of ${main}`,
+  backFrom: (part: string) => `Back from ${part}`,
+};
+const MOVE_NOTE = /^(Given to |From the pot of |Back to the pot of |Back from )/;
+export const isPotMove = (entry: GoalContribution): boolean => MOVE_NOTE.test(entry.note ?? "");
+
+/** What the free pot covers of a goal's own part. */
+export const ownCovered = (data: GoalsData, goal: Goal): number => Math.min(freePot(data, goal), goal.amount);
+
+/** Free pot beyond the goal's own part: set aside, but not covering anything yet. */
+export const potSpare = (data: GoalsData, goal: Goal): number => Math.max(0, freePot(data, goal) - goal.amount);
+
+/** What a part needs in order to be filled in order. */
+export interface FillPart {
+  id: string;
+  /** Its cost. */
+  amount: number;
+  /** What it already holds. */
+  saved: number;
+  necessity: Goal["necessity"];
+  dateType?: "Fixed" | "Flexible";
+  due: string | null;
+}
+
+/**
+ * Hands `money` to the parts in funding order (Fixed dates, then Needs, then the soonest, then the smaller), each up to what it still lacks, and
+ * returns what each is given (only parts that get something are in it). Whatever the parts can't take is left in the pot. Pass every part's
+ * `saved` as 0 and the whole pot as `money` for a fresh fill.
+ */
+export function fillInOrder(parts: FillPart[], money: number): Record<string, number> {
+  const byId = new Map(parts.map((part) => [part.id, part]));
+  const order = fundingOrder(parts.map((part) => ({ id: part.id, topId: "", name: part.id, necessity: part.necessity, dateType: part.dateType ?? "Flexible", due: part.due, left: part.amount, own: false })));
+  const given: Record<string, number> = {};
+  let left = Math.max(0, money);
+  for (const unit of order) {
+    const part = byId.get(unit.id) as FillPart;
+    const give = Math.min(left, Math.max(0, part.amount - part.saved));
+    if (give > 0) given[part.id] = give;
+    left -= give;
+  }
+  return given;
+}
+
+/** A goal's live parts in the order money fills them: Fixed dates, then Needs, then the soonest, then the smaller. */
+export function partsInOrder(data: GoalsData, goal: Goal): Goal[] {
+  const kids = liveKids(data, goal.id);
+  const rank = new Map(fundingOrder(kids.map((kid) => ({ id: kid.id, topId: goal.id, name: kid.name, necessity: kid.necessity, dateType: kid.dateType ?? "Flexible", due: effectiveDue(data, kid), left: kid.amount, own: false }))).map((unit, index) => [unit.id, index]));
+  return [...kids].sort((a, b) => (rank.get(a.id) ?? 0) - (rank.get(b.id) ?? 0));
+}
+
+/** A goal's live parts as `fillInOrder` reads them. */
+export function fillPartsOf(data: GoalsData, goal: Goal): FillPart[] {
+  return liveKids(data, goal.id).map((kid) => ({ id: kid.id, amount: kid.amount, saved: savedOwn(data, kid.id), necessity: kid.necessity, dateType: kid.dateType, due: kid.targetDate ?? dueOf(data, goal) }));
+}
+
 // --- The funding plan ---
 
 /** A unit that gets funded: a goal with no sub-goals, a parent's own part, or a sub-goal. */

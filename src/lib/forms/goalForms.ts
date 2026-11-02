@@ -1,4 +1,5 @@
 import { GOAL_CATEGORIES, GOAL_COLORS, GOAL_CONTRIBUTION_KINDS, GOAL_DATE_TYPES, GOAL_NECESSITIES, GOAL_SCALES, type Goal, type GoalCategory, type GoalColor, type GoalContribution, type GoalDateType, type GoalNecessity, type GoalScale } from "../sheets/types";
+import { formatInr } from "../format/money";
 import { FieldReader, readPaidFrom, type FormFields, type FormResult } from "./fields";
 
 /**
@@ -10,7 +11,51 @@ import { FieldReader, readPaidFrom, type FormFields, type FormResult } from "./f
 type Known = { accountIds: string[]; cardIds: string[] };
 
 /** A goal as the Add and Edit forms send it: everything but its id and status. */
-export type GoalFormInput = Omit<Goal, "id" | "status" | "doneOn" | "actualCost" | "paidFromAccountId" | "paidFromCardId">;
+export type GoalFormInput = Omit<Goal, "id" | "status" | "doneOn" | "actualCost" | "paidFromAccountId" | "paidFromCardId"> & {
+  /** Its parts, from the form's Parts section: an empty list for a goal with none. */
+  parts: PartFormInput[];
+};
+
+/** One row of the Parts section: a piece of the goal with its own cost and date, and what the goal's pot has given it. */
+export interface PartFormInput {
+  /** Set for a part that already exists. */
+  id?: string;
+  name: string;
+  amount: number;
+  necessity: GoalNecessity;
+  targetDate?: string;
+  given: number;
+}
+
+/**
+ * The Parts section's rows. The form sends them as one JSON field (`parts`) of text boxes as typed, each read the way a form field is, so a
+ * row's errors read like the rest of the form's. Null with the first plain-words problem, or the rows.
+ */
+export function readPartsField(raw: string): { parts: PartFormInput[]; error: null } | { parts: null; error: string } {
+  let rows: unknown;
+  try {
+    rows = raw.trim() === "" ? [] : JSON.parse(raw);
+  } catch {
+    return { parts: null, error: "The parts couldn't be read: close this and open it again" };
+  }
+  if (!Array.isArray(rows) || rows.length > 30) return { parts: null, error: rows instanceof Array ? "A goal can have up to 30 parts" : "The parts couldn't be read: close this and open it again" };
+  const parts: PartFormInput[] = [];
+  for (const [index, row] of rows.entries()) {
+    const f = new FieldReader(typeof row === "object" && row !== null ? (row as FormFields) : {});
+    const label = f.raw("name").trim() || `Part ${index + 1}`;
+    const name = f.text("name", `Name part ${index + 1}, or remove it`);
+    const amount = f.amount("amount", { required: `Enter what ${label} costs`, label: "cost" });
+    if (amount !== undefined && amount <= 0) f.fail("amount", `Enter a cost above ₹0 for ${label}`);
+    const necessity = f.choice<GoalNecessity>("necessity", GOAL_NECESSITIES, `Is ${label} a Need or a Want?`);
+    const targetDate = f.date("targetDate");
+    const given = f.raw("given").trim() === "" ? 0 : f.amount("given", { label: "share" });
+    if (amount !== undefined && given !== undefined && given > amount) f.fail("given", `${label} costs ${formatInr(amount)}, so it can't be given more`);
+    const id = f.text("id");
+    if (!f.ok || !name || amount === undefined || !necessity || given === undefined) return { parts: null, error: Object.values(f.errors)[0] as string };
+    parts.push({ ...(id && { id }), name, amount, necessity, ...(targetDate && { targetDate }), given });
+  }
+  return { parts, error: null };
+}
 
 /** Add goal, Add sub-goal (it carries a `parentId`), or Edit goal. */
 export function readGoalForm(fields: FormFields, parentIds: readonly string[], opts: { allowZeroAmount?: boolean } = {}): FormResult<GoalFormInput> {
@@ -19,9 +64,12 @@ export function readGoalForm(fields: FormFields, parentIds: readonly string[], o
   const category = f.choice<GoalCategory>("category", GOAL_CATEGORIES, "Choose a category");
   const necessity = f.choice<GoalNecessity>("necessity", GOAL_NECESSITIES, "Is it a Need or a Want?");
   const scale = f.choice<GoalScale>("scale", GOAL_SCALES, "Is it a Minor or a Major goal?");
+  const partsRead = readPartsField(f.raw("parts"));
+  if (partsRead.error !== null) f.fail("parts", partsRead.error);
+  const parts = partsRead.parts ?? [];
   const amount = f.amount("amount", { required: "Enter what it costs, like 85,000", label: "amount" });
-  // A goal with open sub-goals can stand at ₹0: its sub-goals hold the cost (the write checks that).
-  if (amount !== undefined && (opts.allowZeroAmount ? amount < 0 : amount <= 0)) f.fail("amount", "Enter an amount above ₹0");
+  // A goal with parts can stand at ₹0: its parts hold the cost (the write checks that).
+  if (amount !== undefined && (opts.allowZeroAmount || parts.length > 0 ? amount < 0 : amount <= 0)) f.fail("amount", "Enter an amount above ₹0");
   const targetDate = f.date("targetDate");
   const dateTypeText = f.raw("dateType").trim();
   const dateType = dateTypeText === "" ? undefined : f.choice<GoalDateType>("dateType", GOAL_DATE_TYPES, "Choose Fixed or Flexible");
@@ -37,11 +85,11 @@ export function readGoalForm(fields: FormFields, parentIds: readonly string[], o
   if (parentId !== undefined && !parentIds.includes(parentId)) f.fail("parentId", "Choose the goal this is a part of");
   if (!f.ok || !name || !category || !necessity || !scale || amount === undefined || !startDate) return { ok: false, errors: f.errors };
   const optional = { parentId, targetDate, dateType: targetDate ? (dateType ?? "Flexible") : undefined, plannedMonthly: plannedMonthly || undefined, color, link, notes: f.text("notes") };
-  return f.result({ name, category, necessity, scale, amount, startDate, ...Object.fromEntries(Object.entries(optional).filter(([, value]) => value !== undefined)) } as GoalFormInput);
+  return f.result({ name, category, necessity, scale, amount, startDate, parts, ...Object.fromEntries(Object.entries(optional).filter(([, value]) => value !== undefined)) } as GoalFormInput);
 }
 
 /** Edit goal's patch: a blank optional box clears it ("" is how an update clears a field). The goal's parent isn't changed from the form. */
-export function goalEditPatch(input: GoalFormInput): Partial<Omit<Goal, "id">> {
+export function goalEditPatch(input: Omit<GoalFormInput, "parts">): Partial<Omit<Goal, "id">> {
   return {
     name: input.name,
     category: input.category,
