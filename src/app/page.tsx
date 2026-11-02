@@ -10,6 +10,8 @@ import { cardName } from "@/lib/format/labels";
 import { totalEstimatedFixedDepositValue } from "@/lib/aggregate/fixedDeposits";
 import { pendingPayments, sumAmounts } from "@/lib/aggregate/incomeSchedule";
 import { totalCostBasisInr } from "@/lib/aggregate/investments";
+import { attentionView as goalsAttention } from "@/app/goals/views";
+import { loadGoalsData } from "@/app/goals/loadGoalsData";
 import { computeLoanSummaries } from "@/lib/aggregate/loans";
 import { computeNetWorth } from "@/lib/aggregate/netWorth";
 import { monthlyObligations } from "@/lib/aggregate/obligations";
@@ -56,6 +58,11 @@ export default async function OverviewPage() {
   ]);
 
   const today = todayIso();
+  // A problem reading Goals mustn't take Overview down with it.
+  const goalsData = await loadGoalsData({}, today).then((loaded) => loaded.data).catch((error) => {
+    console.error("[overview] goals failed:", error instanceof Error ? error.message : String(error));
+    return null;
+  });
   const yearMonth = today.slice(0, 7);
 
   const netWorth = computeNetWorth({
@@ -103,6 +110,12 @@ export default async function OverviewPage() {
       label: `${source.alias || source.name} not received`,
       detail: `${formatInr(sumAmounts(pending))} — ${pending.length === 1 ? "expected" : `${pending.length} payments, the first expected`} ${pending[0].expectedDate}`,
     });
+  }
+
+  // Goals join the list only for a Fixed date at risk, a date that has passed, or an account that can't cover its earmarks (F-GO-05).
+  for (const item of goalsData ? goalsAttention(goalsData, today) : []) {
+    const at = item.text.indexOf(": ");
+    attention.push(at > 0 ? { label: item.text.slice(0, at), detail: item.text.slice(at + 2) } : { label: item.text, detail: "" });
   }
 
   return (

@@ -154,15 +154,15 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 
 ### Goals (`F-GO`)
 
-Designed 2026-10-29 (`docs/design/goals.md`, mockups in [`design/goals/`](../design/goals/)). A goal is an earmark, not money: it never changes net worth, and "set aside" is derived from a log. Q1 to Q8 of that doc are answered.
+Designed 2026-10-29 and built 2026-11-02 (`docs/design/goals.md`, mockups in [`design/goals/`](../design/goals/), the Orbit page). A goal is an earmark, not money: it never changes net worth, and "set aside" is derived from a log. Q1 to Q8 of that doc are answered.
 
 | ID | Feature | Pri | Status |
 |---|---|---|---|
-| F-GO-01 | Add, edit, pause, drop and finish a goal: name, category, Need or Want, Minor (short-term) or Major (long-term), amount, optional date (Fixed or Flexible) and planned monthly | P1 | Designed (round 1 mockups G1 to G4 and the forms; the hero is not picked) |
-| F-GO-02 | Sub-goals, one level deep: a goal's total is its own part plus its sub-goals | P1 | Designed |
-| F-GO-03 | Set aside and take back money against a goal, with an optional account; saved, funded and standing are derived | P1 | Designed |
-| F-GO-04 | The monthly figures: required a month, on track or behind, and a funding plan that serves Fixed dates, then Needs, then the soonest | P1 | Designed. The funding-plan rule and the month-counting rule need his yes before they're built. |
-| F-GO-05 | Goals on Overview's "What needs attention": a Fixed date at risk, an earmark an account can't cover | P2 | Designed |
+| F-GO-01 | Add, edit, pause, drop and finish a goal: name, category, Need or Want, Minor (short-term) or Major (long-term), amount, optional date (Fixed or Flexible) and planned monthly | P1 | Built (#238) |
+| F-GO-02 | Sub-goals, one level deep: a goal's total is its own part plus its sub-goals | P1 | Built (#238) |
+| F-GO-03 | Set aside and take back money against a goal, with an optional account; saved, funded and standing are derived | P1 | Built (#238) |
+| F-GO-04 | The monthly figures: required a month, on track or behind, and a funding plan that serves Fixed dates, then Needs, then the soonest | P1 | Built (#238) |
+| F-GO-05 | Goals on Overview's "What needs attention": a Fixed date at risk, an earmark an account can't cover | P2 | Built (#238) |
 
 ### Insurance (`F-IS`)
 
@@ -388,3 +388,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.19 | 2026-10-29 | Goals designed (`docs/design/goals.md`): F-GO-01 to F-GO-05 and an M6 milestone. Minor/Major is a time horizon picked per goal; a goal is an earmark and never changes net worth. Round 1 mockups; the hero is not picked yet. |
 | 1.20 | 2026-10-31 | Insurance (F-IS-01) written into the PRD as built, and Q11 answered: insurance is its own page, not a Subscriptions category. F-SU-03 now covers rent and fees only. |
 | 1.21 | 2026-10-31 | The InvestmentTransactions and FixedDeposits dropdowns are set on the real Sheet from their schemas (#234); `check-sheet` passes on every tab. No scope change. |
+| 1.22 | 2026-11-02 | Goals (F-GO-01 to F-GO-05) built as the Orbit page, with its two tabs, tested math, forms with Undo and Overview's attention items. The month-counting, required-a-month, on-track and funding-order rules are proposals that wait for his yes (PR #246). |
