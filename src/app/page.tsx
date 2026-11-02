@@ -10,9 +10,10 @@ import { cardName } from "@/lib/format/labels";
 import { totalEstimatedFixedDepositValue } from "@/lib/aggregate/fixedDeposits";
 import { pendingPayments, sumAmounts } from "@/lib/aggregate/incomeSchedule";
 import { totalCostBasisInr } from "@/lib/aggregate/investments";
-import { computeLoanSummaries, totalDueThisMonth } from "@/lib/aggregate/loans";
+import { computeLoanSummaries } from "@/lib/aggregate/loans";
 import { computeNetWorth } from "@/lib/aggregate/netWorth";
-import { monthlySpendOffCards, totalMonthlySubscriptionSpend } from "@/lib/aggregate/subscriptions";
+import { monthlyObligations } from "@/lib/aggregate/obligations";
+import { totalMonthlySubscriptionSpend } from "@/lib/aggregate/subscriptions";
 import {
   getCachedAccounts,
   getCachedBalanceSnapshots,
@@ -73,11 +74,7 @@ export default async function OverviewPage() {
   const loanSummaries = computeLoanSummaries(loans, loanInstallments);
   const trend = balanceTrend(accounts, balanceSnapshots);
 
-  // Subscriptions charged to an active card are already inside its bill below, so only the rest are added (#124).
-  const monthlyObligations =
-    monthlySpendOffCards(subscriptions, cards) +
-    totalDueThisMonth(loans, loanInstallments, yearMonth) +
-    cardSummaries.reduce((sum, s) => sum + (s.card.status === "Active" ? s.outstandingBalance : 0), 0);
+  const monthlyObligationsTotal = monthlyObligations({ subscriptions, cards, loans, loanInstallments, cardSummaries, yearMonth });
 
   // Pending income is computed from each source's schedule, never stored (PRD §8).
   const pendingIncome = pendingPayments(incomeSources, incomeEntries, today);
@@ -136,7 +133,7 @@ export default async function OverviewPage() {
           label="Fixed deposits (est.)"
           value={formatInr(totalEstimatedFixedDepositValue(fixedDeposits, today))}
         />
-        <StatTile label="Monthly obligations" value={formatInr(monthlyObligations)} tone="negative" />
+        <StatTile label="Monthly obligations" value={formatInr(monthlyObligationsTotal)} tone="negative" />
       </div>
 
       <div className="rounded-lg border border-divider p-4">
