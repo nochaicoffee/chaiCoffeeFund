@@ -271,6 +271,27 @@ function SideGoal({ view }: { view: GoalSideView }) {
   );
 }
 
+/** On a phone the planets carry no names, so they're listed under the sky: tap a row to open its goal. */
+function PlanetList({ planets, pick, onPick }: { planets: PlanetView[]; pick: string; onPick: (id: string) => void }) {
+  if (planets.length === 0) return null;
+  return (
+    <ul className="flex flex-col md:hidden" aria-label="Every planet">
+      {planets.map((planet) => (
+        <li key={planet.key} className={`border-t border-divider first:border-t-0 ${pick !== ALL && pick !== planet.topId ? "opacity-40" : ""}`}>
+          <button type="button" onClick={() => onPick(planet.topId)} className="flex min-h-12 w-full items-center gap-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-accent">
+            <GoalTile category={planet.category} colorKey={planet.colorKey} size={30} off={planet.paused} />
+            <span className="min-w-0 flex-1">
+              <b className="block truncate text-[13px] font-extrabold">{planet.name.replace(/: the rest$/, " · the rest")}</b>
+              <small className="block text-[11px] font-semibold text-muted">{planet.note}</small>
+            </span>
+            {planet.fixed && <FixedPill />}
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** The first visit: nothing is invented, six kinds to start from. */
 function EmptySide() {
   const { open } = useGoalsForms();
@@ -312,7 +333,10 @@ export function OrbitCard({ sky, side, goalSides, pick, onPick }: { sky: SkyView
       gap="gap-4"
     >
       <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-6 xl:grid-cols-[minmax(0,780px)_minmax(0,1fr)]">
-        <Sky sky={sky} pick={pick} onPick={onPick} />
+        <div className="flex min-w-0 flex-col gap-3">
+          <Sky sky={sky} pick={pick} onPick={onPick} />
+          <PlanetList planets={sky.planets} pick={pick} onPick={onPick} />
+        </div>
         <div className="flex min-w-0 flex-col gap-3.5">{empty ? <EmptySide /> : goalView ? <SideGoal view={goalView} /> : <SideAll side={side} onPick={onPick} />}</div>
       </div>
     </WidgetCard>
