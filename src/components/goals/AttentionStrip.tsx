@@ -1,6 +1,6 @@
 "use client";
 
-import type { AttentionItem } from "@/app/goals/views";
+import type { AttentionItem } from "@/lib/goals/attention";
 import { ActionButton, useGoalsForms } from "./forms/GoalsForms";
 
 /** The strip under the greeting while a Fixed date is at risk, a date has passed, or an account can't cover its earmarks: red first, then amber, one line each. */
@@ -18,7 +18,9 @@ export function AttentionStrip({ items, onSee }: { items: AttentionItem[]; onSee
               <line x1="12" y1="9" x2="12" y2="13" />
               <line x1="12" y1="17" x2="12.01" y2="17" />
             </svg>
-            <span>{item.text}</span>
+            <span>
+              <b className="font-extrabold">{item.label}</b>: {item.detail}
+            </span>
           </p>
           {item.left > 0 && <ActionButton label="Set aside" onClick={() => open({ kind: "set-aside", goalId: item.id, amount: item.left })} />}
           {item.id !== "all" && <ActionButton label="See goal" tone="ghost" onClick={() => onSee(item.id)} />}

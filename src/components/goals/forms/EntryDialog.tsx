@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useState, type FormEvent } from "react";
 import { saveEntry } from "@/app/goals/actions";
 import type { GoalsFormsData } from "@/app/goals/formsView";
+import { formatShortDate } from "@/lib/format/date";
 import { formatInr, parseAmountText } from "@/lib/format/money";
 import { IDLE } from "@/lib/forms/formState";
 import { readEntryForm } from "@/lib/forms/goalForms";
@@ -117,7 +118,7 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
       <div className="grid gap-x-3.5 gap-y-4 md:grid-cols-2">
         <div className="md:col-span-2">
           <Field id="goalId" label="Goal" required error={errors.goalId}>
-            <SelectInput id="goalId" name="goalId" invalid={Boolean(errors.goalId)} options={choices.map((g) => ({ value: g.id, label: g.parentName ? `${g.name} · inside ${g.parentName}` : g.name, meta: take ? `${formatInr(g.saved)} set aside` : g.dueDate ? `due ${g.dueDate}` : undefined, swatch: { background: `var(--card-${g.colorKey})` } }))} value={chosen} onChange={setChosen} placeholder="Choose the goal" />
+            <SelectInput id="goalId" name="goalId" invalid={Boolean(errors.goalId)} options={choices.map((g) => ({ value: g.id, label: g.parentName ? `${g.name} · inside ${g.parentName}` : g.name, meta: take ? `${formatInr(g.saved)} set aside` : g.dueDate ? `due ${formatShortDate(g.dueDate)}` : undefined, swatch: { background: `var(--card-${g.colorKey})` } }))} value={chosen} onChange={setChosen} placeholder="Choose the goal" />
           </Field>
         </div>
         <Field id="amount" label="Amount" required help={take && goal ? `At most ${formatInr(goal.saved)}: what's set aside.` : undefined} error={errors.amount ?? (tooMuch && goal ? `Only ${formatInr(goal.saved)} is set aside in ${goal.name}` : undefined)}>

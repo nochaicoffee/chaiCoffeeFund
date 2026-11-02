@@ -1,7 +1,7 @@
 import { checkNewTerm, paidTerms } from "../aggregate/insurance";
 import { createPolicySchema, updatePolicySchema } from "../sheets/policies";
 import { createPolicyPaymentSchema, updatePolicyPaymentSchema } from "../sheets/policyPayments";
-import { InvalidRowError, NotFoundError } from "../sheets/repository";
+import { InvalidRowError, NotFoundError, type WriteRepo } from "../sheets/repository";
 import type { Policy, PolicyPayment } from "../sheets/types";
 
 /**
@@ -11,18 +11,9 @@ import type { Policy, PolicyPayment } from "../sheets/types";
  * app/insurance/actions.ts. The rules are in lib/aggregate/insurance.ts (`checkNewTerm`) and the schemas.
  */
 
-interface Repo<T extends { id: string }> {
-  list: () => Promise<T[]>;
-  get: (id: string) => Promise<T | null>;
-  create: (input: Omit<T, "id">) => Promise<T>;
-  update: (id: string, patch: Partial<Omit<T, "id">>) => Promise<T>;
-  remove: (id: string) => Promise<void>;
-  removeWhere: (match: (values: Partial<Record<keyof T, unknown>>) => boolean) => Promise<number>;
-}
-
 export interface InsuranceRepos {
-  policies: Repo<Policy>;
-  payments: Repo<PolicyPayment>;
+  policies: WriteRepo<Policy>;
+  payments: WriteRepo<PolicyPayment>;
 }
 
 /** The first or next term as a form sends it, with the policy it belongs to added by the write. */

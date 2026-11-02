@@ -31,6 +31,18 @@ describe("the goal form", () => {
   });
 });
 
+describe("review findings", () => {
+  it("allows ₹0 only for a goal whose cost is in its sub-goals", () => {
+    expect(readGoalForm({ ...goal, amount: "0" }, [])).toMatchObject({ ok: false, errors: { amount: expect.any(String) } });
+    expect(readGoalForm({ ...goal, amount: "0" }, [], { allowZeroAmount: true })).toMatchObject({ ok: true, input: { amount: 0 } });
+    expect(readGoalForm({ ...goal, amount: "-5" }, [], { allowZeroAmount: true })).toMatchObject({ ok: false });
+  });
+  it("refuses saving to begin after the date it's for", () => {
+    expect(readGoalForm({ ...goal, startDate: "2027-07-01", targetDate: "2027-06-10" }, [])).toMatchObject({ ok: false, errors: { startDate: "Saving can't begin after the date it's for" } });
+    expect(readGoalForm({ ...goal, startDate: "2027-06-10", targetDate: "2027-06-10" }, [])).toMatchObject({ ok: true });
+  });
+});
+
 describe("the set aside form", () => {
   const known = { goalIds: ["a", "b"], accountIds: ["hdfc"] };
   const entry = { goalId: "a", kind: "Set-aside", amount: "15,000", date: "2026-10-29" };

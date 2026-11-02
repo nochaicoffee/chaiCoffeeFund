@@ -2,8 +2,6 @@ import type { SentencePart } from "@/app/cards/summarySentence";
 import type { GreetingRowData } from "@/components/shell/GreetingParts";
 import {
   dueOf,
-  earmarkProblems,
-  earmarksByAccount,
   excessOf,
   expectedProgress,
   isFunded,
@@ -19,10 +17,11 @@ import {
   totals,
   type GoalStanding,
   type GoalsData,
+  type GoalsTotals,
 } from "@/lib/aggregate/goals";
 import { MAX_RING_MONTHS, OVERDUE_RING, SOMEDAY_RING, placePlanets, planetRadius, skyPieces, type SkyPiece } from "@/lib/aggregate/goalsOrbit";
-import { daysBetween } from "@/lib/aggregate/cardSpend";
 import { formatDate, formatShortDate } from "@/lib/format/date";
+import { inDays } from "@/lib/goals/attention";
 import { goalColorKey } from "@/lib/format/goalLabels";
 import type { ColorKey } from "@/lib/format/colors";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
@@ -30,6 +29,14 @@ import type { Goal, GoalCategory } from "@/lib/sheets/types";
 
 /** The pick that means every goal, as on the other dashboards. */
 export const ALL = "all";
+
+/** What most of the page reads: the totals and the sky's pieces, worked out once per request instead of once per card. */
+export interface GoalsDerived {
+  totals: GoalsTotals;
+  pieces: SkyPiece[];
+}
+
+export const deriveGoals = (data: GoalsData, today: string): GoalsDerived => ({ totals: totals(data, today), pieces: skyPieces(data, today) });
 
 /** What the Goals page reads: the two tabs, and what the money-side cards need from the rest of the app. */
 export interface GoalsPageData extends GoalsData {
@@ -45,7 +52,7 @@ export interface GoalsPageData extends GoalsData {
 }
 
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
-export const inDays = (n: number) => (n === 0 ? "today" : n === 1 ? "tomorrow" : n > 0 ? `in ${n} days` : n === -1 ? "yesterday" : `${-n} days ago`);
+export { inDays };
 const dateIn = (today: string, date: string) => (date.slice(0, 4) === today.slice(0, 4) ? formatShortDate(date) : formatDate(date));
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 
@@ -54,9 +61,9 @@ const colorOf = (goal: Goal): ColorKey => goalColorKey(goal);
 const pct = (share: number) => `${Math.round(share * 100)}%`;
 
 /** The goals the page shows in the sky and the picks: open, top-level ones, in the order of their first piece (the sky's own order). */
-export function pickIds(data: GoalsPageData, today: string): string[] {
+export function pickIds(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): string[] {
   const seen: string[] = [];
-  for (const piece of skyPieces(data, today)) if (!seen.includes(piece.topId)) seen.push(piece.topId);
+  for (const piece of d.pieces) if (!seen.includes(piece.topId)) seen.push(piece.topId);
   return [ALL, ...seen];
 }
 
@@ -67,10 +74,10 @@ export type GoalsGreetingCards = Partial<Record<GoalsPoint, { title: string; tot
 
 const live = (data: GoalsPageData) => topGoals(data).filter((goal) => goal.status === "Active");
 
-export function summarySentence(data: GoalsPageData, today: string): SentencePart[] {
+export function summarySentence(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): SentencePart[] {
   const open = topGoals(data).filter((goal) => goal.status === "Active" || goal.status === "Paused");
   if (open.length === 0) return [{ text: "Nothing is set aside yet. Add a goal, and this page shows how far each is, what it takes a month, and what to fund first." }];
-  const t = totals(data, today);
+  const t = d.totals;
   const active = live(data);
   if (active.length === 0) return [{ text: `${plural(open.length, "goal")} ${open.length === 1 ? "is" : "are"} paused, with ` }, { text: formatInrCompact(sum(open.map((g) => savedOf(data, g)))), strong: true, point: "saved" }, { text: " set aside. Resume one to bring it back into the plan." }];
   const allFunded = active.every((goal) => isFunded(data, goal));
@@ -90,8 +97,14 @@ export function summarySentence(data: GoalsPageData, today: string): SentencePar
   return parts;
 }
 
-export function greetingView(data: GoalsPageData, today: string): GoalsGreetingCards {
-  const t = totals(data, today);
+export function greetingView(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): GoalsGreetingCards {
+  // Only the figures the sentence actually carries get a card, so the two always agree (a funded page names one figure, a goal that needs no more than its plan skips the 'funded in order' one).
+  const used = new Set(summarySentence(data, today, d).map((part) => part.point));
+  return Object.fromEntries(Object.entries(allCards(data, today, d)).filter(([point]) => used.has(point))) as GoalsGreetingCards;
+}
+
+function allCards(data: GoalsPageData, today: string, d: GoalsDerived): GoalsGreetingCards {
+  const t = d.totals;
   const active = live(data);
   if (active.length === 0) return data.goals.length ? { saved: { title: "Set aside so far", total: formatInr(sum(topGoals(data).map((g) => savedOf(data, g)))), rows: topGoals(data).map((g) => ({ key: g.id, name: g.name, colorKey: colorOf(g), amount: formatInr(savedOf(data, g)) })), note: "Not new money: it's already in your accounts" } } : {};
   const byGoal = (amount: (g: Goal) => number, note?: (g: Goal) => string | undefined): GreetingRowData[] => active.map((g) => ({ key: g.id, name: g.name, colorKey: colorOf(g), amount: formatInr(amount(g)), note: note?.(g) }));
@@ -131,47 +144,12 @@ export function greetingView(data: GoalsPageData, today: string): GoalsGreetingC
   return cards;
 }
 
-// ---------- The attention strip ----------
-
-export interface AttentionItem {
-  /** The top-level goal it's about, which "See" picks. */
-  id: string;
-  tone: "warning" | "negative";
-  text: string;
-  /** The goal's amount still to set aside, for the Set aside button. */
-  left: number;
-}
-
-/** A Fixed date that's close and short of its plan, or any goal whose date has passed. */
-export function attentionView(data: GoalsPageData, today: string): AttentionItem[] {
-  const items: AttentionItem[] = [];
-  for (const goal of live(data)) {
-    if (isFunded(data, goal)) continue;
-    const due = dueOf(data, goal);
-    if (!due) continue;
-    const left = leftOf(data, goal);
-    if (due < today) {
-      items.push({ id: goal.id, tone: "negative", left, text: `${goal.name} · overdue (due ${dateIn(today, due)}): ${formatInr(left)} still to set aside. It needs it all now.` });
-      continue;
-    }
-    if (goal.dateType !== "Fixed") continue;
-    const days = daysBetween(today, due);
-    const planned = plannedOf(data, goal);
-    const needs = requiredMonthly(data, goal, today);
-    if (days <= 90 && planned < needs) items.push({ id: goal.id, tone: "warning", left, text: `${goal.name} · Fixed date ${dateIn(today, due)} (${inDays(days)}): ${formatInr(left)} still to set aside, and you plan ${formatInr(planned)} a month.${goal.necessity === "Need" ? " It's a Need." : ""}` });
-  }
-  const problems = earmarkProblems(earmarksByAccount(data), data.balances);
-  for (const problem of problems) {
-    const name = data.accounts.find((a) => a.id === problem.accountId)?.name ?? "An account";
-    items.push({ id: ALL, tone: "warning", left: 0, text: `${name} earmarks · goals hold ${formatInr(problem.earmarked)} of the ${formatInr(problem.balance)} in the account (${formatInr(problem.over)} more than it has).` });
-  }
-  return items.sort((a, b) => (a.tone === b.tone ? 0 : a.tone === "negative" ? -1 : 1));
-}
-
 // ---------- The sky ----------
 
 export interface PlanetView {
   key: string;
+  /** How its name is shown: the rest of a parent reads 'Car upgrade · the rest'. */
+  label: string;
   topId: string;
   name: string;
   colorKey: ColorKey;
@@ -203,14 +181,17 @@ export interface SkyView {
   hasSomeday: boolean;
 }
 
+/** A piece's name as it's printed: the part of a goal that isn't itemised reads 'Car upgrade · the rest'. */
+export const pieceLabel = (name: string) => name.replace(/: the rest$/, " · the rest");
+
 /** A piece draws in its own colour if it was given one, otherwise in its goal's: a sub-goal follows its parent. */
 export const pieceColor = (data: GoalsPageData, piece: SkyPiece): ColorKey => {
   const own = goalOf(data, piece.goalId);
   return colorOf(own?.color ? own : goalOf(data, piece.topId)!);
 };
 
-export function skyView(data: GoalsPageData, today: string): SkyView {
-  const pieces = skyPieces(data, today);
+export function skyView(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): SkyView {
+  const pieces = d.pieces;
   const open = topGoals(data).filter((goal) => goal.status === "Active" || goal.status === "Paused");
   const active = open.filter((goal) => goal.status === "Active");
   const saved = sum(active.map((goal) => savedOf(data, goal)));
@@ -225,6 +206,7 @@ export function skyView(data: GoalsPageData, today: string): SkyView {
       key: piece.key,
       topId: piece.topId,
       name: piece.name,
+      label: pieceLabel(piece.name),
       colorKey: pieceColor(data, piece),
       category: goal.category,
       radius: planetRadius(piece.amount),
@@ -340,8 +322,8 @@ const BANDS: { title: string; test: (ring: number) => boolean }[] = [
   { title: "Further out", test: (ring) => ring > 24 && ring !== SOMEDAY_RING },
 ];
 
-export function sideView(data: GoalsPageData, today: string): SideView {
-  const pieces = skyPieces(data, today).filter((p) => !p.paused);
+export function sideView(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): SideView {
+  const pieces = d.pieces.filter((p) => !p.paused);
   const bands = BANDS.map(({ title, test }): BandRow => {
     const inBand = pieces.filter((p) => test(p.ring));
     return { title, count: inBand.length ? plural(inBand.length, "piece") : "nothing yet", colors: inBand.map((p) => pieceColor(data, p)), togo: formatInr(sum(inBand.map((p) => p.left))), perMonth: sum(inBand.map((p) => p.required)) ? `${formatInr(sum(inBand.map((p) => p.required)))} a month` : "–" };
@@ -362,7 +344,7 @@ export function sideView(data: GoalsPageData, today: string): SideView {
   };
 }
 
-export function goalSideView(data: GoalsPageData, goal: Goal, today: string): GoalSideView {
+export function goalSideView(data: GoalsPageData, goal: Goal, today: string, d: GoalsDerived = deriveGoals(data, today)): GoalSideView {
   const saved = savedOf(data, goal);
   const target = targetOf(data, goal);
   const due = dueOf(data, goal);
@@ -372,7 +354,7 @@ export function goalSideView(data: GoalsPageData, goal: Goal, today: string): Go
   const left = leftOf(data, goal);
   const stand = standing(data, goal, today);
   const facts = paused ? [] : [{ name: "You plan a month", value: planned ? formatInr(planned) : "nothing" }, { name: "It needs a month", value: needs ? formatInr(needs) : "–" }, ...(planned && needs && planned < needs ? [{ name: "Short of what it needs", value: `${formatInr(needs - planned)} a month` }] : [])];
-  const pieces = skyPieces(data, today).filter((p) => p.topId === goal.id);
+  const pieces = d.pieces.filter((p) => p.topId === goal.id);
   const kids = data.goals.filter((g) => g.parentId === goal.id && g.status !== "Dropped");
   const showPieces = kids.length > 0;
   const entryIds = new Set([goal.id, ...kids.map((k) => k.id)]);
@@ -411,12 +393,12 @@ export function goalSideView(data: GoalsPageData, goal: Goal, today: string): Go
   };
 }
 
-export function goalSides(data: GoalsPageData, today: string): Record<string, GoalSideView> {
+export function goalSides(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): Record<string, GoalSideView> {
   const out: Record<string, GoalSideView> = {};
-  for (const id of pickIds(data, today)) {
+  for (const id of pickIds(data, today, d)) {
     if (id === ALL) continue;
     const goal = goalOf(data, id);
-    if (goal) out[id] = goalSideView(data, goal, today);
+    if (goal) out[id] = goalSideView(data, goal, today, d);
   }
   return out;
 }

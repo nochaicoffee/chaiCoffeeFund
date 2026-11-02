@@ -1,17 +1,38 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState } from "react";
 import { ALL, type GoalSideView, type PlanetView, type SideView, type SkyView } from "@/app/goals/views";
 import { MAX_RING_MONTHS, OVERDUE_RING, SKY_SIZE, SOMEDAY_RING, ringRadius } from "@/lib/aggregate/goalsOrbit";
 import { colorGradient } from "@/lib/format/colors";
 import { GOAL_CATEGORY_COLOR } from "@/lib/format/goalLabels";
 import { CloseIcon, MenuAction, RowMenu } from "../RowMenu";
+import { CheckIcon, PlusIcon } from "../cards/forms/icons";
 import { GOAL_CATEGORIES } from "@/lib/sheets/types";
 import { WidgetCard } from "../shell/WidgetCard";
 import { ActionButton, useGoalsForms } from "./forms/GoalsForms";
 import { CardBar, ColorCard, GoalIcon, GoalTile, FixedPill, NeedBadge, ProgressBar, ScaleBadge, StandingPill } from "./parts";
 
 const GOAL_CATEGORY_KEY = Object.fromEntries(Object.entries(GOAL_CATEGORY_COLOR).map(([category, color]) => [category, color.toLowerCase()])) as Record<(typeof GOAL_CATEGORIES)[number], Lowercase<(typeof GOAL_CATEGORY_COLOR)[keyof typeof GOAL_CATEGORY_COLOR]>>;
+
+const small = { width: 12, height: 12, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2.2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": true } as const;
+const UndoIcon = () => (
+  <svg {...small}>
+    <path d="M9 14 4 9l5-5" />
+    <path d="M4 9h10a6 6 0 0 1 0 12h-3" />
+  </svg>
+);
+const PencilIcon = () => (
+  <svg {...small}>
+    <path d="M12 20h9" />
+    <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z" />
+  </svg>
+);
+const PauseIcon = () => (
+  <svg {...small}>
+    <rect x="6" y="5" width="4" height="14" rx="1" />
+    <rect x="14" y="5" width="4" height="14" rx="1" />
+  </svg>
+);
 
 /** The sky is drawn on a 780-unit square and scaled to fit, so a ring's radius and a planet's size are shares of its width. */
 const S = SKY_SIZE;
@@ -37,7 +58,7 @@ function Planet({ planet, pick, onPick }: { planet: PlanetView; pick: string; on
       {planet.fixed && <span aria-hidden="true" className="absolute -top-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-negative text-[9px] font-black text-white">!</span>}
       {planet.over && <span className="absolute -top-1.5 left-[calc(100%-6px)] rounded-full bg-[oklch(0.88_0.17_140)] px-1.5 py-0.5 text-[10px] font-extrabold whitespace-nowrap text-[oklch(0.2_0.05_150)]">{planet.over}</span>}
       <span aria-hidden="true" className={`pointer-events-none absolute left-1/2 hidden -translate-x-1/2 text-center whitespace-nowrap text-white [text-shadow:0_1px_6px_oklch(0_0_0/0.7)] md:block ${planet.nameAbove ? "bottom-[calc(100%+3px)]" : "top-[calc(100%+3px)]"}`}>
-        <b className="block text-[11.5px] font-extrabold">{planet.name.replace(/: the rest$/, " · the rest")}</b>
+        <b className="block text-[11.5px] font-extrabold">{planet.label}</b>
         <small className="block text-[10px] font-semibold opacity-80">{planet.note}</small>
       </span>
       <span role="tooltip" className="pointer-events-none invisible absolute top-[calc(100%+8px)] left-1/2 z-40 w-[230px] -translate-x-1/2 opacity-0 group-focus-within/p:visible group-focus-within/p:opacity-100 group-hover/p:visible group-hover/p:opacity-100 motion-safe:transition-opacity">
@@ -221,11 +242,11 @@ function SideGoal({ view }: { view: GoalSideView }) {
           {!done && !dropped && <ActionButton label="+ Add sub-goal" tone="ghost" onClick={() => open({ kind: "add-sub-goal", goalId: view.id })} />}
           <span className="text-fg">
             <RowMenu triggerLabel={`More for ${view.name}`} menuLabel={`${view.name} actions`}>
-              <MenuAction icon={<CloseIcon />} label="Set aside" onSelect={() => open({ kind: "set-aside", goalId: view.id })} disabledReason={done || dropped ? "Reopen or restore it first" : undefined} />
-              <MenuAction icon={<CloseIcon />} label="Take back" onSelect={() => open({ kind: "take-back", goalId: view.id })} />
-              <MenuAction icon={<CloseIcon />} label="Edit" onSelect={() => open({ kind: "edit", goalId: view.id })} />
-              <MenuAction icon={<CloseIcon />} label={paused ? "Resume" : "Pause"} onSelect={() => open({ kind: paused ? "resume" : "pause", goalId: view.id })} />
-              <MenuAction icon={<CloseIcon />} label={done ? "Reopen" : "Mark bought"} onSelect={() => open({ kind: done ? "reopen" : "bought", goalId: view.id })} />
+              <MenuAction icon={<PlusIcon />} label="Set aside" onSelect={() => open({ kind: "set-aside", goalId: view.id })} disabledReason={done || dropped ? "Reopen or restore it first" : undefined} />
+              <MenuAction icon={<UndoIcon />} label="Take back" onSelect={() => open({ kind: "take-back", goalId: view.id })} />
+              <MenuAction icon={<PencilIcon />} label="Edit" onSelect={() => open({ kind: "edit", goalId: view.id })} />
+              <MenuAction icon={<PauseIcon />} label={paused ? "Resume" : "Pause"} onSelect={() => open({ kind: paused ? "resume" : "pause", goalId: view.id })} />
+              <MenuAction icon={<CheckIcon />} label={done ? "Reopen" : "Mark bought"} onSelect={() => open({ kind: done ? "reopen" : "bought", goalId: view.id })} />
               <MenuAction icon={<CloseIcon />} label={dropped ? "Restore" : "Drop"} onSelect={() => open({ kind: dropped ? "restore" : "drop", goalId: view.id })} />
               <MenuAction icon={<CloseIcon />} label="Delete" danger onSelect={() => open({ kind: "delete", goalId: view.id })} />
             </RowMenu>
@@ -271,23 +292,35 @@ function SideGoal({ view }: { view: GoalSideView }) {
   );
 }
 
+/** How many planets the phone's list shows before "Show all". */
+const LIST_SHOWN = 6;
+
 /** On a phone the planets carry no names, so they're listed under the sky: tap a row to open its goal. */
 function PlanetList({ planets, pick, onPick }: { planets: PlanetView[]; pick: string; onPick: (id: string) => void }) {
+  const [all, setAll] = useState(false);
   if (planets.length === 0) return null;
+  const shown = all || planets.length <= LIST_SHOWN ? planets : planets.slice(0, LIST_SHOWN);
   return (
     <ul className="flex flex-col md:hidden" aria-label="Every planet">
-      {planets.map((planet) => (
+      {shown.map((planet) => (
         <li key={planet.key} className={`border-t border-divider first:border-t-0 ${pick !== ALL && pick !== planet.topId ? "opacity-40" : ""}`}>
           <button type="button" onClick={() => onPick(planet.topId)} className="flex min-h-12 w-full items-center gap-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-accent">
             <GoalTile category={planet.category} colorKey={planet.colorKey} size={30} off={planet.paused} />
             <span className="min-w-0 flex-1">
-              <b className="block truncate text-[13px] font-extrabold">{planet.name.replace(/: the rest$/, " · the rest")}</b>
+              <b className="block truncate text-[13px] font-extrabold">{planet.label}</b>
               <small className="block text-[11px] font-semibold text-muted">{planet.note}</small>
             </span>
             {planet.fixed && <FixedPill />}
           </button>
         </li>
       ))}
+      {shown.length < planets.length && (
+        <li className="border-t border-divider pt-2">
+          <button type="button" onClick={() => setAll(true)} className="min-h-10 text-xs font-extrabold text-accent-text focus-visible:outline-2 focus-visible:outline-accent">
+            Show all {planets.length}
+          </button>
+        </li>
+      )}
     </ul>
   );
 }
@@ -315,11 +348,14 @@ function EmptySide() {
 }
 
 /** The Orbit card (docs/design/goals.md, "The pick"): the sky, and beside it the overview or the picked goal. */
-export function OrbitCard({ sky, side, goalSides, pick, onPick }: { sky: SkyView; side: SideView; goalSides: Record<string, GoalSideView>; pick: string; onPick: (id: string) => void }) {
+export function OrbitCard({ sky, side, goalSides, pick, onPick: choose }: { sky: SkyView; side: SideView; goalSides: Record<string, GoalSideView>; pick: string; onPick: (id: string) => void }) {
   const goalView = pick === ALL ? null : (goalSides[pick] ?? null);
   const empty = sky.sun.empty;
-  const body = useMemo(() => null, []);
-  void body;
+  // On a phone the side sits under the sky and the list of planets, out of sight of the tap: bring it into view after a pick.
+  const onPick = (id: string) => {
+    choose(id);
+    if (id !== ALL && window.matchMedia("(max-width: 767px)").matches) requestAnimationFrame(() => document.getElementById("orbit-side")?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
   return (
     <WidgetCard
       label="Your goals in orbit"
@@ -337,7 +373,7 @@ export function OrbitCard({ sky, side, goalSides, pick, onPick }: { sky: SkyView
           <Sky sky={sky} pick={pick} onPick={onPick} />
           <PlanetList planets={sky.planets} pick={pick} onPick={onPick} />
         </div>
-        <div className="flex min-w-0 flex-col gap-3.5">{empty ? <EmptySide /> : goalView ? <SideGoal view={goalView} /> : <SideAll side={side} onPick={onPick} />}</div>
+        <div id="orbit-side" className="flex min-w-0 scroll-mt-4 flex-col gap-3.5">{empty ? <EmptySide /> : goalView ? <SideGoal view={goalView} /> : <SideAll side={side} onPick={onPick} />}</div>
       </div>
     </WidgetCard>
   );

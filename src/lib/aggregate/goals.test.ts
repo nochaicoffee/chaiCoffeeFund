@@ -26,6 +26,10 @@ import {
   unitKey,
   wholeMonthsTo,
   dueOf,
+  effectiveDue,
+  horizonFor,
+  orphanGoals,
+  plannedTotal,
 } from "./goals";
 
 
@@ -361,5 +365,51 @@ describe("earmarks", () => {
   });
   it("the sample's ICICI earmarks leave out the bought headphones", () => {
     expect(earmarksByAccount(sample())["demo-icici"]).toBe(36000 + 130000);
+  });
+});
+
+describe("review findings", () => {
+  it("a parent is due on the latest of its own date and its sub-goals'", () => {
+    const parent = goal({ id: "p", name: "P", amount: 100, targetDate: "2027-06-01" });
+    const early = goal({ id: "a", parentId: "p", name: "A", amount: 1, targetDate: "2027-01-01" });
+    const late = goal({ id: "b", parentId: "p", name: "B", amount: 1, targetDate: "2028-03-01" });
+    const data: GoalsData = { goals: [parent, early, late], contributions: [] };
+    expect(dueOf(data, parent)).toBe("2028-03-01");
+    late.status = "Dropped";
+    expect(dueOf(data, parent)).toBe("2027-06-01");
+  });
+  it("a sub-goal with no date reads as its parent's: due, standing and what it needs a month agree", () => {
+    const data = sample();
+    const kid = goal({ id: "k", parentId: "fridge", name: "Cover", amount: 3000, plannedMonthly: 100 });
+    data.goals.push(kid);
+    expect(effectiveDue(data, kid)).toBe("2026-12-20");
+    expect(standing(data, kid, TODAY)).toBe("Behind");
+    expect(requiredMonthly(data, kid, TODAY)).toBe(3000);
+  });
+  it("a goal five years out can be funded on schedule: the plan runs long enough, and the minimum is its schedule, not the whole sum", () => {
+    const data: GoalsData = { goals: [goal({ id: "r", name: "Retirement", amount: 720000, targetDate: "2032-10-29", plannedMonthly: 10000 })], contributions: [] };
+    const units = fundingUnits(data);
+    expect(horizonFor(units, TODAY)).toBeGreaterThanOrEqual(74);
+    expect(minimumBudget(units, TODAY)).toBe(10000);
+    expect(hitsEveryDate(fundingPlan(units, 10000, TODAY), TODAY)).toBe(true);
+  });
+  it("counts whole months by arithmetic, month ends included, and fast for a far date", () => {
+    expect(wholeMonthsTo("2027-01-31", "2026-10-31")).toBe(3);
+    expect(wholeMonthsTo("2027-02-27", "2027-01-31")).toBe(0);
+    expect(wholeMonthsTo("2027-02-28", "2027-01-31")).toBe(1);
+    expect(wholeMonthsTo("2027-03-30", "2027-01-31")).toBe(1);
+    expect(wholeMonthsTo("2027-03-31", "2027-01-31")).toBe(2);
+    expect(wholeMonthsTo("9999-12-31", "2026-10-29")).toBe((9999 - 2026) * 12 + 2);
+  });
+  it("finds a sub-goal whose parent has gone", () => {
+    const data: GoalsData = { goals: [goal({ id: "a", name: "A", amount: 1 }), goal({ id: "k", parentId: "gone", name: "K", amount: 1 })], contributions: [] };
+    expect(orphanGoals(data).map((g) => g.id)).toEqual(["k"]);
+    expect(orphanGoals(sample())).toEqual([]);
+  });
+  it("plannedTotal skips a sub-goal under a paused parent", () => {
+    const data = sample();
+    expect(plannedTotal(data)).toBe(65000);
+    byId(data, "car").status = "Paused";
+    expect(plannedTotal(data)).toBe(65000 - 4000 - 5000 - 5000 - 3500);
   });
 });

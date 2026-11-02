@@ -1,12 +1,13 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
+import { createContext, useContext, useRef, useState, type ReactNode } from "react";
 import { deleteGoalAction, dropGoalAction, pauseGoalAction, reopenGoalAction, restoreGoalAction, resumeGoalAction, undoAction } from "@/app/goals/actions";
 import type { GoalsFormsData } from "@/app/goals/formsView";
 import { formatInr } from "@/lib/format/money";
 import type { GoalCategory } from "@/lib/sheets/types";
 import { AlertIcon, CheckIcon } from "../../cards/forms/icons";
 import { FormTriggerButton, HEADER_GHOST_CLASS, HEADER_PRIMARY_CLASS } from "../../shell/FormTriggerButton";
+import { useUndoToast } from "../../shell/UndoToast";
 import { ConfirmDialog } from "../../subscriptions/forms/ConfirmDialog";
 import { BoughtDialog } from "./BoughtDialog";
 import { EntryDialog } from "./EntryDialog";
@@ -32,8 +33,6 @@ export type GoalsFormAction =
   | { kind: "reopen"; goalId: string }
   | { kind: "delete"; goalId: string };
 
-type Toast = { kind: "saved"; undoId: string; message: string; key: number } | { kind: "done" | "error"; message: string; key: number };
-
 interface Controls {
   forms: GoalsFormsData | null;
   disabledReason?: string;
@@ -41,14 +40,12 @@ interface Controls {
 }
 
 const FormsContext = createContext<Controls>({ forms: null, open: () => undefined });
-const TOAST_MS = 6000;
 
 export const useGoalsForms = () => useContext(FormsContext);
 
 export function GoalsFormsProvider({ forms, children }: { forms: GoalsFormsData; children: ReactNode }) {
   const [open, setOpen] = useState<GoalsFormAction | null>(null);
-  const [toast, setToast] = useState<Toast | null>(null);
-  const [, startTransition] = useTransition();
+  const { saved, view: toast } = useUndoToast(undoAction);
   const disabledReason = forms.demo ? "Sample data can't be changed" : undefined;
   // The button that opened the form, so focus goes back to it on close.
   const opener = useRef<HTMLElement | null>(null);
@@ -61,25 +58,6 @@ export function GoalsFormsProvider({ forms, children }: { forms: GoalsFormsData;
     const back = opener.current;
     setTimeout(() => back?.isConnected && back.focus(), 0);
   };
-  const saved = (undo: { id: string; message: string } | undefined, message: string) => setToast(undo ? { kind: "saved", undoId: undo.id, message: undo.message, key: Date.now() } : { kind: "done", message, key: Date.now() });
-
-  function undo() {
-    if (toast?.kind !== "saved") return;
-    const { undoId } = toast;
-    setToast(null);
-    startTransition(async () => {
-      const result = await undoAction(undoId).catch(() => ({ ok: false, message: "Couldn't reach the app, so nothing was undone. Check the connection and try again." }));
-      setToast({ kind: result.ok ? "done" : "error", message: result.message, key: Date.now() });
-    });
-  }
-
-  // Each toast closes itself after a while; a newer one replaces it.
-  useEffect(() => {
-    if (!toast) return;
-    const timer = setTimeout(() => setToast(null), toast.kind === "saved" ? TOAST_MS : 4000);
-    return () => clearTimeout(timer);
-  }, [toast]);
-
   const target = open && "goalId" in open && open.goalId ? forms.goals.find((g) => g.id === open.goalId) : undefined;
   const confirmProps = { today: forms.today, onClose: close, hidden: { goalId: target?.id ?? "" } };
 
@@ -122,16 +100,7 @@ export function GoalsFormsProvider({ forms, children }: { forms: GoalsFormsData;
           onSaved={(undo) => saved(undo, `${target.name} deleted`)}
         />
       )}
-      {toast && (
-        <div role="status" className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3.5 rounded-full bg-ink py-2.5 pr-2.5 pl-5 text-[13px] font-bold text-on-ink shadow-card max-md:bottom-20" key={toast.key}>
-          <span className={toast.kind === "error" ? "text-[var(--negative-tint)]" : ""}>{toast.message}</span>
-          {toast.kind === "saved" && (
-            <button type="button" onClick={undo} className="min-h-9 rounded-full bg-[var(--on-card-fill)] px-4 text-xs font-extrabold text-[var(--on-card-lime)] hover:opacity-90 focus-visible:outline-2 focus-visible:outline-[var(--on-ink)]">
-              Undo
-            </button>
-          )}
-        </div>
-      )}
+      {toast}
     </FormsContext.Provider>
   );
 }

@@ -58,7 +58,8 @@ export async function saveGoal(_previous: FormState, formData: FormData): Promis
   }
   const existing = editing ? (all.find((g) => g.id === id) ?? null) : null;
   if (editing && !existing) return GONE;
-  const result = readGoalForm(fields(formData), all.filter((g) => !g.parentId).map((g) => g.id));
+  const hasOpenKids = existing !== null && all.some((g) => g.parentId === existing.id && (g.status === "Active" || g.status === "Paused"));
+  const result = readGoalForm(fields(formData), all.filter((g) => !g.parentId).map((g) => g.id), { allowZeroAmount: hasOpenKids });
   if (!result.ok) return { status: "invalid", errors: result.errors };
   try {
     if (existing) {
@@ -154,7 +155,12 @@ export async function undoAction(token: string): Promise<{ ok: boolean; message:
   const change = parseGoalUndo(token);
   if (!change) return { ok: false, message: "That can't be undone any more." };
   try {
-    if (change.undo === "add") await deleteGoal(repos, change.goalId);
+    if (change.undo === "add") {
+      // Money set aside, or sub-goals added, in the six seconds since: undoing the add would delete them with it, so say so instead.
+      const snapshot = await snapshotGoal(repos, change.goalId);
+      if (snapshot && (snapshot.goals.length > 1 || snapshot.contributions.length > 0)) return { ok: false, message: "It has money or sub-goals in it now: delete it from its menu if you mean to." };
+      await deleteGoal(repos, change.goalId);
+    }
     else if (change.undo === "entry") await removeContribution(repos, change.entryId);
     else if (change.undo === "status") await undoStatus(repos, change.changes);
     else if (change.undo === "edit") await editGoal(repos, change.goalId, change.previous as Partial<Omit<Goal, "id">>);

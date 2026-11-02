@@ -13,19 +13,21 @@ type Known = { accountIds: string[]; cardIds: string[] };
 export type GoalFormInput = Omit<Goal, "id" | "status" | "doneOn" | "actualCost" | "paidFromAccountId" | "paidFromCardId">;
 
 /** Add goal, Add sub-goal (it carries a `parentId`), or Edit goal. */
-export function readGoalForm(fields: FormFields, parentIds: readonly string[]): FormResult<GoalFormInput> {
+export function readGoalForm(fields: FormFields, parentIds: readonly string[], opts: { allowZeroAmount?: boolean } = {}): FormResult<GoalFormInput> {
   const f = new FieldReader(fields);
   const name = f.text("name", "Name the goal");
   const category = f.choice<GoalCategory>("category", GOAL_CATEGORIES, "Choose a category");
   const necessity = f.choice<GoalNecessity>("necessity", GOAL_NECESSITIES, "Is it a Need or a Want?");
   const scale = f.choice<GoalScale>("scale", GOAL_SCALES, "Is it a Minor or a Major goal?");
   const amount = f.amount("amount", { required: "Enter what it costs, like 85,000", label: "amount" });
-  if (amount !== undefined && amount <= 0) f.fail("amount", "Enter an amount above ₹0");
+  // A goal with open sub-goals can stand at ₹0: its sub-goals hold the cost (the write checks that).
+  if (amount !== undefined && (opts.allowZeroAmount ? amount < 0 : amount <= 0)) f.fail("amount", "Enter an amount above ₹0");
   const targetDate = f.date("targetDate");
   const dateTypeText = f.raw("dateType").trim();
   const dateType = dateTypeText === "" ? undefined : f.choice<GoalDateType>("dateType", GOAL_DATE_TYPES, "Choose Fixed or Flexible");
   if (dateType === "Fixed" && !targetDate) f.fail("targetDate", "A Fixed date needs a date");
   const startDate = f.date("startDate", "Enter when saving began");
+  if (startDate && targetDate && startDate > targetDate) f.fail("startDate", "Saving can't begin after the date it's for");
   const plannedMonthly = f.amount("plannedMonthly", { label: "planned amount" });
   const colorText = f.raw("color").trim();
   const color = colorText === "" ? undefined : f.choice<GoalColor>("color", GOAL_COLORS, "Choose a colour from the list");

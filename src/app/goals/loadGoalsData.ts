@@ -1,4 +1,4 @@
-import { computeAccountBalances } from "@/lib/aggregate/accounts";
+import { latestBalances } from "@/lib/aggregate/accounts";
 import { computeCardSummaries } from "@/lib/aggregate/cards";
 import { totalMonthlyEquivalentIncome } from "@/lib/aggregate/income";
 import { monthlyObligations } from "@/lib/aggregate/obligations";
@@ -33,8 +33,6 @@ export async function loadGoalsData(params: Record<string, string | string[] | u
     getCachedLoanInstallments(),
     getCachedIncomeSources(),
   ]);
-  const balances: Record<string, number> = {};
-  for (const b of computeAccountBalances(accounts, snapshots)) if (b.latestBalance !== null) balances[b.account.id] = b.latestBalance;
   return {
     demo: null,
     data: {
@@ -42,7 +40,7 @@ export async function loadGoalsData(params: Record<string, string | string[] | u
       contributions: contributions.records,
       accounts: accounts.map((a) => ({ id: a.id, name: a.name })),
       cards: cards.map((c) => ({ id: c.id, name: c.alias || c.name, color: cardColorKey(c.color) })),
-      balances,
+      balances: latestBalances(accounts, snapshots),
       income: totalMonthlyEquivalentIncome(sources),
       obligations: monthlyObligations({ subscriptions, cards, loans, loanInstallments: installments, cardSummaries: computeCardSummaries(cards, statements, today), yearMonth: today.slice(0, 7) }),
     },

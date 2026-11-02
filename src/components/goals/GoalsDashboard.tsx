@@ -1,6 +1,7 @@
 "use client";
 
-import { ALL, type AttentionItem, type GoalSideView, type SideView, type SkyView } from "@/app/goals/views";
+import { ALL, type GoalSideView, type SideView, type SkyView } from "@/app/goals/views";
+import type { AttentionItem } from "@/lib/goals/attention";
 import type { GoalsWidgets } from "@/app/goals/widgetsView";
 import { usePickInAddress } from "../usePickInAddress";
 import { AttentionStrip } from "./AttentionStrip";
@@ -13,7 +14,9 @@ import { AffordCard, ComingUpCard, FinishedCard, GoalsTableCard, MonthCard, Need
  * side opens that goal, and the table, Coming up and Set aside lately dim the rest.
  */
 export function GoalsDashboard({ sky, side, goalSides, widgets, attention, pickIds, initialPick }: { sky: SkyView; side: SideView; goalSides: Record<string, GoalSideView>; widgets: GoalsWidgets; attention: AttentionItem[]; pickIds: string[]; initialPick: string }) {
-  const [pick, choose] = usePickInAddress("goal", initialPick, pickIds, (id) => id === ALL);
+  const [pick, pickAny] = usePickInAddress("goal", initialPick, pickIds, (id) => id === ALL);
+  // A goal with no planet (bought or dropped) has nothing to open: a row for one doesn't change the pick, which would dim the whole sky for nothing.
+  const choose = (id: string) => pickIds.includes(id) && pickAny(id);
   const row = "grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-12";
   return (
     <div className="flex flex-col gap-5">
