@@ -46,6 +46,16 @@ export interface InvalidRow<T> extends SkippedRow {
 /** What createRepository() returns for an entity. */
 export type Repository<T extends { id: string }> = ReturnType<typeof createRepository<T>>;
 
+/** What a write module (lib/insurance/policyWrites.ts, lib/goals/goalWrites.ts) needs of a repository, so it can be tested against an in-memory one. */
+export interface WriteRepo<T extends { id: string }> {
+  list: () => Promise<T[]>;
+  get: (id: string) => Promise<T | null>;
+  create: (input: Omit<T, "id">) => Promise<T>;
+  update: (id: string, patch: Partial<Omit<T, "id">>) => Promise<T>;
+  remove: (id: string) => Promise<void>;
+  removeWhere: (match: (values: Partial<Record<keyof T, unknown>>) => boolean) => Promise<number>;
+}
+
 function toRowValues<T>(record: T, columns: (keyof T)[], dateColumns: Set<keyof T>): unknown[] {
   return columns.map((col) => {
     return toUserEnteredCell(record[col], dateColumns.has(col));

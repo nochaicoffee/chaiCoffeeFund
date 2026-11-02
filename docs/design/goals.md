@@ -1,6 +1,6 @@
 # Goals page (`/goals`)
 
-**Status: planned 2026-10-29, Q1 to Q8 answered the same day (see "Decisions"). Designed in four rounds of mockups (G1 to G16 and the forms, `design/goals/`); the hero was picked on 2026-10-31 (G14 Orbit, see "The pick"), and nothing is built.** This started as the Define and Plan stage of [process.md](../process.md) for a new section. F-GO-01 to F-GO-05 and the M6 milestone are in the PRD.
+**Status: planned 2026-10-29, Q1 to Q8 answered the same day (see "Decisions"). Designed in four rounds of mockups (G1 to G16 and the forms, `design/goals/`); the hero was picked on 2026-10-31 (G14 Orbit, see "The pick"), and it was built on 2026-11-02 (#238).** This started as the Define and Plan stage of [process.md](../process.md) for a new section. F-GO-01 to F-GO-05 and the M6 milestone are in the PRD.
 
 ## Mockups (round 1, 2026-10-29)
 

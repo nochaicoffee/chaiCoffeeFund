@@ -22,6 +22,7 @@ export const SECTIONS: Section[] = [
   { href: "/insurance", label: "Insurance", icon: "insurance" },
   { href: "/fixed-income", label: "Fixed Income", icon: "fixedIncome", comingIn: "M4 · Wealth" },
   { href: "/investments", label: "Investments", icon: "investments", comingIn: "M4 · Wealth" },
+  { href: "/goals", label: "Goals", icon: "goals" },
 ];
 
 /** True when `pathname` is this section's page or one of its sub-pages (/cards/statements is Cards). */

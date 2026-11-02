@@ -15,7 +15,7 @@ const gradient = (c: Color) => colorGradient(c.toLowerCase() as ColorKey);
  * whichever family is showing. One picker for Add card, Add account and Add subscription; it
  * offers whichever of the palette it's given.
  */
-export function ColorSwatches({ colors, value, onChange, error }: { colors: readonly Color[]; value: string; onChange: (color: string) => void; error?: string }) {
+export function ColorSwatches({ colors, value, onChange, error, optional = false }: { colors: readonly Color[]; value: string; onChange: (color: string) => void; error?: string; /** The colour has a default (a goal's category colour): it says optional and offers going back to it. */ optional?: boolean }) {
   const families = familiesOf(colors);
   const familyOfValue = families.findIndex((f) => f.colors.includes(value as Color));
   // The family being browsed; it follows the pick until the user opens another.
@@ -42,7 +42,13 @@ export function ColorSwatches({ colors, value, onChange, error }: { colors: read
   return (
     <fieldset aria-describedby={error ? "color-error" : undefined}>
       <legend className="mb-2 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
-        Colour<span className="text-negative" aria-hidden="true"> *</span>
+        Colour
+        {optional ? <span className="ml-1 font-semibold normal-case opacity-70">optional</span> : <span className="text-negative" aria-hidden="true"> *</span>}
+        {optional && value && (
+          <button type="button" onClick={() => onChange("")} className={`ml-2 rounded-full bg-fill px-2 py-0.5 text-[10px] font-extrabold normal-case hover:bg-fill-strong ${focus}`}>
+            Use the default
+          </button>
+        )}
       </legend>
       <input type="hidden" name="color" value={value} />
       <div className="flex flex-wrap gap-1.5" role="group" aria-label="Colour family">

@@ -26,58 +26,14 @@ import {
   unitKey,
   wholeMonthsTo,
   dueOf,
+  effectiveDue,
+  horizonFor,
+  orphanGoals,
+  plannedTotal,
 } from "./goals";
-import type { Goal, GoalContribution } from "../sheets/types";
 
-const TODAY = "2026-10-29";
 
-const goal = (g: Partial<Goal> & Pick<Goal, "id" | "name" | "amount">): Goal => ({
-  category: "Other",
-  necessity: "Want",
-  scale: "Minor",
-  startDate: "2026-01-01",
-  status: "Active",
-  ...g,
-});
-let n = 0;
-const set = (goalId: string, amount: number, date = "2026-09-05", extra: Partial<GoalContribution> = {}): GoalContribution => ({ id: `c${++n}`, goalId, date, amount, kind: "Set-aside", ...extra });
-const take = (goalId: string, amount: number): GoalContribution => set(goalId, amount, "2026-10-01", { kind: "Take-back" });
-const monthly = (goalId: string, from: string, count: number, each: number, extra: Partial<GoalContribution> = {}) =>
-  Array.from({ length: count }, (_, i) => set(goalId, each, new Date(Date.UTC(+from.slice(0, 4), +from.slice(5, 7) - 1 + i, 5)).toISOString().slice(0, 10), extra));
-
-/** The sample the design boards use (design/goals/generator/lib.mjs): a car with sub-goals, an iPad, a fixed-date fridge, a trip, a course, a paused camera, a bought pair of headphones. */
-const sample = (): GoalsData => ({
-  goals: [
-    goal({ id: "car", name: "Car upgrade", amount: 150000, scale: "Major", targetDate: "2028-06-30", startDate: "2026-03-01", plannedMonthly: 4000 }),
-    goal({ id: "susp", parentId: "car", name: "Suspension", amount: 45000, necessity: "Need", targetDate: "2027-04-15", startDate: "2026-03-01", plannedMonthly: 5000 }),
-    goal({ id: "tyres", parentId: "car", name: "New tyres", amount: 38000, necessity: "Need", targetDate: "2027-01-10", startDate: "2026-03-01", plannedMonthly: 5000 }),
-    goal({ id: "alloy", parentId: "car", name: "Alloy wheels", amount: 52000, targetDate: "2027-12-31", startDate: "2026-06-01", plannedMonthly: 3500 }),
-    goal({ id: "music", parentId: "car", name: "Music system", amount: 60000, targetDate: "2028-03-31", startDate: "2026-10-01" }),
-    goal({ id: "dash", parentId: "car", name: "Dashcam", amount: 9000, targetDate: "2026-12-31", startDate: "2026-05-01", status: "Dropped" }),
-    goal({ id: "ipad", name: "iPad Pro", amount: 68900, targetDate: "2027-02-28", startDate: "2026-07-01", plannedMonthly: 8000 }),
-    goal({ id: "pencil", parentId: "ipad", name: "Apple Pencil", amount: 11900, targetDate: "2027-02-28", startDate: "2026-09-01", plannedMonthly: 1500 }),
-    goal({ id: "fridge", name: "New fridge", amount: 62000, necessity: "Need", targetDate: "2026-12-20", dateType: "Fixed", startDate: "2026-08-15", plannedMonthly: 15000 }),
-    goal({ id: "goa", name: "Goa trip", amount: 85000, targetDate: "2027-06-10", startDate: "2026-08-01", plannedMonthly: 8000 }),
-    goal({ id: "masters", name: "Masters course", amount: 600000, scale: "Major", targetDate: "2029-06-30", startDate: "2026-01-01", plannedMonthly: 15000 }),
-    goal({ id: "camera", name: "Mirrorless camera", amount: 75000, startDate: "2026-04-01", status: "Paused" }),
-    goal({ id: "phones", name: "Headphones", amount: 28000, targetDate: "2026-09-30", startDate: "2026-06-01", status: "Done", doneOn: "2026-09-12", actualCost: 26499 }),
-  ],
-  contributions: [
-    ...monthly("car", "2026-03", 7, 3000),
-    ...monthly("susp", "2026-03", 4, 5000),
-    ...monthly("tyres", "2026-03", 7, 4000, { accountId: "hdfc" }),
-    ...monthly("alloy", "2026-06", 3, 2500),
-    ...monthly("dash", "2026-05", 2, 2000),
-    take("dash", 4000),
-    ...monthly("ipad", "2026-07", 4, 9000, { accountId: "icici" }),
-    ...monthly("pencil", "2026-09", 2, 3000),
-    ...monthly("fridge", "2026-08", 3, 15000, { accountId: "hdfc" }),
-    ...monthly("goa", "2026-08", 3, 7000),
-    ...monthly("masters", "2026-01", 10, 13000, { accountId: "icici" }),
-    ...monthly("camera", "2026-04", 3, 4000),
-    ...monthly("phones", "2026-06", 4, 7000),
-  ],
-});
+import { TODAY, goal, sample, set, take } from "./goals.fixture";
 const byId = (data: GoalsData, id: string) => data.goals.find((g) => g.id === id)!;
 
 describe("saved, target and the roll-up", () => {
@@ -380,9 +336,22 @@ describe("totals", () => {
 });
 
 describe("earmarks", () => {
+  const live = (...goalIds: string[]): GoalsData => ({ goals: goalIds.map((id) => goal({ id, name: id, amount: 1000 })), contributions: [] });
   it("adds set-asides and takes back take-backs per account, and ignores ones with no account", () => {
-    const e = earmarksByAccount([set("a", 100, "2026-09-01", { accountId: "x" }), set("a", 50, "2026-09-02", { accountId: "x" }), take("a", 30), { ...take("a", 20), accountId: "x" }, set("a", 999)]);
-    expect(e).toEqual({ x: 130 });
+    const data = live("a");
+    data.contributions = [set("a", 100, "2026-09-01", { accountId: "x" }), set("a", 50, "2026-09-02", { accountId: "x" }), take("a", 30), { ...take("a", 20), accountId: "x" }, set("a", 999)];
+    expect(earmarksByAccount(data)).toEqual({ x: 130 });
+  });
+  it("a bought or dropped goal holds nothing, and a paused one still does", () => {
+    const data = live("a", "b", "c");
+    data.goals[1].status = "Done";
+    data.goals[1].doneOn = TODAY;
+    data.goals[2].status = "Paused";
+    data.contributions = [set("a", 100, "2026-09-01", { accountId: "x" }), set("b", 700, "2026-09-01", { accountId: "x" }), set("c", 50, "2026-09-01", { accountId: "x" })];
+    expect(earmarksByAccount(data)).toEqual({ x: 150 });
+    data.goals[1].status = "Active";
+    data.goals[1].doneOn = undefined;
+    expect(earmarksByAccount(data)).toEqual({ x: 850 });
   });
   it("flags only accounts whose earmarks pass their balance, biggest first", () => {
     const problems = earmarkProblems({ a: 100, b: 500, c: 300, d: 10 }, { a: 100, b: 400, c: 100 });
@@ -392,6 +361,55 @@ describe("earmarks", () => {
     expect(earmarkProblems({ a: 100 }, {})).toEqual([]);
   });
   it("the sample's HDFC earmarks are the tyres and the fridge", () => {
-    expect(earmarksByAccount(sample().contributions).hdfc).toBe(28000 + 45000);
+    expect(earmarksByAccount(sample())["demo-hdfc"]).toBe(28000 + 45000);
+  });
+  it("the sample's ICICI earmarks leave out the bought headphones", () => {
+    expect(earmarksByAccount(sample())["demo-icici"]).toBe(36000 + 130000);
+  });
+});
+
+describe("review findings", () => {
+  it("a parent is due on the latest of its own date and its sub-goals'", () => {
+    const parent = goal({ id: "p", name: "P", amount: 100, targetDate: "2027-06-01" });
+    const early = goal({ id: "a", parentId: "p", name: "A", amount: 1, targetDate: "2027-01-01" });
+    const late = goal({ id: "b", parentId: "p", name: "B", amount: 1, targetDate: "2028-03-01" });
+    const data: GoalsData = { goals: [parent, early, late], contributions: [] };
+    expect(dueOf(data, parent)).toBe("2028-03-01");
+    late.status = "Dropped";
+    expect(dueOf(data, parent)).toBe("2027-06-01");
+  });
+  it("a sub-goal with no date reads as its parent's: due, standing and what it needs a month agree", () => {
+    const data = sample();
+    const kid = goal({ id: "k", parentId: "fridge", name: "Cover", amount: 3000, plannedMonthly: 100 });
+    data.goals.push(kid);
+    expect(effectiveDue(data, kid)).toBe("2026-12-20");
+    expect(standing(data, kid, TODAY)).toBe("Behind");
+    expect(requiredMonthly(data, kid, TODAY)).toBe(3000);
+  });
+  it("a goal five years out can be funded on schedule: the plan runs long enough, and the minimum is its schedule, not the whole sum", () => {
+    const data: GoalsData = { goals: [goal({ id: "r", name: "Retirement", amount: 720000, targetDate: "2032-10-29", plannedMonthly: 10000 })], contributions: [] };
+    const units = fundingUnits(data);
+    expect(horizonFor(units, TODAY)).toBeGreaterThanOrEqual(74);
+    expect(minimumBudget(units, TODAY)).toBe(10000);
+    expect(hitsEveryDate(fundingPlan(units, 10000, TODAY), TODAY)).toBe(true);
+  });
+  it("counts whole months by arithmetic, month ends included, and fast for a far date", () => {
+    expect(wholeMonthsTo("2027-01-31", "2026-10-31")).toBe(3);
+    expect(wholeMonthsTo("2027-02-27", "2027-01-31")).toBe(0);
+    expect(wholeMonthsTo("2027-02-28", "2027-01-31")).toBe(1);
+    expect(wholeMonthsTo("2027-03-30", "2027-01-31")).toBe(1);
+    expect(wholeMonthsTo("2027-03-31", "2027-01-31")).toBe(2);
+    expect(wholeMonthsTo("9999-12-31", "2026-10-29")).toBe((9999 - 2026) * 12 + 2);
+  });
+  it("finds a sub-goal whose parent has gone", () => {
+    const data: GoalsData = { goals: [goal({ id: "a", name: "A", amount: 1 }), goal({ id: "k", parentId: "gone", name: "K", amount: 1 })], contributions: [] };
+    expect(orphanGoals(data).map((g) => g.id)).toEqual(["k"]);
+    expect(orphanGoals(sample())).toEqual([]);
+  });
+  it("plannedTotal skips a sub-goal under a paused parent", () => {
+    const data = sample();
+    expect(plannedTotal(data)).toBe(65000);
+    byId(data, "car").status = "Paused";
+    expect(plannedTotal(data)).toBe(65000 - 4000 - 5000 - 5000 - 3500);
   });
 });

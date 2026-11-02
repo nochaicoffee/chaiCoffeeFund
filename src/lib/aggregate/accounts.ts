@@ -42,6 +42,13 @@ export function computeAccountBalances(accounts: Account[], snapshots: BalanceSn
   });
 }
 
+/** Each account's latest balance by id, for the checks that compare something with what an account holds; an account with no snapshot isn't in it. */
+export function latestBalances(accounts: Account[], snapshots: BalanceSnapshot[]): Record<string, number> {
+  const balances: Record<string, number> = {};
+  for (const b of computeAccountBalances(accounts, snapshots)) if (b.latestBalance !== null) balances[b.account.id] = b.latestBalance;
+  return balances;
+}
+
 /** Sum of every active account's latest balance — the "bank balances" term in net worth. */
 export function totalAccountBalance(accounts: Account[], snapshots: BalanceSnapshot[]): number {
   return computeAccountBalances(accounts, snapshots)

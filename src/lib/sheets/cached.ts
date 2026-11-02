@@ -15,6 +15,8 @@ import { loanInstallmentsRepository } from "./loanInstallments";
 import { loanPrepaymentsRepository } from "./loanPrepayments";
 import { policiesRepository } from "./policies";
 import { policyPaymentsRepository } from "./policyPayments";
+import { goalsRepository } from "./goals";
+import { goalContributionsRepository } from "./goalContributions";
 import { investmentTransactionsRepository } from "./investmentTransactions";
 import { fixedDepositsRepository } from "./fixedDeposits";
 import { balanceReviewsRepository } from "./balanceReviews";
@@ -50,6 +52,8 @@ export const CACHE_TAGS = {
   loanPrepayments: "loanPrepayments",
   policies: "policies",
   policyPayments: "policyPayments",
+  goals: "goals",
+  goalContributions: "goalContributions",
   investmentTransactions: "investmentTransactions",
   fixedDeposits: "fixedDeposits",
   balanceReviews: "balanceReviews",
@@ -160,3 +164,11 @@ export const getCachedFixedDepositById = cachedGetById(getCachedFixedDeposits);
 export const getCachedBalanceReviewsTab = cachedTab(balanceReviewsRepository, CACHE_TAGS.balanceReviews);
 export const getCachedBalanceReviews = cachedList(getCachedBalanceReviewsTab);
 export const getCachedBalanceReviewById = cachedGetById(getCachedBalanceReviews);
+
+export const getCachedGoalsTab = cachedTab(goalsRepository, CACHE_TAGS.goals);
+export const getCachedGoals = cachedList(getCachedGoalsTab);
+export const getCachedGoalById = cachedGetById(getCachedGoals);
+
+export const getCachedGoalContributionsTab = cachedTab(goalContributionsRepository, CACHE_TAGS.goalContributions);
+export const getCachedGoalContributions = cachedList(getCachedGoalContributionsTab);
+export const getCachedGoalContributionById = cachedGetById(getCachedGoalContributions);

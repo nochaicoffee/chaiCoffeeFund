@@ -84,6 +84,13 @@ export const icons = {
       <line x1="20" y1="20" x2="20" y2="14" />
     </Icon>
   ),
+  goals: (
+    <Icon>
+      <circle cx="12" cy="12" r="9" />
+      <circle cx="12" cy="12" r="5" />
+      <circle cx="12" cy="12" r="1.2" />
+    </Icon>
+  ),
   expand: (
     <Icon size={15}>
       <polyline points="13 17 18 12 13 7" />

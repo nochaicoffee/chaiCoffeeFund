@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useRef, useState, useTransition, type ReactNode } from "react";
+import { createContext, useContext, useRef, useState, type ReactNode } from "react";
 import { deletePaymentAction, deletePolicyAction, restartPolicyAction, undoAction } from "@/app/insurance/actions";
 import type { InsuranceFormsData } from "@/app/insurance/formsView";
 import { formatDate } from "@/lib/format/date";
@@ -10,6 +10,7 @@ import { AlertIcon, CheckIcon } from "../../cards/forms/icons";
 import { FormTriggerButton, HEADER_GHOST_CLASS, HEADER_PRIMARY_CLASS, SMALL_OK } from "../../shell/FormTriggerButton";
 
 export { SMALL_OK };
+import { useUndoToast } from "../../shell/UndoToast";
 import { ConfirmDialog } from "../../subscriptions/forms/ConfirmDialog";
 import { CancelDialog } from "./CancelDialog";
 import { EditPaymentDialog } from "./EditPaymentDialog";
@@ -33,8 +34,6 @@ type Open =
   | { kind: "edit-payment"; id: string }
   | { kind: "delete-payment"; id: string };
 
-type Toast = { kind: "saved"; undoId: string; message: string; key: number } | { kind: "done" | "error"; message: string; key: number };
-
 interface Controls {
   forms: InsuranceFormsData;
   disabledReason?: string;
@@ -42,7 +41,6 @@ interface Controls {
 }
 
 const FormsContext = createContext<Controls | null>(null);
-const TOAST_MS = 6000;
 
 export function useInsuranceForms(): Controls {
   const controls = useContext(FormsContext);
@@ -52,8 +50,7 @@ export function useInsuranceForms(): Controls {
 
 export function InsuranceFormsProvider({ forms, children }: { forms: InsuranceFormsData; children: ReactNode }) {
   const [open, setOpen] = useState<Open | null>(null);
-  const [toast, setToast] = useState<Toast | null>(null);
-  const [, startTransition] = useTransition();
+  const { saved, view: toast } = useUndoToast(undoAction);
   const disabledReason = forms.demo ? "Sample data can't be changed" : undefined;
   // The button that opened the form, so focus goes back to it on close.
   const opener = useRef<HTMLElement | null>(null);
@@ -66,25 +63,6 @@ export function InsuranceFormsProvider({ forms, children }: { forms: InsuranceFo
     const back = opener.current;
     setTimeout(() => back?.isConnected && back.focus(), 0);
   };
-  const saved = (undo: { id: string; message: string } | undefined, message: string) => setToast(undo ? { kind: "saved", undoId: undo.id, message: undo.message, key: Date.now() } : { kind: "done", message, key: Date.now() });
-
-  function undo() {
-    if (toast?.kind !== "saved") return;
-    const { undoId } = toast;
-    setToast(null);
-    startTransition(async () => {
-      const result = await undoAction(undoId).catch(() => ({ ok: false, message: "Couldn't reach the app, so nothing was undone. Check the connection and try again." }));
-      setToast({ kind: result.ok ? "done" : "error", message: result.message, key: Date.now() });
-    });
-  }
-
-  // Each toast closes itself after a while; a newer one replaces it.
-  useEffect(() => {
-    if (!toast) return;
-    const timer = setTimeout(() => setToast(null), toast.kind === "saved" ? TOAST_MS : 4000);
-    return () => clearTimeout(timer);
-  }, [toast]);
-
   const policyOf = (id: string) => forms.policies.find((p) => p.id === id);
   const paymentOf = open?.kind === "edit-payment" || open?.kind === "delete-payment" ? forms.payments.find((p) => p.id === open.id) : undefined;
   const paymentPolicy = paymentOf ? policyOf(paymentOf.policyId) : undefined;
@@ -143,16 +121,7 @@ export function InsuranceFormsProvider({ forms, children }: { forms: InsuranceFo
           onSaved={() => saved(undefined, `${target.name} deleted`)}
         />
       )}
-      {toast && (
-        <div role="status" className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3.5 rounded-full bg-ink py-2.5 pr-2.5 pl-5 text-[13px] font-bold text-on-ink shadow-card max-md:bottom-20" key={toast.key}>
-          <span className={toast.kind === "error" ? "text-[var(--negative-tint)]" : ""}>{toast.message}</span>
-          {toast.kind === "saved" && (
-            <button type="button" onClick={undo} className="min-h-9 rounded-full bg-[var(--on-card-fill)] px-4 text-xs font-extrabold text-[var(--on-card-lime)] hover:opacity-90 focus-visible:outline-2 focus-visible:outline-[var(--on-ink)]">
-              Undo
-            </button>
-          )}
-        </div>
-      )}
+      {toast}
     </FormsContext.Provider>
   );
 }
