@@ -10,6 +10,7 @@ const OUT = join(HERE, "..");
 const heights = JSON.parse(readFileSync(join(HERE, "heights.json"), "utf8"));
 const doc = (inner) => `<!doctype html><html><head><meta charset="utf-8">${FONT_LINK}<style>${CSS}</style></head><body style="margin:0">${inner}</body></html>`;
 const TABS = [
+  ["R5 Pot", "GoalsR5Pot.dc.html"], ["R5 Moons", "GoalsR5Moons.dc.html"], ["R5 List", "GoalsR5List.dc.html"], ["R5 Forms", "GoalsR5Forms.dc.html"],
   ["Final page (Orbit)", "GoalsFinal.dc.html"], ["States", "GoalsStates.dc.html"], ["Phone", "GoalsPhone.dc.html"], ["Forms 2", "GoalsForms2.dc.html"],
   ["G13 Flow", "GoalsG13.dc.html"], ["G14 Orbit", "GoalsG14.dc.html"], ["G15 Receipt", "GoalsG15.dc.html"], ["G16 Calendar", "GoalsG16.dc.html"],
   ["G9 Cover", "GoalsG9.dc.html"], ["G10 Map", "GoalsG10.dc.html"], ["G11 Board", "GoalsG11.dc.html"], ["G12 Tickets", "GoalsG12.dc.html"],

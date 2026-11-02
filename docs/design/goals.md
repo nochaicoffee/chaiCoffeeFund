@@ -77,6 +77,20 @@ What the sky means, and the rules it adds (each needs his yes before it's built,
 
 Still to do before building: the Overview attention items beyond the one drawn, and the `?goal=` pick for a goal deep in the address.
 
+
+## Round 5 (2026-11-03): a part is part of its goal
+
+After using the built page, Prathik found that **a sub-goal isn't really separate from its main goal**. He set aside ₹2,00,000 on the car and a ₹45,000 suspension should have come under that money; the list repeated sub-goals as if they were goals; parts could be added only as a separate "Add sub-goal"; and the sky showed parts as planets of their own. Four boards in [`design/goals/`](../../design/goals/) (built by the same generator, `dash5.mjs`) show the way out. **Nothing here is picked or built yet.**
+
+| Board | The choice |
+|---|---|
+| `GoalsR5Pot` | What a set-aside on a main goal does. **A, one pot filled in order** (the pot covers Needs first, then the soonest, then the smaller; parts have a cost, a date and Need or Want, and no set-asides of their own), **B, one pot you split by hand**, or **C, each part its own pot** (what's built, and what confuses). With ₹2,00,000 on the car, A covers tyres, suspension, alloy wheels and the music system (₹1,95,000) and puts ₹5,000 on the rest of the car; what the car needs a month falls from ₹23,159 to ₹7,250. |
+| `GoalsR5Moons` | The sky with a planet per **main goal** (placed by its last date, sized by its total, its arc what the pot holds). **M1** moons always, **M2** moons when you pick a planet (with a count chip on the others), **M3** a pip per part on the rim. |
+| `GoalsR5List` | The goals table with **main goals only** and a count of parts: **L1** the parts open under the goal, **L2** the count opens a small card, **L3** the set-aside bar is cut into parts. |
+| `GoalsR5Forms` | **Parts live inside the main goal's own form** (Add goal and Edit goal have a Parts section), and "Add sub-goal" goes. Set aside shows what the pot covers. |
+
+If A is picked, the data changes: `GoalContributions` are only ever on a main goal; a part's saved and funded are worked out from the pot, so its own set-asides go and the existing ones (none in the real Sheet) would be folded into the main goal. That is the money rule that needs his yes before it's built, like the others.
+
 ## What it is
 
 A page for monetary goals you save towards: a car upgrade, an iPad, a fridge. A goal can be split into sub-goals (the car upgrade has suspension, tyres, alloy wheels). Each goal says why it exists (**Need** or **Want**), how long a commitment it is (**Minor**, short-term, or **Major**, long-term), when it's wanted, and how much is set aside so far. The page answers three questions:
