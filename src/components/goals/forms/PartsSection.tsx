@@ -1,6 +1,6 @@
 "use client";
 
-import { formatInr } from "@/lib/format/money";
+import { formatInr, parseAmountText } from "@/lib/format/money";
 import type { GoalNecessity } from "@/lib/sheets/types";
 import { DateInput, MoneyInput, TextInput } from "../../cards/forms/fields";
 import { PlusIcon } from "../../cards/forms/icons";
@@ -63,7 +63,7 @@ export function PartsSection({ rows, onChange, today, showGiven, error }: { rows
               <span className="w-36">
                 <MoneyInput aria-label={`${row.name.trim() || `Part ${index + 1}`}: given from the pot`} placeholder="0" value={row.given} onChange={(e) => set(row.key, { given: e.target.value })} invalid={false} />
               </span>
-              {row.amount && <span className="tabular-nums">of {formatInr(Number(row.amount.replace(/[^\d.]/g, "")) || 0)}</span>}
+              {row.amount && <span className="tabular-nums">of {formatInr(parseAmountText(row.amount) ?? 0)}</span>}
             </label>
           )}
         </div>

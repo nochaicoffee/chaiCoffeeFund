@@ -64,7 +64,7 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
   const left = goal ? Math.max(0, goalTarget - after) : 0;
   const needsAfter = goal?.dueDate && !hasParts ? requiredFor(left, goal.targetDate ?? goal.dueDate, forms.today) : 0;
   const needsBefore = goal?.dueDate && !hasParts ? requiredFor(Math.max(0, goalTarget - before), goal.targetDate ?? goal.dueDate, forms.today) : 0;
-  const given = goal && hasParts && !take && give ? fillInOrder(goal.parts.map((part) => ({ id: part.id, amount: part.amount, saved: part.saved, necessity: part.necessity, dateType: part.dateType, due: part.targetDate ?? goal.dueDate })), Math.min(paid, paid + goal.free)) : {};
+  const given = goal && hasParts && !take && give ? fillInOrder(goal.parts.map((part) => ({ id: part.id, amount: part.amount, saved: part.saved, necessity: part.necessity, dateType: part.dateType, due: part.targetDate ?? goal.dueDate })), paid) : {};
   const givenTotal = Object.values(given).reduce((total, value) => total + value, 0);
   const filled = goal ? goal.parts.filter((part) => (given[part.id] ?? 0) > 0 && part.saved + (given[part.id] ?? 0) >= part.amount).length : 0;
   const account = forms.accounts.find((a) => a.id === accountId);

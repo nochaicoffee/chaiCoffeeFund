@@ -20,7 +20,8 @@ describe("the goals table", () => {
     const music = tableRows(data, TODAY).find((r) => r.id === "car")!.parts.find((p) => p.name === "Music system")!;
     expect(music.due).toBe("2028-06-30");
     expect(music.expected).not.toBeNull();
-    expect(music.standing).toBe("No plan");
+    // Parts aren't planned one by one: a part not yet covered reads its goal's standing (the car is behind its plan).
+    expect(music.standing).toBe("Behind");
   });
   it("a bought goal shows what it cost and how far under, and a dropped one says it's released and keeps no parts", () => {
     expect(rows.find((r) => r.id === "phones")).toMatchObject({ standing: "Done", off: true, settled: "paid Sep 12 · ₹1,501 under" });
@@ -127,5 +128,17 @@ describe("the other cards", () => {
     const empty = goalsWidgets(sample("empty"), TODAY);
     expect(empty).toMatchObject({ table: [], comingUp: [], setAsides: [], finished: [], stair: null });
     expect(rupees(empty.afford.income)).toBe(138500);
+  });
+});
+
+describe("money given from a pot to a part", () => {
+  it("is not money set aside this month, nor an entry in 'Set aside lately'", () => {
+    const data = sample("pot");
+    // The sample's "today" is Oct 29 and the moves are dated Oct 20: the plans this month see none of the ₹1,95,000 given.
+    const tyres = monthView(data, TODAY).rows.find((r) => r.key === "tyres");
+    expect(tyres?.done ?? 0).toBe(0);
+    const lately = setAsidesView(data, TODAY, 200);
+    expect(lately.some((e) => e.name === "Tyres")).toBe(false);
+    expect(lately.filter((e) => e.name === "Car upgrade")).toHaveLength(8);
   });
 });

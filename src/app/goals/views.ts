@@ -231,6 +231,9 @@ export const pieceColor = (data: GoalsPageData, piece: SkyPiece): ColorKey => {
 export function partLines(data: GoalsPageData, goal: Goal, today: string, d: GoalsDerived): PartLine[] {
   if (liveKids(data, goal.id).length === 0) return [];
   const pieces = new Map(d.pieces.filter((p) => p.topId === goal.id).map((p) => [p.key, p]));
+  // Parts aren't planned one by one (the goal has the plan), so a part that isn't covered yet reads the goal's own standing.
+  const goalStanding = standing(data, goal, today);
+  const partStanding: PartLine["standing"] = goalStanding === "On track" ? "On track" : goalStanding === "Behind" || goalStanding === "Overdue" ? "Behind" : "No plan";
   const make = (n: number, g: Goal, own: boolean): PartLine => {
     const piece = pieces.get(own ? `${g.id}#own` : g.id);
     const saved = own ? ownCovered(data, g) : savedOwn(data, g.id);
@@ -258,7 +261,7 @@ export function partLines(data: GoalsPageData, goal: Goal, today: string, d: Goa
       expected: expectedProgress(data, g, today),
       savedText: `${formatInrCompact(saved)} of ${formatInrCompact(amount)}`,
       left: formatInr(Math.max(0, amount - saved)),
-      standing: paused ? "Paused" : saved >= amount ? "Funded" : !(piece?.planned ?? 0) ? "No plan" : (piece?.planned ?? 0) >= (piece?.required ?? 0) ? "On track" : "Behind",
+      standing: paused ? "Paused" : saved >= amount ? "Funded" : partStanding,
     };
   };
   const kids = partsInOrder(data, goal);

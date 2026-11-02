@@ -171,8 +171,13 @@ export const resumeGoal = (repos: GoalRepos, id: string) => setStatus(repos, id,
 export async function dropGoal(repos: GoalRepos, id: string, today: string): Promise<StatusChange[]> {
   const goal = await mustGet(repos, id);
   // A dropped part's money stays set aside for the goal it was part of: it goes back to that goal's pot.
-  if (goal.parentId && open(goal)) await returnPartToPot(repos, id, today);
-  return setStatus(repos, id, "Dropped", ["Active", "Paused"], ["Active", "Paused"], "dropped");
+  const moved = goal.parentId && open(goal) ? await returnPartToPot(repos, id, today) : null;
+  try {
+    return await setStatus(repos, id, "Dropped", ["Active", "Paused"], ["Active", "Paused"], "dropped");
+  } catch (error) {
+    await moved?.undo();
+    throw error;
+  }
 }
 
 /** Bring a dropped goal back. Only the goal itself: a parent's sub-goals are restored one by one. */

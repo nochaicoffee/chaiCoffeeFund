@@ -1,5 +1,5 @@
 import { daysBetween } from "@/lib/aggregate/cardSpend";
-import { effectiveDue, expectedProgress, fundingPlan, fundingUnits, monthsLeft, necessitySplit, plannedOf, requiredMonthly, savedOf, standing, targetOf, topGoals, wholeMonthsTo, type GoalStanding } from "@/lib/aggregate/goals";
+import { effectiveDue, expectedProgress, isPotMove, fundingPlan, fundingUnits, monthsLeft, necessitySplit, plannedOf, requiredMonthly, savedOf, standing, targetOf, topGoals, wholeMonthsTo, type GoalStanding } from "@/lib/aggregate/goals";
 import { addMonthsUTC } from "@/lib/aggregate/recurring";
 import { formatDate, formatShortDate } from "@/lib/format/date";
 import { goalColorKey } from "@/lib/format/goalLabels";
@@ -150,7 +150,8 @@ export function monthView(data: GoalsPageData, today: string, d: GoalsDerived = 
   const rows = d.pieces
     .filter((p) => !p.paused)
     .map((p): MonthRow => {
-      const entries = data.contributions.filter((c) => c.goalId === p.goalId && c.date.startsWith(month));
+      // Money given from a goal's pot to a part only changed hands: it isn't set aside this month.
+      const entries = data.contributions.filter((c) => c.goalId === p.goalId && c.date.startsWith(month) && !isPotMove(c));
       const done = Math.max(0, sum(entries.map((c) => (c.kind === "Set-aside" ? c.amount : -c.amount))));
       const state: MonthRow["state"] = done >= p.planned && p.planned > 0 ? (done > p.planned ? "extra" : "done") : done > 0 ? "short" : "notyet";
       return {
@@ -294,7 +295,7 @@ export interface EntryCard {
 
 export function setAsidesView(data: GoalsPageData, today: string, n = 7): EntryCard[] {
   return [...data.contributions]
-    .filter((c) => c.date <= today && goalOf(data, c.goalId))
+    .filter((c) => c.date <= today && goalOf(data, c.goalId) && !isPotMove(c))
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id.localeCompare(a.id)))
     .slice(0, n)
     .map((c) => {

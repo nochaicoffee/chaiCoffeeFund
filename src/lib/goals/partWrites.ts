@@ -56,18 +56,22 @@ function allocate(held: Map<string, number>, amount: number): [string, number][]
 
 /**
  * Moves money from one goal's set-asides to another's, account by account: a take-back on `from` and a set-aside on `to` for each account it
- * sits in. Returns the ids it created, in order, which is what Undo removes (last first).
+ * sits in. `ledger` is the goal entries as the caller read them (read once per write): the move reads from it and adds what it creates. Returns
+ * the ids it created, in order, which is what Undo removes (last first).
  */
-export async function moveMoney(repos: GoalRepos, from: Goal, to: Goal, amount: number, date: string, notes: { out: string; in: string }, journal: Journal): Promise<string[]> {
+export async function moveMoney(repos: GoalRepos, from: Goal, to: Goal, amount: number, date: string, notes: { out: string; in: string }, journal: Journal, ledger: GoalContribution[]): Promise<string[]> {
   if (amount <= 0) return [];
-  const split = allocate(heldByAccount(await repos.contributions.list(), from.id), amount);
-  if (!split) throw new InvalidRowError(`Only part of ${rupees(amount)} is set aside in ${from.name}`);
+  const held = heldByAccount(ledger, from.id);
+  const net = [...held.values()].reduce((total, value) => total + value, 0);
+  const split = amount <= net ? allocate(held, amount) : null;
+  if (!split) throw new InvalidRowError(`Only ${rupees(Math.max(0, net))} is set aside in ${from.name}, not ${rupees(amount)}`);
   const created: string[] = [];
   for (const [key, part] of split) {
     const account = key === NO_ACCOUNT ? {} : { accountId: key };
     for (const [goalId, kind, note] of [[from.id, "Take-back", notes.out], [to.id, "Set-aside", notes.in]] as const) {
       const row = await repos.contributions.create(createGoalContributionSchema.parse({ goalId, kind, amount: part, date, note, ...account }));
       journal.add(() => repos.contributions.remove(row.id));
+      ledger.push(row);
       created.push(row.id);
     }
   }
@@ -80,19 +84,19 @@ const giveNotes = (part: Goal, main: Goal) => ({ out: moveNotes.given(part.name)
 const backNotes = (part: Goal, main: Goal) => ({ out: moveNotes.back(main.name), in: moveNotes.backFrom(part.name) });
 
 /** Puts a part's money back into its goal's pot (a part is dropped or removed). Returns the ids it created. */
-export async function returnToPot(repos: GoalRepos, part: Goal, main: Goal, date: string, journal = new Journal()): Promise<string[]> {
-  const saved = savedOwn({ goals: [], contributions: await repos.contributions.list() }, part.id);
-  return moveMoney(repos, part, main, saved, date, backNotes(part, main), journal);
+export async function returnToPot(repos: GoalRepos, part: Goal, main: Goal, date: string, journal: Journal, ledger: GoalContribution[]): Promise<string[]> {
+  return moveMoney(repos, part, main, savedOwn({ goals: [], contributions: ledger }, part.id), date, backNotes(part, main), journal, ledger);
 }
 
-/** Journal-less move for a caller that wants the ids and no rollback of its own (Drop: the status change comes next). */
-export async function returnPartToPot(repos: GoalRepos, partId: string, date: string): Promise<string[]> {
+/** Puts a part's money back in its goal's pot for a caller whose next step may fail: the result's `undo` takes the move out again. */
+export async function returnPartToPot(repos: GoalRepos, partId: string, date: string): Promise<{ ids: string[]; undo: () => Promise<void> }> {
   const part = await repos.goals.get(partId);
   const main = part?.parentId ? await repos.goals.get(part.parentId) : null;
-  if (!part || !main) return [];
+  if (!part || !main) return { ids: [], undo: async () => undefined };
   const journal = new Journal();
   try {
-    return await returnToPot(repos, part, main, date, journal);
+    const ids = await returnToPot(repos, part, main, date, journal, await repos.contributions.list());
+    return { ids, undo: () => journal.rollBack() };
   } catch (error) {
     await journal.rollBack();
     throw error;
@@ -113,12 +117,12 @@ export async function setAsideAndGive(repos: GoalRepos, input: Omit<GoalContribu
   try {
     const created = await repos.contributions.create(entry);
     journal.add(() => repos.contributions.remove(created.id));
-    const data = { goals: await repos.goals.list(), contributions: await repos.contributions.list() };
+    const data = { goals: await repos.goals.list(), contributions: [...(await repos.contributions.list())] };
     const additions = fillInOrder(fillPartsOf(data, main), Math.min(entry.amount, freePot(data, main)));
     const moved: string[] = [];
     for (const [partId, amount] of Object.entries(additions)) {
       const part = data.goals.find((g) => g.id === partId) as Goal;
-      moved.push(...(await moveMoney(repos, main, part, amount, date, giveNotes(part, main), journal)));
+      moved.push(...(await moveMoney(repos, main, part, amount, date, giveNotes(part, main), journal, data.contributions)));
     }
     return { entry: created, moved };
   } catch (error) {
@@ -176,10 +180,15 @@ export async function saveGoalWithParts(repos: GoalRepos, id: string | null, inp
   const keptIds = new Set(input.parts.flatMap((part) => (part.id ? [part.id] : [])));
   for (const partId of keptIds) if (!openKids.some((kid) => kid.id === partId)) throw new NotFoundError("A part isn't in the Goals tab any more. Close this and refresh.");
   const removed = openKids.filter((kid) => !keptIds.has(kid.id));
-  const goalFields = createGoalSchema.parse({ ...input.goal, status: stored?.status ?? "Active" });
-  if (goalFields.amount <= 0 && input.parts.length === 0) throw new InvalidRowError("Enter the amount: only a goal with parts can stand at ₹0");
+  // A bought or dropped goal can still have its own fields changed, but it takes no parts and holds no pot to give out.
+  if (stored && stored.status !== "Active" && stored.status !== "Paused" && input.parts.length > 0) throw new InvalidRowError(`${stored.name} is ${stored.status === "Done" ? "bought" : "dropped"}: reopen or restore it before changing its parts`);
+  // An edit is merged over the stored row (which keeps its status and bought details); only a new goal is read whole.
+  const patch = stored ? updateGoalSchema.parse(goalFieldsPatch(input.goal)) : null;
+  const created = stored ? null : createGoalSchema.parse({ ...input.goal, status: "Active" });
+  if (input.goal.amount <= 0 && input.parts.length === 0) throw new InvalidRowError("Enter the amount: only a goal with parts can stand at ₹0");
 
-  const dataNow = { goals: all, contributions: await repos.contributions.list() };
+  const ledger = [...(await repos.contributions.list())];
+  const dataNow = { goals: all, contributions: ledger };
   const pot = stored ? sum([stored.id, ...openKids.map((kid) => kid.id)].map((goalId) => savedOwn(dataNow, goalId))) : 0;
   const problem = checkParts(input.parts, pot);
   if (problem) throw new InvalidRowError(problem);
@@ -189,12 +198,12 @@ export async function saveGoalWithParts(repos: GoalRepos, id: string | null, inp
   let touchedParts = removed.length > 0 || input.parts.some((part) => !part.id);
   try {
     // Parts that are going give their money back first, so what's given below comes from the full pot.
-    for (const gone of removed) await returnToPot(repos, gone, stored as Goal, today, journal);
-    if (stored) {
-      main = await repos.goals.update(stored.id, updateGoalSchema.parse(goalFieldsPatch(goalFields)));
+    for (const gone of removed) await returnToPot(repos, gone, stored as Goal, today, journal, ledger);
+    if (stored && patch) {
+      main = await repos.goals.update(stored.id, patch);
       journal.add(async () => void (await repos.goals.update(stored.id, updateGoalSchema.parse(previousFields(stored)))));
     } else {
-      main = await repos.goals.create(goalFields);
+      main = await repos.goals.create(created as Omit<Goal, "id">);
       journal.add(() => repos.goals.remove(main.id));
     }
     const made = new Map<PartInput, Goal>();
@@ -217,14 +226,14 @@ export async function saveGoalWithParts(repos: GoalRepos, id: string | null, inp
       }
     }
     // Shares: parts that hold more than they should give back first, then the others take from the pot.
-    const fresh = { goals: [], contributions: await repos.contributions.list() };
+    const fresh = { goals: [], contributions: ledger };
     const deltas = input.parts.map((part) => ({ row: made.get(part) as Goal, delta: part.given - (part.id ? savedOwn(fresh, part.id) : 0) }));
     for (const { row, delta } of deltas.filter((d) => d.delta < 0)) {
-      await moveMoney(repos, row, main, -delta, today, backNotes(row, main), journal);
+      await moveMoney(repos, row, main, -delta, today, backNotes(row, main), journal, ledger);
       touchedParts = true;
     }
     for (const { row, delta } of deltas.filter((d) => d.delta > 0)) {
-      await moveMoney(repos, main, row, delta, today, giveNotes(row, main), journal);
+      await moveMoney(repos, main, row, delta, today, giveNotes(row, main), journal, ledger);
       touchedParts = true;
     }
   } catch (error) {
@@ -234,14 +243,19 @@ export async function saveGoalWithParts(repos: GoalRepos, id: string | null, inp
   // A part that's gone is deleted last, with its entries: its money is already back in the pot, so nothing is lost if this stops half way.
   if (removed.length > 0) {
     const ids = new Set(removed.map((kid) => kid.id));
-    await repos.contributions.removeWhere((values) => ids.has(String(values.goalId)));
-    for (const gone of removed) await repos.goals.remove(gone.id);
+    try {
+      await repos.contributions.removeWhere((values) => ids.has(String(values.goalId)));
+      for (const gone of removed) await repos.goals.remove(gone.id);
+    } catch {
+      // Everything else is saved and each part's money is back in the pot, so say so in words instead of reporting a failed save.
+      throw new InvalidRowError("Your changes are saved, but a part you took off couldn't be deleted. Its money is back in the pot: open Edit goal and take it off again.");
+    }
   }
   return { goal: main, touchedParts };
 }
 
 /** The goal's own fields as an update sets them ("" clears an optional one), from what a form sent. */
-function goalFieldsPatch(fields: Omit<Goal, "id">): Record<string, string | number> {
+function goalFieldsPatch(fields: Pick<Goal, "name" | "category" | "necessity" | "scale" | "amount" | "startDate" | "targetDate" | "dateType" | "plannedMonthly" | "color" | "link" | "notes">): Record<string, string | number> {
   return { name: fields.name, category: fields.category, necessity: fields.necessity, scale: fields.scale, amount: fields.amount, startDate: fields.startDate, targetDate: fields.targetDate ?? "", dateType: fields.dateType ?? "", plannedMonthly: fields.plannedMonthly ?? "", color: fields.color ?? "", link: fields.link ?? "", notes: fields.notes ?? "" };
 }
 

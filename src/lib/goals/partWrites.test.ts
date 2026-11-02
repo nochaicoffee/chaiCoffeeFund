@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { earmarksByAccount, freePot, isPotMove, ownCovered, savedOf, savedOwn, targetOf } from "../aggregate/goals";
 import type { Goal } from "../sheets/types";
 import { addContribution, dropGoal, markBought, undoStatus } from "./goalWrites";
+import { goalUndoToken, parseGoalUndo } from "./goalUndo";
+import { removeContribution } from "./goalWrites";
 import { checkParts, saveGoalWithParts, setAsideAndGive, type GoalWithParts, type PartInput } from "./partWrites";
 import { setup } from "./testRepos";
 
@@ -162,5 +164,49 @@ describe("dropping and buying a part", () => {
     expect(savedOf(data, w.car)).toBe(162000);
     expect(targetOf(data, w.car)).toBe(150000 + 45000 + 52000);
     expect(earmarksByAccount(data)).toEqual({ hdfc: 162000 });
+  });
+});
+
+describe("editing a goal that is closed", () => {
+  it("a bought goal's own fields can be changed, but it takes no parts", async () => {
+    const w = await carWithPot();
+    await Promise.all(w.parts.map((p) => w.goals.update(p.id, { status: "Dropped" })));
+    await markBought(w.repos, w.car.id, { doneOn: TODAY, actualCost: 140000 });
+    await expect(saveGoalWithParts(w.repos, w.car.id, { goal: car({ name: "Car (done)" }), parts: [] }, TODAY)).resolves.toMatchObject({ goal: { name: "Car (done)", status: "Done", doneOn: TODAY } });
+    await expect(saveGoalWithParts(w.repos, w.car.id, { goal: car(), parts: [part({ name: "Late part" })] }, TODAY)).rejects.toThrow(/bought: reopen or restore/);
+  });
+  it("a dropped goal takes no parts either", async () => {
+    const w = await carWithPot();
+    await dropGoal(w.repos, w.car.id, TODAY);
+    await expect(saveGoalWithParts(w.repos, w.car.id, { goal: car(), parts: [part({ name: "Late part" })] }, TODAY)).rejects.toThrow(/dropped: reopen or restore/);
+  });
+});
+
+describe("undoing a set-aside that was given to the parts", () => {
+  it("takes the moves out last-first, then the set-aside, and leaves the ledger as it was", async () => {
+    const w = await carWithPot();
+    const before = JSON.stringify(w.contributions.rows);
+    const got = await setAsideAndGive(w.repos, { goalId: w.car.id, kind: "Set-aside", amount: 60000, date: TODAY, accountId: "hdfc" }, TODAY);
+    const token = parseGoalUndo(goalUndoToken({ undo: "entry", entryId: got.entry.id, moved: got.moved }));
+    expect(token).toMatchObject({ undo: "entry", moved: got.moved });
+    for (const id of [...got.moved].reverse()) await removeContribution(w.repos, id);
+    await removeContribution(w.repos, got.entry.id);
+    expect(JSON.stringify(w.contributions.rows)).toBe(before);
+  });
+});
+
+describe("dropping a part when the status change fails", () => {
+  it("takes the money back out of the pot, so nothing moved", async () => {
+    const w = await carWithPot();
+    const t = byName(w.parts, "Tyres");
+    await saveGoalWithParts(w.repos, w.car.id, { goal: car(), parts: w.parts.map((p) => ({ name: p.name, amount: p.amount, necessity: p.necessity, targetDate: p.targetDate, id: p.id, given: p.id === t.id ? 38000 : 0 })) }, TODAY);
+    const before = JSON.stringify(w.contributions.rows);
+    const real = w.goals.update;
+    w.goals.update = async () => {
+      throw new Error("Sheets is down");
+    };
+    await expect(dropGoal(w.repos, t.id, TODAY)).rejects.toThrow(/Sheets is down/);
+    w.goals.update = real;
+    expect(JSON.stringify(w.contributions.rows)).toBe(before);
   });
 });
