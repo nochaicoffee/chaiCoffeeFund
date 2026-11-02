@@ -2,6 +2,7 @@ import { computeAccountBalances } from "@/lib/aggregate/accounts";
 import { computeCardSummaries } from "@/lib/aggregate/cards";
 import { totalMonthlyEquivalentIncome } from "@/lib/aggregate/income";
 import { monthlyObligations } from "@/lib/aggregate/obligations";
+import { cardColorKey } from "@/lib/format/colors";
 import { isDemoAllowed } from "@/lib/demo/cardsDemo";
 import { DEMO_VARIANTS, demoGoalsData } from "@/lib/demo/goalsDemo";
 import { getCachedAccounts, getCachedBalanceSnapshots, getCachedCards, getCachedGoalContributionsTab, getCachedGoalsTab, getCachedIncomeSources, getCachedLoanInstallments, getCachedLoans, getCachedStatements, getCachedSubscriptions } from "@/lib/sheets/cached";
@@ -40,6 +41,7 @@ export async function loadGoalsData(params: Record<string, string | string[] | u
       goals: goals.records,
       contributions: contributions.records,
       accounts: accounts.map((a) => ({ id: a.id, name: a.name })),
+      cards: cards.map((c) => ({ id: c.id, name: c.alias || c.name, color: cardColorKey(c.color) })),
       balances,
       income: totalMonthlyEquivalentIncome(sources),
       obligations: monthlyObligations({ subscriptions, cards, loans, loanInstallments: installments, cardSummaries: computeCardSummaries(cards, statements, today), yearMonth: today.slice(0, 7) }),

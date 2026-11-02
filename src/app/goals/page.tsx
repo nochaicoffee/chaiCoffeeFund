@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { GoalsDashboard } from "@/components/goals/GoalsDashboard";
-import { GoalsFormsProvider } from "@/components/goals/forms/GoalsForms";
+import { GoalsFormsProvider, HeaderFormButtons } from "@/components/goals/forms/GoalsForms";
 import { GreetingSentence } from "@/components/goals/GreetingSentence";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
 import { greetingFor, todayIso } from "@/lib/format/date";
+import { goalsFormsData } from "./formsView";
 import { loadGoalsData } from "./loadGoalsData";
 import { ALL, attentionView, goalSides, greetingView, pickIds, sideView, skyView, summarySentence } from "./views";
 import { goalsWidgets } from "./widgetsView";
@@ -27,9 +28,15 @@ export default async function GoalsPage({ searchParams }: PageProps<"/goals">) {
   const initialPick = ids.includes(requested) ? requested : ALL;
 
   return (
-    <GoalsFormsProvider>
+    <GoalsFormsProvider forms={goalsFormsData(data, today, demo !== null)}>
       <div className="flex flex-col gap-6">
-        <PageHeader section="Goals" title={`${greetingFor()}, ${appConfig.ownerName}`} actions={<RefreshButton iconOnly />}>
+        <PageHeader section="Goals" title={`${greetingFor()}, ${appConfig.ownerName}`} actions={
+            <>
+              <RefreshButton iconOnly />
+              <HeaderFormButtons />
+            </>
+          }
+        >
           <GreetingSentence parts={summarySentence(data, today)} cards={greetingView(data, today)} />
           {demo !== null && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
           <SkippedRowsNotice tabs={skipped} />

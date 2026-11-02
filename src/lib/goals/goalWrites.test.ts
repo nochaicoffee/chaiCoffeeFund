@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addContribution, addGoal, deleteGoal, dropGoal, editContribution, editGoal, markBought, pauseGoal, removeContribution, reopenGoal, restoreGoal, resumeGoal, undoStatus, type GoalRepos } from "./goalWrites";
+import { addContribution, addGoal, deleteGoal, dropGoal, editContribution, editGoal, markBought, pauseGoal, removeContribution, reopenGoal, restoreDeleted, restoreGoal, resumeGoal, snapshotGoal, undoStatus, type GoalRepos } from "./goalWrites";
 import { checkGoal } from "../sheets/goals";
 import { earmarksByAccount, savedOf, targetOf, totals } from "../aggregate/goals";
 import { InvalidRowError, NotFoundError } from "../sheets/repository";
@@ -237,5 +237,46 @@ describe("deleting", () => {
   it("deleting one that's already gone is not an error", async () => {
     const { repos } = setup();
     await expect(deleteGoal(repos, "nope")).resolves.toBeUndefined();
+  });
+});
+
+describe("undoing a delete", () => {
+  it("puts the goal, its sub-goals and every entry back, pointed at their new ids", async () => {
+    const { repos, goals, contributions } = setup();
+    const car = await addGoal(repos, input());
+    const tyres = await addGoal(repos, input({ name: "Tyres", parentId: car.id, amount: 5000 }));
+    await addContribution(repos, aside(car.id, 100, { accountId: "hdfc" }));
+    await addContribution(repos, aside(tyres.id, 200, { note: "bonus" }));
+    const snapshot = (await snapshotGoal(repos, car.id))!;
+    expect(snapshot.goals).toHaveLength(2);
+    expect(snapshot.contributions).toHaveLength(2);
+    await deleteGoal(repos, car.id);
+    expect(goals.rows).toHaveLength(0);
+    const newId = await restoreDeleted(repos, snapshot);
+    expect(goals.rows.map((g) => g.name)).toEqual(["Car", "Tyres"]);
+    expect(goals.rows.find((g) => g.name === "Tyres")?.parentId).toBe(newId);
+    expect(goals.rows.some((g) => g.id === car.id)).toBe(false);
+    const kid = goals.rows.find((g) => g.name === "Tyres")!;
+    expect(contributions.rows.map((c) => [c.goalId === newId ? "car" : c.goalId === kid.id ? "tyres" : "?", c.amount, c.accountId ?? null, c.note ?? null])).toEqual([["car", 100, "hdfc", null], ["tyres", 200, null, "bonus"]]);
+  });
+  it("takes back what it had made if one row fails", async () => {
+    const { repos, goals, contributions } = setup();
+    const car = await addGoal(repos, input());
+    await addContribution(repos, aside(car.id, 100));
+    const snapshot = (await snapshotGoal(repos, car.id))!;
+    await deleteGoal(repos, car.id);
+    const failing = { goals: repos.goals, contributions: { ...repos.contributions, create: async () => { throw new Error("Sheets is down"); } } } as GoalRepos;
+    await expect(restoreDeleted(failing, snapshot)).rejects.toThrow(/Sheets is down/);
+    expect(goals.rows).toHaveLength(0);
+    expect(contributions.rows).toHaveLength(0);
+  });
+  it("won't restore from a snapshot with nothing to put back, or a goal that's not valid", async () => {
+    const { repos } = setup();
+    await expect(restoreDeleted(repos, { goals: [], contributions: [] })).rejects.toBeInstanceOf(InvalidRowError);
+    await expect(restoreDeleted(repos, { goals: [{ id: "x", name: "", amount: 1 } as never], contributions: [] })).rejects.toThrow();
+  });
+  it("snapshots nothing for a goal that's gone", async () => {
+    const { repos } = setup();
+    expect(await snapshotGoal(repos, "nope")).toBeNull();
   });
 });

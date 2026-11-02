@@ -35,6 +35,8 @@ export const ALL = "all";
 export interface GoalsPageData extends GoalsData {
   /** For the earmark check and where a set-aside sat. */
   accounts: { id: string; name: string }[];
+  /** The cards a goal can be paid on (for Mark bought). */
+  cards: { id: string; name: string; color: ColorKey }[];
   /** Each account's latest balance, for the earmark check; an account with none isn't in it. */
   balances: Record<string, number>;
   /** Monthly income and the month's obligations (Overview's figures): "income less obligations" is labelled as not a true surplus. */

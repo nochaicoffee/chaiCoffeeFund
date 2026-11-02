@@ -203,3 +203,59 @@ export async function deleteGoal(repos: GoalRepos, id: string): Promise<void> {
 export const hasKids = (data: GoalsData, id: string): boolean => kidsOf(data, id).length > 0;
 
 export { read as readGoals };
+
+// --- Undoing a delete ---
+
+/** A deleted goal as it was: the goal, its sub-goals and every entry, so Undo can put them back. */
+export interface GoalSnapshot {
+  goals: Goal[];
+  contributions: GoalContribution[];
+}
+
+/** What deleting a goal would remove, read before it goes. */
+export async function snapshotGoal(repos: GoalRepos, id: string): Promise<GoalSnapshot | null> {
+  const goal = await repos.goals.get(id);
+  if (!goal) return null;
+  const all = await repos.goals.list();
+  const goals = [goal, ...all.filter((g) => g.parentId === id)];
+  const ids = new Set(goals.map((g) => g.id));
+  return { goals, contributions: (await repos.contributions.list()).filter((c) => ids.has(c.goalId)) };
+}
+
+/**
+ * Put a deleted goal back. The Sheet gives every row a new id, so the goals are created parent first and each sub-goal and entry is pointed
+ * at its new parent. Returns the new id of the top-level goal. A failure half way removes what it had created.
+ */
+export async function restoreDeleted(repos: GoalRepos, snapshot: GoalSnapshot): Promise<string> {
+  const top = snapshot.goals.find((g) => !g.parentId);
+  if (!top) throw new InvalidRowError("There's nothing to put back");
+  const made = new Map<string, string>();
+  const createdGoals: string[] = [];
+  const createdEntries: string[] = [];
+  try {
+    for (const old of [top, ...snapshot.goals.filter((g) => g.id !== top.id)]) {
+      const { id, parentId, ...rest } = old;
+      const row = createGoalSchema.parse({ ...rest, ...(parentId && { parentId: made.get(parentId) }) });
+      const created = await repos.goals.create(row);
+      made.set(id, created.id);
+      createdGoals.push(created.id);
+    }
+    for (const entry of snapshot.contributions) {
+      const { goalId, ...rest } = entry;
+      delete (rest as { id?: string }).id;
+      const target = made.get(goalId);
+      if (!target) continue;
+      createdEntries.push((await repos.contributions.create(createGoalContributionSchema.parse({ ...rest, goalId: target }))).id);
+    }
+  } catch (error) {
+    for (const id of createdEntries) await repos.contributions.remove(id).catch(() => undefined);
+    for (const id of [...createdGoals].reverse()) await repos.goals.remove(id).catch(() => undefined);
+    throw error;
+  }
+  return made.get(top.id) as string;
+}
+
+/** A goal's editable fields as an update would set them back: what Undo of an edit restores. "" is how an update clears an optional field. */
+export function goalEditableFields(goal: Goal): Record<string, string | number> {
+  return { name: goal.name, category: goal.category, necessity: goal.necessity, scale: goal.scale, amount: goal.amount, startDate: goal.startDate, targetDate: goal.targetDate ?? "", dateType: goal.dateType ?? "", plannedMonthly: goal.plannedMonthly ?? "", color: goal.color ?? "", link: goal.link ?? "", notes: goal.notes ?? "" };
+}

@@ -89,6 +89,7 @@ export function demoGoalsData(today: string, variant: DemoVariant | string = "")
       { id: "demo-hdfc", name: "HDFC Salary" },
       { id: "demo-icici", name: "ICICI Invest" },
     ],
+    cards: [{ id: "demo-card", name: "HDFC Regalia", color: "ruby" }],
     balances: { "demo-hdfc": 182400, "demo-icici": variant === "earmark" ? 150000 : 260000 },
     income: 138500,
     obligations: 71000,

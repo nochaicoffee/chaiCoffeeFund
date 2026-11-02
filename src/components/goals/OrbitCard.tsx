@@ -4,10 +4,14 @@ import { useMemo } from "react";
 import { ALL, type GoalSideView, type PlanetView, type SideView, type SkyView } from "@/app/goals/views";
 import { MAX_RING_MONTHS, OVERDUE_RING, SKY_SIZE, SOMEDAY_RING, ringRadius } from "@/lib/aggregate/goalsOrbit";
 import { colorGradient } from "@/lib/format/colors";
+import { GOAL_CATEGORY_COLOR } from "@/lib/format/goalLabels";
 import { CloseIcon, MenuAction, RowMenu } from "../RowMenu";
+import { GOAL_CATEGORIES } from "@/lib/sheets/types";
 import { WidgetCard } from "../shell/WidgetCard";
 import { ActionButton, useGoalsForms } from "./forms/GoalsForms";
 import { CardBar, ColorCard, GoalIcon, GoalTile, FixedPill, NeedBadge, ProgressBar, ScaleBadge, StandingPill } from "./parts";
+
+const GOAL_CATEGORY_KEY = Object.fromEntries(Object.entries(GOAL_CATEGORY_COLOR).map(([category, color]) => [category, color.toLowerCase()])) as Record<(typeof GOAL_CATEGORIES)[number], Lowercase<(typeof GOAL_CATEGORY_COLOR)[keyof typeof GOAL_CATEGORY_COLOR]>>;
 
 /** The sky is drawn on a 780-unit square and scaled to fit, so a ring's radius and a planet's size are shares of its width. */
 const S = SKY_SIZE;
@@ -267,6 +271,28 @@ function SideGoal({ view }: { view: GoalSideView }) {
   );
 }
 
+/** The first visit: nothing is invented, six kinds to start from. */
+function EmptySide() {
+  const { open } = useGoalsForms();
+  return (
+    <>
+      <div className="flex flex-col gap-1.5">
+        <b className="text-[17px] font-extrabold">Nothing to save for yet</b>
+        <span className="max-w-[520px] text-[13px] font-medium text-muted">A goal is a sum of money you&apos;re setting aside for something: a fridge, a trip, a course. Start from a kind, then fill in the amount and the date. It never adds to your net worth: the money stays in your accounts.</span>
+      </div>
+      <div className="flex flex-col gap-2">
+        {GOAL_CATEGORIES.map((category) => (
+          <div key={category} className="flex items-center gap-3 rounded-[16px] bg-fill px-3.5 py-2.5">
+            <GoalTile category={category} colorKey={GOAL_CATEGORY_KEY[category]} size={38} />
+            <b className="flex-1 text-sm font-extrabold">{category}</b>
+            <ActionButton label="+ Add" onClick={() => open({ kind: "add-goal", category })} />
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
 /** The Orbit card (docs/design/goals.md, "The pick"): the sky, and beside it the overview or the picked goal. */
 export function OrbitCard({ sky, side, goalSides, pick, onPick }: { sky: SkyView; side: SideView; goalSides: Record<string, GoalSideView>; pick: string; onPick: (id: string) => void }) {
   const goalView = pick === ALL ? null : (goalSides[pick] ?? null);
@@ -287,7 +313,7 @@ export function OrbitCard({ sky, side, goalSides, pick, onPick }: { sky: SkyView
     >
       <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-6 xl:grid-cols-[minmax(0,780px)_minmax(0,1fr)]">
         <Sky sky={sky} pick={pick} onPick={onPick} />
-        <div className="flex min-w-0 flex-col gap-3.5">{empty ? null : goalView ? <SideGoal view={goalView} /> : <SideAll side={side} onPick={onPick} />}</div>
+        <div className="flex min-w-0 flex-col gap-3.5">{empty ? <EmptySide /> : goalView ? <SideGoal view={goalView} /> : <SideAll side={side} onPick={onPick} />}</div>
       </div>
     </WidgetCard>
   );
