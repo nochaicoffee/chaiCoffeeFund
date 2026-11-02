@@ -28,7 +28,7 @@ export function GoalsTableCard({ rows, pick, onPick }: { rows: TableRow[]; pick:
             <span>Standing</span>
           </div>
           {rows.map((r) => (
-            <div key={r.id} className={`grid ${cols} items-center gap-3 border-t border-divider py-2.5 ${r.off ? "opacity-60" : ""} ${dim(pick, r.topId)} ${r.sub ? "" : ""}`}>
+            <div key={r.id} className={`grid ${cols} items-center gap-3 border-t border-divider py-2.5 ${r.off ? "opacity-60" : ""} ${dim(pick, r.topId)}`}>
               <button type="button" onClick={() => onPick(r.topId)} className={`flex min-w-0 items-center gap-3 text-left focus-visible:outline-2 focus-visible:outline-accent ${r.sub ? "pl-6" : ""}`}>
                 <GoalTile category={r.category} colorKey={r.colorKey} size={r.sub ? 28 : 34} off={r.off} />
                 <span className="min-w-0">
@@ -122,7 +122,7 @@ export function MonthCard({ view }: { view: MonthView }) {
             {view.planned ? Math.round((view.counted / view.planned) * 100) : 0}% of the month&apos;s plan · {view.todoCount} still to do · {view.daysLeft} days left
           </div>
         </div>
-        {view.todoCount > 0 && <ActionButton tone="ink" label={`Set aside all ${view.todoCount} remaining`} onClick={() => open({ kind: "set-aside" })} />}
+        {view.todoCount > 0 && <ActionButton tone="ink" label="Set aside" onClick={() => open({ kind: "set-aside" })} />}
       </div>
       <div className="flex h-[22px] gap-0.5 overflow-hidden rounded-full bg-fill" role="img" aria-label={`${formatInr(view.counted)} of ${formatInr(view.planned)} set aside`}>
         {view.rows.filter((r) => r.planned > 0).map((r) => (

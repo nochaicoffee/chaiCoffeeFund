@@ -280,3 +280,37 @@ describe("undoing a delete", () => {
     expect(await snapshotGoal(repos, "nope")).toBeNull();
   });
 });
+
+describe("review findings", () => {
+  it("a goal's status can't be set through an edit", async () => {
+    const { repos } = setup();
+    const car = await addGoal(repos, input());
+    await expect(editGoal(repos, car.id, { status: "Dropped" })).rejects.toThrow(/Pause, Resume, Drop/);
+  });
+  it("each status move says where it can start", async () => {
+    const { repos } = setup();
+    const car = await addGoal(repos, input());
+    await markBought(repos, car.id, { doneOn: TODAY, actualCost: 1 });
+    await expect(pauseGoal(repos, car.id)).rejects.toThrow(/is bought, so it can't be paused/);
+    await expect(dropGoal(repos, car.id)).rejects.toThrow(/is bought, so it can't be dropped/);
+    await expect(restoreGoal(repos, car.id)).rejects.toThrow(/can't be restored/);
+    await reopenGoal(repos, car.id);
+    await expect(reopenGoal(repos, car.id)).rejects.toThrow(/is active, so it can't be reopened/);
+    await expect(resumeGoal(repos, car.id)).rejects.toThrow(/can't be resumed/);
+    await dropGoal(repos, car.id);
+    await expect(markBought(repos, car.id, { doneOn: TODAY, actualCost: 1 })).rejects.toThrow(/is dropped, so it can't be bought/);
+  });
+  it("two take-backs that both passed the check can't leave a goal below zero", async () => {
+    const { repos, contributions } = setup();
+    const car = await addGoal(repos, input());
+    await addContribution(repos, aside(car.id, 1000));
+    // The second one's check ran before the first was written: simulate it by listing stale entries once.
+    const real = repos.contributions.list;
+    let calls = 0;
+    const racing = { ...repos, contributions: { ...repos.contributions, list: async () => (calls++ === 0 ? [{ id: "old", goalId: car.id, date: TODAY, amount: 1000, kind: "Set-aside" as const }] : real()) } } as GoalRepos;
+    await addContribution(racing, aside(car.id, 800, { kind: "Take-back" }));
+    calls = 0;
+    await expect(addContribution(racing, aside(car.id, 800, { kind: "Take-back" }))).rejects.toThrow(/another take-back came in first/);
+    expect(contributions.rows.filter((c) => c.kind === "Take-back")).toHaveLength(1);
+  });
+});

@@ -69,17 +69,29 @@ export function progressOf(data: GoalsData, goal: Goal): number {
 /** Funded: saved at or above the target. Exactly at target counts. */
 export const isFunded = (data: GoalsData, goal: Goal): boolean => targetOf(data, goal) > 0 && savedOf(data, goal) >= targetOf(data, goal);
 
-/** The date a goal is due: its own, or the latest of its sub-goals'. */
+/** The date a goal is due: the latest of its own date and its live sub-goals' (a parent is due when its last piece is). Null when none has one. */
 export function dueOf(data: GoalsData, goal: Goal): string | null {
-  if (goal.targetDate) return goal.targetDate;
-  const dates = liveKids(data, goal.id).map((kid) => kid.targetDate).filter((date): date is string => Boolean(date));
+  const dates = [goal.targetDate, ...liveKids(data, goal.id).map((kid) => kid.targetDate)].filter((date): date is string => Boolean(date));
   return dates.length ? [...dates].sort().at(-1)! : null;
+}
+
+/**
+ * The date a piece is funded to: its own, or for a sub-goal without one its parent's (the funding plan and the sky already treat it so), or for a
+ * parent the latest of its own and its sub-goals'. Standing, what it needs a month and the pace line all read this, so one piece gets one answer.
+ */
+export function effectiveDue(data: GoalsData, goal: Goal): string | null {
+  if (goal.targetDate) return goal.targetDate;
+  const parent = goal.parentId ? data.goals.find((g) => g.id === goal.parentId) : undefined;
+  return dueOf(data, parent ?? goal);
 }
 
 /** Whole months from today to a date, counting a month only once its day has arrived. 0 when the date is today or past. */
 export function wholeMonthsTo(date: string, today: string): number {
-  let months = 0;
-  while (addMonthsUTC(today, months + 1) <= date) months++;
+  if (date <= today) return 0;
+  // Start from the difference in calendar months, then settle on the last month whose day has arrived (month ends clamp, as addMonthsUTC does).
+  let months = (Number(date.slice(0, 4)) - Number(today.slice(0, 4))) * 12 + Number(date.slice(5, 7)) - Number(today.slice(5, 7));
+  // Landing in the date's own month, the day either has arrived or hasn't: at most one step back (and never a step on, which could pass year 9999).
+  if (months > 0 && addMonthsUTC(today, months) > date) months--;
   return months;
 }
 
@@ -96,7 +108,7 @@ export function requiredFor(left: number, date: string | null, today: string): n
 
 /** A goal's own part needs this a month (a sub-goal's, or a parent's part that isn't itemised). */
 function requiredOwn(data: GoalsData, goal: Goal, today: string): number {
-  return requiredFor(Math.max(0, goal.amount - savedOwn(data, goal.id)), goal.targetDate ?? dueOf(data, goal), today);
+  return requiredFor(Math.max(0, goal.amount - savedOwn(data, goal.id)), effectiveDue(data, goal), today);
 }
 
 /** What a goal needs each month: a goal with sub-goals adds its own part and each live sub-goal at its own date. */
@@ -113,7 +125,7 @@ export const plannedOf = (data: GoalsData, goal: Goal): number => (goal.plannedM
 export function standing(data: GoalsData, goal: Goal, today: string): GoalStanding {
   if (goal.status !== "Active") return goal.status;
   if (isFunded(data, goal)) return "Funded";
-  const due = dueOf(data, goal);
+  const due = effectiveDue(data, goal);
   if (due && due < today) return "Overdue";
   if (!due) return "Someday";
   const planned = plannedOf(data, goal);
@@ -123,7 +135,7 @@ export function standing(data: GoalsData, goal: Goal, today: string): GoalStandi
 
 /** Where saving should be by now, from 0 to 1: a straight line from the start date to the target date. Null with no date. */
 export function expectedProgress(data: GoalsData, goal: Goal, today: string): number | null {
-  const due = dueOf(data, goal);
+  const due = effectiveDue(data, goal);
   if (!due) return null;
   const span = daysBetween(goal.startDate, due);
   if (span <= 0) return 1;
@@ -204,12 +216,18 @@ export interface FundingPlan {
 
 export const unitKey = (unit: Pick<FundingUnit, "id" | "own">): string => (unit.own ? `${unit.id}#own` : unit.id);
 
+/** How many months a plan runs: long enough to reach the latest date (so a goal five years out can finish on schedule), and at least four years. */
+export function horizonFor(units: FundingUnit[], today: string): number {
+  const latest = Math.max(0, ...units.filter((unit) => unit.due && unit.left > 0).map((unit) => wholeMonthsTo(unit.due as string, today)));
+  return Math.max(48, latest + 2);
+}
+
 /**
  * Month by month, in funding order: pass 1 gives each unit at most what it needs this month to reach its date (what's left over the
  * months left), pass 2 hands whatever is left to the units still open, in the same order. Every rupee of `budget` each month is
  * either given or reported as unspent, and a unit gets nothing once it's funded.
  */
-export function fundingPlan(units: FundingUnit[], budget: number, today: string, horizon = 48): FundingPlan {
+export function fundingPlan(units: FundingUnit[], budget: number, today: string, horizon = horizonFor(units, today)): FundingPlan {
   const order = fundingOrder(units);
   const left = Object.fromEntries(order.map((unit) => [unitKey(unit), unit.left]));
   const done: Record<string, number> = {};
@@ -319,6 +337,17 @@ export interface GoalsTotals {
   next: Goal | null;
 }
 
+/** What's planned a month across every active goal and active sub-goal (a sub-goal under a paused or dropped parent isn't planned for). */
+export function plannedTotal(data: GoalsData): number {
+  return sum(data.goals.filter((goal) => goal.status === "Active" && !(goal.parentId && data.goals.find((p) => p.id === goal.parentId)?.status !== "Active")).map((goal) => goal.plannedMonthly ?? 0));
+}
+
+/** Sub-goals whose parent isn't in the Goals tab (a parent deleted by hand in the Sheet): they're in no total, so the page says so. */
+export function orphanGoals(data: GoalsData): Goal[] {
+  const ids = new Set(data.goals.map((goal) => goal.id));
+  return data.goals.filter((goal) => goal.parentId && !ids.has(goal.parentId));
+}
+
 export function totals(data: GoalsData, today: string): GoalsTotals {
   const active = topGoals(data).filter((goal) => goal.status === "Active");
   const units = fundingUnits(data);
@@ -328,7 +357,7 @@ export function totals(data: GoalsData, today: string): GoalsTotals {
     saved: sum(active.map((goal) => savedOf(data, goal))),
     target: sum(active.map((goal) => targetOf(data, goal))),
     requiredTotal: sum(units.map((unit) => requiredFor(unit.left, unit.due, today))),
-    plannedTotal: sum(data.goals.filter((goal) => goal.status === "Active" && !(goal.parentId && data.goals.find((p) => p.id === goal.parentId)?.status !== "Active")).map((goal) => goal.plannedMonthly ?? 0)),
+    plannedTotal: plannedTotal(data),
     minimumMonthly: minimumBudget(units, today),
     next: dated.sort((a, b) => dueOf(data, a)!.localeCompare(dueOf(data, b)!) || a.name.localeCompare(b.name))[0] ?? null,
   };

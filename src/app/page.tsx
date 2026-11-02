@@ -4,14 +4,13 @@ import { PageHeader } from "@/components/shell/PageHeader";
 import { StatTile } from "@/components/StatTile";
 import { todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
-import { balanceTrend } from "@/lib/aggregate/accounts";
+import { balanceTrend, latestBalances } from "@/lib/aggregate/accounts";
 import { computeCardSummaries } from "@/lib/aggregate/cards";
 import { cardName } from "@/lib/format/labels";
 import { totalEstimatedFixedDepositValue } from "@/lib/aggregate/fixedDeposits";
 import { pendingPayments, sumAmounts } from "@/lib/aggregate/incomeSchedule";
 import { totalCostBasisInr } from "@/lib/aggregate/investments";
-import { attentionView as goalsAttention } from "@/app/goals/views";
-import { loadGoalsData } from "@/app/goals/loadGoalsData";
+import { attentionItems } from "@/lib/goals/attention";
 import { computeLoanSummaries } from "@/lib/aggregate/loans";
 import { computeNetWorth } from "@/lib/aggregate/netWorth";
 import { monthlyObligations } from "@/lib/aggregate/obligations";
@@ -21,6 +20,8 @@ import {
   getCachedBalanceSnapshots,
   getCachedCards,
   getCachedFixedDeposits,
+  getCachedGoalContributions,
+  getCachedGoals,
   getCachedIncomeEntries,
   getCachedIncomeSources,
   getCachedInvestmentTransactions,
@@ -58,11 +59,6 @@ export default async function OverviewPage() {
   ]);
 
   const today = todayIso();
-  // A problem reading Goals mustn't take Overview down with it.
-  const goalsData = await loadGoalsData({}, today).then((loaded) => loaded.data).catch((error) => {
-    console.error("[overview] goals failed:", error instanceof Error ? error.message : String(error));
-    return null;
-  });
   const yearMonth = today.slice(0, 7);
 
   const netWorth = computeNetWorth({
@@ -113,10 +109,14 @@ export default async function OverviewPage() {
   }
 
   // Goals join the list only for a Fixed date at risk, a date that has passed, or an account that can't cover its earmarks (F-GO-05).
-  for (const item of goalsData ? goalsAttention(goalsData, today) : []) {
-    const at = item.text.indexOf(": ");
-    attention.push(at > 0 ? { label: item.text.slice(0, at), detail: item.text.slice(at + 2) } : { label: item.text, detail: "" });
-  }
+  // A problem reading Goals is logged and mustn't take Overview down with it.
+  const goalsAttention = await Promise.all([getCachedGoals(), getCachedGoalContributions()])
+    .then(([goals, contributions]) => attentionItems({ goals, contributions, accounts: accounts.map((a) => ({ id: a.id, name: a.name })), balances: latestBalances(accounts, balanceSnapshots) }, today))
+    .catch((error) => {
+      console.error("[overview] goals failed:", error instanceof Error ? error.message : String(error));
+      return [];
+    });
+  for (const item of goalsAttention) attention.push({ label: item.label, detail: item.detail });
 
   return (
     <div className="flex flex-col gap-6">

@@ -1,7 +1,7 @@
-import { savedOwn, kidsOf, type GoalsData } from "../aggregate/goals";
+import { savedOwn } from "../aggregate/goals";
 import { createGoalContributionSchema, updateGoalContributionSchema } from "../sheets/goalContributions";
 import { createGoalSchema, updateGoalSchema } from "../sheets/goals";
-import { InvalidRowError, NotFoundError } from "../sheets/repository";
+import { InvalidRowError, NotFoundError, type WriteRepo } from "../sheets/repository";
 import type { Goal, GoalContribution, GoalStatus } from "../sheets/types";
 
 /**
@@ -12,23 +12,13 @@ import type { Goal, GoalContribution, GoalStatus } from "../sheets/types";
  * goal isn't bought while a sub-goal is open.
  */
 
-interface Repo<T extends { id: string }> {
-  list: () => Promise<T[]>;
-  get: (id: string) => Promise<T | null>;
-  create: (input: Omit<T, "id">) => Promise<T>;
-  update: (id: string, patch: Partial<Omit<T, "id">>) => Promise<T>;
-  remove: (id: string) => Promise<void>;
-  removeWhere: (match: (values: Partial<Record<keyof T, unknown>>) => boolean) => Promise<number>;
-}
-
 export interface GoalRepos {
-  goals: Repo<Goal>;
-  contributions: Repo<GoalContribution>;
+  goals: WriteRepo<Goal>;
+  contributions: WriteRepo<GoalContribution>;
 }
 
 const GONE = "This goal isn't in the Goals tab any more. Close this and refresh.";
 
-const read = async (repos: GoalRepos): Promise<GoalsData> => ({ goals: await repos.goals.list(), contributions: await repos.contributions.list() });
 const open = (goal: Goal) => goal.status === "Active" || goal.status === "Paused";
 
 async function mustGet(repos: GoalRepos, id: string): Promise<Goal> {
@@ -63,6 +53,7 @@ export async function addGoal(repos: GoalRepos, input: Omit<Goal, "id">): Promis
  */
 export async function editGoal(repos: GoalRepos, id: string, patch: Partial<Omit<Goal, "id">>): Promise<Goal> {
   const parsed = updateGoalSchema.parse(patch);
+  if (parsed.status !== undefined) throw new InvalidRowError("Change a goal's status with Pause, Resume, Drop, Restore, Mark bought or Reopen");
   const stored = await mustGet(repos, id);
   const merged = { ...stored, ...parsed };
   const all = await repos.goals.list();
@@ -72,7 +63,6 @@ export async function editGoal(repos: GoalRepos, id: string, patch: Partial<Omit
     assertCanBeKid(all.find((g) => g.id === parsed.parentId) ?? null, id, parsed.parentId);
   }
   if (merged.amount <= 0 && !kids.some(open)) throw new InvalidRowError("Enter the amount: only a goal with sub-goals can stand at ₹0");
-  if (parsed.status === "Done" && kids.some(open)) throw new InvalidRowError("Finish or drop its sub-goals before marking it bought");
   return repos.goals.update(id, parsed);
 }
 
@@ -85,7 +75,16 @@ export async function addContribution(repos: GoalRepos, input: Omit<GoalContribu
     const saved = savedOwn({ goals: [], contributions: await repos.contributions.list() }, goal.id);
     if (entry.amount > saved) throw new InvalidRowError(saved > 0 ? `Only ₹${saved.toLocaleString("en-IN")} is set aside in ${goal.name}` : `Nothing is set aside in ${goal.name} to take back`);
   }
-  return repos.contributions.create(entry);
+  const created = await repos.contributions.create(entry);
+  if (entry.kind === "Take-back") {
+    // Two take-backs sent together can each pass the check above (the Sheet has no transaction), so check again once it's written and take it back out.
+    const net = (await repos.contributions.list()).filter((c) => c.goalId === goal.id).reduce((total, c) => total + (c.kind === "Set-aside" ? c.amount : -c.amount), 0);
+    if (net < 0) {
+      await repos.contributions.remove(created.id);
+      throw new InvalidRowError(`Only part of that is set aside in ${goal.name}: another take-back came in first`);
+    }
+  }
+  return created;
 }
 
 /** Correct an entry (PATCH /api/goal-contributions/[id]): the goal's saved amount must stay at or above 0 once the change is made. */
@@ -122,9 +121,17 @@ export interface StatusChange {
 }
 
 /** Change a goal's status, and the statuses of any sub-goals that move with it. Returns what changed so Undo can put it back. */
-async function setStatus(repos: GoalRepos, id: string, status: GoalStatus, withKids: GoalStatus[], extra: Partial<Omit<Goal, "id">> = {}): Promise<StatusChange[]> {
+const STATUS_WORD: Record<GoalStatus, string> = { Active: "active", Paused: "paused", Done: "bought", Dropped: "dropped" };
+
+/**
+ * Change a goal's status, and the statuses of any sub-goals that move with it. `from` is where the move may start: pausing a bought goal, or
+ * restoring one that's active, is refused in words, since the bought-on day and the cost belong to the status they were set with. Returns what
+ * changed so Undo can put it back.
+ */
+async function setStatus(repos: GoalRepos, id: string, status: GoalStatus, withKids: GoalStatus[], from: GoalStatus[], verb: string, extra: Partial<Omit<Goal, "id">> = {}): Promise<StatusChange[]> {
   const goal = await mustGet(repos, id);
-  const kids = (await repos.goals.list()).filter((g) => g.parentId === id && withKids.includes(g.status));
+  if (!from.includes(goal.status)) throw new InvalidRowError(`${goal.name} is ${STATUS_WORD[goal.status]}, so it can't be ${verb}`);
+  const kids = withKids.length ? (await repos.goals.list()).filter((g) => g.parentId === id && withKids.includes(g.status)) : [];
   const changed: StatusChange[] = [];
   try {
     for (const g of [goal, ...kids]) {
@@ -147,19 +154,19 @@ export async function undoStatus(repos: GoalRepos, changes: StatusChange[]): Pro
 }
 
 /** Pause a goal: it leaves the plan and keeps what's set aside. A paused parent takes its active sub-goals with it. */
-export const pauseGoal = (repos: GoalRepos, id: string) => setStatus(repos, id, "Paused", ["Active"]);
+export const pauseGoal = (repos: GoalRepos, id: string) => setStatus(repos, id, "Paused", ["Active"], ["Active"], "paused");
 
 /** Resume a paused goal and the sub-goals that were paused with it. */
-export const resumeGoal = (repos: GoalRepos, id: string) => setStatus(repos, id, "Active", ["Paused"]);
+export const resumeGoal = (repos: GoalRepos, id: string) => setStatus(repos, id, "Active", ["Paused"], ["Paused"], "resumed");
 
 /** Drop a goal: you won't buy it. Its money is released (a bought or dropped goal is no longer earmarked), and a parent takes its open sub-goals with it. */
-export const dropGoal = (repos: GoalRepos, id: string) => setStatus(repos, id, "Dropped", ["Active", "Paused"]);
+export const dropGoal = (repos: GoalRepos, id: string) => setStatus(repos, id, "Dropped", ["Active", "Paused"], ["Active", "Paused"], "dropped");
 
 /** Bring a dropped goal back. Only the goal itself: a parent's sub-goals are restored one by one. */
 export const restoreGoal = async (repos: GoalRepos, id: string) => {
   const goal = await mustGet(repos, id);
   if (goal.parentId) assertCanBeKid(await repos.goals.get(goal.parentId), id, goal.parentId);
-  return setStatus(repos, id, "Active", []);
+  return setStatus(repos, id, "Active", [], ["Dropped"], "restored");
 };
 
 export interface BoughtInput {
@@ -175,14 +182,14 @@ export async function markBought(repos: GoalRepos, id: string, input: BoughtInpu
   if ((await repos.goals.list()).some((g) => g.parentId === id && open(g))) throw new InvalidRowError("Finish or drop its sub-goals before marking it bought");
   if (goal.status === "Done") throw new InvalidRowError(`${goal.name} is already bought`);
   const patch = updateGoalSchema.parse({ status: "Done", doneOn: input.doneOn, actualCost: input.actualCost, paidFromAccountId: input.paidFromAccountId ?? "", paidFromCardId: input.paidFromCardId ?? "" });
-  return setStatus(repos, id, "Done", [], patch);
+  return setStatus(repos, id, "Done", [], ["Active", "Paused"], "bought", patch);
 }
 
 /** Reopen a bought goal: it's active again and its money is earmarked again. A sub-goal can't reopen under a parent that's still bought. */
 export async function reopenGoal(repos: GoalRepos, id: string): Promise<StatusChange[]> {
   const goal = await mustGet(repos, id);
   if (goal.parentId) assertCanBeKid(await repos.goals.get(goal.parentId), id, goal.parentId);
-  return setStatus(repos, id, "Active", [], updateGoalSchema.parse(CLEAR_BOUGHT));
+  return setStatus(repos, id, "Active", [], ["Done"], "reopened", updateGoalSchema.parse(CLEAR_BOUGHT));
 }
 
 /**
@@ -199,10 +206,6 @@ export async function deleteGoal(repos: GoalRepos, id: string): Promise<void> {
   await repos.goals.remove(id);
 }
 
-/** Whether a goal has sub-goals, for a form that asks before it changes a parent. */
-export const hasKids = (data: GoalsData, id: string): boolean => kidsOf(data, id).length > 0;
-
-export { read as readGoals };
 
 // --- Undoing a delete ---
 

@@ -11,6 +11,7 @@ import {
   monthEnds,
   isBigDrop,
   isStale,
+  latestBalances,
   periodSpan,
   sameDayBalance,
   sharesOfTotal,
@@ -38,6 +39,14 @@ const snapshot = (overrides: Partial<BalanceSnapshot> = {}): BalanceSnapshot => 
   date: "2026-08-01",
   balance: 1000,
   ...overrides,
+});
+
+describe("latestBalances", () => {
+  it("is each account's latest snapshot by id, and leaves out an account with none", () => {
+    const accounts = [account({ id: "a" }), account({ id: "b" }), account({ id: "c" })];
+    const snapshots = [snapshot({ id: "1", accountId: "a", date: "2026-08-01", balance: 100 }), snapshot({ id: "2", accountId: "a", date: "2026-09-01", balance: 250 }), snapshot({ id: "3", accountId: "b", date: "2026-07-01", balance: 0 })];
+    expect(latestBalances(accounts, snapshots)).toEqual({ a: 250, b: 0 });
+  });
 });
 
 describe("computeAccountBalances", () => {

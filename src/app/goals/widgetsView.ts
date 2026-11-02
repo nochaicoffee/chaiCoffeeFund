@@ -1,13 +1,12 @@
 import { daysBetween } from "@/lib/aggregate/cardSpend";
-import { dueOf, expectedProgress, fundingPlan, fundingUnits, minimumBudget, monthsLeft, necessitySplit, plannedOf, requiredFor, requiredMonthly, savedOf, standing, targetOf, topGoals, wholeMonthsTo, type GoalStanding } from "@/lib/aggregate/goals";
-import { skyPieces } from "@/lib/aggregate/goalsOrbit";
+import { effectiveDue, expectedProgress, fundingPlan, fundingUnits, monthsLeft, savedOwn, necessitySplit, plannedOf, requiredFor, requiredMonthly, savedOf, standing, targetOf, topGoals, wholeMonthsTo, type GoalStanding } from "@/lib/aggregate/goals";
 import { addMonthsUTC } from "@/lib/aggregate/recurring";
 import { formatDate, formatShortDate } from "@/lib/format/date";
 import { goalColorKey } from "@/lib/format/goalLabels";
 import type { ColorKey } from "@/lib/format/colors";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import type { Goal, GoalCategory } from "@/lib/sheets/types";
-import { goalOf, pieceColor, plural, inDays, type GoalsPageData } from "./views";
+import { goalOf, pieceColor, plural, inDays, pieceLabel, deriveGoals, type GoalsDerived, type GoalsPageData } from "./views";
 
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 const colorOf = (goal: Goal): ColorKey => goalColorKey(goal);
@@ -46,10 +45,9 @@ export function tableRows(data: GoalsPageData, today: string): TableRow[] {
   const row = (goal: Goal, sub: boolean, top: Goal): TableRow => {
     const kids = data.goals.filter((g) => g.parentId === goal.id && g.status !== "Dropped");
     const stand = standing(data, goal, today);
-    const own = sub ? { saved: sum(data.contributions.filter((c) => c.goalId === goal.id).map((c) => (c.kind === "Set-aside" ? c.amount : -c.amount))), target: goal.amount } : null;
-    const saved = own ? Math.max(0, own.saved) : savedOf(data, goal);
-    const target = own ? own.target : targetOf(data, goal);
-    const due = sub ? (goal.targetDate ?? dueOf(data, top)) : dueOf(data, goal);
+    const saved = sub ? savedOwn(data, goal.id) : savedOf(data, goal);
+    const target = sub ? goal.amount : targetOf(data, goal);
+    const due = effectiveDue(data, goal);
     const planned = sub ? (goal.plannedMonthly ?? 0) : plannedOf(data, goal);
     const needs = sub ? requiredFor(Math.max(0, goal.amount - saved), due, today) : requiredMonthly(data, goal, today);
     const active = goal.status === "Active";
@@ -65,7 +63,7 @@ export function tableRows(data: GoalsPageData, today: string): TableRow[] {
       need: goal.necessity === "Need",
       scale: goal.scale,
       progress: target ? Math.min(1, saved / target) : 0,
-      expected: active ? (sub ? expectedProgress({ goals: data.goals, contributions: data.contributions }, goal, today) : expectedProgress(data, goal, today)) : null,
+      expected: active ? expectedProgress(data, goal, today) : null,
       savedText: goal.status === "Done" && goal.actualCost !== undefined ? formatInr(goal.actualCost) : `${formatInrCompact(saved)} · ${Math.round((target ? Math.min(1, saved / target) : 0) * 100)}%`,
       target: formatInr(goal.status === "Done" ? goal.amount : target),
       due: goal.status === "Done" ? formatShortDate(goal.doneOn as string) : due ? formatDate(due) : "Someday",
@@ -100,15 +98,15 @@ export interface ComingUpRow {
   risk: boolean;
 }
 
-export function comingUpView(data: GoalsPageData, today: string, n = 5): ComingUpRow[] {
-  return skyPieces(data, today)
+export function comingUpView(data: GoalsPageData, today: string, n = 5, d: GoalsDerived = deriveGoals(data, today)): ComingUpRow[] {
+  return d.pieces
     .filter((p) => !p.paused && p.due && p.left > 0)
     .sort((a, b) => (a.due as string).localeCompare(b.due as string) || a.name.localeCompare(b.name))
     .slice(0, n)
     .map((p) => ({
       key: p.key,
       topId: p.topId,
-      name: p.parentName && !p.own ? `${p.name}` : p.name,
+      name: pieceLabel(p.name),
       colorKey: pieceColor(data, p),
       category: goalOf(data, p.goalId)!.category,
       line: `${formatInr(p.left)} to go · ${p.planned ? `plan ${formatInr(p.planned)}` : "no plan"} of ${formatInr(p.required)} a month`,
@@ -149,9 +147,9 @@ export interface MonthView {
   rows: MonthRow[];
 }
 
-export function monthView(data: GoalsPageData, today: string): MonthView {
+export function monthView(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): MonthView {
   const month = today.slice(0, 7);
-  const rows = skyPieces(data, today)
+  const rows = d.pieces
     .filter((p) => !p.paused)
     .map((p): MonthRow => {
       const entries = data.contributions.filter((c) => c.goalId === p.goalId && c.date.startsWith(month));
@@ -160,7 +158,7 @@ export function monthView(data: GoalsPageData, today: string): MonthView {
       return {
         key: p.key,
         topId: p.topId,
-        name: p.name,
+        name: pieceLabel(p.name),
         colorKey: pieceColor(data, p),
         category: goalOf(data, p.goalId)!.category,
         note: `${p.necessity}${p.due ? ` · due ${formatShortDate(p.due)}` : ""}`,
@@ -200,12 +198,9 @@ export interface AffordView {
   note: string;
 }
 
-export function affordView(data: GoalsPageData, today: string): AffordView {
-  const units = fundingUnits(data);
-  const required = sum(units.map((u) => requiredFor(u.left, u.due, today)));
-  const planned = sum(data.goals.filter((g) => g.status === "Active" && (!g.parentId || goalOf(data, g.parentId)?.status === "Active")).map((g) => g.plannedMonthly ?? 0));
+export function affordView(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): AffordView {
+  const { requiredTotal: required, plannedTotal: planned, minimumMonthly: minimum } = d.totals;
   const left = data.income - data.obligations;
-  const minimum = minimumBudget(units, today);
   return {
     income: formatInr(data.income),
     obligations: formatInr(data.obligations),
@@ -232,13 +227,15 @@ export interface StairView {
   labels: { month: number; text: string }[];
 }
 
-const HORIZON = 34;
+/** The staircase shows at least this many months, and more when a date is further out. */
+const MIN_HORIZON = 34;
 
-export function stairView(data: GoalsPageData, today: string): StairView | null {
+export function stairView(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): StairView | null {
   const units = fundingUnits(data).filter((u) => u.due && u.left > 0 && (u.due as string) >= today);
   if (units.length === 0) return null;
   const total = sum(units.map((u) => u.left));
-  const due = units.map((u) => ({ u, month: Math.min(HORIZON, Math.max(1, wholeMonthsTo(u.due as string, today))) })).sort((a, b) => a.month - b.month);
+  const due = units.map((u) => ({ u, month: Math.max(1, wholeMonthsTo(u.due as string, today)) })).sort((a, b) => a.month - b.month);
+  const HORIZON = Math.max(MIN_HORIZON, Math.ceil((due.at(-1)?.month ?? 0) / 6) * 6 + 2);
   let run = 0;
   const steps = due.map(({ u, month }) => ({ month, run: (run += u.left), name: u.name, due: u.due as string }));
   const cumulative = (budget: number) => {
@@ -246,8 +243,8 @@ export function stairView(data: GoalsPageData, today: string): StairView | null 
     let cum = 0;
     return [{ month: 0, cum: 0 }, ...plan.months.map((m) => ({ month: m.month, cum: (cum += m.spent) }))];
   };
-  const planned = sum(data.goals.filter((g) => g.status === "Active" && (!g.parentId || goalOf(data, g.parentId)?.status === "Active")).map((g) => g.plannedMonthly ?? 0));
-  const minimum = minimumBudget(fundingUnits(data), today);
+  const planned = d.totals.plannedTotal;
+  const minimum = d.totals.minimumMonthly;
   return {
     months: HORIZON,
     total,
@@ -256,7 +253,7 @@ export function stairView(data: GoalsPageData, today: string): StairView | null 
     minimum: minimum ? cumulative(minimum) : [],
     planned,
     minimumBudget: minimum,
-    labels: [0, 6, 12, 18, 24, 30].map((month) => ({ month, text: month === 0 ? "Now" : formatShortMonth(addMonthsUTC(today, month)) })),
+    labels: Array.from({ length: Math.floor((HORIZON - 2) / 6) + 1 }, (_, i) => i * 6).map((month) => ({ month, text: month === 0 ? "Now" : formatShortMonth(addMonthsUTC(today, month)) })),
   };
 }
 
@@ -343,7 +340,7 @@ export interface GoalsWidgets {
   finished: FinishedRow[];
 }
 
-export function goalsWidgets(data: GoalsPageData, today: string): GoalsWidgets {
-  return { table: tableRows(data, today), comingUp: comingUpView(data, today), month: monthView(data, today), afford: affordView(data, today), stair: stairView(data, today), needsWants: needsWantsView(data), setAsides: setAsidesView(data, today), finished: finishedView(data) };
+export function goalsWidgets(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): GoalsWidgets {
+  return { table: tableRows(data, today), comingUp: comingUpView(data, today, 5, d), month: monthView(data, today, d), afford: affordView(data, today, d), stair: stairView(data, today, d), needsWants: needsWantsView(data), setAsides: setAsidesView(data, today), finished: finishedView(data) };
 }
 

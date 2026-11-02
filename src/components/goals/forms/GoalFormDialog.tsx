@@ -47,7 +47,7 @@ export function GoalFormDialog({ forms, editing, parent, category: startCategory
   const [notes, setNotes] = useState(editing?.notes ?? "");
 
   const values = { id: editing?.id ?? "", parentId: parentGoal && !editing ? parentGoal.id : "", name, category, necessity, scale, amount, targetDate, dateType: targetDate ? dateType : "", startDate, plannedMonthly, color, link, notes };
-  const read = readGoalForm(values, forms.goals.filter((g) => !g.parentId).map((g) => g.id));
+  const read = readGoalForm(values, forms.goals.filter((g) => !g.parentId).map((g) => g.id), { allowZeroAmount: Boolean(editing && editing.openKids > 0) });
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(read, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     if (read.ok) return markSubmitted();
