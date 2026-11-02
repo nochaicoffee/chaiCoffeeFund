@@ -2,6 +2,7 @@ import { savedOwn } from "../aggregate/goals";
 import { createGoalContributionSchema, updateGoalContributionSchema } from "../sheets/goalContributions";
 import { createGoalSchema, updateGoalSchema } from "../sheets/goals";
 import { InvalidRowError, NotFoundError, type WriteRepo } from "../sheets/repository";
+import { returnPartToPot } from "./partWrites";
 import type { Goal, GoalContribution, GoalStatus } from "../sheets/types";
 
 /**
@@ -66,14 +67,21 @@ export async function editGoal(repos: GoalRepos, id: string, patch: Partial<Omit
   return repos.goals.update(id, parsed);
 }
 
-/** Set aside or take back money (POST /api/goal-contributions). A take-back can't be more than what's saved in that goal. */
+/**
+ * Set aside or take back money (POST /api/goal-contributions). A part is part of its goal, so money is set aside on the goal and given to the part
+ * from the goal's form, never set aside on the part itself. A take-back can't be more than what's free in that goal's pot.
+ */
 export async function addContribution(repos: GoalRepos, input: Omit<GoalContribution, "id">): Promise<GoalContribution> {
   const entry = createGoalContributionSchema.parse(input);
   const goal = await mustGet(repos, entry.goalId);
+  if (goal.parentId) {
+    const main = await repos.goals.get(goal.parentId);
+    throw new InvalidRowError(`${goal.name} is a part of ${main?.name ?? "another goal"}: set the money aside on ${main?.name ?? "that goal"}, then give ${goal.name} its share in the goal's Edit form`);
+  }
   if (entry.kind === "Set-aside" && !open(goal)) throw new InvalidRowError(`${goal.name} is ${goal.status === "Done" ? "bought" : "dropped"}: reopen or restore it before setting money aside`);
   if (entry.kind === "Take-back") {
     const saved = savedOwn({ goals: [], contributions: await repos.contributions.list() }, goal.id);
-    if (entry.amount > saved) throw new InvalidRowError(saved > 0 ? `Only ₹${saved.toLocaleString("en-IN")} is set aside in ${goal.name}` : `Nothing is set aside in ${goal.name} to take back`);
+    if (entry.amount > saved) throw new InvalidRowError(saved > 0 ? `Only ₹${saved.toLocaleString("en-IN")} is free in ${goal.name}'s pot: lower a part's share in Edit first to take back more` : `Nothing is free in ${goal.name}'s pot to take back: lower a part's share in Edit first`);
   }
   const created = await repos.contributions.create(entry);
   if (entry.kind === "Take-back") {
@@ -160,7 +168,17 @@ export const pauseGoal = (repos: GoalRepos, id: string) => setStatus(repos, id, 
 export const resumeGoal = (repos: GoalRepos, id: string) => setStatus(repos, id, "Active", ["Paused"], ["Paused"], "resumed");
 
 /** Drop a goal: you won't buy it. Its money is released (a bought or dropped goal is no longer earmarked), and a parent takes its open sub-goals with it. */
-export const dropGoal = (repos: GoalRepos, id: string) => setStatus(repos, id, "Dropped", ["Active", "Paused"], ["Active", "Paused"], "dropped");
+export async function dropGoal(repos: GoalRepos, id: string, today: string): Promise<StatusChange[]> {
+  const goal = await mustGet(repos, id);
+  // A dropped part's money stays set aside for the goal it was part of: it goes back to that goal's pot.
+  const moved = goal.parentId && open(goal) ? await returnPartToPot(repos, id, today) : null;
+  try {
+    return await setStatus(repos, id, "Dropped", ["Active", "Paused"], ["Active", "Paused"], "dropped");
+  } catch (error) {
+    await moved?.undo();
+    throw error;
+  }
+}
 
 /** Bring a dropped goal back. Only the goal itself: a parent's sub-goals are restored one by one. */
 export const restoreGoal = async (repos: GoalRepos, id: string) => {

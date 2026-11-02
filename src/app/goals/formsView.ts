@@ -1,4 +1,4 @@
-import { dueOf, kidsOf, leftOf, savedOf, savedOwn, targetOf, topGoals } from "@/lib/aggregate/goals";
+import { dueOf, freePot, kidsOf, leftOf, liveKids, ownCovered, savedOf, savedOwn, targetOf, topGoals } from "@/lib/aggregate/goals";
 import type { ColorKey } from "@/lib/format/colors";
 import { goalColorKey } from "@/lib/format/goalLabels";
 import type { Goal, GoalCategory, GoalColor, GoalNecessity, GoalScale, GoalStatus } from "@/lib/sheets/types";
@@ -37,6 +37,28 @@ export interface FormGoal {
   /** Whether it has sub-goals, and whether any is still open (a goal can't be bought while one is). */
   hasKids: boolean;
   openKids: number;
+  /** Its open parts, and what its pot holds: the money set aside on the goal itself, not yet given to a part (`free`), and with the parts' shares (`pot`). */
+  parts: FormPart[];
+  /** How many parts it reads as: its open parts, and its own part when it has one (0 for a goal with none). */
+  partCount: number;
+  free: number;
+  pot: number;
+  /** What the free pot covers of its own part. */
+  ownCovered: number;
+}
+
+/** A part as the Parts section starts from it. */
+export interface FormPart {
+  id: string;
+  name: string;
+  amount: number;
+  necessity: GoalNecessity;
+  /** Its own date, or null when it follows the goal's. */
+  targetDate: string | null;
+  /** What the goal's pot has given it. */
+  saved: number;
+  dateType: "Fixed" | "Flexible";
+  colorKey: ColorKey;
 }
 
 export interface GoalsFormsData {
@@ -78,6 +100,11 @@ export function goalsFormsData(data: GoalsPageData, today: string, demo: boolean
       notes: goal.notes ?? null,
       hasKids: kids.length > 0,
       openKids: kids.filter((k) => k.status === "Active" || k.status === "Paused").length,
+      parts: liveKids(data, goal.id).map((kid): FormPart => ({ id: kid.id, name: kid.name, amount: kid.amount, necessity: kid.necessity, targetDate: kid.targetDate ?? null, saved: savedOwn(data, kid.id), dateType: kid.dateType ?? "Flexible", colorKey: kid.color ? goalColorKey(kid) : goalColorKey(goal) })),
+      partCount: liveKids(data, goal.id).length ? liveKids(data, goal.id).length + (goal.amount > 0 ? 1 : 0) : 0,
+      free: freePot(data, goal),
+      pot: savedOf(data, goal),
+      ownCovered: ownCovered(data, goal),
     };
   };
   return { today, demo, goals: [...tops.flatMap((t) => [t, ...data.goals.filter((g) => g.parentId === t.id)])].map(formGoal), accounts: data.accounts, cards: data.cards };

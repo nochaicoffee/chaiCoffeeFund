@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { goalEditPatch, readBoughtForm, readEntryForm, readGoalForm } from "./goalForms";
+import { goalEditPatch, readBoughtForm, readEntryForm, readGoalForm, readPartsField } from "./goalForms";
 
 const goal = { name: "Goa trip", category: "Travel", necessity: "Want", scale: "Minor", amount: "85,000", startDate: "2026-08-01" };
 
 describe("the goal form", () => {
   it("reads a plain goal, and a dated one with a plan", () => {
     const plain = readGoalForm(goal, []);
-    expect(plain).toEqual({ ok: true, input: { name: "Goa trip", category: "Travel", necessity: "Want", scale: "Minor", amount: 85000, startDate: "2026-08-01" } });
+    expect(plain).toEqual({ ok: true, input: { name: "Goa trip", category: "Travel", necessity: "Want", scale: "Minor", amount: 85000, startDate: "2026-08-01", parts: [] } });
     const dated = readGoalForm({ ...goal, targetDate: "2027-06-10", dateType: "Fixed", plannedMonthly: "8,000", color: "Ruby", notes: "Four nights" }, []);
     expect(dated).toMatchObject({ ok: true, input: { targetDate: "2027-06-10", dateType: "Fixed", plannedMonthly: 8000, color: "Ruby", notes: "Four nights" } });
   });
@@ -65,5 +65,30 @@ describe("the bought form", () => {
   });
   it("needs a cost and a day", () => {
     expect(readBoughtForm({ goalId: "a", actualCost: "", doneOn: "" }, known)).toMatchObject({ ok: false, errors: { actualCost: "Enter what it cost", doneOn: "Enter the day you bought it" } });
+  });
+});
+
+describe("the parts section", () => {
+  const row = { name: "Suspension", amount: "45,000", necessity: "Need", targetDate: "2027-04-15", given: "20,000", id: "g1" };
+  it("reads the rows as typed, with what the pot gave each", () => {
+    expect(readPartsField(JSON.stringify([row, { name: "Tyres", amount: "38000", necessity: "Want" }]))).toEqual({
+      parts: [{ id: "g1", name: "Suspension", amount: 45000, necessity: "Need", targetDate: "2027-04-15", given: 20000 }, { name: "Tyres", amount: 38000, necessity: "Want", given: 0 }],
+      error: null,
+    });
+    expect(readPartsField("")).toEqual({ parts: [], error: null });
+  });
+  it("says the first problem in words: a name, a cost, Need or Want, a share above the cost", () => {
+    expect(readPartsField(JSON.stringify([{ ...row, name: " " }])).error).toBe("Name part 1, or remove it");
+    expect(readPartsField(JSON.stringify([{ ...row, amount: "" }])).error).toBe("Enter what Suspension costs");
+    expect(readPartsField(JSON.stringify([{ ...row, amount: "0" }])).error).toBe("Enter a cost above ₹0 for Suspension");
+    expect(readPartsField(JSON.stringify([{ ...row, necessity: "" }])).error).toBe("Is Suspension a Need or a Want?");
+    expect(readPartsField(JSON.stringify([{ ...row, given: "50,000" }])).error).toBe("Suspension costs ₹45,000, so it can't be given more");
+    expect(readPartsField("{").error).toMatch(/couldn't be read/);
+  });
+  it("the goal form carries the parts, and a goal with parts can stand at ₹0", () => {
+    const withParts = { ...goal, amount: "0", parts: JSON.stringify([row]) };
+    expect(readGoalForm(withParts, [])).toMatchObject({ ok: true, input: { amount: 0, parts: [{ name: "Suspension" }] } });
+    expect(readGoalForm({ ...goal, amount: "0" }, [])).toMatchObject({ ok: false, errors: { amount: expect.any(String) } });
+    expect(readGoalForm({ ...goal, parts: JSON.stringify([{ ...row, amount: "" }]) }, [])).toMatchObject({ ok: false, errors: { parts: "Enter what Suspension costs" } });
   });
 });

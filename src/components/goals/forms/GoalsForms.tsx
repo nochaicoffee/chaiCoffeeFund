@@ -14,14 +14,13 @@ import { EntryDialog } from "./EntryDialog";
 import { GoalFormDialog } from "./GoalFormDialog";
 
 /**
- * Opens the Goals forms (docs/design/goals.md, GoalsForms and GoalsForms2) from anywhere on the page: Add goal and sub-goal, Set aside and Take back,
+ * Opens the Goals forms (docs/design/goals.md, GoalsForms and GoalsForms2) from anywhere on the page: Add goal (its parts are in its form), Set aside and Take back,
  * Edit, Pause and Resume, Drop and Restore, Mark bought and Reopen, and Delete. What was just saved gets a toast with Undo for six seconds (an added
  * goal is removed, an entry taken out, statuses put back, an edit undone, a delete restored). With sample data every button shows disabled: it never
  * reaches the Sheet.
  */
 export type GoalsFormAction =
   | { kind: "add-goal"; category?: GoalCategory }
-  | { kind: "add-sub-goal"; goalId: string }
   | { kind: "set-aside"; goalId?: string; amount?: number }
   | { kind: "take-back"; goalId: string }
   | { kind: "edit"; goalId: string }
@@ -65,7 +64,6 @@ export function GoalsFormsProvider({ forms, children }: { forms: GoalsFormsData;
     <FormsContext.Provider value={{ forms, disabledReason, open: (action) => !disabledReason && show(action) }}>
       {children}
       {open?.kind === "add-goal" && <GoalFormDialog forms={forms} category={open.category} onClose={close} onSaved={saved} />}
-      {open?.kind === "add-sub-goal" && target && <GoalFormDialog forms={forms} parent={target} onClose={close} onSaved={saved} />}
       {open?.kind === "edit" && target && <GoalFormDialog forms={forms} editing={target} onClose={close} onSaved={saved} />}
       {open?.kind === "set-aside" && <EntryDialog forms={forms} kind="Set-aside" goalId={open.goalId} amount={open.amount} onClose={close} onSaved={saved} />}
       {open?.kind === "take-back" && <EntryDialog forms={forms} kind="Take-back" goalId={open.goalId} onClose={close} onSaved={saved} />}
@@ -78,7 +76,7 @@ export function GoalsFormsProvider({ forms, children }: { forms: GoalsFormsData;
           tone="neutral"
           icon={<AlertIcon />}
           title={`Drop ${target.name}?`}
-          body={`You won't buy it. The ${formatInr(target.totalSaved)} set aside is released (it stops being earmarked), ${target.parentName ? `and ${target.parentName}'s total shrinks by ${formatInr(target.amount)}` : target.hasKids ? "and its open sub-goals are dropped with it" : "and the goal stays in the list, dimmed"}. You can restore it later.`}
+          body={target.parentName ? `You won't buy it. Its ${formatInr(target.saved)} goes back into ${target.parentName}'s pot, and ${target.parentName}'s total shrinks by ${formatInr(target.amount)}. You can restore it later.` : `You won't buy it. The ${formatInr(target.totalSaved)} set aside is released (it stops being earmarked), ${target.hasKids ? "and its open parts are dropped with it" : "and the goal stays in the list, dimmed"}. You can restore it later.`}
           keepLabel="Keep it"
           confirmLabel="Drop goal"
           action={dropGoalAction}
@@ -93,7 +91,7 @@ export function GoalsFormsProvider({ forms, children }: { forms: GoalsFormsData;
           tone="danger"
           icon={<AlertIcon />}
           title={`Delete ${target.name}?`}
-          body={`It's removed with ${target.hasKids ? "its sub-goals and " : ""}every set-aside in it (${formatInr(target.totalSaved)}). If you simply won't buy it, drop it instead and keep the history. There's an Undo for six seconds.`}
+          body={`It's removed with ${target.hasKids ? "its parts and " : ""}every set-aside in it (${formatInr(target.totalSaved)}). If you simply won't buy it, drop it instead and keep the history. There's an Undo for six seconds.`}
           keepLabel="Keep it"
           confirmLabel="Delete goal"
           action={deleteGoalAction}

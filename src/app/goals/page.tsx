@@ -45,7 +45,7 @@ export default async function GoalsPage({ searchParams }: PageProps<"/goals">) {
           <SkippedRowsNotice tabs={skipped} />
           {orphanGoals(data).length > 0 && (
             <p role="status" className="w-fit rounded-full bg-warning-tint px-3 py-1 text-xs font-bold text-warning-text">
-              {orphanGoals(data).length} sub-goal{orphanGoals(data).length === 1 ? "" : "s"} ({orphanGoals(data).map((g) => g.name).join(", ")}) {orphanGoals(data).length === 1 ? "has" : "have"} no goal to belong to, so {orphanGoals(data).length === 1 ? "it isn't" : "they aren't"} counted. Fix the Parent id in the Goals tab.
+              {orphanGoals(data).length} part{orphanGoals(data).length === 1 ? "" : "s"} ({orphanGoals(data).map((g) => g.name).join(", ")}) {orphanGoals(data).length === 1 ? "has" : "have"} no goal to belong to, so {orphanGoals(data).length === 1 ? "it isn't" : "they aren't"} counted. Fix the Parent id in the Goals tab.
             </p>
           )}
         </PageHeader>

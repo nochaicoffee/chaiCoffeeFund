@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ALL, type GoalSideView, type PlanetView, type SideView, type SkyView } from "@/app/goals/views";
+import { ALL, type GoalSideView, type PartLine, type PlanetView, type SideView, type SkyView } from "@/app/goals/views";
+import { formatInr } from "@/lib/format/money";
 import { MAX_RING_MONTHS, OVERDUE_RING, SKY_SIZE, SOMEDAY_RING, ringRadius } from "@/lib/aggregate/goalsOrbit";
 import { colorGradient } from "@/lib/format/colors";
 import { GOAL_CATEGORY_COLOR } from "@/lib/format/goalLabels";
@@ -38,23 +39,53 @@ const PauseIcon = () => (
 const S = SKY_SIZE;
 const C = S / 2;
 const pos = (r: number, angle: number) => ({ x: C + r * Math.cos((angle * Math.PI) / 180), y: C + r * Math.sin((angle * Math.PI) / 180) });
-const pc = (n: number) => `${(n / S) * 100}%`;
+const pc = (n: number) => `${Number(((n / S) * 100).toFixed(3))}%`;
 
 /** A fixed scatter of stars, the same every time. */
 const STARS = Array.from({ length: 70 }, (_, i) => ({ left: ((i * 2654435761) % 1000) / 10, top: ((i * 40503 + 977) % 1000) / 10, big: i % 3 === 0, opacity: 0.25 + (i % 5) * 0.12 }));
+
+/** Where the n-th of `count` moons sits round its planet: an arc over the top and the sides, leaving the bottom clear for the planet's name. */
+function moonAngle(index: number, count: number): number {
+  return count === 1 ? 270 : 150 + (index * 240) / (count - 1);
+}
+
+/** A part of the picked goal, going round its planet: its number inside, the arc how much of it the pot covers. */
+function Moon({ moon, index, count }: { moon: PartLine; index: number; count: number }) {
+  const angle = (moonAngle(index, count) * Math.PI) / 180;
+  return (
+    <span
+      role="img"
+      aria-label={`${moon.n}. ${moon.name}: ${moon.text}`}
+      title={`${moon.name}: ${moon.text}`}
+      className="absolute z-10 flex h-[22px] w-[22px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-[10px] font-extrabold text-white"
+      style={{ left: `calc(50% + ${Math.cos(angle).toFixed(3)} * (50% + 24px))`, top: `calc(50% + ${Math.sin(angle).toFixed(3)} * (50% + 24px))`, background: `conic-gradient(white ${moon.share * 360}deg, oklch(1 0 0 / 0.28) 0)`, boxShadow: moon.covered ? "0 0 10px oklch(1 0 0 / 0.55)" : undefined }}
+    >
+      <span className="flex h-[16px] w-[16px] items-center justify-center rounded-full" style={{ background: `var(--card-${moon.colorKey})` }}>
+        {moon.n}
+      </span>
+    </span>
+  );
+}
 
 function Planet({ planet, pick, onPick }: { planet: PlanetView; pick: string; onPick: (id: string) => void }) {
   const r = ringRadius(planet.ring);
   const { x, y } = pos(r, planet.angle);
   const d = planet.radius * 2 + 12;
   const dim = pick !== ALL && pick !== planet.topId;
+  const picked = pick === planet.topId;
   return (
-    <span className={`group/p absolute z-[2] hover:z-30 focus-within:z-30 motion-safe:transition-opacity ${dim ? "opacity-20" : ""} ${pick === planet.topId ? "drop-shadow-[0_0_14px_oklch(1_0_0/0.55)]" : ""}`} style={{ left: pc(x), top: pc(y), width: pc(d), minWidth: 26, aspectRatio: "1", transform: "translate(-50%, -50%)" }}>
+    <span className={`group/p absolute ${picked ? "z-20" : "z-[2]"} hover:z-30 focus-within:z-30 motion-safe:transition-opacity ${dim ? "opacity-20" : ""} ${picked ? "drop-shadow-[0_0_14px_oklch(1_0_0/0.55)]" : ""}`} style={{ left: pc(x), top: pc(y), width: pc(d), minWidth: 26, aspectRatio: "1", transform: "translate(-50%, -50%)" }}>
       <button type="button" onClick={() => onPick(planet.topId)} aria-pressed={pick === planet.topId} aria-label={`${planet.name}: ${planet.note}`} className={`relative block h-full w-full rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white ${planet.progress >= 1 ? "shadow-[0_0_22px_oklch(1_0_0/0.5)]" : ""} ${planet.late ? "shadow-[0_0_24px_oklch(0.7_0.2_25/0.6)]" : ""} ${planet.paused ? "opacity-55" : ""}`} style={{ background: `conic-gradient(${planet.late ? "oklch(0.78 0.17 25)" : "white"} ${Math.min(1, planet.progress) * 360}deg, oklch(1 0 0 / 0.2) 0)` }}>
         <span className="absolute inset-[6%] flex items-center justify-center overflow-hidden rounded-full text-on-card" style={{ background: colorGradient(planet.colorKey, 150), boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.25)" }}>
           <GoalIcon category={planet.category} size={Math.max(12, Math.round(planet.radius * 0.9))} />
         </span>
       </button>
+      {picked && planet.moons.map((moon, index) => <Moon key={moon.key} moon={moon} index={index} count={planet.moons.length} />)}
+      {!picked && planet.moons.length > 0 && (
+        <span aria-hidden="true" title={`${planet.moons.length} parts`} className="absolute -right-1.5 -bottom-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-white px-1 text-[10px] font-extrabold text-[oklch(0.2_0.04_265)]">
+          {planet.moons.length}
+        </span>
+      )}
       {planet.fixed && <span aria-hidden="true" className="absolute -top-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full bg-negative text-[9px] font-black text-white">!</span>}
       {planet.over && <span className="absolute -top-1.5 left-[calc(100%-6px)] rounded-full bg-[oklch(0.88_0.17_140)] px-1.5 py-0.5 text-[10px] font-extrabold whitespace-nowrap text-[oklch(0.2_0.05_150)]">{planet.over}</span>}
       <span aria-hidden="true" className={`pointer-events-none absolute left-1/2 hidden -translate-x-1/2 text-center whitespace-nowrap text-white [text-shadow:0_1px_6px_oklch(0_0_0/0.7)] md:block ${planet.nameAbove ? "bottom-[calc(100%+3px)]" : "top-[calc(100%+3px)]"}`}>
@@ -139,7 +170,7 @@ function SideAll({ side, onPick }: { side: SideView; onPick: (id: string) => voi
     <>
       <div className="flex flex-col gap-1">
         <b className="text-[15px] font-extrabold">How far out</b>
-        <span className="text-xs font-medium text-muted">Each ring is a distance in months from today. The date picks the ring, so a goal moves inward as it nears. Pick a planet to open its goal.</span>
+        <span className="text-xs font-medium text-muted">Each ring is a distance in months from today. The date picks the ring, so a goal moves inward as it nears. Pick a planet to open its goal; its parts go round it like moons.</span>
       </div>
       <div>
         {side.bands.map((band) => (
@@ -207,7 +238,7 @@ function SideGoal({ view }: { view: GoalSideView }) {
               <b className="block text-[19px] leading-tight font-extrabold">{view.name}</b>
               <span className="text-xs font-semibold opacity-85">
                 {view.category}
-                {view.hasKids ? " · with sub-goals" : ""}
+                {view.hasKids ? ` · ${view.parts.length} parts` : ""}
               </span>
             </span>
           </span>
@@ -239,12 +270,12 @@ function SideGoal({ view }: { view: GoalSideView }) {
         ))}
         <div className="mt-auto flex flex-wrap items-center gap-2 pt-1">
           {paused ? <ActionButton label="Resume" onClick={() => open({ kind: "resume", goalId: view.id })} /> : done ? <ActionButton label="Reopen" onClick={() => open({ kind: "reopen", goalId: view.id })} /> : dropped ? <ActionButton label="Restore" onClick={() => open({ kind: "restore", goalId: view.id })} /> : <ActionButton label="Set aside" onClick={() => open({ kind: "set-aside", goalId: view.id })} />}
-          {!done && !dropped && <ActionButton label="+ Add sub-goal" tone="ghost" onClick={() => open({ kind: "add-sub-goal", goalId: view.id })} />}
+          {!done && !dropped && <ActionButton label={view.hasKids ? "Edit parts" : "+ Add parts"} tone="ghost" onClick={() => open({ kind: "edit", goalId: view.id })} />}
           <span className="text-fg">
             <RowMenu triggerLabel={`More for ${view.name}`} menuLabel={`${view.name} actions`}>
               <MenuAction icon={<PlusIcon />} label="Set aside" onSelect={() => open({ kind: "set-aside", goalId: view.id })} disabledReason={done || dropped ? "Reopen or restore it first" : undefined} />
               <MenuAction icon={<UndoIcon />} label="Take back" onSelect={() => open({ kind: "take-back", goalId: view.id })} />
-              <MenuAction icon={<PencilIcon />} label="Edit" onSelect={() => open({ kind: "edit", goalId: view.id })} />
+              <MenuAction icon={<PencilIcon />} label="Edit goal and parts" onSelect={() => open({ kind: "edit", goalId: view.id })} />
               <MenuAction icon={<PauseIcon />} label={paused ? "Resume" : "Pause"} onSelect={() => open({ kind: paused ? "resume" : "pause", goalId: view.id })} />
               <MenuAction icon={<CheckIcon />} label={done ? "Reopen" : "Mark bought"} onSelect={() => open({ kind: done ? "reopen" : "bought", goalId: view.id })} />
               <MenuAction icon={<CloseIcon />} label={dropped ? "Restore" : "Drop"} onSelect={() => open({ kind: dropped ? "restore" : "drop", goalId: view.id })} />
@@ -254,39 +285,66 @@ function SideGoal({ view }: { view: GoalSideView }) {
         </div>
       </ColorCard>
       <div className="flex min-h-0 flex-1 flex-col gap-1 rounded-[20px] bg-fill px-4 py-3.5">
-        <b className="mb-1 text-sm font-extrabold">{view.pieces.length ? "Its pieces" : "Set aside lately"}</b>
-        {view.pieces.length
-          ? view.pieces.map((piece) => (
-              <div key={piece.key} className="grid flex-1 grid-cols-[28px_minmax(0,1.1fr)_minmax(0,1fr)_auto] items-center gap-3 border-b border-divider py-1.5 last:border-b-0 max-md:grid-cols-[28px_minmax(0,1fr)_auto]">
-                <GoalTile category={piece.category} colorKey={piece.colorKey} size={28} />
+        {view.parts.length > 0 && (
+          <>
+            <div className="mb-1 flex flex-wrap items-baseline justify-between gap-x-3">
+              <b className="text-sm font-extrabold">Its {view.parts.length} parts</b>
+              {view.pot && (
+                <span className="text-[11.5px] font-semibold text-muted">
+                  In the pot, not given to a part: <b className="font-extrabold text-fg tabular-nums">{view.pot.free}</b>
+                </span>
+              )}
+            </div>
+            {view.parts.map((part) => (
+              <div key={part.key} className="grid grid-cols-[22px_minmax(0,1.1fr)_minmax(0,1fr)_auto_auto] items-center gap-3 border-b border-divider py-1.5 last:border-b-0 max-md:grid-cols-[22px_minmax(0,1fr)_auto_auto]">
+                <span aria-hidden="true" className="flex h-[22px] w-[22px] items-center justify-center rounded-full text-[10px] font-extrabold text-white" style={{ background: `var(--card-${part.colorKey})` }}>
+                  {part.n}
+                </span>
                 <div className="min-w-0">
-                  <b className="block truncate text-[13px] font-extrabold">{piece.name}</b>
-                  <small className="block text-[11px] font-semibold text-muted">{piece.note}</small>
+                  <b className="block truncate text-[13px] font-extrabold">{part.name}</b>
+                  <small className="block text-[11px] font-semibold text-muted">{part.note}</small>
                 </div>
                 <div className="max-md:hidden">
-                  <ProgressBar progress={piece.progress} expected={piece.expected} colorKey={piece.colorKey} height={7} />
-                  <span className="mt-1 block text-[11px] font-semibold text-muted">{piece.savedText}</span>
+                  <ProgressBar progress={part.progress} expected={part.expected} colorKey={part.colorKey} height={7} />
+                  <span className="mt-1 block text-[11px] font-semibold text-muted">{part.covered ? "covered" : part.savedText}</span>
                 </div>
                 <div className="text-right">
-                  <b className="block text-[13px] font-extrabold tabular-nums">{piece.left}</b>
-                  <StandingPill standing={piece.standing} small />
+                  <b className="block text-[13px] font-extrabold tabular-nums">{part.amount ? formatInr(part.amount) : part.left}</b>
+                  <StandingPill standing={part.standing} small />
                 </div>
+                <span className="text-fg">
+                  {part.goalId ? (
+                    <RowMenu triggerLabel={`More for ${part.name}`} menuLabel={`${part.name} actions`}>
+                      <MenuAction icon={<PencilIcon />} label="Edit goal and parts" onSelect={() => open({ kind: "edit", goalId: view.id })} />
+                      <MenuAction icon={<CheckIcon />} label="Mark bought" onSelect={() => open({ kind: "bought", goalId: part.goalId as string })} />
+                      <MenuAction icon={<CloseIcon />} label="Drop" onSelect={() => open({ kind: "drop", goalId: part.goalId as string })} />
+                    </RowMenu>
+                  ) : (
+                    <span className="inline-block w-8" aria-hidden="true" />
+                  )}
+                </span>
               </div>
-            ))
-          : view.entries.length
-            ? view.entries.map((entry) => (
-                <div key={entry.id} className="grid flex-1 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-divider py-1.5 last:border-b-0">
-                  <div className="min-w-0">
-                    <b className="block text-[13px] font-extrabold">{entry.kind === "Take-back" ? "Taken back" : "Set aside"}</b>
-                    <small className="block truncate text-[11px] font-semibold text-muted">{entry.note}</small>
-                  </div>
-                  <div className="text-right">
-                    <b className={`block text-[13px] font-extrabold tabular-nums ${entry.kind === "Take-back" ? "text-negative" : ""}`}>{entry.amount}</b>
-                    <small className="block text-[11px] font-semibold text-muted">{entry.date}</small>
-                  </div>
-                </div>
-              ))
-            : <p className="flex flex-1 items-center justify-center text-sm font-semibold text-muted">Nothing set aside yet.</p>}
+            ))}
+            <b className="mt-3 mb-1 text-sm font-extrabold">Set aside lately</b>
+          </>
+        )}
+        {view.parts.length === 0 && <b className="mb-1 text-sm font-extrabold">Set aside lately</b>}
+        {view.entries.length ? (
+          view.entries.map((entry) => (
+            <div key={entry.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-divider py-1.5 last:border-b-0">
+              <div className="min-w-0">
+                <b className="block text-[13px] font-extrabold">{entry.kind === "Take-back" ? "Taken back" : "Set aside"}</b>
+                <small className="block truncate text-[11px] font-semibold text-muted">{entry.note}</small>
+              </div>
+              <div className="text-right">
+                <b className={`block text-[13px] font-extrabold tabular-nums ${entry.kind === "Take-back" ? "text-negative" : ""}`}>{entry.amount}</b>
+                <small className="block text-[11px] font-semibold text-muted">{entry.date}</small>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="flex flex-1 items-center justify-center text-sm font-semibold text-muted">Nothing set aside yet.</p>
+        )}
       </div>
     </>
   );
@@ -360,7 +418,7 @@ export function OrbitCard({ sky, side, goalSides, pick, onPick: choose }: { sky:
     <WidgetCard
       label="Your goals in orbit"
       title="Your goals in orbit"
-      note="the nearer its date, the closer to the middle · pick a planet to open its goal"
+      note="the nearer its date, the closer to the middle · pick a planet to open its goal and see its parts go round it"
       right={
         <button type="button" onClick={() => onPick(ALL)} aria-pressed={pick === ALL} className={`inline-flex min-h-8 items-center gap-1.5 rounded-full px-3.5 text-xs font-extrabold focus-visible:outline-2 focus-visible:outline-accent ${pick === ALL ? "bg-ink text-on-ink" : "bg-fill hover:bg-fill-strong"}`}>
           All goals

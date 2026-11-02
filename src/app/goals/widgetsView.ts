@@ -1,12 +1,12 @@
 import { daysBetween } from "@/lib/aggregate/cardSpend";
-import { effectiveDue, expectedProgress, fundingPlan, fundingUnits, monthsLeft, savedOwn, necessitySplit, plannedOf, requiredFor, requiredMonthly, savedOf, standing, targetOf, topGoals, wholeMonthsTo, type GoalStanding } from "@/lib/aggregate/goals";
+import { effectiveDue, expectedProgress, isPotMove, fundingPlan, fundingUnits, monthsLeft, necessitySplit, plannedOf, requiredMonthly, savedOf, standing, targetOf, topGoals, wholeMonthsTo, type GoalStanding } from "@/lib/aggregate/goals";
 import { addMonthsUTC } from "@/lib/aggregate/recurring";
 import { formatDate, formatShortDate } from "@/lib/format/date";
 import { goalColorKey } from "@/lib/format/goalLabels";
 import type { ColorKey } from "@/lib/format/colors";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import type { Goal, GoalCategory } from "@/lib/sheets/types";
-import { goalOf, pieceColor, plural, inDays, pieceLabel, deriveGoals, type GoalsDerived, type GoalsPageData } from "./views";
+import { goalOf, pieceColor, inDays, pieceLabel, deriveGoals, partLines, type GoalsDerived, type GoalsPageData, type PartLine } from "./views";
 
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 const colorOf = (goal: Goal): ColorKey => goalColorKey(goal);
@@ -18,11 +18,12 @@ export interface TableRow {
   /** The top-level goal this row opens when picked. */
   topId: string;
   name: string;
-  sub: boolean;
   category: GoalCategory;
   colorKey: ColorKey;
-  /** Under the name: the category, and how many sub-goals. */
+  /** Under the name: the category. */
   note: string;
+  /** Its live parts, in the order money fills them: the count is a button that opens them under the goal. Empty for a goal with none. */
+  parts: PartLine[];
   need: boolean;
   scale: "Minor" | "Major";
   progress: number;
@@ -41,25 +42,25 @@ export interface TableRow {
   settled: string | null;
 }
 
-export function tableRows(data: GoalsPageData, today: string): TableRow[] {
-  const row = (goal: Goal, sub: boolean, top: Goal): TableRow => {
-    const kids = data.goals.filter((g) => g.parentId === goal.id && g.status !== "Dropped");
+/** The goals table: main goals only. A goal's parts are inside it (a count that opens them), never rows of their own. */
+export function tableRows(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): TableRow[] {
+  const row = (goal: Goal): TableRow => {
     const stand = standing(data, goal, today);
-    const saved = sub ? savedOwn(data, goal.id) : savedOf(data, goal);
-    const target = sub ? goal.amount : targetOf(data, goal);
+    const saved = savedOf(data, goal);
+    const target = targetOf(data, goal);
     const due = effectiveDue(data, goal);
-    const planned = sub ? (goal.plannedMonthly ?? 0) : plannedOf(data, goal);
-    const needs = sub ? requiredFor(Math.max(0, goal.amount - saved), due, today) : requiredMonthly(data, goal, today);
+    const planned = plannedOf(data, goal);
+    const needs = requiredMonthly(data, goal, today);
     const active = goal.status === "Active";
     const settled = goal.status === "Done" ? `paid ${formatShortDate(goal.doneOn as string)}${goal.actualCost !== undefined ? ` · ${goal.actualCost <= goal.amount ? `${formatInr(goal.amount - goal.actualCost)} under` : `${formatInr(goal.actualCost - goal.amount)} over`}` : ""}` : goal.status === "Dropped" ? "released" : null;
     return {
       id: goal.id,
-      topId: top.id,
+      topId: goal.id,
       name: goal.name,
-      sub,
       category: goal.category,
-      colorKey: sub && !goal.color ? colorOf(top) : colorOf(goal),
-      note: sub ? goal.category : `${goal.category}${kids.length ? ` · ${plural(kids.filter((k) => k.status !== "Done").length, "sub-goal")}` : ""}`,
+      colorKey: colorOf(goal),
+      note: goal.category,
+      parts: goal.status === "Done" || goal.status === "Dropped" ? [] : partLines(data, goal, today, d),
       need: goal.necessity === "Need",
       scale: goal.scale,
       progress: target ? Math.min(1, saved / target) : 0,
@@ -76,11 +77,8 @@ export function tableRows(data: GoalsPageData, today: string): TableRow[] {
       settled,
     };
   };
-  const tops = topGoals(data);
   const order: Record<Goal["status"], number> = { Active: 0, Paused: 1, Done: 2, Dropped: 3 };
-  return [...tops]
-    .sort((a, b) => order[a.status] - order[b.status])
-    .flatMap((top) => [row(top, false, top), ...data.goals.filter((g) => g.parentId === top.id).sort((a, b) => order[a.status] - order[b.status]).map((kid) => row(kid, true, top))]);
+  return [...topGoals(data)].sort((a, b) => order[a.status] - order[b.status]).map(row);
 }
 
 // ---------- Coming up ----------
@@ -152,7 +150,8 @@ export function monthView(data: GoalsPageData, today: string, d: GoalsDerived = 
   const rows = d.pieces
     .filter((p) => !p.paused)
     .map((p): MonthRow => {
-      const entries = data.contributions.filter((c) => c.goalId === p.goalId && c.date.startsWith(month));
+      // Money given from a goal's pot to a part only changed hands: it isn't set aside this month.
+      const entries = data.contributions.filter((c) => c.goalId === p.goalId && c.date.startsWith(month) && !isPotMove(c));
       const done = Math.max(0, sum(entries.map((c) => (c.kind === "Set-aside" ? c.amount : -c.amount))));
       const state: MonthRow["state"] = done >= p.planned && p.planned > 0 ? (done > p.planned ? "extra" : "done") : done > 0 ? "short" : "notyet";
       return {
@@ -296,7 +295,7 @@ export interface EntryCard {
 
 export function setAsidesView(data: GoalsPageData, today: string, n = 7): EntryCard[] {
   return [...data.contributions]
-    .filter((c) => c.date <= today && goalOf(data, c.goalId))
+    .filter((c) => c.date <= today && goalOf(data, c.goalId) && !isPotMove(c))
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id.localeCompare(a.id)))
     .slice(0, n)
     .map((c) => {
@@ -341,6 +340,6 @@ export interface GoalsWidgets {
 }
 
 export function goalsWidgets(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): GoalsWidgets {
-  return { table: tableRows(data, today), comingUp: comingUpView(data, today, 5, d), month: monthView(data, today, d), afford: affordView(data, today, d), stair: stairView(data, today, d), needsWants: needsWantsView(data), setAsides: setAsidesView(data, today), finished: finishedView(data) };
+  return { table: tableRows(data, today, d), comingUp: comingUpView(data, today, 5, d), month: monthView(data, today, d), afford: affordView(data, today, d), stair: stairView(data, today, d), needsWants: needsWantsView(data), setAsides: setAsidesView(data, today), finished: finishedView(data) };
 }
 

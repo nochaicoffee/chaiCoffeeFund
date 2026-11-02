@@ -1,50 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { addContribution, addGoal, deleteGoal, dropGoal, editContribution, editGoal, markBought, pauseGoal, removeContribution, reopenGoal, restoreDeleted, restoreGoal, resumeGoal, snapshotGoal, undoStatus, type GoalRepos } from "./goalWrites";
-import { checkGoal } from "../sheets/goals";
 import { earmarksByAccount, savedOf, targetOf, totals } from "../aggregate/goals";
 import { InvalidRowError, NotFoundError } from "../sheets/repository";
 import type { Goal, GoalContribution } from "../sheets/types";
+import { setup } from "./testRepos";
 
-/** In-memory repositories that behave as the real one does: an update is merged over the row and the whole row checked before it's kept. */
-function memory<T extends { id: string }>(check?: (row: Omit<T, "id">) => string | null) {
-  const rows: T[] = [];
-  let next = 1;
-  return {
-    rows,
-    list: async () => rows.map((r) => ({ ...r })),
-    get: async (id: string) => (rows.find((r) => r.id === id) ? { ...rows.find((r) => r.id === id)! } : null),
-    create: async (input: Omit<T, "id">) => {
-      const problem = check?.(input);
-      if (problem) throw new InvalidRowError(problem);
-      const row = { ...input, id: `id-${next++}` } as T;
-      rows.push(row);
-      return { ...row };
-    },
-    update: async (id: string, patch: Partial<Omit<T, "id">>) => {
-      const at = rows.findIndex((r) => r.id === id);
-      if (at < 0) throw new NotFoundError("gone");
-      const merged = { ...rows[at], ...patch } as T;
-      const problem = check?.(merged);
-      if (problem) throw new InvalidRowError(problem);
-      rows[at] = merged;
-      return { ...merged };
-    },
-    remove: async (id: string) => {
-      const at = rows.findIndex((r) => r.id === id);
-      if (at >= 0) rows.splice(at, 1);
-    },
-    removeWhere: async (match: (values: Partial<Record<keyof T, unknown>>) => boolean) => {
-      let n = 0;
-      for (let i = rows.length - 1; i >= 0; i--) if (match(rows[i])) { rows.splice(i, 1); n++; }
-      return n;
-    },
-  };
-}
-const setup = () => {
-  const goals = memory<Goal>(checkGoal);
-  const contributions = memory<GoalContribution>();
-  return { repos: { goals, contributions } as GoalRepos, goals, contributions };
-};
 const input = (over: Partial<Omit<Goal, "id">> = {}): Omit<Goal, "id"> => ({ name: "Car", category: "Vehicle", necessity: "Want", scale: "Major", amount: 100000, startDate: "2026-03-01", status: "Active", ...over });
 const aside = (goalId: string, amount: number, extra: Partial<Omit<GoalContribution, "id">> = {}): Omit<GoalContribution, "id"> => ({ goalId, date: "2026-10-01", amount, kind: "Set-aside", ...extra });
 const TODAY = "2026-10-29";
@@ -72,7 +32,7 @@ describe("adding goals and sub-goals", () => {
     const { repos } = setup();
     await expect(addGoal(repos, input({ parentId: "nope" }))).rejects.toBeInstanceOf(NotFoundError);
     const car = await addGoal(repos, input());
-    await dropGoal(repos, car.id);
+    await dropGoal(repos, car.id, TODAY);
     await expect(addGoal(repos, input({ name: "x", parentId: car.id, amount: 1 }))).rejects.toThrow(/dropped/);
   });
 });
@@ -109,13 +69,13 @@ describe("setting aside and taking back", () => {
     await addContribution(repos, aside(car.id, 5000));
     await expect(addContribution(repos, aside(car.id, 5001, { kind: "Take-back" }))).rejects.toThrow(/Only ₹5,000/);
     await expect(addContribution(repos, aside(car.id, 5000, { kind: "Take-back" }))).resolves.toBeDefined();
-    await expect(addContribution(repos, aside(car.id, 1, { kind: "Take-back" }))).rejects.toThrow(/Nothing is set aside/);
+    await expect(addContribution(repos, aside(car.id, 1, { kind: "Take-back" }))).rejects.toThrow(/Nothing is free/);
   });
   it("a goal that's gone takes no entry, and a bought or dropped one takes no more set-asides", async () => {
     const { repos } = setup();
     await expect(addContribution(repos, aside("nope", 1))).rejects.toBeInstanceOf(NotFoundError);
     const car = await addGoal(repos, input());
-    await dropGoal(repos, car.id);
+    await dropGoal(repos, car.id, TODAY);
     await expect(addContribution(repos, aside(car.id, 1))).rejects.toThrow(/restore it/);
   });
   it("correcting an entry can't take the goal below 0, nor can deleting one a take-back depends on", async () => {
@@ -152,7 +112,7 @@ describe("pause, drop and bought", () => {
     await addContribution(repos, aside(car.id, 5000, { accountId: "hdfc" }));
     const read = () => ({ goals: goals.rows, contributions: contributions.rows });
     expect(earmarksByAccount(read()).hdfc).toBe(5000);
-    const changes = await dropGoal(repos, car.id);
+    const changes = await dropGoal(repos, car.id, TODAY);
     expect(earmarksByAccount(read()).hdfc ?? 0).toBe(0);
     expect(contributions.rows).toHaveLength(1);
     await undoStatus(repos, changes);
@@ -165,7 +125,7 @@ describe("pause, drop and bought", () => {
     const tyres = await addGoal(repos, input({ name: "Tyres", parentId: car.id, amount: 38000 }));
     const read = () => ({ goals: goals.rows as Goal[], contributions: contributions.rows });
     expect(targetOf(read(), goals.rows[0])).toBe(138000);
-    await dropGoal(repos, tyres.id);
+    await dropGoal(repos, tyres.id, TODAY);
     expect(targetOf(read(), goals.rows[0])).toBe(100000);
     await restoreGoal(repos, tyres.id);
     expect(targetOf(read(), goals.rows[0])).toBe(138000);
@@ -174,7 +134,7 @@ describe("pause, drop and bought", () => {
     const { repos, goals } = setup();
     const car = await addGoal(repos, input());
     const tyres = await addGoal(repos, input({ name: "Tyres", parentId: car.id, amount: 1 }));
-    await dropGoal(repos, car.id);
+    await dropGoal(repos, car.id, TODAY);
     expect(goals.rows.map((g) => g.status)).toEqual(["Dropped", "Dropped"]);
     await restoreGoal(repos, car.id);
     expect(goals.rows.find((g) => g.id === car.id)?.status).toBe("Active");
@@ -195,7 +155,7 @@ describe("pause, drop and bought", () => {
     const { repos, goals, contributions } = setup();
     const car = await addGoal(repos, input());
     const tyres = await addGoal(repos, input({ name: "Tyres", parentId: car.id, amount: 1 }));
-    await addContribution(repos, aside(tyres.id, 1, { accountId: "hdfc" }));
+    await contributions.create(aside(tyres.id, 1, { accountId: "hdfc" }));
     await markBought(repos, tyres.id, { doneOn: TODAY, actualCost: 1, paidFromCardId: "c1" });
     expect(earmarksByAccount({ goals: goals.rows as Goal[], contributions: contributions.rows }).hdfc ?? 0).toBe(0);
     await markBought(repos, car.id, { doneOn: TODAY, actualCost: 5 });
@@ -228,7 +188,7 @@ describe("deleting", () => {
     const tyres = await addGoal(repos, input({ name: "Tyres", parentId: car.id, amount: 1 }));
     const other = await addGoal(repos, input({ name: "Other" }));
     await addContribution(repos, aside(car.id, 10));
-    await addContribution(repos, aside(tyres.id, 20));
+    await contributions.create(aside(tyres.id, 20));
     await addContribution(repos, aside(other.id, 30));
     await deleteGoal(repos, car.id);
     expect(goals.rows.map((g) => g.id)).toEqual([other.id]);
@@ -246,7 +206,7 @@ describe("undoing a delete", () => {
     const car = await addGoal(repos, input());
     const tyres = await addGoal(repos, input({ name: "Tyres", parentId: car.id, amount: 5000 }));
     await addContribution(repos, aside(car.id, 100, { accountId: "hdfc" }));
-    await addContribution(repos, aside(tyres.id, 200, { note: "bonus" }));
+    await contributions.create(aside(tyres.id, 200, { note: "bonus" }));
     const snapshot = (await snapshotGoal(repos, car.id))!;
     expect(snapshot.goals).toHaveLength(2);
     expect(snapshot.contributions).toHaveLength(2);
@@ -292,12 +252,12 @@ describe("review findings", () => {
     const car = await addGoal(repos, input());
     await markBought(repos, car.id, { doneOn: TODAY, actualCost: 1 });
     await expect(pauseGoal(repos, car.id)).rejects.toThrow(/is bought, so it can't be paused/);
-    await expect(dropGoal(repos, car.id)).rejects.toThrow(/is bought, so it can't be dropped/);
+    await expect(dropGoal(repos, car.id, TODAY)).rejects.toThrow(/is bought, so it can't be dropped/);
     await expect(restoreGoal(repos, car.id)).rejects.toThrow(/can't be restored/);
     await reopenGoal(repos, car.id);
     await expect(reopenGoal(repos, car.id)).rejects.toThrow(/is active, so it can't be reopened/);
     await expect(resumeGoal(repos, car.id)).rejects.toThrow(/can't be resumed/);
-    await dropGoal(repos, car.id);
+    await dropGoal(repos, car.id, TODAY);
     await expect(markBought(repos, car.id, { doneOn: TODAY, actualCost: 1 })).rejects.toThrow(/is dropped, so it can't be bought/);
   });
   it("two take-backs that both passed the check can't leave a goal below zero", async () => {

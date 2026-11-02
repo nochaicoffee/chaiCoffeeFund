@@ -1,6 +1,10 @@
 {
   "pages": [
     {
+      "id": "r5",
+      "name": "Round 5: the pot, moons, the list and the forms"
+    },
+    {
       "id": "final",
       "name": "Picked: Orbit (final page, states, phone, forms)"
     },
@@ -26,6 +30,38 @@
     }
   ],
   "artboards": [
+    {
+      "file": "GoalsR5Pot.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1700,
+      "h": 1045,
+      "page": "r5"
+    },
+    {
+      "file": "GoalsR5Moons.dc.html",
+      "x": 1820,
+      "y": 0,
+      "w": 1760,
+      "h": 958,
+      "page": "r5"
+    },
+    {
+      "file": "GoalsR5List.dc.html",
+      "x": 3700,
+      "y": 0,
+      "w": 1560,
+      "h": 2426,
+      "page": "r5"
+    },
+    {
+      "file": "GoalsR5Forms.dc.html",
+      "x": 5380,
+      "y": 0,
+      "w": 1100,
+      "h": 2817,
+      "page": "r5"
+    },
     {
       "file": "GoalsFinal.dc.html",
       "x": 0,
@@ -201,11 +237,19 @@
       "x": 0,
       "y": -90,
       "w": 1100,
+      "text": "Goals, round 5 (2026-11-03), after using the built page. Prathik: a sub-goal is part of its main goal, so a set-aside on the main goal should cover its parts (₹2,00,000 on the car and a ₹45,000 suspension under it); the list should show main goals only with a count of parts that opens their details; parts should go round their goal in the orbit like moons; and parts should be added and edited inside the main goal, not as a separate Add sub-goal. Four boards: GoalsR5Pot (three ways the pot can cover its parts), GoalsR5Moons (three orbits), GoalsR5List (three lists), GoalsR5Forms (forms with Parts inside the goal). Sample data, made up; today is Oct 29, 2026.",
+      "page": "r5"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
       "text": "Goals, the pick (2026-10-31): Prathik chose G14 Orbit. GoalsFinal is the page: pick a planet (or All goals) and the sky dims the rest while the side opens that goal, with its pieces or latest set-asides. GoalsStates: no goals, one goal, all funded, overdue, over-funded, paused/dropped/bought, and the Overview attention item. GoalsPhone: the sky small with numbered planets, the picked goal, and Set aside as a bottom sheet. GoalsForms2: the goal's menu, Edit, Take back, Pause, Drop and Delete. The earlier forms (Add goal, Add sub-goal, Set aside, Mark bought) still apply. The other rounds are kept as history. Sample data, made up; today is Oct 29, 2026.",
       "page": "final"
     },
     {
-      "id": "note-2",
+      "id": "note-3",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -213,7 +257,7 @@
       "page": "r4"
     },
     {
-      "id": "note-3",
+      "id": "note-4",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -221,7 +265,7 @@
       "page": "r3"
     },
     {
-      "id": "note-4",
+      "id": "note-5",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -229,7 +273,7 @@
       "page": "r2"
     },
     {
-      "id": "note-5",
+      "id": "note-6",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -237,7 +281,7 @@
       "page": "forms"
     },
     {
-      "id": "note-6",
+      "id": "note-7",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -247,6 +291,6 @@
   ],
   "launch": {
     "view": "canvas",
-    "page": "final"
+    "page": "r5"
   }
 }
