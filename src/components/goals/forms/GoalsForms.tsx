@@ -76,7 +76,7 @@ export function GoalsFormsProvider({ forms, children }: { forms: GoalsFormsData;
           tone="neutral"
           icon={<AlertIcon />}
           title={`Drop ${target.name}?`}
-          body={target.parentName ? `You won't buy it. Its ${formatInr(target.saved)} goes back into ${target.parentName}'s pot, and ${target.parentName}'s total shrinks by ${formatInr(target.amount)}. You can restore it later.` : `You won't buy it. The ${formatInr(target.totalSaved)} set aside is released (it stops being earmarked), ${target.hasKids ? "and its open parts are dropped with it" : "and the goal stays in the list, dimmed"}. You can restore it later.`}
+          body={target.parentName ? `You won't buy it. Its ${formatInr(target.saved)} goes back to ${target.parentName}'s money that isn't given to a part, and ${target.parentName}'s total shrinks by ${formatInr(target.amount)}. You can restore it later.` : `You won't buy it. The ${formatInr(target.totalSaved)} set aside is released (it stops being earmarked), ${target.hasKids ? "and its open parts are dropped with it" : "and the goal stays in the list, dimmed"}. You can restore it later.`}
           keepLabel="Keep it"
           confirmLabel="Drop goal"
           action={dropGoalAction}

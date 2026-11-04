@@ -66,8 +66,17 @@ export function progressOf(data: GoalsData, goal: Goal): number {
   return target > 0 ? Math.min(1, savedOf(data, goal) / target) : 0;
 }
 
-/** Funded: saved at or above the target. Exactly at target counts. */
-export const isFunded = (data: GoalsData, goal: Goal): boolean => targetOf(data, goal) > 0 && savedOf(data, goal) >= targetOf(data, goal);
+/**
+ * Funded: saved at or above the target, exactly at target counting. A goal with parts is funded only when every piece is covered (each part holds
+ * its cost and what isn't given to a part covers the goal's own part): money that is set aside on the goal but not given to a part covers nothing yet.
+ */
+export function isFunded(data: GoalsData, goal: Goal): boolean {
+  const target = targetOf(data, goal);
+  if (target <= 0) return false;
+  const kids = liveKids(data, goal.id);
+  if (kids.length === 0) return savedOf(data, goal) >= target;
+  return savedOwn(data, goal.id) >= goal.amount && kids.every((kid) => savedOwn(data, kid.id) >= kid.amount);
+}
 
 /** The date a goal is due: the latest of its own date and its live sub-goals' (a parent is due when its last piece is). Null when none has one. */
 export function dueOf(data: GoalsData, goal: Goal): string | null {
@@ -164,11 +173,11 @@ export const freePot = (data: GoalsData, goal: Goal): number => savedOwn(data, g
 /** What a move between a goal's pot and a part writes in the entries' notes, so the lists of entries can leave the moves out (the money didn't come or go, it only changed hands). */
 export const moveNotes = {
   given: (part: string) => `Given to ${part}`,
-  from: (main: string) => `From the pot of ${main}`,
-  back: (main: string) => `Back to the pot of ${main}`,
-  backFrom: (part: string) => `Back from ${part}`,
+  from: (main: string) => `Moved from ${main}'s unassigned money`,
+  back: (main: string) => `Moved back to ${main}'s unassigned money`,
+  backFrom: (part: string) => `Moved back from ${part}`,
 };
-const MOVE_NOTE = /^(Given to |From the pot of |Back to the pot of |Back from )/;
+const MOVE_NOTE = /^(Given to |From the pot of |Back to the pot of |Back from |Moved from |Moved back )/;
 export const isPotMove = (entry: GoalContribution): boolean => MOVE_NOTE.test(entry.note ?? "");
 
 /** What the free pot covers of a goal's own part. */

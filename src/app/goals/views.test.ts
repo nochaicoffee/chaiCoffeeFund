@@ -55,6 +55,26 @@ describe("the picks and the sky", () => {
     expect(car?.moons.at(-1)?.goalId).toBeNull();
     expect(skyView(data, TODAY).planets.find((p) => p.key === "fridge")?.moons).toEqual([]);
   });
+  it("says 'funded' only when the goal is funded, not when money merely sits unassigned", () => {
+    const data = sample("pot");
+    data.contributions.push({ id: "extra", goalId: "car", date: TODAY, amount: 200000, kind: "Set-aside" });
+    // ₹4,00,000 is set aside on a ₹3,45,000 goal, but the rest of the car holds it, so the goal is covered; take the parts' shares away and it isn't.
+    expect(goalSides(data, TODAY).car.bigNote).toBe("funded");
+    const unassigned = sample("pot");
+    unassigned.contributions = unassigned.contributions.filter((c) => c.goalId === "car" && c.kind === "Set-aside");
+    unassigned.contributions.push({ id: "extra", goalId: "car", date: TODAY, amount: 350000, kind: "Set-aside" });
+    expect(goalSides(unassigned, TODAY).car.bigNote).toBe("set aside, not all given to parts");
+    expect(skyView(unassigned, TODAY).planets.find((p) => p.key === "car")?.note).not.toBe("funded");
+  });
+  it("bought and dropped parts stay under their goal, bought first, with what they cost and where from", () => {
+    const side = goalSides(sample(), TODAY).car;
+    expect(side.settled.map((p) => [p.name, p.state])).toEqual([["Dashcam", "dropped"]]);
+    const data = sample();
+    data.goals.find((g) => g.id === "tyres")!.status = "Done";
+    Object.assign(data.goals.find((g) => g.id === "tyres")!, { doneOn: "2026-10-20", actualCost: 36500, paidFromAccountId: "demo-hdfc" });
+    expect(goalSides(data, TODAY).car.settled.map((p) => [p.name, p.state, p.amount, p.line])).toEqual([["New tyres", "bought", "₹36,500", "bought Oct 20 · paid from HDFC Salary"], ["Dashcam", "dropped", "₹9,000", "dropped · its money went back to the goal"]]);
+    expect(goalSides(data, TODAY).car.parts.map((p) => p.name)).not.toContain("New tyres");
+  });
   it("with ₹2,00,000 in the car's pot, the parts it was given are covered and the rest of the car holds what's left", () => {
     const pot = sample("pot");
     const car = skyView(pot, TODAY).planets.find((p) => p.key === "car");

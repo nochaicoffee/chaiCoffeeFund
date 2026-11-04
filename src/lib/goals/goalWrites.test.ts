@@ -69,7 +69,7 @@ describe("setting aside and taking back", () => {
     await addContribution(repos, aside(car.id, 5000));
     await expect(addContribution(repos, aside(car.id, 5001, { kind: "Take-back" }))).rejects.toThrow(/Only ₹5,000/);
     await expect(addContribution(repos, aside(car.id, 5000, { kind: "Take-back" }))).resolves.toBeDefined();
-    await expect(addContribution(repos, aside(car.id, 1, { kind: "Take-back" }))).rejects.toThrow(/Nothing is free/);
+    await expect(addContribution(repos, aside(car.id, 1, { kind: "Take-back" }))).rejects.toThrow(/nothing to take back/);
   });
   it("a goal that's gone takes no entry, and a bought or dropped one takes no more set-asides", async () => {
     const { repos } = setup();

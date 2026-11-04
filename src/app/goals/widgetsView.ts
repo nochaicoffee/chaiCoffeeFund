@@ -6,7 +6,7 @@ import { goalColorKey } from "@/lib/format/goalLabels";
 import type { ColorKey } from "@/lib/format/colors";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import type { Goal, GoalCategory } from "@/lib/sheets/types";
-import { goalOf, pieceColor, inDays, pieceLabel, deriveGoals, partLines, type GoalsDerived, type GoalsPageData, type PartLine } from "./views";
+import { goalOf, pieceColor, inDays, pieceLabel, deriveGoals, partLines, settledParts, type GoalsDerived, type GoalsPageData, type PartLine, type SettledPart } from "./views";
 
 const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
 const colorOf = (goal: Goal): ColorKey => goalColorKey(goal);
@@ -24,6 +24,8 @@ export interface TableRow {
   note: string;
   /** Its live parts, in the order money fills them: the count is a button that opens them under the goal. Empty for a goal with none. */
   parts: PartLine[];
+  /** Its parts that were bought or dropped, shown dimmed under the live ones. */
+  boughtParts: SettledPart[];
   need: boolean;
   scale: "Minor" | "Major";
   progress: number;
@@ -61,6 +63,7 @@ export function tableRows(data: GoalsPageData, today: string, d: GoalsDerived = 
       colorKey: colorOf(goal),
       note: goal.category,
       parts: goal.status === "Done" || goal.status === "Dropped" ? [] : partLines(data, goal, today, d),
+      boughtParts: settledParts(data, goal),
       need: goal.necessity === "Need",
       scale: goal.scale,
       progress: target ? Math.min(1, saved / target) : 0,
@@ -324,7 +327,7 @@ export function finishedView(data: GoalsPageData): FinishedRow[] {
     .map((g) => {
       const diff = g.amount - (g.actualCost as number);
       const paid = g.paidFromAccountId ? data.accounts.find((a) => a.id === g.paidFromAccountId)?.name : undefined;
-      return { id: g.id, name: g.name, colorKey: colorOf(g), category: g.category, note: `bought ${formatShortDate(g.doneOn as string)}${paid ? ` · paid from ${paid}` : g.paidFromCardId ? " · paid on a card" : ""}`, cost: formatInr(g.actualCost as number), estimate: `of ${formatInr(g.amount)}`, verdict: diff >= 0 ? `Came in ${formatInr(diff)} under the estimate` : `Came in ${formatInr(-diff)} over the estimate`, under: diff >= 0 };
+      return { id: g.id, name: g.name, colorKey: colorOf(g), category: g.category, note: `${g.parentId ? `part of ${goalOf(data, g.parentId)?.name ?? "a goal"} · ` : ""}bought ${formatShortDate(g.doneOn as string)}${paid ? ` · paid from ${paid}` : g.paidFromCardId ? " · paid on a card" : ""}`, cost: formatInr(g.actualCost as number), estimate: `of ${formatInr(g.amount)}`, verdict: diff === 0 ? "Came in on the estimate" : diff > 0 ? `Came in ${formatInr(diff)} under the estimate` : `Came in ${formatInr(-diff)} over the estimate`, under: diff >= 0 };
     });
 }
 

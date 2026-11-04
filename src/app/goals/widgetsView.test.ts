@@ -23,6 +23,18 @@ describe("the goals table", () => {
     // Parts aren't planned one by one: a part not yet covered reads its goal's standing (the car is behind its plan).
     expect(music.standing).toBe("Behind");
   });
+  it("a goal's bought and dropped parts are listed under it, not in its count of parts", () => {
+    const car = rows.find((r) => r.id === "car")!;
+    expect(car.parts).toHaveLength(5);
+    expect(car.boughtParts.map((p) => [p.name, p.state])).toEqual([["Dashcam", "dropped"]]);
+  });
+  it("Finished names the goal a bought part belonged to, and says 'on the estimate' at zero", () => {
+    const data = sample();
+    Object.assign(data.goals.find((g) => g.id === "tyres")!, { status: "Done", doneOn: "2026-10-20", actualCost: 38000 });
+    const row = finishedView(data).find((r) => r.name === "New tyres")!;
+    expect(row.note).toBe("part of Car upgrade · bought Oct 20");
+    expect(row.verdict).toBe("Came in on the estimate");
+  });
   it("a bought goal shows what it cost and how far under, and a dropped one says it's released and keeps no parts", () => {
     expect(rows.find((r) => r.id === "phones")).toMatchObject({ standing: "Done", off: true, settled: "paid Sep 12 · ₹1,501 under" });
     const data = sample();

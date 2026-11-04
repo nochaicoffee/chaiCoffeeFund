@@ -29,13 +29,19 @@ export function BoughtDialog({ forms, goal, onClose, onSaved }: { forms: GoalsFo
   const [actualCost, setActualCost] = useState(String(goal.target || ""));
   const [doneOn, setDoneOn] = useState(forms.today);
   const [paidFrom, setPaidFrom] = useState("");
+  // A part is paid for out of its goal's money: what's given to it, and what isn't given to any part. "" follows what it costs.
+  const parent = goal.parentId ? forms.goals.find((g) => g.id === goal.parentId) : undefined;
+  const available = parent ? goal.saved + parent.free : 0;
+  const [fromGoalText, setFromGoalText] = useState<string | null>(null);
   const blocked = goal.openKids > 0;
 
-  const values = { goalId: goal.id, actualCost, doneOn, paidFrom };
+  const cost0 = parseAmountText(actualCost) ?? 0;
+  const fromGoal = parent ? (fromGoalText === null ? String(Math.min(cost0, available)) : fromGoalText) : "";
+  const values = { goalId: goal.id, actualCost, doneOn, paidFrom, fromGoal };
   const read = readBoughtForm(values, { goalIds: [goal.id], accountIds: forms.accounts.map((a) => a.id), cardIds: forms.cards.map((c) => c.id) });
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(read, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
-    if (read.ok && !blocked) return markSubmitted();
+    if (read.ok && !blocked && !tooMuch) return markSubmitted();
     event.preventDefault();
     revealAll();
   }
@@ -47,13 +53,16 @@ export function BoughtDialog({ forms, goal, onClose, onSaved }: { forms: GoalsFo
 
   const cost = parseAmountText(actualCost) ?? 0;
   const diff = goal.target - cost;
+  const used = parseAmountText(fromGoal) ?? 0;
+  const tooMuch = Boolean(parent) && used > available;
+  const noMoney = tooMuch ? `Only ${formatInr(available)} of ${parent?.name}'s money is available to ${goal.name}` : undefined;
   return (
     <FormDialog
       icon={<CheckIcon />}
       title="Mark as bought"
       subtitle={`${goal.name} is done: record what it really cost.`}
       preview={
-        <PreviewPanel caption={`The ${formatInr(goal.totalSaved)} set aside is released: nothing stays in the goal, and it stops being earmarked.`}>
+        <PreviewPanel caption={parent ? `${formatInr(used)} of ${parent.name}'s money is used up. ${goal.saved > used ? `${formatInr(goal.saved - used)} goes back to the money not given to a part.` : used > goal.saved ? `${formatInr(used - goal.saved)} more comes from the money not given to a part.` : "Nothing else moves."}` : `The ${formatInr(goal.totalSaved)} set aside stops being earmarked: the goal is finished.`}>
           <div className="flex flex-col gap-3 rounded-[16px] bg-surface p-4">
             <span className="flex items-center gap-3">
               <GoalTile category={goal.category} colorKey={goal.colorKey} size={40} />
@@ -64,6 +73,8 @@ export function BoughtDialog({ forms, goal, onClose, onSaved }: { forms: GoalsFo
           <dl className="flex flex-col gap-1.5 rounded-[16px] bg-surface p-4 text-[12.5px] font-semibold">
             <Line label="Estimate" value={formatInr(goal.target)} />
             <Line label="Cost" value={cost ? formatInr(cost) : "₹—"} />
+            {parent && <Line label="Given to it" value={formatInr(goal.saved)} />}
+            {parent && <Line label={`Used up from ${parent.name}`} value={formatInr(used)} strong />}
             {cost > 0 && <Line label={diff >= 0 ? "Under by" : "Over by"} value={`${formatInr(Math.abs(diff))} · ${goal.target ? ((Math.abs(diff) / goal.target) * 100).toFixed(1) : "0"}%`} strong />}
           </dl>
         </PreviewPanel>
@@ -71,7 +82,7 @@ export function BoughtDialog({ forms, goal, onClose, onSaved }: { forms: GoalsFo
       footerNote={<span className="max-md:hidden">You can reopen it from Finished.</span>}
       primaryLabel="Mark bought"
       pending={pending}
-      errorCount={count + (blocked ? 1 : 0)}
+      errorCount={count + (blocked ? 1 : 0) + (tooMuch ? 1 : 0)}
       saveFailed={state.status === "failed"}
       failMessage={state.status === "failed" ? state.message : undefined}
       close={state.status === "saved"}
@@ -91,6 +102,13 @@ export function BoughtDialog({ forms, goal, onClose, onSaved }: { forms: GoalsFo
         <Field id="doneOn" label="Bought on" required error={errors.doneOn}>
           <DateInput {...describedBy("doneOn", errors.doneOn, false)} label="Bought on" name="doneOn" value={doneOn} onChange={setDoneOn} onBlur={() => reveal("doneOn")} today={forms.today} invalid={Boolean(errors.doneOn)} />
         </Field>
+        {parent && (
+          <div className="md:col-span-2">
+            <Field id="fromGoal" label={`Paid out of ${parent.name}'s money`} help={`${formatInr(goal.saved)} is given to ${goal.name} and ${formatInr(parent.free)} isn't given to any part. Type 0 if you paid from somewhere else: the money stays in the goal.`} error={errors.fromGoal ?? noMoney}>
+              <MoneyInput {...describedBy("fromGoal", errors.fromGoal ?? noMoney, true)} name="fromGoal" value={fromGoal} onChange={(e) => setFromGoalText(e.target.value)} onBlur={() => reveal("fromGoal")} invalid={Boolean(errors.fromGoal || tooMuch)} />
+            </Field>
+          </div>
+        )}
         <div className="md:col-span-2">
           <ChargedToField name="paidFrom" label="Paid from" value={paidFrom} onChange={setPaidFrom} forms={{ cards: forms.cards, accounts: forms.accounts }} help="Optional. An account or a card, at most one." error={errors.paidFrom} />
         </div>

@@ -2,7 +2,7 @@ import { savedOwn } from "../aggregate/goals";
 import { createGoalContributionSchema, updateGoalContributionSchema } from "../sheets/goalContributions";
 import { createGoalSchema, updateGoalSchema } from "../sheets/goals";
 import { InvalidRowError, NotFoundError, type WriteRepo } from "../sheets/repository";
-import { returnPartToPot } from "./partWrites";
+import { Journal, returnPartToPot, settlePartPurchase } from "./partWrites";
 import type { Goal, GoalContribution, GoalStatus } from "../sheets/types";
 
 /**
@@ -81,7 +81,7 @@ export async function addContribution(repos: GoalRepos, input: Omit<GoalContribu
   if (entry.kind === "Set-aside" && !open(goal)) throw new InvalidRowError(`${goal.name} is ${goal.status === "Done" ? "bought" : "dropped"}: reopen or restore it before setting money aside`);
   if (entry.kind === "Take-back") {
     const saved = savedOwn({ goals: [], contributions: await repos.contributions.list() }, goal.id);
-    if (entry.amount > saved) throw new InvalidRowError(saved > 0 ? `Only ₹${saved.toLocaleString("en-IN")} is free in ${goal.name}'s pot: lower a part's share in Edit first to take back more` : `Nothing is free in ${goal.name}'s pot to take back: lower a part's share in Edit first`);
+    if (entry.amount > saved) throw new InvalidRowError(saved > 0 ? `Only ₹${saved.toLocaleString("en-IN")} isn't given to a part in ${goal.name}: lower a part's share in Edit first to take back more` : `Everything in ${goal.name} is given to a part, so there's nothing to take back: lower a part's share in Edit first`);
   }
   const created = await repos.contributions.create(entry);
   if (entry.kind === "Take-back") {
@@ -192,15 +192,31 @@ export interface BoughtInput {
   actualCost: number;
   paidFromAccountId?: string;
   paidFromCardId?: string;
+  /** For a part: how much of the cost came out of its goal's money (see `settlePartPurchase`). Left out, the part's whole share is used up. */
+  fromGoal?: number;
 }
 
-/** Mark a goal bought: what it cost and where it was paid from. It can't be bought while a sub-goal is open. Its money is released. */
+/**
+ * Mark a goal bought: what it cost and where it was paid from. It can't be bought while a part is open. Its money is released; a part's share is
+ * settled first when `fromGoal` is given, so only what the goal really paid is used up and the rest stays in the goal.
+ */
 export async function markBought(repos: GoalRepos, id: string, input: BoughtInput): Promise<StatusChange[]> {
   const goal = await mustGet(repos, id);
   if ((await repos.goals.list()).some((g) => g.parentId === id && open(g))) throw new InvalidRowError("Finish or drop its sub-goals before marking it bought");
   if (goal.status === "Done") throw new InvalidRowError(`${goal.name} is already bought`);
   const patch = updateGoalSchema.parse({ status: "Done", doneOn: input.doneOn, actualCost: input.actualCost, paidFromAccountId: input.paidFromAccountId ?? "", paidFromCardId: input.paidFromCardId ?? "" });
-  return setStatus(repos, id, "Done", [], ["Active", "Paused"], "bought", patch);
+  if (input.fromGoal === undefined || !goal.parentId) return setStatus(repos, id, "Done", [], ["Active", "Paused"], "bought", patch);
+  if (input.fromGoal < 0 || input.fromGoal > input.actualCost) throw new InvalidRowError("The goal's money can pay for some of what it cost, not more than that");
+  const main = await mustGet(repos, goal.parentId);
+  if (!open(goal)) throw new InvalidRowError(`${goal.name} is ${STATUS_WORD[goal.status]}, so it can't be bought`);
+  const journal = new Journal();
+  try {
+    await settlePartPurchase(repos, goal, main, input.fromGoal, input.doneOn, journal, await repos.contributions.list());
+    return await setStatus(repos, id, "Done", [], ["Active", "Paused"], "bought", patch);
+  } catch (error) {
+    await journal.rollBack();
+    throw error;
+  }
 }
 
 /** Reopen a bought goal: it's active again and its money is earmarked again. A sub-goal can't reopen under a parent that's still bought. */
@@ -248,15 +264,17 @@ export async function snapshotGoal(repos: GoalRepos, id: string): Promise<GoalSn
  * at its new parent. Returns the new id of the top-level goal. A failure half way removes what it had created.
  */
 export async function restoreDeleted(repos: GoalRepos, snapshot: GoalSnapshot): Promise<string> {
-  const top = snapshot.goals.find((g) => !g.parentId);
+  // A whole goal, or one part of a goal (a deleted bought or dropped part): the part goes back under the goal it came from, if that's still there.
+  const top = snapshot.goals.find((g) => !g.parentId) ?? (snapshot.goals.length === 1 ? snapshot.goals[0] : undefined);
   if (!top) throw new InvalidRowError("There's nothing to put back");
   const made = new Map<string, string>();
+  if (top.parentId) assertCanBeKid(await repos.goals.get(top.parentId), null, top.parentId);
   const createdGoals: string[] = [];
   const createdEntries: string[] = [];
   try {
     for (const old of [top, ...snapshot.goals.filter((g) => g.id !== top.id)]) {
       const { id, parentId, ...rest } = old;
-      const row = createGoalSchema.parse({ ...rest, ...(parentId && { parentId: made.get(parentId) }) });
+      const row = createGoalSchema.parse({ ...rest, ...(parentId && { parentId: made.get(parentId) ?? parentId }) });
       const created = await repos.goals.create(row);
       made.set(id, created.id);
       createdGoals.push(created.id);

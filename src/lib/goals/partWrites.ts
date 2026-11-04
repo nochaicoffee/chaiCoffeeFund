@@ -103,6 +103,21 @@ export async function returnPartToPot(repos: GoalRepos, partId: string, date: st
   }
 }
 
+/**
+ * Settles a part's money when it's bought: `fromGoal` is how much of the cost came out of its goal's money. The part ends up holding exactly that
+ * (which is then spent: a bought part leaves the goal's total and the earmarks), so a share given beyond it goes back to the goal's unassigned
+ * money (paid from elsewhere, or it cost less), and a cost beyond the share is taken from the goal's unassigned money. Fails in words if the goal
+ * hasn't that much. Returns the ids it created.
+ */
+export async function settlePartPurchase(repos: GoalRepos, part: Goal, main: Goal, fromGoal: number, date: string, journal: Journal, ledger: GoalContribution[]): Promise<string[]> {
+  const share = savedOwn({ goals: [], contributions: ledger }, part.id);
+  const free = savedOwn({ goals: [], contributions: ledger }, main.id);
+  if (fromGoal > share + free) throw new InvalidRowError(`${rupees(fromGoal)} can't come out of ${main.name}'s money: ${rupees(share)} is given to ${part.name} and ${rupees(free)} isn't given to any part. Type less, or set more aside first.`);
+  if (fromGoal < share) return moveMoney(repos, part, main, share - fromGoal, date, backNotes(part, main), journal, ledger);
+  if (fromGoal > share) return moveMoney(repos, main, part, fromGoal - share, date, giveNotes(part, main), journal, ledger);
+  return [];
+}
+
 // --- Setting money aside on a goal with parts ---
 
 /** Set aside, and give it to the parts in order (the form's choice): what each part still lacks, Fixed dates first, then Needs, then the soonest, then the smaller. What no part can take stays in the pot. */
@@ -248,7 +263,7 @@ export async function saveGoalWithParts(repos: GoalRepos, id: string | null, inp
       for (const gone of removed) await repos.goals.remove(gone.id);
     } catch {
       // Everything else is saved and each part's money is back in the pot, so say so in words instead of reporting a failed save.
-      throw new InvalidRowError("Your changes are saved, but a part you took off couldn't be deleted. Its money is back in the pot: open Edit goal and take it off again.");
+      throw new InvalidRowError("Your changes are saved, but a part you took off couldn't be deleted. Its money is back in the goal, not given to a part: open Edit goal and take it off again.");
     }
   }
   return { goal: main, touchedParts };

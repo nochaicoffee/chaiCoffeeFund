@@ -137,7 +137,7 @@ function statusAction(name: string, run: (goalId: string) => Promise<StatusChang
 
 export const pauseGoalAction = statusAction("pauseGoal", (id) => pauseGoal(repos, id), (g) => `${g.name} paused`);
 export const resumeGoalAction = statusAction("resumeGoal", (id) => resumeGoal(repos, id), (g) => `${g.name} resumed`);
-export const dropGoalAction = statusAction("dropGoal", (id) => dropGoal(repos, id, todayIso()), (g) => (g.parentId ? `${g.name} dropped: its money is back in the pot` : `${g.name} dropped: its money is released`));
+export const dropGoalAction = statusAction("dropGoal", (id) => dropGoal(repos, id, todayIso()), (g) => (g.parentId ? `${g.name} dropped: its money is back in the goal, not given to a part` : `${g.name} dropped: its money is released`));
 export const restoreGoalAction = statusAction("restoreGoal", (id) => restoreGoal(repos, id), (g) => `${g.name} restored`);
 export const reopenGoalAction = statusAction("reopenGoal", (id) => reopenGoal(repos, id), (g) => `${g.name} reopened`);
 

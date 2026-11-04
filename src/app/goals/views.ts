@@ -5,6 +5,7 @@ import {
   effectiveDue,
   excessOf,
   expectedProgress,
+  kidsOf,
   freePot,
   isFunded,
   isPotMove,
@@ -209,6 +210,20 @@ export interface PartLine {
   standing: "On track" | "Behind" | "No plan" | "Funded" | "Paused";
 }
 
+/** A part that's been bought or dropped: it has left its goal's total, but it stays visible under the goal so it can be found, reopened or deleted. */
+export interface SettledPart {
+  key: string;
+  goalId: string;
+  name: string;
+  colorKey: ColorKey;
+  category: GoalCategory;
+  state: "bought" | "dropped";
+  /** "bought Oct 26 · paid from HDFC" or goal.status === "Dropped" ? "dropped with the goal" : "dropped · its money went back to the goal". */
+  line: string;
+  /** What it cost (bought) or would have cost (dropped). */
+  amount: string;
+}
+
 export interface SkyView {
   planets: PlanetView[];
   sun: { saved: string; of: string; empty: boolean; done: boolean };
@@ -268,6 +283,27 @@ export function partLines(data: GoalsPageData, goal: Goal, today: string, d: Goa
   return [...kids.map((kid, index) => make(index + 1, kid, false)), ...(goal.amount > 0 ? [make(kids.length + 1, goal, true)] : [])];
 }
 
+/** A goal's parts that are bought or dropped, bought first and the latest on top. */
+export function settledParts(data: GoalsPageData, goal: Goal): SettledPart[] {
+  return kidsOf(data, goal.id)
+    .filter((kid) => kid.status === "Done" || kid.status === "Dropped")
+    .sort((a, b) => (a.status === b.status ? (b.doneOn ?? "").localeCompare(a.doneOn ?? "") || a.name.localeCompare(b.name) : a.status === "Done" ? -1 : 1))
+    .map((kid): SettledPart => {
+      const paid = kid.paidFromAccountId ? data.accounts.find((a) => a.id === kid.paidFromAccountId)?.name : undefined;
+      const bought = kid.status === "Done";
+      return {
+        key: kid.id,
+        goalId: kid.id,
+        name: kid.name,
+        colorKey: pieceColor(data, { goalId: kid.id, topId: goal.id } as SkyPiece),
+        category: kid.category,
+        state: bought ? "bought" : "dropped",
+        line: bought ? `bought ${formatShortDate(kid.doneOn as string)}${paid ? ` · paid from ${paid}` : kid.paidFromCardId ? " · paid on a card" : ""}` : goal.status === "Dropped" ? "dropped with the goal" : "dropped · its money went back to the goal",
+        amount: formatInr(bought ? (kid.actualCost ?? kid.amount) : kid.amount),
+      };
+    });
+}
+
 /** The sky: one planet per main goal, on the ring of its last date. Its parts go round it as moons when it's picked. */
 export function skyView(data: GoalsPageData, today: string, d: GoalsDerived = deriveGoals(data, today)): SkyView {
   const pieces = d.pieces;
@@ -307,7 +343,7 @@ export function skyView(data: GoalsPageData, today: string, d: GoalsDerived = de
       ring,
       angle: angles[index].angle,
       nameAbove: angles[index].nameAbove,
-      note: paused ? `paused · ${formatInrCompact(left)} to go` : left === 0 ? "funded" : `${formatInrCompact(left)} to go${due ? ` · ${formatShortDate(due)}` : ""}`,
+      note: paused ? `paused · ${formatInrCompact(left)} to go` : isFunded(data, goal) ? "funded" : `${formatInrCompact(left)} to go${due ? ` · ${formatShortDate(due)}` : ""}`,
       tip: {
         head: goal.name,
         need: goal.necessity === "Need",
@@ -384,6 +420,8 @@ export interface GoalSideView {
   facts: { name: string; value: string }[];
   /** Its parts (empty for a goal with none), and what's in its pot that no part has been given. */
   parts: PartLine[];
+  /** Its parts that were bought or dropped. */
+  settled: SettledPart[];
   pot: { free: string; note: string } | null;
   entries: EntryRow[];
   hasKids: boolean;
@@ -454,7 +492,7 @@ export function goalSideView(data: GoalsPageData, goal: Goal, today: string, d: 
     status: goal.status,
     standing: stand,
     big: paused ? formatInr(saved) : formatInr(left),
-    bigNote: paused ? "set aside · paused" : left === 0 ? "funded" : "to set aside",
+    bigNote: paused ? "set aside · paused" : isFunded(data, goal) ? "funded" : left === 0 ? "set aside, not all given to parts" : "to set aside",
     dueLine: paused ? "No date. Resume it to bring it back into the plan." : due ? `by ${dateIn(today, due)} · ${due < today ? "overdue" : `${(monthsLeft(due, today) || 1)} month${(monthsLeft(due, today) || 1) === 1 ? "" : "s"} left`}` : "someday",
     progress: progressOf(data, goal),
     expected: paused ? null : expectedProgress(data, goal, today),
@@ -462,8 +500,9 @@ export function goalSideView(data: GoalsPageData, goal: Goal, today: string, d: 
     pctText: pct(progressOf(data, goal)),
     facts: excessOf(data, goal) > 0 ? [{ name: "More than it needs", value: formatInr(excessOf(data, goal)) }, ...facts] : facts,
     hasKids: parts.length > 0,
+    settled: settledParts(data, goal),
     parts,
-    pot: parts.length ? { free: formatInr(free), note: free <= 0 ? "Every rupee set aside is given to a part." : free > goal.amount ? "More than its own part needs, so some covers nothing yet." : "Covers its own part, the last one." } : null,
+    pot: parts.length ? { free: formatInr(free), note: free <= 0 ? "Everything set aside is given to a part." : free > goal.amount ? "More than its own part needs: give some to a part in Edit, or take it back." : "Covers its own part, the last one." } : null,
     entries,
   };
 }

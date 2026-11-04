@@ -95,7 +95,7 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
                 <Line label="Still to go" value={`${formatInr(Math.max(0, goalTarget - before))} → ${formatInr(left)}`} />
                 {goal.dueDate && !hasParts && <Line label="Needed a month" value={`${formatInr(needsBefore)} → ${formatInr(needsAfter)}`} />}
                 {hasParts && !take && (
-                  <Line label="Given to parts" value={give ? (givenTotal ? `${formatInr(givenTotal)}${filled ? ` · ${filled} filled` : ""}` : "nothing to fill") : "stays in the pot"} />
+                  <Line label="Given to parts" value={give ? (givenTotal ? `${formatInr(givenTotal)}${filled ? ` · ${filled} filled` : ""}` : "nothing to fill") : "stays not given to a part"} />
                 )}
               </dl>
               {account && !take && (
@@ -132,7 +132,7 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
             <SelectInput id="goalId" name="goalId" invalid={Boolean(errors.goalId)} options={choices.map((g) => ({ value: g.id, label: g.partCount ? `${g.name} · ${g.partCount} parts` : g.name, meta: take ? `${formatInr(g.saved)} ${g.parts.length ? "free" : "set aside"}` : g.dueDate ? `due ${formatShortDate(g.dueDate)}` : undefined, swatch: { background: `var(--card-${g.colorKey})` } }))} value={chosen} onChange={setChosen} placeholder="Choose the goal" />
           </Field>
         </div>
-        <Field id="amount" label="Amount" required help={take && goal ? `At most ${formatInr(goal.saved)}: ${hasParts ? "what's free in the pot, not given to a part" : "what's set aside"}.` : undefined} error={errors.amount ?? (tooMuch && goal ? `Only ${formatInr(goal.saved)} is ${hasParts ? "free in the pot of" : "set aside in"} ${goal.name}` : undefined)}>
+        <Field id="amount" label="Amount" required help={take && goal ? `At most ${formatInr(goal.saved)}: ${hasParts ? "what isn't given to any part" : "what's set aside"}.` : undefined} error={errors.amount ?? (tooMuch && goal ? hasParts ? `Only ${formatInr(goal.saved)} of ${goal.name}'s money isn't given to a part` : `Only ${formatInr(goal.saved)} is set aside in ${goal.name}` : undefined)}>
           <MoneyInput {...describedBy("amount", errors.amount, Boolean(take && goal))} data-autofocus name="amount" value={amount} onChange={(e) => setAmount(e.target.value)} onBlur={() => reveal("amount")} invalid={Boolean(errors.amount || tooMuch)} />
         </Field>
         <Field id="date" label="Date" required error={errors.date}>
@@ -143,7 +143,7 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
             <input type="checkbox" name="give" checked={give} onChange={(e) => setGive(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--color-accent)]" />
             <span>
               Give it to the parts in order
-              <small className="block text-[11.5px] font-medium text-muted">Needs first, then the soonest, then the smaller. What no part can take stays in the pot. Leave it off to give each part its share by hand in Edit.</small>
+              <small className="block text-[11.5px] font-medium text-muted">Needs first, then the soonest, then the smaller. What no part can take stays not given to a part. Leave it off to give each part its share by hand in Edit.</small>
             </span>
           </label>
         )}
