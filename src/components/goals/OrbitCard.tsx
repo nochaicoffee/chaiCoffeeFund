@@ -8,6 +8,7 @@ import { colorGradient } from "@/lib/format/colors";
 import { GOAL_CATEGORY_COLOR } from "@/lib/format/goalLabels";
 import { CloseIcon, MenuAction, RowMenu } from "../RowMenu";
 import { CheckIcon, PlusIcon } from "../cards/forms/icons";
+import { SettledPartRow } from "./SettledPartRow";
 import { GOAL_CATEGORIES } from "@/lib/sheets/types";
 import { WidgetCard } from "../shell/WidgetCard";
 import { ActionButton, useGoalsForms } from "./forms/GoalsForms";
@@ -44,9 +45,9 @@ const pc = (n: number) => `${Number(((n / S) * 100).toFixed(3))}%`;
 /** A fixed scatter of stars, the same every time. */
 const STARS = Array.from({ length: 70 }, (_, i) => ({ left: ((i * 2654435761) % 1000) / 10, top: ((i * 40503 + 977) % 1000) / 10, big: i % 3 === 0, opacity: 0.25 + (i % 5) * 0.12 }));
 
-/** Where the n-th of `count` moons sits round its planet: an arc over the top and the sides, leaving the bottom clear for the planet's name. */
+/** Where the n-th of `count` moons sits round its planet: an arc over the top and down to just below the sides, leaving the bottom clear for the planet's name. */
 function moonAngle(index: number, count: number): number {
-  return count === 1 ? 270 : 150 + (index * 240) / (count - 1);
+  return count === 1 ? 270 : 170 + (index * 200) / (count - 1);
 }
 
 /** A part of the picked goal, going round its planet: its number inside, the arc how much of it the pot covers. */
@@ -291,7 +292,7 @@ function SideGoal({ view }: { view: GoalSideView }) {
               <b className="text-sm font-extrabold">Its {view.parts.length} parts</b>
               {view.pot && (
                 <span className="text-[11.5px] font-semibold text-muted">
-                  In the pot, not given to a part: <b className="font-extrabold text-fg tabular-nums">{view.pot.free}</b>
+                  Not given to a part yet: <b className="font-extrabold text-fg tabular-nums">{view.pot.free}</b>
                 </span>
               )}
             </div>
@@ -325,10 +326,19 @@ function SideGoal({ view }: { view: GoalSideView }) {
                 </span>
               </div>
             ))}
-            <b className="mt-3 mb-1 text-sm font-extrabold">Set aside lately</b>
           </>
         )}
-        {view.parts.length === 0 && <b className="mb-1 text-sm font-extrabold">Set aside lately</b>}
+        {view.settled.length > 0 && (
+          <>
+            <b className={`mb-1 text-sm font-extrabold ${view.parts.length ? "mt-3" : ""}`}>Bought and dropped parts</b>
+            <div className="flex flex-col gap-2.5 pb-1">
+              {view.settled.map((part) => (
+                <SettledPartRow key={part.key} part={part} />
+              ))}
+            </div>
+          </>
+        )}
+        <b className={`mb-1 text-sm font-extrabold ${view.parts.length || view.settled.length ? "mt-3" : ""}`}>Set aside lately</b>
         {view.entries.length ? (
           view.entries.map((entry) => (
             <div key={entry.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-divider py-1.5 last:border-b-0">

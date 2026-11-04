@@ -130,15 +130,19 @@ export interface BoughtFormInput {
   actualCost: number;
   paidFromAccountId?: string;
   paidFromCardId?: string;
+  /** For a part: how much of the cost came out of its goal's money. */
+  fromGoal?: number;
 }
 
-/** Mark bought: what it really cost, the day, and where it was paid from. */
+/** Mark bought: what it really cost, the day, where it was paid from and, for a part, how much of it came out of its goal's money. */
 export function readBoughtForm(fields: FormFields, known: Known & { goalIds: readonly string[] }): FormResult<BoughtFormInput> {
   const f = new FieldReader(fields);
   const goalId = f.choice("goalId", known.goalIds, "Choose the goal");
   const actualCost = f.amount("actualCost", { required: "Enter what it cost", label: "cost" });
   const doneOn = f.date("doneOn", "Enter the day you bought it");
   const paid = readPaidFrom(f, "paidFrom", known);
+  const fromGoal = f.raw("fromGoal").trim() === "" ? undefined : f.amount("fromGoal", { label: "amount" });
+  if (fromGoal !== undefined && actualCost !== undefined && fromGoal > actualCost) f.fail("fromGoal", "That's more than it cost");
   if (!f.ok || !goalId || actualCost === undefined || !doneOn) return { ok: false, errors: f.errors };
-  return f.result({ goalId, doneOn, actualCost, ...paid });
+  return f.result({ goalId, doneOn, actualCost, ...paid, ...(fromGoal !== undefined && { fromGoal }) });
 }

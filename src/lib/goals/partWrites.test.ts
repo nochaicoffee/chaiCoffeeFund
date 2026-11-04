@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { earmarksByAccount, freePot, isPotMove, ownCovered, savedOf, savedOwn, targetOf } from "../aggregate/goals";
+import { earmarksByAccount, freePot, isFunded, isPotMove, ownCovered, savedOf, savedOwn, targetOf } from "../aggregate/goals";
 import type { Goal } from "../sheets/types";
 import { addContribution, dropGoal, markBought, undoStatus } from "./goalWrites";
 import { goalUndoToken, parseGoalUndo } from "./goalUndo";
@@ -132,11 +132,11 @@ describe("setting money aside on a goal with parts", () => {
     await expect(addContribution(w.repos, { goalId: w.parts[0].id, kind: "Set-aside", amount: 100, date: TODAY })).rejects.toThrow(/part of Car upgrade/);
     await expect(setAsideAndGive(w.repos, { goalId: w.parts[0].id, kind: "Set-aside", amount: 100, date: TODAY }, TODAY)).rejects.toThrow(/part of another goal/);
   });
-  it("a take-back comes only from what's free in the pot, never from a part's share", async () => {
+  it("a take-back comes only from what isn't given to a part, never from a part's share", async () => {
     const w = await carWithPot();
     await saveGoalWithParts(w.repos, w.car.id, { goal: car(), parts: w.parts.map((p) => ({ name: p.name, amount: p.amount, necessity: p.necessity, targetDate: p.targetDate, id: p.id, given: p.amount })) }, TODAY);
     // 200,000 less the three parts (135,000) leaves 65,000 free.
-    await expect(addContribution(w.repos, { goalId: w.car.id, kind: "Take-back", amount: 65001, date: TODAY })).rejects.toThrow(/Only ₹65,000 is free/);
+    await expect(addContribution(w.repos, { goalId: w.car.id, kind: "Take-back", amount: 65001, date: TODAY })).rejects.toThrow(/Only ₹65,000 isn't given to a part/);
     await expect(addContribution(w.repos, { goalId: w.car.id, kind: "Take-back", amount: 65000, date: TODAY })).resolves.toBeDefined();
   });
 });
@@ -208,5 +208,81 @@ describe("dropping a part when the status change fails", () => {
     await expect(dropGoal(w.repos, t.id, TODAY)).rejects.toThrow(/Sheets is down/);
     w.goals.update = real;
     expect(JSON.stringify(w.contributions.rows)).toBe(before);
+  });
+});
+
+describe("buying a part out of its goal's money", () => {
+  /** The car with ₹2,00,000 set aside, Tyres given ₹38,000 and Suspension ₹45,000, so ₹1,17,000 is not given to a part. */
+  async function given() {
+    const w = await carWithPot();
+    const [t, s] = [byName(w.parts, "Tyres"), byName(w.parts, "Suspension")];
+    await saveGoalWithParts(w.repos, w.car.id, { goal: car(), parts: [{ ...tyres, id: t.id, given: 38000 }, { ...susp, id: s.id, given: 45000 }, { ...alloy, id: byName(w.parts, "Alloy wheels").id, given: 0 }] }, TODAY);
+    return { ...w, t, s };
+  }
+  const buy = (repos: Awaited<ReturnType<typeof carWithPot>>["repos"], id: string, actualCost: number, fromGoal?: number) => markBought(repos, id, { doneOn: TODAY, actualCost, paidFromAccountId: "hdfc", ...(fromGoal !== undefined && { fromGoal }) });
+
+  it("the cost paid out of the goal's money is used up; the goal keeps the rest", async () => {
+    const w = await given();
+    await buy(w.repos, w.t.id, 38000, 38000);
+    const data = await w.data();
+    expect(savedOf(data, w.car)).toBe(162000);
+    expect(freePot(data, w.car)).toBe(117000);
+    expect(earmarksByAccount(data)).toEqual({ hdfc: 162000 });
+  });
+  it("a part given more than it cost sends the extra back to what isn't given to a part", async () => {
+    const w = await given();
+    await buy(w.repos, w.t.id, 30000, 30000);
+    const data = await w.data();
+    expect(savedOwn(data, w.t.id)).toBe(30000);
+    expect(freePot(data, w.car)).toBe(117000 + 8000);
+    expect(savedOf(data, w.car)).toBe(200000 - 30000);
+  });
+  it("paying from somewhere else (0) returns the whole share and uses nothing up", async () => {
+    const w = await given();
+    await buy(w.repos, w.t.id, 38000, 0);
+    const data = await w.data();
+    expect(savedOwn(data, w.t.id)).toBe(0);
+    expect(savedOf(data, w.car)).toBe(200000);
+    expect(freePot(data, w.car)).toBe(117000 + 38000);
+  });
+  it("a cost beyond the share is taken from what isn't given to a part, and refused when that isn't enough", async () => {
+    const w = await given();
+    await buy(w.repos, w.s.id, 50000, 50000);
+    const data = await w.data();
+    expect(freePot(data, w.car)).toBe(117000 - 5000);
+    expect(savedOf(data, w.car)).toBe(200000 - 50000);
+    const a = byName(w.parts, "Alloy wheels");
+    await expect(buy(w.repos, a.id, 190000, 190000)).rejects.toThrow(/can't come out of/);
+  });
+  it("can't use more of the goal's money than it cost, and puts the moves back if the status change fails", async () => {
+    const w = await given();
+    await expect(buy(w.repos, w.t.id, 10000, 12000)).rejects.toThrow(/not more than that/);
+    const before = JSON.stringify(w.contributions.rows);
+    const real = w.goals.update;
+    w.goals.update = async () => {
+      throw new Error("Sheets is down");
+    };
+    await expect(buy(w.repos, w.t.id, 30000, 30000)).rejects.toThrow(/Sheets is down/);
+    w.goals.update = real;
+    expect(JSON.stringify(w.contributions.rows)).toBe(before);
+  });
+  it("without the goal's-money amount (the old path) the part's whole share is used up", async () => {
+    const w = await given();
+    await buy(w.repos, w.t.id, 30000);
+    expect(savedOf(await w.data(), w.car)).toBe(200000 - 38000);
+  });
+});
+
+describe("funded", () => {
+  it("a goal with parts is funded only when every piece is covered, however much sits unassigned", async () => {
+    const w = await carWithPot();
+    expect(isFunded(await w.data(), w.car)).toBe(false);
+    // ₹3,00,000 set aside covers the total (₹2,85,000) on paper, but no part has been given anything.
+    await w.contributions.create({ goalId: w.car.id, date: TODAY, amount: 100000, kind: "Set-aside" });
+    const data = await w.data();
+    expect(savedOf(data, w.car)).toBeGreaterThanOrEqual(targetOf(data, w.car));
+    expect(isFunded(data, w.car)).toBe(false);
+    await saveGoalWithParts(w.repos, w.car.id, { goal: car(), parts: w.parts.map((p) => ({ name: p.name, amount: p.amount, necessity: p.necessity, targetDate: p.targetDate, id: p.id, given: p.amount })) }, TODAY);
+    expect(isFunded(await w.data(), w.car)).toBe(true);
   });
 });

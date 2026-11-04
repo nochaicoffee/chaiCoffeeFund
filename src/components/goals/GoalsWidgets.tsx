@@ -7,6 +7,7 @@ import { formatShortDate } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import { WidgetCard } from "../shell/WidgetCard";
 import { ActionButton, useGoalsForms } from "./forms/GoalsForms";
+import { SettledPartRow } from "./SettledPartRow";
 import { FixedPill, GoalTile, NeedBadge, ProgressBar, ScaleBadge, StandingPill } from "./parts";
 
 const dim = (pick: string, topId: string) => (pick !== ALL && pick !== topId ? "opacity-40" : "");
@@ -52,9 +53,11 @@ export function GoalsTableCard({ rows, pick, onPick }: { rows: TableRow[]; pick:
                       </button>
                       <small className="flex items-center gap-1.5 truncate text-[11px] font-semibold text-muted">
                         {r.note}
-                        {r.parts.length > 0 && (
+                        {(r.parts.length > 0 || r.boughtParts.length > 0) && (
                           <button type="button" onClick={() => toggle(r.id)} aria-expanded={expanded} aria-controls={`parts-${r.id}`} className="inline-flex min-h-5 items-center gap-1 rounded-full bg-ink px-2 text-[10.5px] font-extrabold text-on-ink focus-visible:outline-2 focus-visible:outline-accent">
-                            {r.parts.length} {r.parts.length === 1 ? "part" : "parts"}
+                            {r.parts.length > 0 ? `${r.parts.length} ${r.parts.length === 1 ? "part" : "parts"}` : ""}
+                            {r.parts.length > 0 && r.boughtParts.length > 0 ? " · " : ""}
+                            {r.boughtParts.length > 0 ? `${r.boughtParts.length} done` : ""}
                             <span aria-hidden="true" className={expanded ? "rotate-180" : ""}>⌄</span>
                           </button>
                         )}
@@ -116,6 +119,13 @@ export function GoalsTableCard({ rows, pick, onPick }: { rows: TableRow[]; pick:
                         <span />
                       </div>
                     ))}
+                    {r.boughtParts.length > 0 && (
+                      <div className="mt-1 flex flex-col gap-2 border-t border-divider pt-2 pl-4">
+                        {r.boughtParts.map((part) => (
+                          <SettledPartRow key={part.key} part={part} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -391,7 +401,7 @@ export function FinishedCard({ rows }: { rows: FinishedRow[] }) {
   return (
     <WidgetCard label="Finished" title="Finished" note="estimate against what it cost" gap="gap-4">
       {body}
-      <p className="text-xs font-medium text-muted">What you&apos;d set aside is released back to you: nothing is left in a bought goal.</p>
+      <p className="text-xs font-medium text-muted">A bought goal stops being earmarked: its money is spent.</p>
     </WidgetCard>
   );
 }

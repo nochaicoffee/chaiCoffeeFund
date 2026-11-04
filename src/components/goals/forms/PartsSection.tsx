@@ -59,9 +59,9 @@ export function PartsSection({ rows, onChange, today, showGiven, error }: { rows
           </div>
           {showGiven && (
             <label className="col-span-3 flex items-center gap-2 text-[11.5px] font-semibold text-muted">
-              <span className="shrink-0">Given from the pot</span>
+              <span className="shrink-0">Given to this part</span>
               <span className="w-36">
-                <MoneyInput aria-label={`${row.name.trim() || `Part ${index + 1}`}: given from the pot`} placeholder="0" value={row.given} onChange={(e) => set(row.key, { given: e.target.value })} invalid={false} />
+                <MoneyInput aria-label={`${row.name.trim() || `Part ${index + 1}`}: given to this part`} placeholder="0" value={row.given} onChange={(e) => set(row.key, { given: e.target.value })} invalid={false} />
               </span>
               {row.amount && <span className="tabular-nums">of {formatInr(parseAmountText(row.amount) ?? 0)}</span>}
             </label>

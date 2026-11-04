@@ -90,7 +90,7 @@ export function GoalFormDialog({ forms, editing, category: startCategory, onClos
       title={title}
       subtitle={editing ? `${editing.name}. Its parts are here too.` : "Something you're saving a sum of money for, with the parts it's made of."}
       preview={
-        <PreviewPanel caption={pot > 0 ? `${formatInr(pot)} is set aside on this goal. A part's share comes out of it, and what's left covers the goal's own part.` : "What you set aside is recorded as entries, so a goal's progress is never typed in. Set some aside, then give each part its share."}>
+        <PreviewPanel caption={pot > 0 ? `${formatInr(pot)} is set aside on this goal. Give a part its share and that comes out of it; what's left over covers the goal's own part.` : "What you set aside is recorded as entries, so a goal's progress is never typed in. Set some aside, then give each part its share."}>
           <div className="flex flex-col gap-3 rounded-[16px] bg-surface p-4">
             <span className="flex items-center gap-3">
               <GoalTile category={(category || "Other") as GoalCategory} colorKey={colorKey} size={40} />
@@ -111,7 +111,7 @@ export function GoalFormDialog({ forms, editing, category: startCategory, onClos
                 <>
                   <Line label="Set aside on the goal" value={formatInr(pot)} strong />
                   <Line label="Given to parts" value={formatInr(givenTotal)} />
-                  <Line label="Left in the pot" value={formatInr(poolLeft)} />
+                  <Line label="Not given to a part" value={formatInr(poolLeft)} />
                   {own > 0 && <Line label="Its own part is" value={ownCover >= own ? "covered" : `${formatInr(ownCover)} of ${formatInr(own)}`} />}
                 </>
               )}
@@ -133,7 +133,7 @@ export function GoalFormDialog({ forms, editing, category: startCategory, onClos
           <p className="text-[11.5px] font-medium text-muted">{color ? "Your colour." : "Its category's colour. Pick one above to change it."}</p>
         </PreviewPanel>
       }
-      footerNote={<span className="max-md:hidden">{editing ? "Taking a part off puts its share back in the pot." : "Parts are added and changed here, inside their goal."}</span>}
+      footerNote={<span className="max-md:hidden">{editing ? "Taking a part off puts its share back in the goal, not given to a part." : "Parts are added and changed here, inside their goal."}</span>}
       primaryLabel={editing ? "Save goal" : "Add goal"}
       pending={pending}
       errorCount={count + (overGiven ? 1 : 0)}
@@ -159,7 +159,7 @@ export function GoalFormDialog({ forms, editing, category: startCategory, onClos
         </Field>
         <Segmented name="necessity" legend="Why" required options={[{ value: "Need", label: "Need" }, { value: "Want", label: "Want" }]} value={necessity} onChange={setNecessity} help="A Need breaks or goes undone without it." error={errors.necessity} />
         <Segmented name="scale" legend="How long" required options={[{ value: "Minor", label: "Minor" }, { value: "Major", label: "Major" }]} value={scale} onChange={setScale} help="Minor: short-term. Major: a long-term commitment." error={errors.scale} />
-        <Field id="amount" label={rows.length ? "Its own part" : "Amount"} required help={rows.length ? "What isn't a part yet. The pot covers it last. It can be ₹0." : undefined} error={errors.amount}>
+        <Field id="amount" label={rows.length ? "Its own part" : "Amount"} required help={rows.length ? "What isn't a part yet. Money not given to a part covers it last. It can be ₹0." : undefined} error={errors.amount}>
           <MoneyInput {...describedBy("amount", errors.amount, rows.length > 0)} name="amount" value={amount} onChange={(e) => setAmount(e.target.value)} onBlur={() => reveal("amount")} invalid={Boolean(errors.amount)} />
         </Field>
         <Field id="targetDate" label="Target date" help="Leave it empty for someday." error={errors.targetDate}>

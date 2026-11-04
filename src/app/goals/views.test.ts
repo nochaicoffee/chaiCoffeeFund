@@ -55,6 +55,15 @@ describe("the picks and the sky", () => {
     expect(car?.moons.at(-1)?.goalId).toBeNull();
     expect(skyView(data, TODAY).planets.find((p) => p.key === "fridge")?.moons).toEqual([]);
   });
+  it("bought and dropped parts stay under their goal, bought first, with what they cost and where from", () => {
+    const side = goalSides(sample(), TODAY).car;
+    expect(side.settled.map((p) => [p.name, p.state])).toEqual([["Dashcam", "dropped"]]);
+    const data = sample();
+    data.goals.find((g) => g.id === "tyres")!.status = "Done";
+    Object.assign(data.goals.find((g) => g.id === "tyres")!, { doneOn: "2026-10-20", actualCost: 36500, paidFromAccountId: "demo-hdfc" });
+    expect(goalSides(data, TODAY).car.settled.map((p) => [p.name, p.state, p.amount, p.line])).toEqual([["New tyres", "bought", "₹36,500", "bought Oct 20 · paid from HDFC Salary"], ["Dashcam", "dropped", "₹9,000", "dropped · its money went back to the goal"]]);
+    expect(goalSides(data, TODAY).car.parts.map((p) => p.name)).not.toContain("New tyres");
+  });
   it("with ₹2,00,000 in the car's pot, the parts it was given are covered and the rest of the car holds what's left", () => {
     const pot = sample("pot");
     const car = skyView(pot, TODAY).planets.find((p) => p.key === "car");
