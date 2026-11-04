@@ -264,15 +264,17 @@ export async function snapshotGoal(repos: GoalRepos, id: string): Promise<GoalSn
  * at its new parent. Returns the new id of the top-level goal. A failure half way removes what it had created.
  */
 export async function restoreDeleted(repos: GoalRepos, snapshot: GoalSnapshot): Promise<string> {
-  const top = snapshot.goals.find((g) => !g.parentId);
+  // A whole goal, or one part of a goal (a deleted bought or dropped part): the part goes back under the goal it came from, if that's still there.
+  const top = snapshot.goals.find((g) => !g.parentId) ?? (snapshot.goals.length === 1 ? snapshot.goals[0] : undefined);
   if (!top) throw new InvalidRowError("There's nothing to put back");
   const made = new Map<string, string>();
+  if (top.parentId) assertCanBeKid(await repos.goals.get(top.parentId), null, top.parentId);
   const createdGoals: string[] = [];
   const createdEntries: string[] = [];
   try {
     for (const old of [top, ...snapshot.goals.filter((g) => g.id !== top.id)]) {
       const { id, parentId, ...rest } = old;
-      const row = createGoalSchema.parse({ ...rest, ...(parentId && { parentId: made.get(parentId) }) });
+      const row = createGoalSchema.parse({ ...rest, ...(parentId && { parentId: made.get(parentId) ?? parentId }) });
       const created = await repos.goals.create(row);
       made.set(id, created.id);
       createdGoals.push(created.id);

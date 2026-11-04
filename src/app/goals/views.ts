@@ -218,7 +218,7 @@ export interface SettledPart {
   colorKey: ColorKey;
   category: GoalCategory;
   state: "bought" | "dropped";
-  /** "bought Oct 26 · paid from HDFC" or "dropped · its money went back to the goal". */
+  /** "bought Oct 26 · paid from HDFC" or goal.status === "Dropped" ? "dropped with the goal" : "dropped · its money went back to the goal". */
   line: string;
   /** What it cost (bought) or would have cost (dropped). */
   amount: string;
@@ -287,7 +287,7 @@ export function partLines(data: GoalsPageData, goal: Goal, today: string, d: Goa
 export function settledParts(data: GoalsPageData, goal: Goal): SettledPart[] {
   return kidsOf(data, goal.id)
     .filter((kid) => kid.status === "Done" || kid.status === "Dropped")
-    .sort((a, b) => (a.status === b.status ? ((b.doneOn ?? "") < (a.doneOn ?? "") ? -1 : 1) : a.status === "Done" ? -1 : 1))
+    .sort((a, b) => (a.status === b.status ? (b.doneOn ?? "").localeCompare(a.doneOn ?? "") || a.name.localeCompare(b.name) : a.status === "Done" ? -1 : 1))
     .map((kid): SettledPart => {
       const paid = kid.paidFromAccountId ? data.accounts.find((a) => a.id === kid.paidFromAccountId)?.name : undefined;
       const bought = kid.status === "Done";
@@ -298,7 +298,7 @@ export function settledParts(data: GoalsPageData, goal: Goal): SettledPart[] {
         colorKey: pieceColor(data, { goalId: kid.id, topId: goal.id } as SkyPiece),
         category: kid.category,
         state: bought ? "bought" : "dropped",
-        line: bought ? `bought ${formatShortDate(kid.doneOn as string)}${paid ? ` · paid from ${paid}` : kid.paidFromCardId ? " · paid on a card" : ""}` : "dropped · its money went back to the goal",
+        line: bought ? `bought ${formatShortDate(kid.doneOn as string)}${paid ? ` · paid from ${paid}` : kid.paidFromCardId ? " · paid on a card" : ""}` : goal.status === "Dropped" ? "dropped with the goal" : "dropped · its money went back to the goal",
         amount: formatInr(bought ? (kid.actualCost ?? kid.amount) : kid.amount),
       };
     });
@@ -343,7 +343,7 @@ export function skyView(data: GoalsPageData, today: string, d: GoalsDerived = de
       ring,
       angle: angles[index].angle,
       nameAbove: angles[index].nameAbove,
-      note: paused ? `paused · ${formatInrCompact(left)} to go` : left === 0 ? "funded" : `${formatInrCompact(left)} to go${due ? ` · ${formatShortDate(due)}` : ""}`,
+      note: paused ? `paused · ${formatInrCompact(left)} to go` : isFunded(data, goal) ? "funded" : `${formatInrCompact(left)} to go${due ? ` · ${formatShortDate(due)}` : ""}`,
       tip: {
         head: goal.name,
         need: goal.necessity === "Need",
@@ -492,7 +492,7 @@ export function goalSideView(data: GoalsPageData, goal: Goal, today: string, d: 
     status: goal.status,
     standing: stand,
     big: paused ? formatInr(saved) : formatInr(left),
-    bigNote: paused ? "set aside · paused" : left === 0 ? "funded" : "to set aside",
+    bigNote: paused ? "set aside · paused" : isFunded(data, goal) ? "funded" : left === 0 ? "set aside, not all given to parts" : "to set aside",
     dueLine: paused ? "No date. Resume it to bring it back into the plan." : due ? `by ${dateIn(today, due)} · ${due < today ? "overdue" : `${(monthsLeft(due, today) || 1)} month${(monthsLeft(due, today) || 1) === 1 ? "" : "s"} left`}` : "someday",
     progress: progressOf(data, goal),
     expected: paused ? null : expectedProgress(data, goal, today),

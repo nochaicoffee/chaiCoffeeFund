@@ -132,7 +132,7 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
             <SelectInput id="goalId" name="goalId" invalid={Boolean(errors.goalId)} options={choices.map((g) => ({ value: g.id, label: g.partCount ? `${g.name} · ${g.partCount} parts` : g.name, meta: take ? `${formatInr(g.saved)} ${g.parts.length ? "free" : "set aside"}` : g.dueDate ? `due ${formatShortDate(g.dueDate)}` : undefined, swatch: { background: `var(--card-${g.colorKey})` } }))} value={chosen} onChange={setChosen} placeholder="Choose the goal" />
           </Field>
         </div>
-        <Field id="amount" label="Amount" required help={take && goal ? `At most ${formatInr(goal.saved)}: ${hasParts ? "what isn't given to any part" : "what's set aside"}.` : undefined} error={errors.amount ?? (tooMuch && goal ? `Only ${formatInr(goal.saved)} is ${hasParts ? "not given to a part in" : "set aside in"} ${goal.name}` : undefined)}>
+        <Field id="amount" label="Amount" required help={take && goal ? `At most ${formatInr(goal.saved)}: ${hasParts ? "what isn't given to any part" : "what's set aside"}.` : undefined} error={errors.amount ?? (tooMuch && goal ? hasParts ? `Only ${formatInr(goal.saved)} of ${goal.name}'s money isn't given to a part` : `Only ${formatInr(goal.saved)} is set aside in ${goal.name}` : undefined)}>
           <MoneyInput {...describedBy("amount", errors.amount, Boolean(take && goal))} data-autofocus name="amount" value={amount} onChange={(e) => setAmount(e.target.value)} onBlur={() => reveal("amount")} invalid={Boolean(errors.amount || tooMuch)} />
         </Field>
         <Field id="date" label="Date" required error={errors.date}>

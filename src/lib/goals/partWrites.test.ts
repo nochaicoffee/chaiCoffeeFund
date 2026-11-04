@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { earmarksByAccount, freePot, isFunded, isPotMove, ownCovered, savedOf, savedOwn, targetOf } from "../aggregate/goals";
 import type { Goal } from "../sheets/types";
-import { addContribution, dropGoal, markBought, undoStatus } from "./goalWrites";
+import { addContribution, deleteGoal, dropGoal, markBought, restoreDeleted, snapshotGoal, undoStatus } from "./goalWrites";
 import { goalUndoToken, parseGoalUndo } from "./goalUndo";
 import { removeContribution } from "./goalWrites";
 import { checkParts, saveGoalWithParts, setAsideAndGive, type GoalWithParts, type PartInput } from "./partWrites";
@@ -284,5 +284,25 @@ describe("funded", () => {
     expect(isFunded(data, w.car)).toBe(false);
     await saveGoalWithParts(w.repos, w.car.id, { goal: car(), parts: w.parts.map((p) => ({ name: p.name, amount: p.amount, necessity: p.necessity, targetDate: p.targetDate, id: p.id, given: p.amount })) }, TODAY);
     expect(isFunded(await w.data(), w.car)).toBe(true);
+  });
+});
+
+describe("deleting a part and undoing it", () => {
+  it("puts the part back under its goal with its entries, and refuses when the goal is gone", async () => {
+    const w = await carWithPot();
+    const t = byName(w.parts, "Tyres");
+    await saveGoalWithParts(w.repos, w.car.id, { goal: car(), parts: w.parts.map((p) => ({ name: p.name, amount: p.amount, necessity: p.necessity, targetDate: p.targetDate, id: p.id, given: p.id === t.id ? 38000 : 0 })) }, TODAY);
+    await markBought(w.repos, t.id, { doneOn: TODAY, actualCost: 38000, fromGoal: 38000 });
+    const raw = (await snapshotGoal(w.repos, t.id))!;
+    // The in-memory repository keeps "" for a cleared field where the real one reads it back as missing.
+    const snapshot = { ...raw, goals: raw.goals.map((g) => Object.fromEntries(Object.entries(g).filter(([, v]) => v !== ""))) as unknown as Goal[] };
+    expect(snapshot.goals).toHaveLength(1);
+    await deleteGoal(w.repos, t.id);
+    expect(w.goals.rows.some((g) => g.id === t.id)).toBe(false);
+    const newId = await restoreDeleted(w.repos, snapshot);
+    expect(w.goals.rows.find((g) => g.id === newId)).toMatchObject({ name: "Tyres", parentId: w.car.id, status: "Done" });
+    expect(w.contributions.rows.filter((c) => c.goalId === newId)).toHaveLength(snapshot.contributions.length);
+    await deleteGoal(w.repos, w.car.id);
+    await expect(restoreDeleted(w.repos, snapshot)).rejects.toThrow(/isn't in the Goals tab/);
   });
 });
