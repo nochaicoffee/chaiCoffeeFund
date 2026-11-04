@@ -1,0 +1,268 @@
+{
+  "pages": [
+    {
+      "id": "fin",
+      "name": "FINAL: J1 Doors + widgets, the page"
+    },
+    {
+      "id": "phone",
+      "name": "FINAL: phone"
+    },
+    {
+      "id": "states",
+      "name": "FINAL: states"
+    },
+    {
+      "id": "forms",
+      "name": "FINAL: forms"
+    },
+    {
+      "id": "r4",
+      "name": "Exploration · Round 4: J2 Pillars (not picked)"
+    },
+    {
+      "id": "r3",
+      "name": "Round 3: your real numbers (H1–H5)"
+    },
+    {
+      "id": "r2",
+      "name": "Exploration · made-up data · Round 2: coloured stages (G1–G4)"
+    },
+    {
+      "id": "r1",
+      "name": "Exploration · made-up data · Round 1: six heroes (F1–F6)"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "FiJ1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2967,
+      "page": "fin"
+    },
+    {
+      "file": "FiPhone.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 3200,
+      "h": 2129,
+      "page": "phone"
+    },
+    {
+      "file": "FiStates.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2064,
+      "page": "states"
+    },
+    {
+      "file": "FiForms.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1100,
+      "h": 4721,
+      "page": "forms"
+    },
+    {
+      "file": "FiJ2.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 3103,
+      "page": "r4"
+    },
+    {
+      "file": "FiH1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2082,
+      "page": "r3"
+    },
+    {
+      "file": "FiH2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 2089,
+      "page": "r3"
+    },
+    {
+      "file": "FiH3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 1894,
+      "page": "r3"
+    },
+    {
+      "file": "FiH4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 1959,
+      "page": "r3"
+    },
+    {
+      "file": "FiH5.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 1600,
+      "h": 2075,
+      "page": "r3"
+    },
+    {
+      "file": "FiG1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2156,
+      "page": "r2"
+    },
+    {
+      "file": "FiG2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 2182,
+      "page": "r2"
+    },
+    {
+      "file": "FiG3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 2075,
+      "page": "r2"
+    },
+    {
+      "file": "FiG4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 1961,
+      "page": "r2"
+    },
+    {
+      "file": "FiF1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2043,
+      "page": "r1"
+    },
+    {
+      "file": "FiF2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 2187,
+      "page": "r1"
+    },
+    {
+      "file": "FiF3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 2027,
+      "page": "r1"
+    },
+    {
+      "file": "FiF4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 2049,
+      "page": "r1"
+    },
+    {
+      "file": "FiF5.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 1600,
+      "h": 2164,
+      "page": "r1"
+    },
+    {
+      "file": "FiF6.dc.html",
+      "x": 8600,
+      "y": 0,
+      "w": 1600,
+      "h": 2068,
+      "page": "r1"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-1",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Fixed Income, the picked design (2026-11-04): J1 Doors + widgets, on his real numbers (FD app and EPFO passbooks). Three doors (Everything, EPF, Fixed deposits) pick what the stage shows; under it money in each month, credits on time (with the passbook check), growth path, the deposits table, coming up and the EPF card.",
+      "page": "fin"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Fixed Income on a phone: the doors slide sideways, the stage is one column, the widgets stack. Add EPF statement is a bottom sheet followed by a review sheet.",
+      "page": "phone"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Fixed Income states: nothing yet, an EPF credit that is late, a deposit matured and not closed, the year's interest arriving against its estimate, and closed deposits. Dates after today are examples.",
+      "page": "states"
+    },
+    {
+      "id": "note-4",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Fixed Income forms: Add an EPF statement (drop the PDF), Review (checks pass), Review (doesn't add up, nothing saved), Already imported, Add a deposit (tenure, bank and maturity amount optional), Add a contribution (typed, less certain), Close a deposit with Undo, EPF settings.",
+      "page": "forms"
+    },
+    {
+      "id": "note-5",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Fixed Income, round 4 (2026-11-04): Prathik liked H1 Two pillars and asked for the missing widgets and a variation with cooler interactions. J1 is H1 as it was (three coloured doors) with three new widgets; J2 is the literal pillars (height is money: EPF 89%, deposits 11%) with a Go back to a day scrub that makes the pillars rise and fall. New widgets under both: Money in each month (a heat grid), Credits on time (days from the wage month to the credit, plus the passbook check an import would run), Growth path (EPF in 5, 10 and 20 years if nothing changes, arithmetic only). Real numbers from his FD app and EPFO passbooks.",
+      "page": "r4"
+    },
+    {
+      "id": "note-6",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Fixed Income, round 3 (2026-11-04): redrawn on Prathik's REAL numbers from his FD app and EPFO passbooks (his UAN and date of birth are left out). EPF is ₹9.53L, the seven FDs ₹1.23L, so EPF leads. H1 Two pillars (pick Everything, EPF or Deposits), H2 Ladder pick (a rung per deposit, plus EPF), H3 Interest stage (a day, a month, this year, all time), H4 Drawer (EPF passbook and a certificate per FD), H5 Real return (FDs against EPF after tax and inflation). The bank cover and tax-year boards are dropped (₹1.2L of deposits and ₹3,020 of interest make them moot); they remain in rounds 1 and 2 as made-up explorations. EPF interest here is worked out by a rule that reproduces his credited interest to the rupee for FY 24-25 and FY 25-26.",
+      "page": "r3"
+    },
+    {
+      "id": "note-7",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Exploration on made-up data. Fixed Income, round 2 (2026-11-04): Prathik asked for a colourful hero with good interaction, like the other dashboards. Four stages that take the colour of what you pick (open any board and click): G1 Ladder pick (the maturity ladder is the picker; pick a rung and the stage follows that deposit), G2 Bank doors (pick a bank: its cover, its deposits, its tax-year interest), G3 Bubbles (rate against time left; pick a bubble), G4 Interest stage (chips for a day, a month, this tax year, all time). Same greeting, attention strip and widgets underneath. Sample data is made up.",
+      "page": "r2"
+    },
+    {
+      "id": "note-8",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Exploration on made-up data. Fixed Income, round 1 (2026-11-04): the /fixed-income dashboard, six directions. Every board has the same greeting (its figures point), an attention strip (a deposit that matured but isn't closed, banks over the cover) and the same widgets underneath: deposits table, coming up, passbook holdings. Only the hero differs. F1 Ladder (what matures when, and the quiet stretches), F2 Meter (what the money earns each day), F3 Vault (a certificate for each deposit), F4 Cover (each bank against the ₹5L insurance, and who stands behind the money), F5 Tax year (interest by payer against the limit before tax is cut), F6 Real return (rate, then tax, then inflation). All sample data is made up; today is Wed Nov 4, 2026.",
+      "page": "r1"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "fin"
+  }
+}
