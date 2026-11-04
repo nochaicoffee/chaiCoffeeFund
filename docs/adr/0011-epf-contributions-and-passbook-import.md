@@ -1,0 +1,43 @@
+# 0011. Record EPF as contributions plus yearly interest, and import the passbook PDF
+
+- **Status:** Proposed (the approach was agreed in chat on 2026-11-04; the interest rule and the two Sheet tabs below still need Prathik's yes before they are built)
+- **Date:** 2026-11-04
+
+## Context
+The page this serves is specified in [docs/design/fixed-income.md](../design/fixed-income.md). EPF is Prathik's largest fixed-income holding (₹9.53L on the passbook, about 89% of EPF plus his seven deposits) and is not in net worth at all. PRD Q1 asked how to model a holding that grows by monthly contributions and declared interest, and had proposed "contributions plus dated passbook balances".
+
+His real EPFO member passbooks (FY 2023-24 to FY 2026-27) show what the data actually looks like:
+- One page a financial year: an opening balance, **one row per credit** (wage month, the day it was credited, employee share, employer share, pension share), the year's **interest**, and a closing balance. Employee and employer shares are separate balances (equal for him; the pension share is 0).
+- Credits arrive about a month after the wage month. They came on the 1st until May's wages and about the 17th since June's.
+- Interest is credited once a year, on 31 March, after EPFO declares the rate.
+- The four PDFs are readable with the app's own pdf.js, and for each year opening + credits + interest = closing, and the rows add to the PDF's "Total Contributions" line.
+- A monthly rule reproduces the credited interest **to the rupee** for both years that have it: each month's interest is the balance at the **start** of the month times the rate divided by 12, summed over the year (a contribution counts from the month after it is credited). At 8.25% it gives ₹14,422 for FY 2024-25 and ₹40,924 for FY 2025-26, which are exactly what EPFO credited.
+- EPFO does not email passbooks; they are downloaded from the member portal after a login with an OTP.
+
+## Decision
+- **Two tabs, a master and a log, like every other entity.** `EpfAccounts` holds the account (a name such as "NetApp India", the establishment, the **last four of the member ID** to match a statement, a status, the **last declared rate**, and an optional monthly credit for the growth projection). `EpfEntries` holds one row for each **credit** (kind `Contribution`: the wage month, the day credited, the employee, employer and pension amounts), each year's **interest** (kind `Interest`: the 31 March, with the amounts credited) and, only if a first statement starts above zero, an **opening** balance (kind `Opening`). Each row says where it came from: `Passbook` or `Typed`.
+- **The balance is worked out, never stored:** opening + contributions + interest up to a day, per share. The passbook's closing balance is a **check**, not a stored figure.
+- **Interest the page shows is credited interest.** The interest not yet credited this year is an **estimate** from the monthly rule above at the last declared rate, always labelled as one, and replaced by the credited figure when the passbook that has it is imported. Net worth counts EPF at the **passbook figure** (credited interest only), never the estimate.
+- **The estimate and the growth path are pure functions** in `lib/aggregate/epf.ts`, with tests that prove the math: the monthly rule reproduces ₹14,422 and ₹40,924 from the contributions in the two passbooks, and a single credit grows exactly as the rule says.
+- **Importing is upload first.** "Add EPF statement" takes the PDF, a pure function in `lib/epfStatement/` reads it (pdf.js, like the card and bank-account statement imports) and returns rows plus checks, the review screen shows every row, and nothing is saved until Prathik confirms.
+  - The file is **accepted only if** opening + credits + interest = closing for both shares, and the rows add to the PDF's contribution total. A file that doesn't reconcile saves nothing and says which check failed.
+  - It is **idempotent**: a credit is identified by its account and its **wage month**, and a year's interest by its account and **financial year**, so importing the same year again changes nothing. A `Typed` credit for a wage month the passbook now covers is **replaced** by the passbook's row. If a wage month or a year is already there with a **different day or amount** (EPFO re-dated or corrected it), the review shows it as a **conflict** to resolve and it is never added a second time.
+  - The **UAN, date of birth and member ID are never saved**; the member ID is used only to match the account (by its last four), and the establishment name is used to label it. **No match, or more than one, stops at the review screen**, which asks which account (or to create one); the import never guesses.
+  - The tests use a **synthetic PDF** built locally, never a real passbook (a real one carries the UAN and date of birth), as the card statement fixture already does.
+- **A Gmail label is a second way in, later.** It would call the same function on an email attachment. It is not built with this decision.
+- **Credits that look late are noticed** from the dates (the usual wait since June is 17 to 18 days; one well past that is flagged), using the same rows.
+
+## Consequences
+- EPF joins net worth (about ₹9.5L), and the Fixed Income page can lead with its biggest holding.
+- A new EPF year is one dropped file a year, or a refresh each month if he wants each credit shown; a typed credit covers the gap and is marked as less certain.
+- The monthly rule is verified on two years of one account and one employer. It is not verified on a withdrawal, a transfer-in from an earlier employer, or a part-year, none of which his files contain: the parser must **reject what it can't read for review**, not guess it.
+- The rate is a fact EPFO declares, so it is a stored setting, not worked out; if the declared rate differs from the rate the estimate used, the page says so.
+- Two new tabs need a real Sheet round trip and `check-sheet`.
+- PPF, NSC, RD and NPS are **not decided here** (PRD F-FI-06). PPF has its own interest rule and its own statement layout (it comes from whichever bank or post office holds it), so it needs its own ADR and a real statement to write the parser against.
+
+## Alternatives considered
+- **One balance with dated "passbook says" snapshots (PRD Q1's first proposal):** simpler, but it throws away the credits (so there is nothing to show about timing or a missing month), can't check a statement, and needs the balance retyped each time.
+- **Store the balance and the interest estimate:** both go stale the day after they are written; working them out from the credits can't.
+- **Import from Gmail first:** EPFO doesn't email the file, so he would download it, email it to himself and label it before the app sees it, which is one more step than dropping it in, and a bad file would only show up in a later sync report.
+- **Read EPFO's portal directly:** it needs his login and an OTP, and automating that is fragile and a security risk.
+- **Type every credit by hand:** it works, but he would be copying about 30 rows a year from a document the app can read.
