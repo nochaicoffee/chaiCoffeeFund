@@ -1,6 +1,6 @@
 # Fixed Income page (`/fixed-income`)
 
-## Status: design final (2026-11-04): J1 Doors + widgets, on his real numbers. Nothing built.
+## Status: design final (2026-11-04): J1 Doors + widgets, on his real numbers. In build: the forms, the EPF and deposit math and the greeting, attention strip, doors and stages are built (2026-11-05); the widgets, the states and phone layout, and the Overview are still to do.
 
 Prathik asked to start designing the Fixed Income dashboard on 2026-11-04. Mockups: [`design/fixed-income/`](../../design/fixed-income/), built by [`design/fixed-income/generator/`](../../design/fixed-income/generator/) (a rebuild overwrites the artboards, so change the generator). The earlier `design/dashboards/FixedIncomeList.dc.html` was not used (the same fate as the stale Investments mock). Not committed.
 

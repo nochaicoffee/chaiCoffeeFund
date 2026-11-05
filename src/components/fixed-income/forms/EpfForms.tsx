@@ -8,10 +8,8 @@ import { formatInr } from "@/lib/format/money";
 import { wageMonthLabel } from "@/lib/epfStatement/reviewView";
 import type { EpfEntry } from "@/lib/sheets/types";
 import { AlertIcon } from "../../cards/forms/icons";
-import { FormTriggerButton, HEADER_GHOST_CLASS } from "../../shell/FormTriggerButton";
 import { useUndoToast } from "../../shell/UndoToast";
 import { ConfirmDialog } from "../../subscriptions/forms/ConfirmDialog";
-import { AddEpfStatementButton } from "../AddEpfStatementButton";
 import { ContributionDialog } from "./ContributionDialog";
 import { CreditedDialog } from "./CreditedDialog";
 import { SettingsDialog } from "./SettingsDialog";
@@ -82,25 +80,6 @@ export function EpfFormsProvider({ forms, children }: { forms: EpfFormsData; chi
       )}
       {view}
     </FormsContext.Provider>
-  );
-}
-
-/** A button that opens a form. With no account yet it stays focusable but disabled, with the reason as a tooltip. */
-function FormTrigger({ label, onClick }: { label: string; onClick: () => void }) {
-  const { disabledReason } = useEpfForms();
-  return <FormTriggerButton className={HEADER_GHOST_CLASS} label={label} onClick={onClick} disabledReason={disabledReason} />;
-}
-
-/** The page header's buttons: the import first, then the typed ways in. */
-export function EpfHeaderButtons() {
-  const { open } = useEpfForms();
-  return (
-    <div className="flex flex-wrap gap-2">
-      <AddEpfStatementButton />
-      <FormTrigger label="Add contribution" onClick={() => open({ kind: "contribution" })} />
-      <FormTrigger label="Add what EPFO credited" onClick={() => open({ kind: "credited" })} />
-      <FormTrigger label="EPF settings" onClick={() => open({ kind: "settings" })} />
-    </div>
   );
 }
 
