@@ -21,6 +21,7 @@ ADRs 0001–0006 were backfilled on 2026-10-16 from decisions made between 2026-
 | [0011](0011-epf-contributions-and-passbook-import.md) | Record EPF as contributions plus yearly interest, and import the passbook PDF | Accepted |
 | [0012](0012-foreign-currency-balances.md) | Keep a balance in its account's own currency, and count it in rupees at today's rate | Accepted |
 | [0013](0013-price-sources-and-history.md) | Prices come from Yahoo, AMFI and Frankfurter, saved once a day | Accepted |
+| [0014](0014-lent-out-payouts-are-income.md) | A lent loan's payouts arrive as Income, and the loan keeps its income source's id | Accepted |
 
 ## Template
 
