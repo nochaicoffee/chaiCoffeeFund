@@ -8,6 +8,9 @@ import { BALANCE_REVIEW_COLUMNS, balanceReviewRowSchema } from "@/lib/sheets/bal
 import { BALANCE_SNAPSHOT_COLUMNS, balanceSnapshotRowSchema } from "@/lib/sheets/balanceSnapshots";
 import { CARD_COLUMNS, cardRowSchema } from "@/lib/sheets/cards";
 import { FIXED_DEPOSIT_COLUMNS, fixedDepositRowSchema } from "@/lib/sheets/fixedDeposits";
+import { EPF_ACCOUNT_COLUMNS, epfAccountRowSchema } from "@/lib/sheets/epfAccounts";
+import { EPF_ENTRY_COLUMNS, epfEntryRowSchema } from "@/lib/sheets/epfEntries";
+import { EPF_RATE_COLUMNS, epfRateRowSchema } from "@/lib/sheets/epfRates";
 import { INVESTMENT_TRANSACTION_COLUMNS, investmentTransactionRowSchema } from "@/lib/sheets/investmentTransactions";
 import { INCOME_ENTRY_COLUMNS, incomeEntryRowSchema } from "@/lib/sheets/incomeEntries";
 import { INCOME_SOURCE_COLUMNS, incomeSourceRowSchema } from "@/lib/sheets/incomeSources";
@@ -40,6 +43,9 @@ const TABS = {
   LoanPrepayments: () => columnSpecs(LOAN_PREPAYMENT_COLUMNS as string[], loanPrepaymentRowSchema),
   InvestmentTransactions: () => columnSpecs(INVESTMENT_TRANSACTION_COLUMNS as string[], investmentTransactionRowSchema),
   FixedDeposits: () => columnSpecs(FIXED_DEPOSIT_COLUMNS as string[], fixedDepositRowSchema),
+  EpfAccounts: () => columnSpecs(EPF_ACCOUNT_COLUMNS as string[], epfAccountRowSchema),
+  EpfEntries: () => columnSpecs(EPF_ENTRY_COLUMNS as string[], epfEntryRowSchema),
+  EpfRates: () => columnSpecs(EPF_RATE_COLUMNS as string[], epfRateRowSchema),
   Policies: () => columnSpecs(POLICY_COLUMNS as string[], policyRowSchema),
   PolicyPayments: () => columnSpecs(POLICY_PAYMENT_COLUMNS as string[], policyPaymentRowSchema),
   Goals: () => columnSpecs(GOAL_COLUMNS as string[], goalRowSchema),
@@ -47,7 +53,7 @@ const TABS = {
 };
 
 /** Tabs the code needs that may not exist yet: the route creates them, with their Table, when they're missing. Existing tabs are never created over. */
-const CREATABLE = new Set(["AccountStatementEmails", "BalanceReviews", "LoanPrepayments", "Policies", "PolicyPayments", "Goals", "GoalContributions"]);
+const CREATABLE = new Set(["AccountStatementEmails", "BalanceReviews", "LoanPrepayments", "Policies", "PolicyPayments", "Goals", "GoalContributions", "EpfAccounts", "EpfEntries", "EpfRates"]);
 
 type Plan =
   | { error: string }

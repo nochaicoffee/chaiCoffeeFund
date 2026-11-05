@@ -18,6 +18,9 @@ import { goalsRepository } from "./goals";
 import { goalContributionsRepository } from "./goalContributions";
 import { investmentTransactionsRepository } from "./investmentTransactions";
 import { fixedDepositsRepository } from "./fixedDeposits";
+import { epfAccountsRepository } from "./epfAccounts";
+import { epfEntriesRepository } from "./epfEntries";
+import { epfRatesRepository } from "./epfRates";
 import { statementEmailsRepository } from "./statementEmails";
 import { syncRunsRepository } from "./syncRuns";
 import { accountStatementEmailsRepository } from "./accountStatementEmails";
@@ -42,6 +45,9 @@ export const checkedRepositories = [
   goalContributionsRepository,
   investmentTransactionsRepository,
   fixedDepositsRepository,
+  epfAccountsRepository,
+  epfEntriesRepository,
+  epfRatesRepository,
   statementEmailsRepository,
   syncRunsRepository,
   accountStatementEmailsRepository,
