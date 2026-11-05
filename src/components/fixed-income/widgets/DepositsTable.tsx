@@ -37,13 +37,16 @@ export function DepositsTable({ rows }: { rows: DepositTableRow[] }) {
           <span className="w-[116px]" />
         </div>
         {rows.map((r, i) => (
-          <div key={r.id} className={`grid items-center gap-x-3 gap-y-2 border-t border-divider px-1 py-3.5 max-lg:grid-cols-2 ${COLS}`}>
+          <div key={r.id} className={`grid items-center gap-x-3 gap-y-2 border-t border-divider py-3.5 max-lg:grid-cols-2 ${COLS} ${r.due ? "rounded-[14px] bg-negative-tint/60 px-3" : "px-1"}`}>
             <div className="flex min-w-0 items-center gap-3 max-lg:col-span-2">
               <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-[11px] text-[11px] font-extrabold text-on-card" style={{ background: `linear-gradient(155deg, var(--card-${CHIPS[i % CHIPS.length]}-from), var(--card-${CHIPS[i % CHIPS.length]}-to))` }}>
                 FD
               </span>
               <span className="min-w-0">
-                <b className="block truncate text-[13px] font-extrabold">{r.name}</b>
+                <b className="block truncate text-[13px] font-extrabold">
+                  {r.name}
+                  {r.due && <span className="ml-2 rounded-full bg-negative-tint px-2 py-0.5 align-middle text-[10px] font-bold text-negative">Matured</span>}
+                </b>
                 <span className="block truncate text-[11px] font-medium text-muted">{r.sub}</span>
               </span>
             </div>

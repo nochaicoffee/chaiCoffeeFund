@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { HIS_ENTRIES } from "./epf.fixture";
 import { computeNetWorth } from "./netWorth";
 import { inRupees } from "./accountCurrency";
 import type {
@@ -85,5 +86,24 @@ describe("computeNetWorth", () => {
     };
     expect(net(90).bankBalances).toBe(100000 + 3000 * 90);
     expect(net(null).bankBalances).toBe(100000);
+  });
+
+  describe("EPF (ADR 0011)", () => {
+    const base = { accounts: [], balanceSnapshots: [], cards: [], statements: [], loans: [], loanInstallments: [], investmentTransactions: [], fixedDeposits: [], asOfDate: "2026-11-05" };
+    it("counts EPF at the passbook figure: credits plus the interest EPFO has credited, both shares, never the estimate", () => {
+      const r = computeNetWorth({ ...base, epfEntries: HIS_ENTRIES });
+      expect(r.epfValueInr).toBe(952566);
+      expect(r.netWorth).toBe(952566);
+    });
+    it("is the balance on the day asked, so a credit dated later isn't counted yet", () => {
+      const before = computeNetWorth({ ...base, epfEntries: HIS_ENTRIES, asOfDate: "2026-03-30" }).epfValueInr;
+      const after = computeNetWorth({ ...base, epfEntries: HIS_ENTRIES, asOfDate: "2026-03-31" }).epfValueInr;
+      expect(after - before).toBe(40924);
+    });
+    it("adds each account on its own, and leaves EPF out when no entries are given", () => {
+      const second = HIS_ENTRIES.map((e) => ({ ...e, id: `b-${e.id}`, epfAccountId: "epf-2" }));
+      expect(computeNetWorth({ ...base, epfEntries: [...HIS_ENTRIES, ...second] }).epfValueInr).toBe(2 * 952566);
+      expect(computeNetWorth(base).epfValueInr).toBe(0);
+    });
   });
 });

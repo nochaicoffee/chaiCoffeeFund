@@ -5,7 +5,7 @@ import { comingUp, creditTiming, creditYears, growthPath, moneyInByMonth, moneyI
 import { tenureBetween } from "@/lib/aggregate/fixedDeposits";
 import { formatDate, formatMonthShort, MONTH_NAMES } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
-import { formatLakh } from "./views";
+import { formatLakh, ordinal } from "./views";
 
 /**
  * What the Fixed Income page's widgets show (docs/design/fixed-income.md, J1), as plain, already-formatted data. The numbers come
@@ -14,7 +14,6 @@ import { formatLakh } from "./views";
 
 const rupees = (n: number) => formatInr(Math.round(n));
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
-const ordinal = (n: number) => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[n % 10] ?? "th"}`;
 const monthName = (month: string) => MONTH_NAMES[Number(month.slice(5, 7)) - 1];
 
 /** How far away a day is, as a person says it: "in 13 days", "in 5 months", "in 1.9 years". */
@@ -290,3 +289,29 @@ const addMonth = (month: string, n: number): string => {
   d.setUTCMonth(d.getUTCMonth() + n);
   return d.toISOString().slice(0, 7);
 };
+
+// ---------- The year's interest arriving against its estimate ----------
+export interface InterestView {
+  financialYear: string;
+  tiles: { label: string; value: string; note: string }[];
+  note: string;
+  /** The rate for the year now running: declared, or still assumed. */
+  rate: { value: string; note: string };
+}
+
+export function interestView(f: FixedIncome): InterestView | null {
+  const h = f.epf.holdings[0];
+  const r = h?.recentInterest;
+  if (!h || !r) return null;
+  const diff = r.estimated !== null ? r.credited - r.estimated : null;
+  return {
+    financialYear: r.financialYear,
+    tiles: [
+      { label: "Estimated", value: r.estimated !== null ? `≈ ${rupees(r.estimated)}` : "no rate known", note: r.ratePercent !== null ? `${r.ratePercent}% on each month's balance` : "" },
+      { label: "Credited", value: rupees(r.credited), note: formatDate(r.date) },
+      { label: "Difference", value: diff !== null ? rupees(Math.abs(diff)) : "—", note: diff === null ? "nothing to compare" : diff === 0 ? "to the rupee" : "shown, never hidden" },
+    ],
+    note: `What EPFO credited is what the page shows${r.typed ? "; you typed it, so importing the passbook that has it confirms it" : ""}. If the credited rate differs from the one in settings, the page says so.`,
+    rate: h.ratePercent === null ? { value: "not known", note: "add a rate in EPF settings" } : h.rateSource === "Declared" ? { value: `${h.ratePercent}% declared`, note: "estimates use it" } : { value: "not declared yet", note: `estimates use the last one, ${h.ratePercent}%, and are marked as estimates` },
+  };
+}

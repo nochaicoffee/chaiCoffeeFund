@@ -1,6 +1,6 @@
 import type { EpfAccount, EpfEntry, EpfRate, FixedDeposit } from "../sheets/types";
 import { daysBetween } from "./cardSpend";
-import { entriesOfAccount, epfBalance, epfMonthStates, epfRateForYear, financialYearEnd, financialYearOf, financialYearStart, interestNotYetCredited, type EpfMonth, type EpfRateKind, type InterestEstimate } from "./epf";
+import { entriesOfAccount, epfBalance, epfInterestForYear, epfMonthStates, epfRateForYear, financialYearEnd, financialYearOf, financialYearStart, interestNotYetCredited, type EpfMonth, type EpfRateKind, type InterestEstimate } from "./epf";
 import { compoundedValue, estimatedCurrentValue } from "./fixedDeposits";
 import { addMonthsUTC } from "./recurring";
 
@@ -37,6 +37,11 @@ export interface EpfHolding {
    * later), worked out the same way. Null when it is credited, or there was no money in it.
    */
   pendingPrior: { financialYear: string; amount: number; ratePercent: number; rateSource: EpfRateKind } | null;
+  /**
+   * Interest EPFO credited in the last six months, against what the rule gave at the rate then in use: the year's interest arriving
+   * against its estimate. The credited figure is what the page shows; the difference is shown and never hidden.
+   */
+  recentInterest: { financialYear: string; date: string; credited: number; estimated: number | null; ratePercent: number | null; rateSource: EpfRateKind | null; typed: boolean } | null;
   /** The next credit expected (or the one that is late), and whether it is late. */
   nextCredit: { wageMonth: string; due: string; amount: number; late: boolean } | null;
   /** Wage months that are late: their usual day has passed by a passbook printed after it, and no credit is there. */
@@ -94,6 +99,24 @@ const wholeMonths = (from: string, to: string): number => {
   return months;
 };
 
+function recentInterestOf(own: EpfEntry[], rates: EpfRate[], today: string): EpfHolding["recentInterest"] {
+  const sixMonthsAgo = new Date(Date.parse(`${today}T00:00:00Z`) - 183 * 86_400_000).toISOString().slice(0, 10);
+  const latest = [...own].filter((e) => e.kind === "Interest").sort((a, b) => (a.date < b.date ? -1 : 1)).at(-1);
+  if (!latest || latest.date < sixMonthsAgo || latest.date > today) return null;
+  const fy = financialYearOf(latest.date);
+  const without = own.filter((e) => e.id !== latest.id);
+  const rate = epfRateForYear(without, rates, fy);
+  return {
+    financialYear: fy,
+    date: latest.date,
+    credited: latest.employee + latest.employer,
+    estimated: rate ? epfInterestForYear(without, fy, rate.ratePercent).total : null,
+    ratePercent: rate?.ratePercent ?? null,
+    rateSource: rate?.source ?? null,
+    typed: latest.source === "Typed",
+  };
+}
+
 function epfHolding(account: EpfAccount, entries: EpfEntry[], rates: EpfRate[], today: string): EpfHolding {
   const own = entriesOfAccount(entries, account.id);
   const fy = financialYearOf(today);
@@ -120,6 +143,7 @@ function epfHolding(account: EpfAccount, entries: EpfEntry[], rates: EpfRate[], 
     rateSource: rate?.source ?? null,
     creditedInterest: sum(own.filter((e) => e.kind === "Interest").map((e) => e.employee + e.employer)),
     estimate: interestNotYetCredited(own, ownRates, today),
+    recentInterest: recentInterestOf(own, ownRates, today),
     pendingPrior: prior && !prior.credited && prior.amount > 0 && prior.ratePercent !== null && prior.source !== null ? { financialYear: priorFy, amount: prior.amount, ratePercent: prior.ratePercent, rateSource: prior.source } : null,
     nextCredit: next?.due ? { wageMonth: next.wageMonth, due: next.due, amount: next.amount, late: next.state === "Late" } : null,
     lateMonths: open ? states.filter((m) => m.state === "Late") : [],

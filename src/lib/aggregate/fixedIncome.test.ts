@@ -89,6 +89,16 @@ describe("states", () => {
     expect(fixedIncome({ ...input, epfAccounts: [{ ...account, confirmedThrough: "2026-04-20" }] }, "2026-04-20").epf.holdings[0].pendingPrior).toBeNull();
     expect(fixedIncome(input, TODAY).epf.holdings[0].pendingPrior).toBeNull();
   });
+  it("interest EPFO has just credited is shown against what the rule gave at the rate then in use, and the difference is never hidden", () => {
+    const uncredited = HIS_ENTRIES.filter((e) => !(e.kind === "Interest" && e.date === "2026-03-31"));
+    const credited = [...uncredited, { id: "i-new", epfAccountId: "epf-1", kind: "Interest" as const, date: "2026-03-31", employee: 20462, employer: 20462, pension: 0, source: "Passbook" as const }];
+    const h = fixedIncome({ ...input, epfEntries: credited }, "2026-06-10").epf.holdings[0];
+    expect(h.recentInterest).toMatchObject({ financialYear: "2025-26", date: "2026-03-31", credited: 40924, ratePercent: 8.25, typed: false });
+    expect(Math.abs(h.recentInterest!.estimated! - 40924)).toBeLessThan(3);
+    // Six months later it is no longer news.
+    expect(fixedIncome({ ...input, epfEntries: credited }, "2026-11-05").epf.holdings[0].recentInterest).toBeNull();
+    expect(fixedIncome(input, "2026-11-05").epf.holdings[0].recentInterest).toBeNull();
+  });
   it("a closed EPF account keeps its balance but expects and flags nothing", () => {
     const f = fixedIncome({ ...input, epfAccounts: [{ ...account, status: "Closed", confirmedThrough: "2026-11-25" }] }, "2026-11-25");
     expect(f.epf.total).toBe(952566);

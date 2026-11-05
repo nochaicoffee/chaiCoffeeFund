@@ -41,6 +41,8 @@ His real EPFO member passbooks (FY 2023-24 to FY 2026-27) show what the data act
 ## Updates
 - 2026-11-05 (import built): `confirmedThrough` is the day the file covers up to: its print date for the year in progress, the end of its financial year for an earlier year (a file printed later says nothing about the months after its year), and it never moves back. A year whose interest is printed as 0 is not yet credited, whatever the date, and gets no interest row. Anything not read straight from the file (a row he adds or changes in the review) is saved `Typed`. The "offer to set the year's rate as Implied" is not built: an implied rate is worked out and never stored, so once the interest is imported the year shows its implied rate by itself. The import takes one year's file at a time.
 
+- 2026-11-05 (page built): net worth counts EPF at the passbook figure (balance of credits and credited interest, employee and employer; pension is shown but not counted). The year that has just ended keeps its interest in the estimate until EPFO credits it (the credited year's rate is still worked out from its own interest). A closed account keeps its balance and expects nothing.
+
 ## Alternatives considered
 - **One balance with dated "passbook says" snapshots (PRD Q1's first proposal):** simpler, but it throws away the credits (so there is nothing to show about timing or a missing month), can't check a statement, and needs the balance retyped each time.
 - **Store the balance and the interest estimate:** both go stale the day after they are written; working them out from the credits can't.

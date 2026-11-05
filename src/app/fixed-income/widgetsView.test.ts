@@ -3,7 +3,7 @@ import { HIS_ENTRIES } from "@/lib/aggregate/epf.fixture";
 import { fixedIncome } from "@/lib/aggregate/fixedIncome";
 import { HIS_DEPOSITS } from "@/lib/aggregate/fixedIncome.fixture";
 import type { EpfAccount } from "@/lib/sheets/types";
-import { comingUpView, creditsView, depositsTableView, epfCardView, growthView, inPhrase, moneyInView } from "./widgetsView";
+import { comingUpView, creditsView, depositsTableView, epfCardView, growthView, inPhrase, interestView, moneyInView } from "./widgetsView";
 
 const TODAY = "2026-11-05";
 const account: EpfAccount = { id: "epf-1", name: "NetApp India", status: "Active", confirmedThrough: "2026-11-04" };
@@ -129,5 +129,25 @@ describe("the EPF card", () => {
   });
   it("is left out with no EPF", () => {
     expect(epfCardView(fixedIncome({ ...input, epfAccounts: [], epfEntries: [] }, TODAY), { epfEntries: [] }, TODAY)).toBeNull();
+  });
+});
+
+describe("the year's interest arriving against its estimate", () => {
+  const uncredited = HIS_ENTRIES.filter((e) => !(e.kind === "Interest" && e.date === "2026-03-31"));
+  const credited = [...uncredited, { id: "i-new", epfAccountId: "epf-1", kind: "Interest" as const, date: "2026-03-31", employee: 20462, employer: 20462, pension: 0, source: "Passbook" as const }];
+  const arrived = fixedIncome({ ...input, epfEntries: credited }, "2026-06-10");
+  it("shows the estimate, what was credited and the difference", () => {
+    const v = interestView(arrived)!;
+    expect(v.financialYear).toBe("2025-26");
+    expect(v.tiles.map((t) => t.label)).toEqual(["Estimated", "Credited", "Difference"]);
+    expect(v.tiles[1]).toEqual({ label: "Credited", value: "₹40,924", note: "Mar 31, 2026" });
+    expect(v.tiles[0].value).toMatch(/^≈ ₹40,9\d\d$/);
+    expect(v.tiles[0].note).toBe("8.25% on each month's balance");
+    expect(v.rate).toEqual({ value: "not declared yet", note: "estimates use the last one, 8.25%, and are marked as estimates" });
+  });
+  it("says a declared rate is the one in use, and says nothing when no interest has just arrived", () => {
+    const declared = fixedIncome({ ...input, epfEntries: credited, epfRates: [{ id: "r", epfAccountId: "epf-1", financialYear: "2026-27", ratePercent: 8.5, source: "Declared" }] }, "2026-06-10");
+    expect(interestView(declared)!.rate).toEqual({ value: "8.5% declared", note: "estimates use it" });
+    expect(interestView(f)).toBeNull();
   });
 });

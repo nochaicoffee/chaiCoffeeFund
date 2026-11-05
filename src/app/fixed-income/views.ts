@@ -1,9 +1,10 @@
 import type { SentencePart } from "@/app/cards/summarySentence";
 import type { GreetingRowData } from "@/components/shell/GreetingParts";
 import { financialYearOf, financialYearStart } from "@/lib/aggregate/epf";
+import type { CreditTiming } from "@/lib/aggregate/fixedIncomeWidgets";
 import { builtUpSeries, depositBars, epfBars, expectedAtMaturity, type BuiltUpPoint, type DepositBar, type EpfBar, type FixedIncome, type FixedIncomeInput } from "@/lib/aggregate/fixedIncome";
 import type { ColorKey } from "@/lib/format/colors";
-import { formatDate, formatMonthShort, formatShortDate } from "@/lib/format/date";
+import { formatDate, formatMonthShort, formatShortDate, MONTH_NAMES } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import type { FixedDeposit } from "@/lib/sheets/types";
 
@@ -30,6 +31,7 @@ export function formatLakh(value: number): string {
   return `₹${amount}${unit}`;
 }
 
+export const ordinal = (n: number): string => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[n % 10] ?? "th"}`;
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 const monthsPhrase = (months: number) => (months < 1 ? "this month" : months < 24 ? `in ${plural(months, "month", "months")}` : `in ${(months / 12).toFixed(1)} years`);
 const approx = (n: number) => `≈ ${formatInr(Math.round(n))}`;
@@ -142,41 +144,80 @@ export function greetingView(f: FixedIncome, today: string): FixedIncomeGreeting
 }
 
 // ---------- What needs attention ----------
-export type AttentionKind = "interest" | "incomplete" | "due" | "late";
+export type AttentionKind = "interest" | "incomplete" | "due" | "late" | "credited";
 export interface AttentionItem {
   /** Unique on the page: a late credit has one for each late month. */
   id: string;
   kind: AttentionKind;
+  /** late is red (a credit that should have come), credited is green (good news), the rest amber. */
+  tone: "warn" | "late" | "ok";
   title: string;
   text: string;
   /** The deposit a button opens, for the items about one. */
   depositId?: string;
+  /** For the credited item: the interest was typed, so importing the passbook that has it is the next step. */
+  typed?: boolean;
 }
 
-export function attentionView(f: FixedIncome, today: string): AttentionItem[] {
+/** What needs attention on this page, most urgent first. `timing` (when credits usually arrive) makes a late credit's text specific. */
+export function attentionView(f: FixedIncome, today: string, timing?: CreditTiming | null): AttentionItem[] {
   const items: AttentionItem[] = [];
   const holding = f.epf.holdings[0];
   for (const h of f.epf.holdings) {
     for (const m of h.lateMonths) {
-      items.push({ id: `late-${m.wageMonth}`, kind: "late", title: `${formatMonthShort(m.wageMonth)}'s EPF credit is late.`, text: `Credits have come about the ${Number(m.due?.slice(8, 10) ?? 18)}th. Download a fresh passbook and add it, or add the credit by hand.` });
+      const usual = timing?.usualDay ?? Number(m.due?.slice(8, 10) ?? 18);
+      const since = timing?.since ? ` since ${MONTH_NAMES[Number(timing.since.slice(5, 7)) - 1]}` : "";
+      items.push({
+        id: `late-${m.wageMonth}`,
+        kind: "late",
+        tone: "late",
+        title: `${MONTH_NAMES[Number(m.wageMonth.slice(5, 7)) - 1]}'s EPF credit hasn't arrived.`,
+        text: `Credits have come about the ${ordinal(usual)}${since}; it is the ${ordinal(Number(today.slice(8, 10)))}. Check your passbook, or add it by hand if you already know the amount.`,
+      });
     }
   }
   if (f.deposits.due.length > 0) {
     const first = f.deposits.due[0];
-    items.push({ id: "due", kind: "due", title: f.deposits.due.length === 1 ? `${first.name} has matured.` : `${f.deposits.due.length} deposits have matured.`, text: "Close it when the money reaches your account, to record what you received.", depositId: first.id });
+    const e = expectedAtMaturity(first);
+    items.push({
+      id: "due",
+      kind: "due",
+      tone: "warn",
+      title: f.deposits.due.length === 1 ? `${first.name} matured on ${formatDate(first.maturityDate)}.` : `${f.deposits.due.length} deposits have matured.`,
+      text: f.deposits.due.length === 1 ? `${rupees(e.amount)} should have reached your account. Mark it closed once it has, so it stops counting as held.` : "Mark each closed once its money has reached your account, so it stops counting as held.",
+      depositId: first.id,
+    });
+  }
+  const recent = holding?.recentInterest;
+  if (recent) {
+    items.push({
+      id: "credited",
+      kind: "credited",
+      tone: "ok",
+      title: `FY ${recent.financialYear}'s interest was credited on ${formatDate(recent.date)}.`,
+      text: `EPFO credited ${rupees(recent.credited)}${recent.estimated !== null ? `; the estimate said ≈ ${rupees(recent.estimated)}` : ""}. The credited figure is what the page now shows.`,
+      typed: recent.typed,
+    });
   }
   if (holding?.pendingPrior) {
     const p = holding.pendingPrior;
-    items.push({ id: "interest-prior", kind: "interest", title: `EPF's FY ${p.financialYear} interest isn't credited yet.`, text: `The year ended on 31 March. About ${rupees(p.amount)} is expected at ${p.ratePercent}%, ${p.rateSource === "Declared" ? "the declared rate" : "last year's"}. EPFO credits it after it declares the rate.` });
+    items.push({ id: "interest-prior", kind: "interest", tone: "warn", title: `EPF's FY ${p.financialYear} interest isn't credited yet.`, text: `The year ended on 31 March. About ${rupees(p.amount)} is expected at ${p.ratePercent}%, ${p.rateSource === "Declared" ? "the declared rate" : "last year's"}. EPFO credits it after it declares the rate.` });
   }
   if (holding && holding.estimate.amount > 0 && holding.ratePercent) {
-    items.push({ id: "interest", kind: "interest", title: `EPF's FY ${financialYearOf(today)} interest isn't credited yet.`, text: `About ${rupees(holding.estimate.amount)} has built up at last year's ${holding.ratePercent}%. The rate is declared later, so it stays an estimate.` });
+    items.push({ id: "interest", kind: "interest", tone: "warn", title: `EPF's FY ${financialYearOf(today)} interest isn't credited yet.`, text: holding.rateSource === "Declared" ? `About ${rupees(holding.estimate.amount)} has built up at the declared ${holding.ratePercent}%. EPFO credits it after the year ends.` : `About ${rupees(holding.estimate.amount)} has built up at last year's ${holding.ratePercent}%. The rate is declared later, so it stays an estimate.` });
   }
   if (f.deposits.incomplete.length > 0) {
     const n = f.deposits.incomplete.length;
-    items.push({ id: "incomplete", kind: "incomplete", title: `${n === 1 ? "The deposit has" : `The ${n} deposits have`} no bank and no maturity amount.`, text: "Add what your FD app shows so worth today and maturity use the bank's own figures.", depositId: f.deposits.incomplete[0].id });
+    items.push({ id: "incomplete", kind: "incomplete", tone: "warn", title: `${n === 1 ? "The deposit has" : `The ${n} deposits have`} no bank and no maturity amount.`, text: "Add what your FD app shows so worth today and maturity use the bank's own figures.", depositId: f.deposits.incomplete[0].id });
   }
   return items;
+}
+
+/** What the Overview borrows from this page's attention items: a late EPF credit and a deposit that has matured and isn't closed. */
+export function overviewAttention(f: FixedIncome, today: string): { label: string; detail: string }[] {
+  return attentionView(f, today)
+    .filter((i) => i.kind === "late" || i.kind === "due")
+    .map((i) => ({ label: i.title, detail: i.text }));
 }
 
 // ---------- The doors and their stages ----------
@@ -210,15 +251,17 @@ export interface StageView {
   chips: string[];
   tiles: Tile[];
   chart: ChartView | null;
+  /** Nothing behind this door yet: the stage invites him to add the first. */
+  empty: boolean;
 }
 
 export function doorsView(f: FixedIncome): Door[] {
   const holding = f.epf.holdings[0];
   const share = (part: number) => (f.total > 0 ? part / f.total : 0);
   return [
-    { id: "all", label: "Everything", total: formatLakh(f.total), sub: `EPF and ${plural(f.deposits.held.length, "deposit", "deposits")}`, fraction: f.total > 0 ? 1 : 0 },
-    { id: "epf", label: "EPF", total: formatLakh(f.epf.total), sub: `${f.total > 0 ? Math.round(share(f.epf.total) * 100) : 0}% of it${holding?.ratePercent ? ` · ${holding.ratePercent}% a year` : ""}`, fraction: share(f.epf.total) },
-    { id: "fd", label: "Fixed deposits", total: formatLakh(f.deposits.worth), sub: `${plural(f.deposits.held.length, "deposit", "deposits")}${f.deposits.held.length ? ` · ${f.deposits.held[0].interestRate}%` : ""}`, fraction: share(f.deposits.worth) },
+    { id: "all", label: "Everything", total: formatLakh(f.total), sub: f.epf.total > 0 && f.deposits.held.length > 0 ? `EPF and ${plural(f.deposits.held.length, "deposit", "deposits")}` : f.epf.total > 0 ? "EPF only" : f.deposits.held.length > 0 ? `${plural(f.deposits.held.length, "deposit", "deposits")} only` : "nothing yet", fraction: f.total > 0 ? 1 : 0 },
+    { id: "epf", label: "EPF", total: formatLakh(f.epf.total), sub: f.epf.total > 0 ? `${Math.round(share(f.epf.total) * 100)}% of it${holding?.ratePercent ? ` · ${holding.ratePercent}% a year` : ""}` : "no statement yet", fraction: share(f.epf.total) },
+    { id: "fd", label: "Fixed deposits", total: formatLakh(f.deposits.worth), sub: f.deposits.held.length > 0 ? `${plural(f.deposits.held.length, "deposit", "deposits")} · ${f.deposits.held[0].interestRate}%` : "no deposits yet", fraction: share(f.deposits.worth) },
   ];
 }
 
@@ -241,8 +284,11 @@ export function stagesView(input: FixedIncomeData, f: FixedIncome, today: string
       { label: "Earning a month", value: rupees(f.perMonth), note: "at today's pace" },
       f.deposits.nextMaturity
         ? { label: "First deposit matures", value: formatDate(f.deposits.nextMaturity.deposit.maturityDate), note: monthsPhrase(f.deposits.nextMaturity.months) }
-        : { label: "Deposits", value: "none maturing", note: f.deposits.held.length ? "all past their maturity day" : "none held" },
+        : f.deposits.held.length
+          ? { label: "Deposits", value: "none running", note: "all past their maturity day" }
+          : { label: "Deposits", value: "none yet", note: "add one to see it here" },
     ],
+    empty: f.epf.total === 0 && f.deposits.held.length === 0,
     chart: { kind: "built", points: builtUpSeries(input, today), note: "EPF steps up each March when the year's interest is credited." + (f.deposits.held.length ? ` The deposits began in ${formatMonthShort(firstStart(f.deposits.held))} ${firstStart(f.deposits.held).slice(0, 4)}.` : "") },
   };
   const epf: StageView = {
@@ -261,6 +307,7 @@ export function stagesView(input: FixedIncomeData, f: FixedIncome, today: string
       { label: "Credited last year", value: holding?.lastInterest ? rupees(holding.lastInterest.amount) : "none yet", note: holding?.lastInterest ? `on ${formatDate(holding.lastInterest.date)}` : "until a passbook has it" },
       { label: "Earning a day", value: `₹${f.epf.perDay.toFixed(2)}`, note: "on the passbook balance" },
     ],
+    empty: f.epf.total === 0,
     chart: { kind: "epf", bars: epfBars(input.epfEntries, next ?? null, today), note: next ? `The last bar is the next credit, expected about ${formatShortDate(next.due)}.` : `FY ${fy}` },
   };
   const first = f.deposits.held[0];
@@ -278,6 +325,7 @@ export function stagesView(input: FixedIncomeData, f: FixedIncome, today: string
       { label: "Earning a day", value: rupees(f.perDay - f.epf.perDay), note: "at each one's own rate" },
       f.deposits.nextMaturity ? { label: "First matures", value: formatDate(f.deposits.nextMaturity.deposit.maturityDate), note: monthsPhrase(f.deposits.nextMaturity.months) } : { label: "First matures", value: "none", note: "nothing running" },
     ],
+    empty: f.deposits.held.length === 0,
     chart: f.deposits.held.length ? { kind: "deposits", bars: depositBars(input.deposits, today), today, note: "Each bar runs from the day a deposit started to the day it matures." } : null,
   };
   return { all, epf, fd };
