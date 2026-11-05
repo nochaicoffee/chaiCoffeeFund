@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createLentLoanSchema } from "./lentLoans";
+import { createLentLoanSchema, updateLentLoanSchema } from "./lentLoans";
 
 const accruing = { borrowerName: "Friend", principalAmount: 650000, startDate: "2024-10-01", interestMode: "Accruing", interestRate: 12, status: "Active" } as const;
 const paidOut = { borrowerName: "Friend", principalAmount: 300000, startDate: "2025-01-01", interestMode: "Paid-out", payoutFrequency: "Monthly", payoutAmount: 6000, status: "Active" } as const;
@@ -23,5 +23,15 @@ describe("createLentLoanSchema", () => {
     expect(createLentLoanSchema.safeParse({ ...paidOut, status: "Repaid", closedDate: "2024-12-31" }).success).toBe(false);
     expect(createLentLoanSchema.safeParse({ ...paidOut, status: "Repaid", closedDate: "2026-06-01" }).success).toBe(true);
     expect(createLentLoanSchema.safeParse({ ...paidOut, closedDate: "2026-06-01" }).success).toBe(false);
+  });
+  it("lets a paid-out loan keep its income source and a colour, and refuses an income source on an accruing loan", () => {
+    expect(createLentLoanSchema.safeParse({ ...paidOut, incomeSourceId: "src-1", color: "Copper" }).success).toBe(true);
+    expect(createLentLoanSchema.safeParse({ ...accruing, incomeSourceId: "src-1" }).success).toBe(false);
+    expect(createLentLoanSchema.safeParse({ ...paidOut, color: "NotAColour" }).success).toBe(false);
+  });
+  it("lets an update clear the income source and the colour with an empty cell", () => {
+    const r = updateLentLoanSchema.safeParse({ incomeSourceId: "", color: "" });
+    expect(r.success).toBe(true);
+    expect(r.success && r.data).toEqual({ incomeSourceId: undefined, color: undefined });
   });
 });
