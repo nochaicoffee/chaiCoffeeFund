@@ -9,7 +9,7 @@ export { daysBetween, addDays, addMonthsUTC };
 export const TODAY = "2026-11-04";
 export const FY_START = "2026-04-01";
 export const FY_END = "2027-03-31";
-export const SETTINGS = { slab: 0.3, inflation: 0.05, epfRate: 0.0825 };
+export const SETTINGS = { slab: 0.3, inflation: 0.05 };
 export const sum = (a) => a.reduce((s, x) => s + x, 0);
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const day = (iso) => `${+iso.slice(8, 10)} ${MON[+iso.slice(5, 7) - 1]}`;
@@ -64,11 +64,29 @@ export const epfBalance = (asOf = TODAY) => {
   return { each: c + i, total: 2 * (c + i), contributions: 2 * c, interest: 2 * i };
 };
 /**
+ * The rate for each financial year and where it came from. EPFO's passbook doesn't print the rate, so a year already credited gets the rate
+ * its credited interest IMPLIES: 8.25% for each of his three years (two of them to the rupee, FY 24-25 and FY 25-26; FY 23-24 is only ₹116,
+ * so ₹117 against ₹116). The year in progress is ASSUMED to be last year's until EPFO declares it (and he enters it as Declared, or imports
+ * the passbook with its interest). In the real tabs only Declared and Assumed are stored; an Implied rate is worked out when it is read.
+ */
+export const EPF_RATES = [
+  { fy: "FY 23-24", from: "2023-04-01", rate: 8.25, source: "Implied" },
+  { fy: "FY 24-25", from: "2024-04-01", rate: 8.25, source: "Implied" },
+  { fy: "FY 25-26", from: "2025-04-01", rate: 8.25, source: "Implied" },
+  { fy: "FY 26-27", from: "2026-04-01", rate: 8.25, source: "Assumed" },
+];
+/** A year with no row is estimated at the latest rate, and says so: its source is Assumed. */
+export const rateInfo = (fyStart) => EPF_RATES.find((r) => r.from === fyStart) ?? { ...EPF_RATES.at(-1), from: fyStart, source: "Assumed" };
+export const rateFor = (fyStart) => rateInfo(fyStart).rate / 100;
+const NOW = rateInfo("2026-04-01");
+/** The rate the year in progress is using, for the captions: "8.25%", "assumed". */
+export const RATE_NOW = `${NOW.rate.toFixed(2)}%`, RATE_SRC = NOW.source.toLowerCase(), RATE_TAG = `${RATE_NOW} ${RATE_SRC}`;
+/**
  * EPF interest for a financial year, worked out the way his credited interest reproduces to the rupee (FY 24-25 and FY 25-26):
  * each month, the balance at the START of the month times rate / 12 (a contribution counts from the month after it is credited), summed.
  * `through` stops the year early, for the interest that has built up but isn't credited yet.
  */
-export function epfInterest(fyStart, rate = SETTINGS.epfRate, through = null, credits = EPF_CREDITS) {
+export function epfInterest(fyStart, rate = rateFor(fyStart), through = null, credits = EPF_CREDITS) {
   const open = epfBalance(addDays(fyStart, -1)).total;
   let total = 0;
   for (let m = 0; m < 12; m++) {
@@ -83,7 +101,7 @@ export function epfInterest(fyStart, rate = SETTINGS.epfRate, through = null, cr
 const FUTURE = ["2026-11-17", "2026-12-17", "2027-01-17", "2027-02-17", "2027-03-17"].map((date) => ({ wage: "", date, each: EPF_CREDITS.at(-1).each }));
 export const EPF = (() => {
   const b = epfBalance();
-  const pending = epfInterest(FY_START, SETTINGS.epfRate, TODAY); // months already started this year, not yet credited
+  const pending = epfInterest(FY_START, undefined, TODAY); // months already started this year, not yet credited
   const thisYear = EPF_CREDITS.filter((c) => c.date >= FY_START);
   return {
     each: b.each, total: b.total, pending,
@@ -91,13 +109,28 @@ export const EPF = (() => {
     lastMonthly: 2 * EPF_CREDITS.at(-1).each, // ₹39,308 a month after the July 2026 wage rise
     creditedTotal: 2 * sum(EPF_INTEREST.map((i) => i.each)),
     lastCredit: EPF_CREDITS.at(-1).date,
-    perDay: (b.total * SETTINGS.epfRate) / 365,
+    perDay: (b.total * rateFor(FY_START)) / 365,
     openingFy: epfBalance("2026-03-31").each,
-    yearEnd: epfInterest(FY_START, SETTINGS.epfRate, null, [...EPF_CREDITS, ...FUTURE]),
+    yearEnd: epfInterest(FY_START, undefined, null, [...EPF_CREDITS, ...FUTURE]),
   };
 })();
 // A check the design stands on: the formula reproduces his credited interest for the last two years, to the rupee.
 export const EPF_CHECK = [["2024-04-01", 2 * 7211], ["2025-04-01", 2 * 20462]].map(([fy, want]) => ({ fy, want, got: epfInterest(fy) }));
+/**
+ * The day his latest imported passbook was PRINTED ("Printed On" on the file; in the real tabs this is `confirmedThrough` on the account): the passbook is complete up to that day, so a credit on or before
+ * it is confirmed and one that is not in it is genuinely missing, while anything after it is only expected.
+ */
+export const CONFIRMED_THROUGH = "2026-11-04";
+/**
+ * The twelve wage months of the year in progress, each Confirmed (a credit from a passbook), Typed (one he entered by hand), Expected
+ * (nothing yet: worked out, never stored, never counted in the balance) or Late (the day it usually arrives is on or before the passbook's print
+ * date and it is still missing). Only a passbook printed after that day can make a month Late, so an old file never raises it.
+ */
+export const EPF_MONTH_STATES = Array.from({ length: 12 }, (_, i) => {
+  const wage = addMonthsUTC("2026-03-01", i).slice(0, 7), credit = EPF_CREDITS.find((c) => c.wage === wage);
+  const due = `${addMonthsUTC(`${wage}-01`, 1).slice(0, 8)}18`; // about the 17th to 18th of the next month, as since June
+  return credit ? { wage, state: credit.source === "Typed" ? "Typed" : "Confirmed", date: credit.date, amount: 2 * credit.each } : { wage, state: due <= CONFIRMED_THROUGH ? "Late" : "Expected", due, amount: EPF.lastMonthly };
+});
 /** The next credit is expected around the 17th to 18th of the month, as the last three were. */
 export const NEXT_EPF_CREDIT = (() => { const d = new Date(`${TODAY}T00:00:00Z`); const iso = `${TODAY.slice(0, 8)}17`; return iso > TODAY ? iso : addMonthsUTC(iso, 1); })();
 
@@ -119,7 +152,7 @@ export const WORTH_OVER_TIME = monthEnds("2024-01", "2026-11").map((date) => ({ 
  * Same rule as epfInterest: a month's interest is the start-of-month balance x rate / 12, added up and credited each 31 March;
  * a contribution counts from the month after. Starts from today's passbook balance and the interest already built up this year.
  */
-export function projectEpf(years, perCredit = EPF_CREDITS.at(-1).each * 2, rate = SETTINGS.epfRate) {
+export function projectEpf(years, perCredit = EPF_CREDITS.at(-1).each * 2, rate = rateFor(FY_START)) {
   let bal = EPF.total, pot = EPF.pending, contributed = 0;
   for (let i = 0; i < years * 12; i++) {
     const month = addMonthsUTC(`${TODAY.slice(0, 7)}-01`, i);

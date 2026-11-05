@@ -22,4 +22,10 @@ export const FI5 = String.raw`
 .emp3 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 .empk { border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 10px; color: #fff; }
 .empk p { margin: 0; font-size: 13px; font-weight: 500; opacity: 0.85; line-height: 1.5; }
+.rev-e .pen { display: inline-flex; margin-left: 8px; width: 20px; height: 20px; border-radius: 6px; background: var(--fill); align-items: center; justify-content: center; color: var(--muted); vertical-align: middle; }
+.rev .typ { font-style: italic; background: oklch(0.97 0.03 85); } .rev em.tagb { font-style: normal; margin-left: 6px; }
+.fixrow { border: 2px dashed var(--accent-edge); border-radius: 18px; padding: 14px 16px; display: grid; gap: 10px; background: var(--accent-tint); } .fr-h { font-size: 13px; font-weight: 800; display: flex; align-items: center; gap: 8px; } .fr-g { display: grid; grid-template-columns: 1.1fr 1.1fr 1fr 1fr; gap: 10px; }
+.cmp { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; } .cmp-c { border: 1.5px solid var(--fill-strong); border-radius: 16px; padding: 14px 16px; display: grid; gap: 3px; } .cmp-c.sel { border-color: var(--accent); background: var(--accent-tint); } .cmp-c .k { font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); } .cmp-c b { font-size: 22px; font-weight: 800; } .cmp-c small { font-size: 12px; font-weight: 600; color: var(--muted); }
+.rtab { display: grid; gap: 8px; } .rrow { display: grid; grid-template-columns: 70px 120px auto 1fr; gap: 12px; align-items: center; font-size: 13px; font-weight: 800; } .rrow small { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.cdot.typ { background: oklch(0.95 0.05 85); border: 2px dashed oklch(0.72 0.14 75); color: oklch(0.4 0.08 70); } .cdot.exp { background: transparent; border: 2px dashed var(--fill-strong); color: var(--muted); }
 `;
