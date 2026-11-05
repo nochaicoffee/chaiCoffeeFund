@@ -57,6 +57,8 @@ export const CACHE_TAGS = {
   investmentTransactions: "investmentTransactions",
   fixedDeposits: "fixedDeposits",
   balanceReviews: "balanceReviews",
+  /** Today's USD to INR, for dollar accounts (lib/prices/usdInr.ts). */
+  usdInr: "usdInr",
 } as const;
 
 const REVALIDATE_SECONDS = 900;
