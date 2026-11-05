@@ -2,7 +2,7 @@ import { decryptAndExtractText } from "../pdf/decryptAndExtractText";
 import { parseEpfPassbookText } from "./parseEpfPassbookText";
 import type { ParseEpfPassbookResult } from "./parseEpfPassbookText";
 
-export { checkEpfPassbook, parseEpfPassbookText, passbookEntries } from "./parseEpfPassbookText";
+export { checkEpfPassbook, creditDateProblem, parseEpfPassbookText, passbookEntries } from "./parseEpfPassbookText";
 export type { EpfPassbook, EpfPassbookChecks, EpfShares, ParseEpfPassbookResult, PassbookCredit, PassbookEntryDraft } from "./parseEpfPassbookText";
 
 /**

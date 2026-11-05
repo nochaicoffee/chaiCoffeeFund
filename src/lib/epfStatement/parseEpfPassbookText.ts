@@ -86,6 +86,21 @@ export function passbookEntries(p: Pick<EpfPassbook, "credits" | "interest">): P
   return [...credits, ...interest];
 }
 
+/**
+ * Why a credit's dates can't be right for a passbook of this year, or null: it must be credited after its wage month, inside
+ * the financial year, and no later than the day the passbook was printed. Shared with the review, which checks the rows he
+ * adds or changes by the same rule.
+ */
+export function creditDateProblem(credit: Pick<PassbookCredit, "wageMonth" | "date">, passbook: Pick<EpfPassbook, "financialYear" | "printedOn">): string | null {
+  const start = `${passbook.financialYear.slice(0, 4)}-04-01`;
+  const end = `${Number(passbook.financialYear.slice(0, 4)) + 1}-03-31`;
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(credit.wageMonth)) return "the wage month isn't a month";
+  if (credit.date.slice(0, 7) <= credit.wageMonth) return "a credit can't come in the month of its wages or before it";
+  if (credit.date < start || credit.date > end) return `the day is outside ${passbook.financialYear}`;
+  if (credit.date > passbook.printedOn) return "the day is after the passbook was printed";
+  return null;
+}
+
 // ---------- Reading ----------
 /** An amount as the passbook prints it: whole rupees, grouped Indian style ("1,19,356"). Captured loosely, then checked by `toRupees`. */
 const AMOUNT = String.raw`(\d[\d,]*)`;
@@ -160,8 +175,6 @@ export function parseEpfPassbookText(rawText: string): ParseEpfPassbookResult {
   const credits: PassbookCredit[] = [];
   const seen = new Set<string>();
   let rowsFound = 0;
-  const yearStart = `${startYear}-04-01`;
-  const yearEnd = `${startYear + 1}-03-31`;
   for (const m of text.matchAll(CREDIT)) {
     rowsFound++;
     const g = m.groups!;
@@ -171,7 +184,7 @@ export function parseEpfPassbookText(rawText: string): ParseEpfPassbookResult {
     const wageMonth = `${g.wageYear}-${String(month).padStart(2, "0")}`;
     // A row is only as good as its dates: after its wage month, inside this year, no later than the print date, and in the
     // credit month the row itself prints.
-    if (date.slice(0, 7) <= wageMonth || date < yearStart || date > yearEnd || date > printedOn || ![`${date.slice(0, 4)}${date.slice(5, 7)}`, `${date.slice(5, 7)}${date.slice(0, 4)}`].includes(g.creditMonth)) {
+    if (creditDateProblem({ wageMonth, date }, { financialYear, printedOn }) || ![`${date.slice(0, 4)}${date.slice(5, 7)}`, `${date.slice(5, 7)}${date.slice(0, 4)}`].includes(g.creditMonth)) {
       return fail("a credit row has dates that don't fit the passbook's year");
     }
     if (seen.has(wageMonth)) return fail("two credits are for the same wage month, which the import can't tell apart");
