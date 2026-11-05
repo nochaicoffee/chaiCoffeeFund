@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compoundedValue, estimatedCurrentValue, totalEstimatedFixedDepositValue } from "./fixedDeposits";
+import { compoundedValue, estimatedCurrentValue, maturityFromTenure, tenureBetween, totalEstimatedFixedDepositValue } from "./fixedDeposits";
 import type { FixedDeposit } from "../sheets/types";
 
 const fd = (overrides: Partial<FixedDeposit> = {}): FixedDeposit => ({
@@ -125,5 +125,27 @@ describe("totalEstimatedFixedDepositValue", () => {
   it("includes matured deposits at their maturity value", () => {
     const deposits = [fd({ status: "Matured" })];
     expect(totalEstimatedFixedDepositValue(deposits, "2027-06-01")).toBe(107000);
+  });
+});
+
+
+describe("maturityFromTenure and tenureBetween", () => {
+  it("adds calendar months, then days: his deposits run 18 months 1 day or 2 years", () => {
+    expect(maturityFromTenure("2026-12-01", 18, 1)).toBe("2028-06-02");
+    expect(maturityFromTenure("2026-03-13", 24, 0)).toBe("2028-03-13");
+    expect(maturityFromTenure("2026-11-01", 18, 1)).toBe("2028-05-02");
+  });
+  it("clamps to the end of a shorter month, and handles a leap year", () => {
+    expect(maturityFromTenure("2026-01-31", 1, 0)).toBe("2026-02-28");
+    expect(maturityFromTenure("2027-01-31", 13, 0)).toBe("2028-02-29");
+    expect(maturityFromTenure("2026-06-10", 0, 45)).toBe("2026-07-25");
+  });
+  it("reads a tenure back from the two days, and the two round trip", () => {
+    expect(tenureBetween("2026-12-01", "2028-06-02")).toEqual({ months: 18, days: 1 });
+    expect(tenureBetween("2026-03-13", "2028-03-13")).toEqual({ months: 24, days: 0 });
+    expect(tenureBetween("2026-06-10", "2026-07-25")).toEqual({ months: 1, days: 15 });
+    for (const [start, months, days] of [["2026-08-26", 18, 1], ["2026-10-05", 24, 0], ["2026-04-01", 6, 10]] as const) {
+      expect(tenureBetween(start, maturityFromTenure(start, months, days))).toEqual({ months, days });
+    }
   });
 });

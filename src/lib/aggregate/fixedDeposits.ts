@@ -1,4 +1,6 @@
 import type { FixedDeposit } from "../sheets/types";
+import { addMonthsUTC } from "./recurring";
+import { addDays } from "./subscriptionRenewals";
 
 function daysBetween(fromIso: string, toIso: string): number {
   const from = Date.parse(`${fromIso}T00:00:00Z`);
@@ -58,4 +60,19 @@ export function totalEstimatedFixedDepositValue(deposits: ValuableDeposit[], asO
   return deposits
     .filter((fd) => fd.status !== "Closed")
     .reduce((sum, fd) => sum + estimatedCurrentValue(fd, asOfDate), 0);
+}
+
+/**
+ * The day a deposit matures: its start day plus its tenure, as his FD app shows it ("18 months 1 day", "2 years" = 24 months).
+ * Months are calendar months (31 Jan + 1 month is 28 Feb, or 29 in a leap year), then the days are added.
+ */
+export function maturityFromTenure(startDate: string, months: number, days: number): string {
+  return addDays(addMonthsUTC(startDate, months), days);
+}
+
+/** A tenure, the other way round: the most whole months that fit between the two days, and the days left over. */
+export function tenureBetween(startDate: string, maturityDate: string): { months: number; days: number } {
+  let months = 0;
+  while (addMonthsUTC(startDate, months + 1) <= maturityDate) months++;
+  return { months, days: daysBetween(addMonthsUTC(startDate, months), maturityDate) };
 }
