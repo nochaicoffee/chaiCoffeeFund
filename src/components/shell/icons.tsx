@@ -65,6 +65,13 @@ export const icons = {
       <circle cx="17.5" cy="17.5" r="2.5" />
     </Icon>
   ),
+  lent: (
+    <Icon>
+      <circle cx="9" cy="9" r="5" />
+      <line x1="13" y1="13" x2="20" y2="20" />
+      <polyline points="20 14 20 20 14 20" />
+    </Icon>
+  ),
   insurance: (
     <Icon>
       <path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6l8-3z" />
