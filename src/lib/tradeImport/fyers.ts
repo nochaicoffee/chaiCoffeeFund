@@ -25,6 +25,17 @@ export const FYERS_SYMBOLS: Record<string, string> = {
   "TARSONS PRODUCTS LIMITED": "TARSONS",
 };
 
+/**
+ * Share splits, so a buy before one reads in the shares you hold now. A trade dated before `before`
+ * has its quantity multiplied by `ratio` and its price divided by it; its cost is unchanged.
+ * Rushil Decor split 10 for 1 (₹10 to ₹1 face value) between his 2024-08-05 buy at ₹365.60 and his
+ * 2024-10-17 sale at ₹33.92. The exact day isn't in the files, and no trade of his falls between
+ * the two, so `before` is the first day known to be after the split.
+ */
+export const FYERS_SPLITS: Record<string, { ratio: number; before: string }> = {
+  RUSHIL: { ratio: 10, before: "2024-10-17" },
+};
+
 const MONTHS: Record<string, string> = { Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06", Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12" };
 
 /** "18 Oct 2024, 03:27:34 PM" → "2024-10-18" (the day on FYERS's own clock, which is India's). */
@@ -97,11 +108,10 @@ export function parseFyersTradebook(text: string): ParseResult {
     });
   }
 
-  const trades = [...orders.values()].map(({ trade, quantity, amount }) => ({
-    ...trade,
-    quantity: round6(quantity),
-    amount: round6(amount),
-    price: Math.round((amount / quantity) * 10_000) / 10_000,
-  }));
+  const trades = [...orders.values()].map(({ trade, quantity: pieces, amount }) => {
+    const split = FYERS_SPLITS[trade.symbol];
+    const quantity = split && trade.tradeDate < split.before ? pieces * split.ratio : pieces;
+    return { ...trade, quantity: round6(quantity), amount: round6(amount), price: Math.round((amount / quantity) * 10_000) / 10_000 };
+  });
   return { trades, skipped: [] };
 }
