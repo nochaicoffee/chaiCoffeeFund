@@ -24,7 +24,7 @@ export const LATE_AFTER_DAYS = 3;
 
 const STEP_MONTHS: Record<Exclude<IncomeFrequency, "One-Time">, number> = { Monthly: 1, Quarterly: 3, Yearly: 12 };
 /** How far an entry's expected date can be from a scheduled date and still receive it: half a cycle. */
-const MATCH_DAYS: Record<IncomeFrequency, number> = { Monthly: 15, Quarterly: 45, Yearly: 182, "One-Time": 182 };
+export const MATCH_DAYS: Record<IncomeFrequency, number> = { Monthly: 15, Quarterly: 45, Yearly: 182, "One-Time": 182 };
 
 export interface ExpectedPayment {
   sourceId: string;
