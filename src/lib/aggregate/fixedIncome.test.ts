@@ -77,6 +77,18 @@ describe("states", () => {
     expect(f.epf.holdings[0].lateMonths.map((m) => m.wageMonth)).toEqual(["2026-10"]);
     expect(f.epf.holdings[0].nextCredit).toMatchObject({ wageMonth: "2026-10", late: true });
   });
+  it("after 31 March the year that just ended keeps its interest in the estimate until EPFO credits it", () => {
+    const uncredited = HIS_ENTRIES.filter((e) => !(e.kind === "Interest" && e.date === "2026-03-31"));
+    const f2 = fixedIncome({ ...input, epfEntries: uncredited, epfAccounts: [{ ...account, confirmedThrough: "2026-04-20" }] }, "2026-04-20");
+    const h = f2.epf.holdings[0];
+    expect(h.pendingPrior).toMatchObject({ financialYear: "2025-26", ratePercent: 8.25 });
+    expect(Math.abs(h.pendingPrior!.amount - 2 * 20462)).toBeLessThan(3);
+    expect(h.estimate.amount).toBe(0);
+    expect(f2.epf.estimate).toBe(h.pendingPrior!.amount);
+    // Once EPFO has credited it, nothing is pending.
+    expect(fixedIncome({ ...input, epfAccounts: [{ ...account, confirmedThrough: "2026-04-20" }] }, "2026-04-20").epf.holdings[0].pendingPrior).toBeNull();
+    expect(fixedIncome(input, TODAY).epf.holdings[0].pendingPrior).toBeNull();
+  });
   it("a closed EPF account keeps its balance but expects and flags nothing", () => {
     const f = fixedIncome({ ...input, epfAccounts: [{ ...account, status: "Closed", confirmedThrough: "2026-11-25" }] }, "2026-11-25");
     expect(f.epf.total).toBe(952566);

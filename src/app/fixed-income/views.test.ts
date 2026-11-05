@@ -39,7 +39,7 @@ describe("the greeting, on his real numbers", () => {
     expect(cards.epf?.rows.map((r) => [r.name, r.amount])).toEqual([["Employee", "₹4,76,283"], ["Employer", "₹4,76,283"], ["Pension (EPS)", "₹0"]]);
     expect(cards.deposits?.rows).toHaveLength(7);
     expect(cards.interest).toMatchObject({ title: "EPF interest, not credited yet" });
-    expect(cards.interest?.rows.map((r) => r.name)).toEqual(["Rate used", "Months counted", "Credited last year"]);
+    expect(cards.interest?.rows.map((r) => r.name)).toEqual(["Rate used", "Months counted this year", "Credited last year"]);
     expect(cards.interest?.rows[1]).toMatchObject({ amount: "7", note: "Apr to Oct" });
     expect(cards.next?.total).toBe("Sep 14");
   });
@@ -70,9 +70,19 @@ describe("what needs attention", () => {
     expect(lates.length).toBeGreaterThan(1);
     expect(new Set(lates.map((i) => i.id)).size).toBe(lates.length);
   });
+  it("names the year that ended and is waiting for its interest, first", () => {
+    const uncredited = HIS_ENTRIES.filter((e) => !(e.kind === "Interest" && e.date === "2026-03-31"));
+    const april = fixedIncome({ ...input, epfEntries: uncredited, epfAccounts: [{ ...account, confirmedThrough: "2026-04-20" }] }, "2026-04-20");
+    const items = attentionView(april, "2026-04-20");
+    expect(items[0]).toMatchObject({ id: "interest-prior", title: "EPF's FY 2025-26 interest isn't credited yet." });
+    expect(items[0].text).toMatch(/^The year ended on 31 March\. About ₹40,9\d\d is expected at 8\.25%/);
+    expect(text(summarySentence(april))).toMatch(/of interest built up and not yet credited\./);
+    expect(greetingView(april, "2026-04-20").interest?.rows.map((r) => r.name)).toEqual(["Rate used", "FY 2025-26, ended", "Credited last year"]);
+  });
   it("is empty when there's nothing to say", () => {
     const quiet = fixedIncome({ ...input, epfEntries: [...HIS_ENTRIES], deposits: HIS_DEPOSITS.map((d) => ({ ...d, bankName: "HDFC" })) }, TODAY);
-    expect(attentionView({ ...quiet, epf: { ...quiet.epf, estimate: 0 } }, TODAY)).toEqual([]);
+    const none = { ...quiet, epf: { ...quiet.epf, estimate: 0, holdings: quiet.epf.holdings.map((h) => ({ ...h, estimate: { ...h.estimate, amount: 0 } })) } };
+    expect(attentionView(none, TODAY)).toEqual([]);
   });
 });
 
