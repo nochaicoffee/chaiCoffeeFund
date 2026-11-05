@@ -6,6 +6,7 @@ import { cardColorKey } from "@/lib/format/colors";
 import { isDemoAllowed } from "@/lib/demo/cardsDemo";
 import { DEMO_VARIANTS, demoGoalsData } from "@/lib/demo/goalsDemo";
 import { getCachedAccounts, getCachedBalanceSnapshots, getCachedCards, getCachedGoalContributionsTab, getCachedGoalsTab, getCachedIncomeSources, getCachedLoanInstallments, getCachedLoans, getCachedStatements, getCachedSubscriptions } from "@/lib/sheets/cached";
+import { rupeeBalances } from "@/lib/prices/rupeeBalances";
 import type { SkippedRows } from "@/lib/sheets/rowReading";
 import type { GoalsPageData } from "./views";
 
@@ -21,7 +22,7 @@ export async function loadGoalsData(params: Record<string, string | string[] | u
     const variant = DEMO_VARIANTS.find((v) => v === asked) ?? "";
     return { demo: variant, data: demoGoalsData(today, variant), skipped: [] };
   }
-  const [goals, contributions, accounts, snapshots, cards, statements, subscriptions, loans, installments, sources] = await Promise.all([
+  const [goals, contributions, allAccounts, allSnapshots, cards, statements, subscriptions, loans, installments, sources] = await Promise.all([
     getCachedGoalsTab(),
     getCachedGoalContributionsTab(),
     getCachedAccounts(),
@@ -33,6 +34,8 @@ export async function loadGoalsData(params: Record<string, string | string[] | u
     getCachedLoanInstallments(),
     getCachedIncomeSources(),
   ]);
+  // Dollar accounts are counted in rupees at today's rate (ADR 0012); with no rate they are left out here, as on Accounts.
+  const { accounts, snapshots } = await rupeeBalances(allAccounts, allSnapshots);
   return {
     demo: null,
     data: {

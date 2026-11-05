@@ -24,12 +24,15 @@ export function parseUsdInr(body: unknown): UsdInr {
   return { ok: true, rate, date };
 }
 
+/** A failure whose message is already plain language for the page; anything else (a network error, a timeout) becomes a generic reason. */
+class RateError extends Error {}
+
 /** One live read. Throws on a failure, so the cache below never keeps one. */
 async function fetchUsdInr(): Promise<{ rate: number; date: string }> {
   const response = await fetch(USD_INR_URL, { cache: "no-store", signal: AbortSignal.timeout(8000) });
-  if (!response.ok) throw new Error(`the rate service answered ${response.status}`);
+  if (!response.ok) throw new RateError(`the rate service answered ${response.status}`);
   const parsed = parseUsdInr(await response.json());
-  if (!parsed.ok) throw new Error(parsed.reason);
+  if (!parsed.ok) throw new RateError(parsed.reason);
   return { rate: parsed.rate, date: parsed.date };
 }
 
@@ -41,6 +44,6 @@ export async function getUsdInr(): Promise<UsdInr> {
   try {
     return { ok: true, ...(await cachedRate()) };
   } catch (error) {
-    return { ok: false, reason: error instanceof Error ? error.message : "the rate couldn't be fetched" };
+    return { ok: false, reason: error instanceof RateError ? error.message : "the rate service couldn't be reached" };
   }
 }

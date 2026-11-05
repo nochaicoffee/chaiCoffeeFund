@@ -24,7 +24,8 @@ export type AccountMatch =
  * statement for one is reported as that, not as belonging to nothing.
  */
 export function matchAccount(accounts: Account[], bank: StatementBank, last4: string | undefined, { fillLast4 = true }: { fillLast4?: boolean } = {}): AccountMatch {
-  const ofBank = accounts.filter((a) => BANK_WORDS[bank].test(a.bank) || BANK_WORDS[bank].test(a.name));
+  // A Brokerage account is cash at a broker (ADR 0012): it has no bank statement, so its name or broker can never make it a bank's.
+  const ofBank = accounts.filter((a) => a.accountType !== "Brokerage" && (BANK_WORDS[bank].test(a.bank) || BANK_WORDS[bank].test(a.name)));
   if (ofBank.length === 0) return { kind: "none", reason: `no account is with ${bank}` };
   if (last4) {
     const same = ofBank.filter((a) => a.last4 === last4);

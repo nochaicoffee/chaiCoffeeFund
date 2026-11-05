@@ -15,6 +15,7 @@ import {
   getCachedSubscriptionPayments,
   getCachedSubscriptions,
 } from "@/lib/sheets/cached";
+import { rupeeBalances, unpricedForPage } from "@/lib/prices/rupeeBalances";
 import type { SkippedRows } from "@/lib/sheets/rowReading";
 
 /**
@@ -46,9 +47,11 @@ export async function loadAccountsData(
     getCachedIncomeSources(),
     getCachedIncomeEntries(),
   ]);
+  // A dollar account is counted in rupees at today's rate right here, so nothing below learns about currencies (ADR 0012).
+  const rupee = await rupeeBalances(accounts.records, snapshots.records);
   return {
     demo,
-    data: { accounts: accounts.records, snapshots: snapshots.records, reviews: reviews.records, cards, statements, subscriptions, subscriptionPayments, loans, installments, trades, incomeSources, incomeEntries },
+    data: { accounts: rupee.accounts, snapshots: rupee.snapshots, unpriced: unpricedForPage(rupee), reviews: reviews.records, cards, statements, subscriptions, subscriptionPayments, loans, installments, trades, incomeSources, incomeEntries },
     skipped: [accounts.skipped, snapshots.skipped, reviews.skipped],
   };
 }
