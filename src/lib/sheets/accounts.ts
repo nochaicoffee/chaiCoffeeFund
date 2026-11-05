@@ -9,7 +9,7 @@ const last4Schema = z.string().regex(/^\d{4}$/, "Enter the last 4 digits of the 
 export const createAccountSchema = z.object({
   name: nonEmptyString,
   bank: nonEmptyString,
-  accountType: z.enum(["Savings", "Current"]),
+  accountType: z.enum(["Savings", "Current", "Brokerage"]),
   purpose: z.enum(["Spending", "Investment", "Emergency-Fund", "Loan-Payments"]),
   startDate: isoDate,
   status: z.enum(["Active", "Inactive"]),
@@ -18,6 +18,8 @@ export const createAccountSchema = z.object({
   last4: last4Schema.optional(),
   // Optional: rows from before this column existed have none. Kept exactly as typed, like a card's.
   statementPdfPassword: nonEmptyString.optional(),
+  // Optional: rows from before this column existed have none, and read as INR (ADR 0012).
+  currency: z.enum(["INR", "USD"]).optional(),
 });
 
 /** An update can clear the last 4: "" blanks the cell (see `clearable`). A colour is changed, not cleared. */
@@ -26,8 +28,8 @@ export const updateAccountSchema = createAccountSchema.partial().extend({ last4:
 /** A row as read back from the Sheet: a valid create, plus its id. */
 export const accountRowSchema = createAccountSchema.extend({ id: nonEmptyString });
 
-/** The Accounts tab's columns, in order. color and last4 were added on the end (#160), then statementPdfPassword. */
-export const ACCOUNT_COLUMNS: (keyof Account)[] = ["id", "name", "bank", "accountType", "purpose", "startDate", "status", "color", "last4", "statementPdfPassword"];
+/** The Accounts tab's columns, in order. color and last4 were added on the end (#160), then statementPdfPassword, then currency (ADR 0012). */
+export const ACCOUNT_COLUMNS: (keyof Account)[] = ["id", "name", "bank", "accountType", "purpose", "startDate", "status", "color", "last4", "statementPdfPassword", "currency"];
 
 export const accountsRepository = createRepository<Account>({
   sheetName: "Accounts",

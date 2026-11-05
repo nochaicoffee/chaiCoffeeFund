@@ -6,6 +6,7 @@ import type { AccountsFormsData, FormAccount } from "@/app/accounts/views";
 import { cardColorKey, freeColor as sharedFreeColor } from "@/lib/format/colors";
 import { optionLabel } from "@/lib/format/labels";
 import { PURPOSE_COLORS } from "@/lib/aggregate/accounts";
+import type { AccountType } from "@/lib/sheets/types";
 import { ACCOUNT_PURPOSES, ACCOUNT_TYPES, readAccountForm } from "@/lib/forms/accountForms";
 import { IDLE } from "@/lib/forms/formState";
 import { parseAmountText } from "@/lib/format/money";
@@ -77,7 +78,7 @@ export function AccountFormDialog({ account, forms, onClose }: { account?: FormA
           {state.errors.form}
         </p>
       )}
-      <Segmented name="accountType" legend="Account type" required options={ACCOUNT_TYPES.map((t) => ({ value: t, label: t }))} value={accountType as "Savings" | "Current"} onChange={setType} error={errors.accountType} />
+      <Segmented name="accountType" legend="Account type" required options={ACCOUNT_TYPES.map((t) => ({ value: t, label: t }))} value={accountType as AccountType} onChange={setType} error={errors.accountType} />
       <div className="grid gap-x-3.5 gap-y-4 md:grid-cols-2">
         <Field id="name" label="Name" required error={errors.name}>
           <TextInput {...describedBy("name", errors.name, false)} data-autofocus name="name" value={name} onChange={(e) => setName(e.target.value)} onBlur={() => reveal("name")} invalid={Boolean(errors.name)} placeholder="e.g. HDFC Salary" />
