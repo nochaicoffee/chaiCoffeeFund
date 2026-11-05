@@ -52,7 +52,7 @@ export interface RealisedSale {
 const QUANTITY_EPSILON = 1e-9;
 
 /** A trade's `total` in rupees: an Indian trade as it is, a US one at its own frozen rate. */
-function totalInInr(transaction: InvestmentTransaction): number {
+export function totalInInr(transaction: InvestmentTransaction): number {
   if (transaction.market === "IND") return transaction.total;
   // US: the transaction's own frozen fxRateToInr, never a live rate — see
   // the plan's cost-basis-vs-current-value FX split.
