@@ -24,6 +24,8 @@
 
 ## Epics and tasks (each task is one PR, about a day or less)
 
+**Issues (2026-11-05):** prices are epic #32 (A1 to A4 = #311 to #314), the maths is epic #309 (B1 to B5 = #315 to #319), the page is epic #310 (C1 to C6 = #320 to #325), all in M4 · Wealth.
+
 ### A. Prices and history (F-IV-03, `area:investments`, P1)
 
 | # | Task | Main files | Proof | Depends on |
