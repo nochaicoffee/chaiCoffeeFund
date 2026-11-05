@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeHoldings, findOversells, holdingsAt, totalCostBasisInr, valueHolding } from "./investments";
+import { computeHoldings, findOversells, holdingsAt, realisedGains, totalCostBasisInr, totalRealisedGainInr, valueHolding } from "./investments";
 import type { InvestmentTransaction } from "../sheets/types";
 
 const tx = (overrides: Partial<InvestmentTransaction> = {}): InvestmentTransaction => ({
@@ -218,5 +218,89 @@ describe("holdingsAt", () => {
   it("refuses a day that isn't an ISO day, instead of comparing it as text", () => {
     expect(() => holdingsAt(log, "2026-4-5")).toThrow(RangeError);
     expect(() => holdingsAt(log, "")).toThrow(RangeError);
+  });
+});
+
+describe("realisedGains", () => {
+  const t = (o: Partial<InvestmentTransaction>): InvestmentTransaction => ({
+    id: "t", tradeDate: "2026-01-01", symbol: "XYZ", market: "IND", currency: "INR", tradeType: "Buy", source: "Market",
+    quantity: 100, price: 100, total: 10000, assetType: "Equity", broker: "B", ...o,
+  });
+
+  it("is the proceeds less the cost of the shares sold, at the average cost", () => {
+    const [sale] = realisedGains([t({ id: "b" }), t({ id: "s", tradeDate: "2026-02-01", tradeType: "Sell", quantity: 40, total: 5000 })]);
+    expect(sale).toMatchObject({ quantity: 40, proceedsInr: 5000, costRemovedInr: 4000, gainInr: 1000 });
+  });
+
+  it("never moves the average cost of what is left", () => {
+    const rows = [t({ id: "b" }), t({ id: "s", tradeDate: "2026-02-01", tradeType: "Sell", quantity: 40, total: 9000 })];
+    const [holding] = computeHoldings(rows);
+    expect(holding.avgCostInr).toBeCloseTo(100, 9);
+    expect(holding.totalCostInr).toBeCloseTo(6000, 9);
+  });
+
+  it("uses the sale day's rate for proceeds and the rates paid for cost, so the rupee is in the gain", () => {
+    // 10 shares for $1,000 at 80: cost ₹80,000. Four sold for $500 at 90: ₹45,000 in, ₹32,000 of cost out.
+    const [sale] = realisedGains([
+      t({ id: "b", market: "US", currency: "USD", quantity: 10, price: 100, total: 1000, fxRateToInr: 80 }),
+      t({ id: "s", tradeDate: "2026-02-01", market: "US", currency: "USD", tradeType: "Sell", quantity: 4, price: 125, total: 500, fxRateToInr: 90 }),
+    ]);
+    expect(sale).toMatchObject({ proceedsInr: 45000, costRemovedInr: 32000, gainInr: 13000 });
+  });
+
+  it("has the sale's fees already out of its proceeds, since a sell's total is net of them", () => {
+    const [sale] = realisedGains([t({ id: "b" }), t({ id: "s", tradeDate: "2026-02-01", tradeType: "Sell", quantity: 100, price: 120, total: 11990 })]);
+    expect(sale.gainInr).toBe(1990); // 12,000 less a 10 fee, less the 10,000 cost
+  });
+
+  it("counts a loss as negative", () => {
+    expect(totalRealisedGainInr([t({ id: "b" }), t({ id: "s", tradeDate: "2026-02-01", tradeType: "Sell", quantity: 100, total: 8000 })])).toBe(-2000);
+  });
+
+  it("lists every sale oldest first, across holdings, and sums them", () => {
+    const rows = [
+      t({ id: "b1", symbol: "AAA" }),
+      t({ id: "b2", symbol: "BBB", total: 20000 }),
+      t({ id: "s2", symbol: "BBB", tradeDate: "2026-03-01", tradeType: "Sell", quantity: 100, total: 25000 }),
+      t({ id: "s1", symbol: "AAA", tradeDate: "2026-02-01", tradeType: "Sell", quantity: 100, total: 11000 }),
+    ];
+    expect(realisedGains(rows).map((s) => [s.symbol, s.gainInr])).toEqual([["AAA", 1000], ["BBB", 5000]]);
+    expect(totalRealisedGainInr(rows)).toBe(6000);
+  });
+
+  it("matches only the shares that were held when a sell asks for more", () => {
+    const [sale] = realisedGains([t({ id: "b", quantity: 6, total: 600 }), t({ id: "s", tradeDate: "2026-02-01", tradeType: "Sell", quantity: 10, total: 1000 })]);
+    expect(sale).toMatchObject({ quantity: 6, proceedsInr: 600, costRemovedInr: 600, gainInr: 0 });
+  });
+
+  it("is nothing before a first sale", () => {
+    expect(realisedGains([t({ id: "b" })])).toEqual([]);
+  });
+
+  it("works on a NetApp-shaped history: the sell-to-cover and both later sales", () => {
+    const us = (o: Partial<InvestmentTransaction>) => t({ market: "US", currency: "USD", symbol: "NTAP", ...o });
+    const rows = [
+      us({ id: "espp", tradeDate: "2024-11-29", source: "ESPP", quantity: 13, total: 1314.508, fxRateToInr: 84.57 }),
+      us({ id: "vest", tradeDate: "2025-02-15", source: "RSU", quantity: 56, total: 6636, fxRateToInr: 86.67 }),
+      us({ id: "cover", tradeDate: "2025-02-15", source: "RSU", tradeType: "Sell", quantity: 17, total: 2014.5, fxRateToInr: 86.67 }),
+      us({ id: "sell-all", tradeDate: "2026-04-06", tradeType: "Sell", quantity: 52, total: 5362.58, fxRateToInr: 93.1 }),
+    ];
+    const bought = 1314.508 * 84.57 + 6636 * 86.67;
+    const [cover, rest] = realisedGains(rows);
+    expect(cover.costRemovedInr).toBeCloseTo(bought * (17 / 69), 6);
+    expect(cover.gainInr).toBeCloseTo(2014.5 * 86.67 - bought * (17 / 69), 6);
+    expect(rest.costRemovedInr).toBeCloseTo(bought * (52 / 69), 6); // everything that is left
+    expect(cover.costRemovedInr + rest.costRemovedInr).toBeCloseTo(bought, 6);
+    // Whole history: money in less money out, in rupees.
+    expect(totalRealisedGainInr(rows)).toBeCloseTo(2014.5 * 86.67 + 5362.58 * 93.1 - bought, 6);
+  });
+
+  it("can be asked as of a past day: later sales are left out, and a bad day is refused", () => {
+    const rows = [t({ id: "b" }), t({ id: "s1", tradeDate: "2026-02-01", tradeType: "Sell", quantity: 40, total: 5000 }), t({ id: "s2", tradeDate: "2026-03-01", tradeType: "Sell", quantity: 60, total: 9000 })];
+    expect(totalRealisedGainInr(rows, "2026-01-31")).toBe(0);
+    expect(totalRealisedGainInr(rows, "2026-02-01")).toBe(1000);
+    expect(totalRealisedGainInr(rows, "2026-03-01")).toBe(1000 + 3000);
+    expect(totalRealisedGainInr(rows)).toBe(4000);
+    expect(() => realisedGains(rows, "2026-2-1")).toThrow(RangeError);
   });
 });
