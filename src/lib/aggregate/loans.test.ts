@@ -5,6 +5,7 @@ import {
   computeLoanSummaries,
   currentEmi,
   editPaymentProblem,
+  emiExceedsBalance,
   excessOverEmi,
   financialYear,
   loadZone,
@@ -296,5 +297,23 @@ describe("markPaidProblem", () => {
     expect(markPaidProblem(first, rows, 130000)).toMatch(/more than the EMI and everything left/);
     const left = rows.slice(1).reduce((t, i) => t + i.principalDue, 0);
     expect(markPaidProblem(first, rows, first.totalDue + left)).toBeNull();
+  });
+});
+
+describe("emiExceedsBalance", () => {
+  it("is true only when the account holds less than the EMI", () => {
+    expect(emiExceedsBalance(97_581, 50_000)).toBe(true);
+    expect(emiExceedsBalance(97_581, 97_581)).toBe(false);
+    expect(emiExceedsBalance(97_581, 200_000)).toBe(false);
+  });
+
+  it("takes the EMI in whole rupees, as the bank debits it", () => {
+    expect(emiExceedsBalance(97_581.47, 97_581)).toBe(false);
+    expect(emiExceedsBalance(97_581.47, 97_580)).toBe(true);
+    expect(emiExceedsBalance(97_581.6, 97_581)).toBe(true); // the bank rounds up to ₹97,582
+  });
+
+  it("doesn't flag an account with no balance recorded", () => {
+    expect(emiExceedsBalance(97_581, null)).toBe(false);
   });
 });

@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { demoLoansData } from "@/lib/demo/loansDemo";
-import { ALL, attentionView, coverView, greetingView, monthKeyAdd, pickIds, summarySentence, type LoansData } from "./views";
+import { ALL, attentionView, coverView, greetingView, monthKeyAdd, pickIds, shortAccountName, summarySentence, type LoansData } from "./views";
 import { loanWidgets } from "./widgetsView";
 
 // The design's "today", and its sample loans.
 const today = "2026-10-25";
 const data = demoLoansData(today);
-const empty: LoansData = { loans: [], installments: [], prepayments: [], accounts: [], cards: [], salary: null };
+const empty: LoansData = { loans: [], installments: [], prepayments: [], accounts: [], cards: [], salary: null, balances: [] };
 
 describe("the greeting", () => {
   const parts = summarySentence(data, today);
@@ -51,6 +51,53 @@ describe("the attention strip", () => {
   it("calls one past its due date overdue", () => {
     const items = attentionView(data, "2026-10-30");
     expect(items[0]).toMatchObject({ overdue: true, text: "was due Oct 28 (2 days ago) and isn't marked paid." });
+  });
+});
+
+describe("when the account can't cover an EMI", () => {
+  // The demo's HDFC Salary holds ₹18,000 (recorded on the design's "today", Oct 25). The Home loan's EMI (about ₹24,655) is
+  // due on the 12th, more than that; the Car loan's (about ₹14,599, due on the 5th) isn't.
+  const soon = "2026-11-05"; // the Home loan's EMI is 7 days off
+  const home = data.loans.find((l) => l.id === "demo-home")!;
+  const pending = data.installments.find((i) => i.loanId === "demo-home" && i.status === "Pending")!;
+  const low = (balance: number, date = today) => ({ ...data, balances: [{ accountId: "demo-hdfc", balance, date }] });
+
+  it("flags an EMI bigger than what its account holds, in the strip and in Coming up", () => {
+    expect(attentionView(data, "2026-11-10").find((i) => i.name === "Home loan")?.short).toBe("HDFC Salary");
+    const rows = loanWidgets(data, soon).comingUp.rows;
+    expect(rows.find((r) => r.loanId === "demo-home")?.short).toBe("HDFC Salary");
+    expect(rows.find((r) => r.loanId === "demo-car")?.short).toBeUndefined();
+  });
+
+  it("doesn't flag it when the account holds enough, or has no balance recorded", () => {
+    expect(loanWidgets(low(500_000), soon).comingUp.rows.every((r) => !r.short)).toBe(true);
+    expect(loanWidgets({ ...data, balances: [] }, soon).comingUp.rows.every((r) => !r.short)).toBe(true);
+  });
+
+  it("never flags an EMI charged to a card, whatever the account holds", () => {
+    // Even with an account set on the loan, a card on the loan or on the installment decides.
+    expect(shortAccountName(low(1), { ...home, emiPaidFromCardId: "demo-regalia" }, pending, "2026-11-10")).toBeUndefined();
+    expect(shortAccountName(low(1), home, { ...pending, paidFromCardId: "demo-regalia" }, "2026-11-10")).toBeUndefined();
+    expect(shortAccountName(low(1), home, pending, "2026-11-10")).toBe("HDFC Salary"); // the same EMI, from the account
+  });
+
+  it("only flags an EMI due within a week, as the strip does", () => {
+    const due = (date: string) => ({ ...pending, dueDate: date });
+    expect(shortAccountName(low(1), home, due("2026-11-11"), "2026-11-04")).toBe("HDFC Salary"); // 7 days
+    expect(shortAccountName(low(1), home, due("2026-11-12"), "2026-11-04")).toBeUndefined(); // 8 days
+  });
+
+  it("doesn't flag an EMI already past its due date, which the balance may already have paid", () => {
+    const late = (date: string) => ({ ...pending, dueDate: date });
+    expect(shortAccountName(low(1), home, late("2026-11-04"), "2026-11-04")).toBe("HDFC Salary"); // due today
+    expect(shortAccountName(low(1), home, late("2026-11-03"), "2026-11-04")).toBeUndefined(); // a day late
+    expect(attentionView(data, "2026-11-14").find((i) => i.name === "Home loan")).toMatchObject({ overdue: true, short: undefined });
+  });
+
+  it("ignores a balance recorded more than 35 days ago", () => {
+    const due = { ...pending, dueDate: "2026-11-30" };
+    expect(shortAccountName(low(1, "2026-10-26"), home, due, "2026-11-25")).toBe("HDFC Salary"); // 30 days old
+    expect(shortAccountName(low(1, "2026-10-20"), home, due, "2026-11-25")).toBeUndefined(); // 36 days old
   });
 });
 

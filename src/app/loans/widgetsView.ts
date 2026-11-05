@@ -4,7 +4,7 @@ import type { ColorKey } from "@/lib/format/colors";
 import { formatDate, formatMonthShort, formatShortDate } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import type { Loan, LoanCategory, LoanInstallment, LoanPrepayment, PrepaymentEffect } from "@/lib/sheets/types";
-import { ALL, allFacts, colorOf, inDays, monthKeyAdd, monthYear, paidFromName, percent, plural, tenureText, yearsMonths, type LoansData } from "./views";
+import { ALL, allFacts, colorOf, inDays, monthKeyAdd, monthYear, paidFromName, percent, plural, shortAccountName, tenureText, yearsMonths, type LoansData } from "./views";
 
 /**
  * The widgets under the Loans cover (docs/design/loans.md, LoansN1), in the page's order: Principal and interest
@@ -245,6 +245,8 @@ export interface ComingRow {
   soon: boolean;
   detail: string;
   amount: string;
+  /** The account that holds less than this EMI, when there is one. */
+  short?: string;
 }
 
 export interface ComingUpView {
@@ -269,6 +271,7 @@ function comingUp(data: LoansData, facts: LoanFacts[], today: string, shown = 5)
         soon: daysBetween(today, i.dueDate) <= 7,
         detail: `${formatInr(i.principalDue)} principal, ${formatInr(i.interestDue)} interest${from ? ` · ${from}` : ""}`,
         amount: `−${formatInr(i.totalDue)}`,
+        short: shortAccountName(data, f.loan, i, today),
       };
     }),
     foot: soon30.length ? `Next 30 days: ${formatInr(soon30.reduce((t, i) => t + i.totalDue, 0))} from ${plural(soon30.length, "EMI")}` : "Nothing due in the next 30 days",

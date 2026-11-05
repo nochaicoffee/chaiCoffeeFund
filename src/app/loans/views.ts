@@ -1,7 +1,7 @@
 import type { SentencePart } from "@/app/cards/summarySentence";
 import type { GreetingRowData } from "@/components/shell/GreetingParts";
 import { daysBetween } from "@/lib/aggregate/cardSpend";
-import { bookFacts, loanColor, loanFacts, timeUntil, usualEffect, type BookFacts, type LoanFacts } from "@/lib/aggregate/loans";
+import { bookFacts, emiExceedsBalance, loanColor, loanFacts, timeUntil, usualEffect, type BookFacts, type LoanFacts } from "@/lib/aggregate/loans";
 import { cardColorKey, type ColorKey } from "@/lib/format/colors";
 import { formatDate, formatDayDate, formatMonthShort, formatShortDate } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
@@ -33,6 +33,8 @@ export interface LoansData {
   cards: { id: string; name: string; color: ColorKey }[];
   /** A month's salary, from Income's active salary sources; null with none. For the EMI load only. */
   salary: number | null;
+  /** What each account holds today (its latest recorded balance, and the day it was recorded); an account with none recorded is left out. */
+  balances: { accountId: string; balance: number; date: string }[];
 }
 
 const factsOf = new WeakMap<LoansData, LoanFacts[]>();
@@ -73,6 +75,27 @@ export function paidFromName(data: Pick<LoansData, "accounts" | "cards">, place:
   if (place.accountId) return data.accounts.find((a) => a.id === place.accountId)?.name ?? "An account";
   return undefined;
 }
+/** An EMI is checked against the account's balance only this close to its due date: further out, salary lands first. */
+export const SHORT_WITHIN_DAYS = 7;
+/** A balance recorded longer ago than this says nothing about today (a payday may have come and gone). */
+export const BALANCE_FRESH_DAYS = 35;
+
+/**
+ * The name of the account an unpaid EMI leaves from when that account holds less than the EMI, else undefined. Nothing
+ * is flagged for an EMI paid from a card, one more than a week away, or one already past its due date (it may well have
+ * been debited, so the balance no longer says whether it could be), nor when the account has no balance recorded in
+ * the last 35 days: there's nothing sound to compare.
+ */
+export function shortAccountName(data: LoansData, loan: Loan, installment: LoanInstallment, today: string): string | undefined {
+  if (installment.status !== "Pending" || installment.paidFromCardId || (!installment.paidFromAccountId && loan.emiPaidFromCardId)) return undefined;
+  const accountId = installment.paidFromAccountId ?? loan.emiPaidFromAccountId;
+  const away = daysBetween(today, installment.dueDate);
+  if (!accountId || away < 0 || away > SHORT_WITHIN_DAYS) return undefined;
+  const snapshot = data.balances.find((b) => b.accountId === accountId);
+  const held = snapshot && daysBetween(snapshot.date, today) <= BALANCE_FRESH_DAYS ? snapshot.balance : null;
+  return emiExceedsBalance(installment.totalDue, held) ? paidFromName(data, { accountId }) : undefined;
+}
+
 const emiPlace = (loan: Loan) => ({ accountId: loan.emiPaidFromAccountId, cardId: loan.emiPaidFromCardId });
 
 // ---------- The greeting ----------
@@ -165,6 +188,8 @@ export interface AttentionItem {
   amount: string;
   text: string;
   overdue: boolean;
+  /** The account that holds less than this EMI, when there is one. */
+  short?: string;
 }
 
 /**
@@ -186,6 +211,7 @@ export function attentionView(data: LoansData, today: string): AttentionItem[] {
       name: loan.name,
       amount: formatInr(i.totalDue),
       overdue,
+      short: shortAccountName(data, loan, i, today),
       text: overdue
         ? `was due ${formatShortDate(i.dueDate)} (${inDays(today, i.dueDate)}) and isn't marked paid${more ? `, with ${plural(more, "more EMI")} overdue after it` : ""}.`
         : `is due ${formatShortDate(i.dueDate)} (${inDays(today, i.dueDate)})${from ? ` and will be ${loan.emiPaidFromCardId ? "charged to" : "paid from"} ${from}` : ""}.`,

@@ -152,6 +152,11 @@ describe("comingUp (decision 14)", () => {
     expect(comingUp(rich, "sbi", today).find((i) => i.kind === "EMI")?.short).toBe(false);
   });
 
+  it("doesn't warn when the account has no balance recorded", () => {
+    const unknown = { ...d, snapshots: [] };
+    expect(comingUp(unknown, "sbi", today).find((i) => i.kind === "EMI")?.short).toBe(false);
+  });
+
   it("takes a billed statement as billed, then the next bill as about the last one", () => {
     const bills = items.filter((i) => i.kind === "Card bill");
     expect(bills[0]).toMatchObject({ date: "2026-10-26", amount: 30_000, about: false, accountId: "sbi" });

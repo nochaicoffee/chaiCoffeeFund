@@ -1,5 +1,6 @@
 import { balanceOn, dayBefore, totalOn } from "./accounts";
 import { dueDateFor, nextStatementDate } from "./cardSchedule";
+import { emiExceedsBalance } from "./loans";
 import { monthRange, type MonthKey } from "./cardSpend";
 import { nextOccurrence } from "./recurring";
 import { addDays } from "./subscriptionRenewals";
@@ -217,7 +218,7 @@ export interface ComingItem {
   label: string;
   /** A card bill worked out from the card's last bill, not yet billed. */
   about: boolean;
-  /** An EMI bigger than what the account holds today. */
+  /** An EMI bigger than what the account holds today (an account with no balance recorded isn't flagged). */
   short: boolean;
 }
 
@@ -230,7 +231,7 @@ export function comingUp(data: AccountsData, accountId: string | null, today: st
     if (accountId !== null && item.accountId !== accountId) return;
     items.push({ short: false, ...item });
   };
-  const held = (id: string) => balanceOn(data.snapshots, id, today)?.balance ?? 0;
+  const held = (id: string) => balanceOn(data.snapshots, id, today)?.balance ?? null;
   const activeAccounts = new Set(data.accounts.filter((a) => a.status === "Active").map((a) => a.id));
 
   // Salary: what's recorded as pending, then each monthly source's next usual day, in the account its last entry landed in.
@@ -252,7 +253,7 @@ export function comingUp(data: AccountsData, accountId: string | null, today: st
     if (loan.status !== "Active") continue;
     for (const i of data.installments) {
       if (i.loanId !== loan.id || i.status !== "Pending" || i.paidFromCardId) continue;
-      add({ kind: "EMI", date: i.dueDate, amount: i.totalDue, accountId: i.paidFromAccountId ?? loan.accountId, label: loan.name, about: false, short: i.totalDue > held(i.paidFromAccountId ?? loan.accountId) });
+      add({ kind: "EMI", date: i.dueDate, amount: i.totalDue, accountId: i.paidFromAccountId ?? loan.accountId, label: loan.name, about: false, short: emiExceedsBalance(i.totalDue, held(i.paidFromAccountId ?? loan.accountId)) });
     }
   }
 
