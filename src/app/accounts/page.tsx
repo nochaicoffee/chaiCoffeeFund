@@ -4,6 +4,7 @@ import { SyncAccountStatementsButton } from "@/components/SyncAccountStatementsB
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { AccountsDashboard } from "@/components/accounts/AccountsDashboard";
 import { AttentionCard } from "@/components/accounts/AttentionCard";
+import { UnpricedNotice } from "@/components/accounts/UnpricedNotice";
 import { ReviewProvider } from "@/components/accounts/ReviewDialog";
 import { GreetingSentence } from "@/components/accounts/GreetingSentence";
 import { AccountFormsProvider, HeaderFormButtons } from "@/components/accounts/forms/AccountForms";
@@ -55,6 +56,7 @@ export default async function AccountsPage({ searchParams }: PageProps<"/account
         <GreetingSentence parts={summarySentence(data, today, period)} cards={greetingView(data, today, period)} />
         {demo && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
         <SkippedRowsNotice tabs={skipped} />
+        {data.unpriced && <UnpricedNotice unpriced={data.unpriced} />}
         {!demo && <AccountSyncReportPanel />}
       </PageHeader>
       <AttentionCard items={view.attention} />

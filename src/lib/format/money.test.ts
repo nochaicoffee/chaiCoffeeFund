@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatInr, formatInrCompact, formatInrExact, parseAmountText } from "./money";
+import { formatInr, formatInrCompact, formatInrExact, formatUsd, parseAmountText } from "./money";
 
 describe("formatInr", () => {
   it("uses Indian digit grouping", () => {
@@ -104,5 +104,19 @@ describe("invalid amounts", () => {
     expect(formatInr(Number.NaN)).toBe("\u2014");
     expect(formatInrCompact(Number.NaN)).toBe("\u2014");
     expect(formatInr(Number.POSITIVE_INFINITY)).toBe("\u2014");
+  });
+});
+
+describe("formatUsd", () => {
+  it("shows dollars with cents and US grouping", () => {
+    expect(formatUsd(3000)).toBe("$3,000.00");
+    expect(formatUsd(474.4)).toBe("$474.40");
+  });
+  it("shows a negative with the app's minus, and no minus for nothing", () => {
+    expect(formatUsd(-157)).toBe("−$157.00");
+    expect(formatUsd(-0.001)).toBe("$0.00");
+  });
+  it("shows a dash for a value that isn't a number", () => {
+    expect(formatUsd(Number.NaN)).toBe("—");
   });
 });

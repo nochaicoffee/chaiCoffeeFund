@@ -24,6 +24,15 @@ export function formatInr(value: number): string {
   return value < 0 && Math.round(Math.abs(value)) !== 0 ? MINUS + formatted : formatted;
 }
 
+const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+/** A dollar amount as a statement prints it: 3000 → "$3,000.00", -157 → "−$157.00". */
+export function formatUsd(value: number): string {
+  if (!Number.isFinite(value)) return NO_VALUE;
+  const formatted = usd.format(Math.abs(value));
+  return value < 0 && Math.round(Math.abs(value) * 100) !== 0 ? MINUS + formatted : formatted;
+}
+
 const inrPaise = new Intl.NumberFormat("en-IN", {
   style: "currency",
   currency: "INR",

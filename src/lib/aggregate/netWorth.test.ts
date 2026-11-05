@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { computeNetWorth } from "./netWorth";
+import { inRupees } from "./accountCurrency";
 import type {
   Account,
   BalanceSnapshot,
@@ -67,5 +68,22 @@ describe("computeNetWorth", () => {
       result.cardOutstanding -
       result.loanOutstanding;
     expect(result.netWorth).toBeCloseTo(expectedNetWorth, 5);
+  });
+
+  it("counts a dollar account once, in rupees at today's rate, and not at all without a rate (ADR 0012)", () => {
+    const accounts: Account[] = [
+      { id: "hdfc", name: "H", bank: "HDFC Bank", accountType: "Savings", purpose: "Spending", startDate: "2020-01-01", status: "Active" },
+      { id: "vested", name: "V", bank: "Vested", accountType: "Brokerage", purpose: "Investment", startDate: "2023-01-01", status: "Active", currency: "USD" },
+    ];
+    const snapshots: BalanceSnapshot[] = [
+      { id: "1", accountId: "hdfc", date: "2026-10-01", balance: 100000 },
+      { id: "2", accountId: "vested", date: "2026-10-19", balance: 3000 },
+    ];
+    const net = (rate: number | null) => {
+      const r = inRupees(accounts, snapshots, rate);
+      return computeNetWorth({ accounts: r.accounts, balanceSnapshots: r.snapshots, cards: [], statements: [], loans: [], loanInstallments: [], investmentTransactions: [], fixedDeposits: [], asOfDate: "2026-11-05" });
+    };
+    expect(net(90).bankBalances).toBe(100000 + 3000 * 90);
+    expect(net(null).bankBalances).toBe(100000);
   });
 });

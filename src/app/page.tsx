@@ -3,7 +3,8 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { StatTile } from "@/components/StatTile";
 import { todayIso } from "@/lib/format/date";
-import { formatInr } from "@/lib/format/money";
+import { rupeeBalances, unpricedForPage } from "@/lib/prices/rupeeBalances";
+import { formatInr, formatUsd } from "@/lib/format/money";
 import { balanceTrend, latestBalances } from "@/lib/aggregate/accounts";
 import { computeCardSummaries } from "@/lib/aggregate/cards";
 import { cardName } from "@/lib/format/labels";
@@ -33,8 +34,8 @@ import {
 
 export default async function OverviewPage() {
   const [
-    accounts,
-    balanceSnapshots,
+    allAccounts,
+    allBalanceSnapshots,
     cards,
     statements,
     subscriptions,
@@ -57,6 +58,11 @@ export default async function OverviewPage() {
     getCachedIncomeEntries(),
     getCachedIncomeSources(),
   ]);
+
+  // Dollar accounts are counted in rupees at today's rate, once (ADR 0012); with no rate they are left out and flagged below.
+  const rupee = await rupeeBalances(allAccounts, allBalanceSnapshots);
+  const { accounts, snapshots: balanceSnapshots } = rupee;
+  const unpriced = unpricedForPage(rupee);
 
   const today = todayIso();
   const yearMonth = today.slice(0, 7);
@@ -83,6 +89,9 @@ export default async function OverviewPage() {
   const pendingIncome = pendingPayments(incomeSources, incomeEntries, today);
 
   const attention: { label: string; detail: string }[] = [];
+  for (const account of unpriced?.accounts ?? []) {
+    attention.push({ label: `${account.name} isn't counted`, detail: `${account.dollars === null ? "Its dollars" : formatUsd(account.dollars)} can't be turned into rupees: ${unpriced?.reason}. Net worth leaves it out until the rate is back.` });
+  }
   for (const summary of cardSummaries) {
     if (summary.card.status === "Active" && summary.outstandingBalance > 0) {
       attention.push({

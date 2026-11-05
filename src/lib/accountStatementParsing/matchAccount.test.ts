@@ -57,4 +57,10 @@ describe("matchAccount", () => {
   it("still matches by last 4 in such a PDF: only filling one in is held back", () => {
     expect(matchAccount(all, "HDFC", "7788", { fillLast4: false })).toEqual({ kind: "match", account: hdfcSecond });
   });
+
+  it("never matches a Brokerage account, even one named for the bank", () => {
+    const cash = account({ id: "cash", name: "HDFC Securities cash", bank: "HDFC Securities", accountType: "Brokerage" });
+    expect(matchAccount([cash], "HDFC", undefined)).toEqual({ kind: "none", reason: "no account is with HDFC" });
+    expect(matchAccount([cash, hdfcSalary], "HDFC", undefined)).toEqual({ kind: "match", account: hdfcSalary });
+  });
 });

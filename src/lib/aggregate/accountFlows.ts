@@ -23,6 +23,13 @@ import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, Income
  *   accounts, which aren't recorded anywhere).
  */
 
+/** A dollar account that isn't counted, as the page tells it: its name and what it holds in dollars. */
+export interface UnpricedAccount {
+  id: string;
+  name: string;
+  dollars: number | null;
+}
+
 export interface AccountsData {
   accounts: Account[];
   snapshots: BalanceSnapshot[];
@@ -37,6 +44,8 @@ export interface AccountsData {
   incomeEntries: IncomeEntry[];
   /** Balances a bank statement disagreed with (BalanceReviews). Left out where there are none to show. */
   reviews?: BalanceReview[];
+  /** Dollar accounts left out of every total because today's rate couldn't be had (ADR 0012), with why. Absent when none. */
+  unpriced?: { accounts: UnpricedAccount[]; reason: string };
 }
 
 export const OUT_KINDS = ["Card bills", "Subscriptions", "EMIs", "Investments"] as const;
