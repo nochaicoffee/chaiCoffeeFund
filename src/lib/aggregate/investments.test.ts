@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeHoldings, findOversells, totalCostBasisInr, valueHolding } from "./investments";
+import { computeHoldings, findOversells, holdingsAt, totalCostBasisInr, valueHolding } from "./investments";
 import type { InvestmentTransaction } from "../sheets/types";
 
 const tx = (overrides: Partial<InvestmentTransaction> = {}): InvestmentTransaction => ({
@@ -158,5 +158,65 @@ describe("totalCostBasisInr", () => {
       tx({ id: "t2", market: "US", symbol: "BBB", quantity: 5, total: 500, currency: "USD", fxRateToInr: 83 }),
     ];
     expect(totalCostBasisInr(transactions)).toBeCloseTo(1000 + 500 * 83, 2);
+  });
+});
+
+describe("holdingsAt", () => {
+  // The shape of a real NetApp history: an ESPP lot, an RSU vest with its sell-to-cover the same day, then both sold.
+  const us = (overrides: Partial<InvestmentTransaction>): InvestmentTransaction => ({
+    id: "t", tradeDate: "2025-01-01", symbol: "NTAP", market: "US", currency: "USD", tradeType: "Buy", source: "Market",
+    quantity: 1, price: 100, total: 100, assetType: "Equity", broker: "E*TRADE", fxRateToInr: 85, ...overrides,
+  });
+  const log = [
+    us({ id: "espp", tradeDate: "2024-11-29", source: "ESPP", quantity: 13, price: 101.116, total: 1314.508, fxRateToInr: 84.57 }),
+    us({ id: "vest", tradeDate: "2025-02-15", source: "RSU", quantity: 56, price: 118.5, total: 6636, fxRateToInr: 86.67 }),
+    us({ id: "cover", tradeDate: "2025-02-15", source: "RSU", tradeType: "Sell", quantity: 17, price: 118.5, total: 2014.5, fxRateToInr: 86.67 }),
+    us({ id: "sell-rsu", tradeDate: "2026-04-06", source: "RSU", tradeType: "Sell", quantity: 39, price: 103.1651, total: 4023.35, fxRateToInr: 93.1 }),
+    us({ id: "sell-espp", tradeDate: "2026-04-06", source: "ESPP", tradeType: "Sell", quantity: 13, price: 103.02, total: 1339.23, fxRateToInr: 93.1 }),
+  ];
+  const ntap = (day: string) => holdingsAt(log, day).find((h) => h.symbol === "NTAP");
+
+  it("holds nothing before the first trade", () => {
+    expect(holdingsAt(log, "2024-11-28")).toEqual([]);
+  });
+
+  it("counts a trade made on the day itself", () => {
+    expect(ntap("2024-11-29")?.quantity).toBe(13);
+  });
+
+  it("leaves a later trade out: the day before the vest is the ESPP lot alone", () => {
+    expect(ntap("2025-02-14")?.quantity).toBe(13);
+  });
+
+  it("counts a vest and its same-day sell-to-cover together, with the cost left after the sale", () => {
+    const held = ntap("2025-02-15");
+    expect(held?.quantity).toBe(52);
+    // 17 of the 69 shares leave, taking 17/69 of the cost with them; what is kept is costed at what it cost.
+    const bought = 1314.508 * 84.57 + 6636 * 86.67;
+    expect(held?.totalCostInr).toBeCloseTo(bought * (52 / 69), 6);
+    expect(held?.avgCostInr).toBeCloseTo((bought * (52 / 69)) / 52, 6);
+  });
+
+  it("is sold out, and so holds nothing, once the last shares go", () => {
+    expect(ntap("2026-04-05")?.quantity).toBe(52);
+    expect(ntap("2026-04-06")).toBeUndefined();
+  });
+
+  it("is today's holdings when asked for a day after the last trade", () => {
+    expect(holdingsAt(log, "2030-01-01")).toEqual(computeHoldings(log));
+  });
+
+  it("does not depend on the order the trades are listed in", () => {
+    expect(holdingsAt([...log].reverse(), "2025-02-15")).toEqual(holdingsAt(log, "2025-02-15"));
+  });
+
+  it("keeps a past day's cost at the rates paid, whatever a later trade did", () => {
+    const later = [...log, us({ id: "more", tradeDate: "2026-09-01", quantity: 100, price: 200, total: 20000, fxRateToInr: 120 })];
+    expect(holdingsAt(later, "2025-02-15")).toEqual(holdingsAt(log, "2025-02-15"));
+  });
+
+  it("refuses a day that isn't an ISO day, instead of comparing it as text", () => {
+    expect(() => holdingsAt(log, "2026-4-5")).toThrow(RangeError);
+    expect(() => holdingsAt(log, "")).toThrow(RangeError);
   });
 });
