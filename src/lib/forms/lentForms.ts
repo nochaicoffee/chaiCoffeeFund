@@ -1,4 +1,5 @@
 import { principalOutstanding, summariseLentLoan } from "../aggregate/lentOut";
+import { firstPayoutDate } from "../aggregate/lentPromises";
 import { formatInr } from "../format/money";
 import { CARD_COLORS, LENT_INTEREST_MODES, type CardColor, type LentInterestMode, type LentLoan, type LentRepayment, type LentRepaymentKind, type RecurrenceCycle } from "../sheets/types";
 import { FieldReader, type FieldErrors, type FormFields, type FormResult } from "./fields";
@@ -125,4 +126,39 @@ export function readRepaidForm(fields: FormFields, loan: Pick<LentLoan, "startDa
   const latest = repayments.map((r) => r.date).sort().at(-1);
   if (closedDate && latest && closedDate < latest) f.fail("closedDate", "A repayment is dated after this day. Use that day or later");
   return f.result({ closedDate: closedDate! });
+}
+
+/** What the Add form asks when it also sets up the payouts as Income: where they land and the text on the bank statement. Both optional. */
+export interface PayoutSourceExtras {
+  accountId?: string;
+  statementMatch?: string;
+}
+
+/**
+ * The "Set up an income source for this loan's payouts" part of Add a loan (ADR 0014). Read only when it is ticked. The statement text is how Income
+ * matches a bank credit to the source, so it needs at least 3 letters (as the Income form does) or it would match other deposits.
+ */
+export function readPayoutSourceExtras(fields: FormFields, known: { accountIds: string[] }): FormResult<PayoutSourceExtras> {
+  const f = new FieldReader(fields);
+  const accountId = f.raw("accountId").trim();
+  if (accountId && !known.accountIds.includes(accountId)) f.fail("accountId", "Choose one of your accounts");
+  const statementMatch = f.text("statementMatch");
+  if (statementMatch && statementMatch.replace(/\s+/g, "").length < 3) f.fail("statementMatch", "Use at least 3 letters, like the name on the credit, so it doesn't match other deposits");
+  return f.result({ ...(accountId && { accountId }), ...(statementMatch && { statementMatch }) });
+}
+
+/** The income source a Paid-out loan's payouts arrive through: what it pays and how often, the first payout as its schedule, category Investment. */
+export function payoutIncomeSource(loan: LentLoanInput, extras: PayoutSourceExtras) {
+  return {
+    name: `${loan.borrowerName} interest`,
+    alias: loan.borrowerName,
+    category: "Investment" as const,
+    frequency: loan.payoutFrequency as RecurrenceCycle,
+    expectedAmount: loan.payoutAmount as number,
+    status: "Active" as const,
+    scheduleDate: firstPayoutDate(loan) as string,
+    ...(loan.color && { color: loan.color }),
+    ...(extras.accountId && { accountId: extras.accountId }),
+    ...(extras.statementMatch && { statementMatch: extras.statementMatch }),
+  };
 }

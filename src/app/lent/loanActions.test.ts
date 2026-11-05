@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { LentLoan, LentRepayment } from "@/lib/sheets/types";
+import type { Account, IncomeSource, LentLoan, LentRepayment } from "@/lib/sheets/types";
 
-const fake = vi.hoisted(() => ({ loans: [] as LentLoan[], repayments: [] as LentRepayment[], tags: [] as string[], fail: false, failRepaymentDelete: false, n: 0 }));
+const fake = vi.hoisted(() => ({ loans: [] as LentLoan[], repayments: [] as LentRepayment[], sources: [] as IncomeSource[], accounts: [] as Account[], tags: [] as string[], fail: false, failRepaymentDelete: false, failLoanCreate: false, failSourceRemove: false, failSourceUpdate: false, n: 0 }));
 vi.mock("next/cache", () => ({ updateTag: (tag: string) => fake.tags.push(tag), unstable_cache: <T,>(fn: T) => fn }));
 const guard = () => { if (fake.fail) throw new Error("Sheets said no"); };
 vi.mock("@/lib/sheets/lentLoans", async (original) => ({
   ...(await original<object>()),
   lentLoansRepository: {
     get: async (id: string) => fake.loans.find((l) => l.id === id) ?? null,
-    create: async (input: Omit<LentLoan, "id">) => { guard(); const row = { ...input, id: `ll${++fake.n}` }; fake.loans.push(row); return row; },
+    create: async (input: Omit<LentLoan, "id">) => { guard(); if (fake.failLoanCreate) throw new Error("Sheets said no"); const row = { ...input, id: `ll${++fake.n}` }; fake.loans.push(row); return row; },
     update: async (id: string, patch: Record<string, unknown>) => {
       guard();
       const row = fake.loans.find((l) => l.id === id)!;
@@ -16,6 +16,16 @@ vi.mock("@/lib/sheets/lentLoans", async (original) => ({
       return row;
     },
     remove: async (id: string) => { guard(); if (!fake.loans.some((l) => l.id === id)) throw new (await import("@/lib/sheets/repository")).NotFoundError(`LentLoans ${id}`); fake.loans = fake.loans.filter((l) => l.id !== id); },
+  },
+}));
+vi.mock("@/lib/sheets/accounts", () => ({ accountsRepository: { list: async () => fake.accounts } }));
+vi.mock("@/lib/sheets/incomeSources", async (original) => ({
+  ...(await original<object>()),
+  incomeSourcesRepository: {
+    get: async (id: string) => fake.sources.find((x) => x.id === id) ?? null,
+    create: async (input: Omit<IncomeSource, "id">) => { guard(); const row = { ...input, id: `src${++fake.n}` }; fake.sources.push(row); return row; },
+    update: async (id: string, patch: Record<string, unknown>) => { if (fake.failSourceUpdate) throw new Error("Sheets said no"); Object.assign(fake.sources.find((x) => x.id === id)!, patch); },
+    remove: async (id: string) => { if (fake.failSourceRemove) throw new Error("Sheets said no"); fake.sources = fake.sources.filter((x) => x.id !== id); },
   },
 }));
 vi.mock("@/lib/sheets/lentRepayments", async (original) => ({
@@ -42,7 +52,7 @@ const loanA: LentLoan = { id: "a", borrowerName: "Friend", principalAmount: 6500
 const loanB: LentLoan = { id: "b", borrowerName: "B", principalAmount: 300000, startDate: "2025-11-01", interestMode: "Paid-out", payoutFrequency: "Monthly", payoutAmount: 6000, status: "Active", incomeSourceId: "src-b" };
 const back = (id: string, lentLoanId: string, date: string, amount: number, kind: LentRepayment["kind"]): LentRepayment => ({ id, lentLoanId, date, amount, kind });
 
-beforeEach(() => { fake.loans = []; fake.repayments = []; fake.tags = []; fake.fail = false; fake.failRepaymentDelete = false; fake.n = 0; });
+beforeEach(() => { fake.loans = []; fake.repayments = []; fake.sources = []; fake.accounts = [{ id: "hdfc", name: "HDFC" } as Account]; fake.tags = []; fake.fail = false; fake.failRepaymentDelete = false; fake.failLoanCreate = false; fake.failSourceRemove = false; fake.failSourceUpdate = false; fake.n = 0; });
 
 describe("saveLentLoan", () => {
   it("adds an active loan and refreshes the loans", async () => {
@@ -166,3 +176,91 @@ describe("deleteLentRepayment", () => {
     expect(fake.repayments.map((r) => r.id)).toEqual(["r2"]);
   });
 });
+
+describe("adding a Paid-out loan with its income source (B2)", () => {
+  const linked = { ...paidOut, createIncomeSource: "1", statementMatch: "RAVI KUMAR", accountId: "hdfc" };
+
+  it("creates the source first, then the loan holding its id, and refreshes both", async () => {
+    expect(await saveLentLoan(IDLE, form(linked))).toMatchObject({ status: "saved" });
+    expect(fake.sources).toHaveLength(1);
+    expect(fake.sources[0]).toMatchObject({ name: "B interest", category: "Investment", frequency: "Monthly", expectedAmount: 6000, status: "Active", scheduleDate: "2025-12-01", statementMatch: "RAVI KUMAR", accountId: "hdfc" });
+    expect(fake.loans[0].incomeSourceId).toBe(fake.sources[0].id);
+    expect(fake.tags.sort()).toEqual(["incomeSources", "lentLoans"]);
+  });
+  it("starts the source one period after the day it was lent, quarterly included", async () => {
+    await saveLentLoan(IDLE, form({ ...linked, payoutFrequency: "Quarterly", payoutAmount: "18000", startDate: "2026-01-01" }));
+    expect(fake.sources[0]).toMatchObject({ frequency: "Quarterly", expectedAmount: 18000, scheduleDate: "2026-04-01" });
+  });
+  it("saves the loan alone, not linked, when the box isn't ticked", async () => {
+    expect(await saveLentLoan(IDLE, form(paidOut))).toMatchObject({ status: "saved" });
+    expect(fake.sources).toEqual([]);
+    expect(fake.loans[0].incomeSourceId).toBeUndefined();
+  });
+  it("ignores the box for an Accruing loan", async () => {
+    await saveLentLoan(IDLE, form({ ...accruing, createIncomeSource: "1" }));
+    expect(fake.sources).toEqual([]);
+    expect(fake.loans[0].incomeSourceId).toBeUndefined();
+  });
+  it("is both or neither: a loan that can't be written takes its source back out", async () => {
+    fake.failLoanCreate = true;
+    expect((await saveLentLoan(IDLE, form(linked))).status).toBe("failed");
+    expect(fake.sources).toEqual([]);
+    expect(fake.loans).toEqual([]);
+  });
+  it("says which source is left behind when it can't be taken back out", async () => {
+    fake.failLoanCreate = true;
+    fake.failSourceRemove = true;
+    expect(await saveLentLoan(IDLE, form(linked))).toMatchObject({ status: "invalid", errors: { form: expect.stringContaining("B interest") } });
+    expect(fake.sources).toHaveLength(1);
+  });
+  it("writes nothing when the statement text is too short or the account is unknown", async () => {
+    expect(await saveLentLoan(IDLE, form({ ...linked, statementMatch: "RK" }))).toMatchObject({ status: "invalid", errors: { statementMatch: expect.any(String) } });
+    expect(await saveLentLoan(IDLE, form({ ...linked, accountId: "nope" }))).toMatchObject({ status: "invalid", errors: { accountId: expect.any(String) } });
+    expect(fake.sources).toEqual([]);
+    expect(fake.loans).toEqual([]);
+  });
+});
+
+describe("editing a loan that has an income source (B2)", () => {
+  const src = (): IncomeSource => ({ id: "src-b", name: "B interest", alias: "B", category: "Investment", frequency: "Monthly", expectedAmount: 6000, status: "Active", scheduleDate: "2025-12-01" });
+  beforeEach(() => { fake.loans = [{ ...loanB }]; fake.sources = [src()]; });
+
+  it("gives the source the new payout amount", async () => {
+    expect(await saveLentLoan(IDLE, form({ ...paidOut, id: "b", payoutAmount: "7000" }))).toMatchObject({ status: "saved" });
+    expect(fake.loans[0].payoutAmount).toBe(7000);
+    expect(fake.sources[0].expectedAmount).toBe(7000);
+    expect(fake.loans[0].incomeSourceId).toBe("src-b");
+  });
+  it("leaves the source alone when nothing about the payout changed", async () => {
+    await saveLentLoan(IDLE, form({ ...paidOut, id: "b", borrowerName: "B renamed" }));
+    expect(fake.sources[0]).toEqual(src());
+    expect(fake.tags).toEqual(["lentLoans"]);
+  });
+  it("won't change how often it pays, since the schedule lives in Income, and writes nothing", async () => {
+    expect(await saveLentLoan(IDLE, form({ ...paidOut, id: "b", payoutFrequency: "Quarterly" }))).toMatchObject({ errors: { payoutFrequency: expect.stringContaining("Income") } });
+    expect(fake.loans[0].payoutFrequency).toBe("Monthly");
+  });
+  it("pauses the source when the loan becomes Accruing, and unlinks it", async () => {
+    expect(await saveLentLoan(IDLE, form({ ...accruing, id: "b" }))).toMatchObject({ status: "saved" });
+    expect(fake.sources[0].status).toBe("Inactive");
+    expect(fake.loans[0].incomeSourceId).toBeUndefined();
+  });
+  it("says so when the loan saved but the source couldn't be updated", async () => {
+    fake.failSourceUpdate = true;
+    expect(await saveLentLoan(IDLE, form({ ...paidOut, id: "b", payoutAmount: "7000" }))).toMatchObject({ status: "invalid", errors: { form: expect.stringContaining("brought in line with the loan") } });
+    expect(fake.loans[0].payoutAmount).toBe(7000);
+  });
+  it("moves the source's schedule to the new first payout when the lent day changes, and leaves it when it doesn't", async () => {
+    expect(await saveLentLoan(IDLE, form({ ...paidOut, id: "b", startDate: "2025-11-05" }))).toMatchObject({ status: "saved" });
+    expect(fake.sources[0].scheduleDate).toBe("2025-12-05");
+    expect(fake.sources[0].expectedAmount).toBe(6000);
+    fake.sources[0].scheduleDate = "2025-12-03";
+    await saveLentLoan(IDLE, form({ ...paidOut, id: "b", startDate: "2025-11-05", payoutAmount: "7000" }));
+    expect(fake.sources[0]).toMatchObject({ scheduleDate: "2025-12-03", expectedAmount: 7000 });
+  });
+  it("edits a loan whose source has been deleted without touching Income", async () => {
+    fake.sources = [];
+    expect(await saveLentLoan(IDLE, form({ ...paidOut, id: "b", payoutAmount: "7000" }))).toMatchObject({ status: "saved" });
+  });
+});
+

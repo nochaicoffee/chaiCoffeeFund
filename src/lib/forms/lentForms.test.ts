@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readLentLoanForm, readRepaidForm, readRepaymentForm } from "./lentForms";
+import { payoutIncomeSource, readLentLoanForm, readPayoutSourceExtras, readRepaidForm, readRepaymentForm } from "./lentForms";
 import type { LentLoan, LentRepayment } from "../sheets/types";
 
 const TODAY = "2026-11-06";
@@ -95,3 +95,19 @@ describe("readRepaidForm", () => {
     expect(readRepaidForm({ closedDate: "2026-03-01" }, loan, [back("r", "2026-03-01", 1000, "Interest")], TODAY)).toEqual({ ok: true, input: { closedDate: "2026-03-01" } });
   });
 });
+
+describe("the payout loan's income source", () => {
+  it("reads where it lands and the statement text, both optional, and refuses a text too short to match safely", () => {
+    expect(readPayoutSourceExtras({}, { accountIds: ["hdfc"] })).toEqual({ ok: true, input: {} });
+    expect(readPayoutSourceExtras({ accountId: "hdfc", statementMatch: " RAVI KUMAR " }, { accountIds: ["hdfc"] })).toEqual({ ok: true, input: { accountId: "hdfc", statementMatch: "RAVI KUMAR" } });
+    expect(readPayoutSourceExtras({ statementMatch: "RK" }, { accountIds: [] })).toMatchObject({ ok: false, errors: { statementMatch: expect.any(String) } });
+    expect(readPayoutSourceExtras({ accountId: "x" }, { accountIds: ["hdfc"] })).toMatchObject({ ok: false, errors: { accountId: expect.any(String) } });
+  });
+  it("makes an Investment source of what the loan pays, scheduled from its first payout", () => {
+    const read = readLentLoanForm(paidOut, {}, TODAY);
+    expect(read.ok && payoutIncomeSource(read.input, { statementMatch: "RAVI" })).toEqual({
+      name: "Friend interest", alias: "Friend", category: "Investment", frequency: "Monthly", expectedAmount: 6000, status: "Active", scheduleDate: "2025-12-01", statementMatch: "RAVI",
+    });
+  });
+});
+
