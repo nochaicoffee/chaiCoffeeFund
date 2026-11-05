@@ -22,6 +22,18 @@ function invalidate(tag: string) {
 }
 
 /**
+ * Rules that need the other rows (a duplicate, a missing parent, a parent that still has children), which neither the schema nor the
+ * repository's whole-row check can see. A hook returns a message to refuse the write with a 409, or null to let it through.
+ */
+export interface WriteGuards<T extends { id: string }> {
+  beforeCreate?: (input: Omit<T, "id">) => Promise<string | null>;
+  beforeUpdate?: (id: string, patch: Partial<Omit<T, "id">>) => Promise<string | null>;
+  beforeDelete?: (id: string) => Promise<string | null>;
+}
+
+const refused = (message: string) => NextResponse.json({ error: message }, { status: 409 });
+
+/**
  * Wraps a route handler body so a NotFoundError becomes a clean 404, an
  * InvalidRowError (a row that would break its entity's check) a 400, and any
  * other thrown error a 500 with its message — instead of every
@@ -60,6 +72,7 @@ export function createListRoute<T extends { id: string }>(
   tag: string,
   createSchema: z.ZodType<Omit<T, "id">>,
   serialize: (record: T) => unknown = (record) => record,
+  guards: Pick<WriteGuards<T>, "beforeCreate"> = {},
 ) {
   async function GET() {
     return handleRouteErrors(async () => NextResponse.json((await repository.list()).map(serialize)));
@@ -72,6 +85,8 @@ export function createListRoute<T extends { id: string }>(
       if (!parsed.success) {
         return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
       }
+      const refusal = await guards.beforeCreate?.(parsed.data);
+      if (refusal) return refused(refusal);
       const created = await repository.create(parsed.data);
       invalidate(tag);
       return NextResponse.json(serialize(created), { status: 201 });
@@ -87,6 +102,7 @@ export function createItemRoute<T extends { id: string }>(
   tag: string,
   updateSchema: z.ZodType<Partial<Omit<T, "id">>>,
   serialize: (record: T) => unknown = (record) => record,
+  guards: Pick<WriteGuards<T>, "beforeUpdate" | "beforeDelete"> = {},
 ) {
   async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
     return handleRouteErrors(async () => {
@@ -96,6 +112,8 @@ export function createItemRoute<T extends { id: string }>(
       if (!parsed.success) {
         return NextResponse.json({ error: parsed.error.flatten() }, { status: 400 });
       }
+      const refusal = await guards.beforeUpdate?.(id, parsed.data);
+      if (refusal) return refused(refusal);
       const updated = await repository.update(id, parsed.data);
       invalidate(tag);
       return NextResponse.json(serialize(updated));
@@ -105,6 +123,8 @@ export function createItemRoute<T extends { id: string }>(
   async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
     return handleRouteErrors(async () => {
       const { id } = await params;
+      const refusal = await guards.beforeDelete?.(id);
+      if (refusal) return refused(refusal);
       await repository.remove(id);
       invalidate(tag);
       return new NextResponse(null, { status: 204 });

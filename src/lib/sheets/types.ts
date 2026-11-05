@@ -674,6 +674,9 @@ export type EpfEntrySource = (typeof EPF_ENTRY_SOURCES)[number];
 export const EPF_RATE_SOURCES = ["Declared", "Assumed"] as const;
 export type EpfRateSource = (typeof EPF_RATE_SOURCES)[number];
 
+export const EPF_ACCOUNT_STATUSES = ["Active", "Closed"] as const;
+export type EpfAccountStatus = (typeof EPF_ACCOUNT_STATUSES)[number];
+
 export interface EpfAccount {
   id: string;
   /** Such as "NetApp India". */
@@ -681,7 +684,7 @@ export interface EpfAccount {
   establishment?: string;
   /** To match a statement to the account. The UAN, date of birth and the whole member ID are never stored. */
   memberIdLast4?: string;
-  status: "Active" | "Closed";
+  status: EpfAccountStatus;
   /** Both shares together, for the growth path; defaults to the last credit. */
   projectionCredit?: number;
   /** The day the latest imported passbook was printed: it is complete up to then. Set only by an import. */

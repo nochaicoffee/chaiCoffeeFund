@@ -19,6 +19,9 @@ import { goalsRepository } from "./goals";
 import { goalContributionsRepository } from "./goalContributions";
 import { investmentTransactionsRepository } from "./investmentTransactions";
 import { fixedDepositsRepository } from "./fixedDeposits";
+import { epfAccountsRepository } from "./epfAccounts";
+import { epfEntriesRepository } from "./epfEntries";
+import { epfRatesRepository } from "./epfRates";
 import { balanceReviewsRepository } from "./balanceReviews";
 
 /**
@@ -56,6 +59,9 @@ export const CACHE_TAGS = {
   goalContributions: "goalContributions",
   investmentTransactions: "investmentTransactions",
   fixedDeposits: "fixedDeposits",
+  epfAccounts: "epfAccounts",
+  epfEntries: "epfEntries",
+  epfRates: "epfRates",
   balanceReviews: "balanceReviews",
   /** Today's USD to INR, for dollar accounts (lib/prices/usdInr.ts). */
   usdInr: "usdInr",
@@ -162,6 +168,18 @@ export const getCachedInvestmentTransactionById = cachedGetById(getCachedInvestm
 export const getCachedFixedDepositsTab = cachedTab(fixedDepositsRepository, CACHE_TAGS.fixedDeposits);
 export const getCachedFixedDeposits = cachedList(getCachedFixedDepositsTab);
 export const getCachedFixedDepositById = cachedGetById(getCachedFixedDeposits);
+
+export const getCachedEpfAccountsTab = cachedTab(epfAccountsRepository, CACHE_TAGS.epfAccounts);
+export const getCachedEpfAccounts = cachedList(getCachedEpfAccountsTab);
+export const getCachedEpfAccountById = cachedGetById(getCachedEpfAccounts);
+
+export const getCachedEpfEntriesTab = cachedTab(epfEntriesRepository, CACHE_TAGS.epfEntries);
+export const getCachedEpfEntries = cachedList(getCachedEpfEntriesTab);
+export const getCachedEpfEntryById = cachedGetById(getCachedEpfEntries);
+
+export const getCachedEpfRatesTab = cachedTab(epfRatesRepository, CACHE_TAGS.epfRates);
+export const getCachedEpfRates = cachedList(getCachedEpfRatesTab);
+export const getCachedEpfRateById = cachedGetById(getCachedEpfRates);
 
 export const getCachedBalanceReviewsTab = cachedTab(balanceReviewsRepository, CACHE_TAGS.balanceReviews);
 export const getCachedBalanceReviews = cachedList(getCachedBalanceReviewsTab);
