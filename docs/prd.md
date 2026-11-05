@@ -35,7 +35,7 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 
 ## 4. User and context
 
-- **User:** Prathik, the only user. INR is the base currency. He holds several bank accounts and credit cards, has bank loans (borrowed only; he doesn't lend), Indian and US equities including NetApp RSU and ESPP shares, fixed deposits, and EPF/PPF-style holdings.
+- **User:** Prathik, the only user. INR is the base currency. He holds several bank accounts and credit cards, has bank loans (borrowed from banks), and money he has lent to friends (lent-out, F-LE), Indian and US equities including NetApp RSU and ESPP shares, fixed deposits, and EPF/PPF-style holdings.
 - **Devices:** a laptop and a phone, with the **full app on both** (decided 2026-10-16). Every screen and form has to work at phone width, not just a read-only subset.
 - **Typical rhythm:**
   - A monthly check-in: what's due, what was spent, net worth.
@@ -128,6 +128,14 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 |---|---|---|---|
 | F-IN-01 | Income sources, and an add source form | P0 | Built (2026-10-25, #184–#191) |
 | F-IN-02 | Income entries, expected vs. received, with pending income called out and a monthly equivalent | P0 | Built (2026-10-25, #184–#191); the salary from statements awaits its first real run (#187) |
+
+### Lent out (`F-LE`)
+
+| ID | Feature | Pri | Status |
+|---|---|---|---|
+| F-LE-01 | Money lent to people: Accruing (simple interest) and Paid-out loans, repayments, and a "Lent out" line in net worth | P1 | Data layer, maths and net worth built (2026-11-06, #305) |
+| F-LE-02 | A Lent page: entry forms and a per-loan view | P1 | To design |
+| F-LE-03 | Income sources for the Paid-out loans' interest, matched to bank statements | P1 | To do |
 
 ### Loans (`F-LO`)
 

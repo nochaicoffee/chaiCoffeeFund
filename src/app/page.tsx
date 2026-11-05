@@ -31,6 +31,8 @@ import {
   getCachedIncomeEntries,
   getCachedIncomeSources,
   getCachedInvestmentTransactions,
+  getCachedLentLoans,
+  getCachedLentRepayments,
   getCachedLoanInstallments,
   getCachedLoans,
   getCachedStatements,
@@ -80,6 +82,14 @@ export default async function OverviewPage() {
       return { epfAccounts: [], epfEntries: [], epfRates: [], failed: true };
     });
 
+  // Money lent to people. Its tabs may not be in the Sheet yet, so a problem reading them is logged and flagged below, and mustn't take Overview down.
+  const lent = await Promise.all([getCachedLentLoans(), getCachedLentRepayments()])
+    .then(([lentLoans, lentRepayments]) => ({ lentLoans, lentRepayments, failed: false }))
+    .catch((error) => {
+      console.error("[overview] lent out failed:", error instanceof Error ? error.message : String(error));
+      return { lentLoans: [], lentRepayments: [], failed: true };
+    });
+
   const netWorth = computeNetWorth({
     accounts,
     balanceSnapshots,
@@ -90,6 +100,8 @@ export default async function OverviewPage() {
     investmentTransactions,
     fixedDeposits,
     epfEntries: epf.epfEntries,
+    lentLoans: lent.lentLoans,
+    lentRepayments: lent.lentRepayments,
     asOfDate: today,
   });
 
@@ -104,6 +116,7 @@ export default async function OverviewPage() {
 
   const attention: { label: string; detail: string }[] = [];
   if (epf.failed) attention.push({ label: "EPF isn't counted", detail: "The EPF tabs couldn't be read, so net worth leaves EPF out until they can." });
+  if (lent.failed) attention.push({ label: "Money lent out isn't counted", detail: "The LentLoans and LentRepayments tabs couldn't be read, so net worth leaves what people owe you out until they can." });
   for (const account of unpriced?.accounts ?? []) {
     attention.push({ label: `${account.name} isn't counted`, detail: `${account.dollars === null ? "Its dollars" : formatUsd(account.dollars)} can't be turned into rupees: ${unpriced?.reason}. Net worth leaves it out until the rate is back.` });
   }
@@ -153,11 +166,12 @@ export default async function OverviewPage() {
       <div className="rounded-lg border border-divider p-6">
         <div className="text-sm text-foreground/60">Net worth</div>
         <div className="mt-1 text-4xl font-bold">{formatInr(netWorth.netWorth)}</div>
-        <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-foreground/60 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-foreground/60 sm:grid-cols-3 lg:grid-cols-7">
           <span>Bank {formatInr(netWorth.bankBalances)}</span>
           <span>Investments {formatInr(netWorth.investmentValueInr)}</span>
           <span>Fixed deposits {formatInr(netWorth.fixedDepositValueInr)}</span>
           <span>EPF {formatInr(netWorth.epfValueInr)}</span>
+          <span>Lent out {formatInr(netWorth.lentOutInr)}</span>
           <span>− Cards {formatInr(netWorth.cardOutstanding)}</span>
           <span>− Loans {formatInr(netWorth.loanOutstanding)}</span>
         </div>
@@ -176,6 +190,7 @@ export default async function OverviewPage() {
           value={formatInr(totalEstimatedFixedDepositValue(fixedDeposits, today))}
         />
         <StatTile label="EPF (passbook)" value={formatInr(netWorth.epfValueInr)} />
+        <StatTile label="Lent out (owed to you)" value={formatInr(netWorth.lentOutInr)} />
         <StatTile label="Monthly obligations" value={formatInr(monthlyObligationsTotal)} tone="negative" />
       </div>
 

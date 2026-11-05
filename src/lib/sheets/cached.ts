@@ -23,6 +23,8 @@ import { epfAccountsRepository } from "./epfAccounts";
 import { epfEntriesRepository } from "./epfEntries";
 import { epfRatesRepository } from "./epfRates";
 import { balanceReviewsRepository } from "./balanceReviews";
+import { lentLoansRepository } from "./lentLoans";
+import { lentRepaymentsRepository } from "./lentRepayments";
 
 /**
  * Cached reads for every entity, one tag each — used by pages (Server
@@ -63,6 +65,8 @@ export const CACHE_TAGS = {
   epfEntries: "epfEntries",
   epfRates: "epfRates",
   balanceReviews: "balanceReviews",
+  lentLoans: "lentLoans",
+  lentRepayments: "lentRepayments",
   /** Today's USD to INR, for dollar accounts (lib/prices/usdInr.ts). */
   usdInr: "usdInr",
 } as const;
@@ -192,3 +196,11 @@ export const getCachedGoalById = cachedGetById(getCachedGoals);
 export const getCachedGoalContributionsTab = cachedTab(goalContributionsRepository, CACHE_TAGS.goalContributions);
 export const getCachedGoalContributions = cachedList(getCachedGoalContributionsTab);
 export const getCachedGoalContributionById = cachedGetById(getCachedGoalContributions);
+
+export const getCachedLentLoansTab = cachedTab(lentLoansRepository, CACHE_TAGS.lentLoans);
+export const getCachedLentLoans = cachedList(getCachedLentLoansTab);
+export const getCachedLentLoanById = cachedGetById(getCachedLentLoans);
+
+export const getCachedLentRepaymentsTab = cachedTab(lentRepaymentsRepository, CACHE_TAGS.lentRepayments);
+export const getCachedLentRepayments = cachedList(getCachedLentRepaymentsTab);
+export const getCachedLentRepaymentById = cachedGetById(getCachedLentRepayments);

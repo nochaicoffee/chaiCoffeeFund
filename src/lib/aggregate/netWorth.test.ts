@@ -8,6 +8,8 @@ import type {
   Card,
   FixedDeposit,
   InvestmentTransaction,
+  LentLoan,
+  LentRepayment,
   Loan,
   LoanInstallment,
   Statement,
@@ -104,6 +106,27 @@ describe("computeNetWorth", () => {
       const second = HIS_ENTRIES.map((e) => ({ ...e, id: `b-${e.id}`, epfAccountId: "epf-2" }));
       expect(computeNetWorth({ ...base, epfEntries: [...HIS_ENTRIES, ...second] }).epfValueInr).toBe(2 * 952566);
       expect(computeNetWorth(base).epfValueInr).toBe(0);
+    });
+  });
+  describe("money lent out", () => {
+    const base = { accounts: [], balanceSnapshots: [], cards: [], statements: [], loans: [], loanInstallments: [], investmentTransactions: [], fixedDeposits: [], asOfDate: "2026-11-05" };
+    const lentLoans: LentLoan[] = [
+      { id: "a", borrowerName: "Friend", principalAmount: 650000, startDate: "2025-11-05", interestMode: "Accruing", interestRate: 12, status: "Active" },
+      { id: "m", borrowerName: "B", principalAmount: 300000, startDate: "2025-01-01", interestMode: "Paid-out", payoutFrequency: "Monthly", payoutAmount: 6000, status: "Active" },
+    ];
+    it("adds what people still owe: principal, plus the interest that builds up on an Accruing loan", () => {
+      // 365 days of 12% on ₹6,50,000 is ₹78,000.
+      const r = computeNetWorth({ ...base, lentLoans, lentRepayments: [] });
+      expect(r.lentOutInr).toBeCloseTo(650000 + 78000 + 300000, 6);
+      expect(r.netWorth).toBeCloseTo(650000 + 78000 + 300000, 6);
+    });
+    it("takes what has come back off, and counts nothing for a repaid loan", () => {
+      const repayments: LentRepayment[] = [{ id: "r", lentLoanId: "m", date: "2026-06-01", amount: 100000, kind: "Principal" }];
+      expect(computeNetWorth({ ...base, lentLoans: [lentLoans[1]], lentRepayments: repayments }).lentOutInr).toBe(200000);
+      expect(computeNetWorth({ ...base, lentLoans: [{ ...lentLoans[1], status: "Repaid", closedDate: "2026-06-01" }] }).lentOutInr).toBe(0);
+    });
+    it("leaves it out when none are given", () => {
+      expect(computeNetWorth(base).lentOutInr).toBe(0);
     });
   });
 });
