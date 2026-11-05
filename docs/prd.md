@@ -134,8 +134,8 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 | ID | Feature | Pri | Status |
 |---|---|---|---|
 | F-LE-01 | Money lent to people: Accruing (simple interest) and Paid-out loans, repayments, and a "Lent out" line in net worth | P1 | Data layer, maths and net worth built (2026-11-06, #305) |
-| F-LE-02 | A Lent page: entry forms and a per-loan view | P1 | To design |
-| F-LE-03 | Income sources for the Paid-out loans' interest, matched to bank statements | P1 | To do |
+| F-LE-02 | A Lent page: Who owes what, the interest clock, forms to add, repay, mark repaid and delete | P1 | Designed (final 2026-11-06, `docs/design/lent-out.md`); build planned |
+| F-LE-03 | Income sources for the Paid-out loans' interest, matched to bank statements; the Lent page's promised-against-arrived reads them | P1 | Designed; build planned (decisions answered 2026-11-06; ADR 0013 to write) |
 
 ### Loans (`F-LO`)
 
