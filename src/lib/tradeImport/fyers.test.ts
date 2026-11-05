@@ -60,3 +60,22 @@ describe("parseFyersTradebook order id", () => {
     expect(() => parseFyersTradebook(csv(line("PVR INOX LIMITED", "05 Aug 2024, 10:36:00 AM", "BUY", 1, 100, "")))).toThrow(/OMS order ID/);
   });
 });
+
+describe("parseFyersTradebook splits", () => {
+  it("reads a buy before Rushil's 10-for-1 split in the shares held now, at the same cost", () => {
+    const { trades } = parseFyersTradebook(csv(line("RUSHIL DECOR LIMITED", "05 Aug 2024, 10:36:00 AM", "BUY", 30, 365.6, "a")));
+    expect(trades[0]).toMatchObject({ quantity: 300, price: 36.56, amount: 10968 });
+  });
+
+  it("leaves a trade on or after the first day known to be after the split alone", () => {
+    const { trades } = parseFyersTradebook(csv(line("RUSHIL DECOR LIMITED", "17 Oct 2024, 09:30:47 AM", "SELL", 299, 33.92, "b")));
+    expect(trades[0]).toMatchObject({ quantity: 299, price: 33.92 });
+  });
+});
+
+describe("parseFyersTradebook splits and sells", () => {
+  it("also reads a sell before the split in the shares held now", () => {
+    const { trades } = parseFyersTradebook(csv(line("RUSHIL DECOR LIMITED", "20 Sep 2024, 10:00:00 AM", "SELL", 5, 360, "c")));
+    expect(trades[0]).toMatchObject({ tradeType: "Sell", quantity: 50, price: 36 });
+  });
+});
