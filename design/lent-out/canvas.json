@@ -1,0 +1,128 @@
+{
+  "pages": [
+    {
+      "id": "fin",
+      "name": "FINAL: the page (L3 Who owes what + the interest clock)"
+    },
+    {
+      "id": "phone",
+      "name": "FINAL: phone"
+    },
+    {
+      "id": "states",
+      "name": "FINAL: states"
+    },
+    {
+      "id": "forms",
+      "name": "FINAL: forms"
+    },
+    {
+      "id": "r1",
+      "name": "Exploration · Round 1 · not picked: L1 Promise ledger, L2 Interest clock (now a widget), L4 Year of promises"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "LeFinal.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2661,
+      "page": "fin"
+    },
+    {
+      "file": "LePhone.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 4320,
+      "h": 2393,
+      "page": "phone"
+    },
+    {
+      "file": "LeStates.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 7319,
+      "page": "states"
+    },
+    {
+      "file": "LeForms.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1100,
+      "h": 4905,
+      "page": "forms"
+    },
+    {
+      "file": "LeL1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1972,
+      "page": "r1"
+    },
+    {
+      "file": "LeL2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 2039,
+      "page": "r1"
+    },
+    {
+      "file": "LeL4.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 2027,
+      "page": "r1"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-1",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Lent out, the picked design (2026-11-06): L3 Who owes what as the hero, with the Interest clock (L2) as its own widget under it. The greeting's figures point (hover, focus or tap). Then the attention strip, the hero (a block per loan sized by what it owes; pick one to see the total without it), the clock (a day, month, year and all time at its own colour; it never recolours with the hero), the loans table, interest coming up (an overdue payout leads) and money back. His three real loans; the interest payouts that ARRIVED are made-up sample payments. Open the board and click.",
+      "page": "fin"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Lent out on a phone (the final page): the blocks stack, the picked block opens under them, the clock is its own coloured widget, loans become cards, sixteen people become a scrolling list, and the forms are bottom sheets.",
+      "page": "phone"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Lent out states on the final page: nothing lent yet, a payout that is late (flagged on its block, its row and in Interest coming up), a loan repaid (its block leaves the map, a dashed strip stays), part of the principal returned (the block shrinks, interest worked out in two stretches), and sixteen people (the map becomes a scrolling list). Repayments and closing days here are examples.",
+      "page": "states"
+    },
+    {
+      "id": "note-4",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Lent out forms of the final page: Add a loan (accruing, paid-out), Record a repayment (and the warning when more than is out), Mark repaid (closing day required), Edit, Delete with its repayments. Each says where it opens from and previews what happens to the blocks.",
+      "page": "forms"
+    },
+    {
+      "id": "note-5",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Exploration, not picked (round 1, 2026-11-06). L1 Promise ledger, L2 Interest clock (its clock became a widget on the final page) and L4 Year of promises, each a coloured stage on his three real loans with sample payments. L3 Who owes what was picked and is the FINAL page. These boards use the earlier page layout (no clock widget under the hero).",
+      "page": "r1"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "fin"
+  }
+}
