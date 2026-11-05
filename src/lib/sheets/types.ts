@@ -638,11 +638,15 @@ export interface InvestmentTransaction {
 
 export type FixedDepositCompounding = "Cumulative" | "Non-Cumulative";
 export type FixedDepositStatus = "Active" | "Matured" | "Closed";
+/** How a closed deposit ended: when its term ran out, or early (his FD app calls these Matured and Pre-closed). */
+export const FIXED_DEPOSIT_CLOSE_KINDS = ["Matured", "Pre-closed"] as const;
+export type FixedDepositCloseKind = (typeof FIXED_DEPOSIT_CLOSE_KINDS)[number];
 
 export interface FixedDeposit {
   id: string;
   name: string;
-  bankName: string;
+  /** Optional: his FD app doesn't show the bank. */
+  bankName?: string;
   principalAmount: number;
   interestRate: number;
   compoundingType: FixedDepositCompounding;
@@ -650,10 +654,14 @@ export interface FixedDeposit {
   payoutFrequency?: RecurrenceCycle;
   startDate: string;
   maturityDate: string;
-  /** Bank-quoted, not computed — see the note above. */
-  maturityAmount: number;
+  /** Bank-quoted, not computed — see the note above. Optional: his FD app doesn't show it, so the value is estimated until it is entered. */
+  maturityAmount?: number;
   accountId?: string;
   status: FixedDepositStatus;
+  /** Only on a Closed deposit: the day the money was received, what was received, and how it ended. */
+  closedDate?: string;
+  receivedAmount?: number;
+  closeKind?: FixedDepositCloseKind;
 }
 
 // ---------- EPF (ADR 0011): contributions plus yearly interest, never a stored balance ----------
