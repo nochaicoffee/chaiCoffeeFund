@@ -1,5 +1,5 @@
 import { daysBetween } from "./cardSpend";
-import type { LentLoan, LentRepayment, RecurrenceCycle } from "../sheets/types";
+import { CARD_COLORS, type CardColor, type LentLoan, type LentRepayment, type RecurrenceCycle } from "../sheets/types";
 
 const PERIODS_PER_YEAR: Record<RecurrenceCycle, number> = { Monthly: 12, Quarterly: 4, Yearly: 1 };
 
@@ -101,4 +101,15 @@ export function summariseLentLoan(loan: LentLoan, repayments: LentRepayment[], a
 /** Everything the borrowers still owe: principal out plus interest owed, across every loan. */
 export function totalLentOut(loans: LentLoan[], repayments: LentRepayment[], asOfDate: string): number {
   return loans.reduce((total, loan) => total + summariseLentLoan(loan, repayments, asOfDate).owedToday, 0);
+}
+
+/**
+ * The loan's colour on the Lent page: the one it was given, else one worked out from its id. From the id and never from its place in
+ * the list, so repaying or deleting another loan doesn't recolour it.
+ */
+export function lentLoanColor(loan: Pick<LentLoan, "id" | "color">): CardColor {
+  if (loan.color) return loan.color;
+  let hash = 5381;
+  for (let i = 0; i < loan.id.length; i++) hash = (Math.imul(hash, 33) + loan.id.charCodeAt(i)) >>> 0;
+  return CARD_COLORS[hash % CARD_COLORS.length];
 }

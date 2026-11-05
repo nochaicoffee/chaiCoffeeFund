@@ -738,6 +738,10 @@ export interface LentLoan {
   status: LentLoanStatus;
   /** The day the last of it came back. Only on a Repaid loan. */
   closedDate?: string;
+  /** Only a Paid-out loan: the income source its interest arrives through (ADR 0014). Added on the end of the tab for the Lent page. */
+  incomeSourceId?: string;
+  /** The loan's colour on the Lent page. A row without one gets a stable one from its id (lentLoanColor in lib/aggregate/lentOut.ts). */
+  color?: CardColor;
 }
 
 /** What a repayment paid: some of the principal, or some interest. */

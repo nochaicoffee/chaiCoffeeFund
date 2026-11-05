@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   annualRatePercent,
   interestAccrued,
+  lentLoanColor,
   principalOutstanding,
   summariseLentLoan,
   totalLentOut,
@@ -137,5 +138,18 @@ describe("totals", () => {
   it("adds up what every borrower still owes: ₹6,50,000 + interest, ₹3,00,000 and ₹1,82,000", () => {
     const total = totalLentOut([accruing, monthly, quarterly], [], "2026-11-05");
     expect(total).toBeCloseTo(650000 + (650000 * 0.12 * 765) / 365 + 300000 + 182000, 4);
+  });
+});
+
+describe("lentLoanColor", () => {
+  it("is the colour the loan was given", () => {
+    expect(lentLoanColor({ id: "a", color: "Copper" })).toBe("Copper");
+  });
+  it("is the same colour for the same id every time, whatever else is in the list", () => {
+    expect(lentLoanColor({ id: "7e34e43c-9bc9-4520-8722-757e7ab0ce72" })).toBe(lentLoanColor({ id: "7e34e43c-9bc9-4520-8722-757e7ab0ce72" }));
+  });
+  it("spreads different ids over the palette", () => {
+    const colours = new Set(Array.from({ length: 40 }, (_, i) => lentLoanColor({ id: `loan-${i}` })));
+    expect(colours.size).toBeGreaterThan(10);
   });
 });
