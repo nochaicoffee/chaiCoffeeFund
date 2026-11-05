@@ -18,7 +18,7 @@ export function facts(id) {
   }
   const a = L.acc(id), l = L.latest(id), p = L.previous(id);
   return { all: false, id, a, name: a.name, short: a.name, bank: a.bank, color: a.color, on: L.isOn(a), stale: L.isStale(a), purpose: a.purpose, type: a.accountType,
-    balance: l?.balance ?? null, asOf: l?.date ?? null, prev: p, chg: L.change(id), sinceJan: L.sinceJan(id), range: L.rangeIn(id, L.isOn(a) ? L.YEAR : L.HISTORY), share: L.isOn(a) && l ? l.balance / L.TOTAL : 0,
+    ccy: a.ccy, native: l?.native ?? null, balance: l?.balance ?? null, asOf: l?.date ?? null, prev: p, chg: L.change(id), sinceJan: L.sinceJan(id), range: L.rangeIn(id, L.isOn(a) ? L.YEAR : L.HISTORY), share: L.isOn(a) && l ? l.balance / L.TOTAL : 0,
     snaps: L.snapsOf(id).length, opened: a.startDate, closedOn: L.closedOn(a), interval: L.lastInterval(id) };
 }
 export const FACTS = Object.fromEntries(IDS.map((id) => [id, facts(id)]));
@@ -129,7 +129,7 @@ export function whenLine(f) {
   if (!f.on) return `Closed ${fmtY(f.closedOn)} · its final balance`;
   if (f.balance == null) return "No balance yet";
   if (f.stale) return `<span class="pill pill-stale pulse">${I.clock(10)} Last updated ${fmt(f.asOf)} · ${ago(f.asOf)}</span>`;
-  return `Updated ${fmt(f.asOf)} · ${signed(f.chg)} since ${fmt(f.prev.date)}`;
+  return `${f.ccy === "USD" && f.native != null ? `<b>${L.usdTxt(f.native)}</b> at ₹${L.RATE} · ` : ""}Updated ${fmt(f.asOf)} · ${signed(f.chg)} since ${fmt(f.prev.date)}`;
 }
 export function heroCaption(f, { ph = false } = {}) {
   const eyebrow = f.all ? `Everything · ${f.count} active accounts` : `${L.purposeName(f.purpose)} · ${f.bank} · ${f.on ? f.type : "Closed"}`;
@@ -197,7 +197,7 @@ function snapRows(f, n, { ph = false, allCols = false, compact = false } = {}) {
     const d = p ? s.balance - p.balance : null, gap = p ? L.daysBetween(p.date, s.date) : null;
     return `<div class="snaprow" style="display:grid;grid-template-columns:${f.all ? (ph ? "1.4fr 1fr" : compact ? "1.5fr 0.8fr 1fr 0.9fr" : "1.6fr 0.8fr 1fr 0.9fr 0.8fr 20px") : ph ? "1fr 1fr 0.8fr" : compact ? "1fr 1fr 1fr" : "1fr 1fr 1fr 0.9fr 20px"};align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--divider);font-size:13px">
       ${f.all ? `<span class="cell-name">${mono(a, 26)}<span style="min-width:0"><b>${a.name}</b>${ph ? `<small>${fmtSmart(s.date)}</small>` : ""}</span></span>${ph ? "" : `<span style="font-weight:600">${fmtSmart(s.date)}</span>`}` : `<span style="font-weight:600">${fmtSmart(s.date)}</span>`}
-      <b class="num"${ph && f.all ? ' style="text-align:right"' : ""}>${inr(s.balance)}${ph && f.all ? `<span class="sub2" style="text-align:right">${d == null ? "first" : chg(d)}</span>` : ""}</b>
+      <b class="num"${ph && f.all ? ' style="text-align:right"' : ""}>${s.native != null ? `${L.usdTxt(s.native)}<span class="sub2" style="display:block;font-weight:600;${ph && f.all ? "text-align:right" : ""}">≈ ${inr(s.balance)}</span>` : inr(s.balance)}${ph && f.all ? `<span class="sub2" style="text-align:right">${d == null ? "first" : chg(d)}</span>` : ""}</b>
       ${ph && f.all ? "" : `<span>${d == null ? `<span class="muted" style="font-size:12px;font-weight:600">First balance</span>` : chg(d)}</span>`}
       ${ph || compact ? "" : `<span class="muted" style="font-size:12px;font-weight:600">${gap == null ? "—" : `${gap} days`}</span><span class="muted" style="display:flex;justify-content:flex-end">${I.edit(13)}</span>`}</div>`;
   }).join("");

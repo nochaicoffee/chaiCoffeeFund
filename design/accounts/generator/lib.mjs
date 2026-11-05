@@ -43,8 +43,15 @@ export const ACCOUNTS = [
   { id: "icici", name: "ICICI Invest", bank: "ICICI Bank", accountType: "Savings", purpose: "Investment", startDate: "2022-01-10", status: "Active", color: "violet" },
   { id: "sbi", name: "SBI Rainy Day", bank: "SBI", accountType: "Savings", purpose: "Emergency-Fund", startDate: "2018-05-02", status: "Active", color: "teal" },
   { id: "axis", name: "Axis EMI", bank: "Axis Bank", accountType: "Current", purpose: "Loan-Payments", startDate: "2025-04-01", status: "Active", color: "copper" },
+  // Cash at a broker (2026-11-04, PRD F-AC-05 and F-IV-18): a Brokerage account has a currency. A USD balance is stored in dollars and counted in rupees at today's rate.
+  { id: "vested", name: "Vested cash", bank: "Vested", accountType: "Brokerage", purpose: "Investment", startDate: "2023-07-01", status: "Active", color: "sapphire", ccy: "USD" },
+  { id: "zerodha", name: "Zerodha cash", bank: "Zerodha", accountType: "Brokerage", purpose: "Investment", startDate: "2021-09-01", status: "Active", color: "teal", ccy: "INR" },
   { id: "yes", name: "YES Old Salary", bank: "YES Bank", accountType: "Savings", purpose: "Spending", startDate: "2017-08-01", status: "Inactive", color: "onyx" },
 ];
+/** Today's USD/INR (the Investments sample's rate). A dollar account counts at this, with no cost basis. */
+export const RATE = 90.15;
+export const isUsd = (a) => a?.ccy === "USD";
+export const usdTxt = (n) => `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 export const acc = (id) => ACCOUNTS.find((a) => a.id === id);
 export const isOn = (a) => a.status === "Active";
 export const ACTIVE = ACCOUNTS.filter(isOn);
@@ -58,16 +65,20 @@ const B = {
   sbi: [562000, 566400, 571500, 575800, 580300, 586900, 591200, 595800, 601400, 605900, 611300, 616800, 620400, 625900, 630300, 634800, 640200, 644700, 648300, 652800, 655900, 658000, null, null],
   axis: [null, null, null, null, null, null, 4800, 7350, 9900, 12450, 15000, 17550, 20100, 22650, 3200, 5750, 8300, 10850, 13400, 15950, 18500, 21050, 23600, 18900],
   yes: [18200, null, null, 12100, null, null, 9800, null, null, 7400, null, null, 5200, null, null, 3100, 0, null, null, null, null, null, null, null],
+  // vested is in dollars, zerodha in rupees (each in its own account's currency)
+  vested: [null, null, null, null, null, null, null, null, null, 640, 910, 1180, 1420, 1190, 1640, 1960, 1710, 2150, 2380, 2200, 2640, 2480, 2790, 3000],
+  zerodha: [22000, 31000, 28500, 41000, 36000, 52000, 47500, 58000, 49000, 63000, 71000, 66500, 78000, 84000, 72000, 91000, 87500, 96000, 82000, 105000, 93500, 99000, 88000, 100000],
 };
 // The day of the month each one is usually updated: they're not all done on the same day.
-const DAY = { hdfc: "end", kotak: 2, icici: 28, sbi: 9, axis: 6, yes: 15 };
+const DAY = { hdfc: "end", kotak: 2, icici: 28, sbi: 9, axis: 6, yes: 15, vested: 19, zerodha: 18 };
 const OVERRIDE = { "hdfc:2026-10": "2026-10-20", "icici:2026-10": "2026-10-15", "yes:2026-03": "2026-03-31" };
 function snapDate(id, key) {
   if (OVERRIDE[`${id}:${key}`]) return OVERRIDE[`${id}:${key}`];
   const day = DAY[id];
   return day === "end" ? monthEnd(key) : `${key}-${String(day).padStart(2, "0")}`;
 }
-export const SNAPSHOTS = ACCOUNTS.flatMap((a) => HISTORY.map((key, i) => (B[a.id][i] == null ? null : { accountId: a.id, date: snapDate(a.id, key), balance: B[a.id][i] })).filter(Boolean));
+// `balance` is always rupees (so every total and chart is in one currency); a dollar account's own figure is `native`.
+export const SNAPSHOTS = ACCOUNTS.flatMap((a) => HISTORY.map((key, i) => (B[a.id][i] == null ? null : { accountId: a.id, date: snapDate(a.id, key), balance: isUsd(a) ? Math.round(B[a.id][i] * RATE) : B[a.id][i], ...(isUsd(a) ? { native: B[a.id][i] } : {}) })).filter(Boolean));
 export const snapsOf = (id) => SNAPSHOTS.filter((s) => s.accountId === id).sort((x, y) => (x.date < y.date ? -1 : 1));
 export const latest = (id) => snapsOf(id).at(-1) ?? null;
 export const previous = (id) => snapsOf(id).at(-2) ?? null;
