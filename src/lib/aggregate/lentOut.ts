@@ -68,6 +68,15 @@ export function interestPaid(loan: LentLoan, repayments: LentRepayment[], asOfDa
     .reduce((total, r) => total + r.amount, 0);
 }
 
+/**
+ * What the principal still out earns in a day at the loan's rate: `principal still out × rate ÷ 365`. A Paid-out loan's rate is worked
+ * out from what it pays, so this is its payout spread over the days. Zero once the loan is repaid, and from the day principal comes back
+ * it falls with it.
+ */
+export function dailyEarnings(loan: LentLoan, repayments: LentRepayment[], asOfDate: string): number {
+  return (principalOutstanding(loan, repayments, asOfDate) * annualRatePercent(loan)) / 100 / 365;
+}
+
 export interface LentLoanSummary {
   loan: LentLoan;
   annualRatePercent: number;
