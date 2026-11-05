@@ -3,7 +3,7 @@
 import { useActionState, useState, type FormEvent } from "react";
 import { saveCheckIn } from "@/app/accounts/actions";
 import type { AccountsFormsData } from "@/app/accounts/views";
-import { formatInr, parseAmountText } from "@/lib/format/money";
+import { formatInr, formatMoney, parseAmountText } from "@/lib/format/money";
 import { readCheckInForm } from "@/lib/forms/accountForms";
 import { IDLE } from "@/lib/forms/formState";
 import { DateInput, Field, MoneyInput, PreviewPanel, describedBy } from "../../cards/forms/fields";
@@ -30,7 +30,8 @@ export function CheckInDialog({ forms, onClose }: { forms: AccountsFormsData; on
     revealAll();
   }
   // What everything adds up to: each account's typed balance, else what it holds now.
-  const total = accounts.reduce((sum, a) => sum + (parseAmountText(typed[a.id] ?? "") ?? a.balance ?? 0), 0);
+  // In rupees: a dollar balance at today's rate, and a dollar account with no rate not at all.
+  const total = accounts.reduce((sum, a) => sum + (parseAmountText(typed[a.id] ?? "") ?? a.balance ?? 0) * (a.rate ?? 0), 0);
 
   return (
     <FormDialog
@@ -63,8 +64,8 @@ export function CheckInDialog({ forms, onClose }: { forms: AccountsFormsData; on
       </Field>
       <div className="flex flex-col gap-3">
         {accounts.map((a, i) => (
-          <Field key={a.id} id={`balance-${a.id}`} label={`${a.name}${a.stale ? " · not read lately" : ""}`} help={a.balance === null ? "No balance yet" : `Now ${formatInr(a.balance)}`} error={errors[`balance:${a.id}`]}>
-            <MoneyInput {...describedBy(`balance-${a.id}`, errors[`balance:${a.id}`], true)} data-autofocus={i === 0 ? true : undefined} name={`balance:${a.id}`} value={typed[a.id] ?? ""} onChange={(e) => setTyped({ ...typed, [a.id]: e.target.value })} onBlur={() => reveal(`balance:${a.id}`)} invalid={Boolean(errors[`balance:${a.id}`])} />
+          <Field key={a.id} id={`balance-${a.id}`} label={`${a.name}${a.stale ? " · not read lately" : ""}`} help={a.balance === null ? "No balance yet" : `Now ${formatMoney(a.currency, a.balance)}`} error={errors[`balance:${a.id}`]}>
+            <MoneyInput {...describedBy(`balance-${a.id}`, errors[`balance:${a.id}`], true)} symbol={a.currency === "USD" ? "$" : "₹"} data-autofocus={i === 0 ? true : undefined} name={`balance:${a.id}`} value={typed[a.id] ?? ""} onChange={(e) => setTyped({ ...typed, [a.id]: e.target.value })} onBlur={() => reveal(`balance:${a.id}`)} invalid={Boolean(errors[`balance:${a.id}`])} />
           </Field>
         ))}
       </div>

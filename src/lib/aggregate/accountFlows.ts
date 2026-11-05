@@ -4,6 +4,7 @@ import { monthRange, type MonthKey } from "./cardSpend";
 import { nextOccurrence } from "./recurring";
 import { addDays } from "./subscriptionRenewals";
 import { nextRenewalsFrom } from "./subscriptionNextCharges";
+import type { RupeeSnapshot } from "./accountCurrency";
 import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, IncomeSource, InvestmentTransaction, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment } from "../sheets/types";
 
 /**
@@ -28,11 +29,15 @@ export interface UnpricedAccount {
   id: string;
   name: string;
   dollars: number | null;
+  /** The account and its snapshots (in dollars), so the forms can still update it while the rate is down. */
+  account: Account;
+  snapshots: BalanceSnapshot[];
 }
 
 export interface AccountsData {
   accounts: Account[];
-  snapshots: BalanceSnapshot[];
+  /** In rupees: a dollar account's carry the dollars as `native` (lib/aggregate/accountCurrency.ts). */
+  snapshots: RupeeSnapshot[];
   cards: Card[];
   statements: Statement[];
   subscriptions: Subscription[];
@@ -46,6 +51,8 @@ export interface AccountsData {
   reviews?: BalanceReview[];
   /** Dollar accounts left out of every total because today's rate couldn't be had (ADR 0012), with why. Absent when none. */
   unpriced?: { accounts: UnpricedAccount[]; reason: string };
+  /** Today's USD to INR, when a dollar account is counted (ADR 0012): what a dollar balance is shown against. */
+  usdInr?: number;
 }
 
 export const OUT_KINDS = ["Card bills", "Subscriptions", "EMIs", "Investments"] as const;

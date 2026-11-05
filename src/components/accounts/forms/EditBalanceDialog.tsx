@@ -31,7 +31,7 @@ export function EditBalanceDialog({ row, amount, forms, onDelete, onClose }: { r
       icon={<EditIcon size={16} />}
       title="Edit balance"
       subtitle={`${row.accountName} · ${row.dateText}`}
-      preview={<PreviewPanel>{account && <MiniAccountCard colorKey={account.colorKey} initial={account.initial} name={account.name} last4={account.last4 || undefined} balance={parseAmountText(balance)} corner={account.bank} closed={account.closed} />}</PreviewPanel>}
+      preview={<PreviewPanel>{account && <MiniAccountCard colorKey={account.colorKey} initial={account.initial} name={account.name} last4={account.last4 || undefined} currency={account?.currency} balance={parseAmountText(balance)} corner={account.bank} closed={account.closed} />}</PreviewPanel>}
       footerNote={
         <span className="flex items-center gap-2">
           <button type="button" onClick={onDelete} className="min-h-11 font-bold text-negative hover:underline focus-visible:outline-2 focus-visible:outline-accent md:min-h-0">
@@ -59,7 +59,7 @@ export function EditBalanceDialog({ row, amount, forms, onDelete, onClose }: { r
           <DateInput {...describedBy("date", errors.date, false)} label="Read on" name="date" value={date} onChange={setDate} onBlur={() => reveal("date")} today={forms.today} invalid={Boolean(errors.date)} />
         </Field>
         <Field id="balance" label="Balance" required error={errors.balance}>
-          <MoneyInput {...describedBy("balance", errors.balance, false)} data-autofocus name="balance" value={balance} onChange={(e) => setBalance(e.target.value)} onBlur={() => reveal("balance")} invalid={Boolean(errors.balance)} />
+          <MoneyInput {...describedBy("balance", errors.balance, false)} symbol={account?.currency === "USD" ? "$" : "₹"} data-autofocus name="balance" value={balance} onChange={(e) => setBalance(e.target.value)} onBlur={() => reveal("balance")} invalid={Boolean(errors.balance)} />
         </Field>
       </div>
     </FormDialog>

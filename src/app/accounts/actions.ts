@@ -69,6 +69,12 @@ export async function saveAccount(_previous: FormState, formData: FormData): Pro
   const { balance, last4, ...account } = result.input;
   try {
     if (editing) {
+      // Its balances are in its currency, so it can't be switched once it has any: a dollar balance would turn into the same figure in rupees.
+      const existing = (await accountsRepository.list()).find((a) => a.id === id);
+      if (!existing) return GONE;
+      if ((existing.currency ?? "INR") !== account.currency && (await balanceSnapshotsRepository.list()).some((s) => s.accountId === id)) {
+        return { status: "invalid", errors: { currency: `Its balances are already in ${existing.currency === "USD" ? "dollars" : "rupees"}. Delete them first to change that.` } };
+      }
       // A blank password keeps the saved one; "clearPassword" removes it (as Edit card does).
       const patch = updateAccountSchema.parse({ ...account, last4 }) as Partial<Omit<Account, "id">>;
       await accountsRepository.update(id, { ...patch, ...(formData.get("clearPassword") === "1" && { statementPdfPassword: undefined }) });

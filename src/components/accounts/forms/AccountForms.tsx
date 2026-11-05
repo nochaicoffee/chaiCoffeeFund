@@ -3,7 +3,7 @@
 import { createContext, useContext, useRef, useState, type ReactNode, type Ref } from "react";
 import { closeAccount, deleteAccount, deleteBalance, reopenAccount } from "@/app/accounts/actions";
 import type { AccountsFormsData, HistoryRow } from "@/app/accounts/views";
-import { formatInr } from "@/lib/format/money";
+import { formatMoney } from "@/lib/format/money";
 import { AlertIcon } from "../../cards/forms/icons";
 import { RenewIcon } from "../../subscriptions/icons";
 import { ConfirmDialog } from "../../subscriptions/forms/ConfirmDialog";
@@ -73,8 +73,8 @@ export function AccountFormsProvider({ forms, children }: { forms: AccountsForms
           tone="danger"
           icon={<AlertIcon />}
           title={`Close ${account.name}?`}
-          body={`A ₹0 balance is recorded on the day and it moves to Closed, so its history stays.${account.balance ? ` It still holds ${formatInr(account.balance)}: move that first, or it drops out of your totals.` : ""}${account.paysALoan ? " A loan's EMIs are paid from it, so choose another account for them." : ""}`}
-          date={{ name: "endDate", label: "Closed on", initial: forms.today, help: "Its balance is ₹0 from this day." }}
+          body={`A ${account.currency === "USD" ? "$0" : "₹0"} balance is recorded on the day and it moves to Closed, so its history stays.${account.balance ? ` It still holds ${formatMoney(account.currency, account.balance)}: move that first, or it drops out of your totals.` : ""}${account.paysALoan ? " A loan's EMIs are paid from it, so choose another account for them." : ""}`}
+          date={{ name: "endDate", label: "Closed on", initial: forms.today, help: `Its balance is ${account.currency === "USD" ? "$0" : "₹0"} from this day.` }}
           hidden={{ id: account.id }}
           keepLabel="Keep it open"
           confirmLabel="Close account"

@@ -4,7 +4,7 @@ import { accountColor, balanceOn, isClosed } from "@/lib/aggregate/accounts";
 import { periodLabel } from "@/lib/aggregate/period";
 import { formatDate, formatDayDate, formatMonthYear, formatShortDate } from "@/lib/format/date";
 import { optionLabel } from "@/lib/format/labels";
-import { formatInr } from "@/lib/format/money";
+import { formatInr, formatUsd } from "@/lib/format/money";
 import { cardColorKey, type ColorKey } from "@/lib/format/subscriptionLabels";
 import { ACCOUNT_PURPOSES } from "@/lib/forms/accountForms";
 import type { SelectOption } from "@/components/Select";
@@ -44,6 +44,8 @@ export interface HistoryRowView {
   dateText: string;
   gapText: string | null;
   balanceText: string;
+  /** A dollar balance's rupee value under the dollars. */
+  balanceSub?: string;
   changeText: string;
   changeTone: "up" | "down" | null;
   pill: "First balance" | "Closing balance" | null;
@@ -92,11 +94,12 @@ export function rowView(e: HistoryEntry, attention?: AttentionItem): HistoryRowV
     closed: isClosed(e.account),
     dateText: formatDayDate(e.date),
     gapText,
-    balanceText: formatInr(e.balance),
+    balanceText: e.native !== undefined ? formatUsd(e.native) : formatInr(e.balance),
+    ...(e.native !== undefined && { balanceSub: `≈ ${formatInr(e.balance)}` }),
     changeText,
     changeTone,
     pill: e.closing ? "Closing balance" : e.first ? "First balance" : null,
-    row: { id: e.id, accountId: e.account.id, accountName: e.account.name, date: e.date, dateText: formatDate(e.date), balanceText: formatInr(e.balance), balance: e.balance, changeText, changeTone, gapText, ...(attention && { attention }), ...(e.fromStatement && { fromStatement: true as const }) },
+    row: { id: e.id, accountId: e.account.id, accountName: e.account.name, date: e.date, dateText: formatDate(e.date), balanceText: e.native !== undefined ? formatUsd(e.native) : formatInr(e.balance), ...(e.native !== undefined && { balanceSub: `≈ ${formatInr(e.balance)}` }), currency: e.native !== undefined ? ("USD" as const) : ("INR" as const), balance: e.native ?? e.balance, changeText, changeTone, gapText, ...(attention && { attention }), ...(e.fromStatement && { fromStatement: true as const }) },
   };
 }
 

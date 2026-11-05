@@ -150,6 +150,7 @@ function OpenFace({ pick, open, rollFrom }: { pick: PickView; open: boolean; rol
           </div>
         </Rise>
         <Rise n={3}>
+          {pick.native && <div className="mt-0.5 text-xs font-bold text-on-card">{pick.native}</div>}
           <div className={`mt-0.5 text-xs font-semibold ${pick.stale ? "text-[var(--card-copper)]" : "text-on-card-muted"}`}>{pick.updated}</div>
           <div className={`text-xs font-semibold ${pick.changeTone === "up" ? "text-on-card-lime" : "text-on-card-muted"}`}>{pick.change}</div>
         </Rise>

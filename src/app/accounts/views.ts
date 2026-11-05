@@ -1,13 +1,14 @@
 import { comingUp, moneyItems, type AccountsData, type FlowItem } from "@/lib/aggregate/accountFlows";
 import { checkInGrid } from "@/lib/aggregate/accountCheckIns";
+import type { RupeeSnapshot } from "@/lib/aggregate/accountCurrency";
 import { PURPOSE_COLORS, accountColor, monthEnds, balanceOn, changeSince, dayBefore, daysSinceBalance, isClosed, isStale, periodSpan, sharesOfTotal, STALE_DAYS, totalOn, totalSeries, weeklyDates, type BalanceTrendPoint } from "@/lib/aggregate/accounts";
 import { monthOf, type SpendPeriod } from "@/lib/aggregate/cardSpend";
 import { periodName, periodPhrase } from "@/lib/aggregate/period";
 import { formatDate, formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
 import { optionLabel } from "@/lib/format/labels";
-import { formatInr, formatInrCompact } from "@/lib/format/money";
+import { formatInr, formatInrCompact, formatUsd } from "@/lib/format/money";
 import { cardColorKey, whenFrom, type ColorKey } from "@/lib/format/subscriptionLabels";
-import type { Account, CardColor } from "@/lib/sheets/types";
+import type { Account, AccountCurrency, CardColor } from "@/lib/sheets/types";
 import type { MapEntry } from "@/components/subscriptions/costMap";
 import { daysBetween } from "@/lib/aggregate/cardSpend";
 import { attentionForSnapshot, attentionItems, type AttentionItem } from "./attentionView";
@@ -60,6 +61,8 @@ export interface PickView {
   balance: string;
   /** The balance as a number, for the rolling digits. */
   balanceValue: number;
+  /** A dollar account's own figure, under the rupee one: "$3,000.00 at ₹94.64". Null for a rupee account. */
+  native: string | null;
   /** "Updated Oct 20" / "5 accounts · 4 up to date". */
   updated: string;
   /** Under the balance: "+₹4,200 since the balance before", or "No balance yet". */
@@ -99,7 +102,11 @@ export interface HistoryRow {
   date: string;
   dateText: string;
   balanceText: string;
-  /** The balance as saved, to start an edit on. */
+  /** A dollar balance's rupee value, "≈ ₹2,83,920", under the dollars. Absent for a rupee account. */
+  balanceSub?: string;
+  /** What currency the balance is in. */
+  currency?: AccountCurrency;
+  /** The balance as saved (in its own currency), to start an edit on. */
   balance: number;
   /** "+₹4,200", "−₹1,000", or "First balance". */
   changeText: string;
@@ -140,12 +147,16 @@ export interface FormAccount {
   hasPdfPassword: boolean;
   closed: boolean;
   stale: boolean;
-  /** Its balance today, or null with none yet. */
+  /** What its balances are in. */
+  currency: AccountCurrency;
+  /** Rupees to a unit of its currency: 1 for rupees, today's rate for dollars, null when a dollar account has no rate (it isn't counted). */
+  rate: number | null;
+  /** Its balance today in its own currency, or null with none yet. */
   balance: number | null;
   latestDate: string | null;
   /** Whether a loan's EMIs are paid from it, for Close's warning. */
   paysALoan: boolean;
-  /** Every recorded balance, oldest first, so the form can warn against the one before the chosen day. */
+  /** Every recorded balance (in its own currency), oldest first, so the form can warn against the one before the chosen day. */
   readings: { id: string; date: string; balance: number }[];
 }
 
@@ -206,6 +217,12 @@ function lineFor(data: AccountsData, scope: Account[], period: SpendPeriod, toda
   return { points, months };
 }
 
+/** "$3,000.00 at ₹94.64": a dollar balance and the rate it is counted at. Null for a rupee balance. */
+function nativeLine(data: AccountsData, snapshot: RupeeSnapshot | null): string | null {
+  if (!snapshot || snapshot.native === undefined) return null;
+  return `${formatUsd(snapshot.native)}${data.usdInr ? ` at ₹${data.usdInr.toFixed(2)}` : ""}`;
+}
+
 function accountPick(data: AccountsData, account: Account, period: SpendPeriod, today: string, cache: ItemsCache): PickView {
   const latest = balanceOn(data.snapshots, account.id, today);
   const mine = data.snapshots.filter((s) => s.accountId === account.id);
@@ -231,6 +248,7 @@ function accountPick(data: AccountsData, account: Account, period: SpendPeriod, 
     noBalance: !latest,
     balance: formatInr(held),
     balanceValue: held,
+    native: nativeLine(data, latest),
     updated: !latest ? "No balance yet" : closed ? `Closed ${formatShortDate(latest.date)}` : `Updated ${formatShortDate(latest.date)}${stale ? ` · ${days} days ago` : ""}`,
     change: !latest ? "Add its first balance" : delta === null ? "First balance" : delta === 0 ? "No change since the balance before" : `${delta >= 0 ? "+" : "−"}${formatInr(Math.abs(delta))} since the balance before`,
     changeShort: delta === null ? "" : delta === 0 ? "no change" : `${delta >= 0 ? "+" : "−"}${formatInr(Math.abs(delta))}`,
@@ -267,6 +285,7 @@ function allPick(data: AccountsData, period: SpendPeriod, today: string, cache: 
     noBalance: data.snapshots.length === 0,
     balance: formatInr(total),
     balanceValue: total,
+    native: null,
     updated: live.length === 0 ? "No accounts yet" : `${live.length} account${live.length === 1 ? "" : "s"} · ${upToDate} up to date`,
     change: data.snapshots.length === 0 ? "Add a balance to begin" : `${since >= 0 ? "+" : "−"}${formatInr(Math.abs(since))} since ${formatShortDate(span.from)}${latestDate && span.to === today ? ` · latest update ${formatShortDate(latestDate)}` : ` to ${formatShortDate(span.to)}`}`,
     changeShort: "",
@@ -325,8 +344,10 @@ export function historyRows(data: AccountsData, attention: AttentionItem[] = att
         accountName: account.name,
         date: s.date,
         dateText: formatDate(s.date),
-        balanceText: formatInr(s.balance),
-        balance: s.balance,
+        balanceText: s.native !== undefined ? formatUsd(s.native) : formatInr(s.balance),
+        ...(s.native !== undefined && { balanceSub: `≈ ${formatInr(s.balance)}` }),
+        currency: s.native !== undefined ? ("USD" as const) : ("INR" as const),
+        balance: s.native ?? s.balance,
         changeText: delta === null ? "First balance" : delta === 0 ? "No change" : `${delta > 0 ? "+" : "−"}${formatInr(Math.abs(delta))}`,
         changeTone: delta === null || delta === 0 ? null : delta > 0 ? "up" : "down",
         gapText: before ? `${daysBetween(before.date, s.date)} days after the one before` : null,
@@ -347,28 +368,36 @@ export function historyRows(data: AccountsData, attention: AttentionItem[] = att
 }
 
 export function formsView(data: AccountsData, today: string, demo: boolean): AccountsFormsData {
-  const accounts = [...data.accounts].sort((a, b) => Number(isClosed(a)) - Number(isClosed(b))).map((a): FormAccount => {
-    const latest = balanceOn(data.snapshots, a.id, today);
-    return {
-      id: a.id,
-      name: a.name,
-      bank: a.bank,
-      initial: a.bank.trim()[0]?.toUpperCase() ?? "?",
-      colorKey: cardColorKey(accountColor(a)),
-      color: accountColor(a),
-      accountType: a.accountType,
-      purpose: a.purpose,
-      startDate: a.startDate,
-      last4: a.last4 ?? "",
-      hasPdfPassword: Boolean(a.statementPdfPassword),
-      closed: isClosed(a),
-      stale: isStale(a, data.snapshots, today),
-      balance: latest?.balance ?? null,
-      latestDate: latest?.date ?? null,
-      paysALoan: data.loans.some((l) => l.status === "Active" && l.accountId === a.id),
-      readings: data.snapshots.filter((x) => x.accountId === a.id).sort((x, y) => (x.date < y.date ? -1 : x.date > y.date ? 1 : 0)).map(({ id, date, balance }) => ({ id, date, balance })),
-    };
-  });
+  // A dollar account with no rate isn't in data.accounts (it isn't counted), but it can still be updated: its form takes dollars and needs no rate.
+  type Counted = { account: Account; snapshots: RupeeSnapshot[]; rate: number | null };
+  const unpriced: Counted[] = (data.unpriced?.accounts ?? []).map((u) => ({ account: u.account, snapshots: u.snapshots, rate: null }));
+  const counted: Counted[] = data.accounts.map((account) => ({ account, snapshots: data.snapshots, rate: account.currency === "USD" ? (data.usdInr ?? null) : 1 }));
+  const accounts = [...counted, ...unpriced]
+    .sort((x, y) => Number(isClosed(x.account)) - Number(isClosed(y.account)))
+    .map(({ account: a, snapshots, rate }): FormAccount => {
+      const latest = balanceOn(snapshots, a.id, today);
+      return {
+        id: a.id,
+        name: a.name,
+        bank: a.bank,
+        initial: a.bank.trim()[0]?.toUpperCase() ?? "?",
+        colorKey: cardColorKey(accountColor(a)),
+        color: accountColor(a),
+        accountType: a.accountType,
+        purpose: a.purpose,
+        startDate: a.startDate,
+        last4: a.last4 ?? "",
+        hasPdfPassword: Boolean(a.statementPdfPassword),
+        closed: isClosed(a),
+        stale: isStale(a, snapshots, today),
+        currency: a.currency ?? "INR",
+        rate,
+        balance: latest ? (latest.native ?? latest.balance) : null,
+        latestDate: latest?.date ?? null,
+        paysALoan: data.loans.some((l) => l.status === "Active" && l.accountId === a.id),
+        readings: snapshots.filter((x) => x.accountId === a.id).sort((x, y) => (x.date < y.date ? -1 : x.date > y.date ? 1 : 0)).map((x) => ({ id: x.id, date: x.date, balance: x.native ?? x.balance })),
+      };
+    });
   return { demo, today, accounts, total: totalOn(data.accounts, data.snapshots, today) };
 }
 
@@ -387,7 +416,7 @@ export function checkInsView(data: AccountsData, today: string, period: SpendPer
       colorKey: isClosed(r.account) ? "onyx" : cardColorKey(accountColor(r.account)),
       purpose: optionLabel(r.account.purpose),
       closed: isClosed(r.account),
-      cells: r.cells.map((c) => ({ month: c.month, monthText: formatMonthYear(c.month), state: c.state, readings: c.readings.map((x) => ({ dateText: formatShortDate(x.date), balanceText: formatInr(x.balance) })) })),
+      cells: r.cells.map((c) => ({ month: c.month, monthText: formatMonthYear(c.month), state: c.state, readings: c.readings.map((x) => ({ dateText: formatShortDate(x.date), balanceText: x.native !== undefined ? formatUsd(x.native) : formatInr(x.balance) })) })),
     })),
     facts: [
       { label: "Readings", value: String(grid.readings), note: `in ${plural(grid.months.length, "month")}` },

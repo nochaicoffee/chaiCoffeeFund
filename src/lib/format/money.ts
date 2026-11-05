@@ -33,6 +33,11 @@ export function formatUsd(value: number): string {
   return value < 0 && Math.round(Math.abs(value) * 100) !== 0 ? MINUS + formatted : formatted;
 }
 
+/** An amount in an account's own currency: rupees with Indian grouping, dollars with cents. */
+export function formatMoney(currency: "INR" | "USD", value: number): string {
+  return currency === "USD" ? formatUsd(value) : formatInr(value);
+}
+
 const inrPaise = new Intl.NumberFormat("en-IN", {
   style: "currency",
   currency: "INR",

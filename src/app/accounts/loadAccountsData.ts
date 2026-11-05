@@ -51,7 +51,7 @@ export async function loadAccountsData(
   const rupee = await rupeeBalances(accounts.records, snapshots.records);
   return {
     demo,
-    data: { accounts: rupee.accounts, snapshots: rupee.snapshots, unpriced: unpricedForPage(rupee), reviews: reviews.records, cards, statements, subscriptions, subscriptionPayments, loans, installments, trades, incomeSources, incomeEntries },
+    data: { accounts: rupee.accounts, snapshots: rupee.snapshots, unpriced: unpricedForPage(rupee), usdInr: rupee.usdInr ?? undefined, reviews: reviews.records, cards, statements, subscriptions, subscriptionPayments, loans, installments, trades, incomeSources, incomeEntries },
     skipped: [accounts.skipped, snapshots.skipped, reviews.skipped],
   };
 }

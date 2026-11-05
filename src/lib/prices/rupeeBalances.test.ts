@@ -38,6 +38,10 @@ describe("rupeeBalances", () => {
     expect(result.accounts.map((a) => a.id)).toEqual(["hdfc"]);
     expect(result.snapshots.map((s) => s.accountId)).toEqual(["hdfc"]);
     expect(result.rateProblem).toBe("the rate service answered 503");
-    expect(unpricedForPage(result)).toEqual({ accounts: [{ id: "vested", name: "Vested cash", dollars: 3000 }], reason: "the rate service answered 503" });
+    const page = unpricedForPage(result);
+    expect(page?.reason).toBe("the rate service answered 503");
+    expect(page?.accounts).toHaveLength(1);
+    expect(page?.accounts[0]).toMatchObject({ id: "vested", name: "Vested cash", dollars: 3000, account: vested });
+    expect(page?.accounts[0].snapshots.map((x) => x.balance)).toEqual([2500, 3000]);
   });
 });

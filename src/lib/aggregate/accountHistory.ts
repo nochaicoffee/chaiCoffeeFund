@@ -1,3 +1,4 @@
+import type { RupeeSnapshot } from "./accountCurrency";
 import { balanceOn, isClosed, isStale, periodSpan } from "./accounts";
 import { daysBetween, type SpendPeriod } from "./cardSpend";
 import type { Account, AccountPurpose, BalanceSnapshot } from "../sheets/types";
@@ -20,6 +21,8 @@ export interface HistoryEntry {
   account: Account;
   date: string;
   balance: number;
+  /** A dollar account's own figure, when `balance` is its rupee value (accountCurrency.ts). */
+  native?: number;
   previous: number | null;
   /** Balance less the previous one; null for an account's first. */
   delta: number | null;
@@ -32,7 +35,7 @@ export interface HistoryEntry {
 }
 
 /** Every balance of every account, each with its change from the one before. Balances of an account that's gone are left out. */
-export function historyEntries(accounts: Account[], snapshots: BalanceSnapshot[]): HistoryEntry[] {
+export function historyEntries(accounts: Account[], snapshots: RupeeSnapshot[]): HistoryEntry[] {
   const entries: HistoryEntry[] = [];
   for (const account of accounts) {
     // Stable on equal dates, so two for one day keep the Sheet's order.
@@ -44,6 +47,7 @@ export function historyEntries(accounts: Account[], snapshots: BalanceSnapshot[]
         account,
         date: s.date,
         balance: s.balance,
+        ...(s.native !== undefined && { native: s.native }),
         previous: before ? before.balance : null,
         delta: before ? s.balance - before.balance : null,
         gapDays: before ? daysBetween(before.date, s.date) : null,

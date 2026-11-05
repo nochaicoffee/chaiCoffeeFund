@@ -6,7 +6,7 @@ const good = { name: "HDFC Salary", bank: "HDFC Bank", accountType: "Savings", p
 describe("readAccountForm", () => {
   it("reads an add, with the opening balance and a last 4 that keeps its leading zero", () => {
     const r = readAccountForm(good, false);
-    expect(r).toEqual({ ok: true, input: { name: "HDFC Salary", bank: "HDFC Bank", accountType: "Savings", purpose: "Spending", startDate: "2026-01-05", color: "Sapphire", last4: "0042", balance: 120000 } });
+    expect(r).toEqual({ ok: true, input: { name: "HDFC Salary", bank: "HDFC Bank", accountType: "Savings", purpose: "Spending", startDate: "2026-01-05", color: "Sapphire", currency: "INR", last4: "0042", balance: 120000 } });
   });
   it("leaves last 4 and the balance optional, and ignores a balance on an edit", () => {
     const r = readAccountForm({ ...good, last4: "", balance: "" }, false);
@@ -32,6 +32,27 @@ describe("readAccountForm", () => {
       const r = readAccountForm({ ...good, statementPdfPassword: blank }, true);
       expect(r.ok && "statementPdfPassword" in r.input).toBe(false);
     }
+  });
+});
+
+describe("readAccountForm: currency (ADR 0012)", () => {
+  const broker = { ...good, accountType: "Brokerage", purpose: "Investment", name: "Vested cash", bank: "Vested", last4: "", balance: "3,000" };
+  it("is rupees when the form sends none", () => {
+    const r = readAccountForm(good, false);
+    expect(r.ok && r.input.currency).toBe("INR");
+  });
+  it("takes dollars for a Brokerage account", () => {
+    const r = readAccountForm({ ...broker, currency: "USD" }, false);
+    expect(r.ok && r.input).toMatchObject({ accountType: "Brokerage", currency: "USD", balance: 3000 });
+  });
+  it("won't put a bank account in dollars", () => {
+    const r = readAccountForm({ ...good, currency: "USD" }, false);
+    expect(r.ok).toBe(false);
+    expect(!r.ok && r.errors.currency).toBe("Only a brokerage account can be in dollars");
+  });
+  it("refuses a currency it doesn't know", () => {
+    const r = readAccountForm({ ...broker, currency: "EUR" }, false);
+    expect(!r.ok && r.errors.currency).toBe("Choose rupees or dollars");
   });
 });
 
