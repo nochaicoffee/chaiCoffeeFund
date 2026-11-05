@@ -2,7 +2,10 @@
 // (e.g. "Emergency-Fund") — matching the Sheet's actual dropdown option
 // text exactly, since Sheets Tables validate against that literal text.
 
-export type AccountType = "Savings" | "Current";
+/** Brokerage is cash lying at a broker (ADR 0012). */
+export type AccountType = "Savings" | "Current" | "Brokerage";
+/** The currency an account's balances are kept in (ADR 0012). Only USD besides rupees. */
+export type AccountCurrency = "INR" | "USD";
 export type AccountPurpose = "Spending" | "Investment" | "Emergency-Fund" | "Loan-Payments";
 /** Closed is Inactive with a ₹0 balance on the day (#160): the Sheet's dropdown stays Active or Inactive. */
 export type AccountStatus = "Active" | "Inactive";
@@ -21,6 +24,8 @@ export interface Account {
   last4?: string;
   /** Password to open this account's statement PDFs. Used only by the Gmail statement import; never sent to the browser (FormAccount carries `hasPdfPassword` instead). */
   statementPdfPassword?: string;
+  /** What its balances are in. Optional: a row without one is INR. A dollar balance is counted in rupees at today's rate (lib/aggregate/accountCurrency.ts). */
+  currency?: AccountCurrency;
 }
 
 /** Where a balance came from. A row with none was typed in, so it reads as Manual. */

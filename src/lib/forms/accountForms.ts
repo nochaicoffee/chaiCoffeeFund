@@ -7,7 +7,7 @@ import { FieldReader, type FormFields, type FormResult } from "./fields";
  * repository expects, or plain-word errors by field. The wording here is the source of truth.
  */
 
-export const ACCOUNT_TYPES: readonly AccountType[] = ["Savings", "Current"];
+export const ACCOUNT_TYPES: readonly AccountType[] = ["Savings", "Current", "Brokerage"];
 export const ACCOUNT_PURPOSES: readonly AccountPurpose[] = ["Spending", "Investment", "Emergency-Fund", "Loan-Payments"];
 
 export interface AccountInput {
@@ -30,7 +30,7 @@ export function readAccountForm(fields: FormFields, editing: boolean): FormResul
   const f = new FieldReader(fields);
   const name = f.text("name", "Enter the account's name");
   const bank = f.text("bank", "Enter the bank");
-  const accountType = f.choice("accountType", ACCOUNT_TYPES, "Choose savings or current");
+  const accountType = f.choice("accountType", ACCOUNT_TYPES, "Choose an account type");
   const purpose = f.choice("purpose", ACCOUNT_PURPOSES, "Choose what it's for");
   const startDate = f.date("startDate", "Enter when it was opened");
   const color = f.choice("color", CARD_COLORS, "Pick a colour");
