@@ -714,3 +714,41 @@ export interface EpfRate {
   ratePercent: number;
   source: EpfRateSource;
 }
+
+// ---------- Lent out: money lent to people, tracked outside any bank (docs/system-design.md, "Lent out") ----------
+/** Accruing: simple interest builds up and is paid with the principal, whenever the borrower pays. Paid-out: a fixed amount comes every period, and the principal stays out. */
+export const LENT_INTEREST_MODES = ["Accruing", "Paid-out"] as const;
+export type LentInterestMode = (typeof LENT_INTEREST_MODES)[number];
+export const LENT_LOAN_STATUSES = ["Active", "Repaid"] as const;
+export type LentLoanStatus = (typeof LENT_LOAN_STATUSES)[number];
+
+export interface LentLoan {
+  id: string;
+  borrowerName: string;
+  /** What was handed over, before any of it was paid back. */
+  principalAmount: number;
+  /** The day the money was handed over: simple interest counts from it. */
+  startDate: string;
+  interestMode: LentInterestMode;
+  /** Annual simple interest, in percent. Required when the interest accrues; a paid-out loan's rate is worked out from what it pays. */
+  interestRate?: number;
+  /** Only for a Paid-out loan: how often the fixed amount arrives, and how much. */
+  payoutFrequency?: RecurrenceCycle;
+  payoutAmount?: number;
+  status: LentLoanStatus;
+  /** The day the last of it came back. Only on a Repaid loan. */
+  closedDate?: string;
+}
+
+/** What a repayment paid: some of the principal, or some interest. */
+export const LENT_REPAYMENT_KINDS = ["Principal", "Interest"] as const;
+export type LentRepaymentKind = (typeof LENT_REPAYMENT_KINDS)[number];
+
+/** Money that came back on a lent loan. Interest of a Paid-out loan arrives as Income instead, so this holds mostly principal and an Accruing loan's interest. */
+export interface LentRepayment {
+  id: string;
+  lentLoanId: string;
+  date: string;
+  amount: number;
+  kind: LentRepaymentKind;
+}

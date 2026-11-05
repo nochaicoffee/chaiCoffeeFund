@@ -3,6 +3,7 @@ import { epfBalance } from "./epf";
 import { totalCardOutstanding } from "./cards";
 import { totalEstimatedFixedDepositValue } from "./fixedDeposits";
 import { totalCostBasisInr } from "./investments";
+import { totalLentOut } from "./lentOut";
 import { totalLoanOutstanding } from "./loans";
 import type {
   Account,
@@ -11,6 +12,8 @@ import type {
   EpfEntry,
   FixedDeposit,
   InvestmentTransaction,
+  LentLoan,
+  LentRepayment,
   Loan,
   LoanInstallment,
   Statement,
@@ -27,6 +30,9 @@ export interface NetWorthInputs {
   fixedDeposits: FixedDeposit[];
   /** Every EPF entry (ADR 0011), of every account. Optional: a page that has none to give leaves EPF out. */
   epfEntries?: EpfEntry[];
+  /** Money lent to people, and what has come back. Optional: a page that has none to give leaves it out. */
+  lentLoans?: LentLoan[];
+  lentRepayments?: LentRepayment[];
   asOfDate: string;
 }
 
@@ -37,13 +43,15 @@ export interface NetWorthBreakdown {
   fixedDepositValueInr: number;
   /** EPF at the passbook figure: credits plus interest EPFO has credited, both shares. Never the interest still to come. */
   epfValueInr: number;
+  /** Principal still out plus interest still owed, across every loan to a person. Money owed by people, not held by a bank: it can go bad, so it is its own line. */
+  lentOutInr: number;
   cardOutstanding: number;
   loanOutstanding: number;
   netWorth: number;
 }
 
 /**
- * bank balances + investments + fixed deposits + EPF − card debt − loan debt.
+ * bank balances + investments + fixed deposits + EPF + money lent out − card debt − loan debt.
  * Subscriptions are deliberately excluded (see the plan: an unbilled future
  * subscription cost isn't a liability the way a loan's remaining principal
  * or a card's outstanding balance is).
@@ -60,6 +68,7 @@ export function computeNetWorth(inputs: NetWorthInputs): NetWorthBreakdown {
   // Each account on its own (the balance functions take one account's entries): a closed account still holds its balance.
   const epfEntries = inputs.epfEntries ?? [];
   const epfValueInr = [...new Set(epfEntries.map((e) => e.epfAccountId))].reduce((total, id) => total + epfBalance(epfEntries.filter((e) => e.epfAccountId === id), inputs.asOfDate).total, 0);
+  const lentOutInr = totalLentOut(inputs.lentLoans ?? [], inputs.lentRepayments ?? [], inputs.asOfDate);
   const cardOutstanding = totalCardOutstanding(inputs.cards, inputs.statements);
   const loanOutstanding = totalLoanOutstanding(inputs.loans, inputs.loanInstallments);
 
@@ -68,8 +77,9 @@ export function computeNetWorth(inputs: NetWorthInputs): NetWorthBreakdown {
     investmentValueInr,
     fixedDepositValueInr,
     epfValueInr,
+    lentOutInr,
     cardOutstanding,
     loanOutstanding,
-    netWorth: bankBalances + investmentValueInr + fixedDepositValueInr + epfValueInr - cardOutstanding - loanOutstanding,
+    netWorth: bankBalances + investmentValueInr + fixedDepositValueInr + epfValueInr + lentOutInr - cardOutstanding - loanOutstanding,
   };
 }
