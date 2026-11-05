@@ -2,6 +2,7 @@ import { BalanceTrendChart } from "@/components/BalanceTrendChart";
 import { RefreshButton } from "@/components/RefreshButton";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { StatTile } from "@/components/StatTile";
+import { overviewAttention } from "@/app/fixed-income/views";
 import { todayIso } from "@/lib/format/date";
 import { rupeeBalances, unpricedForPage } from "@/lib/prices/rupeeBalances";
 import { formatInr, formatUsd } from "@/lib/format/money";
@@ -11,6 +12,7 @@ import { cardName } from "@/lib/format/labels";
 import { totalEstimatedFixedDepositValue } from "@/lib/aggregate/fixedDeposits";
 import { pendingPayments, sumAmounts } from "@/lib/aggregate/incomeSchedule";
 import { totalCostBasisInr } from "@/lib/aggregate/investments";
+import { fixedIncome } from "@/lib/aggregate/fixedIncome";
 import { attentionItems } from "@/lib/goals/attention";
 import { computeLoanSummaries } from "@/lib/aggregate/loans";
 import { computeNetWorth } from "@/lib/aggregate/netWorth";
@@ -20,6 +22,9 @@ import {
   getCachedAccounts,
   getCachedBalanceSnapshots,
   getCachedCards,
+  getCachedEpfAccounts,
+  getCachedEpfEntries,
+  getCachedEpfRates,
   getCachedFixedDeposits,
   getCachedGoalContributions,
   getCachedGoals,
@@ -67,6 +72,14 @@ export default async function OverviewPage() {
   const today = todayIso();
   const yearMonth = today.slice(0, 7);
 
+  // EPF is counted at the passbook figure (ADR 0011). A problem reading its tabs is logged and flagged below, and mustn't take Overview down.
+  const epf = await Promise.all([getCachedEpfAccounts(), getCachedEpfEntries(), getCachedEpfRates()])
+    .then(([epfAccounts, epfEntries, epfRates]) => ({ epfAccounts, epfEntries, epfRates, failed: false }))
+    .catch((error) => {
+      console.error("[overview] EPF failed:", error instanceof Error ? error.message : String(error));
+      return { epfAccounts: [], epfEntries: [], epfRates: [], failed: true };
+    });
+
   const netWorth = computeNetWorth({
     accounts,
     balanceSnapshots,
@@ -76,6 +89,7 @@ export default async function OverviewPage() {
     loanInstallments,
     investmentTransactions,
     fixedDeposits,
+    epfEntries: epf.epfEntries,
     asOfDate: today,
   });
 
@@ -89,6 +103,7 @@ export default async function OverviewPage() {
   const pendingIncome = pendingPayments(incomeSources, incomeEntries, today);
 
   const attention: { label: string; detail: string }[] = [];
+  if (epf.failed) attention.push({ label: "EPF isn't counted", detail: "The EPF tabs couldn't be read, so net worth leaves EPF out until they can." });
   for (const account of unpriced?.accounts ?? []) {
     attention.push({ label: `${account.name} isn't counted`, detail: `${account.dollars === null ? "Its dollars" : formatUsd(account.dollars)} can't be turned into rupees: ${unpriced?.reason}. Net worth leaves it out until the rate is back.` });
   }
@@ -127,6 +142,10 @@ export default async function OverviewPage() {
     });
   for (const item of goalsAttention) attention.push({ label: item.label, detail: item.detail });
 
+  // A late EPF credit and a deposit that has matured and isn't closed (the Fixed Income page's own attention items).
+  const fixedIncomeNow = fixedIncome({ epfAccounts: epf.epfAccounts, epfEntries: epf.epfEntries, epfRates: epf.epfRates, deposits: fixedDeposits }, today);
+  attention.push(...overviewAttention(fixedIncomeNow, today));
+
   return (
     <div className="flex flex-col gap-6">
       <PageHeader section="Overview" title="Overview" actions={<RefreshButton />} />
@@ -134,10 +153,11 @@ export default async function OverviewPage() {
       <div className="rounded-lg border border-divider p-6">
         <div className="text-sm text-foreground/60">Net worth</div>
         <div className="mt-1 text-4xl font-bold">{formatInr(netWorth.netWorth)}</div>
-        <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-foreground/60 sm:grid-cols-5">
+        <div className="mt-3 grid grid-cols-2 gap-2 text-sm text-foreground/60 sm:grid-cols-3 lg:grid-cols-6">
           <span>Bank {formatInr(netWorth.bankBalances)}</span>
           <span>Investments {formatInr(netWorth.investmentValueInr)}</span>
           <span>Fixed deposits {formatInr(netWorth.fixedDepositValueInr)}</span>
+          <span>EPF {formatInr(netWorth.epfValueInr)}</span>
           <span>− Cards {formatInr(netWorth.cardOutstanding)}</span>
           <span>− Loans {formatInr(netWorth.loanOutstanding)}</span>
         </div>
@@ -155,6 +175,7 @@ export default async function OverviewPage() {
           label="Fixed deposits (est.)"
           value={formatInr(totalEstimatedFixedDepositValue(fixedDeposits, today))}
         />
+        <StatTile label="EPF (passbook)" value={formatInr(netWorth.epfValueInr)} />
         <StatTile label="Monthly obligations" value={formatInr(monthlyObligationsTotal)} tone="negative" />
       </div>
 

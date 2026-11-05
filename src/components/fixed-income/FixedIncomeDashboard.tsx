@@ -21,7 +21,8 @@ export function FixedIncomeDashboard({ doors, stages, attention, initialPick, ch
   return (
     <div className="flex flex-col gap-5">
       <AttentionStrip items={attention} />
-      <div role="group" aria-label="What to look at" className="grid grid-cols-1 gap-3 md:grid-cols-3">
+      {/* On a phone the doors slide sideways, one and a bit in view; from a tablet up they sit side by side. */}
+      <div role="group" aria-label="What to look at" className="-mx-4 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 md:mx-0 md:grid md:grid-cols-3 md:overflow-visible md:px-0 md:pb-0">
         {doors.map((door) => {
           const on = stage.id === door.id;
           return (
@@ -30,7 +31,7 @@ export function FixedIncomeDashboard({ doors, stages, attention, initialPick, ch
               type="button"
               aria-pressed={on}
               onClick={() => choose(door.id)}
-              className={`flex min-h-[104px] flex-col justify-between rounded-[20px] p-4 text-left text-on-card transition-[transform,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:p-5 ${on ? "scale-[1.015] shadow-[0_0_0_3px_var(--surface),0_0_0_5px_currentColor]" : "opacity-95 hover:opacity-100"}`}
+              className={`flex min-h-[104px] w-[78%] shrink-0 snap-start scroll-mx-4 flex-col justify-between rounded-[20px] p-4 text-left text-on-card transition md:w-auto md:shrink-[transform,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:p-5 ${on ? "scale-[1.015] shadow-[0_0_0_3px_var(--surface),0_0_0_5px_currentColor]" : "opacity-95 hover:opacity-100"}`}
               style={{ background: colorGradient(doorColor(door.id)) }}
             >
               <span className="text-[13px] font-extrabold">{door.label}</span>
@@ -45,13 +46,42 @@ export function FixedIncomeDashboard({ doors, stages, attention, initialPick, ch
           );
         })}
       </div>
-      <Stage stage={stage} />
+      {stage.empty ? <EmptyStage stage={stage} /> : <Stage stage={stage} />}
       {children}
     </div>
   );
 }
 
 const doorColor = (id: DoorId) => DOOR_COLOR[id];
+
+/** A door with nothing behind it yet: what to add, in the door's own colour. Everything with nothing offers both. */
+function EmptyStage({ stage }: { stage: StageView }) {
+  const deposits = useDepositForms();
+  const both = stage.id === "all";
+  const cards = [
+    ...(both || stage.id === "epf" ? [{ id: "epf" as const, title: "Add an EPF statement", text: "Download your passbook from the EPFO member portal and drop the PDF here. You see every row and a set of checks before anything is saved, and your UAN is never kept." }] : []),
+    ...(both || stage.id === "fd" ? [{ id: "fd" as const, title: "Add a deposit", text: "A fixed deposit. The date it started and how long it runs is enough: the bank and maturity amount can come later." }] : []),
+  ];
+  return (
+    <section aria-label={stage.title} className={`grid gap-4 ${cards.length > 1 ? "md:grid-cols-2" : ""}`}>
+      {cards.map((c) => (
+        <div key={c.id} className="flex flex-col gap-3 rounded-[26px] p-5 text-on-card md:p-7" style={{ background: colorGradient(doorColor(c.id)) }}>
+          <h2 className="text-xl font-extrabold">{c.title}</h2>
+          <p className="max-w-[56ch] text-[13px] font-medium text-on-card-muted">{c.text}</p>
+          <div>
+            {c.id === "epf" ? (
+              <AddEpfStatementButton />
+            ) : (
+              <button type="button" onClick={() => deposits.open({ kind: "add" })} className="min-h-10 rounded-full bg-on-card px-5 text-[13px] font-bold text-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-on-card">
+                Add a deposit
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+    </section>
+  );
+}
 
 function Stage({ stage }: { stage: StageView }) {
   const epf = useEpfForms();

@@ -3,7 +3,7 @@ import { HIS_ENTRIES } from "@/lib/aggregate/epf.fixture";
 import { fixedIncome } from "@/lib/aggregate/fixedIncome";
 import { HIS_DEPOSITS } from "@/lib/aggregate/fixedIncome.fixture";
 import type { EpfAccount } from "@/lib/sheets/types";
-import { attentionView, doorsView, formatLakh, greetingView, lakhParts, stagesView, summarySentence } from "./views";
+import { attentionView, doorsView, formatLakh, greetingView, lakhParts, overviewAttention, stagesView, summarySentence } from "./views";
 
 const TODAY = "2026-11-05";
 const account: EpfAccount = { id: "epf-1", name: "NetApp India", status: "Active", confirmedThrough: "2026-11-04" };
@@ -52,6 +52,7 @@ describe("the greeting, on his real numbers", () => {
 describe("what needs attention", () => {
   it("is the EPF interest still to be credited, and the deposits missing their bank and maturity amount", () => {
     expect(attentionView(f, TODAY).map((i) => i.kind)).toEqual(["interest", "incomplete"]);
+    expect(attentionView(f, TODAY).every((i) => i.tone === "warn")).toBe(true);
     expect(attentionView(f, TODAY)[0].title).toBe("EPF's FY 2026-27 interest isn't credited yet.");
     expect(attentionView(f, TODAY)[1].title).toBe("The 7 deposits have no bank and no maturity amount.");
   });
@@ -61,6 +62,11 @@ describe("what needs attention", () => {
     const items = attentionView(late, "2026-11-25");
     expect(items.map((i) => i.kind)).toEqual(["late", "due", "interest", "incomplete"]);
     expect(items[1].depositId).toBe("m");
+    expect(items.slice(0, 2).map((i) => i.tone)).toEqual(["late", "warn"]);
+    expect(items[0].title).toBe("October's EPF credit hasn't arrived.");
+    expect(items[0].text).toBe("Credits have come about the 18th; it is the 25th. Check your passbook, or add it by hand if you already know the amount.");
+    expect(items[1].title).toBe("₹15,000 FD · 13 Mar matured on Jul 2, 2026.");
+    expect(items[1].text).toMatch(/^₹1\d,\d\d\d should have reached your account\. Mark it closed once it has/);
     expect(new Set(items.map((i) => i.id)).size).toBe(items.length);
   });
   it("gives each late month its own item", () => {
@@ -78,6 +84,14 @@ describe("what needs attention", () => {
     expect(items[0].text).toMatch(/^The year ended on 31 March\. About ₹40,9\d\d is expected at 8\.25%/);
     expect(text(summarySentence(april))).toMatch(/of interest built up and not yet credited\./);
     expect(greetingView(april, "2026-04-20").interest?.rows.map((r) => r.name)).toEqual(["Rate used", "FY 2025-26, ended", "Credited last year"]);
+  });
+  it("tells him good news too: the interest EPFO has just credited, against the estimate", () => {
+    const uncredited = HIS_ENTRIES.filter((e) => !(e.kind === "Interest" && e.date === "2026-03-31"));
+    const credited = [...uncredited, { id: "i-new", epfAccountId: "epf-1", kind: "Interest" as const, date: "2026-03-31", employee: 20462, employer: 20462, pension: 0, source: "Typed" as const }];
+    const items = attentionView(fixedIncome({ ...input, epfEntries: credited }, "2026-06-10"), "2026-06-10");
+    const good = items.find((i) => i.kind === "credited")!;
+    expect(good).toMatchObject({ tone: "ok", typed: true, title: "FY 2025-26's interest was credited on Mar 31, 2026." });
+    expect(good.text).toMatch(/^EPFO credited ₹40,924; the estimate said ≈ ₹40,9\d\d\. The credited figure is what the page now shows\.$/);
   });
   it("is empty when there's nothing to say", () => {
     const quiet = fixedIncome({ ...input, epfEntries: [...HIS_ENTRIES], deposits: HIS_DEPOSITS.map((d) => ({ ...d, bankName: "HDFC" })) }, TODAY);
@@ -114,11 +128,42 @@ describe("the doors and their stages", () => {
     expect(s.tiles[3].value).toBe("₹215.31");
     expect(s.chart).toMatchObject({ kind: "epf" });
   });
+  it("a door with nothing behind it says so, and its stage invites the first", () => {
+    const nothing = fixedIncome({ epfAccounts: [], epfEntries: [], epfRates: [], deposits: [] }, TODAY);
+    expect(doorsView(nothing).map((d) => [d.total, d.sub])).toEqual([["₹0", "nothing yet"], ["₹0", "no statement yet"], ["₹0", "no deposits yet"]]);
+    const stages = stagesView({ epfAccounts: [], epfEntries: [], epfRates: [], deposits: [] }, nothing, TODAY);
+    expect([stages.all.empty, stages.epf.empty, stages.fd.empty]).toEqual([true, true, true]);
+    // EPF only: the deposits door is the empty one.
+    const epfOnly = fixedIncome({ ...input, deposits: [] }, TODAY);
+    const s = stagesView({ ...input, deposits: [] }, epfOnly, TODAY);
+    expect([s.all.empty, s.epf.empty, s.fd.empty]).toEqual([false, false, true]);
+    expect(stagesView(input, f, TODAY).all.empty).toBe(false);
+  });
   it("the deposits' stage has one bar for each, and none when none are held", () => {
     const s = stagesView(input, f, TODAY).fd;
     expect(s.chart).toMatchObject({ kind: "deposits" });
     expect(s.chart && s.chart.kind === "deposits" && s.chart.bars).toHaveLength(7);
     const none = fixedIncome({ ...input, deposits: [] }, TODAY);
     expect(stagesView({ ...input, deposits: [] }, none, TODAY).fd.chart).toBeNull();
+  });
+});
+
+describe("what the Overview borrows", () => {
+  it("only a late credit and a matured deposit, as a label and a detail", () => {
+    expect(overviewAttention(f, TODAY)).toEqual([]);
+    const matured = { ...HIS_DEPOSITS[0], id: "m", startDate: "2025-01-01", maturityDate: "2026-07-02" };
+    const late = fixedIncome({ ...input, epfAccounts: [{ ...account, confirmedThrough: "2026-11-25" }], deposits: [matured] }, "2026-11-25");
+    const items = overviewAttention(late, "2026-11-25");
+    expect(items.map((i) => i.label)).toEqual(["October's EPF credit hasn't arrived.", "₹15,000 FD · 13 Mar matured on Jul 2, 2026."]);
+    expect(items[0].detail).toMatch(/Check your passbook/);
+  });
+});
+
+describe("a declared rate", () => {
+  it("is called declared, not last year's", () => {
+    const declared = fixedIncome({ ...input, epfRates: [{ id: "r", epfAccountId: "epf-1", financialYear: "2026-27", ratePercent: 8.5, source: "Declared" }] }, TODAY);
+    const item = attentionView(declared, TODAY).find((i) => i.kind === "interest")!;
+    expect(item.text).toMatch(/at the declared 8\.5%\. EPFO credits it after the year ends\.$/);
+    expect(item.text).not.toMatch(/last year's/);
   });
 });

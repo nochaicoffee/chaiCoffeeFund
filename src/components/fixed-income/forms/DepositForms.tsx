@@ -112,9 +112,8 @@ export function ClosedDeposits() {
             <span className="font-semibold tabular-nums">
               {formatInr(d.principalAmount)} → {formatInr(d.receivedAmount ?? 0)}
             </span>
-            <span className="text-muted">
-              {d.closeKind === "Matured" ? "matured" : "closed early"} · received {d.closedDate ? formatDate(d.closedDate) : "—"}
-            </span>
+            <span className="text-muted">received {d.closedDate ? formatDate(d.closedDate) : "—"}</span>
+            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${d.closeKind === "Matured" ? "bg-accent-tint text-accent-text" : "bg-warning-tint text-warning-text"}`}>{d.closeKind === "Matured" ? "At maturity" : "Pre-closed"}</span>
             <span className="ml-auto flex gap-2">
               <button type="button" onClick={() => open({ kind: "reopen", id: d.id })} className={SMALL} aria-label={`Reopen ${d.name}`}>
                 Reopen
@@ -126,6 +125,7 @@ export function ClosedDeposits() {
           </li>
         ))}
       </ul>
+      <p className="text-[11px] font-medium text-muted">A pre-closed deposit pays less than its maturity amount, and the page shows what was actually received.</p>
     </section>
   );
 }

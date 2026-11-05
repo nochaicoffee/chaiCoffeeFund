@@ -6,6 +6,7 @@ import { FixedIncomeDashboard } from "@/components/fixed-income/FixedIncomeDashb
 import { AddDepositButton, DepositFormsProvider } from "@/components/fixed-income/forms/DepositForms";
 import { EpfEntriesList, EpfFormsProvider } from "@/components/fixed-income/forms/EpfForms";
 import { GreetingSentence } from "@/components/fixed-income/GreetingSentence";
+import { InterestCard } from "@/components/fixed-income/widgets/InterestCard";
 import { ComingUpCard } from "@/components/fixed-income/widgets/ComingUpCard";
 import { CreditsCard } from "@/components/fixed-income/widgets/CreditsCard";
 import { DepositsTable } from "@/components/fixed-income/widgets/DepositsTable";
@@ -15,12 +16,13 @@ import { MoneyInCard } from "@/components/fixed-income/widgets/MoneyInCard";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
 import { fixedIncome } from "@/lib/aggregate/fixedIncome";
+import { creditTiming } from "@/lib/aggregate/fixedIncomeWidgets";
 import { greetingFor, todayIso } from "@/lib/format/date";
 import { getCachedAccounts, getCachedEpfAccountsTab, getCachedEpfEntriesTab, getCachedEpfRatesTab, getCachedFixedDepositsTab } from "@/lib/sheets/cached";
 import { depositFormsData } from "./depositFormsData";
 import { epfFormsData } from "./epfFormsData";
 import { attentionView, doorsView, DOORS, greetingView, stagesView, summarySentence, type DoorId } from "./views";
-import { comingUpView, creditsView, depositsTableView, epfCardView, growthView, moneyInView } from "./widgetsView";
+import { comingUpView, creditsView, depositsTableView, epfCardView, growthView, interestView, moneyInView } from "./widgetsView";
 
 export const metadata: Metadata = { title: "Fixed Income" };
 
@@ -47,6 +49,8 @@ export default async function FixedIncomePage({ searchParams }: PageProps<"/fixe
   const deposits = depositsTableView(f, today);
   const comingUp = comingUpView(f, data, today);
   const epfCard = epfCardView(f, data, today);
+  const interest = interestView(f);
+  const timing = creditTiming(own);
   const row = "grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-12";
   const skipped = [accountsTab.skipped, entriesTab.skipped, ratesTab.skipped, depositsTab.skipped].filter((t) => t.rows.length > 0);
 
@@ -68,7 +72,7 @@ export default async function FixedIncomePage({ searchParams }: PageProps<"/fixe
             <GreetingSentence parts={summarySentence(f)} cards={greetingView(f, today)} />
             <SkippedRowsNotice tabs={skipped} />
           </PageHeader>
-          <FixedIncomeDashboard doors={doorsView(f)} stages={stagesView(data, f, today)} attention={attentionView(f, today)} initialPick={initialPick}>
+          <FixedIncomeDashboard doors={doorsView(f)} stages={stagesView(data, f, today)} attention={attentionView(f, today, timing)} initialPick={initialPick}>
             {moneyIn && <MoneyInCard view={moneyIn} />}
             {(credits || growth) && (
               <div className={row}>
@@ -77,6 +81,7 @@ export default async function FixedIncomePage({ searchParams }: PageProps<"/fixe
               </div>
             )}
             {deposits && <DepositsTable rows={deposits} />}
+            {interest && <InterestCard view={interest} />}
             {(comingUp || epfCard) && (
               <div className={row}>
                 {comingUp && <div className={epfCard ? "xl:col-span-6" : "xl:col-span-12"}><ComingUpCard items={comingUp.items} note={comingUp.note} /></div>}
