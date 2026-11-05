@@ -20,6 +20,7 @@ ADRs 0001–0006 were backfilled on 2026-10-16 from decisions made between 2026-
 | [0010](0010-insurance-terms-with-years.md) | Record insurance as a policy plus a payment for each term, with the years a premium buys | Accepted |
 | [0011](0011-epf-contributions-and-passbook-import.md) | Record EPF as contributions plus yearly interest, and import the passbook PDF | Accepted |
 | [0012](0012-foreign-currency-balances.md) | Keep a balance in its account's own currency, and count it in rupees at today's rate | Accepted |
+| [0013](0013-price-sources-and-history.md) | Prices come from Yahoo, AMFI and Frankfurter, saved once a day | Accepted |
 
 ## Template
 
