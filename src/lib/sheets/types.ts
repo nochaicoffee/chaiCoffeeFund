@@ -715,6 +715,35 @@ export interface EpfRate {
   source: EpfRateSource;
 }
 
+// ---------- Prices (ADR 0013): what each instrument is, and the closes saved once a day ----------
+/** A holding's identity and where its price comes from. A holding with no Instruments row is valued at cost and the page says so. */
+export interface Instrument {
+  id: string;
+  /** How it appears on his trades: NTAP, NIFTYBEES. */
+  symbol: string;
+  market: InvestmentMarket;
+  name: string;
+  assetType: InvestmentAssetType;
+  /** Yahoo's ticker (`NTAP`, `NIFTYBEES.NS`) or, for a mutual fund, its all-digit AMFI scheme code. */
+  priceTicker: string;
+  color?: Color;
+}
+
+/** Where a saved close came from. */
+export const PRICE_SOURCES = ["Yahoo", "AMFI", "Frankfurter"] as const;
+export type PriceSource = (typeof PRICE_SOURCES)[number];
+
+/** One day's close for one ticker (an instrument's, an index's such as `^NSEI`, or `USDINR=X`), saved as it was read. */
+export interface PriceSnapshot {
+  id: string;
+  /** An ISO day, on the exchange's own calendar. */
+  date: string;
+  ticker: string;
+  close: number;
+  currency: InvestmentCurrency;
+  source: PriceSource;
+}
+
 // ---------- Lent out: money lent to people, tracked outside any bank (docs/system-design.md, "Lent out") ----------
 /** Accruing: simple interest builds up and is paid with the principal, whenever the borrower pays. Paid-out: a fixed amount comes every period, and the principal stays out. */
 export const LENT_INTEREST_MODES = ["Accruing", "Paid-out"] as const;
