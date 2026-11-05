@@ -8,7 +8,7 @@ import type { FormState } from "@/lib/forms/formState";
 import { accountsRepository, createAccountSchema, updateAccountSchema } from "@/lib/sheets/accounts";
 import { balanceSnapshotsRepository, updateBalanceSnapshotSchema } from "@/lib/sheets/balanceSnapshots";
 import { CACHE_TAGS } from "@/lib/sheets/cached";
-import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
+import { isQuotaError, isTimeoutError, sheetsFailureMessage } from "@/lib/sheets/errors";
 import { cardsRepository } from "@/lib/sheets/cards";
 import { fixedDepositsRepository } from "@/lib/sheets/fixedDeposits";
 import { incomeSourcesRepository } from "@/lib/sheets/incomeSources";
@@ -30,7 +30,8 @@ const fields = (formData: FormData) => Object.fromEntries(formData.entries());
 
 function failed(action: string, error: unknown): FormState {
   console.error(`[accounts] ${action} failed:`, error instanceof Error ? error.message : String(error));
-  return isQuotaError(error) ? { status: "failed", message: sheetsFailureMessage(error) } : { status: "failed" };
+  // A quota refusal and a timeout each get their own words; a timeout can't say "nothing was written", as the request may have landed.
+  return isQuotaError(error) || isTimeoutError(error) ? { status: "failed", message: sheetsFailureMessage(error) } : { status: "failed" };
 }
 
 const GONE: FormState = { status: "invalid", errors: { form: "This account isn't in the Accounts tab any more. Close this and refresh." } };
@@ -41,23 +42,27 @@ function refreshed(...tags: string[]): FormState {
 }
 
 /**
- * Writes balances one at a time (so the Sheet isn't written concurrently): each replaces its
- * day's if there is one, else is added. The tab is read once for all of them, and each write
- * is added to what's known, so two for one account and day in a call still make one row.
+ * Writes balances in at most two Sheet calls however many there are: the ones whose day already has a
+ * balance replace it (one batch update), the rest are added (one append), so a check-in of eight accounts
+ * costs the same as one. The tab is read once for all of them. Two for one account and day in a call make
+ * one row, the later one winning. Updates go first, then the append, never at the same time, so the Sheet
+ * isn't written concurrently; if the append fails the replaced ones stay replaced, and saving again redoes
+ * the rest rather than doubling anything.
  */
 async function writeBalances(entries: { accountId: string; date: string; balance: number }[], known?: BalanceSnapshot[]): Promise<void> {
   known ??= await balanceSnapshotsRepository.list();
+  const replacing = new Map<string, number>();
+  const adding = new Map<string, Omit<BalanceSnapshot, "id">>();
   for (const { accountId, date, balance } of entries) {
     const same = sameDayBalance(known, accountId, date);
-    if (same) {
-      // Typed in by hand now, even if a statement gave the balance it replaces.
-      await balanceSnapshotsRepository.update(same.id, { balance, source: "Manual" });
-      same.balance = balance;
-      same.source = "Manual";
-    } else {
-      known.push(await balanceSnapshotsRepository.create({ accountId, date, balance, source: "Manual" }));
-    }
+    if (same) replacing.set(same.id, balance);
+    else adding.set(`${accountId}|${date}`, { accountId, date, balance, source: "Manual" });
   }
+  if (replacing.size > 0) {
+    // Typed in by hand now, even if a statement gave the balance it replaces.
+    await balanceSnapshotsRepository.updateMany([...replacing].map(([id, balance]) => ({ id, patch: { balance, source: "Manual" as const } })));
+  }
+  if (adding.size > 0) known.push(...(await balanceSnapshotsRepository.createMany([...adding.values()])));
 }
 
 /** Add account (with an optional opening balance, today's), or Edit account when the form carries an id. */
@@ -119,8 +124,17 @@ export async function saveBalance(_previous: FormState, formData: FormData): Pro
   return refreshed(CACHE_TAGS.balanceSnapshots);
 }
 
-/** The monthly check-in: every balance typed, for one day, one at a time so the Sheet isn't written concurrently. */
+/** What to say when a check-in fails: the batches go one after the other, so some of it may already be in the Sheet. */
+function checkInFailed(error: unknown): FormState {
+  console.error("[accounts] saveCheckIn failed:", error instanceof Error ? error.message : String(error));
+  const why = isQuotaError(error) ? "Google Sheets is busy: this minute's requests are used up." : isTimeoutError(error) ? "Google Sheets didn't answer in time." : "Couldn't finish saving to the Sheet.";
+  // Saving again replaces a balance already written rather than adding it twice, so trying again is always safe.
+  return { status: "failed", message: `${why} If some balances did go in, saving again replaces them, it won't double them.` };
+}
+
+/** The monthly check-in: every balance typed, for one day, in one batch update and one append so the Sheet isn't written concurrently. */
 export async function saveCheckIn(_previous: FormState, formData: FormData): Promise<FormState> {
+  const started = Date.now();
   let accountIds: string[];
   try {
     accountIds = (await accountsRepository.list()).map((a) => a.id);
@@ -129,11 +143,14 @@ export async function saveCheckIn(_previous: FormState, formData: FormData): Pro
   }
   const result = readCheckInForm(fields(formData), { accountIds }, todayIso());
   if (!result.ok) return { status: "invalid", errors: result.errors };
+  const wrote = Date.now();
   try {
     await writeBalances(result.input.balances.map((b) => ({ ...b, date: result.input.date })));
   } catch (error) {
-    // Some may have been written; saving again replaces them rather than doubling them.
-    return failed("saveCheckIn", error);
+    return checkInFailed(error);
+  } finally {
+    // Where the time goes, for when a save feels slow or fails: the Accounts read, then the writes.
+    console.info(`[accounts] saveCheckIn: ${result.input.balances.length} balances, accounts read ${wrote - started}ms, writes ${Date.now() - wrote}ms`);
   }
   return refreshed(CACHE_TAGS.balanceSnapshots);
 }

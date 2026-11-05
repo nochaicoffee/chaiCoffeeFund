@@ -1,7 +1,25 @@
 "use client";
 
-import { useEffect, useRef, type ComponentProps, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
 import { AlertIcon, CloseIcon } from "./icons";
+
+/** After this many seconds of saving, the button says how long it has been, so a slow save doesn't look like a stuck one. */
+const SLOW_AFTER_SECONDS = 4;
+
+/** Whole seconds since `pending` turned on, ticking each second; 0 while not pending. */
+function useSecondsPending(pending: boolean): number {
+  const [seconds, setSeconds] = useState(0);
+  useEffect(() => {
+    if (!pending) return;
+    const started = Date.now();
+    const tick = setInterval(() => setSeconds(Math.floor((Date.now() - started) / 1000)), 1000);
+    return () => {
+      clearInterval(tick);
+      setSeconds(0);
+    };
+  }, [pending]);
+  return seconds;
+}
 
 const COUNT_WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
 
@@ -65,7 +83,9 @@ export function FormDialog({
   }, [close]);
 
   const shut = () => ref.current?.close();
-  const label = pending ? "Saving…" : saveFailed ? "Try again" : primaryLabel;
+  const seconds = useSecondsPending(pending);
+  const slow = pending && seconds >= SLOW_AFTER_SECONDS;
+  const label = slow ? `Still saving… ${seconds}s` : pending ? "Saving…" : saveFailed ? "Try again" : primaryLabel;
 
   return (
     <dialog
@@ -129,6 +149,9 @@ export function FormDialog({
           >
             {label}
           </button>
+          <span role="status" className="sr-only">
+            {slow ? "Still saving to the Sheet. It's taking longer than usual." : ""}
+          </span>
         </footer>
       </form>
     </dialog>
