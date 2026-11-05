@@ -1,5 +1,5 @@
 import { colorGradient, type ColorKey } from "@/lib/format/colors";
-import { formatInr } from "@/lib/format/money";
+import { formatMoney } from "@/lib/format/money";
 import { RingTexture } from "../../RingTexture";
 
 /**
@@ -7,7 +7,7 @@ import { RingTexture } from "../../RingTexture";
  * previews: the dark gradient lit from the top, the faint rings from the corner, the bank's initial
  * in a small rounded square, the name, then its last 4 and balance. Greyed when closed.
  */
-export function MiniAccountCard({ colorKey, initial, name, last4, balance, corner, closed }: { colorKey: ColorKey; initial: string; name: string; last4?: string; balance?: number | null; corner?: string; closed?: boolean }) {
+export function MiniAccountCard({ colorKey, initial, name, last4, balance, corner, closed, currency = "INR", sub }: { colorKey: ColorKey; initial: string; name: string; last4?: string; balance?: number | null; corner?: string; closed?: boolean; currency?: "INR" | "USD"; sub?: string }) {
   return (
     <div
       className="relative isolate flex h-[156px] flex-col justify-between overflow-hidden rounded-[18px] border border-on-card-line border-t-on-card-line-top px-4 py-3.5 text-on-card shadow-[var(--tile-shadow)] max-md:h-[120px]"
@@ -22,7 +22,7 @@ export function MiniAccountCard({ colorKey, initial, name, last4, balance, corne
       <span className="min-w-0">
         <b className="block truncate text-lg">{name.trim() || "Account name"}</b>
         <span className="mt-1 flex justify-between text-xs font-semibold text-on-card-muted tabular-nums">
-          <span>{balance === undefined || balance === null ? "₹–" : formatInr(balance)}</span>
+          <span>{balance === undefined || balance === null ? (currency === "USD" ? "$–" : "₹–") : formatMoney(currency, balance)}{sub ? <span className="ml-1.5 font-medium text-on-card-faint">{sub}</span> : null}</span>
           <span className="tracking-[0.14em] text-on-card-faint">{last4 ? `•••• ${last4}` : "••••"}</span>
         </span>
       </span>

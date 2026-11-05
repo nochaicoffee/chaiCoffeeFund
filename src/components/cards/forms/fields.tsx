@@ -80,11 +80,11 @@ export function TextInput({ invalid, ...props }: ComponentProps<"input"> & { inv
 }
 
 /** A rupee amount: typed as text so "1,20,000" and "₹38,500.50" both work (parseAmountText reads it). */
-export function MoneyInput({ invalid, ...props }: ComponentProps<"input"> & { invalid: boolean }) {
+export function MoneyInput({ invalid, symbol = "₹", ...props }: ComponentProps<"input"> & { invalid: boolean; symbol?: string }) {
   return (
     <div className="relative">
       <span className="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-sm font-semibold text-muted" aria-hidden="true">
-        ₹
+        {symbol}
       </span>
       <input type="text" inputMode="decimal" autoComplete="off" {...props} className={`${inputClass(invalid)} pl-8`} />
     </div>

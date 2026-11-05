@@ -20,6 +20,8 @@ export interface CheckInReading {
   id: string;
   date: string;
   balance: number;
+  /** A dollar account's own figure, when the balance above is its rupee value. */
+  native?: number;
 }
 
 export interface CheckInCell {

@@ -79,6 +79,7 @@ function Row({ row }: { row: HistoryRowView }) {
       </div>
       <div role="cell" className="text-right">
         <b className="block text-sm font-extrabold">{row.balanceText}</b>
+        {row.balanceSub && <small className="block text-[11px] font-semibold text-muted">{row.balanceSub}</small>}
         <Change row={row} />
       </div>
       <div role="cell" className="flex justify-end">

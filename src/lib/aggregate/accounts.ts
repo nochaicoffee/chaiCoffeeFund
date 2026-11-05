@@ -59,8 +59,8 @@ export function totalAccountBalance(accounts: Account[], snapshots: BalanceSnaps
 // --- Carrying a balance forward (decision 1) ---
 
 /** An account's balance on a date: its latest on or before it, later row winning a tie. Null before its first. */
-export function balanceOn(snapshots: BalanceSnapshot[], accountId: string, date: string): BalanceSnapshot | null {
-  let found: BalanceSnapshot | null = null;
+export function balanceOn<S extends BalanceSnapshot>(snapshots: S[], accountId: string, date: string): S | null {
+  let found: S | null = null;
   for (const snapshot of snapshots) {
     if (snapshot.accountId !== accountId || snapshot.date > date) continue;
     if (!found || snapshot.date >= found.date) found = snapshot;

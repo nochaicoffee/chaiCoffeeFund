@@ -1,4 +1,4 @@
-import { CARD_COLORS, type AccountPurpose, type AccountType, type CardColor } from "../sheets/types";
+import { CARD_COLORS, type AccountCurrency, type AccountPurpose, type AccountType, type CardColor } from "../sheets/types";
 import { FieldReader, type FormFields, type FormResult } from "./fields";
 
 /**
@@ -8,6 +8,7 @@ import { FieldReader, type FormFields, type FormResult } from "./fields";
  */
 
 export const ACCOUNT_TYPES: readonly AccountType[] = ["Savings", "Current", "Brokerage"];
+export const ACCOUNT_CURRENCIES: readonly AccountCurrency[] = ["INR", "USD"];
 export const ACCOUNT_PURPOSES: readonly AccountPurpose[] = ["Spending", "Investment", "Emergency-Fund", "Loan-Payments"];
 
 export interface AccountInput {
@@ -17,6 +18,8 @@ export interface AccountInput {
   purpose: AccountPurpose;
   startDate: string;
   color: CardColor;
+  /** What its balances are in (ADR 0012). Only a Brokerage account can be in dollars. */
+  currency: AccountCurrency;
   /** Blank is none; on an edit "" clears it. */
   last4: string;
   /** Kept exactly as typed. Blank is absent, which Edit account treats as "keep the saved one". */
@@ -34,6 +37,11 @@ export function readAccountForm(fields: FormFields, editing: boolean): FormResul
   const purpose = f.choice("purpose", ACCOUNT_PURPOSES, "Choose what it's for");
   const startDate = f.date("startDate", "Enter when it was opened");
   const color = f.choice("color", CARD_COLORS, "Pick a colour");
+  // A form that doesn't send a currency (an older one) is rupees.
+  const currencyText = f.raw("currency").trim() || "INR";
+  const currency = (ACCOUNT_CURRENCIES as readonly string[]).includes(currencyText) ? (currencyText as AccountCurrency) : undefined;
+  if (!currency) f.fail("currency", "Choose rupees or dollars");
+  else if (currency === "USD" && accountType && accountType !== "Brokerage") f.fail("currency", "Only a brokerage account can be in dollars");
   const last4 = f.text("last4") ?? "";
   if (last4 && !/^\d{4}$/.test(last4)) f.fail("last4", "Enter just the last 4 digits, like 4821");
   const password = f.raw("statementPdfPassword");
@@ -45,6 +53,7 @@ export function readAccountForm(fields: FormFields, editing: boolean): FormResul
     purpose: purpose!,
     startDate: startDate!,
     color: color!,
+    currency: currency ?? "INR",
     last4,
     ...(password.trim() !== "" && { statementPdfPassword: password }),
     ...(balance !== undefined && { balance }),

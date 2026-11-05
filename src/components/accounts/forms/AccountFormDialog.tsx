@@ -7,7 +7,7 @@ import { cardColorKey, freeColor as sharedFreeColor } from "@/lib/format/colors"
 import { optionLabel } from "@/lib/format/labels";
 import { PURPOSE_COLORS } from "@/lib/aggregate/accounts";
 import type { AccountType } from "@/lib/sheets/types";
-import { ACCOUNT_PURPOSES, ACCOUNT_TYPES, readAccountForm } from "@/lib/forms/accountForms";
+import { ACCOUNT_CURRENCIES, ACCOUNT_PURPOSES, ACCOUNT_TYPES, readAccountForm } from "@/lib/forms/accountForms";
 import { IDLE } from "@/lib/forms/formState";
 import { parseAmountText } from "@/lib/format/money";
 import { CARD_COLORS, type CardColor } from "@/lib/sheets/types";
@@ -38,10 +38,13 @@ export function AccountFormDialog({ account, forms, onClose }: { account?: FormA
   const [startDate, setStartDate] = useState(account?.startDate ?? "");
   const [color, setColor] = useState<string>(account?.color ?? freeColor(forms.accounts));
   const [last4, setLast4] = useState(account?.last4 ?? "");
+  const [currency, setCurrency] = useState<string>(account?.currency ?? "INR");
   const [balance, setBalance] = useState("");
   const [password, setPassword] = useState("");
 
-  const values = { name, bank, accountType, purpose, startDate, color, last4, balance, statementPdfPassword: password };
+  // Only a brokerage account can be in dollars; any other type is rupees whatever was picked before.
+  const dollars = accountType === "Brokerage" && currency === "USD";
+  const values = { name, bank, accountType, purpose, startDate, color, currency: accountType === "Brokerage" ? currency : "INR", last4, balance, statementPdfPassword: password };
   const check = readAccountForm(values, editing);
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -58,7 +61,7 @@ export function AccountFormDialog({ account, forms, onClose }: { account?: FormA
       subtitle={editing ? account!.name : "Fill it in and watch the account take shape"}
       preview={
         <PreviewPanel caption="This is how the account will look in your account row. It updates as you type.">
-          <MiniAccountCard colorKey={cardColorKey(color as CardColor)} initial={bank.trim()[0]?.toUpperCase() ?? ""} name={name} last4={last4.length === 4 ? last4 : undefined} balance={editing ? account!.balance : opening} corner={optionLabel(purpose)} />
+          <MiniAccountCard colorKey={cardColorKey(color as CardColor)} initial={bank.trim()[0]?.toUpperCase() ?? ""} name={name} last4={last4.length === 4 ? last4 : undefined} currency={dollars ? "USD" : "INR"} balance={editing ? account!.balance : opening} corner={optionLabel(purpose)} />
           <ColorSwatches colors={CARD_COLORS} value={color} onChange={setColor} error={errors.color} />
         </PreviewPanel>
       }
@@ -79,6 +82,18 @@ export function AccountFormDialog({ account, forms, onClose }: { account?: FormA
         </p>
       )}
       <Segmented name="accountType" legend="Account type" required options={ACCOUNT_TYPES.map((t) => ({ value: t, label: t }))} value={accountType as AccountType} onChange={setType} error={errors.accountType} />
+      {accountType !== "Brokerage" && errors.currency && (
+        <p role="alert" className="rounded-[12px] bg-negative-tint px-3.5 py-2.5 text-xs font-semibold text-negative">
+          {errors.currency}
+        </p>
+      )}
+      {accountType === "Brokerage" && (
+        <>
+          <input type="hidden" name="currency" value={currency} />
+          <Segmented name="currencyChoice" legend="Currency" required options={ACCOUNT_CURRENCIES.map((c) => ({ value: c, label: c === "USD" ? "Dollars (USD)" : "Rupees (INR)" }))} value={currency as "INR" | "USD"} onChange={setCurrency} error={errors.currency} />
+          {currency === "USD" && <p className="-mt-2 text-xs font-medium text-muted">Its balance is kept in dollars and counted in rupees at today&rsquo;s rate. Cash has no cost, so the rate&rsquo;s move isn&rsquo;t shown as a gain.</p>}
+        </>
+      )}
       <div className="grid gap-x-3.5 gap-y-4 md:grid-cols-2">
         <Field id="name" label="Name" required error={errors.name}>
           <TextInput {...describedBy("name", errors.name, false)} data-autofocus name="name" value={name} onChange={(e) => setName(e.target.value)} onBlur={() => reveal("name")} invalid={Boolean(errors.name)} placeholder="e.g. HDFC Salary" />
@@ -97,7 +112,7 @@ export function AccountFormDialog({ account, forms, onClose }: { account?: FormA
         </Field>
         {!editing && (
           <Field id="balance" label="Balance today" help="Optional." error={errors.balance}>
-            <MoneyInput {...describedBy("balance", errors.balance, true)} name="balance" value={balance} onChange={(e) => setBalance(e.target.value)} onBlur={() => reveal("balance")} invalid={Boolean(errors.balance)} />
+            <MoneyInput {...describedBy("balance", errors.balance, true)} symbol={dollars ? "$" : "₹"} name="balance" value={balance} onChange={(e) => setBalance(e.target.value)} onBlur={() => reveal("balance")} invalid={Boolean(errors.balance)} />
           </Field>
         )}
         <div className="md:col-span-2">

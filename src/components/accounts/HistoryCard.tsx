@@ -74,6 +74,7 @@ function Table({ rows, all, onEdit, spacer = false }: { rows: HistoryTableRow[];
           </span>
           <b role="cell" className="text-right font-extrabold tabular-nums md:text-left">
             {r.balanceText}
+            {r.balanceSub && <small className="block text-[11px] font-semibold text-muted">{r.balanceSub}</small>}
           </b>
           <span role="cell" className={`text-xs font-bold whitespace-nowrap max-md:hidden ${r.changeTone === "up" ? "text-positive" : r.changeTone === "down" ? "text-negative" : "text-muted"}`}>
             {r.changeText}

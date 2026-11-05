@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { inRupees } from "@/lib/aggregate/accountCurrency";
 import type { AccountsData } from "@/lib/aggregate/accountFlows";
+import type { Account } from "@/lib/sheets/types";
 import { thisYear } from "@/lib/aggregate/period";
 import { demoAccountsData, demoReviews } from "@/lib/demo/accountsDemo";
 import { sentenceText } from "../cards/summarySentence";
@@ -225,3 +227,60 @@ describe("the hero's wallet, Trend and check-ins", () => {
     expect(empty.checkIns.facts[0].value).toBe("0");
   });
 });
+
+describe("a dollar account (ADR 0012)", () => {
+  const vested: Account = { id: "vested", name: "Vested cash", bank: "Vested", accountType: "Brokerage", purpose: "Investment", startDate: "2023-07-01", status: "Active", currency: "USD" };
+  const withDollars = (rate: number | null): AccountsData => {
+    const accounts = [...demo.accounts, vested];
+    const snapshots = [...demo.snapshots, { id: "v1", accountId: "vested", date: "2026-09-19", balance: 2790 }, { id: "v2", accountId: "vested", date: "2026-10-19", balance: 3000 }];
+    const r = inRupees(accounts, snapshots, rate);
+    return { ...demo, accounts: r.accounts, snapshots: r.snapshots, ...(rate ? { usdInr: rate } : { unpriced: { accounts: r.unpriced.map((u) => ({ id: u.account.id, name: u.account.name, dollars: 3000, account: u.account, snapshots: u.snapshots })), reason: "the rate service answered 503" } }) };
+  };
+
+  it("shows the rupee value as the figure and the dollars under it", () => {
+    const pick = accountsPageView(withDollars(94.64), today, period).picks.find((p) => p.id === "vested");
+    expect(pick?.balance).toBe("₹2,83,920");
+    expect(pick?.native).toBe("$3,000.00 at ₹94.64");
+    expect(pick?.change).toBe("+₹19,874 since the balance before");
+  });
+
+  it("gives a rupee account no dollar line, and All none", () => {
+    const view = accountsPageView(withDollars(94.64), today, period);
+    expect(view.picks.filter((p) => p.native !== null).map((p) => p.id)).toEqual(["vested"]);
+  });
+
+  it("counts it once in All", () => {
+    const view = accountsPageView(withDollars(94.64), today, period);
+    const rupees = view.picks.slice(1).reduce((sum, p) => sum + p.balanceValue, 0);
+    expect(view.picks[0].balanceValue).toBe(rupees);
+    expect(view.picks[0].balanceValue - accountsPageView(demo, today, period).picks[0].balanceValue).toBeCloseTo(2.8392e5, 0);
+  });
+
+  it("lists its balances in dollars with the rupees under, and starts an edit on the dollars", () => {
+    const row = historyRows(withDollars(94.64)).vested[0];
+    expect(row).toMatchObject({ balanceText: "$3,000.00", balanceSub: "≈ ₹2,83,920", balance: 3000, currency: "USD" });
+  });
+
+  it("gives its form dollars, today's rate and readings in dollars", () => {
+    const form = formsView(withDollars(94.64), today, false).accounts.find((a) => a.id === "vested");
+    expect(form).toMatchObject({ currency: "USD", rate: 94.64, balance: 3000 });
+    expect(form?.readings.map((r) => r.balance)).toEqual([2790, 3000]);
+  });
+
+  it("keeps the rupee total out of the form data's dollars", () => {
+    const forms = formsView(withDollars(94.64), today, false);
+    expect(forms.total).toBeCloseTo(formsView(demo, today, false).total + 3000 * 94.64, 0);
+  });
+
+  describe("with no rate", () => {
+    it("is left out of the cards and the total but can still be updated in dollars", () => {
+      const data = withDollars(null);
+      const view = accountsPageView(data, today, period);
+      expect(view.picks.some((p) => p.id === "vested")).toBe(false);
+      const form = view.forms.accounts.find((a) => a.id === "vested");
+      expect(form).toMatchObject({ currency: "USD", rate: null, balance: 3000 });
+      expect(view.forms.total).toBe(formsView(demo, today, false).total);
+    });
+  });
+});
+

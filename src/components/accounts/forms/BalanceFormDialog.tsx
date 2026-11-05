@@ -4,7 +4,7 @@ import { useActionState, useState, type FormEvent } from "react";
 import { saveBalance } from "@/app/accounts/actions";
 import type { AccountsFormsData } from "@/app/accounts/views";
 import { balanceBefore, isBigDrop, sameDayBalance } from "@/lib/aggregate/accounts";
-import { formatInr, parseAmountText } from "@/lib/format/money";
+import { formatInr, formatMoney, parseAmountText } from "@/lib/format/money";
 import { readBalanceForm } from "@/lib/forms/accountForms";
 import { IDLE } from "@/lib/forms/formState";
 import { DateInput, Field, MoneyInput, PreviewPanel, SelectInput, describedBy } from "../../cards/forms/fields";
@@ -43,7 +43,11 @@ export function BalanceFormDialog({ accountId, forms, onClose }: { accountId?: s
   const drop = next !== null && isBigDrop(last, next);
   // Only a balance on or after the latest one changes what's held today.
   const becomesLatest = !account?.latestDate || (date !== "" && date >= account.latestDate);
-  const allAfter = forms.total + (becomesLatest && next !== null ? next - (account?.balance ?? 0) : 0);
+  // The rupee total moves by the change in the account's own currency times its rate (a dollar account with no rate isn't in the total).
+  const rate = account?.rate ?? 0;
+  const currency = account?.currency ?? "INR";
+  const allAfter = forms.total + (becomesLatest && next !== null ? (next - (account?.balance ?? 0)) * rate : 0);
+  const inRupees = currency === "USD" && account?.rate && next !== null ? `≈ ${formatInr(next * account.rate)}` : undefined;
   const sameDay = date !== "" && sameDayBalance(readings, id, date) !== null;
 
   return (
@@ -53,12 +57,13 @@ export function BalanceFormDialog({ accountId, forms, onClose }: { accountId?: s
       subtitle={account ? account.name : "Record what an account holds"}
       preview={
         <PreviewPanel caption="A balance is saved as you type it, never worked out.">
-          {account && <MiniAccountCard colorKey={account.colorKey} initial={account.initial} name={account.name} last4={account.last4 || undefined} balance={becomesLatest ? (next ?? account.balance) : account.balance} corner={account.bank} closed={account.closed} />}
+          {account && <MiniAccountCard colorKey={account.colorKey} initial={account.initial} name={account.name} last4={account.last4 || undefined} currency={currency} sub={inRupees} balance={becomesLatest ? (next ?? account.balance) : account.balance} corner={account.bank} closed={account.closed} />}
           <SummaryBox
             rows={[
-              { label: "Now", value: account?.balance == null ? "No balance yet" : formatInr(account.balance) },
-              { label: "Change from the one before", value: change === null ? "–" : `${change >= 0 ? "+" : "−"}${formatInr(Math.abs(change))}` },
+              { label: "Now", value: account?.balance == null ? "No balance yet" : formatMoney(currency, account.balance) },
+              { label: "Change from the one before", value: change === null ? "–" : `${change >= 0 ? "+" : "−"}${formatMoney(currency, Math.abs(change))}` },
               { label: "All accounts", value: formatInr(allAfter) },
+              ...(currency === "USD" ? [{ label: "Counted at", value: account?.rate ? `₹${account.rate.toFixed(2)} a dollar` : "no rate today" }] : []),
             ]}
           />
         </PreviewPanel>
@@ -86,12 +91,12 @@ export function BalanceFormDialog({ accountId, forms, onClose }: { accountId?: s
           <DateInput {...describedBy("date", errors.date, false)} label="Read on" name="date" value={date} onChange={setDate} onBlur={() => reveal("date")} today={forms.today} invalid={Boolean(errors.date)} />
         </Field>
         <Field id="balance" label="Balance" required error={errors.balance}>
-          <MoneyInput {...describedBy("balance", errors.balance, false)} data-autofocus name="balance" value={balance} onChange={(e) => setBalance(e.target.value)} onBlur={() => reveal("balance")} invalid={Boolean(errors.balance)} />
+          <MoneyInput {...describedBy("balance", errors.balance, false)} symbol={currency === "USD" ? "$" : "₹"} data-autofocus name="balance" value={balance} onChange={(e) => setBalance(e.target.value)} onBlur={() => reveal("balance")} invalid={Boolean(errors.balance)} />
         </Field>
       </div>
       {drop && (
         <p role="status" className="rounded-[12px] bg-warning-tint px-3.5 py-2.5 text-xs font-semibold text-warning-text">
-          That&rsquo;s more than a fifth below the last balance, {formatInr(last!)}. Check it&rsquo;s right; you can still save it.
+          That&rsquo;s more than a fifth below the last balance, {formatMoney(currency, last!)}. Check it&rsquo;s right; you can still save it.
         </p>
       )}
       {sameDay && (

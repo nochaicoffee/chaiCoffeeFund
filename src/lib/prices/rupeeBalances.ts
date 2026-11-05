@@ -8,6 +8,8 @@ import { getUsdInr } from "./usdInr";
 export interface RupeeBalances extends InRupees {
   /** Why today's rate wasn't had, when a dollar account exists and it wasn't. Null otherwise. */
   rateProblem: string | null;
+  /** The rate the dollar accounts were counted at, or null when none was (or none was needed). */
+  usdInr: number | null;
 }
 
 /**
@@ -16,9 +18,9 @@ export interface RupeeBalances extends InRupees {
  * rupee accounts can't be affected by the rate service being down.
  */
 export async function rupeeBalances(accounts: Account[], snapshots: BalanceSnapshot[]): Promise<RupeeBalances> {
-  if (!needsRate(accounts)) return { ...inRupees(accounts, snapshots, null), rateProblem: null };
+  if (!needsRate(accounts)) return { ...inRupees(accounts, snapshots, null), rateProblem: null, usdInr: null };
   const rate = await getUsdInr();
-  return { ...inRupees(accounts, snapshots, rate.ok ? rate.rate : null), rateProblem: rate.ok ? null : rate.reason };
+  return { ...inRupees(accounts, snapshots, rate.ok ? rate.rate : null), rateProblem: rate.ok ? null : rate.reason, usdInr: rate.ok ? rate.rate : null };
 }
 
 /** Lets the dollars of an unpriced account be shown: its latest balance as typed. */
@@ -26,7 +28,7 @@ export function unpricedForPage({ unpriced, rateProblem }: RupeeBalances): Accou
   if (unpriced.length === 0) return undefined;
   const accounts = unpriced.map(({ account, snapshots }) => {
     const latest = [...snapshots].sort((a, b) => (a.date < b.date ? -1 : 1)).at(-1);
-    return { id: account.id, name: account.name, dollars: latest ? latest.balance : null };
+    return { id: account.id, name: account.name, dollars: latest ? latest.balance : null, account, snapshots };
   });
   return { accounts, reason: rateProblem ?? "today's USD to INR rate isn't available" };
 }
