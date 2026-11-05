@@ -70,7 +70,7 @@ export function summarySentence(f: FixedIncome): SentencePart[] {
   }
   if (f.perDay > 0) parts.push({ text: ", earning about " }, { text: `${rupees(f.perDay)} a day`, strong: true, point: "perDay" });
   parts.push({ text: ". " });
-  if (f.epf.estimate > 0) parts.push({ text: "EPF has " }, { text: `about ${rupees(f.epf.estimate)}`, strong: true, point: "interest" }, { text: " of this year's interest built up and not yet credited. " });
+  if (f.epf.estimate > 0) parts.push({ text: "EPF has " }, { text: `about ${rupees(f.epf.estimate)}`, strong: true, point: "interest" }, { text: ` of ${f.epf.holdings.some((h) => h.pendingPrior) ? "" : "this year's "}interest built up and not yet credited. ` });
   if (f.deposits.nextMaturity) parts.push({ text: "The next deposit matures " }, { text: monthsPhrase(f.deposits.nextMaturity.months), strong: true, point: "next" }, { text: "." });
   else if (f.deposits.due.length > 0) parts.push({ text: `${plural(f.deposits.due.length, "deposit has", "deposits have")} matured and is ` }, { text: "waiting to be closed", strong: true }, { text: "." });
   return parts;
@@ -120,14 +120,15 @@ export function greetingView(f: FixedIncome, today: string): FixedIncomeGreeting
       note: `About ${rupees(f.perMonth)} a month. Not a forecast: it is today's balance at today's rates.`,
     };
   }
-  if (f.epf.estimate > 0 && holding?.ratePercent) {
+  if (holding && f.epf.estimate > 0 && holding.ratePercent) {
     const first = financialYearStart(financialYearOf(today)).slice(0, 7);
     cards.interest = {
       title: "EPF interest, not credited yet",
       total: approx(f.epf.estimate),
       rows: [
         row("rate", "Rate used", DOOR_COLOR.epf, `${holding.ratePercent}%`, holding.rateSource === "Declared" ? "declared by EPFO" : "assumed: the latest known, until EPFO declares it"),
-        row("months", "Months counted", DOOR_COLOR.epf, String(holding.estimate.months), `${formatMonthShort(first)} to ${formatMonthShort(addMonthKey(first, holding.estimate.months - 1))}`),
+        ...(holding.pendingPrior ? [row("prior", `FY ${holding.pendingPrior.financialYear}, ended`, DOOR_COLOR.epf, approx(holding.pendingPrior.amount), "the whole year, waiting to be credited")] : []),
+        ...(holding.estimate.months > 0 ? [row("months", "Months counted this year", DOOR_COLOR.epf, String(holding.estimate.months), `${formatMonthShort(first)} to ${formatMonthShort(addMonthKey(first, holding.estimate.months - 1))}`)] : []),
         ...(holding.lastInterest ? [row("last", "Credited last year", DOOR_COLOR.epf, formatInr(holding.lastInterest.amount), formatDate(holding.lastInterest.date))] : []),
       ],
       note: "An estimate: each month's balance × rate ÷ 12, added up. It is replaced by the credited figure when you import the passbook that has it.",
@@ -164,8 +165,12 @@ export function attentionView(f: FixedIncome, today: string): AttentionItem[] {
     const first = f.deposits.due[0];
     items.push({ id: "due", kind: "due", title: f.deposits.due.length === 1 ? `${first.name} has matured.` : `${f.deposits.due.length} deposits have matured.`, text: "Close it when the money reaches your account, to record what you received.", depositId: first.id });
   }
-  if (f.epf.estimate > 0 && holding?.ratePercent) {
-    items.push({ id: "interest", kind: "interest", title: `EPF's FY ${financialYearOf(today)} interest isn't credited yet.`, text: `About ${rupees(f.epf.estimate)} has built up at last year's ${holding.ratePercent}%. The rate is declared later, so it stays an estimate.` });
+  if (holding?.pendingPrior) {
+    const p = holding.pendingPrior;
+    items.push({ id: "interest-prior", kind: "interest", title: `EPF's FY ${p.financialYear} interest isn't credited yet.`, text: `The year ended on 31 March. About ${rupees(p.amount)} is expected at ${p.ratePercent}%, ${p.rateSource === "Declared" ? "the declared rate" : "last year's"}. EPFO credits it after it declares the rate.` });
+  }
+  if (holding && holding.estimate.amount > 0 && holding.ratePercent) {
+    items.push({ id: "interest", kind: "interest", title: `EPF's FY ${financialYearOf(today)} interest isn't credited yet.`, text: `About ${rupees(holding.estimate.amount)} has built up at last year's ${holding.ratePercent}%. The rate is declared later, so it stays an estimate.` });
   }
   if (f.deposits.incomplete.length > 0) {
     const n = f.deposits.incomplete.length;
@@ -250,7 +255,9 @@ export function stagesView(input: FixedIncomeData, f: FixedIncome, today: string
     chips: holding ? [...(holding.ratePercent ? [`Rate ${holding.ratePercent}%`] : []), `Employee ${formatLakh(f.epf.employee)}`, `Employer ${formatLakh(f.epf.employer)}`, `Pension ${formatLakh(f.epf.pension)}`] : [],
     tiles: [
       { label: "Put in this year", value: rupees(holding?.putInThisYear.amount ?? 0), note: `${plural(holding?.putInThisYear.count ?? 0, "credit", "credits")}${holding?.lastCredit ? ` · ${formatInr(holding.lastCredit.amount)} a month now` : ""}` },
-      { label: "Interest not credited", value: f.epf.estimate > 0 ? approx(f.epf.estimate) : "none yet", note: holding?.ratePercent ? `${holding.estimate.months} months, at ${holding.ratePercent}%` : "no rate known" },
+      holding?.pendingPrior
+        ? { label: "Interest not credited", value: approx(holding.pendingPrior.amount + holding.estimate.amount), note: `FY ${holding.pendingPrior.financialYear}${holding.estimate.amount > 0 ? " and this year so far" : ""}, at ${holding.pendingPrior.ratePercent}%` }
+        : { label: "Interest not credited", value: f.epf.estimate > 0 ? approx(f.epf.estimate) : "none yet", note: holding?.ratePercent ? `${holding.estimate.months} months, at ${holding.ratePercent}%` : "no rate known" },
       { label: "Credited last year", value: holding?.lastInterest ? rupees(holding.lastInterest.amount) : "none yet", note: holding?.lastInterest ? `on ${formatDate(holding.lastInterest.date)}` : "until a passbook has it" },
       { label: "Earning a day", value: `₹${f.epf.perDay.toFixed(2)}`, note: "on the passbook balance" },
     ],

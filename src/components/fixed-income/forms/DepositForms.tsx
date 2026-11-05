@@ -97,52 +97,35 @@ export function AddDepositButton() {
 
 const SMALL = "min-h-8 rounded-full bg-fill px-3 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent";
 
-/** Every deposit: held ones by the soonest to mature, then Matured and pre-closed. The page's own deposits table (#269) replaces this list. */
-export function DepositsList() {
+/** The deposits that are closed (Matured and pre-closed), each with Reopen and Delete. */
+export function ClosedDeposits() {
   const { forms, open } = useDepositForms();
-  if (forms.deposits.length === 0) return null;
-  const held = forms.deposits.filter((d) => d.status !== "Closed");
   const closed = forms.deposits.filter((d) => d.status === "Closed");
+  if (closed.length === 0) return <p className="text-xs font-medium text-muted">Nothing matured or closed yet.</p>;
   return (
-    <div className="flex flex-col gap-5">
-      {held.length > 0 && (
-        <section aria-label="Deposits" className="flex flex-col gap-2">
-          <h2 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Deposits · {held.length}</h2>
-          <ul className="flex flex-col divide-y divide-divider rounded-[14px] border border-surface-line">
-            {held.map((d) => (
-              <li key={d.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-3.5 py-2.5 text-sm">
-                <span className="min-w-40 font-bold">{d.name}</span>
-                <span className="font-semibold tabular-nums">{formatInr(d.principalAmount)}</span>
-                <span className="text-muted tabular-nums">{d.interestRate}% · matures {formatDate(d.maturityDate)}</span>
-                <span className="text-muted tabular-nums">worth about {formatInr(Math.round(d.worth))}</span>
-                {d.due && <span className="rounded-full bg-warning-tint px-2 py-0.5 text-[10px] font-bold text-warning-text">matured · close it</span>}
-                <span className="ml-auto flex gap-2">
-                  <button type="button" onClick={() => open({ kind: "edit", id: d.id })} className={SMALL} aria-label={`Edit ${d.name}`}>Edit</button>
-                  <button type="button" onClick={() => open({ kind: "close", id: d.id })} className={SMALL} aria-label={`Close ${d.name}`}>Close</button>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-      {closed.length > 0 && (
-        <section aria-label="Matured and pre-closed" className="flex flex-col gap-2">
-          <h2 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Matured and pre-closed · {closed.length}</h2>
-          <ul className="flex flex-col divide-y divide-divider rounded-[14px] border border-surface-line">
-            {closed.map((d) => (
-              <li key={d.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-3.5 py-2.5 text-sm">
-                <span className="min-w-40 font-bold">{d.name}</span>
-                <span className="font-semibold tabular-nums">{formatInr(d.principalAmount)} → {formatInr(d.receivedAmount ?? 0)}</span>
-                <span className="text-muted">{d.closeKind === "Matured" ? "matured" : "closed early"} · received {d.closedDate ? formatDate(d.closedDate) : "—"}</span>
-                <span className="ml-auto flex gap-2">
-                  <button type="button" onClick={() => open({ kind: "reopen", id: d.id })} className={SMALL} aria-label={`Reopen ${d.name}`}>Reopen</button>
-                  <button type="button" onClick={() => open({ kind: "delete", id: d.id })} className={SMALL} aria-label={`Delete ${d.name}`}>Delete</button>
-                </span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-    </div>
+    <section aria-label="Matured and pre-closed" className="flex flex-col gap-2">
+      <h3 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Matured and pre-closed · {closed.length}</h3>
+      <ul className="flex flex-col divide-y divide-divider rounded-[14px] border border-surface-line">
+        {closed.map((d) => (
+          <li key={d.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-3.5 py-2.5 text-sm">
+            <span className="min-w-40 font-bold">{d.name}</span>
+            <span className="font-semibold tabular-nums">
+              {formatInr(d.principalAmount)} → {formatInr(d.receivedAmount ?? 0)}
+            </span>
+            <span className="text-muted">
+              {d.closeKind === "Matured" ? "matured" : "closed early"} · received {d.closedDate ? formatDate(d.closedDate) : "—"}
+            </span>
+            <span className="ml-auto flex gap-2">
+              <button type="button" onClick={() => open({ kind: "reopen", id: d.id })} className={SMALL} aria-label={`Reopen ${d.name}`}>
+                Reopen
+              </button>
+              <button type="button" onClick={() => open({ kind: "delete", id: d.id })} className={SMALL} aria-label={`Delete ${d.name}`}>
+                Delete
+              </button>
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
   );
 }

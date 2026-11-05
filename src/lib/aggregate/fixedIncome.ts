@@ -1,6 +1,6 @@
 import type { EpfAccount, EpfEntry, EpfRate, FixedDeposit } from "../sheets/types";
 import { daysBetween } from "./cardSpend";
-import { entriesOfAccount, epfBalance, epfMonthStates, epfRateForYear, financialYearOf, interestNotYetCredited, type EpfMonth, type EpfRateKind, type InterestEstimate } from "./epf";
+import { entriesOfAccount, epfBalance, epfMonthStates, epfRateForYear, financialYearEnd, financialYearOf, financialYearStart, interestNotYetCredited, type EpfMonth, type EpfRateKind, type InterestEstimate } from "./epf";
 import { compoundedValue, estimatedCurrentValue } from "./fixedDeposits";
 import { addMonthsUTC } from "./recurring";
 
@@ -32,6 +32,11 @@ export interface EpfHolding {
   creditedInterest: number;
   /** The interest built up this year and not credited yet: an estimate. */
   estimate: InterestEstimate;
+  /**
+   * The year that ended last 31 March and whose interest EPFO hasn't credited yet (it declares the rate and credits it weeks or months
+   * later), worked out the same way. Null when it is credited, or there was no money in it.
+   */
+  pendingPrior: { financialYear: string; amount: number; ratePercent: number; rateSource: EpfRateKind } | null;
   /** The next credit expected (or the one that is late), and whether it is late. */
   nextCredit: { wageMonth: string; due: string; amount: number; late: boolean } | null;
   /** Wage months that are late: their usual day has passed by a passbook printed after it, and no credit is there. */
@@ -63,6 +68,7 @@ export interface DepositsSummary {
 }
 
 export interface FixedIncome {
+  /** `estimate` is the interest built up and not credited: this year's, and last year's if EPFO hasn't credited it yet. */
   epf: { holdings: EpfHolding[]; total: number; employee: number; employer: number; pension: number; creditedInterest: number; estimate: number; perDay: number };
   deposits: DepositsSummary;
   /** EPF (employee + employer) and deposits at what they are worth today. */
@@ -94,6 +100,10 @@ function epfHolding(account: EpfAccount, entries: EpfEntry[], rates: EpfRate[], 
   const balance = epfBalance(own, today);
   const rate = epfRateForYear(own, rates.filter((r) => r.epfAccountId === account.id), fy);
   const confirmedThrough = account.confirmedThrough ?? null;
+  const ownRates = rates.filter((r) => r.epfAccountId === account.id);
+  const priorFy = financialYearOf(addMonthsUTC(financialYearStart(fy), -1));
+  const priorEnd = financialYearEnd(priorFy);
+  const prior = own.some((e) => e.date <= priorEnd) ? interestNotYetCredited(own, ownRates, priorEnd) : null;
   // This year's months, then next year's: the Feb wages are credited in March, and the next one may belong to the following year.
   const states = [fy, financialYearOf(addMonthsUTC(`${today.slice(0, 7)}-01`, 12))].flatMap((year) => epfMonthStates(own, year, confirmedThrough));
   // A closed account (an old employer's) keeps its balance but is not expected to receive anything more.
@@ -109,7 +119,8 @@ function epfHolding(account: EpfAccount, entries: EpfEntry[], rates: EpfRate[], 
     ratePercent: rate?.ratePercent ?? null,
     rateSource: rate?.source ?? null,
     creditedInterest: sum(own.filter((e) => e.kind === "Interest").map((e) => e.employee + e.employer)),
-    estimate: interestNotYetCredited(own, rates.filter((r) => r.epfAccountId === account.id), today),
+    estimate: interestNotYetCredited(own, ownRates, today),
+    pendingPrior: prior && !prior.credited && prior.amount > 0 && prior.ratePercent !== null && prior.source !== null ? { financialYear: priorFy, amount: prior.amount, ratePercent: prior.ratePercent, rateSource: prior.source } : null,
     nextCredit: next?.due ? { wageMonth: next.wageMonth, due: next.due, amount: next.amount, late: next.state === "Late" } : null,
     lateMonths: open ? states.filter((m) => m.state === "Late") : [],
     confirmedThrough,
@@ -163,7 +174,7 @@ export function fixedIncome(input: FixedIncomeInput, today: string): FixedIncome
       employer: sum(holdings.map((h) => h.employer)),
       pension: sum(holdings.map((h) => h.pension)),
       creditedInterest: epfCredited,
-      estimate: sum(holdings.map((h) => h.estimate.amount)),
+      estimate: sum(holdings.map((h) => h.estimate.amount + (h.pendingPrior?.amount ?? 0))),
       perDay: epfPerDay,
     },
     deposits,
