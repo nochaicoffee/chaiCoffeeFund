@@ -6,8 +6,8 @@ import type { FieldErrors } from "./fields";
  */
 export type FormState =
   | { status: "idle" }
-  /** Some fields need fixing; nothing was sent to the Sheet. */
-  | { status: "invalid"; errors: FieldErrors; duplicate?: DuplicateStatement }
+  /** Some fields need fixing; nothing was sent to the Sheet. `overridable` is a warning, not a block: the dialog offers "Record it anyway", which sends the form again with `confirmed` set. */
+  | { status: "invalid"; errors: FieldErrors; duplicate?: DuplicateStatement; overridable?: boolean }
   /** The Sheet write failed; nothing was written. The dialog offers Try again, with the reason when there is one (lib/sheets/errors.ts). */
   | { status: "failed"; message?: string }
   /** Saved; `at` makes every save a new state, so the dialog can close on it. `undo` is what a toast can take back (Record income, #190). */
