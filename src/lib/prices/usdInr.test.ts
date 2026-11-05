@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseUsdInr } from "./usdInr";
+import { parseUsdInrOn } from "./usdInrParse";
 
 describe("parseUsdInr", () => {
   it("reads Frankfurter's latest rate and its date", () => {
@@ -26,5 +27,27 @@ describe("parseUsdInr", () => {
   it("gives a reason a person can read when it fails", () => {
     const failed = parseUsdInr({ date: "2026-11-04", rates: {} });
     expect(failed.ok === false && failed.reason).toMatch(/no USD to INR rate/);
+  });
+});
+
+describe("parseUsdInrOn", () => {
+  it("takes the answer for the day asked", () => {
+    expect(parseUsdInrOn({ date: "2026-10-30", rates: { INR: 94.95 } }, "2026-10-30")).toEqual({ ok: true, rate: 94.95, date: "2026-10-30" });
+  });
+
+  it("takes the last working day's rate for a weekend", () => {
+    expect(parseUsdInrOn({ date: "2026-10-30", rates: { INR: 94.95 } }, "2026-11-01").ok).toBe(true);
+  });
+
+  it("refuses an answer from after the day asked", () => {
+    expect(parseUsdInrOn({ date: "2026-11-02", rates: { INR: 94.95 } }, "2026-10-30").ok).toBe(false);
+  });
+
+  it("refuses an answer from far before the day asked (a gap, not a weekend)", () => {
+    expect(parseUsdInrOn({ date: "2026-10-01", rates: { INR: 94.95 } }, "2026-10-30").ok).toBe(false);
+  });
+
+  it("fails on a bad body", () => {
+    expect(parseUsdInrOn({}, "2026-10-30").ok).toBe(false);
   });
 });
