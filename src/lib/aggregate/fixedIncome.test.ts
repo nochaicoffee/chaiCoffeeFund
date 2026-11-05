@@ -113,6 +113,57 @@ describe("states", () => {
   });
 });
 
+describe("earned and put in count what was closed and what a paid-out deposit has paid", () => {
+  const closed: FixedDeposit = { ...HIS_DEPOSITS[0], id: "closed", status: "Closed", closedDate: "2026-09-14", receivedAmount: 16400, closeKind: "Pre-closed" };
+  it("a closed deposit's gain is what reached him less what he placed, and it stays in what he put in", () => {
+    const withClosed = fixedIncome({ ...input, deposits: [closed, ...HIS_DEPOSITS.slice(1)] }, TODAY);
+    const base = fixedIncome({ ...input, deposits: HIS_DEPOSITS.slice(1) }, TODAY);
+    expect(withClosed.deposits.closedGain).toBe(1400);
+    expect(withClosed.deposits.closedPlaced).toBe(15000);
+    expect(withClosed.earned).toBeCloseTo(base.earned + 1400, 6);
+    expect(withClosed.putIn).toBe(base.putIn + 15000);
+    // It holds nothing now.
+    expect(withClosed.deposits.held).toHaveLength(6);
+  });
+  it("closing a deposit doesn't make 'earned' fall", () => {
+    const before = fixedIncome(input, TODAY);
+    const after = fixedIncome({ ...input, deposits: [{ ...HIS_DEPOSITS[0], status: "Closed", closedDate: "2026-11-05", receivedAmount: 15764, closeKind: "Pre-closed" }, ...HIS_DEPOSITS.slice(1)] }, TODAY);
+    expect(Math.abs(after.earned - before.earned)).toBeLessThan(5);
+    expect(after.putIn).toBe(before.putIn);
+  });
+  it("closing a paid-out deposit doesn't make 'earned' fall either: what it paid before closing stays", () => {
+    const payout: FixedDeposit = { ...HIS_DEPOSITS[0], compoundingType: "Non-Cumulative", payoutFrequency: "Quarterly", startDate: "2026-01-01", maturityDate: "2027-01-01" };
+    const only = (d: FixedDeposit) => fixedIncome({ epfAccounts: [], epfEntries: [], epfRates: [], deposits: [d] }, "2026-07-02");
+    const held = only(payout);
+    const closedAtPar = only({ ...payout, status: "Closed", closedDate: "2026-07-02", receivedAmount: 15000, closeKind: "Pre-closed" });
+    expect(held.earned).toBeGreaterThan(500);
+    expect(closedAtPar.earned).toBeCloseTo(held.earned, 6);
+    // Interest stops at the day it closed, not at today.
+    const later = fixedIncome({ epfAccounts: [], epfEntries: [], epfRates: [], deposits: [{ ...payout, status: "Closed", closedDate: "2026-07-02", receivedAmount: 15000, closeKind: "Pre-closed" }] }, "2026-12-01");
+    expect(later.earned).toBeCloseTo(held.earned, 6);
+  });
+  it("a deposit closed for less than was placed (a penalty) makes a loss, which lowers 'earned'", () => {
+    const f2 = fixedIncome({ ...input, deposits: [{ ...HIS_DEPOSITS[0], status: "Closed", closedDate: "2026-11-05", receivedAmount: 14800, closeKind: "Pre-closed" }] }, TODAY);
+    expect(f2.deposits.closedGain).toBe(-200);
+    expect(f2.earned).toBeCloseTo(f2.epf.creditedInterest - 200, 6);
+  });
+  it("a closed deposit with no amount recorded counts nothing rather than a guess", () => {
+    const f2 = fixedIncome({ ...input, deposits: [{ ...HIS_DEPOSITS[0], status: "Closed" }] }, TODAY);
+    expect(f2.deposits.closedGain).toBe(0);
+    expect(f2.deposits.closedPlaced).toBe(0);
+  });
+  it("a paid-out deposit has paid simple interest on what was placed, for the days run, and never past its maturity", () => {
+    const payout: FixedDeposit = { ...HIS_DEPOSITS[0], compoundingType: "Non-Cumulative", payoutFrequency: "Quarterly", startDate: "2026-01-01", maturityDate: "2027-01-01" };
+    const f2 = fixedIncome({ epfAccounts: [], epfEntries: [], epfRates: [], deposits: [payout] }, "2026-07-02");
+    expect(f2.deposits.paidOut).toBeCloseTo((15000 * 7.75 * 182) / 100 / 365, 6);
+    expect(f2.deposits.worth).toBe(15000);
+    expect(f2.earned).toBeCloseTo(f2.deposits.paidOut, 6);
+    const after = fixedIncome({ epfAccounts: [], epfEntries: [], epfRates: [], deposits: [payout] }, "2027-06-01");
+    expect(after.deposits.paidOut).toBeCloseTo((15000 * 7.75 * 365) / 100 / 365, 6);
+    expect(fixedIncome(input, TODAY).deposits.paidOut).toBe(0);
+  });
+});
+
 describe("series", () => {
   it("builds up from the first contribution: EPF rises every month and the deposits begin in March 2026", () => {
     const series = builtUpSeries(input, TODAY);
