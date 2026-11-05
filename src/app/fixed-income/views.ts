@@ -91,7 +91,7 @@ export function greetingView(f: FixedIncome, today: string): FixedIncomeGreeting
         ...(f.epf.total > 0 ? [row("epf", "EPF", DOOR_COLOR.epf, formatLakh(f.epf.total), "as the passbook says", f.epf.total / f.total)] : []),
         ...(f.deposits.held.length > 0 ? [row("fd", "Deposits", DOOR_COLOR.fd, formatLakh(f.deposits.worth), `${plural(f.deposits.held.length, "deposit", "deposits")}, an estimate`, f.deposits.worth / f.total)] : []),
       ],
-      note: `You put in ${formatLakh(f.putIn)}; ${rupees(f.earned)} of it is interest earned so far.`,
+      note: `You've put in ${formatLakh(f.putIn)} in all and earned ${rupees(f.earned)} in interest so far.`,
     };
   }
   if (holding && f.epf.total > 0) {
@@ -279,7 +279,7 @@ export function stagesView(input: FixedIncomeData, f: FixedIncome, today: string
     caption: `${epfShare}% of it is EPF${f.epf.estimate > 0 ? ` · ${approx(f.epf.estimate)} more interest is on its way` : ""}`,
     chips: [`Earning ${rupees(f.perDay)} a day`, ...(next ? [next.late ? `Credit late: expected about ${formatShortDate(next.due)}` : `Next in about ${formatShortDate(next.due)}`] : [])],
     tiles: [
-      { label: "Earned so far", value: rupees(f.earned), note: "EPF interest credited and the deposits' interest" },
+      { label: "Earned so far", value: rupees(f.earned), note: "EPF interest credited and the deposits' interest, closed and paid-out ones included" },
       { label: "Put in", value: formatLakh(f.putIn), note: "your and your employer's contributions, and the deposits" },
       { label: "Earning a month", value: rupees(f.perMonth), note: "at today's pace" },
       f.deposits.nextMaturity
@@ -321,7 +321,7 @@ export function stagesView(input: FixedIncomeData, f: FixedIncome, today: string
     chips: [],
     tiles: [
       { label: "Placed", value: rupees(f.deposits.placed), note: plural(f.deposits.held.length, "deposit", "deposits") },
-      { label: "Built up", value: rupees(f.deposits.accrued), note: "interest so far, by quarterly compounding" },
+      { label: "Built up", value: rupees(f.deposits.accrued + f.deposits.paidOut), note: f.deposits.paidOut > 0 ? "interest so far; a paid-out one's is accrued, an estimate" : "interest so far, by quarterly compounding" },
       { label: "Earning a day", value: rupees(f.perDay - f.epf.perDay), note: "at each one's own rate" },
       f.deposits.nextMaturity ? { label: "First matures", value: formatDate(f.deposits.nextMaturity.deposit.maturityDate), note: monthsPhrase(f.deposits.nextMaturity.months) } : { label: "First matures", value: "none", note: "nothing running" },
     ],

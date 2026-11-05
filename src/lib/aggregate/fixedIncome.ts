@@ -62,8 +62,16 @@ export interface DepositsSummary {
   worthOf: Record<string, number>;
   worth: number;
   placed: number;
-  /** Worth minus placed: the interest built up so far (a payout deposit's is paid out, so it counts nothing here). */
+  /** Worth minus placed: the interest built up so far inside deposits that add their interest to themselves. */
   accrued: number;
+  /**
+   * The interest the held deposits that pay theirs out have paid so far: simple interest on what was placed, for the days run (an
+   * estimate: it ignores the bank's payout dates and any tax cut). Zero for a deposit that adds its interest to itself.
+   */
+  paidOut: number;
+  /** Closed deposits: what was placed in them, and what they made: what reached him less that, as recorded when each was closed, plus what a paid-out one paid before. */
+  closedPlaced: number;
+  closedGain: number;
   /** The soonest to mature of those held, and how many whole months away it is. */
   nextMaturity: { deposit: FixedDeposit; months: number } | null;
   /** Held and past the maturity day: waiting to be closed. */
@@ -78,9 +86,12 @@ export interface FixedIncome {
   deposits: DepositsSummary;
   /** EPF (employee + employer) and deposits at what they are worth today. */
   total: number;
-  /** What he has put in: the balance less what EPFO credited as interest, plus what the deposits were placed at. */
+  /** What he has put in, for good: the EPF balance less what EPFO credited as interest, plus what every deposit, held or closed, was placed at. */
   putIn: number;
-  /** Interest credited by EPFO plus what the deposits have built up. Not the estimate for the year in progress. */
+  /**
+   * All the interest so far: what EPFO credited, what the deposits that add theirs have built up, what the paid-out ones have paid
+   * (an estimate), and what the closed ones made. Not the estimate for the year in progress.
+   */
   earned: number;
   /** What it earns at today's rates, for a day and for an average month. */
   perDay: number;
@@ -162,18 +173,35 @@ const lastOf = (rows: EpfEntry[]): { date: string; amount: number } | null => {
   return last ? { date: last.date, amount: last.employee + last.employer + last.pension } : null;
 };
 
+/**
+ * What a deposit that pays its interest out has paid up to `asOf`: simple interest on what was placed for the days it ran, never past
+ * its maturity. An estimate (it accrues daily and ignores the bank's payout dates and any tax cut). Zero for one that adds its interest.
+ */
+function paidOutInterest(d: FixedDeposit, asOf: string): number {
+  if (d.compoundingType !== "Non-Cumulative") return 0;
+  const days = Math.max(0, Math.min(daysBetween(d.startDate, asOf), daysBetween(d.startDate, d.maturityDate)));
+  return (d.principalAmount * d.interestRate * days) / 100 / 365;
+}
+
 function depositsSummary(deposits: FixedDeposit[], today: string): DepositsSummary {
   const held = deposits.filter((d) => d.status !== "Closed").sort((a, b) => (a.maturityDate < b.maturityDate ? -1 : a.maturityDate > b.maturityDate ? 1 : a.startDate < b.startDate ? -1 : 1));
   const worthOf = Object.fromEntries(held.map((d) => [d.id, estimatedCurrentValue(d, today)]));
   const worth = sum(Object.values(worthOf));
   const placed = sum(held.map((d) => d.principalAmount));
   const upcoming = held.find((d) => d.maturityDate > today);
+  // A payout deposit holds its principal and pays its interest out: simple interest for the days it has run, never past maturity.
+  const paidOut = sum(held.map((d) => paidOutInterest(d, today)));
+  const closed = deposits.filter((d) => d.status === "Closed" && d.receivedAmount !== undefined);
   return {
     held,
     worthOf,
     worth,
     placed,
     accrued: worth - placed,
+    paidOut,
+    closedPlaced: sum(closed.map((d) => d.principalAmount)),
+    // What reached him less what he placed, plus (for a paid-out one) the interest it paid before it closed, so closing never makes it fall.
+    closedGain: sum(closed.map((d) => d.receivedAmount! - d.principalAmount + paidOutInterest(d, d.closedDate ?? d.maturityDate))),
     nextMaturity: upcoming ? { deposit: upcoming, months: wholeMonths(today, upcoming.maturityDate) } : null,
     due: held.filter((d) => d.maturityDate <= today),
     incomplete: held.filter((d) => !d.bankName && d.maturityAmount === undefined),
@@ -203,8 +231,8 @@ export function fixedIncome(input: FixedIncomeInput, today: string): FixedIncome
     },
     deposits,
     total: epfTotal + deposits.worth,
-    putIn: epfTotal - epfCredited + deposits.placed,
-    earned: epfCredited + deposits.accrued,
+    putIn: epfTotal - epfCredited + deposits.placed + deposits.closedPlaced,
+    earned: epfCredited + deposits.accrued + deposits.paidOut + deposits.closedGain,
     perDay,
     perMonth: (perDay * 365) / 12,
   };
