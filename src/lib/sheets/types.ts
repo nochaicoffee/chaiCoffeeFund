@@ -655,3 +655,51 @@ export interface FixedDeposit {
   accountId?: string;
   status: FixedDepositStatus;
 }
+
+// ---------- EPF (ADR 0011): contributions plus yearly interest, never a stored balance ----------
+export const EPF_ENTRY_KINDS = ["Contribution", "Interest", "Opening"] as const;
+export type EpfEntryKind = (typeof EPF_ENTRY_KINDS)[number];
+/** Where an entry came from: read from a passbook, or entered by hand (counted, but marked less certain). */
+export const EPF_ENTRY_SOURCES = ["Passbook", "Typed"] as const;
+export type EpfEntrySource = (typeof EPF_ENTRY_SOURCES)[number];
+/** A rate someone entered: declared by EPFO, or assumed for a year not declared yet. A credited year's rate is worked out, never stored. */
+export const EPF_RATE_SOURCES = ["Declared", "Assumed"] as const;
+export type EpfRateSource = (typeof EPF_RATE_SOURCES)[number];
+
+export interface EpfAccount {
+  id: string;
+  /** Such as "NetApp India". */
+  name: string;
+  establishment?: string;
+  /** To match a statement to the account. The UAN, date of birth and the whole member ID are never stored. */
+  memberIdLast4?: string;
+  status: "Active" | "Closed";
+  /** Both shares together, for the growth path; defaults to the last credit. */
+  projectionCredit?: number;
+  /** The day the latest imported passbook was printed: it is complete up to then. Set only by an import. */
+  confirmedThrough?: string;
+}
+
+export interface EpfEntry {
+  id: string;
+  epfAccountId: string;
+  kind: EpfEntryKind;
+  /** The day it was credited; 31 March for a year's interest. */
+  date: string;
+  /** A contribution's wage month, "2026-09". */
+  wageMonth?: string;
+  /** Amounts in rupees. The pension share (EPS) earns no interest here. */
+  employee: number;
+  employer: number;
+  pension: number;
+  source: EpfEntrySource;
+}
+
+export interface EpfRate {
+  id: string;
+  epfAccountId: string;
+  /** "2026-27". */
+  financialYear: string;
+  ratePercent: number;
+  source: EpfRateSource;
+}
