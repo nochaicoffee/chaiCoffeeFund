@@ -119,6 +119,19 @@ export function computeHoldings(transactions: InvestmentTransaction[]): Holding[
 }
 
 /**
+ * What was held at the end of `asOf` (an ISO day, inclusive): the same fold as `computeHoldings`
+ * over the trades made on or before that day. A trade made on `asOf` counts, so "today" is
+ * `holdingsAt(trades, today)` and a day before the first trade holds nothing. Cost is the
+ * weighted-average cost to that day, fees included (they are in each trade's `total`), at each
+ * trade's own frozen rate, so a past day's cost never moves when today's rate does.
+ */
+export function holdingsAt(transactions: InvestmentTransaction[], asOf: string): Holding[] {
+  // Trade dates are compared as text, which is only right for ISO days: "2026-4-5" would sort after "2026-04-30".
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(asOf)) throw new RangeError(`holdingsAt needs a day like 2026-04-05, not ${JSON.stringify(asOf)}`);
+  return computeHoldings(transactions.filter((transaction) => transaction.tradeDate <= asOf));
+}
+
+/**
  * Every sell that asked for more than was held. `computeHoldings` clamps these rather than
  * failing, so a page shows them as something to fix instead of a position quietly missing.
  */
