@@ -4,6 +4,7 @@ import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { GreetingSentence } from "@/components/investments/GreetingSentence";
 import { HoldingsTable } from "@/components/investments/HoldingsTable";
 import { RecentTrades } from "@/components/investments/RecentTrades";
+import { TradeButtons, TradeFormsProvider } from "@/components/investments/TradeForms";
 import { RefreshPricesButton } from "@/components/investments/RefreshPricesButton";
 import { ReturnsRow } from "@/components/investments/ReturnsRow";
 import { PageHeader } from "@/components/shell/PageHeader";
@@ -13,6 +14,7 @@ import { greetingFor, todayIso } from "@/lib/format/date";
 import type { PricePoint } from "@/lib/prices/history";
 import { getPriceSeries } from "@/lib/prices/series";
 import { getCachedInstrumentsTab, getCachedInvestmentTransactionsTab } from "@/lib/sheets/cached";
+import { tradeFormsData } from "./tradeFormsData";
 import { greetingView, holdingsView, recentTradesView, returnsView, summarySentence } from "./views";
 
 export const metadata: Metadata = { title: "Investments" };
@@ -35,6 +37,7 @@ export default async function InvestmentsPage() {
   const skipped = [tradesTab.skipped, instrumentsTab.skipped].filter((t) => t.rows.length > 0);
 
   return (
+    <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today)}>
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Investments"
@@ -42,6 +45,7 @@ export default async function InvestmentsPage() {
         actions={
           <>
             <RefreshButton iconOnly />
+            <TradeButtons />
             <RefreshPricesButton />
           </>
         }
@@ -58,5 +62,6 @@ export default async function InvestmentsPage() {
       {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} />}
       <RecentTrades rows={recentTradesView(tradesTab.records, instrumentsTab.records)} />
     </div>
+    </TradeFormsProvider>
   );
 }
