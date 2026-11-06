@@ -3,6 +3,7 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { AttentionStrip } from "@/components/lent/AttentionStrip";
 import { GreetingSentence } from "@/components/lent/GreetingSentence";
+import { InterestClock } from "@/components/lent/InterestClock";
 import { WhoOwesWhat } from "@/components/lent/WhoOwesWhat";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
@@ -11,6 +12,7 @@ import { cardColorKey } from "@/lib/format/colors";
 import { greetingFor, todayIso } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import { getCachedIncomeEntriesTab, getCachedIncomeSourcesTab, getCachedLentLoansTab, getCachedLentRepaymentsTab } from "@/lib/sheets/cached";
+import { clockView, PERIODS, type ClockPeriod } from "./clockView";
 import { heroView } from "./heroView";
 import { attentionView, greetingView, lentModel, summarySentence } from "./views";
 
@@ -19,7 +21,7 @@ export const metadata: Metadata = { title: "Lent out" };
 /**
  * The Lent out page (docs/design/lent-out.md, L3 Who owes what + the interest clock): the greeting, whose figures point, then what needs
  * attention, then the Who owes what hero (`?who=` picks a borrower). The clock, the loans table and the forms are built on this shell (C3 to C5);
- * until the table exists the loans are a plain list when nothing is out, as the Fixed Income page was before its widgets.
+ * `?clock=` picks the clock's period. Until the table exists the loans are a plain list when nothing is out, as the Fixed Income page was before its widgets.
  */
 export default async function LentPage({ searchParams }: PageProps<"/lent">) {
   const params = await searchParams;
@@ -28,6 +30,8 @@ export default async function LentPage({ searchParams }: PageProps<"/lent">) {
   const model = lentModel({ loans: loansTab.records, repayments: repaymentsTab.records, sources: sourcesTab.records, entries: entriesTab.records }, today);
   const hero = heroView(model);
   const requested = typeof params.who === "string" ? params.who : "all";
+  const clock = clockView(model);
+  const requestedClock = typeof params.clock === "string" ? params.clock : "day";
   const skipped = [loansTab.skipped, repaymentsTab.skipped].filter((t) => t.rows.length > 0);
 
   return (
@@ -38,6 +42,7 @@ export default async function LentPage({ searchParams }: PageProps<"/lent">) {
       </PageHeader>
       <AttentionStrip items={attentionView(model)} />
       {hero && <WhoOwesWhat view={hero} initialPick={hero.keys.includes(requested) ? requested : "all"} />}
+      {clock && <InterestClock view={clock} initialPick={(PERIODS as readonly string[]).includes(requestedClock) ? (requestedClock as ClockPeriod) : "day"} />}
       {model.data.loans.length === 0 ? (
         <section className="rounded-[22px] border border-surface-line bg-surface p-6 text-sm font-semibold text-muted">
           Nothing lent yet. Money you lend to friends will show here: who owes what, what it earns a day, and which payouts have arrived.
