@@ -21,8 +21,8 @@ const pvs = (rows) => F.box(rows);
 export function phoneBoard() {
   const p1 = phone({ body: `${phHead()}${P.attention()}${hero({ pick: "all" })}` });
   const p2 = phone({ body: hero({ pick: "a", title: "Who owes what", sub: "" }) });
-  const p3 = phone({ body: clockWidget({ live: false, period: "day", phone: true }) });
-  const p3b = phone({ body: clockWidget({ live: false, period: "ever", phone: true }) });
+  const p3 = phone({ body: clockWidget({ live: false, period: "day", phone: true, split: true }) });
+  const p3b = phone({ body: clockWidget({ live: false, period: "ever", phone: true, split: true }) });
   const p4 = phone({ body: `${loanCards()}${P.comingUp()}${P.repaymentsLog()}` });
   const p5 = phone({ body: hero({ v: view(D.CROWD, D.CROWD_REPAYMENTS), pick: "all", flags: false }) });
   const s1 = phone({ body: `${dimTop()}${sheet(`${sh(I.plus(18), "Add a loan", "Interest paid out on a schedule")}${flds(addFieldsPaid())}${pvs([["Works out to", `<b>24%</b> a year`], ["Its block", `<b>${((D.S.b.owedToday / D.TOTAL) * 100).toFixed(1)}%</b> of the total`]])}${btn("Add loan", { kind: "primary", icon: I.plus() })}`)}` });

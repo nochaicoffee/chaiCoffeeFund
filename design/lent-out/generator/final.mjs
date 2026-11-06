@@ -78,5 +78,5 @@ export function l3Hero({ v = view(), live = true, pick = "all", flags = true, ti
 
 /** The whole page, one board: hero, clock widget, then the shared widgets. */
 export function finalPage() {
-  return P.page(`${P.greeting()}${P.attention()}${l3Hero()}${clockWidget()}${P.loansTable()}${P.grid([[6, P.comingUp()], [6, P.repaymentsLog()]])}${P.sampleNote()}`);
+  return P.page(`${P.greeting()}${P.attention()}${l3Hero()}${clockWidget({ split: true })}${P.loansTable()}${P.grid([[6, P.comingUp()], [6, P.repaymentsLog()]])}${P.sampleNote()}`);
 }

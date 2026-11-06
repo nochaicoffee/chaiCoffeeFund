@@ -27,7 +27,7 @@
       "x": 0,
       "y": 0,
       "w": 1600,
-      "h": 2661,
+      "h": 2699,
       "page": "fin"
     },
     {
@@ -43,7 +43,7 @@
       "x": 0,
       "y": 0,
       "w": 1600,
-      "h": 7319,
+      "h": 10826,
       "page": "states"
     },
     {
@@ -85,7 +85,7 @@
       "x": 0,
       "y": -90,
       "w": 1100,
-      "text": "Lent out, the picked design (2026-11-06): L3 Who owes what as the hero, with the Interest clock (L2) as its own widget under it. The greeting's figures point (hover, focus or tap). Then the attention strip, the hero (a block per loan sized by what it owes; pick one to see the total without it), the clock (a day, month, year and all time at its own colour; it never recolours with the hero), the loans table, interest coming up (an overdue payout leads) and money back. His three real loans; the interest payouts that ARRIVED are made-up sample payments. Open the board and click.",
+      "text": "Lent out, the picked design (2026-11-06): L3 Who owes what as the hero, with the Interest clock (L2) as its own widget under it. The greeting's figures point (hover, focus or tap). Then the attention strip, the hero (a block per loan sized by what it owes; pick one to see the total without it), a two-card row that ends level (the Interest clock on the left: dial, a day / month / year / all-time switch, per-loan rows; Interest adding up on the right: the pot, the payouts in lumps and the chart), sharing one pick and its colour, which never follow the hero, the loans table, interest coming up (an overdue payout leads) and money back. His three real loans; the interest payouts that ARRIVED are made-up sample payments. Open the board and click.",
       "page": "fin"
     },
     {
@@ -93,7 +93,7 @@
       "x": 0,
       "y": -90,
       "w": 1100,
-      "text": "Lent out on a phone (the final page): the blocks stack, the picked block opens under them, the clock is its own coloured widget, loans become cards, sixteen people become a scrolling list, and the forms are bottom sheets.",
+      "text": "Lent out on a phone (the final page): the blocks stack, the picked block opens under them, the clock and Interest adding up stack as two cards, loans become cards, sixteen people become a scrolling list, and the forms are bottom sheets.",
       "page": "phone"
     },
     {
@@ -101,7 +101,7 @@
       "x": 0,
       "y": -90,
       "w": 1100,
-      "text": "Lent out states on the final page: nothing lent yet, a payout that is late (flagged on its block, its row and in Interest coming up), a loan repaid (its block leaves the map, a dashed strip stays), part of the principal returned (the block shrinks, interest worked out in two stretches), and sixteen people (the map becomes a scrolling list). Repayments and closing days here are examples.",
+      "text": "Lent out states on the final page, each with its clock row: nothing lent yet, a payout that is late (flagged on its block, its row and in Interest coming up), a loan repaid (its block leaves the map, a dashed strip stays), part of the principal returned (the block shrinks, interest worked out in two stretches), and sixteen people (the map becomes a scrolling list). Repayments and closing days here are examples.",
       "page": "states"
     },
     {
