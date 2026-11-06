@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AMFI_NAV_URL, parseAmfiNavAll, parseYahooChart, priceOnOrBefore, sourceFor, yahooChartUrl, type PricePoint } from "./history";
+import { AMFI_NAV_URL, frankfurterRangeUrl, parseAmfiNavAll, parseFrankfurterRange, parseYahooChart, priceOnOrBefore, sourceFor, yahooChartUrl, type PricePoint } from "./history";
 
 // The shape Yahoo really sends (NIFTYBEES.NS, 5 days): India's offset 19800 s, and the last close null while the market is open.
 const nse = {
@@ -29,7 +29,7 @@ describe("parseYahooChart", () => {
     expect(series.ok && series.currency).toBe("INR");
     expect(series.ok && series.points).toHaveLength(4);
     // 1793331900 s is 2026-10-30 03:45 UTC = 09:15 in India.
-    expect(series.ok && series.points[0]).toEqual({ date: "2026-10-30", close: 262.8900146484375 });
+    expect(series.ok && series.points[0]).toEqual({ date: "2026-10-30", close: 262.89 });
     expect(series.ok && series.points.map((p) => p.date)).toEqual(["2026-10-30", "2026-11-02", "2026-11-03", "2026-11-04"]);
   });
 
@@ -134,5 +134,60 @@ describe("priceOnOrBefore", () => {
   it("is null before the first price, never a price from the future", () => {
     expect(priceOnOrBefore(points, "2026-10-28")).toBeNull();
     expect(priceOnOrBefore([], "2026-10-28")).toBeNull();
+  });
+});
+
+describe("parseYahooChart and a market still open", () => {
+  const sessionStart = Date.UTC(2026, 10, 5, 14, 30) / 1000; // 9:30 in New York
+  const sessionEnd = Date.UTC(2026, 10, 5, 21, 0) / 1000; // 16:00 in New York
+  const body = {
+    chart: {
+      result: [
+        {
+          meta: { currency: "USD", gmtoffset: -18000, currentTradingPeriod: { regular: { start: sessionStart, end: sessionEnd } } },
+          timestamp: [Date.UTC(2026, 10, 4, 14, 30) / 1000, sessionStart],
+          indicators: { quote: [{ close: [100, 101.5] }] },
+        },
+      ],
+      error: null,
+    },
+  };
+
+  it("leaves out today's close while the session is on, since it is only the latest price", () => {
+    const during = parseYahooChart(body, (sessionStart + 3600) * 1000);
+    expect(during.ok && during.points.map((p) => p.date)).toEqual(["2026-11-04"]);
+  });
+
+  it("keeps today's close once the session has ended", () => {
+    const after = parseYahooChart(body, (sessionEnd + 60) * 1000);
+    expect(after.ok && after.points.map((p) => p.date)).toEqual(["2026-11-04", "2026-11-05"]);
+  });
+
+  it("with no session time, leaves out a day dated today on the exchange's clock", () => {
+    const noSession = { chart: { result: [{ meta: { currency: "USD", gmtoffset: -18000 }, timestamp: [sessionStart], indicators: { quote: [{ close: [101.5] }] } }], error: null } };
+    expect(parseYahooChart(noSession, (sessionStart + 3600) * 1000)).toEqual({ ok: true, currency: "USD", points: [] });
+  });
+});
+
+describe("parseFrankfurterRange", () => {
+  it("reads a rate for each day, oldest first", () => {
+    const parsed = parseFrankfurterRange({ rates: { "2026-11-03": { INR: 94.4 }, "2026-11-02": { INR: 94.1 } } });
+    expect(parsed).toEqual({ ok: true, currency: "INR", points: [{ date: "2026-11-02", close: 94.1 }, { date: "2026-11-03", close: 94.4 }] });
+  });
+
+  it.each([["no rates", {}], ["a zero rate", { rates: { "2026-11-02": { INR: 0 } } }], ["a bad day", { rates: { today: { INR: 94 } } }], ["no INR", { rates: { "2026-11-02": { EUR: 0.9 } } }], ["not an object", null]])("fails on %s", (_n, body) => {
+    expect(parseFrankfurterRange(body).ok).toBe(false);
+  });
+
+  it("builds the range URL", () => {
+    expect(frankfurterRangeUrl("2024-05-28", "2026-11-05")).toBe("https://api.frankfurter.dev/v1/2024-05-28..2026-11-05?base=USD&symbols=INR");
+  });
+});
+
+describe("parseYahooChart precision", () => {
+  it("rounds a 32-bit float close to four places", () => {
+    const body = { chart: { result: [{ meta: { currency: "USD", gmtoffset: 0 }, timestamp: [Date.UTC(2026, 3, 6, 12) / 1000], indicators: { quote: [{ close: [100.9000015258789] }] } }], error: null } };
+    const series = parseYahooChart(body);
+    expect(series.ok && series.points[0].close).toBe(100.9);
   });
 });

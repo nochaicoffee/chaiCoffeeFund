@@ -27,8 +27,13 @@ const isNumber = (value: unknown): value is number => typeof value === "number" 
  * market is open, comes back as null) is left out rather than treated as 0 or carried forward, and a
  * close of zero or below is refused as a bad price. A day is the exchange's own (the timestamp
  * moved by the exchange's UTC offset), so an NSE day is India's and a US day is New York's.
+ *
+ * **A day still being traded is left out.** While a market is open Yahoo's "close" for today is only
+ * the latest price, and saving it would fix a wrong close for good. A day counts once the session
+ * has ended (`currentTradingPeriod.regular.end`); with no session time, a day dated today on the
+ * exchange's clock is left out.
  */
-export function parseYahooChart(body: unknown): PriceSeries {
+export function parseYahooChart(body: unknown, nowMs: number = Date.now()): PriceSeries {
   if (typeof body !== "object" || body === null) return { ok: false, reason: "Yahoo sent something that isn't a chart" };
   const chart = (body as { chart?: { result?: unknown; error?: { description?: unknown } | null } }).chart;
   if (!chart) return { ok: false, reason: "Yahoo sent no chart" };
@@ -36,13 +41,19 @@ export function parseYahooChart(body: unknown): PriceSeries {
   const result = Array.isArray(chart.result) ? (chart.result[0] as Record<string, unknown> | undefined) : undefined;
   if (!result) return { ok: false, reason: "Yahoo sent no result for this ticker" };
 
-  const meta = (result.meta ?? {}) as { currency?: unknown; gmtoffset?: unknown };
+  const meta = (result.meta ?? {}) as { currency?: unknown; gmtoffset?: unknown; currentTradingPeriod?: { regular?: { start?: unknown; end?: unknown } } };
   if (typeof meta.currency !== "string" || meta.currency === "") return { ok: false, reason: "Yahoo sent no currency" };
   const offset = isNumber(meta.gmtoffset) ? meta.gmtoffset : 0;
   const timestamps = result.timestamp;
   const closes = ((result.indicators as { quote?: { close?: unknown }[] } | undefined)?.quote?.[0]?.close ?? undefined) as unknown;
   if (timestamps === undefined || closes === undefined) return { ok: true, currency: meta.currency, points: [] };
   if (!Array.isArray(timestamps) || !Array.isArray(closes) || timestamps.length !== closes.length) return { ok: false, reason: "Yahoo's days and prices don't line up" };
+
+  // Days on or after this one aren't final yet: today's, until its session has ended.
+  const sessionStart = meta.currentTradingPeriod?.regular?.start;
+  const sessionEnd = meta.currentTradingPeriod?.regular?.end;
+  const exchangeToday = new Date(nowMs + offset * 1000).toISOString().slice(0, 10);
+  const openDay = isNumber(sessionStart) && isNumber(sessionEnd) ? (nowMs / 1000 < sessionEnd ? new Date((sessionStart + offset) * 1000).toISOString().slice(0, 10) : null) : exchangeToday;
 
   const points: PricePoint[] = [];
   for (let i = 0; i < timestamps.length; i++) {
@@ -52,7 +63,9 @@ export function parseYahooChart(body: unknown): PriceSeries {
     if (close === null || close === undefined) continue;
     if (!isNumber(close) || close <= 0) return { ok: false, reason: `Yahoo sent a price that isn't one (${String(close)})` };
     const date = new Date((seconds + offset) * 1000).toISOString().slice(0, 10);
-    points.push({ date, close });
+    if (openDay !== null && date >= openDay) continue;
+    // Yahoo sends 32-bit floats (100.9000015258789 for 100.90); no price moves in steps finer than four places.
+    points.push({ date, close: Math.round(close * 10_000) / 10_000 });
   }
   // Oldest first whatever order they came in, and a day that came twice (a late correction) keeps the later close.
   points.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
@@ -136,4 +149,26 @@ export function priceOnOrBefore(points: PricePoint[], day: string): PriceOnDay |
   if (found < 0) return null;
   const ageDays = Math.round((Date.parse(`${day}T00:00:00Z`) - Date.parse(`${points[found].date}T00:00:00Z`)) / 86_400_000);
   return { date: points[found].date, close: points[found].close, ageDays };
+}
+
+export function frankfurterRangeUrl(from: string, to: string): string {
+  return `https://api.frankfurter.dev/v1/${from}..${to}?base=USD&symbols=INR`;
+}
+
+/**
+ * Frankfurter's USD to INR for a range of days: `{ rates: { "2026-11-05": { INR: 94.48 }, ... } }`,
+ * a rate for each working day. Oldest first. Anything that isn't a positive rate on a real day
+ * fails the whole read, since a half-read series would look complete.
+ */
+export function parseFrankfurterRange(body: unknown): PriceSeries {
+  const rates = typeof body === "object" && body !== null ? (body as { rates?: unknown }).rates : undefined;
+  if (typeof rates !== "object" || rates === null) return { ok: false, reason: "the rate service sent no rates" };
+  const points: PricePoint[] = [];
+  for (const [date, day] of Object.entries(rates)) {
+    const inr = typeof day === "object" && day !== null ? (day as { INR?: unknown }).INR : undefined;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !isNumber(inr) || inr <= 0) return { ok: false, reason: `the rate service sent a rate that isn't one for ${date}` };
+    points.push({ date, close: inr });
+  }
+  points.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
+  return { ok: true, currency: "INR", points };
 }
