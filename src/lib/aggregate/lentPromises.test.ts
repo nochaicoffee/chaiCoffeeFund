@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { MATCH_DAYS } from "./incomeSchedule";
-import { firstPayoutDate, lentPromises, MISSING_AFTER_DAYS } from "./lentPromises";
+import { firstPayoutDate, lentPromises, MISSING_AFTER_DAYS, upcomingPayouts } from "./lentPromises";
 import type { IncomeEntry, IncomeSource, LentLoan } from "../sheets/types";
 
 const TODAY = "2026-11-06";
@@ -151,6 +151,28 @@ describe("review fixes", () => {
   });
   it("puts a loan lent on the 31st on the last day of the next shorter month", () => {
     expect(firstPayoutDate({ startDate: "2026-01-31", payoutFrequency: "Monthly" })).toBe("2026-02-28");
+  });
+});
+
+describe("upcomingPayouts", () => {
+  it("lists the days still to come from today, in order, at the usual amount", () => {
+    const r = upcomingPayouts(threeL, threeLSource, sampleEntries, TODAY, "2027-02-28");
+    expect(r.map((p) => p.date)).toEqual(["2026-11-01", "2026-12-01", "2027-01-01", "2027-02-01"].filter((d) => d >= TODAY));
+    expect(r[0]).toEqual({ date: "2026-12-01", amount: 6000, inDays: 25 });
+  });
+  it("keeps today's day while it hasn't arrived, and drops it once it has", () => {
+    expect(upcomingPayouts(threeL, threeLSource, [], "2026-11-01", "2026-11-30")[0]).toEqual({ date: "2026-11-01", amount: 6000, inDays: 0 });
+    expect(upcomingPayouts(threeL, threeLSource, [got("s3", "2026-11-01", "2026-11-01", 6000)], "2026-11-01", "2026-11-30")).toEqual([]);
+  });
+  it("skips a day that already arrived early, and starts at the first payout before it", () => {
+    expect(upcomingPayouts(threeL, threeLSource, [got("s3", "2025-12-01", "2025-11-28", 6000)], "2025-11-30", "2026-01-31").map((p) => p.date)).toEqual(["2026-01-01"]);
+    expect(upcomingPayouts(threeL, { ...threeLSource, scheduleDate: "2025-10-01" }, [], "2025-11-10", "2026-01-15").map((p) => p.date)).toEqual(["2025-12-01", "2026-01-01"]);
+  });
+  it("has none for a repaid loan, an Accruing loan, or one with no income source", () => {
+    expect(upcomingPayouts({ ...threeL, status: "Repaid", closedDate: "2026-06-01" }, threeLSource, [], TODAY, "2027-01-01")).toEqual([]);
+    expect(upcomingPayouts(threeL, undefined, [], TODAY, "2027-01-01")).toEqual([]);
+    const accruing: LentLoan = { id: "a", borrowerName: "F", principalAmount: 1000, startDate: "2024-10-01", interestMode: "Accruing", interestRate: 12, status: "Active" };
+    expect(upcomingPayouts(accruing, threeLSource, [], TODAY, "2027-01-01")).toEqual([]);
   });
 });
 

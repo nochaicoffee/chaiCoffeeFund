@@ -1,6 +1,6 @@
 import type { IncomeEntry, IncomeSource, LentLoan, RecurrenceCycle } from "../sheets/types";
 import { daysBetween } from "./cardSpend";
-import { LATE_AFTER_DAYS, MATCH_DAYS, nearestScheduledDate, scheduledDates } from "./incomeSchedule";
+import { LATE_AFTER_DAYS, MATCH_DAYS, nearestScheduledDate, receivedScheduledDates, scheduledDates } from "./incomeSchedule";
 import { addMonthsUTC } from "./recurring";
 import { addDays } from "./subscriptionRenewals";
 
@@ -116,4 +116,24 @@ export function lentPromises(loan: LentLoan, source: IncomeSource | undefined, e
     notHere: missing + overdue,
     next: nextDate ? { date: nextDate, amount: source.expectedAmount, inDays: daysBetween(today, nextDate) } : undefined,
   };
+}
+
+export interface UpcomingPayout {
+  date: string;
+  amount: number;
+  /** Days from today: 0 for today's, which hasn't arrived. */
+  inDays: number;
+}
+
+/**
+ * The payouts of a linked Paid-out loan still to come: each day from today (today's included while it hasn't arrived) to `until`, from its
+ * first payout on, that Income hasn't received. A repaid loan has none. Uses the income source's own schedule and matching, as `lentPromises` does.
+ */
+export function upcomingPayouts(loan: LentLoan, source: IncomeSource | undefined, entries: IncomeEntry[], today: string, until: string): UpcomingPayout[] {
+  const first = firstPayoutDate(loan);
+  if (loan.interestMode !== "Paid-out" || loan.status === "Repaid" || !first || !source?.scheduleDate) return [];
+  const received = receivedScheduledDates(source, entries);
+  return scheduledDates(source, today > first ? today : first, until)
+    .filter((date) => !received.has(date))
+    .map((date) => ({ date, amount: source.expectedAmount, inDays: daysBetween(today, date) }));
 }
