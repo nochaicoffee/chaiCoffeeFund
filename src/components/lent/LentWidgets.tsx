@@ -4,7 +4,10 @@ import { useState } from "react";
 import type { ComingUpView, LoansTableView, MoneyBackView } from "@/app/lent/widgetsView";
 import type { PayoutVerdict } from "@/lib/aggregate/lentPromises";
 import { colorGradient } from "@/lib/format/colors";
+import { CloseIcon, MenuAction, RowMenu } from "../RowMenu";
+import { AlertIcon, CheckIcon, PlusIcon } from "../cards/forms/icons";
 import { WidgetCard } from "../shell/WidgetCard";
+import { useLentForms } from "./forms/LentForms";
 
 const SMALL_LINK = "text-xs font-extrabold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent";
 const COLS = "lg:grid-cols-[minmax(0,2.2fr)_minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.3fr)_minmax(0,1.1fr)_minmax(0,1.2fr)]";
@@ -50,6 +53,7 @@ function Cell({ label, className = "", children }: { label: string; className?: 
 
 /** The loans as a table (a card for each on a phone): rate, what was lent, what came back, interest, what is owed and when the next payout is due. */
 export function LoansTable({ view }: { view: LoansTableView }) {
+  const { open } = useLentForms();
   return (
     <WidgetCard label="Loans" title="Loans" note="money you've lent, outside any bank">
       <div className="flex flex-col">
@@ -63,17 +67,23 @@ export function LoansTable({ view }: { view: LoansTableView }) {
           <span className="text-right">Next due</span>
         </div>
         {view.rows.map((r) => (
-          <div key={r.id} className={`grid items-start gap-x-3 gap-y-3 border-t border-divider px-1 py-3.5 max-lg:grid-cols-2 ${COLS} ${r.repaid ? "opacity-60" : ""}`}>
+          <div key={r.id} className={`grid items-start gap-x-3 gap-y-3 border-t border-divider px-1 py-3.5 max-lg:grid-cols-2 ${COLS} ${r.repaid || r.settled ? "opacity-60" : ""}`}>
             <div className="flex min-w-0 items-start gap-3 max-lg:col-span-2">
               <Initial name={r.name} colorKey={r.colorKey} />
-              <span className="min-w-0">
+              <span className="min-w-0 flex-1">
                 <b className="block text-[13px] font-extrabold">
                   {r.name}
-                  <span className={`ml-2 rounded-full px-2 py-0.5 align-middle text-[10px] font-bold ${r.repaid ? "bg-fill text-muted" : r.kind === "Accruing" ? "bg-warning-tint text-warning-text" : "bg-accent-tint text-accent-text"}`}>{r.repaid ? "Repaid" : r.kind}</span>
+                  <span className={`ml-2 rounded-full px-2 py-0.5 align-middle text-[10px] font-bold whitespace-nowrap ${r.repaid || r.settled ? "bg-fill text-muted" : r.kind === "Accruing" ? "bg-warning-tint text-warning-text" : "bg-accent-tint text-accent-text"}`}>{r.repaid ? "Repaid" : r.settled ? "Paid back" : r.kind}</span>
                 </b>
                 <span className="block text-[11px] font-medium text-muted">{r.lent}</span>
                 {r.verdicts && <Dots verdicts={r.verdicts} />}
               </span>
+              <RowMenu triggerLabel={`More for ${r.name}`} menuLabel={r.name}>
+                {!r.repaid && !r.settled && <MenuAction icon={<PlusIcon />} label="Record a repayment" onSelect={() => open({ kind: "repay", id: r.id })} />}
+                <MenuAction icon={<CheckIcon />} label="Edit loan" onSelect={() => open({ kind: "edit", id: r.id })} />
+                {r.repaid ? <MenuAction icon={<AlertIcon />} label="Reopen" onSelect={() => open({ kind: "reopen", id: r.id })} /> : <MenuAction icon={<CheckIcon />} label="Mark repaid" onSelect={() => open({ kind: "repaid", id: r.id })} />}
+                <MenuAction icon={<CloseIcon />} label="Delete loan" danger onSelect={() => open({ kind: "delete", id: r.id })} />
+              </RowMenu>
             </div>
             <Cell label="Rate" className="lg:text-right">
               <b>{r.rate}</b>
@@ -167,6 +177,7 @@ const TAG: Record<string, string> = { "on time": "bg-accent-tint text-accent-tex
 
 /** Money back: what has reached you, newest first, from Income's matched credits and from the repayments you recorded. */
 export function MoneyBackCard({ view }: { view: MoneyBackView }) {
+  const { open } = useLentForms();
   const [all, setAll] = useState(false);
   const rows = all ? view.rows : view.rows.slice(0, SHOWN);
   return (
@@ -193,6 +204,11 @@ export function MoneyBackCard({ view }: { view: MoneyBackView }) {
               <span className="text-right text-[13px] tabular-nums">
                 <b className="block font-extrabold">{r.amount}</b>
                 <span className="block text-[11px] font-medium text-muted">{r.when}</span>
+                {r.repaymentId && (
+                  <button type="button" onClick={() => open({ kind: "delete-repayment", id: r.repaymentId! })} className="mt-0.5 text-[11px] font-bold text-negative hover:underline focus-visible:outline-2 focus-visible:outline-accent" aria-label={`Delete the ${r.amount} repayment from ${r.title}`}>
+                    Delete
+                  </button>
+                )}
               </span>
             </li>
           ))}

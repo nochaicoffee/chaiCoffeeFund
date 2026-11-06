@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Account, IncomeSource, LentLoan, LentRepayment } from "@/lib/sheets/types";
 
-const fake = vi.hoisted(() => ({ loans: [] as LentLoan[], repayments: [] as LentRepayment[], sources: [] as IncomeSource[], accounts: [] as Account[], tags: [] as string[], fail: false, failRepaymentDelete: false, failLoanCreate: false, failSourceRemove: false, failSourceUpdate: false, n: 0 }));
+const fake = vi.hoisted(() => ({ loans: [] as LentLoan[], repayments: [] as LentRepayment[], sources: [] as IncomeSource[], accounts: [] as Account[], tags: [] as string[], fail: false, failRepaymentDelete: false, failLoanCreate: false, failSourceRemove: false, failSourceUpdate: false, failLoanUpdate: false, n: 0 }));
 vi.mock("next/cache", () => ({ updateTag: (tag: string) => fake.tags.push(tag), unstable_cache: <T,>(fn: T) => fn }));
 const guard = () => { if (fake.fail) throw new Error("Sheets said no"); };
 vi.mock("@/lib/sheets/lentLoans", async (original) => ({
@@ -11,6 +11,7 @@ vi.mock("@/lib/sheets/lentLoans", async (original) => ({
     create: async (input: Omit<LentLoan, "id">) => { guard(); if (fake.failLoanCreate) throw new Error("Sheets said no"); const row = { ...input, id: `ll${++fake.n}` }; fake.loans.push(row); return row; },
     update: async (id: string, patch: Record<string, unknown>) => {
       guard();
+      if (fake.failLoanUpdate) throw new Error("Sheets said no");
       const row = fake.loans.find((l) => l.id === id)!;
       for (const [k, v] of Object.entries(patch)) { if (v === "" || v === undefined) delete (row as unknown as Record<string, unknown>)[k]; else (row as unknown as Record<string, unknown>)[k] = v; }
       return row;
@@ -52,7 +53,7 @@ const loanA: LentLoan = { id: "a", borrowerName: "Friend", principalAmount: 6500
 const loanB: LentLoan = { id: "b", borrowerName: "B", principalAmount: 300000, startDate: "2025-11-01", interestMode: "Paid-out", payoutFrequency: "Monthly", payoutAmount: 6000, status: "Active", incomeSourceId: "src-b" };
 const back = (id: string, lentLoanId: string, date: string, amount: number, kind: LentRepayment["kind"]): LentRepayment => ({ id, lentLoanId, date, amount, kind });
 
-beforeEach(() => { fake.loans = []; fake.repayments = []; fake.sources = []; fake.accounts = [{ id: "hdfc", name: "HDFC" } as Account]; fake.tags = []; fake.fail = false; fake.failRepaymentDelete = false; fake.failLoanCreate = false; fake.failSourceRemove = false; fake.failSourceUpdate = false; fake.n = 0; });
+beforeEach(() => { fake.loans = []; fake.repayments = []; fake.sources = []; fake.accounts = [{ id: "hdfc", name: "HDFC" } as Account]; fake.tags = []; fake.fail = false; fake.failRepaymentDelete = false; fake.failLoanCreate = false; fake.failSourceRemove = false; fake.failSourceUpdate = false; fake.failLoanUpdate = false; fake.n = 0; });
 
 describe("saveLentLoan", () => {
   it("adds an active loan and refreshes the loans", async () => {
@@ -218,6 +219,48 @@ describe("adding a Paid-out loan with its income source (B2)", () => {
     expect(await saveLentLoan(IDLE, form({ ...linked, accountId: "nope" }))).toMatchObject({ status: "invalid", errors: { accountId: expect.any(String) } });
     expect(fake.sources).toEqual([]);
     expect(fake.loans).toEqual([]);
+  });
+});
+
+describe("giving an existing paid-out loan its income source", () => {
+  const unlinked = (): LentLoan => ({ ...loanB, incomeSourceId: undefined });
+  const link = { ...paidOut, id: "b", createIncomeSource: "1", statementMatch: "RAVI KUMAR" };
+
+  it("creates the source and links the loan to it, refreshing both", async () => {
+    fake.loans = [unlinked()];
+    expect(await saveLentLoan(IDLE, form(link))).toMatchObject({ status: "saved" });
+    expect(fake.sources).toHaveLength(1);
+    expect(fake.sources[0]).toMatchObject({ name: "B interest", frequency: "Monthly", expectedAmount: 6000, scheduleDate: "2025-12-01", statementMatch: "RAVI KUMAR" });
+    expect(fake.loans[0].incomeSourceId).toBe(fake.sources[0].id);
+    expect(fake.tags.sort()).toEqual(["incomeSources", "lentLoans"]);
+  });
+  it("leaves the loan unlinked when the box isn't ticked", async () => {
+    fake.loans = [unlinked()];
+    await saveLentLoan(IDLE, form({ ...paidOut, id: "b" }));
+    expect(fake.sources).toEqual([]);
+    expect(fake.loans[0].incomeSourceId).toBeUndefined();
+  });
+  it("takes the source back out when the loan can't be saved, so it is both or neither", async () => {
+    fake.loans = [unlinked()];
+    const original = fake.loans[0];
+    fake.failSourceRemove = false;
+    // The loan's update fails after the source was made.
+    fake.fail = false;
+    fake.failLoanUpdate = true;
+    expect((await saveLentLoan(IDLE, form(link))).status).toBe("failed");
+    expect(fake.sources).toEqual([]);
+    expect(fake.loans[0]).toBe(original);
+  });
+  it("writes nothing when the statement text is too short", async () => {
+    fake.loans = [unlinked()];
+    expect(await saveLentLoan(IDLE, form({ ...link, statementMatch: "RK" }))).toMatchObject({ status: "invalid", errors: { statementMatch: expect.any(String) } });
+    expect(fake.sources).toEqual([]);
+  });
+  it("doesn't make a second source for a loan that already has one", async () => {
+    fake.loans = [{ ...loanB }];
+    fake.sources = [{ id: "src-b", name: "B interest", alias: "B", category: "Investment", frequency: "Monthly", expectedAmount: 6000, status: "Active", scheduleDate: "2025-12-01" }];
+    await saveLentLoan(IDLE, form(link));
+    expect(fake.sources).toHaveLength(1);
   });
 });
 

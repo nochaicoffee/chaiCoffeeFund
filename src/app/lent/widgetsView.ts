@@ -1,5 +1,5 @@
 import { daysBetween } from "@/lib/aggregate/cardSpend";
-import { annualRatePercent, lentLoanColor } from "@/lib/aggregate/lentOut";
+import { annualRatePercent, lentLoanColor, summariseLentLoan } from "@/lib/aggregate/lentOut";
 import { upcomingPayouts, type PayoutVerdict } from "@/lib/aggregate/lentPromises";
 import { addMonthsUTC } from "@/lib/aggregate/recurring";
 import { cardColorKey, type ColorKey } from "@/lib/format/colors";
@@ -46,7 +46,10 @@ export interface LoanTableRow {
   owedNote: string;
   next: string;
   nextNote: string;
+  /** Marked Repaid: closed. */
   repaid: boolean;
+  /** Still marked Active, but everything has come back and nothing is owed: it can be marked repaid, not reopened. */
+  settled: boolean;
 }
 
 export interface LoansTableView {
@@ -58,18 +61,19 @@ export function loansTableView(m: LentModel): LoansTableView | null {
   if (m.data.loans.length === 0) return null;
   const { who, today } = m;
   const live = who.blocks.map((b) => ({ loan: b.loan, owed: b.owedToday, summary: b.summary, perDay: b.perDay }));
-  const out = [...who.repaid.map((loan) => ({ loan, owed: 0, summary: undefined, perDay: 0 }))];
+  const out = who.repaid.map((loan) => ({ loan, owed: 0, summary: summariseLentLoan(loan, m.data.repayments, today), perDay: 0 }));
   const rows: LoanTableRow[] = [...live, ...out].map(({ loan, owed, summary, perDay }) => {
     const accruing = loan.interestMode === "Accruing";
     const p = m.promises[loan.id];
-    const back = summary ? loan.principalAmount - summary.principalOutstanding : loan.principalAmount;
-    const repaid = !summary;
+    const back = loan.principalAmount - summary.principalOutstanding;
+    const repaid = loan.status === "Repaid";
+    const settled = !repaid && owed <= 0.005;
     const days = daysBetween(loan.startDate, today);
     const next = p?.next;
     let interest = "—";
-    let interestNote = repaid ? "closed" : "no income source, not tracked";
+    let interestNote = repaid ? "closed" : settled ? "nothing owed" : "no income source, not tracked";
     let interestWarn = false;
-    if (accruing && summary) {
+    if (accruing && !repaid) {
       // What has piled up in all; what is still owed and what was paid are in the note.
       interest = inr(summary.interestAccrued);
       interestNote = summary.interestPaid > 0 ? `${inr(summary.interestOwed)} owed, ${inr(summary.interestPaid)} paid` : `owed · piling up ${inr(perDay)} a day`;
@@ -95,10 +99,11 @@ export function loansTableView(m: LentModel): LoansTableView | null {
       interestNote,
       interestWarn,
       owed: inr(owed),
-      owedNote: repaid ? "repaid" : accruing ? "principal + interest" : "principal only",
-      next: accruing || repaid ? (repaid ? "—" : "No date") : next ? formatDate(next.date) : "—",
-      nextNote: repaid ? (loan.closedDate ? `repaid ${formatShortDate(loan.closedDate)}` : "repaid") : accruing ? "paid when they pay" : next ? `in ${plural(next.inDays, "day", "days")} · ${inr(next.amount)}` : "not tracked",
+      owedNote: repaid ? "repaid" : settled ? "paid back in full" : accruing ? "principal + interest" : "principal only",
+      next: repaid || settled ? "—" : accruing ? "No date" : next ? formatDate(next.date) : "—",
+      nextNote: repaid ? (loan.closedDate ? `repaid ${formatShortDate(loan.closedDate)}` : "repaid") : settled ? "nothing owed" : accruing ? "paid when they pay" : next ? `in ${plural(next.inDays, "day", "days")} · ${inr(next.amount)}` : "not tracked",
       repaid,
+      settled,
     };
   });
   const principal = live.reduce((t, r) => t + r.loan.principalAmount, 0);
@@ -179,6 +184,8 @@ export interface MoneyBackRow {
   title: string;
   /** "on time", "late", "principal", "interest". */
   tag: "on time" | "late" | "principal" | "interest";
+  /** A repayment he recorded can be deleted: its id. A payout that arrived through Income has none. */
+  repaymentId?: string;
   note: string;
   amount: string;
   when: string;
@@ -203,7 +210,7 @@ export function moneyBackView(m: LentModel): MoneyBackView | null {
   for (const r of m.data.repayments) {
     const loan = byId.get(r.lentLoanId);
     if (!loan) continue;
-    rows.push({ key: `rep-${r.id}`, date: r.date, ...dayMonth(r.date), colorKey: cardColorKey(lentLoanColor(loan)), title: loan.borrowerName, tag: r.kind === "Principal" ? "principal" : "interest", note: `${r.kind === "Principal" ? "Principal" : "Interest"} · recorded by you`, amount: inr(r.amount), when: "came back" });
+    rows.push({ key: `rep-${r.id}`, date: r.date, ...dayMonth(r.date), colorKey: cardColorKey(lentLoanColor(loan)), title: loan.borrowerName, tag: r.kind === "Principal" ? "principal" : "interest", repaymentId: r.id, note: `${r.kind === "Principal" ? "Principal" : "Interest"} · recorded by you`, amount: inr(r.amount), when: "came back" });
   }
   rows.sort((a, b) => b.date.localeCompare(a.date) || a.key.localeCompare(b.key));
   const noPrincipal = !m.data.repayments.some((r) => r.kind === "Principal");
