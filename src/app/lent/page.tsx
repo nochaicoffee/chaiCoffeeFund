@@ -4,16 +4,15 @@ import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { AttentionStrip } from "@/components/lent/AttentionStrip";
 import { GreetingSentence } from "@/components/lent/GreetingSentence";
 import { InterestClock } from "@/components/lent/InterestClock";
+import { ComingUpCard, LoansTable, MoneyBackCard } from "@/components/lent/LentWidgets";
 import { WhoOwesWhat } from "@/components/lent/WhoOwesWhat";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
-import { lentLoanColor } from "@/lib/aggregate/lentOut";
-import { cardColorKey } from "@/lib/format/colors";
 import { greetingFor, todayIso } from "@/lib/format/date";
-import { formatInr } from "@/lib/format/money";
 import { getCachedIncomeEntriesTab, getCachedIncomeSourcesTab, getCachedLentLoansTab, getCachedLentRepaymentsTab } from "@/lib/sheets/cached";
 import { clockView, PERIODS, type ClockPeriod } from "./clockView";
 import { heroView } from "./heroView";
+import { comingUpView, loansTableView, moneyBackView } from "./widgetsView";
 import { attentionView, greetingView, lentModel, summarySentence } from "./views";
 
 export const metadata: Metadata = { title: "Lent out" };
@@ -21,7 +20,7 @@ export const metadata: Metadata = { title: "Lent out" };
 /**
  * The Lent out page (docs/design/lent-out.md, L3 Who owes what + the interest clock): the greeting, whose figures point, then what needs
  * attention, then the Who owes what hero (`?who=` picks a borrower). The clock, the loans table and the forms are built on this shell (C3 to C5);
- * `?clock=` picks the clock's period. Until the table exists the loans are a plain list when nothing is out, as the Fixed Income page was before its widgets.
+ * `?clock=` picks the clock's period. Under them: the loans table, Interest coming up and Money back. The forms are built on this (C5).
  */
 export default async function LentPage({ searchParams }: PageProps<"/lent">) {
   const params = await searchParams;
@@ -31,6 +30,9 @@ export default async function LentPage({ searchParams }: PageProps<"/lent">) {
   const hero = heroView(model);
   const requested = typeof params.who === "string" ? params.who : "all";
   const clock = clockView(model);
+  const table = loansTableView(model);
+  const comingUp = comingUpView(model);
+  const moneyBack = moneyBackView(model);
   const requestedClock = typeof params.clock === "string" ? params.clock : "day";
   const skipped = [loansTab.skipped, repaymentsTab.skipped].filter((t) => t.rows.length > 0);
 
@@ -43,26 +45,17 @@ export default async function LentPage({ searchParams }: PageProps<"/lent">) {
       <AttentionStrip items={attentionView(model)} />
       {hero && <WhoOwesWhat view={hero} initialPick={hero.keys.includes(requested) ? requested : "all"} />}
       {clock && <InterestClock view={clock} initialPick={(PERIODS as readonly string[]).includes(requestedClock) ? (requestedClock as ClockPeriod) : "day"} />}
-      {model.data.loans.length === 0 ? (
+      {table && <LoansTable view={table} />}
+      {(comingUp || moneyBack) && (
+        <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-12">
+          {comingUp && <div className={moneyBack ? "xl:col-span-6" : "xl:col-span-12"}><ComingUpCard view={comingUp} /></div>}
+          {moneyBack && <div className={comingUp ? "xl:col-span-6" : "xl:col-span-12"}><MoneyBackCard view={moneyBack} /></div>}
+        </div>
+      )}
+      {model.data.loans.length === 0 && (
         <section className="rounded-[22px] border border-surface-line bg-surface p-6 text-sm font-semibold text-muted">
           Nothing lent yet. Money you lend to friends will show here: who owes what, what it earns a day, and which payouts have arrived.
         </section>
-      ) : (
-        !hero && (
-        <section aria-label="Loans" className="rounded-[22px] border border-surface-line bg-surface p-5 md:p-6">
-          <h2 className="text-[15px] font-extrabold">Loans</h2>
-          <ul className="mt-3 flex flex-col divide-y divide-divider">
-            {[...model.who.blocks.map((b) => ({ loan: b.loan, owed: b.owedToday })), ...model.who.repaid.map((loan) => ({ loan, owed: 0 }))].map(({ loan, owed }) => (
-              <li key={loan.id} className="flex items-center gap-3 py-2.5 text-sm">
-                <i aria-hidden="true" className="size-2.5 shrink-0 rounded-[4px]" style={{ background: `var(--card-${cardColorKey(lentLoanColor(loan))})` }} />
-                <span className="min-w-0 flex-1 truncate font-extrabold">{loan.borrowerName}</span>
-                <span className="text-xs font-semibold text-muted">{loan.interestMode === "Accruing" ? "interest builds up" : "paid out"}{loan.status === "Repaid" ? " · repaid" : ""}</span>
-                <span className="font-extrabold tabular-nums">{formatInr(Math.round(owed))}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-        )
       )}
     </div>
   );
