@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { investmentOverview } from "@/lib/aggregate/investmentOverview";
 import type { PricePoint } from "@/lib/prices/history";
 import type { Instrument, InvestmentTransaction } from "@/lib/sheets/types";
-import { greetingView, holdingsView, pct, recentTradesView, returnsView, summarySentence } from "./views";
+import { greetingView, holdingsView, lensViews, pct, recentTradesView, returnsView, summarySentence } from "./views";
 
 const trade = (o: Partial<InvestmentTransaction>): InvestmentTransaction => ({
   id: "t", tradeDate: "2024-01-02", symbol: "AAA", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 100, price: 100, total: 10000, assetType: "Equity", broker: "B", ...o,
@@ -118,5 +118,27 @@ describe("pct", () => {
     expect(pct(0.1234)).toBe("12.3%");
     expect(pct(-0.05)).toBe("−5.0%");
     expect(pct(0.05, 0, true)).toBe("+5%");
+  });
+});
+
+describe("lensViews", () => {
+  const lenses = lensViews(o);
+
+  it("has a lens for each holding, with the line, his trades and the stats in words", () => {
+    expect(lenses.map((l) => l.symbol)).toEqual(["AAA", "BBB"]);
+    const a = lenses[0];
+    expect(a.points.length).toBeGreaterThan(100);
+    expect(a.markers.map((m) => m.tradeType)).toEqual(["Buy", "Sell"]);
+    expect(a.stats.map((s) => s.label)).toEqual(expect.arrayContaining(["Shares", "Average cost", "Worth", "Gain", "Yearly return", "Price a year", "Made on sales"]));
+    expect(a.stats.find((s) => s.label === "Average cost")!.value).toBe("₹100");
+  });
+
+  it("splits a US holding's gain into the price and the rupee, and has no such line for an Indian one", () => {
+    expect(lenses[1].stats.find((s) => s.label === "Of the gain")).toBeDefined();
+    expect(lenses[0].stats.find((s) => s.label === "Of the gain")).toBeUndefined();
+  });
+
+  it("leaves out Made on sales for a holding never sold", () => {
+    expect(lenses[1].stats.find((s) => s.label === "Made on sales")).toBeUndefined();
   });
 });

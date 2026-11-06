@@ -66,6 +66,12 @@ describe("investmentOverview", () => {
     expect(o.series.at(-1)!.value).toBe(Math.round(o.valueInr));
   });
 
+  it("gives a lens for each holding, in the same order, each pricing itself from its own line", () => {
+    expect(o.lenses.map((l) => l.symbol)).toEqual(o.holdings.map((h) => h.symbol));
+    expect(o.lenses[0]).toMatchObject({ symbol: "AAA", quantity: 100, price: 150, currency: "INR" });
+    expect(o.lenses[1]).toMatchObject({ symbol: "BBB", currency: "USD" });
+  });
+
   it("has no series with no trades", () => {
     expect(investmentOverview({ trades: [], instruments, closes, today: "2026-01-01" }).series).toEqual([]);
   });

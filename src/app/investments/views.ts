@@ -1,6 +1,7 @@
 import type { SentencePart } from "@/app/cards/summarySentence";
 import { formatLakh } from "@/lib/format/lakh";
 import type { GreetingRowData } from "@/components/shell/GreetingParts";
+import type { HoldingLens, LensMarker, LensPoint } from "@/lib/aggregate/holdingLens";
 import type { HoldingRow, Overview } from "@/lib/aggregate/investmentOverview";
 import { formatDate, formatShortDate } from "@/lib/format/date";
 import { formatInr, formatMoney } from "@/lib/format/money";
@@ -214,4 +215,45 @@ export function recentTradesView(trades: InvestmentTransaction[], instruments: I
       detail: `${quantityText(t.quantity)} × ${formatMoney(t.currency, t.price)}`,
       total: formatMoney(t.currency, t.total),
     }));
+}
+
+// ---------- The lens: one holding on its own ----------
+export interface LensStat {
+  label: string;
+  value: string;
+  note?: string;
+  tone: ReturnCard["tone"];
+}
+
+export interface LensView {
+  key: string;
+  name: string;
+  symbol: string;
+  currency: "INR" | "USD";
+  points: LensPoint[];
+  markers: LensMarker[];
+  /** What he paid a share now, to draw the line's end; null when he holds none. */
+  avgCost: number | null;
+  stats: LensStat[];
+}
+
+function lensStats(l: HoldingLens): LensStat[] {
+  const rateText = (rate: number | null, tooEarly: boolean) => (rate !== null ? pct(rate, 1, true) : tooEarly ? "Too early" : "—");
+  const stats: LensStat[] = [
+    { label: "Shares", value: quantityText(l.quantity), note: l.firstBuy ? `first bought ${formatDate(l.firstBuy)}` : undefined, tone: "plain" },
+    { label: "Average cost", value: l.avgCost === null ? "—" : formatMoney(l.currency, l.avgCost), note: "a share, fees included", tone: "plain" },
+    { label: "Worth", value: formatInr(l.valueInr), note: l.price === null ? "no price: counted at cost" : `at ${formatMoney(l.currency, l.price)} a share`, tone: "plain" },
+    { label: "Gain", value: `${l.gainInr < 0 ? MINUS : "+"}${formatInr(Math.abs(l.gainInr))}`, note: l.gainFraction === null ? undefined : pct(l.gainFraction, 1, true), tone: tone(l.gainInr) },
+    { label: "Yearly return", value: rateText(l.xirr.rate, l.xirr.tooEarly), note: l.xirr.rate === null ? "needs a year of history" : "on this holding alone", tone: tone(l.xirr.rate) },
+    { label: "Price a year", value: l.priceCagr === null ? "Too early" : pct(l.priceCagr, 1, true), note: "the share price's own growth", tone: tone(l.priceCagr) },
+  ];
+  if (l.split) {
+    stats.push({ label: "Of the gain", value: `${signedLakh(l.split.pricePartInr)} price`, note: `${signedLakh(l.split.rupeePartInr)} from the rupee`, tone: "plain" });
+  }
+  if (l.markers.some((m) => m.tradeType === "Sell") && l.realisedInr !== 0) stats.push({ label: "Made on sales", value: signedLakh(l.realisedInr), note: "shares already sold", tone: tone(l.realisedInr) });
+  return stats;
+}
+
+export function lensViews(o: Overview): LensView[] {
+  return o.lenses.map((l) => ({ key: l.key, name: l.name, symbol: l.symbol, currency: l.currency, points: l.points, markers: l.markers, avgCost: l.avgCost, stats: lensStats(l) }));
 }
