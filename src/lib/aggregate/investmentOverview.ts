@@ -51,6 +51,8 @@ export interface Overview {
   pricesFrom: string | null;
   /** Holdings counted at cost for want of a price. */
   unpriced: string[];
+  /** Every day from his first trade to today: what he held was worth, and what it cost him (the stage draws these). */
+  series: { date: string; value: number; cost: number }[];
 }
 
 export interface OverviewInput {
@@ -117,6 +119,7 @@ export function investmentOverview({ trades, instruments, closes, today }: Overv
     gapToNifty: gapToIndex(twr.yearlyRate, niftyYearly), gapToSp500: gapToIndex(twr.yearlyRate, sp500Yearly),
     pricesFrom: dates.length > 0 ? dates.reduce((a, b) => (a > b ? a : b)) : null,
     unpriced: rows.filter((r) => r.price === null).map((r) => r.symbol),
+    series: history.map((d) => ({ date: d.date, value: Math.round(d.valueInr), cost: Math.round(d.costInr) })),
   };
 }
 

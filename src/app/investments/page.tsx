@@ -6,11 +6,12 @@ import { HoldingsTable } from "@/components/investments/HoldingsTable";
 import { RecentTrades } from "@/components/investments/RecentTrades";
 import { TradeButtons, TradeFormsProvider } from "@/components/investments/TradeForms";
 import { RefreshPricesButton } from "@/components/investments/RefreshPricesButton";
+import { Stage } from "@/components/investments/Stage";
 import { ReturnsRow } from "@/components/investments/ReturnsRow";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { investmentOverview } from "@/lib/aggregate/investmentOverview";
 import { appConfig } from "@/lib/appConfig";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { formatShortDate, greetingFor, todayIso } from "@/lib/format/date";
 import type { PricePoint } from "@/lib/prices/history";
 import { getPriceSeries } from "@/lib/prices/series";
 import { getCachedInstrumentsTab, getCachedInvestmentTransactionsTab } from "@/lib/sheets/cached";
@@ -58,6 +59,7 @@ export default async function InvestmentsPage() {
         )}
         <SkippedRowsNotice tabs={skipped} />
       </PageHeader>
+      <Stage series={overview.series} pricesNote={overview.pricesFrom && overview.pricesFrom < today ? `prices from ${formatShortDate(overview.pricesFrom)}` : undefined} />
       <ReturnsRow cards={returnsView(overview)} />
       {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} />}
       <RecentTrades rows={recentTradesView(tradesTab.records, instrumentsTab.records)} />

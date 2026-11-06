@@ -59,6 +59,17 @@ describe("investmentOverview", () => {
     expect(o.sp500Yearly).toBeCloseTo(0, 9); // the index and the dollar are both flat in this sample
   });
 
+  it("gives the stage a worth and cost for every day from the first trade to today", () => {
+    expect(o.series[0]).toEqual({ date: "2024-01-02", value: 24000, cost: 18000 }); // AAA 100 x 150, BBB 10 x $10 x 90
+    expect(o.series.at(-1)).toMatchObject({ date: "2026-01-01", cost: 18000 });
+    expect(o.series).toHaveLength(731);
+    expect(o.series.at(-1)!.value).toBe(Math.round(o.valueInr));
+  });
+
+  it("has no series with no trades", () => {
+    expect(investmentOverview({ trades: [], instruments, closes, today: "2026-01-01" }).series).toEqual([]);
+  });
+
   it("counts a holding with no instrument at cost and names it", () => {
     const naked = investmentOverview({ trades, instruments: [inst({})], closes, today: "2026-01-01" });
     const b = naked.holdings.find((h) => h.symbol === "BBB")!;
