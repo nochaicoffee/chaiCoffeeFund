@@ -45,17 +45,17 @@ Round 1's other boards (replaced by the final ones above): `LeForms` (Add a loan
 
 The canvas opens on four **FINAL** pages (`LeFinal` the page, `LePhone`, `LeStates`, `LeForms`); L1, L2 and L4 stay as one Exploration page, labelled "not picked". The earlier L1-based phone, states and forms boards were replaced, not kept (the owner's rule: when the design changes, every board changes).
 
-**The page, top to bottom:** the greeting (its figures point), the attention strip, the **Who owes what** hero, the **Interest clock** widget, the loans table, **Interest coming up** beside **Money back** (they end level; `audit.sh` measures it).
+**The page, top to bottom:** the greeting (its figures point), the attention strip, the **Who owes what** hero, then a two-card row (the **Interest clock** on the left, **Interest adding up** on the right; see Round 2), the loans table, **Interest coming up** beside **Money back** (they end level; `audit.sh` measures it).
 
 **Decisions**
 - **The hero is L3**: a block per loan sized by what it owes today; picking one shows the total *without* it, its share, and what the daily earnings would fall to. A measure of concentration, never advice. Paid-out blocks carry their promised-against-arrived dots and a "not here" flag; the 12% block carries its interest ramp.
-- **The clock is its own widget**, not part of the hero. It has its own colour (a day gold, a month teal, a year indigo, all time green) scoped to the widget, so it never recolours with the hero's pick. It keeps the dial (an arc per loan, a sweeping hand), the day / month / year / all-time switch, the 12% pot beside the payouts, and the chart of interest adding up since Oct 2024. A day, a month and a year are at today's pace; all time is what has really piled up or fallen due.
+- **The clock is its own widget**, not part of the hero, and not full width (see Round 2: it is split in two cards). It has its own colour (a day gold, a month teal, a year indigo, all time green) scoped to the widget, so it never recolours with the hero's pick. It keeps the dial (an arc per loan, a sweeping hand), the day / month / year / all-time switch, the 12% pot beside the payouts, and the chart of interest adding up since Oct 2024. A day, a month and a year are at today's pace; all time is what has really piled up or fallen due.
 - **Interest coming up leads with an overdue payout** (amber row), then the 12% loan's daily pile, then the dated payouts. Money back shows what arrived.
 - **Past three borrowers the map becomes a scrolling list**, longest first, so sixteen people never become sixteen tiny blocks. A repaid loan owes ₹0, so its block leaves the map and a dashed "Repaid" strip stays under it; the shares recompute over what is still out.
 - **Part of the principal returned**: the block shrinks to what is still owed, shows what came back as a dashed part of its meter, and the interest is worked out in two stretches (interest stops on what was paid back from the day it was paid).
 - **A late payout** is flagged on its block, highlighted in its table row, leads Interest coming up, and is a red x on the clock's chart.
 - **Forms** say where they open from (header buttons, a block's menu, a table row) and their previews show what happens to the blocks: the total, the share, who is left. Principal paid above what is out is a warning with "Record it anyway", not a block. Mark repaid requires the closing day. Delete confirms by typing the name and offers Mark repaid as the gentler option.
-- **Phone**: the blocks stack (the biggest full width), the picked block opens under them, the clock is a widget with its own colour and switch, loans become cards, sixteen people are a scrolling list, and the forms are bottom sheets.
+- **Phone**: the blocks stack (the biggest full width), the picked block opens under them, the clock row stacks (the clock first, then Interest adding up) with its own colour and switch, loans become cards, sixteen people are a scrolling list, and the forms are bottom sheets.
 
 **Assumptions (3 and 4 confirmed by him 2026-11-06; 1 and 2 still to check against the bank)**
 1. **The first payout falls one period after the day the money was lent** (so ₹3L's first was 1 Dec 2025). To check against the bank statement once real income entries exist.
@@ -64,6 +64,17 @@ The canvas opens on four **FINAL** pages (`LeFinal` the page, `LePhone`, `LeStat
 4. **An income source per payout loan** is offered by the Add form (checked by default); whether that is how he wants it linked, or a separate step in Income, is unconfirmed.
 
 Still sample: the interest that *arrived* (₹1,14,000 of ₹1,26,000 promised), and every repayment, closing day and the sixteen people in the States board.
+
+## Round 2 (2026-11-07): the clock widget is split in two
+
+Prathik asked that the Interest clock **not be full width**. The widget under the hero is now a **two-card row that ends level**:
+
+- **Left, about 5/12: the Interest clock.** The dial (an arc per loan, the sweeping hand), the day / month / year / all-time switch, and the per-loan rows under it (what each loan earns for the picked period, with its share).
+- **Right, about 7/12: Interest adding up.** The 12% pot tile and the payouts-in-lumps tile on top, and below them the chart of interest adding up since the first loan, with the picked period shaded and a red cross for each payout that isn't here.
+
+**One pick drives both cards** (the switch in the clock), and so does their colour (a day gold, a month teal, a year indigo, all time green). The colour is scoped to the two cards, so it never follows the Who owes what hero. On a phone the two cards stack, the clock first.
+
+Every board follows it: the page (`LeFinal`), the phone (`LePhone`), and every state in `LeStates` now shows its clock row, drawn for that state: nothing lent (both cards wait, with a dashed dial and an empty chart), a late payout (a cross on the chart), a repaid loan (the dial and chart drop its daily earnings but keep what it earned before it closed), part of the principal returned (the 12% line bends at the day it came back, and the earnings a day fall), and sixteen people (the three biggest loans get an arc each, the other thirteen share one, and the chart draws the same four lines). `LeForms` is unchanged: its context didn't change. The L1, L2 and L4 explorations are untouched.
 
 ## Questions from round 1: where they stand
 
@@ -95,7 +106,7 @@ Drafted here first so each task can be copied into an issue as it is, in the sam
 **C · The page** (acceptance: the L3 page, its phone layout and its states match the mockups; the greeting's figures point; the empty state and the phone are checked in the browser, light and dark)
 - **C1 · The shell: `/lent`, the sidebar entry, the greeting that points, the attention strip.** `app/lent/page.tsx`, `views.ts` and `greetingView.ts`, a `GreetingSentence` on `PointingSentence` (CLAUDE.md, "Every dashboard's greeting points"), the skipped-rows notice, the empty state. A test checks the sentence against the greeting cards.
 - **C2 · Who owes what.** The blocks, the pick and its colour glide, the "without each" panel, the scrolling list past three borrowers, the repaid strip. From A3.
-- **C3 · The interest clock.** The dial, the day / month / year / all-time switch (its own colour, never the hero's), the pot and the lumps, the chart. From A4.
+- **C3 · The interest clock and Interest adding up.** Two cards in one row. Left (5/12): the dial, the day / month / year / all-time switch (its own colour, never the hero's) and the per-loan rows. Right (7/12): the pot and the lumps, and the chart, which shades the period the switch picked. One pick drives both. From A4.
 - **C4 · The widgets.** The loans table (with a row menu: record a repayment, edit, mark repaid, delete), Interest coming up (an overdue payout leads), Money back. Cards that sit side by side end level (`audit.sh` equivalent, measured in the browser).
 - **C5 · The forms.** Add a loan (accruing and paid-out), Record a repayment (with the warning), Mark repaid, Edit (the preview of a changed rate), Delete (typed name, Mark repaid offered first); dialogs on desktop and bottom sheets on the phone. Wired to B1 and B2.
 - **C6 · States and the phone.** Nothing lent yet, a late payout, a repaid loan, part of the principal returned, sixteen people; the phone layout. Checked in the browser, light and dark, desktop and phone width.

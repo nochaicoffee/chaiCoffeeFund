@@ -521,7 +521,7 @@ label.pbook:hover { transform: translateY(-2px); }
 .dialw { position: relative; display: flex; align-items: center; justify-content: center; }
 .dial-c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; pointer-events: none; }
 .dial-c .k { font-size: 11px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.75; }
-.dial-c .v { font-size: 50px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; margin-top: 4px; } .dial-c .v small { font-size: 22px; font-weight: 700; opacity: 0.75; margin-right: 2px; letter-spacing: 0; }
+.dial-c .v { font-size: 50px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.05; margin-top: 4px; } .dial-c .v small { font-size: var(--sm, 22px); font-weight: 700; opacity: 0.75; margin-right: 2px; letter-spacing: 0; }
 .dial-c .s { font-size: 12.5px; font-weight: 600; opacity: 0.78; margin-top: 4px; }
 @keyframes sweep { to { transform: rotate(360deg); } }
 .hand { transform-origin: 180px 180px; animation: sweep 60s linear infinite; }
@@ -571,8 +571,10 @@ label.pbook:hover { transform: translateY(-2px); }
 /* ---- The page: the L3 hero, the clock as its own widget, the static pick ---- */
 .vw-on { display: block !important; } .vw-on.vw-grid { display: grid !important; }
 .clk { --h1: var(--card-gold-from); --h2: var(--card-gold-to); --hc: var(--card-gold); transition: --h1 520ms ease, --h2 520ms ease, --hc 520ms ease; }
+.g12 > * > .stg2 { flex: 1 1 auto; }
+.clk-card { padding: 26px 28px; }
 .dialw svg { display: block; width: 100%; max-width: 360px; height: auto; }
-.clk-ph .dial-c .v { font-size: 38px; } .clk-ph .dial-c .v small { font-size: 18px; } .clk-ph .dial-c .s { font-size: 11px; } .clk-ph .dialw svg { max-width: 300px; } .clk-ph .dial-c { max-width: 300px; margin: 0 auto; }
+ .clk-ph .dial-c .s { font-size: 11px; } .clk-ph .dialw svg { max-width: 300px; } .clk-ph .dial-c { max-width: 300px; margin: 0 auto; }
 .oflag { display: inline-flex; align-items: center; gap: 5px; align-self: flex-start; padding: 3px 10px; border-radius: 999px; background: oklch(0.82 0.15 85); color: oklch(0.3 0.08 70); font-size: 11px; font-weight: 800; }
 .meter .m-b { background: transparent; box-shadow: inset 0 0 0 1.5px oklch(1 0 0 / 0.7); }
 .owe.n2 { grid-template-rows: 1fr; } .owe.n2 .oblk.big { grid-row: 1; } .owe.n2 .oblk.tall { grid-row: 1; }
