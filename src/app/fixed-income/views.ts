@@ -18,18 +18,8 @@ export type DoorId = "all" | "epf" | "fd";
 export const DOORS: readonly DoorId[] = ["all", "epf", "fd"];
 export const DOOR_COLOR: Record<DoorId, ColorKey> = { all: "sapphire", epf: "emerald", fd: "teal" };
 
-/** ₹10.76L with two decimals, as the design sets the big figures: lakhs from a lakh, crores from a crore, plain rupees below. */
-export function lakhParts(value: number): { amount: string; unit: string } {
-  const abs = Math.abs(value);
-  const sign = value < 0 ? "−" : "";
-  if (abs >= 1e7) return { amount: `${sign}${(abs / 1e7).toFixed(2)}`, unit: "Cr" };
-  if (abs >= 1e5) return { amount: `${sign}${(abs / 1e5).toFixed(2)}`, unit: "L" };
-  return { amount: formatInr(value).replace("₹", ""), unit: "" };
-}
-export function formatLakh(value: number): string {
-  const { amount, unit } = lakhParts(value);
-  return `₹${amount}${unit}`;
-}
+export { formatLakh, lakhParts } from "@/lib/format/lakh";
+import { formatLakh, lakhParts } from "@/lib/format/lakh";
 
 export const ordinal = (n: number): string => `${n}${n % 100 >= 11 && n % 100 <= 13 ? "th" : ({ 1: "st", 2: "nd", 3: "rd" } as Record<number, string>)[n % 10] ?? "th"}`;
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
