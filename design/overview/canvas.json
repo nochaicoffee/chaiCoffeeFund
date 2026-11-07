@@ -1,0 +1,304 @@
+{
+  "pages": [
+    {
+      "id": "r9",
+      "name": "FINAL (to build) · the refined Bento with the Watermark icons and the Timeline ending, which toggles to a Calendar"
+    },
+    {
+      "id": "r8",
+      "name": "Round 8 · the refined Bento again: five icon styles, the rate setter on Future you, and four ways to end the page"
+    },
+    {
+      "id": "r7",
+      "name": "Round 7 · L1 Bento refined: a trend line in the net worth block, a mark on every tile, then the eight things and Future you at the foot"
+    },
+    {
+      "id": "r6",
+      "name": "Round 6 · the four neubrutalism LAYOUTS, whole pages, in our design language (no art): Bento, Rail, Poster, Windows"
+    },
+    {
+      "id": "r5",
+      "name": "Round 5 · borrowing from the neubrutalism exploration (illustrations, the cup, the town), in our language"
+    },
+    {
+      "id": "r4",
+      "name": "Round 4 · more visual, molded on two designs Prathik liked: Capsules, Warm bento, Bubbles"
+    },
+    {
+      "id": "r3",
+      "name": "Round 3 · net worth first, every page in groups, every warning in one place: River, Map, Bridge"
+    },
+    {
+      "id": "r2",
+      "name": "Round 2 · four whole-page ideas: Future you, What if, Things I noticed, Where a month goes"
+    },
+    {
+      "id": "r1",
+      "name": "Round 1 · five hero ideas, none picked yet"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "OvT1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 4907,
+      "page": "r9"
+    },
+    {
+      "file": "OvS1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 4488,
+      "page": "r8"
+    },
+    {
+      "file": "OvR1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 4295,
+      "page": "r7"
+    },
+    {
+      "file": "OvL1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1947,
+      "page": "r6"
+    },
+    {
+      "file": "OvL2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 2181,
+      "page": "r6"
+    },
+    {
+      "file": "OvL3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 2430,
+      "page": "r6"
+    },
+    {
+      "file": "OvL4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 2089,
+      "page": "r6"
+    },
+    {
+      "file": "OvI1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1324,
+      "page": "r5"
+    },
+    {
+      "file": "OvV1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1845,
+      "page": "r4"
+    },
+    {
+      "file": "OvV2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 1630,
+      "page": "r4"
+    },
+    {
+      "file": "OvV3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 1324,
+      "page": "r4"
+    },
+    {
+      "file": "OvN1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2083,
+      "page": "r3"
+    },
+    {
+      "file": "OvN2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 1514,
+      "page": "r3"
+    },
+    {
+      "file": "OvN3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 1324,
+      "page": "r3"
+    },
+    {
+      "file": "OvQ1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1099,
+      "page": "r2"
+    },
+    {
+      "file": "OvQ2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 1104,
+      "page": "r2"
+    },
+    {
+      "file": "OvQ3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 1618,
+      "page": "r2"
+    },
+    {
+      "file": "OvQ4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 1108,
+      "page": "r2"
+    },
+    {
+      "file": "OvO1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 2211,
+      "page": "r1"
+    },
+    {
+      "file": "OvO2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 2169,
+      "page": "r1"
+    },
+    {
+      "file": "OvO3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 2157,
+      "page": "r1"
+    },
+    {
+      "file": "OvO4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 2093,
+      "page": "r1"
+    },
+    {
+      "file": "OvO5.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 1600,
+      "h": 2148,
+      "page": "r1"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-1",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Overview, final page (2026-11-08). Prathik picked the Watermark icon style and the Timeline ending, with a toggle to switch the ending to a Calendar. T1 is the page to build: greeting; net worth (number, change, a trend line whose months you click, the type chips, the ring); twelve tiles, each with a large faint watermark glyph (the cards tile keeps its card faces); the eight things; Future you with a slider for any rate from 2% to 14%; then Coming up and Keep in mind as a timeline (needs a look now, then every day, each item tagged when a warning belongs to it), with a Timeline / Calendar toggle. The calendar has a day panel and the warnings that have no day of their own. Rounds 1 to 8 stay on their pages. Every figure is made up.",
+      "page": "r9"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Overview, round 8 (2026-11-08). Prathik's notes on round 7: the soft illustrations don't fit our design, so explore five more modern icon styles; move Coming up and Keep in mind to the very end and explore a few ways of expressing them; everything else is good; Future you should have a setter for any percentage. S1: the same page. Icon style (a design aid, top right of the tiles): 1 Glass chip, 2 Duotone, 3 Watermark, 4 App badge, 5 Orbit, all dressing one hand-drawn glyph set; the cards tile keeps its cards. Future you: a slider from 2% to 14% in whole steps replaces the three chips (the real build would take a typed number; every step here has its own chart). The last section, four ways (design aid): A two cards, B one timeline (what needs a look now, then every day), C a board by when, D a calendar with a day panel. Click a month on the trend, a style, a version, a day on the calendar. Every figure is made up.",
+      "page": "r8"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Overview, round 7 (2026-11-08). Prathik picked L1 Bento and asked for three things: a trend line in the net worth block; an icon or art on every tile below it (the cards tile with card art, and so on); and, at the end of the page, Eight things worth knowing about your money with Future you below it. R1: the greeting; net worth (the number, the change, a trend line whose months you can click to count the number to them, the type chips and the ring); twelve tiles, each with its own mark (the cards tile draws the real cards, investments carry their trend, loans the home-and-car split, goals their progress, still-to-pay its ring); Coming up beside Keep in mind; then the eight things (filter them, flip a card for the maths) and Future you (pick how far and what your investments earn). The soft illustrations are back on the tiles only; the cup stays off. Every figure is made up.",
+      "page": "r7"
+    },
+    {
+      "id": "note-4",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Overview, round 6 (2026-11-07). Prathik doesn't want the art (the illustrations and the cup) but liked the layouts of the four neubrutalism pages in the Dashboard design exploration session, and asked to explore all of them for our design, the whole page and not just the hero. Each is rebuilt page for page in our language (glass, soft gradients, our type), on our data, with net worth first, the groups of pages and every warning in one list. L1 Bento (Sticker Bento): our rail; a net worth block with a ring; 12 tiles in four columns (the ten pages and the two sums of the month); the trend and the Keep in mind list side by side. L2 Rail (Chai Buddy): a round icon rail; the greeting in a card; net worth as one chunky segmented bar with a hatched strip for what you owe; tiles with round badges; an area trend; a list you can tick off. L3 Poster (Pop Poster): a sticker nav across the top; a big title and a speech bubble; a loud net worth block with a starburst; slightly tilted tiles; halftone bars; speech-bubble warnings. L4 Windows (Money Town): folder tabs; app-window tiles; a block city instead of the skyline (1 block = ₹3L, owed below the road); the trend as stacked blocks. Click a month on the trend and the net worth above counts to it. The round 5 Town and the illustrations and cup are kept but switched off. Every figure is made up.",
+      "page": "r6"
+    },
+    {
+      "id": "note-5",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Overview, round 5 (2026-11-07). Prathik asked to take inspiration from the mockups in the Dashboard design exploration session (neubrutalism: spot illustrations for every kind of money, the chai-cup mascot, the Money Town skyline) and to follow our design language. What was borrowed: a small illustration for every page and type of money (piggy bank, rocket, vault, money bag, card, house, car, coins, shield, target), now drawn with a thin soft line on a light bubble instead of a thick ink outline; the chai cup beside the greeting; and the town. These are also in place on rounds 3 and 4 (the line icons became illustrations, the cup stands by every greeting). I1 Town: a cross-section of your money. What you own stands above the road and grows taller; what you owe hangs below it and deepens; a billboard counts the net worth; slide through 13 months and every building grows or shrinks; a sign on each building carries its figure and a beacon where its page has a warning; pick a building for its year and its warnings. What was left behind: thick ink outlines, hard offset shadows, flat poster colours, folder tabs and the retro windows. Every figure is made up.",
+      "page": "r5"
+    },
+    {
+      "id": "note-6",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Overview, round 4 (2026-11-07). Prathik asked for more visual and attached two designs he liked (a purple one with paired pill bars, a treemap of net worth and status chips; a dark warm bento with a stack of cards, gradient blocks, pill bars, concentric arcs and a table), to be molded on our data and design language. V1 Capsules: status chips, owned against owed as paired pills month by month (click one), net worth with a treemap of what it is made of, and group tabs below with every page and warning. V2 Warm bento: our cards stacked, owned and owed as gradient blocks, a pill-bar month strip, three measures as concentric arcs, still-to-pay as a bar, and the warnings as a table you can filter by group. V3 Bubbles: every type of money as a glowing orb sized by what it holds (dashed ones are debts), slide through the months and they swell and shrink; groups on the right. All keep net worth first, the pages in groups and every warning in one place. Every figure is made up.",
+      "page": "r4"
+    },
+    {
+      "id": "note-7",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Overview, round 3 (2026-11-07). Prathik answered the questions: net worth is the star (big number and change, trend over time, owned against owed, split by type, and how each piece fits); the other pages come as grouped sections (Assets, Debts, Cash flow, Plans and cover); a Keep in mind list gathers every warning from every page, tagged with its page; and the design should be unique and modern, with great interactions and animation, not a hero over widgets. N1 River: net worth through 13 months as a river, owned above the line and owed below; click any month and the number counts to it; the lanes below hold every page and every warning by group. N2 Map: a map of the money with a cell per page; pick one and the page, its facts and its warnings come forward while the others dim. N3 Bridge: a bridge from what you own, over what you owe, to what you keep; slide back in time and the bars morph; groups on the right. Every figure is made up; the 12 months of history is made up too and ends at today's real sample figures.",
+      "page": "r3"
+    },
+    {
+      "id": "note-8",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Overview, round 2 (2026-11-07). Prathik asked for something cooler that needn't follow the other dashboards: whole pages built around one interaction each, with insights the old Overview never gave. They keep the shell and the greeting that points, and end with a slim dock to every section. Q1 Future you: pick how far (1 to 20 years) and what your investments earn, and see net worth, the loans shrinking and the milestones (loans cleared, ₹50L, ₹1 Cr). Q2 What if: seven scenarios, each with how long you could carry the bills (bank first, then what you would sell), what it does to net worth, and the one-line reading. Q3 Things I noticed: eight insights, each with its own picture, a filter, and a flip to show the maths. Q4 Where a month goes: a flow from money in to groups to every line, pick any block to follow it. Every figure is made up and every rate is an assumption shown on its board. Open a board and click.",
+      "page": "r2"
+    },
+    {
+      "id": "note-9",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Overview, round 1 (2026-11-07). Five ideas for the hero, each on the same page: the greeting (its figures point: hover, focus or tap), the first two things that need a look, the hero, a tile for every section, what needs attention beside this month, then Coming up beside the bank balance. Only the hero differs. O1 Two sides of the ledger: what you own against what you owe plus what you keep. O2 How fast you could reach it: the same money sorted by how soon you could hold it. O3 The month ahead: the bank accounts' balance for 30 days with every bill and payday on it. O4 Money vitals: six measures with a band each, like a check-up. O5 Briefing: the page opens on what to do. Every figure is made up (shaped like the real Overview). Open a board and click: each hero is a coloured stage that takes the colour of what you pick.",
+      "page": "r1"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "r9"
+  }
+}

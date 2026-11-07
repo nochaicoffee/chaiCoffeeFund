@@ -92,7 +92,7 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 | F-OV-02 | Monthly obligations: subscriptions, this month's EMIs and upcoming card bills | P0 | Live |
 | F-OV-03 | What needs attention: upcoming due dates, pending statements, pending income | P0 | Live. A late EPF credit and a deposit that has matured and isn't closed join it (2026-11-05). |
 | F-OV-04 | Bank-balance trend chart | P0 | Live |
-| F-OV-05 | Overview in the new design language | P0 | Not designed (no mockup yet) |
+| F-OV-05 | Overview in the new design language | P0 | **Designed 2026-11-08**: the final page T1 (net worth with its trend, twelve tiles with watermark glyphs, Eight things worth knowing, Future you with a rate slider, then Coming up and Keep in mind as a timeline that toggles to a calendar). Eight rounds of mockups in `design/overview/`, spec in [design/overview.md](design/overview.md). Phone and states are built with the page. |
 | F-OV-06 | Net worth over time | P2 | Not started. It needs past loan, card and investment state reconstructed. |
 
 ### Cards (`F-CC`): first milestone
@@ -376,7 +376,7 @@ Confirmed by Prathik on 2026-10-24 (he accepted the defaults the mockups show fo
 | Q5 | Which banks are your current cards with? | **Answered 2026-10-17:** HDFC, ICICI, Axis, YES and CSB/Jupiter. All five have parsers. |
 | Q6 | Cards design: which merged-widget option (J–O)? | **Answered 2026-10-17:** none. A new final design replaced them (see §8). |
 | Q7 | Phone layouts: per epic, or a mobile design pass up front? | **Answered 2026-10-17:** per epic. M1 sets the shared phone patterns. |
-| Q8 | Overview design: needs a mockup in the new design language | F-OV-05 |
+| Q8 | Overview design: needs a mockup in the new design language | **Answered 2026-11-08:** the final page T1 (`design/overview/`, [design/overview.md](design/overview.md)). |
 | Q9 | Valued assets (EPF, PPF, NPS, NSC, insurance, property, vehicle): one `ValuedAssets` entity with dated valuations for all of them, or one per kind? Proposed: one. | F-FI-02 |
 | Q10 | Upcoming RSU vests: reopen "vesting schedules" in §10 for a list of the next vests (date and shares, not in net worth), or leave it out? | F-IV-06 |
 | Q11 | Insurance, rent and fees: add them to Subscriptions as new categories (proposed), or give them their own page? | **Answered 2026-10-29 for insurance:** its own page (F-IS-01), with a `Policies` master and a `PolicyPayments` row per term, because it asks whether you're covered and when it lapses, not what you pay each period. Rent and fees stay proposed for Subscriptions (F-SU-03). |
