@@ -75,7 +75,7 @@ function useHoldingFields(forms: TradeFormsData, initial: { holding?: string; br
 function HoldingFieldsBlock({ forms, h, errors, reveal }: { forms: TradeFormsData; h: ReturnType<typeof useHoldingFields>; errors: Record<string, string>; reveal: (field: string) => void }) {
   return (
     <>
-      <Field id="holding" label="Holding" required error={errors.holding}>
+      <Field id="holding" label="Holding" required error={errors.holding} help="Not listed? Close this and use Add holding at the top of the page.">
         <SelectInput id="holding" name="holding" invalid={Boolean(errors.holding)} placeholder="Choose" options={forms.instruments.map((i) => ({ value: holdingKey(i.market, i.symbol), label: `${i.name} · ${i.symbol}` }))} value={h.holding} onChange={h.setHolding} />
       </Field>
       {h.market === "US" && (
