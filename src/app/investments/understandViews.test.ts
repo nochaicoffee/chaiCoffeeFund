@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { investmentOverview } from "@/lib/aggregate/investmentOverview";
 import type { PricePoint } from "@/lib/prices/history";
 import type { Instrument, InvestmentTransaction } from "@/lib/sheets/types";
-import { gainView, niceAxis, niceStep, weightView } from "./understandViews";
+import { concentrationView, gainView, niceAxis, niceStep, weightView } from "./understandViews";
 
 const trade = (o: Partial<InvestmentTransaction>): InvestmentTransaction => ({
   id: "t", tradeDate: "2024-01-02", symbol: "AAA", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 100, price: 100, total: 10000, assetType: "Equity", broker: "B", ...o,
@@ -124,5 +124,33 @@ describe("gainView", () => {
 
   it("has nothing with no holdings", () => {
     expect(gainView(investmentOverview({ trades: [], instruments, closes, today: "2026-01-01" }))).toBeNull();
+  });
+});
+
+describe("concentrationView", () => {
+  const view = concentrationView(overview)!;
+
+  it("lists every holding biggest first, their shares adding up to the whole", () => {
+    expect(view.holdingCount).toBe(3);
+    expect(view.ladder.map((p) => p.fraction)).toEqual([...view.ladder.map((p) => p.fraction)].sort((a, b) => b - a));
+    expect(view.ladder.reduce((s, p) => s + p.fraction, 0)).toBeCloseTo(1, 12);
+  });
+
+  it("counts how many make half and 80%, and what holding that few equal ones is like", () => {
+    // AAA ₹15,000 (48.7%), BBB ₹10,800 (35.1%) and LOS ₹5,000 (16.2%): AAA alone is just short of half, with BBB it is past 80%.
+    expect(view.forHalf).toBe(2);
+    expect(view.forEighty).toBe(2);
+    expect(view.likeHolding).toBe("2.6");
+  });
+
+  it("words each piece's share and worth, a share under 10% with a decimal", () => {
+    expect(view.ladder.map((p) => p.percent)).toEqual(["49%", "35%", "16%"]);
+    expect(view.ladder[0].worth).toBe("₹15,000");
+    const tiny = concentrationView(investmentOverview({ trades: [...trades, trade({ id: "s", symbol: "TNY", quantity: 1, price: 100, total: 100 })], instruments: [...instruments, inst({ id: "k", symbol: "TNY", name: "Tiny", priceTicker: "TNY.NS" })], closes: new Map([...closes, ["TNY.NS", days(731, () => 100)]]), today: "2026-01-01" }))!;
+    expect(tiny.ladder.at(-1)!.percent).toBe("0.3%");
+  });
+
+  it("has nothing with nothing held", () => {
+    expect(concentrationView(investmentOverview({ trades: [], instruments, closes, today: "2026-01-01" }))).toBeNull();
   });
 });

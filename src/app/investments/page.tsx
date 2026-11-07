@@ -10,6 +10,7 @@ import { SameMoney } from "@/components/investments/SameMoney";
 import { TradeButtons, TradeFormsProvider } from "@/components/investments/TradeForms";
 import { RefreshPricesButton } from "@/components/investments/RefreshPricesButton";
 import { Stage } from "@/components/investments/Stage";
+import { ConcentrationCard } from "@/components/investments/ConcentrationCard";
 import { GainCard } from "@/components/investments/GainCard";
 import { GrowthCard } from "@/components/investments/GrowthCard";
 import { SplitCard } from "@/components/investments/SplitCard";
@@ -27,7 +28,7 @@ import { cashFrom, readCash } from "./loadCash";
 import { growthView, whatIfView } from "./scenarioViews";
 import { splitView } from "./splitView";
 import { tradeFormsData } from "./tradeFormsData";
-import { gainView, weightView } from "./understandViews";
+import { concentrationView, gainView, weightView } from "./understandViews";
 import { greetingView, holdingsView, lensViews, moneyInView, pickerView, recentTradesView, returnsView, sameMoneyView, summarySentence } from "./views";
 
 export const metadata: Metadata = { title: "Investments" };
@@ -57,6 +58,7 @@ export default async function InvestmentsPage() {
   const gain = gainView(overview);
   const whatIf = whatIfView(overview);
   const growth = growthView(overview);
+  const concentrated = concentrationView(overview);
 
   return (
     <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today)}>
@@ -85,7 +87,7 @@ export default async function InvestmentsPage() {
       {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} />}
       {cash && <CashCard view={cash} />}
       <MoneyAndSame money={moneyInView(tradesTab.records, instrumentsTab.records, today)} same={sameMoneyView(overview)} />
-      {(split || weight || gain || whatIf || growth) && (
+      {(split || weight || gain || whatIf || growth || concentrated) && (
         <section aria-label="Understand it" className="flex flex-col gap-3">
           <h2 className="px-1 text-base font-extrabold">
             Understand it
@@ -99,6 +101,7 @@ export default async function InvestmentsPage() {
             </div>
           )}
           {whatIf && <WhatIfCard view={whatIf} />}
+          {concentrated && <ConcentrationCard view={concentrated} />}
           {growth && <GrowthCard view={growth} />}
         </section>
       )}

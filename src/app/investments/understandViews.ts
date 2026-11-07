@@ -1,7 +1,8 @@
 import type { Overview } from "@/lib/aggregate/investmentOverview";
+import { concentration } from "@/lib/aggregate/concentration";
 import { gainParts } from "@/lib/aggregate/gainShare";
 import { formatLakh } from "@/lib/format/lakh";
-import { colorOf, holdingKey, pct, signedLakh, symbolTile, tone, type Tone } from "./views";
+import { colorOf, holdingKey, pct, shareText, signedLakh, symbolTile, tone, type Tone } from "./views";
 
 /**
  * Two of the "Understand it" cards (docs/design/investments.md), as plain already-formatted data: where the weight sits against how each
@@ -73,7 +74,7 @@ export function weightView(o: Overview): WeightView | null {
       x: (gain - x.min) / (x.max - x.min),
       y: h.share / y.max,
       size: Math.sqrt(h.valueInr / biggest),
-      weight: `${pct(h.share, h.share < 0.1 ? 1 : 0)} of what you hold · ${formatLakh(h.valueInr)}`,
+      weight: `${shareText(h.share)} of what you hold · ${formatLakh(h.valueInr)}`,
       ret: `${pct(gain, 0, true)} on what it cost`,
       retTone: tone(gain),
     }))
@@ -146,7 +147,7 @@ export function gainView(o: Overview): GainView | null {
       tile: symbolTile(h.symbol),
       gain: signedLakh(p.gainInr),
       gainTone: tone(p.gainInr),
-      share: p.shareOfGain === null ? shareless(p.gainInr, o.gainInr) : `${pct(p.shareOfGain, p.shareOfGain < 0.1 ? 1 : 0)} of the gain`,
+      share: p.shareOfGain === null ? shareless(p.gainInr, o.gainInr) : `${shareText(p.shareOfGain)} of the gain`,
       priceBar: Math.abs(p.pricePartInr) / longest,
       rupeeBar: Math.abs(p.rupeePartInr) / longest,
       priceText: signedLakh(p.pricePartInr),
@@ -161,4 +162,36 @@ export function gainView(o: Overview): GainView | null {
     rupeeNote: rupeeNote(o.rupeeGainInr),
     sharesNote: parts.reduce((sum, p) => sum + (p.shareOfGain ?? 0), 0) > 1.0001 ? "The shares add up to more than the whole because some holdings lost: the whole gain is what's left after them." : null,
   };
+}
+
+// ---------- How concentrated ----------
+
+export interface LadderPiece {
+  key: string;
+  symbol: string;
+  name: string;
+  colorKey: string;
+  /** Its share of the whole, 0 to 1, as the piece's width. */
+  fraction: number;
+  percent: string;
+  worth: string;
+}
+
+export interface ConcentrationView {
+  forHalf: number;
+  forEighty: number;
+  /** "3.1": the holdings it is like having, equal in size. */
+  likeHolding: string;
+  holdingCount: number;
+  /** Every holding, biggest first. */
+  ladder: LadderPiece[];
+}
+
+export function concentrationView(o: Overview): ConcentrationView | null {
+  const c = concentration(o.holdings.map((h) => h.share));
+  if (!c) return null;
+  const ladder = o.holdings
+    .map((h, i): LadderPiece => ({ key: holdingKey(h), symbol: h.symbol, name: h.name, colorKey: colorOf(i), fraction: h.share, percent: shareText(h.share), worth: formatLakh(h.valueInr) }))
+    .sort((a, b) => b.fraction - a.fraction);
+  return { forHalf: c.forHalf, forEighty: c.forEighty, likeHolding: c.likeHolding.toFixed(1), holdingCount: o.holdings.length, ladder };
 }
