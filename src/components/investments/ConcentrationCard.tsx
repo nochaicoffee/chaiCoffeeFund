@@ -31,7 +31,7 @@ export function ConcentrationCard({ view }: { view: ConcentrationView }) {
                 label={`${p.name}: ${p.percent}, ${p.worth}`}
                 card={<TipBody head={p.name} total={p.percent} detail={p.worth} />}
                 width={200}
-                align={i === 0 ? "left" : i === view.ladder.length - 1 ? "right" : "center"}
+                align={view.ladder.slice(0, i).reduce((sum, q) => sum + q.fraction, 0) < 0.4 ? "left" : "right"}
                 className="block h-full w-full rounded-md"
                 style={{ background: `var(--card-${p.colorKey})` }}
               >

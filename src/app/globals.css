@@ -307,10 +307,17 @@
   --animate-days-next: days-next 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-days-prev: days-prev 180ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-tile-in: tile-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1) 260ms both;
+  /* A hover card opening (Tip): it is not displayed until then, so a hidden one takes up no room and can't widen the page. */
+  --animate-tip-in: tip-in 150ms ease-out both;
   --animate-breathe: breathe 2.6s ease-in-out infinite;
   --animate-breathe-fast: breathe 1.5s ease-in-out infinite;
 
   /* A subscription's cover renewing within 3 days (#148, 4A): a soft ring in its own colour (--cover-soft) swells and fades. */
+  @keyframes tip-in {
+    from {
+      opacity: 0;
+    }
+  }
   @keyframes breathe {
     0%,
     100% {
