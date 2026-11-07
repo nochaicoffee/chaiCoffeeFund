@@ -309,6 +309,9 @@ export function holdingGroups(rows: HoldingTableRow[]): HoldingGroup[] {
   });
 }
 
+/** "Mutual-Fund" read as "Mutual Fund". */
+const assetTypeText = (type: string) => type.replaceAll("-", " ");
+
 const quantityText = (q: number) => (Number.isInteger(q) ? String(q) : String(Math.round(q * 10_000) / 10_000));
 
 export function holdingsView(o: Overview): HoldingTableRow[] {
@@ -320,7 +323,7 @@ export function holdingsView(o: Overview): HoldingTableRow[] {
       market: h.market,
       name: h.name,
       tags: [...h.plans, ...(h.stale ? ["Stale price"] : [])],
-      kind: `${h.symbol} · ${h.assetType.replace("-", " ")} · since ${h.since.slice(0, 4)}`,
+      kind: `${h.symbol} · ${assetTypeText(h.assetType)} · since ${h.since.slice(0, 4)}`,
       tile: h.symbol.slice(0, 4),
       colorKey: colorOf(i),
       quantity: quantityText(h.quantity),
@@ -388,7 +391,18 @@ export interface LensView {
   markers: LensMarker[];
   /** What he paid a share now, to draw the line's end; null when he holds none. */
   avgCost: number | null;
+  /** The holding's own header on the stage (design: tile, name, share-plan tags, one line about it). */
+  header: LensHeader;
   stats: LensStat[];
+}
+
+export interface LensHeader {
+  tile: string;
+  colorKey: string;
+  /** "RSU", "ESPP" (the share plans it came through) and "Stale price" when its price feed has stopped. */
+  tags: string[];
+  /** "NTAP · Equity · United States · 30 trades since 2023". */
+  kind: string;
 }
 
 function lensStats(l: HoldingLens): LensStat[] {
@@ -408,8 +422,26 @@ function lensStats(l: HoldingLens): LensStat[] {
   return stats;
 }
 
+/** The shares sold at a vest to cover tax are not his trades to count. */
+const isCoverSell = (m: { tradeType: "Buy" | "Sell"; source: "Market" | "RSU" | "ESPP" }) => m.tradeType === "Sell" && m.source === "RSU";
+
+function lensHeader(l: HoldingLens, h: HoldingRow, index: number): LensHeader {
+  const trades = l.markers.filter((m) => !isCoverSell(m)).length;
+  return {
+    tile: h.symbol.slice(0, 4),
+    colorKey: colorOf(index),
+    tags: [...h.plans, ...(h.stale ? ["Stale price"] : [])],
+    kind: [h.symbol, assetTypeText(h.assetType), h.market === "US" ? "United States" : "India", `${plural(trades, "trade", "trades")} since ${h.since.slice(0, 4)}`].join(" · "),
+  };
+}
+
 export function lensViews(o: Overview): LensView[] {
-  return o.lenses.map((l) => ({ key: l.key, name: l.name, symbol: l.symbol, currency: l.currency, points: l.points, markers: l.markers, avgCost: l.avgCost, stats: lensStats(l) }));
+  return o.lenses.flatMap((l) => {
+    // Matched on the holding's own market and symbol, never by position, so a filtered or reordered list can't give a lens another's header.
+    const i = o.holdings.findIndex((h) => h.market === l.market && h.symbol === l.symbol);
+    if (i < 0) return [];
+    return [{ key: l.key, name: l.name, symbol: l.symbol, currency: l.currency, points: l.points, markers: l.markers, avgCost: l.avgCost, header: lensHeader(l, o.holdings[i], i), stats: lensStats(l) }];
+  });
 }
 
 // ---------- Pick what to look at ----------

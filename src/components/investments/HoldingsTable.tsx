@@ -3,13 +3,11 @@
 import { useState } from "react";
 import { holdingGroups, type HoldingTableRow, type Tone } from "@/app/investments/views";
 import { WidgetCard } from "../shell/WidgetCard";
+import { PlanTag } from "./PlanTag";
 
 const TONE: Record<Tone, string> = { gain: "text-positive", loss: "text-negative", plain: "text-fg" };
 const CHIP: Record<Tone, string> = { gain: "bg-accent-tint text-positive", loss: "bg-negative-tint text-negative", plain: "bg-fill text-muted" };
 const COLS = "lg:grid-cols-[minmax(0,2.6fr)_minmax(0,0.8fr)_minmax(0,1.1fr)_minmax(0,1.2fr)_minmax(0,1.1fr)_minmax(0,1.2fr)_minmax(0,1.7fr)_minmax(0,1.2fr)]";
-
-/** The share-plan tags: RSU in blue, ESPP in violet (design: srcb). */
-const TAG = { RSU: { background: "oklch(0.94 0.03 258)", color: "oklch(0.42 0.1 258)" }, ESPP: { background: "oklch(0.94 0.04 300)", color: "oklch(0.42 0.12 300)" } } as const;
 
 type Filter = "all" | "IND" | "US";
 /**
@@ -81,9 +79,7 @@ function Row({ r }: { r: HoldingTableRow }) {
           <b className="block text-[13.5px] font-extrabold">
             {r.name}
             {r.tags.map((t) => (
-              <span key={t} className={`ml-1.5 inline-flex rounded-full px-[7px] py-px align-[1px] text-[9.5px] font-extrabold tracking-[0.03em] ${t === "Stale price" ? "bg-warning-tint text-warning-text" : ""}`} style={t === "Stale price" ? undefined : TAG[t === "ESPP" ? "ESPP" : "RSU"]}>
-                {t}
-              </span>
+              <PlanTag key={t} name={t} />
             ))}
           </b>
           <span className="block truncate text-[11px] font-semibold text-muted">{r.kind}</span>
