@@ -222,6 +222,32 @@ describe("lensViews", () => {
     expect(lenses[0].stats.find((s) => s.label === "Of the gain")).toBeUndefined();
   });
 
+  it("has a header for each holding: its tile, plan tags and one line saying what it is and how long he has traded it", () => {
+    const a = lenses[0].header;
+    expect(a.tile).toBe("AAA");
+    expect(a.kind).toMatch(/^AAA · .+ · India · 2 trades since \d{4}$/);
+    expect(lenses[1].header.kind).toContain("United States");
+    expect(lenses.map((l) => l.header.colorKey)).toEqual(holdingsView(o).map((r) => r.colorKey));
+  });
+
+  it("doesn't count the shares sold at a vest to cover tax as his trades, and tags the plans and a stale price", () => {
+    const vest = [
+      trade({ id: "v", symbol: "BBB", market: "US", currency: "USD", source: "RSU", quantity: 10, price: 10, total: 100, fxRateToInr: 80, tradeDate: "2025-03-01" }),
+      trade({ id: "c", symbol: "BBB", market: "US", currency: "USD", source: "RSU", tradeType: "Sell", quantity: 3, price: 10, total: 30, fxRateToInr: 80, tradeDate: "2025-03-01" }),
+      trade({ id: "e", symbol: "BBB", market: "US", currency: "USD", source: "ESPP", quantity: 5, price: 9, total: 45, fxRateToInr: 80, tradeDate: "2025-06-01" }),
+    ];
+    const old = new Map(closes);
+    old.set("BBB", days("2024-01-02", 400, () => 10));
+    const header = lensViews(investmentOverview({ trades: vest, instruments, closes: old, today: "2026-01-01" }))[0].header;
+    expect(header.kind).toBe("BBB · Equity · United States · 2 trades since 2025");
+    expect(header.tags).toEqual(["RSU", "ESPP", "Stale price"]);
+  });
+
+  it("says '1 trade' for a holding traded once", () => {
+    const once = lensViews(investmentOverview({ trades: [trade({})], instruments, closes, today: "2026-01-01" }))[0];
+    expect(once.header.kind).toMatch(/ · 1 trade since 2024$/);
+  });
+
   it("leaves out Made on sales for a holding never sold", () => {
     expect(lenses[1].stats.find((s) => s.label === "Made on sales")).toBeUndefined();
   });

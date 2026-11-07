@@ -9,6 +9,7 @@ import { formatDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { nearestIndex } from "../accounts/trendChart";
 import { PickCarousel } from "./PickCarousel";
+import { PlanTag } from "./PlanTag";
 import { PlotFrame } from "./PlotFrame";
 
 /**
@@ -283,8 +284,22 @@ function LensStage({ lens }: { lens: LensView }) {
         <Chips label="How far back" items={rangeItems(ranges)} value={range} onChange={(key) => { setRange(key); setHover(null); }} />
       </div>
       <div className="min-w-0 pt-2">
-        <div className="text-[11px] font-extrabold tracking-[0.05em] uppercase" style={{ color: MUTED }}>
-          {lens.name} · {hover === null ? "latest price" : `price on ${formatDate(at.date)}`}
+        <div className="flex items-center gap-3">
+          <span aria-hidden="true" className="flex size-[44px] shrink-0 items-center justify-center rounded-[13px] text-[11px] font-extrabold text-on-card" style={{ background: `linear-gradient(155deg, var(--card-${lens.header.colorKey}-from), var(--card-${lens.header.colorKey}-to))` }}>
+            {lens.header.tile}
+          </span>
+          <div className="min-w-0">
+            <div className="text-[17px] leading-tight font-extrabold">
+              {lens.name}
+              {lens.header.tags.map((t) => (
+                <PlanTag key={t} name={t} />
+              ))}
+            </div>
+            <p className="m-0 mt-0.5 text-[11.5px] font-semibold" style={{ color: MUTED }}>{lens.header.kind}</p>
+          </div>
+        </div>
+        <div className="mt-3 text-[11px] font-extrabold tracking-[0.05em] uppercase" style={{ color: MUTED }}>
+          {hover === null ? "Latest price" : `Price on ${formatDate(at.date)}`}
         </div>
         <div className="mt-1.5 text-[52px] leading-[0.95] font-extrabold tracking-[-0.045em] tabular-nums md:text-[76px]">{big}</div>
         <p className="mt-3 text-[13px] font-semibold" style={{ color: MUTED }}>
