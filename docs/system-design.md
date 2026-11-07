@@ -193,6 +193,16 @@ Money Prathik has lent to friends, outside any bank. It is **not** a bank `Loan`
 - **Net worth**: `lentOutInr` is its own asset line ("Lent out"), added to net worth. It is owed by a person and can go bad, so it is never folded into Fixed Deposits. If the tabs can't be read, Overview says so under "What needs attention" and leaves the line out instead of failing.
 - **The Lent page** (`/lent`, built 2026-11-07; design `docs/design/lent-out.md`): greeting, what needs attention, Who owes what, the interest clock, the loans table, interest coming up and money back, and the forms (add, edit, record a repayment, mark repaid, reopen, delete). A payout loan's promised payouts and what arrived are read from its income source (ADR 0014), whether the source was made with the loan or already existed. **Overview** shows the Lent out line, a Lent out tile that opens the page, and the page's late or missing payouts and long-out loans under "What needs attention" (`overviewAttention` in `src/app/lent/views.ts`).
 
+### Overview (F-OV-05, built 2026-11-08, [`docs/design/overview.md`](design/overview.md))
+
+The Overview reads everything and decides nothing new: every figure is one a page shows, or a tested pure function.
+
+- **One loader, one model.** `app/overview/loadOverviewData.ts` reads every source once (core tabs plus EPF, lent out, goals, insurance, prices, each flagged when unreadable and never taking the page down); `model.ts` turns it into the model every view reads (investments at market value through `investmentOverview`, net worth through `computeNetWorth`, the month-end series).
+- **Investments are at market value** on the Overview (cost for a holding with no price), the number the Investments page shows. `computeNetWorth` takes the value as an input and falls back to cost for every other caller.
+- **Past net worth is rebuilt, not stored** (`lib/aggregate/netWorthOn.ts`): each part read as it stood on the day. A month before the first bank balance is left out, never drawn as nothing; the last point is the headline figure itself. It is an estimate (see F-OV-06 in the PRD) until real snapshots (F-OV-07) exist.
+- **Keep in mind is each page's own attention list in one shape** (`app/overview/warnings.ts`, `loadWarnings.ts`): the pages' `attentionView`s, tagged with their page and ranked act now, soon, worth knowing. Fixed Income lends only a late EPF credit and a matured deposit; a source that couldn't be read is a warning of its own. **Coming up** (`events.ts`) is the next 30 days from the same helpers the pages use, and each event joins its warning by a `ref`.
+- **Eight things** (`insights.ts`) are measures with their working shown, never advice; one with nothing to say is left out. **Future you** (`lib/aggregate/futureYou.ts`) is arithmetic on his records and on numbers he sets: loans follow their stored schedules to exactly zero; the bank, lent-out money and card bills stay as today; the defaults (amount added, EPF a month, the two rates) come from his records, say where from, and are remembered on the device.
+
 ### Investments page (designed 2026-11-02, proposals: nothing here is built or decided)
 
 The page the mockups picked (L1 Giant, `docs/design/investments.md`) needs more than F-IV-03's today prices. What it adds, all as proposals:

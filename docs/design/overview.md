@@ -188,3 +188,13 @@ Why these: Round 1 answered "what am I worth". These answer what the old page co
 ## Not designed yet
 
 The phone layout, the states (nothing entered yet, a dollar rate that can't be fetched, EPF unreadable), and light/dark beyond today's light theme. These wait for the pick, as on every other page.
+
+## What changed between the mockup and the build (2026-11-08)
+
+- **The trend is real but an estimate.** The mockup's 13 months were made up; the build rebuilds them from the records and leaves out months before the first bank balance. With less than a year of records the change reads "since <first month>" instead of "a year ago".
+- **Warnings come from the pages.** The mockup's eleven sample warnings included some no page raises today (a Netflix price rise, NetApp being 37% of investments). The build lists only what each page's own attention list says, plus card statements and sources that couldn't be read; the concentration lives in Eight things.
+- **Due this month and Still to pay** are the real obligations: Still to pay is the existing "monthly obligations" (what is left), Due this month adds what was already paid.
+- **Eight things:** a card with nothing to say is left out, so the heading says Seven when seven. The matured-deposit card needs a deposit that has matured and isn't closed and a loan to compare.
+- **Future you:** the amount added to investments is his buys and ESPP less his sales over twelve months (an RSU vest costs him nothing), and the assumptions are editable and remembered. The slider is whole 2 to 14 and a typed field takes any 0 to 30.
+- **Calendar on a phone** is the list of the days that have something.
+- **Left for later:** the design aids (icon-style and ending switches) are not on the page; real net worth snapshots (F-OV-07) would make the trend exact.
