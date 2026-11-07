@@ -11,6 +11,7 @@ import { SameMoney } from "@/components/investments/SameMoney";
 import { TradeButtons, TradeFormsProvider } from "@/components/investments/TradeForms";
 import { RefreshPricesButton } from "@/components/investments/RefreshPricesButton";
 import { Stage } from "@/components/investments/Stage";
+import { TargetsCard } from "@/components/investments/TargetsCard";
 import { ConcentrationCard } from "@/components/investments/ConcentrationCard";
 import { GainCard } from "@/components/investments/GainCard";
 import { GrowthCard } from "@/components/investments/GrowthCard";
@@ -24,9 +25,10 @@ import { appConfig } from "@/lib/appConfig";
 import { greetingFor, todayIso } from "@/lib/format/date";
 import type { PricePoint } from "@/lib/prices/history";
 import { getPriceSeries } from "@/lib/prices/series";
-import { getCachedInstrumentsTab, getCachedInvestmentTransactionsTab } from "@/lib/sheets/cached";
+import { getCachedInstrumentsTab, getCachedInvestmentTargetsTab, getCachedInvestmentTransactionsTab } from "@/lib/sheets/cached";
 import { asOfViews } from "./asOfViews";
 import { cashFrom, readCash } from "./loadCash";
+import { limitViews, targetsView } from "./targetViews";
 import { growthView, whatIfView } from "./scenarioViews";
 import { splitView } from "./splitView";
 import { tradeFormsData } from "./tradeFormsData";
@@ -44,7 +46,14 @@ export default async function InvestmentsPage() {
   const today = todayIso();
   // The cash at his brokers is read beside the holdings (it needs nothing from them) and counted outside their worth (F-IV-18).
   const cashRead = readCash(today);
+  // His targets and limits are a side card: if their tab can't be read the page still shows everything else (they just read as none set).
+  const targetsRead = getCachedInvestmentTargetsTab().catch((error) => {
+    console.error("Investments: the targets and limits couldn't be read", error);
+    return null;
+  });
   const [tradesTab, instrumentsTab] = await Promise.all([getCachedInvestmentTransactionsTab(), getCachedInstrumentsTab()]);
+  const targetsTab = await targetsRead;
+  const savedTargets = targetsTab?.records ?? [];
   // The saved prices not reading must not take the page down: the holdings are then counted at cost, and the page says so (design state B).
   const prices = await getPriceSeries().then(
     (closes) => ({ closes, failed: false }),
@@ -57,7 +66,7 @@ export default async function InvestmentsPage() {
   const asOf = asOfViews(overviewInput, overview);
   const cashData = await cashRead;
   const cash = cashFrom(cashData, overview.valueInr, today);
-  const skipped = [tradesTab.skipped, instrumentsTab.skipped].filter((t) => t.rows.length > 0);
+  const skipped = [tradesTab.skipped, instrumentsTab.skipped, ...(targetsTab ? [targetsTab.skipped] : [])].filter((t) => t.rows.length > 0);
 
   const split = splitView(overview);
   const weight = weightView(overview);
@@ -65,9 +74,11 @@ export default async function InvestmentsPage() {
   const whatIf = whatIfView(overview);
   const growth = growthView(overview);
   const concentrated = concentrationView(overview);
+  const targets = targetsView(overview, savedTargets);
+  const limits = limitViews(overview, savedTargets);
 
   return (
-    <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today, cashData?.cash)}>
+    <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today, cashData?.cash, savedTargets)}>
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Investments"
@@ -95,7 +106,7 @@ export default async function InvestmentsPage() {
       </AsOfProvider>
       {cash && <CashCard view={cash} />}
       <MoneyAndSame money={moneyInView(tradesTab.records, instrumentsTab.records, today)} same={sameMoneyView(overview)} />
-      {(split || weight || gain || whatIf || growth || concentrated) && (
+      {(split || weight || gain || whatIf || growth || concentrated || targets) && (
         <section aria-label="Understand it" className="flex flex-col gap-3">
           <h2 className="px-1 text-base font-extrabold">
             Understand it
@@ -109,7 +120,12 @@ export default async function InvestmentsPage() {
             </div>
           )}
           {whatIf && <WhatIfCard view={whatIf} />}
-          {concentrated && <ConcentrationCard view={concentrated} />}
+          {(targets || concentrated) && (
+            <div className={`grid items-stretch gap-6 ${targets && concentrated ? "lg:grid-cols-2" : ""}`}>
+              {targets && <TargetsCard view={targets} />}
+              {concentrated && <ConcentrationCard view={concentrated} limits={limits} />}
+            </div>
+          )}
           {growth && <GrowthCard view={growth} />}
         </section>
       )}
