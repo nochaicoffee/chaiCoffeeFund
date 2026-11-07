@@ -1,11 +1,14 @@
 import { RefreshButton } from "@/components/RefreshButton";
 import { GreetingSentence } from "@/components/overview/GreetingSentence";
+import { EightThings } from "@/components/overview/EightThings";
 import { KeepInMind } from "@/components/overview/KeepInMind";
 import { NetWorthBlock } from "@/components/overview/NetWorthBlock";
 import { Tiles } from "@/components/overview/Tiles";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
 import { greetingFor, todayIso } from "@/lib/format/date";
+import { overviewEvents } from "./overview/events";
+import { insights } from "./overview/insights";
 import { loadOverviewData } from "./overview/loadOverviewData";
 import { loadWarnings } from "./overview/loadWarnings";
 import { overviewModel } from "./overview/model";
@@ -20,6 +23,7 @@ export default async function OverviewPage() {
   const model = overviewModel(await loadOverviewData(), today);
   const warnings = await loadWarnings(model, today);
   const worth = netWorthView(model);
+  const events = overviewEvents(model.data, today);
 
   return (
     <div className="flex flex-col gap-6">
@@ -28,6 +32,7 @@ export default async function OverviewPage() {
       </PageHeader>
       {worth && <NetWorthBlock view={worth} />}
       <Tiles tiles={tilesView(model, warnings)} />
+      <EightThings items={insights(model, events)} />
       <KeepInMind warnings={warnings} />
     </div>
   );
