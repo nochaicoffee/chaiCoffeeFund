@@ -50,7 +50,7 @@ export default async function LentPage({ searchParams }: PageProps<"/lent">) {
       {hero && <WhoOwesWhat view={hero} initialPick={hero.keys.includes(requested) ? requested : "all"} />}
       {clock && <InterestClock view={clock} initialPick={(PERIODS as readonly string[]).includes(requestedClock) ? (requestedClock as ClockPeriod) : "day"} />}
       {table && <LoansTable view={table} />}
-      {(comingUp || moneyBack) && (
+      {model.data.loans.length > 0 && (comingUp || moneyBack) && (
         <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-12">
           {comingUp && <div className={moneyBack ? "xl:col-span-6" : "xl:col-span-12"}><ComingUpCard view={comingUp} /></div>}
           {moneyBack && <div className={comingUp ? "xl:col-span-6" : "xl:col-span-12"}><MoneyBackCard view={moneyBack} /></div>}
@@ -58,7 +58,7 @@ export default async function LentPage({ searchParams }: PageProps<"/lent">) {
       )}
       {model.data.loans.length === 0 && (
         <section className="rounded-[22px] border border-surface-line bg-surface p-6 text-sm font-semibold text-muted">
-          <p>Nothing lent yet. Money you lend to friends will show here: who owes what, what it earns a day, and which payouts have arrived.</p>
+          <p>Money you have lent to friends or family, outside any bank, goes here.</p>
           <div className="mt-4"><AddFirstLoanButton /></div>
         </section>
       )}

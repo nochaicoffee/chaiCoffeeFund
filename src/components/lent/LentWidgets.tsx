@@ -196,8 +196,9 @@ export function MoneyBackCard({ view }: { view: MoneyBackView }) {
                 <small className="mt-0.5 text-[9px] font-extrabold tracking-[0.06em] text-muted">{r.month}</small>
               </span>
               <span className="min-w-0">
-                <b className="block truncate text-[13px] font-extrabold">
-                  {r.title} <span className={`ml-1 rounded-full px-2 py-0.5 align-middle text-[10px] font-bold ${TAG[r.tag]}`}>{r.tag}</span>
+                <b className="flex items-center gap-1.5 text-[13px] font-extrabold">
+                  <span className="min-w-0 truncate">{r.title}</span>
+                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${TAG[r.tag]}`}>{r.tag}</span>
                 </b>
                 <span className="block text-[11px] font-medium text-muted">{r.note}</span>
               </span>
