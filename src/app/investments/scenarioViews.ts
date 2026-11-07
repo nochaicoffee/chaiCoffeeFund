@@ -2,7 +2,7 @@ import { growthPath } from "@/lib/aggregate/growthPath";
 import type { Overview } from "@/lib/aggregate/investmentOverview";
 import { runScenario, scenarios, type WhatIfHolding } from "@/lib/aggregate/whatIf";
 import { formatLakh } from "@/lib/format/lakh";
-import { colorOf, holdingKey, pct, signedLakh, symbolTile, tone, type Tone } from "./views";
+import { colorOf, holdingKey, pct, shareText, signedLakh, symbolTile, tone, type Tone } from "./views";
 
 /**
  * Two more "Understand it" cards (docs/design/investments.md), as plain already-formatted data: What if (a shock to today's prices) and
@@ -82,7 +82,7 @@ export function whatIfView(o: Overview): WhatIfView | null {
     today: {
       total: formatLakh(o.valueInr),
       gainLine: o.gainInr > 0 ? `${pct(o.gainInr / o.valueInr, 0)} of it is gain · ${formatLakh(o.gainInr)} on ${formatLakh(o.costInr)} put in` : `${formatLakh(o.costInr)} put in`,
-      rows: o.holdings.map((h, i) => ({ key: holdingKey(h), symbol: h.symbol, tile: symbolTile(h.symbol), colorKey: colorOf(i), share: pct(h.share, h.share < 0.1 ? 1 : 0), bar: h.share })),
+      rows: o.holdings.map((h, i) => ({ key: holdingKey(h), symbol: h.symbol, tile: symbolTile(h.symbol), colorKey: colorOf(i), share: shareText(h.share), bar: h.share })),
     },
     scenarios: out,
   };

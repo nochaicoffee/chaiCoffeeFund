@@ -1,7 +1,7 @@
 import { splitHoldings, type SplitBy, type Slice } from "@/lib/aggregate/investmentSplit";
 import type { Overview } from "@/lib/aggregate/investmentOverview";
 import { formatLakh } from "@/lib/format/lakh";
-import { pct, type Tone } from "./views";
+import { pct, shareText, type Tone } from "./views";
 
 /**
  * "How it's split" (docs/design/investments.md, Understand it): what he holds cut four ways, as plain already-formatted data for the wheel
@@ -50,7 +50,6 @@ const DIMENSIONS: { key: SplitBy; label: string }[] = [
 ];
 const COLOURS = ["teal", "sapphire", "amber", "violet", "rose", "emerald", "copper", "ocean"] as const;
 
-const share = (fraction: number) => pct(fraction, fraction < 0.1 ? 1 : 0);
 
 function sliceView(slice: Slice, index: number, start: number): SplitSliceView {
   const gain = slice.gainFraction;
@@ -59,12 +58,12 @@ function sliceView(slice: Slice, index: number, start: number): SplitSliceView {
     label: slice.label,
     colour: COLOURS[index % COLOURS.length],
     value: formatLakh(slice.valueInr),
-    percent: share(slice.fraction),
+    percent: shareText(slice.fraction),
     fraction: slice.fraction,
     start,
     gain: gain === null ? "" : pct(gain, 0, true),
     gainTone: gain === null || Math.abs(gain * 100) < 0.5 ? "plain" : gain > 0 ? "gain" : "loss",
-    members: slice.members.map((m) => ({ key: `${m.market}:${m.symbol}`, symbol: m.symbol, name: m.name, value: formatLakh(m.valueInr), percent: share(m.fractionOfSlice), fraction: m.fractionOfSlice })),
+    members: slice.members.map((m) => ({ key: `${m.market}:${m.symbol}`, symbol: m.symbol, name: m.name, value: formatLakh(m.valueInr), percent: shareText(m.fractionOfSlice), fraction: m.fractionOfSlice })),
   };
 }
 

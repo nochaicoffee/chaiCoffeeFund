@@ -20,6 +20,8 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
 const MINUS = "−";
 /** 12.4% from a fraction, with a sign when asked. */
 export const pct = (fraction: number, digits = 1, signed = false) => `${fraction < 0 ? MINUS : signed && fraction > 0 ? "+" : ""}${Math.abs(fraction * 100).toFixed(digits)}%`;
+/** A share of the whole as a percent: a decimal under 10%, so a small share doesn't round to nothing. */
+export const shareText = (fraction: number) => pct(fraction, fraction < 0.1 ? 1 : 0);
 export const signedLakh = (n: number) => `${n < 0 ? MINUS : "+"}${formatLakh(Math.abs(n))}`;
 const years = (days: number) => (days / 365).toFixed(1);
 
