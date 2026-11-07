@@ -10,6 +10,7 @@ import { FormTriggerButton, HEADER_GHOST_CLASS } from "../shell/FormTriggerButto
 import { useUndoToast } from "../shell/UndoToast";
 import { ConfirmDialog } from "../subscriptions/forms/ConfirmDialog";
 import { InstrumentDialog } from "./InstrumentDialog";
+import { TargetsDialog } from "./TargetsDialog";
 import { EsppDialog, TradeDialog, VestDialog } from "./TradeDialogs";
 
 /**
@@ -17,7 +18,7 @@ import { EsppDialog, TradeDialog, VestDialog } from "./TradeDialogs";
  * that fits the trade) and Delete. A trade just added or deleted gets a toast with Undo for six seconds.
  */
 
-type Open = { kind: "add" } | { kind: "holding" } | { kind: "vest" } | { kind: "espp" } | { kind: "edit"; id: string } | { kind: "delete"; target: EditTarget };
+type Open = { kind: "add" } | { kind: "holding" } | { kind: "targets" } | { kind: "vest" } | { kind: "espp" } | { kind: "edit"; id: string } | { kind: "delete"; target: EditTarget };
 
 interface Controls {
   forms: TradeFormsData;
@@ -60,6 +61,7 @@ export function TradeFormsProvider({ forms, children }: { forms: TradeFormsData;
       {children}
       {open?.kind === "add" && <TradeDialog forms={forms} onClose={close} onSaved={done("Saved.")} />}
       {open?.kind === "holding" && <InstrumentDialog existing={forms.instruments} onClose={close} onSaved={() => saved(undefined, "Holding added.")} />}
+      {open?.kind === "targets" && <TargetsDialog saved={forms.targets} onClose={close} onSaved={() => saved(undefined, "Targets and limits saved.")} />}
       {open?.kind === "vest" && <VestDialog forms={forms} onClose={close} onSaved={done("Saved.")} />}
       {open?.kind === "espp" && <EsppDialog forms={forms} onClose={close} onSaved={done("Saved.")} />}
       {target?.kind === "trade" && <TradeDialog forms={forms} trade={find(target.ids[0])} onClose={close} onSaved={done("Saved.")} onDelete={toDelete(target)} />}

@@ -1,15 +1,17 @@
+import type { LimitView } from "@/app/investments/targetViews";
 import type { ConcentrationView } from "@/app/investments/understandViews";
 import { Tip, TipBody } from "../shell/Tip";
 import { WidgetCard } from "../shell/WidgetCard";
+import { TargetsButton } from "./TargetsButton";
 
 /**
  * How concentrated (docs/design/investments.md, Understand it): how few holdings carry half and 80% of what he holds, what holding that many
  * equal ones is like, and every holding as a piece of one ladder. Counts only: no limit and no suggestion. His own limits come with the
  * targets tab.
  */
-export function ConcentrationCard({ view }: { view: ConcentrationView }) {
+export function ConcentrationCard({ view, limits }: { view: ConcentrationView; limits: LimitView[] }) {
   return (
-    <WidgetCard label="How concentrated" title="How concentrated" note="how few holdings carry the weight">
+    <WidgetCard label="How concentrated" title="How concentrated" note="and your own limits" right={<TargetsButton label={limits.length > 0 ? "Change limits" : "Set your limits"} />}>
       <dl className="grid grid-cols-2 gap-4">
         <div>
           <dt className="text-xs font-bold text-muted">Holdings that make half</dt>
@@ -46,9 +48,31 @@ export function ConcentrationCard({ view }: { view: ConcentrationView }) {
           </i>
         ))}
       </div>
-      <p className="mt-4 text-xs font-semibold text-muted">
-        Every holding, biggest first, as a share of the whole: hover a piece. The app counts and never suggests.
-      </p>
+      <p className="mt-4 text-xs font-semibold text-muted">Every holding, biggest first, as a share of the whole: hover a piece.</p>
+
+      <div className="flex flex-col gap-3 border-t border-divider pt-3">
+        <b className="text-[13px] font-extrabold">Your limits <small className="font-semibold text-muted">yours, not the app&apos;s</small></b>
+        {limits.length === 0 ? (
+          <p className="text-xs font-semibold text-muted">You haven&apos;t set any limits. Set one (one holding at most 30%, say) and this checks it against what you hold today. Nothing is set for you.</p>
+        ) : (
+          <ul className="flex flex-col gap-3">
+            {limits.map((l) => (
+              <li key={l.name} className="flex flex-col gap-1.5">
+                <div className="flex items-baseline justify-between gap-3 text-[13px]">
+                  <b className="font-extrabold">{l.label}</b>
+                  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold ${l.breached ? "bg-negative-tint text-negative" : "bg-accent-tint text-positive"}`}>{l.chip}</span>
+                </div>
+                <div className="relative h-2 rounded-full bg-fill" role="img" aria-label={`${l.label}: ${l.detail}. ${l.chip}.`}>
+                  <i className="absolute inset-y-0 left-0 block rounded-full" style={{ width: `${Math.min(100, l.now * 100)}%`, background: l.breached ? "var(--negative)" : "var(--positive)" }} />
+                  <i aria-hidden="true" className="absolute -top-1 -bottom-1 w-0.5 rounded-full bg-ink" style={{ left: `${Math.min(100, l.limit * 100)}%` }} />
+                </div>
+                <small className="text-xs font-semibold text-muted">{l.detail}</small>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="text-xs font-semibold text-muted">The app only checks the limits you set against today&apos;s figures. It never suggests one, and a breach isn&apos;t a call to act.</p>
+      </div>
     </WidgetCard>
   );
 }

@@ -1,5 +1,5 @@
 import type { BrokerCash } from "@/lib/aggregate/brokerCash";
-import type { AccountCurrency, Instrument, InvestmentTransaction } from "@/lib/sheets/types";
+import type { AccountCurrency, Instrument, InvestmentTarget, InvestmentTransaction } from "@/lib/sheets/types";
 
 /** A broker cash account a trade can be paid from (or its proceeds land in), with the balance last on record, in its own currency. */
 export interface CashOption {
@@ -20,9 +20,11 @@ export interface TradeFormsData {
   trades: InvestmentTransaction[];
   brokers: string[];
   cash: CashOption[];
+  /** The targets and limits he has set, for the Your targets and limits form to open filled in. */
+  targets: InvestmentTarget[];
 }
 
-export function tradeFormsData(trades: InvestmentTransaction[], instruments: Instrument[], today: string, cash: BrokerCash[] = []): TradeFormsData {
+export function tradeFormsData(trades: InvestmentTransaction[], instruments: Instrument[], today: string, cash: BrokerCash[] = [], targets: InvestmentTarget[] = []): TradeFormsData {
   const brokers = [...new Set(trades.map((t) => t.broker))].sort();
   return {
     today,
@@ -30,6 +32,7 @@ export function tradeFormsData(trades: InvestmentTransaction[], instruments: Ins
     trades,
     brokers,
     cash: cashOptions(cash),
+    targets,
   };
 }
 
