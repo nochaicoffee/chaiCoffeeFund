@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { investmentOverview } from "@/lib/aggregate/investmentOverview";
 import type { PricePoint } from "@/lib/prices/history";
 import type { Instrument, InvestmentTransaction } from "@/lib/sheets/types";
+import { cashView } from "./cashView";
 import { greetingView, holdingGroups, holdingsView, lensViews, moneyInView, monthYear, pct, pickerView, recentTradesView, returnsView, sameMoneyView, summarySentence } from "./views";
 
 const trade = (o: Partial<InvestmentTransaction>): InvestmentTransaction => ({
@@ -202,6 +203,22 @@ describe("pct", () => {
     expect(pct(0.1234)).toBe("12.3%");
     expect(pct(-0.05)).toBe("−5.0%");
     expect(pct(0.05, 0, true)).toBe("+5%");
+  });
+});
+
+describe("cash at the brokers in the greeting", () => {
+  const cash = cashView({ cash: [{ account: { id: "b", name: "IBKR", bank: "IBKR", accountType: "Brokerage", purpose: "Investment", startDate: "2024-01-01", status: "Active", currency: "USD" }, balance: 1000, rupees: 90_000, date: "2025-12-30", source: "Manual" }], holdingsInr: o.valueInr, today: "2026-01-01", usdInr: 90 });
+
+  it("adds one figure that points, saying the cash and how many brokers, and a card for it", () => {
+    const parts = summarySentence(o, cash);
+    expect(text(parts)).toMatch(/₹90,000 waits as cash at 1 broker\. /);
+    expect(parts.find((p) => p.point === "cash")).toMatchObject({ strong: true });
+    expect(greetingView(o, cash).cash).toBeDefined();
+  });
+
+  it("says nothing of cash with none, and gives no card", () => {
+    expect(text(summarySentence(o))).not.toMatch(/cash/);
+    expect(greetingView(o).cash).toBeUndefined();
   });
 });
 
