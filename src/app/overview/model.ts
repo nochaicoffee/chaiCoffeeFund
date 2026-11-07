@@ -5,7 +5,7 @@ import type { PricePoint } from "@/lib/prices/history";
 import type { AccountsData } from "@/lib/aggregate/accountFlows";
 import type {
   Account, BalanceSnapshot, Card, EpfAccount, EpfEntry, EpfRate, FixedDeposit, Goal, GoalContribution, IncomeEntry, IncomeSource, Instrument,
-  InvestmentTransaction, LentLoan, LentRepayment, Loan, LoanInstallment, LoanPrepayment, Policy, PolicyPayment, Statement, Subscription,
+  InvestmentTransaction, LentLoan, LentRepayment, Loan, LoanInstallment, LoanPrepayment, Policy, PolicyPayment, Statement, Subscription, SubscriptionPayment,
 } from "@/lib/sheets/types";
 
 /** Everything the Overview reads (loadOverviewData.ts), as plain records, so every view below is a pure function of it. A source that couldn't be read is empty with `failed` set. */
@@ -17,6 +17,7 @@ export interface OverviewData {
   cards: Card[];
   statements: Statement[];
   subscriptions: Subscription[];
+  subscriptionPayments: SubscriptionPayment[];
   loans: Loan[];
   loanInstallments: LoanInstallment[];
   loanPrepayments: LoanPrepayment[];

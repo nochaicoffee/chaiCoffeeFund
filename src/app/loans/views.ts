@@ -188,6 +188,8 @@ export interface AttentionItem {
   amount: string;
   text: string;
   overdue: boolean;
+  /** The day it is due (the Overview dates its warning by it). */
+  dueDate: string;
   /** The account that holds less than this EMI, when there is one. */
   short?: string;
 }
@@ -210,6 +212,7 @@ export function attentionView(data: LoansData, today: string): AttentionItem[] {
       loanId: loan.id,
       name: loan.name,
       amount: formatInr(i.totalDue),
+      dueDate: i.dueDate,
       overdue,
       short: shortAccountName(data, loan, i, today),
       text: overdue

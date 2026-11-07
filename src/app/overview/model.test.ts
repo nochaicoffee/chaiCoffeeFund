@@ -14,7 +14,7 @@ const trade: InvestmentTransaction = { id: "t1", tradeDate: "2026-08-10", symbol
 const instrument = { symbol: "AAA", market: "IND", name: "AAA", priceTicker: "AAA.NS", assetType: "Equity" } as unknown as Instrument;
 
 const data = (over: Partial<OverviewData> = {}): OverviewData => ({
-  accounts: [account], balanceSnapshots: [{ id: "s1", accountId: "a1", date: "2026-08-01", balance: 300000 }], unpriced: undefined, cards: [card], statements: [statement], subscriptions: [],
+  accounts: [account], balanceSnapshots: [{ id: "s1", accountId: "a1", date: "2026-08-01", balance: 300000 }], unpriced: undefined, cards: [card], statements: [statement], subscriptions: [], subscriptionPayments: [],
   loans: [loan], loanInstallments: installments, loanPrepayments: [], trades: [trade], instruments: [instrument],
   closes: new Map([["AAA.NS", [{ date: "2026-08-10", close: 1000 }, { date: "2026-11-05", close: 1500 }]]]), pricesFailed: false, fixedDeposits: [], incomeEntries: [], incomeSources: [],
   epf: { accounts: [], entries: [], rates: [], failed: false }, lent: { loans: [], repayments: [], failed: false }, goals: { goals: [], contributions: [], failed: false }, insurance: { policies: [], payments: [], failed: false },

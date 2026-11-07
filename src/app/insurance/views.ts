@@ -204,6 +204,8 @@ export interface AttentionItem {
   /** Bold lead-in, then the sentence. */
   text: string;
   tone: "lapsed" | "soon";
+  /** The day its term ends or ended (the Overview dates its warning by it). */
+  renewsOn: string;
 }
 
 /** A line for each policy that has lapsed (first) and each one due to renew within the window, soonest first. */
@@ -223,10 +225,10 @@ export function attentionView(data: InsuranceData, today: string): AttentionItem
           : bare.length
             ? ` The ${bare.join(" and ")} ${bare.length === 1 ? "policy leaves" : "policies leave"} owner-driver cover out because of this one, so nothing covers you as ${bare.length === 1 ? "its" : "their"} driver.`
             : " Cover stopped when the term ended.";
-      return { policyId: v.policy.id, name: v.policy.name, tone: "lapsed", text: `lapsed on ${formatDate(on)} (${inDays(-lapsedAgo(v, today))}).${later}${v.latest && v.latest.start > today ? "" : effect}` };
+      return { policyId: v.policy.id, name: v.policy.name, tone: "lapsed", renewsOn: on, text: `lapsed on ${formatDate(on)} (${inDays(-lapsedAgo(v, today))}).${later}${v.latest && v.latest.start > today ? "" : effect}` };
     });
   const soon = renewingWithin(views, RENEW_SOON_DAYS).map(
-    (v): AttentionItem => ({ policyId: v.policy.id, name: `${v.policy.name} · ${v.policy.insurer}`, tone: "soon", text: `renews ${formatDate(v.renewsOn as string)} (${inDays(v.daysLeft as number)}). Last paid ${formatInr(v.latest!.payment.amount)}; the insurer's quote may differ.` }),
+    (v): AttentionItem => ({ policyId: v.policy.id, name: `${v.policy.name} · ${v.policy.insurer}`, tone: "soon", renewsOn: v.renewsOn as string, text: `renews ${formatDate(v.renewsOn as string)} (${inDays(v.daysLeft as number)}). Last paid ${formatInr(v.latest!.payment.amount)}; the insurer's quote may differ.` }),
   );
   return [...lapsed, ...soon];
 }
