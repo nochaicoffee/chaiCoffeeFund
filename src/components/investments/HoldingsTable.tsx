@@ -1,7 +1,7 @@
-import type { HoldingTableRow, ReturnCard } from "@/app/investments/views";
+import type { HoldingTableRow, Tone } from "@/app/investments/views";
 import { WidgetCard } from "../shell/WidgetCard";
 
-const TONE: Record<ReturnCard["tone"], string> = { gain: "text-positive", loss: "text-negative", plain: "text-fg" };
+const TONE: Record<Tone, string> = { gain: "text-positive", loss: "text-negative", plain: "text-fg" };
 const COLS = "lg:grid-cols-[minmax(0,2.4fr)_minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,1.1fr)_minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1.1fr)]";
 
 /** What he holds, biggest first: shares, today's price, what it is worth, the gain, its share of the whole and the last day's move. */

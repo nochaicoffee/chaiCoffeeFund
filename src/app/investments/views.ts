@@ -1,9 +1,10 @@
 import type { SentencePart } from "@/app/cards/summarySentence";
 import { formatLakh } from "@/lib/format/lakh";
 import type { GreetingRowData } from "@/components/shell/GreetingParts";
+import { DEPOSIT_RATE } from "@/lib/aggregate/raceLines";
 import type { HoldingLens, LensMarker, LensPoint } from "@/lib/aggregate/holdingLens";
 import type { HoldingRow, Overview } from "@/lib/aggregate/investmentOverview";
-import { formatDate, formatShortDate } from "@/lib/format/date";
+import { formatDate, formatMonthShort, formatShortDate } from "@/lib/format/date";
 import { formatInr, formatInrExact, formatMoney } from "@/lib/format/money";
 import type { Instrument, InvestmentTransaction } from "@/lib/sheets/types";
 
@@ -156,28 +157,102 @@ export function greetingView(o: Overview): InvestmentsGreetingCards {
 }
 
 // ---------- The returns row ----------
+/** A figure's colour: a gain, a loss or neither. */
+export type Tone = "gain" | "loss" | "plain";
+const tone = (n: number | null): Tone => (n === null || n === 0 ? "plain" : n > 0 ? "gain" : "loss");
+
+export interface ReturnTip {
+  head: string;
+  total: string;
+  detail: string;
+  rows: { name: string; amount: string }[];
+  foot: string;
+}
 export interface ReturnCard {
-  key: string;
+  key: "xirr" | "gap" | "total" | "realised" | "dividends" | "fall";
+  /** Which small icon sits beside the title. */
+  icon: "calendar" | "trend" | "check" | "coins" | "down";
   label: string;
   value: string;
-  note: string;
-  /** Colours the value: a gain, a loss or neither. */
-  tone: "gain" | "loss" | "plain";
+  /** The grey words after the value: "a year · XIRR". */
+  small: string;
+  /** A dark pill after them: "S&P +28.6%", or the total return's percent. */
+  pill?: string;
+  /** A figure that isn't there yet (too early, not recorded): drawn quieter. */
+  muted: boolean;
+  /** What the hover card says; none when there is nothing behind the figure. */
+  tip: ReturnTip | null;
 }
 
-const tone = (n: number | null): ReturnCard["tone"] => (n === null || n === 0 ? "plain" : n > 0 ? "gain" : "loss");
+const signedPct = (fraction: number, digits = 1) => pct(fraction, digits, true);
+/** "2026-04-04" → "Apr 2026", from the app's own month names (a locale formatter spells September "Sept" in some builds). */
+export const monthYear = (iso: string) => `${formatMonthShort(iso.slice(0, 7))} ${iso.slice(0, 4)}`;
 
+/** The six cards of the Returns row (the design's "key metrics"): the yearly return, the gap to the index, the total return, what sales made, dividends and the deepest fall. */
 export function returnsView(o: Overview): ReturnCard[] {
   if (o.holdings.length === 0) return [];
   const tooEarly = "needs a year of history";
-  return [
-    { key: "xirr", label: "Yearly return", value: o.xirr.rate === null ? "Too early" : pct(o.xirr.rate, 1, true), note: o.xirr.rate === null ? tooEarly : "XIRR, on your money as it went in", tone: tone(o.xirr.rate) },
-    { key: "twr", label: "Time-weighted", value: o.twr.yearlyRate === null ? "Too early" : pct(o.twr.yearlyRate, 1, true), note: o.twr.yearlyRate === null ? tooEarly : "a year, as if money was never added", tone: tone(o.twr.yearlyRate) },
-    { key: "fall", label: "Deepest fall", value: o.twr.deepestFall ? pct(-o.twr.deepestFall.fraction) : "None", note: o.twr.deepestFall ? `${formatShortDate(o.twr.deepestFall.from)} to ${formatShortDate(o.twr.deepestFall.to)}` : "it has only risen", tone: o.twr.deepestFall ? "loss" : "plain" },
-    { key: "nifty", label: "Against Nifty 50", value: o.gapToNifty === null ? "Too early" : `${pct(Math.abs(o.gapToNifty), 1, false)} ${o.gapToNifty >= 0 ? "ahead" : "behind"}`, note: o.niftyYearly === null ? tooEarly : `Nifty made ${pct(o.niftyYearly)} a year`, tone: tone(o.gapToNifty) },
-    { key: "sp", label: "Against the S&P 500", value: o.gapToSp500 === null ? "Too early" : `${pct(Math.abs(o.gapToSp500), 1, false)} ${o.gapToSp500 >= 0 ? "ahead" : "behind"}`, note: o.sp500Yearly === null ? tooEarly : `the S&P made ${pct(o.sp500Yearly)} a year, in rupees`, tone: tone(o.gapToSp500) },
-    { key: "realised", label: "Made on sales", value: signedLakh(o.realisedInr), note: "shares already sold, beside the gain", tone: tone(o.realisedInr) },
-  ];
+  const cards: ReturnCard[] = [];
+
+  const rate = o.xirr.rate;
+  cards.push({
+    key: "xirr", icon: "calendar", label: "Yearly return", value: rate === null ? "Too early" : pct(rate), small: rate === null ? tooEarly : "a year · XIRR", muted: rate === null,
+    tip: rate === null ? null : {
+      head: "Yearly return (XIRR)", total: `${pct(rate)} a year`, detail: `what your money earned, over ${years(o.xirr.days)} years`,
+      rows: [{ name: "RSU vest", amount: "cash in at fair value" }, { name: "ESPP purchase", amount: "cash in at what you paid" }, { name: "Sale, and shares sold to cover tax", amount: "cash out" }, { name: "Worth today", amount: formatLakh(o.valueInr) }],
+      foot: "When money went in matters: a late buy weighs less than an early one. The ESPP discount shows as return, because you paid less than the market.",
+    },
+  });
+
+  const you = o.twr.yearlyRate;
+  const gap = o.gapToNifty;
+  cards.push({
+    key: "gap", icon: "trend", label: "Against the index", value: gap === null ? "Too early" : signedPct(gap), small: gap === null ? tooEarly : "a year · vs Nifty 50", pill: o.gapToSp500 === null ? undefined : `S&P ${signedPct(o.gapToSp500)}`, muted: gap === null,
+    tip: gap === null || you === null ? null : {
+      head: "Against the index", total: `${gap >= 0 ? "ahead of" : "behind"} Nifty 50 by ${pct(Math.abs(gap))} a year`, detail: `your time-weighted yearly return less the index's, over the same ${years(o.twr.days)} years`,
+      rows: [
+        { name: "You", amount: pct(you) },
+        ...(o.niftyYearly === null ? [] : [{ name: "Nifty 50", amount: `${pct(o.niftyYearly)} · ${signedPct(you - o.niftyYearly)}` }]),
+        ...(o.sp500Yearly === null ? [] : [{ name: "S&P 500 in rupees", amount: `${pct(o.sp500Yearly)} · ${signedPct(you - o.sp500Yearly)}` }]),
+        { name: `A ${Math.round(DEPOSIT_RATE * 100)}% deposit`, amount: `${pct(DEPOSIT_RATE)} · ${signedPct(you - DEPOSIT_RATE)}` },
+      ],
+      foot: "A comparison, never advice. It is the Race in one figure. Time-weighted, so it ignores when you added money: it says how the holdings did, not what your money earned.",
+    },
+  });
+
+  const allIn = o.gainInr + o.realisedInr;
+  const allInFraction = o.moneyBoughtInr > 0 ? allIn / o.moneyBoughtInr : null;
+  cards.push({
+    key: "total", icon: "trend", label: "Total return", value: signedLakh(allIn), small: "", pill: allInFraction === null ? undefined : signedPct(allInFraction), muted: false,
+    tip: {
+      head: "Total return, all in", total: `${signedLakh(allIn)}${allInFraction === null ? "" : ` · ${signedPct(allInFraction)}`}`, detail: `on ${formatLakh(o.moneyBoughtInr)} bought over the years`,
+      rows: [{ name: "Still held: price", amount: signedLakh(o.gainInr - o.rupeeGainInr) }, { name: "Still held: the rupee", amount: signedLakh(o.rupeeGainInr) }, { name: "Made on shares sold", amount: signedLakh(o.realisedInr) }],
+      foot: `What is still held is ${signedLakh(o.gainInr)}${o.gainFraction === null ? "" : ` (${signedPct(o.gainFraction)} on its cost)`}. The % here is on every buy, an RSU vest at its fair value. Net worth counts only what you hold. Dividends aren't recorded yet, so they aren't in it.`,
+    },
+  });
+
+  const sold = o.realised;
+  cards.push({
+    key: "realised", icon: "check", label: "Made on shares sold", value: sold.sales === 0 ? "None" : signedLakh(o.realisedInr), small: sold.sales === 0 ? "no sales yet" : `from ${plural(sold.sales, "sale", "sales")}`, muted: sold.sales === 0,
+    tip: sold.sales === 0 ? null : {
+      head: "Made on shares sold", total: signedLakh(o.realisedInr), detail: "proceeds less the average cost of the shares sold",
+      rows: [
+        { name: "Shares sold to cover tax at a vest", amount: signedLakh(sold.coverInr) },
+        { name: "Every other sale", amount: signedLakh(o.realisedInr - sold.coverInr) },
+        ...sold.bySymbol.slice(0, 3).map((h) => ({ name: h.name, amount: signedLakh(h.gainInr) })),
+      ],
+      foot: "Not in net worth, and not what you hold. It is in the total return beside it. A US sale is at its own day's rate, so the rupee's part is in it.",
+    },
+  });
+
+  cards.push({ key: "dividends", icon: "coins", label: "Dividends", value: "—", small: "not recorded yet", muted: true, tip: null });
+
+  const fall = o.twr.deepestFall;
+  cards.push({
+    key: "fall", icon: "down", label: "Deepest fall", value: fall ? pct(-fall.fraction) : "None", small: fall ? `in ${monthYear(fall.to)}` : "it has only risen", muted: !fall,
+    tip: fall ? { head: "Deepest fall", total: pct(-fall.fraction), detail: `the worst peak-to-trough drop, from ${formatDate(fall.from)} to ${formatDate(fall.to)}`, rows: [], foot: "Of the time-weighted return, so buying more doesn't hide it." } : null,
+  });
+  return cards;
 }
 
 // ---------- The holdings table ----------
@@ -192,11 +267,11 @@ export interface HoldingTableRow {
   worth: string;
   gain: string;
   gainNote: string;
-  gainTone: ReturnCard["tone"];
+  gainTone: Tone;
   share: string;
   shareFraction: number;
   day: string;
-  dayTone: ReturnCard["tone"];
+  dayTone: Tone;
 }
 
 const quantityText = (q: number) => (Number.isInteger(q) ? String(q) : String(Math.round(q * 10_000) / 10_000));
@@ -253,7 +328,7 @@ export interface LensStat {
   label: string;
   value: string;
   note?: string;
-  tone: ReturnCard["tone"];
+  tone: Tone;
 }
 
 export interface LensView {
@@ -305,7 +380,7 @@ export interface PickCard {
   price: string;
   /** "▼ 0.96% today". */
   day: string;
-  dayTone: ReturnCard["tone"];
+  dayTone: Tone;
 }
 
 const SPARK_DAYS = 90;

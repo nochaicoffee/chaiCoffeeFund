@@ -112,3 +112,35 @@ describe("investmentOverview", () => {
     expect(e.xirr).toEqual({ rate: null, tooEarly: false, days: 0 });
   });
 });
+
+describe("investmentOverview: the totals behind the Returns row", () => {
+  const trades = [
+    trade({}), // 100 AAA at 100 = 10,000
+    trade({ id: "u", symbol: "BBB", market: "US", currency: "USD", quantity: 10, price: 10, total: 100, fxRateToInr: 80 }), // 8,000
+    trade({ id: "s1", tradeType: "Sell", tradeDate: "2024-06-01", quantity: 10, total: 1500 }), // cost 1,000: made 500
+    trade({ id: "v", symbol: "BBB", market: "US", currency: "USD", source: "RSU", tradeDate: "2024-07-01", quantity: 4, price: 20, total: 80, fxRateToInr: 85 }), // 6,800 bought
+    trade({ id: "v2", symbol: "BBB", market: "US", currency: "USD", source: "RSU", tradeType: "Sell", tradeDate: "2024-07-01", quantity: 1, price: 20, total: 20, fxRateToInr: 85 }), // sold to cover
+  ];
+  const instruments = [inst({}), inst({ id: "j", symbol: "BBB", market: "US", name: "Beta Inc", priceTicker: "BBB" })];
+  const o = investmentOverview({ trades, instruments, closes, today: "2026-01-01" });
+
+  it("adds up every buy, a vest at its fair value, and no sale", () => {
+    expect(o.moneyBoughtInr).toBe(10_000 + 8_000 + 6_800);
+  });
+
+  it("counts the sales, what the cover sale made, and each holding's part, biggest first", () => {
+    expect(o.realised.sales).toBe(2);
+    expect(o.realised.bySymbol.map((s) => s.symbol)).toEqual(expect.arrayContaining(["AAA", "BBB"]));
+    expect(o.realised.bySymbol.map((s) => s.name)).toContain("Alpha Ltd");
+    expect(o.realised.bySymbol.reduce((sum, s) => sum + s.gainInr, 0)).toBeCloseTo(o.realisedInr, 6);
+    const [first, second] = o.realised.bySymbol;
+    expect(Math.abs(first.gainInr)).toBeGreaterThanOrEqual(Math.abs(second.gainInr));
+    expect(o.realised.coverInr).toBeCloseTo(o.realised.bySymbol.find((s) => s.symbol === "BBB")!.gainInr, 6); // BBB's only sale is the cover sale
+  });
+
+  it("says what the rupee did to the US holdings, and nothing for India", () => {
+    const bbb = o.lenses.find((l) => l.symbol === "BBB")!;
+    expect(o.rupeeGainInr).toBeCloseTo(bbb.split!.rupeePartInr, 6);
+    expect(o.rupeeGainInr).not.toBe(0);
+  });
+});

@@ -3,7 +3,7 @@ import { priceOnOrBefore, type PricePoint } from "../prices/history";
 import { USD_INR_TICKER } from "../prices/refreshPlan";
 import { holdingLens, type HoldingLens } from "./holdingLens";
 import { raceLines, type RaceLine } from "./raceLines";
-import { computeHoldings, holdingsAt, totalRealisedGainInr } from "./investments";
+import { computeHoldings, holdingsAt, realisedGains, totalInInr } from "./investments";
 import { dayChange } from "./investmentValue";
 import { yearlyReturn, type YearlyReturn } from "./investmentReturns";
 import { gapToIndex, indexYearlyRate, portfolioHistory, timeWeightedReturns, type PriceBook, type Returns } from "./portfolioHistory";
@@ -41,6 +41,12 @@ export interface Overview {
   dayChangeInr: number | null;
   /** What sales have made, in rupees, beside the gain and never inside it. */
   realisedInr: number;
+  /** Every buy, in rupees (an RSU vest at its fair value, fees in): the "money bought" a total return is counted on. */
+  moneyBoughtInr: number;
+  /** What the rupee has done to the US holdings still held, in rupees: the part of `gainInr` that is not the share price. */
+  rupeeGainInr: number;
+  /** What the sales made, and from where: how many, what the shares sold to cover tax at a vest made, and each holding's part (biggest first). */
+  realised: { sales: number; coverInr: number; bySymbol: { symbol: string; market: InvestmentMarket; name: string; gainInr: number }[] };
   /** The yearly return on his money (XIRR); "too early" under a year. */
   xirr: YearlyReturn;
   /** Time-weighted: the portfolio's yearly rate (null under a year), the deepest fall and the day it started. */
@@ -120,14 +126,27 @@ export function investmentOverview({ trades, instruments, closes, today }: Overv
   const niftyYearly = twr.startDate ? indexYearlyRate(closes.get("^NSEI") ?? [], twr.startDate, today) : null;
   const sp500Yearly = twr.startDate ? indexYearlyRate(closes.get("^GSPC") ?? [], twr.startDate, today, usdInr) : null;
 
+  const lensList = rows.map((r) => holdingLens({ trades, instrument: tickerOf.get(`${r.market}:${r.symbol}`) ?? { symbol: r.symbol, market: r.market, name: r.name, priceTicker: "" }, closes, usdInr, today }));
+  const sales = realisedGains(trades, today);
+  const sourceOf = new Map(trades.map((t) => [t.id, t.source]));
+  const bySymbol = new Map<string, { symbol: string; market: InvestmentMarket; name: string; gainInr: number }>();
+  for (const sale of sales) {
+    const key = `${sale.market}:${sale.symbol}`;
+    const entry = bySymbol.get(key) ?? { symbol: sale.symbol, market: sale.market, name: tickerOf.get(key)?.name ?? sale.symbol, gainInr: 0 };
+    entry.gainInr += sale.gainInr;
+    bySymbol.set(key, entry);
+  }
   const dates = rows.map((r) => r.priceDate).filter((d): d is string => d !== null);
   return {
     today, holdings: rows, valueInr, costInr, gainInr: valueInr - costInr, gainFraction: costInr > 0 ? (valueInr - costInr) / costInr : null, dayChangeInr,
-    realisedInr: totalRealisedGainInr(trades, today), xirr: yearlyReturn(trades, valueInr, today), twr, usdInr: fxToday ?? null, niftyYearly, sp500Yearly,
+    realisedInr: sales.reduce((sum, sale) => sum + sale.gainInr, 0), moneyBoughtInr: trades.filter((t) => t.tradeType === "Buy" && t.tradeDate <= today).reduce((sum, t) => sum + totalInInr(t), 0),
+    rupeeGainInr: lensList.reduce((sum, l) => sum + (l.split?.rupeePartInr ?? 0), 0),
+    realised: { sales: sales.length, coverInr: sales.filter((sale) => sourceOf.get(sale.transactionId) === "RSU").reduce((sum, sale) => sum + sale.gainInr, 0), bySymbol: [...bySymbol.values()].sort((a, b) => Math.abs(b.gainInr) - Math.abs(a.gainInr)) },
+    xirr: yearlyReturn(trades, valueInr, today), twr, usdInr: fxToday ?? null, niftyYearly, sp500Yearly,
     gapToNifty: gapToIndex(twr.yearlyRate, niftyYearly), gapToSp500: gapToIndex(twr.yearlyRate, sp500Yearly),
     pricesFrom: dates.length > 0 ? dates.reduce((a, b) => (a > b ? a : b)) : null,
     unpriced: rows.filter((r) => r.price === null).map((r) => r.symbol),
-    lenses: rows.map((r) => holdingLens({ trades, instrument: tickerOf.get(`${r.market}:${r.symbol}`) ?? { symbol: r.symbol, market: r.market, name: r.name, priceTicker: "" }, closes, usdInr, today })),
+    lenses: lensList,
     race: raceLines({ dates: history.map((d) => d.date), youIndex: twr.index, closes }),
     series: history.map((d) => ({ date: d.date, value: Math.round(d.valueInr), cost: Math.round(d.costInr), flow: Math.round(d.netFlowInr) })),
   };
