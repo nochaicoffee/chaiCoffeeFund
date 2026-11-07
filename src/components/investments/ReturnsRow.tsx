@@ -18,6 +18,8 @@ const ICONS: Record<ReturnCard["icon"], ReactNode> = {
   check: <path d="m5 12.5 4.5 4.5L19 7.5" />,
   coins: <path d="M12 6c4.4 0 8 1 8 2.5S16.4 11 12 11 4 10 4 8.5 7.6 6 12 6Zm8 2.5v4C20 14 16.4 15 12 15s-8-1-8-2.5v-4M20 12.5v4c0 1.5-3.6 2.5-8 2.5s-8-1-8-2.5v-4" />,
   down: <path d="m4 8 5 5 4-4 7 8M15 17h5v-5" />,
+  layers: <path d="m12 4 8 4-8 4-8-4 8-4Zm-8 8 8 4 8-4M4 16l8 4 8-4" />,
+  range: <path d="M5 5v14M19 5v14M5 12h14M9 8l-4 4 4 4M15 8l4 4-4 4" />,
 };
 
 function Icon({ name }: { name: ReturnCard["icon"] }) {
@@ -28,16 +30,17 @@ function Icon({ name }: { name: ReturnCard["icon"] }) {
   );
 }
 
-export function ReturnsRow({ cards: now, asOf }: { cards: ReturnCard[]; asOf: Record<string, AsOfView> }) {
-  const { goBack, setGoBack } = useAsOf();
-  const then = goBack === "now" ? undefined : asOf[goBack];
-  const cards = then ? then.returns : now;
+export function ReturnsRow({ cards: now, asOf, holdings }: { cards: ReturnCard[]; asOf: Record<string, AsOfView>; holdings: { key: string; title: string; cards: ReturnCard[] }[] }) {
+  const { goBack, setGoBack, pick } = useAsOf();
+  const own = holdings.find((h) => h.key === pick);
+  const then = own || goBack === "now" ? undefined : asOf[goBack];
+  const cards = own ? own.cards : then ? then.returns : now;
   if (cards.length === 0) return null;
   return (
     <section aria-label="Returns" className="flex flex-col gap-3">
       <h2 className="px-1 text-base font-extrabold">
         Returns
-        <small className="ml-2 text-xs font-semibold text-muted">for everything, as of {then ? formatDate(then.date) : "today"}</small>
+        <small className="ml-2 text-xs font-semibold text-muted">{own ? `${own.title} on its own, as of today` : `for everything, as of ${then ? formatDate(then.date) : "today"}`}</small>
         {then && (
           <span className="ml-3 align-middle">
             <button type="button" onClick={() => setGoBack("now")} className="min-h-8 rounded-full bg-ink px-3.5 text-[12.5px] font-extrabold whitespace-nowrap text-on-ink focus-visible:outline-2 focus-visible:outline-offset-2">
@@ -46,7 +49,7 @@ export function ReturnsRow({ cards: now, asOf }: { cards: ReturnCard[]; asOf: Re
           </span>
         )}
       </h2>
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className={`grid gap-4 sm:grid-cols-2 ${own ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
         {cards.map((c) => {
           const body = (
             <div className="flex h-full flex-col gap-5 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]">
