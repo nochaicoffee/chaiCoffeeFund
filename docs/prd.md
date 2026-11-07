@@ -92,8 +92,8 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 | F-OV-02 | Monthly obligations: subscriptions, this month's EMIs and upcoming card bills | P0 | Live |
 | F-OV-03 | What needs attention: upcoming due dates, pending statements, pending income | P0 | Live. A late EPF credit and a deposit that has matured and isn't closed join it (2026-11-05). |
 | F-OV-04 | Bank-balance trend chart | P0 | Live |
-| F-OV-05 | Overview in the new design language | P0 | **Designed 2026-11-08**: the final page T1 (net worth with its trend, twelve tiles with watermark glyphs, Eight things worth knowing, Future you with a rate slider, then Coming up and Keep in mind as a timeline that toggles to a calendar). Eight rounds of mockups in `design/overview/`, spec in [design/overview.md](design/overview.md). Phone and states are built with the page. |
-| F-OV-06 | Net worth over time | P2 | Not started. It needs past loan, card and investment state reconstructed. |
+| F-OV-05 | Overview in the new design language | P0 | **Live 2026-11-08** ([design/overview.md](design/overview.md), built #372 to #378): a greeting whose figures point; net worth with a clickable 13-month trend, what it is made of and a ring of owned against owed; twelve tiles; Eight things worth knowing; Future you with a rate setter; Coming up and Keep in mind as a Timeline that toggles to a Calendar. Investments are counted at market value. |
+| F-OV-06 | Net worth over time | P2 | **Partly live (F-OV-05).** The Overview's trend rebuilds net worth at each of the last 13 month-ends from the records already kept (balances carried forward, statements and installments until the day they were paid, deposits until closed, lent-out loans as of the day, and the Investments page's daily value). It goes back as far as the first bank balance. It is an estimate: a statement part-paid since is counted at its full amount, and dollar accounts at today's rate. Real snapshots (F-OV-07) would replace the rebuild. |
 
 ### Cards (`F-CC`): first milestone
 
