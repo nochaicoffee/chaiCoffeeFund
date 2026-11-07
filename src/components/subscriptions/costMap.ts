@@ -1,5 +1,5 @@
 import { shareOfTotal, type ColorKey } from "@/lib/format/subscriptionLabels";
-import { squarify } from "./treemap";
+import { squarify } from "@/lib/layout/treemap";
 
 /**
  * The cost map's layout and what-ifs (Prathik's picks 1A, 1B and 7C): where each block

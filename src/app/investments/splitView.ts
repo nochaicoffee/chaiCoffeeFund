@@ -1,7 +1,7 @@
 import { splitHoldings, type SplitBy, type Slice } from "@/lib/aggregate/investmentSplit";
 import type { Overview } from "@/lib/aggregate/investmentOverview";
 import { formatLakh } from "@/lib/format/lakh";
-import { pct, shareText, type Tone } from "./views";
+import { colorOf, holdingKey, pct, shareText, type Tone } from "./views";
 
 /**
  * "How it's split" (docs/design/investments.md, Understand it): what he holds cut four ways, as plain already-formatted data for the wheel
@@ -17,6 +17,14 @@ export interface SplitMemberView {
   /** Its share of its slice: "38%". */
   percent: string;
   fraction: number;
+  /** What it is worth and cost, in rupees, for the treemap's "try without" sums. */
+  valueInr: number;
+  costInr: number;
+  /** Its colour in the card palette: the one it has on the rest of the page. */
+  colorKey: string;
+  /** "+57%" on what it cost, with its colour; empty when it cost nothing. */
+  gain: string;
+  gainTone: Tone;
 }
 
 export interface SplitSliceView {
@@ -51,7 +59,7 @@ const DIMENSIONS: { key: SplitBy; label: string }[] = [
 const COLOURS = ["teal", "sapphire", "amber", "violet", "rose", "emerald", "copper", "ocean"] as const;
 
 
-function sliceView(slice: Slice, index: number, start: number): SplitSliceView {
+function sliceView(slice: Slice, index: number, start: number, colours: ReadonlyMap<string, string>): SplitSliceView {
   const gain = slice.gainFraction;
   return {
     key: slice.key,
@@ -63,7 +71,14 @@ function sliceView(slice: Slice, index: number, start: number): SplitSliceView {
     start,
     gain: gain === null ? "" : pct(gain, 0, true),
     gainTone: gain === null || Math.abs(gain * 100) < 0.5 ? "plain" : gain > 0 ? "gain" : "loss",
-    members: slice.members.map((m) => ({ key: `${m.market}:${m.symbol}`, symbol: m.symbol, name: m.name, value: formatLakh(m.valueInr), percent: shareText(m.fractionOfSlice), fraction: m.fractionOfSlice })),
+    members: slice.members.map((m) => {
+      const gainFraction = m.costInr > 0 ? m.valueInr / m.costInr - 1 : null;
+      return {
+        key: holdingKey(m), symbol: m.symbol, name: m.name, value: formatLakh(m.valueInr), percent: shareText(m.fractionOfSlice), fraction: m.fractionOfSlice,
+        valueInr: m.valueInr, costInr: m.costInr, colorKey: colours.get(holdingKey(m)) ?? "slate",
+        gain: gainFraction === null ? "" : pct(gainFraction, 0, true), gainTone: gainFraction === null || Math.abs(gainFraction * 100) < 0.5 ? "plain" : gainFraction > 0 ? "gain" : "loss",
+      };
+    }),
   };
 }
 
@@ -76,12 +91,14 @@ export const spinTo = (start: number, fraction: number): number => -(start + fra
  */
 export const drawnLength = (length: number, gap: number): number => (length > 2 * gap ? length - gap : length / 2);
 
-export function splitView(o: Overview): { dimensions: SplitDimensionView[]; total: string } | null {
+export function splitView(o: Overview): { dimensions: SplitDimensionView[]; total: string; totalInr: number; costInr: number } | null {
+  // A holding keeps the colour it has on the rest of the page, whichever way it is sliced.
+  const colours = new Map(o.holdings.map((h, i) => [holdingKey(h), colorOf(i)]));
   const dimensions = DIMENSIONS.flatMap(({ key, label }): SplitDimensionView[] => {
     const slices = splitHoldings(o.holdings, key);
     if (slices.length === 0) return [];
     let start = 0;
-    return [{ key, label, slices: slices.map((s, i) => { const view = sliceView(s, i, start); start += s.fraction; return view; }) }];
+    return [{ key, label, slices: slices.map((s, i) => { const view = sliceView(s, i, start, colours); start += s.fraction; return view; }) }];
   });
-  return dimensions.length === 0 ? null : { dimensions, total: formatLakh(o.valueInr) };
+  return dimensions.length === 0 ? null : { dimensions, total: formatLakh(o.valueInr), totalInr: o.valueInr, costInr: o.costInr };
 }
