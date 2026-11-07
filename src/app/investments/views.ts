@@ -323,10 +323,24 @@ const assetTypeText = (type: string) => type.replaceAll("-", " ");
 
 const quantityText = (q: number) => (Number.isInteger(q) ? String(q) : String(Math.round(q * 10_000) / 10_000));
 
-export function holdingsView(o: Overview): HoldingTableRow[] {
+/** How a holding's price has moved from the day `then` shows to today (`now`'s): "sold" when he no longer holds it, null with no price on either day. */
+function priceSince(then: HoldingRow, now: HoldingRow | undefined): number | null | "sold" {
+  if (!now) return "sold";
+  if (then.price === null || now.price === null || then.price <= 0) return null;
+  return now.price / then.price - 1;
+}
+
+/**
+ * The holdings table's rows. With `now` given, `o` is the book as it stood on a past day: the "Today" column then says how each price has moved
+ * since (against `now`'s price), a holding he has since sold says so, and the colours stay the ones the holding has today.
+ */
+export function holdingsView(o: Overview, now?: Overview): HoldingTableRow[] {
+  const nowIndex = new Map((now ?? o).holdings.map((h, i) => [holdingKey(h), i]));
   return o.holdings.map((h, i) => {
     const currency = h.market === "US" ? "USD" : "INR";
-    const move = h.dayFraction;
+    const colour = colorOf(nowIndex.get(holdingKey(h)) ?? nowIndex.size + i);
+    const sinceThen = now ? priceSince(h, now.holdings.find((n) => holdingKey(n) === holdingKey(h))) : null;
+    const move = now ? (sinceThen === "sold" ? null : sinceThen) : h.dayFraction;
     return {
       key: `${h.market}:${h.symbol}`,
       market: h.market,
@@ -334,16 +348,16 @@ export function holdingsView(o: Overview): HoldingTableRow[] {
       tags: [...h.plans, ...(h.stale ? ["Stale price"] : [])],
       kind: `${h.symbol} · ${assetTypeText(h.assetType)} · since ${h.since.slice(0, 4)}`,
       tile: symbolTile(h.symbol),
-      colorKey: colorOf(i),
+      colorKey: colour,
       quantity: quantityText(h.quantity),
       avgCost: h.avgCostNative === null ? "—" : formatMoney(currency, h.avgCostNative),
       avgCostNote: h.avgRateInr === null ? undefined : `at ${formatInrExact(h.avgRateInr)}`,
       price: h.price === null ? "No price" : formatMoney(currency, h.price),
       priceNote: h.price === null ? "counted at cost" : h.stale ? `from ${formatShortDate(h.priceDate!)}, out of date` : (h.priceSource ?? undefined),
-      day: arrow(move, "").trim(),
+      day: sinceThen === "sold" ? "Sold since" : arrow(move, "").trim(),
       dayTone: moveTone(move),
-      dayInrTone: tone(h.dayChangeInr),
-      dayInr: h.dayChangeInr === null || h.dayChangeInr === 0 ? undefined : `${h.dayChangeInr < 0 ? MINUS : "+"}${formatInr(Math.abs(h.dayChangeInr))}`,
+      dayInrTone: now ? "plain" : tone(h.dayChangeInr),
+      dayInr: now || h.dayChangeInr === null || h.dayChangeInr === 0 ? undefined : `${h.dayChangeInr < 0 ? MINUS : "+"}${formatInr(Math.abs(h.dayChangeInr))}`,
       worth: formatInr(h.valueInr),
       worthNote: h.market === "US" && h.valueNative !== null ? formatMoney("USD", h.valueNative) : undefined,
       worthInr: h.valueInr,

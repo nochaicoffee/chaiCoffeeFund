@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AsOfProvider } from "@/components/investments/AsOf";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { CashCard } from "@/components/investments/CashCard";
@@ -24,6 +25,7 @@ import { greetingFor, todayIso } from "@/lib/format/date";
 import type { PricePoint } from "@/lib/prices/history";
 import { getPriceSeries } from "@/lib/prices/series";
 import { getCachedInstrumentsTab, getCachedInvestmentTransactionsTab } from "@/lib/sheets/cached";
+import { asOfViews } from "./asOfViews";
 import { cashFrom, readCash } from "./loadCash";
 import { growthView, whatIfView } from "./scenarioViews";
 import { splitView } from "./splitView";
@@ -49,7 +51,10 @@ export default async function InvestmentsPage() {
     () => ({ closes: new Map<string, PricePoint[]>(), failed: true }),
   );
   const closes = prices.closes;
-  const overview = investmentOverview({ trades: tradesTab.records, instruments: instrumentsTab.records, closes, today });
+  const overviewInput = { trades: tradesTab.records, instruments: instrumentsTab.records, closes, today };
+  const overview = investmentOverview(overviewInput);
+  // The Returns row and the holdings table as they stood on each day the stage can go back to.
+  const asOf = asOfViews(overviewInput, overview);
   const cash = cashFrom(await cashRead, overview.valueInr, today);
   const skipped = [tradesTab.skipped, instrumentsTab.skipped].filter((t) => t.rows.length > 0);
 
@@ -82,9 +87,11 @@ export default async function InvestmentsPage() {
         )}
         <SkippedRowsNotice tabs={skipped} />
       </PageHeader>
+      <AsOfProvider>
       <Stage series={overview.series} race={overview.race} lenses={lensViews(overview)} picks={pickerView(overview)} holdingCount={overview.holdings.length} />
-      <ReturnsRow cards={returnsView(overview)} />
-      {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} />}
+      <ReturnsRow cards={returnsView(overview)} asOf={asOf} />
+      {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} asOf={asOf} />}
+      </AsOfProvider>
       {cash && <CashCard view={cash} />}
       <MoneyAndSame money={moneyInView(tradesTab.records, instrumentsTab.records, today)} same={sameMoneyView(overview)} />
       {(split || weight || gain || whatIf || growth || concentrated) && (

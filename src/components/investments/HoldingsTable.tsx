@@ -1,8 +1,11 @@
 "use client";
 
 import { useState } from "react";
+import type { AsOfView } from "@/app/investments/asOfViews";
 import { holdingGroups, type HoldingTableRow, type Tone } from "@/app/investments/views";
+import { formatDate } from "@/lib/format/date";
 import { WidgetCard } from "../shell/WidgetCard";
+import { useAsOf } from "./AsOf";
 import { PlanTag } from "./PlanTag";
 
 const TONE: Record<Tone, string> = { gain: "text-positive", loss: "text-negative", plain: "text-fg" };
@@ -15,7 +18,10 @@ type Filter = "all" | "IND" | "US";
  * the shares, what he paid a share on average, today's price and move, what it is worth, the gain and its share of the whole. The chips
  * above pick All, India or the US.
  */
-export function HoldingsTable({ rows }: { rows: HoldingTableRow[] }) {
+export function HoldingsTable({ rows: now, asOf }: { rows: HoldingTableRow[]; asOf: Record<string, AsOfView> }) {
+  const { goBack, setGoBack } = useAsOf();
+  const then = goBack === "now" ? undefined : asOf[goBack];
+  const rows = then ? then.holdings : now;
   const [filter, setFilter] = useState<Filter>("all");
   const count = (market: "IND" | "US") => rows.filter((r) => r.market === market).length;
   const chips: { key: Filter; label: string }[] = [
@@ -27,15 +33,20 @@ export function HoldingsTable({ rows }: { rows: HoldingTableRow[] }) {
   return (
     <WidgetCard
       label="Holdings"
-      title="Holdings"
-      note="folded from the trade log · India in rupees, the US in dollars at today's rate"
+      title={then ? "Holdings as they stood" : "Holdings"}
+      note={then ? `on ${formatDate(then.date)} · the move since is each price's, to today` : "folded from the trade log · India in rupees, the US in dollars at today's rate"}
       right={
+        <div className="flex flex-wrap items-center gap-2">
+          {then && <button type="button" onClick={() => setGoBack("now")} className="min-h-8 rounded-full bg-ink px-3.5 text-[12.5px] font-extrabold whitespace-nowrap text-on-ink focus-visible:outline-2 focus-visible:outline-offset-2">
+            Back to today
+          </button>}
         <div role="group" aria-label="Which holdings" className="flex rounded-full bg-fill p-1">
           {chips.map((c) => (
             <button key={c.key} type="button" aria-pressed={active === c.key} onClick={() => setFilter(c.key)} className={`min-h-8 rounded-full px-3.5 text-[12.5px] font-extrabold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 ${active === c.key ? "bg-ink text-on-ink" : "text-muted hover:text-fg"}`}>
               {c.label}
             </button>
           ))}
+        </div>
         </div>
       }
     >
@@ -45,7 +56,7 @@ export function HoldingsTable({ rows }: { rows: HoldingTableRow[] }) {
           <span className="text-right">Quantity</span>
           <span className="text-right">Average cost</span>
           <span className="text-right">Price</span>
-          <span className="text-right">Today</span>
+          <span className="text-right">{then ? "Since then" : "Today"}</span>
           <span className="text-right">Value</span>
           <span className="text-right">Gain</span>
           <span>Share</span>
@@ -58,7 +69,7 @@ export function HoldingsTable({ rows }: { rows: HoldingTableRow[] }) {
                 <b className="text-[12.5px] tracking-normal text-fg normal-case">{g.summary}</b>
               </div>
               {g.rows.map((r) => (
-                <Row key={r.key} r={r} />
+                <Row key={r.key} r={r} dayLabel={then ? "Since then" : "Today"} />
               ))}
             </div>
           );
@@ -68,7 +79,7 @@ export function HoldingsTable({ rows }: { rows: HoldingTableRow[] }) {
   );
 }
 
-function Row({ r }: { r: HoldingTableRow }) {
+function Row({ r, dayLabel }: { r: HoldingTableRow; dayLabel: string }) {
   return (
     <div className={`grid items-center gap-x-3.5 gap-y-2 border-b border-divider py-3 last:border-b-0 max-lg:grid-cols-2 ${COLS}`}>
       <div className="flex min-w-0 items-center gap-3 max-lg:col-span-2">
@@ -94,7 +105,7 @@ function Row({ r }: { r: HoldingTableRow }) {
         <b>{r.price}</b>
         {r.priceNote && <small className={r.price === "No price" || r.priceNote.includes("out of date") ? "text-negative" : undefined}>{r.priceNote}</small>}
       </Cell>
-      <Cell label="Today">
+      <Cell label={dayLabel}>
         <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[11.5px] font-extrabold whitespace-nowrap lg:ml-auto ${CHIP[r.dayTone]}`}>{r.day}</span>
         {r.dayInr && <small className={TONE[r.dayInrTone]}>{r.dayInr}</small>}
       </Cell>
