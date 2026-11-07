@@ -11,8 +11,10 @@ import { TradeButtons, TradeFormsProvider } from "@/components/investments/Trade
 import { RefreshPricesButton } from "@/components/investments/RefreshPricesButton";
 import { Stage } from "@/components/investments/Stage";
 import { GainCard } from "@/components/investments/GainCard";
+import { GrowthCard } from "@/components/investments/GrowthCard";
 import { SplitCard } from "@/components/investments/SplitCard";
 import { WeightCard } from "@/components/investments/WeightCard";
+import { WhatIfCard } from "@/components/investments/WhatIfCard";
 import { ReturnsRow } from "@/components/investments/ReturnsRow";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { investmentOverview } from "@/lib/aggregate/investmentOverview";
@@ -22,6 +24,7 @@ import type { PricePoint } from "@/lib/prices/history";
 import { getPriceSeries } from "@/lib/prices/series";
 import { getCachedInstrumentsTab, getCachedInvestmentTransactionsTab } from "@/lib/sheets/cached";
 import { cashFrom, readCash } from "./loadCash";
+import { growthView, whatIfView } from "./scenarioViews";
 import { splitView } from "./splitView";
 import { tradeFormsData } from "./tradeFormsData";
 import { gainView, weightView } from "./understandViews";
@@ -52,6 +55,8 @@ export default async function InvestmentsPage() {
   const split = splitView(overview);
   const weight = weightView(overview);
   const gain = gainView(overview);
+  const whatIf = whatIfView(overview);
+  const growth = growthView(overview);
 
   return (
     <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today)}>
@@ -80,7 +85,7 @@ export default async function InvestmentsPage() {
       {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} />}
       {cash && <CashCard view={cash} />}
       <MoneyAndSame money={moneyInView(tradesTab.records, instrumentsTab.records, today)} same={sameMoneyView(overview)} />
-      {(split || weight || gain) && (
+      {(split || weight || gain || whatIf || growth) && (
         <section aria-label="Understand it" className="flex flex-col gap-3">
           <h2 className="px-1 text-base font-extrabold">
             Understand it
@@ -93,6 +98,8 @@ export default async function InvestmentsPage() {
               {gain && <GainCard view={gain} />}
             </div>
           )}
+          {whatIf && <WhatIfCard view={whatIf} />}
+          {growth && <GrowthCard view={growth} />}
         </section>
       )}
       <RecentTrades rows={recentTradesView(tradesTab.records, instrumentsTab.records)} />

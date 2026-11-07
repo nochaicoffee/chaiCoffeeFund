@@ -1,7 +1,7 @@
 import type { Overview } from "@/lib/aggregate/investmentOverview";
 import { gainParts } from "@/lib/aggregate/gainShare";
 import { formatLakh } from "@/lib/format/lakh";
-import { colorOf, pct, signedLakh, tone, type Tone } from "./views";
+import { colorOf, holdingKey, pct, signedLakh, symbolTile, tone, type Tone } from "./views";
 
 /**
  * Two of the "Understand it" cards (docs/design/investments.md), as plain already-formatted data: where the weight sits against how each
@@ -66,7 +66,7 @@ export function weightView(o: Overview): WeightView | null {
   const biggest = Math.max(...plotted.map((p) => p.h.valueInr));
   const bubbles = plotted
     .map(({ h, i, gain }): WeightBubble => ({
-      key: `${h.market}:${h.symbol}`,
+      key: holdingKey(h),
       symbol: h.symbol,
       name: h.name,
       colorKey: colorOf(i),
@@ -133,8 +133,8 @@ function rupeeNote(rupeeGainInr: number): string | null {
 
 export function gainView(o: Overview): GainView | null {
   if (o.holdings.length === 0) return null;
-  const parts = gainParts(o.holdings.map((h, i) => ({ key: `${h.market}:${h.symbol}`, gainInr: h.gainInr, split: o.lenses[i]?.split ?? null })), o.gainInr);
-  const holdingOf = new Map(o.holdings.map((h, i) => [`${h.market}:${h.symbol}`, { h, i }]));
+  const parts = gainParts(o.holdings.map((h, i) => ({ key: holdingKey(h), gainInr: h.gainInr, split: o.lenses[i]?.split ?? null })), o.gainInr);
+  const holdingOf = new Map(o.holdings.map((h, i) => [holdingKey(h), { h, i }]));
   const longest = Math.max(...parts.map((p) => Math.max(Math.abs(p.gainInr), Math.abs(p.pricePartInr) + Math.abs(p.rupeePartInr))), 1);
   const rows = parts.map((p): GainRowView => {
     const { h, i } = holdingOf.get(p.key)!;
@@ -143,7 +143,7 @@ export function gainView(o: Overview): GainView | null {
       symbol: h.symbol,
       name: h.name,
       colorKey: colorOf(i),
-      tile: h.symbol.slice(0, 4),
+      tile: symbolTile(h.symbol),
       gain: signedLakh(p.gainInr),
       gainTone: tone(p.gainInr),
       share: p.shareOfGain === null ? shareless(p.gainInr, o.gainInr) : `${pct(p.shareOfGain, p.shareOfGain < 0.1 ? 1 : 0)} of the gain`,
