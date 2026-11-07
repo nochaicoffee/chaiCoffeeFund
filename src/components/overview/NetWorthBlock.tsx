@@ -76,7 +76,7 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
                 style={{ left: `${((x(i) - (W - 2 * PAD) / (2 * Math.max(1, n - 1))) / W) * 100}%`, width: `${((W - 2 * PAD) / Math.max(1, n - 1) / W) * 100}%` }}
               >
                 <i className={`absolute left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white transition-all duration-200 ${i === pick ? "size-[18px] shadow-[0_0_0_5px_rgba(255,255,255,0.3)]" : "size-[9px] group-hover:size-[13px]"}`} style={{ top: `${(y(m.net) / H) * 100}%` }} />
-                <span className={`absolute left-1/2 -translate-x-1/2 -translate-y-full rounded-[9px] bg-white px-2 py-1 text-[11.5px] font-extrabold whitespace-nowrap text-black transition-opacity ${i === pick ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} style={{ top: `calc(${(y(m.net) / H) * 100}% - 14px)` }}>
+                <span className={`absolute left-1/2 -translate-x-1/2 -translate-y-full rounded-[9px] bg-white px-2 py-1 text-[11.5px] font-extrabold whitespace-nowrap text-ink transition-opacity ${i === pick ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} style={{ top: `calc(${(y(m.net) / H) * 100}% - 14px)` }}>
                   {formatInrCompact(m.net)}
                 </span>
                 <span className={`absolute inset-x-0 bottom-1 text-center text-[10.5px] font-bold opacity-75 ${(n - 1 - i) % 2 === 1 ? "max-sm:hidden" : ""}`}>{m.label}</span>

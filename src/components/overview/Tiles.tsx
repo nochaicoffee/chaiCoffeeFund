@@ -17,7 +17,7 @@ export function Tiles({ tiles }: { tiles: TileView[] }) {
         <Tip key={t.key} place={i >= 8 ? "up" : "down"} align={i % 4 === 3 ? "right" : i % 4 === 0 ? "left" : "center"} width={300} className="block" label={`${t.name}: ${t.value}`}
           card={<TipBody head={t.card.title} total={t.card.total} detail={t.card.detail} rows={t.card.rows} foot={t.card.foot ?? `Open ${t.name} for the rest.`} />}>
           <Link href={t.href} className="group/tile relative flex min-h-[148px] flex-col gap-1 overflow-hidden rounded-[22px] p-4 text-on-card shadow-[var(--card-shadow)] transition-transform duration-200 hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-accent md:min-h-[168px] md:p-5" style={{ background: colorGradient(t.colorKey) }}>
-            <Glyph name={t.glyph} className="pointer-events-none absolute -top-5 -right-6 size-40 text-on-card opacity-[0.17] transition-opacity duration-200 group-hover/tile:opacity-25 md:size-44" />
+            <Glyph name={t.glyph} className="pointer-events-none absolute top-1/2 -right-5 size-28 -translate-y-1/2 text-on-card opacity-[0.1] transition-opacity duration-200 group-hover/tile:opacity-[0.16] md:size-32" />
             <span className="relative flex items-center gap-2 text-[10.5px] font-extrabold tracking-[0.08em] uppercase opacity-80">
               {t.group}
               <span className="flex gap-1">
