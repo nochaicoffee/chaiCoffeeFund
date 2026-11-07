@@ -2,13 +2,15 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { GreetingSentence } from "@/components/overview/GreetingSentence";
 import { EightThings } from "@/components/overview/EightThings";
 import { FutureYou } from "@/components/overview/FutureYou";
-import { KeepInMind } from "@/components/overview/KeepInMind";
+import { Ending } from "@/components/overview/Ending";
 import { NetWorthBlock } from "@/components/overview/NetWorthBlock";
 import { Tiles } from "@/components/overview/Tiles";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
+import { addDays } from "@/lib/aggregate/subscriptionRenewals";
 import { greetingFor, todayIso } from "@/lib/format/date";
-import { overviewEvents } from "./overview/events";
+import { endingView } from "./overview/endingView";
+import { overviewEvents, WINDOW_DAYS } from "./overview/events";
 import { insights } from "./overview/insights";
 import { futureView } from "./overview/futureView";
 import { loadOverviewData } from "./overview/loadOverviewData";
@@ -36,7 +38,7 @@ export default async function OverviewPage() {
       <Tiles tiles={tilesView(model, warnings)} />
       <EightThings items={insights(model, events)} />
       <FutureYou view={futureView(model)} />
-      <KeepInMind warnings={warnings} />
+      <Ending view={endingView(warnings, events, today, addDays(today, WINDOW_DAYS))} />
     </div>
   );
 }
