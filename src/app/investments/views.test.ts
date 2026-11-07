@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { investmentOverview } from "@/lib/aggregate/investmentOverview";
 import type { PricePoint } from "@/lib/prices/history";
 import type { Instrument, InvestmentTransaction } from "@/lib/sheets/types";
-import { greetingView, holdingsView, lensViews, pct, pickerView, recentTradesView, returnsView, summarySentence } from "./views";
+import { greetingView, holdingsView, lensViews, monthYear, pct, pickerView, recentTradesView, returnsView, summarySentence } from "./views";
 
 const trade = (o: Partial<InvestmentTransaction>): InvestmentTransaction => ({
   id: "t", tradeDate: "2024-01-02", symbol: "AAA", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 100, price: 100, total: 10000, assetType: "Equity", broker: "B", ...o,
@@ -67,16 +67,54 @@ describe("summarySentence and greetingView", () => {
 });
 
 describe("returnsView", () => {
-  it("gives six cards, with the sign of each gap and a loss in the loss tone", () => {
-    const cards = returnsView(o);
-    expect(cards.map((c) => c.key)).toEqual(["xirr", "twr", "fall", "nifty", "sp", "realised"]);
-    expect(cards.find((c) => c.key === "xirr")!.value).toMatch(/^\+\d+\.\d%$/);
-    expect(cards.find((c) => c.key === "realised")!.value).toMatch(/^\+₹/);
+  const cards = returnsView(o);
+  const card = (key: string) => cards.find((c) => c.key === key)!;
+
+  it("gives the design's six cards in its order", () => {
+    expect(cards.map((c) => c.key)).toEqual(["xirr", "gap", "total", "realised", "dividends", "fall"]);
   });
 
-  it("says Too early instead of a number under a year", () => {
+  it("says the yearly return plainly, the gap to Nifty with a sign and the S&P's gap in a pill", () => {
+    expect(card("xirr")).toMatchObject({ small: "a year · XIRR", muted: false });
+    expect(card("xirr").value).toMatch(/^\d+\.\d%$/);
+    expect(card("gap").value).toMatch(/^[+−]\d+\.\d%$/);
+    expect(card("gap").pill).toMatch(/^S&P [+−]\d+\.\d%$/);
+  });
+
+  it("adds what is held, what the sales made and (not yet) dividends into the total return, on every buy", () => {
+    const total = card("total");
+    const allIn = o.gainInr + o.realisedInr;
+    expect(total.value).toMatch(/^[+−]₹/);
+    expect(total.pill).toBe(`${allIn >= 0 ? "+" : "−"}${Math.abs((allIn / o.moneyBoughtInr) * 100).toFixed(1)}%`);
+    expect(total.tip!.rows.map((r) => r.name)).toEqual(["Still held: price", "Still held: the rupee", "Made on shares sold"]);
+    expect(total.tip!.foot).toMatch(/Dividends aren't recorded yet/);
+  });
+
+  it("counts the sales, and lists what the cover sales and each holding made", () => {
+    expect(card("realised").small).toBe("from 1 sale");
+    expect(card("realised").value).toMatch(/^\+₹/);
+    expect(card("realised").tip!.rows.map((r) => r.name)).toEqual(expect.arrayContaining(["Shares sold to cover tax at a vest", "Every other sale", "Alpha Ltd"]));
+  });
+
+  it("leaves Dividends as a quiet card with no hover, since none are recorded", () => {
+    expect(card("dividends")).toMatchObject({ value: "—", small: "not recorded yet", muted: true, tip: null });
+  });
+
+  it("names the month of the deepest fall, and draws a hover card only for figures that have something behind them", () => {
+    expect(card("fall").small).toMatch(/^in [A-Z][a-z]{2} \d{4}$|^it has only risen$/);
+    for (const c of cards) if (c.tip) expect(c.tip.total.length).toBeGreaterThan(0);
+  });
+
+  it("says Too early instead of a number under a year, with no hover", () => {
     const young = investmentOverview({ trades: [trade({ tradeDate: "2025-10-01" })], instruments, closes, today: "2026-01-01" });
-    expect(returnsView(young).find((c) => c.key === "xirr")).toMatchObject({ value: "Too early", tone: "plain" });
+    const c = returnsView(young);
+    expect(c.find((x) => x.key === "xirr")).toMatchObject({ value: "Too early", muted: true, tip: null });
+    expect(c.find((x) => x.key === "gap")).toMatchObject({ value: "Too early", tip: null });
+  });
+
+  it("says None, not a figure, when nothing has been sold", () => {
+    const none = investmentOverview({ trades: [trade({})], instruments, closes, today: "2026-01-01" });
+    expect(returnsView(none).find((x) => x.key === "realised")).toMatchObject({ value: "None", small: "no sales yet", tip: null });
   });
 
   it("is empty with nothing held", () => {
@@ -213,5 +251,13 @@ describe("review fixes", () => {
     const bbb = cards.find((c) => c.title === "BBB")!;
     expect(aaa.day).toMatch(/last close$/);
     expect(bbb.day).toMatch(/today$|^—$/);
+  });
+});
+
+describe("monthYear", () => {
+  it("spells every month in three letters, September included", () => {
+    expect(monthYear("2025-09-05")).toBe("Sep 2025");
+    expect(monthYear("2026-12-31")).toBe("Dec 2026");
+    expect(monthYear("2026-01-01")).toBe("Jan 2026");
   });
 });
