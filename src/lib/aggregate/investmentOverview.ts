@@ -1,5 +1,5 @@
 import type { Instrument, InvestmentAssetType, InvestmentMarket, InvestmentTransaction } from "../sheets/types";
-import { priceOnOrBefore, type PricePoint } from "../prices/history";
+import { priceOnOrBefore, sourceFor, type PricePoint } from "../prices/history";
 import { USD_INR_TICKER } from "../prices/refreshPlan";
 import { holdingLens, type HoldingLens } from "./holdingLens";
 import { raceLines, type RaceLine } from "./raceLines";
@@ -27,6 +27,20 @@ export interface HoldingRow {
   gainFraction: number | null;
   /** This holding's share of everything held, 0 to 1. */
   share: number;
+  /** What he paid a share on average, in the holding's own currency, fees in. Null when he holds none. */
+  avgCostNative: number | null;
+  /** For a US holding, the rupees to a dollar he paid on average (cost in rupees over cost in dollars); null for an Indian one. */
+  avgRateInr: number | null;
+  /** The day of his first trade in it. */
+  since: string;
+  /** Which kinds of share plan trades are in it: an RSU vest, an ESPP purchase. */
+  plans: ("RSU" | "ESPP")[];
+  /** Where its price comes from, or null when it has no price. */
+  priceSource: "Yahoo" | "AMFI" | null;
+  /** What it is worth in its own currency (dollars for a US holding): quantity times the price. Null with no price. */
+  valueNative: number | null;
+  /** The last close against the one before it, as a fraction, in its own currency (the rupee's move not in it). Null when it can't be told. */
+  dayFraction: number | null;
   /** The last day's move in rupees (the rupee's move included for a US holding), or null when it can't be told. */
   dayChangeInr: number | null;
 }
@@ -95,17 +109,27 @@ export function investmentOverview({ trades, instruments, closes, today }: Overv
     const valueInr = priced ? h.quantity * price.close * (h.market === "US" ? fxToday! : 1) : h.totalCostInr;
 
     let change: number | null = null;
+    let dayFraction: number | null = null;
     if (priced) {
       // The move from the close before the latest one, with each day's own rate, on the shares held then.
       const lastIndex = series.findIndex((p) => p.date === price.date);
       const previous = lastIndex > 0 ? series[lastIndex - 1] : undefined;
       const fxPrev = previous ? priceOnOrBefore(usdInr, previous.date)?.close : undefined;
+      if (previous && previous.close > 0) dayFraction = price.close / previous.close - 1;
       if (previous && (h.market === "IND" || fxPrev !== undefined)) {
         const quantityThen = holdingsAt(trades, previous.date).find((x) => x.symbol === h.symbol && x.market === h.market)?.quantity ?? 0;
         change = dayChange({ market: h.market, quantityAtPrevClose: quantityThen, priceToday: price.close, pricePrevClose: previous.close, fxToday: fxToday ?? 1, fxPrevClose: fxPrev ?? 1 }).changeInr;
       }
     }
+    const own = trades.filter((t) => t.symbol === h.symbol && t.market === h.market && t.tradeDate <= today);
     return {
+      avgCostNative: h.quantity > 0 ? h.totalCostNative / h.quantity : null,
+      avgRateInr: h.market === "US" && h.totalCostNative > 0 ? h.totalCostInr / h.totalCostNative : null,
+      since: own.reduce((min, t) => (t.tradeDate < min ? t.tradeDate : min), own[0]?.tradeDate ?? today),
+      plans: (["RSU", "ESPP"] as const).filter((plan) => own.some((t) => t.source === plan)),
+      priceSource: instrument?.priceTicker ? (sourceFor(instrument.priceTicker).kind === "amfi" ? "AMFI" : "Yahoo") : null,
+      valueNative: priced ? h.quantity * price.close : null,
+      dayFraction,
       symbol: h.symbol, market: h.market, name: instrument?.name ?? h.symbol, assetType: h.assetType, quantity: h.quantity,
       price: priced ? price.close : null, priceDate: priced ? price.date : null, stale: priced ? price.ageDays > STALE_DAYS : false,
       valueInr, costInr: h.totalCostInr, gainInr: valueInr - h.totalCostInr, gainFraction: h.totalCostInr > 0 ? (valueInr - h.totalCostInr) / h.totalCostInr : null,

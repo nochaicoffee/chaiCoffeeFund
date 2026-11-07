@@ -6,7 +6,7 @@ import type { HoldingLens, LensMarker, LensPoint } from "@/lib/aggregate/holding
 import type { HoldingRow, Overview } from "@/lib/aggregate/investmentOverview";
 import { formatDate, formatMonthShort, formatShortDate } from "@/lib/format/date";
 import { formatInr, formatInrExact, formatMoney } from "@/lib/format/money";
-import type { Instrument, InvestmentTransaction } from "@/lib/sheets/types";
+import type { Instrument, InvestmentMarket, InvestmentTransaction } from "@/lib/sheets/types";
 
 /**
  * What the Investments page shows (docs/design/investments.md, L1 Giant), as plain, already-formatted data: the greeting's sentence and
@@ -258,42 +258,89 @@ export function returnsView(o: Overview): ReturnCard[] {
 // ---------- The holdings table ----------
 export interface HoldingTableRow {
   key: string;
+  market: InvestmentMarket;
   name: string;
-  sub: string;
+  /** Small tags beside the name: "RSU", "ESPP", "Stale price". */
+  tags: string[];
+  /** "NTAP · Equity · since 2023". */
+  kind: string;
+  /** The tile's letters. */
+  tile: string;
   colorKey: string;
   quantity: string;
+  /** What he paid a share on average, in its own currency; for a US holding the note says the rate: "at ₹87.20". */
+  avgCost: string;
+  avgCostNote?: string;
   price: string;
+  /** Where the price is from, or why there is none. */
   priceNote?: string;
+  /** The last day's move in the price, as "▲ 0.24%", and the move in rupees under it. */
+  day: string;
+  dayTone: Tone;
+  dayInr?: string;
+  /** The rupee move's own colour: it has the rupee in it, so it can differ from the price's. */
+  dayInrTone: Tone;
   worth: string;
+  /** The worth in dollars for a US holding. */
+  worthNote?: string;
+  /** The worth in rupees, to add up a group. */
+  worthInr: number;
   gain: string;
   gainNote: string;
   gainTone: Tone;
   share: string;
   shareFraction: number;
-  day: string;
-  dayTone: Tone;
+}
+
+export interface HoldingGroup {
+  market: "IND" | "US";
+  title: string;
+  /** "2 holdings · ₹34,963". */
+  summary: string;
+  rows: HoldingTableRow[];
+}
+
+/** The rows under India and the United States headings, each with its count and what it is worth in all; a group with none is left out. */
+export function holdingGroups(rows: HoldingTableRow[]): HoldingGroup[] {
+  return ([["IND", "India · INR"], ["US", "United States · USD"]] as const).flatMap(([market, title]) => {
+    const own = rows.filter((r) => r.market === market);
+    return own.length === 0 ? [] : [{ market, title, summary: `${plural(own.length, "holding", "holdings")} · ${formatLakh(own.reduce((sum, r) => sum + r.worthInr, 0))}`, rows: own }];
+  });
 }
 
 const quantityText = (q: number) => (Number.isInteger(q) ? String(q) : String(Math.round(q * 10_000) / 10_000));
 
 export function holdingsView(o: Overview): HoldingTableRow[] {
-  return o.holdings.map((h, i) => ({
-    key: `${h.market}:${h.symbol}`,
-    name: h.name,
-    sub: `${h.symbol} · ${h.market === "US" ? "US" : "India"}`,
-    colorKey: colorOf(i),
-    quantity: quantityText(h.quantity),
-    price: h.price === null ? "No price" : formatMoney(h.market === "US" ? "USD" : "INR", h.price),
-    priceNote: h.price === null ? "counted at cost" : h.stale ? `from ${formatShortDate(h.priceDate!)}, out of date` : undefined,
-    worth: formatInr(h.valueInr),
-    gain: `${h.gainInr < 0 ? MINUS : "+"}${formatInr(Math.abs(h.gainInr))}`,
-    gainNote: h.gainFraction === null ? "" : pct(h.gainFraction, 1, true),
-    gainTone: tone(h.gainInr),
-    share: pct(h.share),
-    shareFraction: h.share,
-    day: h.dayChangeInr === null ? "—" : `${h.dayChangeInr < 0 ? MINUS : h.dayChangeInr > 0 ? "+" : ""}${formatInr(Math.abs(h.dayChangeInr))}`,
-    dayTone: tone(h.dayChangeInr),
-  }));
+  return o.holdings.map((h, i) => {
+    const currency = h.market === "US" ? "USD" : "INR";
+    const move = h.dayFraction;
+    return {
+      key: `${h.market}:${h.symbol}`,
+      market: h.market,
+      name: h.name,
+      tags: [...h.plans, ...(h.stale ? ["Stale price"] : [])],
+      kind: `${h.symbol} · ${h.assetType.replace("-", " ")} · since ${h.since.slice(0, 4)}`,
+      tile: h.symbol.slice(0, 4),
+      colorKey: colorOf(i),
+      quantity: quantityText(h.quantity),
+      avgCost: h.avgCostNative === null ? "—" : formatMoney(currency, h.avgCostNative),
+      avgCostNote: h.avgRateInr === null ? undefined : `at ${formatInrExact(h.avgRateInr)}`,
+      price: h.price === null ? "No price" : formatMoney(currency, h.price),
+      priceNote: h.price === null ? "counted at cost" : h.stale ? `from ${formatShortDate(h.priceDate!)}, out of date` : (h.priceSource ?? undefined),
+      day: arrow(move, "").trim(),
+      dayTone: moveTone(move),
+      dayInrTone: tone(h.dayChangeInr),
+      dayInr: h.dayChangeInr === null || h.dayChangeInr === 0 ? undefined : `${h.dayChangeInr < 0 ? MINUS : "+"}${formatInr(Math.abs(h.dayChangeInr))}`,
+      worth: formatInr(h.valueInr),
+      worthNote: h.market === "US" && h.valueNative !== null ? formatMoney("USD", h.valueNative) : undefined,
+      worthInr: h.valueInr,
+      gain: `${h.gainInr < 0 ? MINUS : "+"}${formatInr(Math.abs(h.gainInr))}`,
+      gainNote: h.gainFraction === null ? "" : pct(h.gainFraction, 1, true),
+      gainTone: tone(h.gainInr),
+      share: pct(h.share),
+      shareFraction: h.share,
+    };
+  });
 }
 
 // ---------- Recent trades ----------
@@ -384,7 +431,10 @@ export interface PickCard {
 }
 
 const SPARK_DAYS = 90;
-const arrow = (fraction: number | null, when: string) => (fraction === null ? "—" : `${fraction < 0 ? "▼" : fraction > 0 ? "▲" : "–"} ${Math.abs(fraction * 100).toFixed(2)}% ${when}`);
+/** A move that rounds to 0.00% is no move: no arrow up or down, and no gain or loss colour. */
+const flat = (fraction: number) => Math.abs(fraction * 100).toFixed(2) === "0.00";
+const arrow = (fraction: number | null, when: string) => (fraction === null ? "—" : `${flat(fraction) ? "–" : fraction < 0 ? "▼" : "▲"} ${Math.abs(fraction * 100).toFixed(2)}% ${when}`);
+const moveTone = (fraction: number | null): Tone => (fraction === null || flat(fraction) ? "plain" : tone(fraction));
 
 /** The row of cards that picks what the stage shows: everything, then each holding with its last three months, what he holds and today's move. */
 export function pickerView(o: Overview): PickCard[] {
@@ -397,7 +447,7 @@ export function pickerView(o: Overview): PickCard[] {
   cards.push({
     key: "all", title: "Everything", subtitle: plural(o.holdings.length, "holding", "holdings"), colorKey: null, spark: tail.map((p) => p.value),
     detail: `Put in ${formatLakh(o.costInr)}${o.gainFraction === null ? "" : ` · ${pct(o.gainFraction, 0, true)} on cost`}`,
-    price: formatLakh(o.valueInr), day: arrow(dayAll, whenOf(o.pricesFrom)), dayTone: tone(dayAll),
+    price: formatLakh(o.valueInr), day: arrow(dayAll, whenOf(o.pricesFrom)), dayTone: moveTone(dayAll),
   });
   o.holdings.forEach((h, i) => {
     const lens = o.lenses[i];
@@ -409,7 +459,7 @@ export function pickerView(o: Overview): PickCard[] {
     cards.push({
       key: lens.key, title: h.symbol, subtitle: h.name, colorKey: colorOf(i), spark,
       detail: `You hold ${quantityText(h.quantity)}${h.gainFraction === null ? "" : ` · ${pct(h.gainFraction, 0, true)} on cost`}`,
-      price: h.price === null ? "No price" : formatMoney(h.market === "US" ? "USD" : "INR", h.price), day: h.price === null ? "counted at cost" : arrow(dayPct, whenOf(h.priceDate)), dayTone: tone(dayPct),
+      price: h.price === null ? "No price" : formatMoney(h.market === "US" ? "USD" : "INR", h.price), day: h.price === null ? "counted at cost" : arrow(dayPct, whenOf(h.priceDate)), dayTone: moveTone(dayPct),
     });
   });
   return cards;
