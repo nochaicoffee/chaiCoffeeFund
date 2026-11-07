@@ -44,6 +44,8 @@ export interface Overview {
   xirr: YearlyReturn;
   /** Time-weighted: the portfolio's yearly rate (null under a year), the deepest fall and the day it started. */
   twr: Returns;
+  /** Today's USD to INR (the latest saved), or null when none is saved. */
+  usdInr: number | null;
   niftyYearly: number | null;
   sp500Yearly: number | null;
   gapToNifty: number | null;
@@ -53,7 +55,7 @@ export interface Overview {
   /** Holdings counted at cost for want of a price. */
   unpriced: string[];
   /** Every day from his first trade to today: what he held was worth, and what it cost him (the stage draws these). */
-  series: { date: string; value: number; cost: number }[];
+  series: { date: string; value: number; cost: number; /** Money put in that day, less money taken out (a buy is in, a sell is out), in rupees: the stage's "money added" bars. */ flow: number }[];
   /** Each holding on its own, in the same order as `holdings`: its price line, his trades on it and its stats (the lens). */
   lenses: HoldingLens[];
 }
@@ -118,12 +120,12 @@ export function investmentOverview({ trades, instruments, closes, today }: Overv
   const dates = rows.map((r) => r.priceDate).filter((d): d is string => d !== null);
   return {
     today, holdings: rows, valueInr, costInr, gainInr: valueInr - costInr, gainFraction: costInr > 0 ? (valueInr - costInr) / costInr : null, dayChangeInr,
-    realisedInr: totalRealisedGainInr(trades, today), xirr: yearlyReturn(trades, valueInr, today), twr, niftyYearly, sp500Yearly,
+    realisedInr: totalRealisedGainInr(trades, today), xirr: yearlyReturn(trades, valueInr, today), twr, usdInr: fxToday ?? null, niftyYearly, sp500Yearly,
     gapToNifty: gapToIndex(twr.yearlyRate, niftyYearly), gapToSp500: gapToIndex(twr.yearlyRate, sp500Yearly),
     pricesFrom: dates.length > 0 ? dates.reduce((a, b) => (a > b ? a : b)) : null,
     unpriced: rows.filter((r) => r.price === null).map((r) => r.symbol),
     lenses: rows.map((r) => holdingLens({ trades, instrument: tickerOf.get(`${r.market}:${r.symbol}`) ?? { symbol: r.symbol, market: r.market, name: r.name, priceTicker: "" }, closes, usdInr, today })),
-    series: history.map((d) => ({ date: d.date, value: Math.round(d.valueInr), cost: Math.round(d.costInr) })),
+    series: history.map((d) => ({ date: d.date, value: Math.round(d.valueInr), cost: Math.round(d.costInr), flow: Math.round(d.netFlowInr) })),
   };
 }
 

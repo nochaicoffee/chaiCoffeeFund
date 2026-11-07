@@ -6,6 +6,8 @@ export interface StagePoint {
   value: number;
   /** What it cost him, in rupees. */
   cost: number;
+  /** Money put in that day, less money taken out, in rupees (the "money added" bars). Missing counts as none. */
+  flow?: number;
 }
 
 export const RANGES = [
@@ -91,4 +93,104 @@ export function offeredLensRanges(points: { date: string }[]): RangeKey[] {
   if (points.length < 2) return ["All"];
   const span = (Date.parse(`${points.at(-1)!.date}T00:00:00Z`) - Date.parse(`${points[0].date}T00:00:00Z`)) / 86_400_000;
   return RANGES.filter((r) => r.days === null || r.days < span).map((r) => r.key);
+}
+
+// ---------- Go back to a day ----------
+/** The days the stage can go back to (design: Today, 1M ago, 6M ago, 1Y ago, 2Y ago). */
+export const GO_BACK = [
+  { key: "now", label: "Today", days: 0 },
+  { key: "1m", label: "1M ago", days: 30 },
+  { key: "6m", label: "6M ago", days: 182 },
+  { key: "1y", label: "1Y ago", days: 365 },
+  { key: "2y", label: "2Y ago", days: 730 },
+] as const;
+export type GoBackKey = (typeof GO_BACK)[number]["key"];
+
+/** The days worth offering: those that fall on or after his first trade. A day before it has nothing to show. Today is always there. */
+export function offeredGoBack(series: StagePoint[]): GoBackKey[] {
+  return GO_BACK.filter((g) => g.days < series.length).map((g) => g.key);
+}
+
+/** The point a "go back to" lands on, counted back from the last day of the series (one point a day); the last point for Today. */
+export function goBackIndex(series: StagePoint[], key: GoBackKey): number {
+  const days = GO_BACK.find((g) => g.key === key)?.days ?? 0;
+  return Math.max(0, series.length - 1 - days);
+}
+
+export interface AsOfReading extends StageReading {
+  /** Money put in after that day, less money taken out, in rupees. */
+  addedSince: number;
+  /** What the market did to it since that day: today's worth less that day's, less the money added since. */
+  marketSince: number;
+}
+
+/** The portfolio as it stood on `index`, and what has happened since up to the last point. */
+export function asOfReading(series: StagePoint[], index: number): AsOfReading | null {
+  const base = readingAt(series, index);
+  const last = series.at(-1);
+  if (!base || !last) return null;
+  const from = Math.max(0, Math.min(series.length - 1, index));
+  let addedSince = 0;
+  for (let i = from + 1; i < series.length; i++) addedSince += series[i].flow ?? 0;
+  return { ...base, addedSince, marketSince: last.value - base.value - addedSince };
+}
+
+// ---------- Money added, along the foot of the chart ----------
+/**
+ * The money put in, in `buckets` equal slices of the chart's width: each slice's buys (money taken out doesn't count here), as a fraction of
+ * the biggest slice. A day goes in the slice its place along the chart falls in, so a bar sits under the days it belongs to however many
+ * days the range has.
+ */
+export function moneyBars(points: StagePoint[], buckets = 38): number[] {
+  const n = points.length;
+  if (n === 0) return [];
+  const sums = Array.from({ length: buckets }, () => 0);
+  points.forEach((p, i) => {
+    const slice = n === 1 ? 0 : Math.min(buckets - 1, Math.floor((i / (n - 1)) * buckets));
+    sums[slice] += Math.max(0, p.flow ?? 0);
+  });
+  const biggest = Math.max(...sums);
+  return biggest > 0 ? sums.map((v) => v / biggest) : sums.map(() => 0);
+}
+
+/** Where a "go back to" day falls among the points a range shows (the tail of the series), or null for Today or a day before the range starts. */
+export function goBackMark(series: StagePoint[], shown: number, key: GoBackKey): number | null {
+  if (key === "now") return null;
+  const at = goBackIndex(series, key) - (series.length - shown);
+  return at >= 0 && at < shown ? at : null;
+}
+
+// ---------- The axes ----------
+/** Round values to hang gridlines on, about `count` of them across [min, max] (1, 2, 2.5, 5 or 10 times a power of ten apart). */
+export function axisTicks(min: number, max: number, count = 4): number[] {
+  if (!(max > min)) return [];
+  const raw = (max - min) / count;
+  const magnitude = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * magnitude).find((v) => v >= raw)!;
+  const ticks: number[] = [];
+  for (let v = Math.ceil(min / step) * step; v <= max; v += step) ticks.push(Math.round(v * 1e6) / 1e6);
+  return ticks;
+}
+
+/** A tick as the design prints it: 60L, 1.5Cr, or the plain number under a lakh. */
+export function tickLabel(value: number): string {
+  const abs = Math.abs(value);
+  const trim = (n: number) => String(Math.round(n * 100) / 100);
+  if (abs >= 1e7) return `${trim(value / 1e7)}Cr`;
+  if (abs >= 1e5) return `${trim(value / 1e5)}L`;
+  return trim(value);
+}
+
+/** `count` evenly spaced indexes from 0 to n-1, for the dates under the chart. */
+export function dateTickIndexes(n: number, count = 5): number[] {
+  if (n <= 1) return [0];
+  return Array.from({ length: count + 1 }, (_, k) => Math.round((k * (n - 1)) / count)).filter((v, i, all) => all.indexOf(v) === i);
+}
+
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** A day under the chart: "14 Jun" when the chart covers about three months or less, "Jun 21" (month and year) over longer. */
+export function axisDate(iso: string, spanDays: number): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return spanDays <= 100 ? `${d} ${MONTHS[m - 1]}` : `${MONTHS[m - 1]} ${String(y).slice(2)}`;
 }

@@ -4,7 +4,7 @@ import type { GreetingRowData } from "@/components/shell/GreetingParts";
 import type { HoldingLens, LensMarker, LensPoint } from "@/lib/aggregate/holdingLens";
 import type { HoldingRow, Overview } from "@/lib/aggregate/investmentOverview";
 import { formatDate, formatShortDate } from "@/lib/format/date";
-import { formatInr, formatMoney } from "@/lib/format/money";
+import { formatInr, formatInrExact, formatMoney } from "@/lib/format/money";
 import type { Instrument, InvestmentTransaction } from "@/lib/sheets/types";
 
 /**
@@ -17,11 +17,11 @@ const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one :
 const MINUS = "−";
 /** 12.4% from a fraction, with a sign when asked. */
 export const pct = (fraction: number, digits = 1, signed = false) => `${fraction < 0 ? MINUS : signed && fraction > 0 ? "+" : ""}${Math.abs(fraction * 100).toFixed(digits)}%`;
-const signedLakh = (n: number) => `${n < 0 ? MINUS : "+"}${formatLakh(Math.abs(n))}`;
+export const signedLakh = (n: number) => `${n < 0 ? MINUS : "+"}${formatLakh(Math.abs(n))}`;
 const years = (days: number) => (days / 365).toFixed(1);
 
 // ---------- The greeting ----------
-export type InvestmentsPoint = "worth" | "gain" | "top" | "yearly" | "gap";
+export type InvestmentsPoint = "worth" | "gain" | "top" | "day" | "yearly" | "gap";
 export interface GreetingCard {
   title: string;
   total: string;
@@ -42,6 +42,27 @@ function gapSentence(o: Overview): SentencePart[] {
   return [{ text: ", " }, { text: `${pct(Math.abs(o.gapToNifty))} a year ${o.gapToNifty >= 0 ? "ahead of" : "behind"} Nifty 50`, strong: true, point: "gap" }];
 }
 
+/** Which day the prices are from, what the day did, and the dollar's rate: "Prices are from Nov 5, down ₹10,463 on the day, with USD/INR at ₹90.15. " */
+function pricesSentence(o: Overview): SentencePart[] {
+  const old = o.pricesFrom !== null && o.pricesFrom < o.today;
+  const day = o.dayChangeInr;
+  const bits: SentencePart[][] = [];
+  if (day !== null && day !== 0) bits.push([{ text: day < 0 ? "down " : "up " }, { text: formatInr(Math.abs(day)), strong: true, point: "day" }, { text: " on the day" }]);
+  // First in a sentence of its own it can't read "With USD/INR at ...", so it says "USD/INR is at ...".
+  if (o.usdInr !== null) bits.push([{ text: !old && bits.length === 0 ? "USD/INR is at " : "with USD/INR at " }, { text: formatInrExact(o.usdInr), strong: true }]);
+  if (!old && bits.length === 0) return [];
+  const parts: SentencePart[] = [];
+  if (old) parts.push({ text: `Prices are from ${formatShortDate(o.pricesFrom!)}` });
+  bits.forEach((bit, i) => {
+    if (i === 0 && !old) {
+      const [first, ...rest] = bit;
+      parts.push({ ...first, text: first.text.charAt(0).toUpperCase() + first.text.slice(1) }, ...rest);
+    } else parts.push({ text: ", " }, ...bit);
+  });
+  parts.push({ text: ". " });
+  return parts;
+}
+
 export function summarySentence(o: Overview): SentencePart[] {
   if (o.holdings.length === 0) return [{ text: "Nothing here yet. Add a trade, and this page shows what you hold, what it is worth and how it has done." }];
   const parts: SentencePart[] = [
@@ -54,7 +75,7 @@ export function summarySentence(o: Overview): SentencePart[] {
   parts.push({ text: ". " });
   const t = top(o);
   if (t && o.holdings.length > 1) parts.push({ text: t.name, strong: true, point: "top" }, { text: " is " }, { text: pct(t.share), strong: true, point: "top" }, { text: " of it. " });
-  if (o.pricesFrom && o.pricesFrom < o.today) parts.push({ text: `Prices are from ${formatShortDate(o.pricesFrom)}. ` });
+  parts.push(...pricesSentence(o));
   if (o.unpriced.length > 0) parts.push({ text: `${plural(o.unpriced.length, "holding has", "holdings have")} no price and ${o.unpriced.length === 1 ? "is" : "are"} counted at cost. ` });
   if (!o.xirr.tooEarly && o.xirr.rate !== null) {
     parts.push({ text: `Over ${years(o.xirr.days)} years your money has earned ` }, { text: `${pct(o.xirr.rate)} a year`, strong: true, point: "yearly" }, ...gapSentence(o), { text: "." });
@@ -95,6 +116,16 @@ export function greetingView(o: Overview): InvestmentsGreetingCards {
       total: formatLakh(t.valueInr),
       rows: [row("value", "Worth", "sapphire", formatLakh(t.valueInr)), row("cost", "Cost", "slate", formatLakh(t.costInr)), row("gain", t.gainInr >= 0 ? "Gain" : "Loss", t.gainInr >= 0 ? "emerald" : "ruby", `${signedLakh(t.gainInr)}${t.gainFraction === null ? "" : ` (${pct(t.gainFraction, 0, true)})`}`)],
       note: "A plain fact about today's value: the page suggests no split.",
+    };
+  }
+  const moved = o.holdings.filter((h) => h.dayChangeInr !== null && h.dayChangeInr !== 0).sort((a, b) => Math.abs(b.dayChangeInr!) - Math.abs(a.dayChangeInr!));
+  if (o.dayChangeInr !== null && o.dayChangeInr !== 0 && moved.length > 0) {
+    const biggest = Math.abs(moved[0].dayChangeInr!);
+    cards.day = {
+      title: o.dayChangeInr < 0 ? "What it lost on the day" : "What it made on the day",
+      total: signedLakh(o.dayChangeInr),
+      rows: moved.slice(0, 5).map((h) => row(h.symbol, h.name, h.dayChangeInr! < 0 ? "ruby" : "emerald", `${h.dayChangeInr! < 0 ? MINUS : "+"}${formatInr(Math.abs(h.dayChangeInr!))}`, undefined, Math.abs(h.dayChangeInr!) / biggest)),
+      note: `The last close against the one before it${o.pricesFrom ? ` (${formatDate(o.pricesFrom)})` : ""}, with the rupee's move on each US holding.${moved.length > 5 ? ` ${moved.length - 5} smaller moves aren't listed.` : ""}`,
     };
   }
   if (!o.xirr.tooEarly && o.xirr.rate !== null) {
@@ -256,4 +287,55 @@ function lensStats(l: HoldingLens): LensStat[] {
 
 export function lensViews(o: Overview): LensView[] {
   return o.lenses.map((l) => ({ key: l.key, name: l.name, symbol: l.symbol, currency: l.currency, points: l.points, markers: l.markers, avgCost: l.avgCost, stats: lensStats(l) }));
+}
+
+// ---------- Pick what to look at ----------
+export interface PickCard {
+  /** "all", or the holding's lens key. */
+  key: string;
+  title: string;
+  subtitle: string;
+  /** The tile's colour, or null for Everything (a neutral tile). */
+  colorKey: string | null;
+  /** The sparkline: the last three months, oldest first. */
+  spark: number[];
+  /** "Put in ₹43.33L · +28% on cost", or "You hold 191 · +26% on cost". */
+  detail: string;
+  /** Worth for Everything, the price for a holding. */
+  price: string;
+  /** "▼ 0.96% today". */
+  day: string;
+  dayTone: ReturnCard["tone"];
+}
+
+const SPARK_DAYS = 90;
+const arrow = (fraction: number | null, when: string) => (fraction === null ? "—" : `${fraction < 0 ? "▼" : fraction > 0 ? "▲" : "–"} ${Math.abs(fraction * 100).toFixed(2)}% ${when}`);
+
+/** The row of cards that picks what the stage shows: everything, then each holding with its last three months, what he holds and today's move. */
+export function pickerView(o: Overview): PickCard[] {
+  if (o.holdings.length === 0) return [];
+  const cards: PickCard[] = [];
+  const tail = o.series.slice(-(SPARK_DAYS + 1));
+  const before = o.dayChangeInr === null ? null : o.valueInr - o.dayChangeInr;
+  const dayAll = before !== null && before > 0 ? o.dayChangeInr! / before : null;
+  const whenOf = (priceDate: string | null) => (priceDate === o.today ? "today" : "last close");
+  cards.push({
+    key: "all", title: "Everything", subtitle: plural(o.holdings.length, "holding", "holdings"), colorKey: null, spark: tail.map((p) => p.value),
+    detail: `Put in ${formatLakh(o.costInr)}${o.gainFraction === null ? "" : ` · ${pct(o.gainFraction, 0, true)} on cost`}`,
+    price: formatLakh(o.valueInr), day: arrow(dayAll, whenOf(o.pricesFrom)), dayTone: tone(dayAll),
+  });
+  o.holdings.forEach((h, i) => {
+    const lens = o.lenses[i];
+    const last = lens.points.at(-1);
+    const from = last ? new Date(Date.parse(`${last.date}T00:00:00Z`) - SPARK_DAYS * 86_400_000).toISOString().slice(0, 10) : "";
+    const spark = lens.points.filter((p) => p.date >= from).map((p) => p.price);
+    const prev = lens.points.at(-2);
+    const dayPct = last && prev && prev.price > 0 ? last.price / prev.price - 1 : null;
+    cards.push({
+      key: lens.key, title: h.symbol, subtitle: h.name, colorKey: colorOf(i), spark,
+      detail: `You hold ${quantityText(h.quantity)}${h.gainFraction === null ? "" : ` · ${pct(h.gainFraction, 0, true)} on cost`}`,
+      price: h.price === null ? "No price" : formatMoney(h.market === "US" ? "USD" : "INR", h.price), day: h.price === null ? "counted at cost" : arrow(dayPct, whenOf(h.priceDate)), dayTone: tone(dayPct),
+    });
+  });
+  return cards;
 }

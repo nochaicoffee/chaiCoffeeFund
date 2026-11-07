@@ -60,9 +60,11 @@ describe("investmentOverview", () => {
   });
 
   it("gives the stage a worth and cost for every day from the first trade to today", () => {
-    expect(o.series[0]).toEqual({ date: "2024-01-02", value: 24000, cost: 18000 }); // AAA 100 x 150, BBB 10 x $10 x 90
+    expect(o.series[0]).toEqual({ date: "2024-01-02", value: 24000, cost: 18000, flow: 18000 }); // AAA 100 x 150, BBB 10 x $10 x 90
     expect(o.series.at(-1)).toMatchObject({ date: "2026-01-01", cost: 18000 });
     expect(o.series).toHaveLength(731);
+    expect(o.series.slice(1).every((d) => d.flow === 0)).toBe(true); // both buys were on the first day
+    expect(o.usdInr).toBe(90);
     expect(o.series.at(-1)!.value).toBe(Math.round(o.valueInr));
   });
 

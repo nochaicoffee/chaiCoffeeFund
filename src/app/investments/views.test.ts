@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { investmentOverview } from "@/lib/aggregate/investmentOverview";
 import type { PricePoint } from "@/lib/prices/history";
 import type { Instrument, InvestmentTransaction } from "@/lib/sheets/types";
-import { greetingView, holdingsView, lensViews, pct, recentTradesView, returnsView, summarySentence } from "./views";
+import { greetingView, holdingsView, lensViews, pct, pickerView, recentTradesView, returnsView, summarySentence } from "./views";
 
 const trade = (o: Partial<InvestmentTransaction>): InvestmentTransaction => ({
   id: "t", tradeDate: "2024-01-02", symbol: "AAA", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 100, price: 100, total: 10000, assetType: "Equity", broker: "B", ...o,
@@ -27,7 +27,7 @@ describe("summarySentence and greetingView", () => {
   const cards = greetingView(o);
 
   it("reads as one sentence with the worth, the gain, the biggest holding and the yearly return in bold", () => {
-    expect(text(parts)).toMatch(/^Your 2 holdings are worth ₹[\d,.]+(L|Cr)?, up ₹[\d,.]+(L|Cr)? \(\d+\.\d%\) on what they cost\. Alpha Ltd is \d+\.\d% of it\. Over 2\.0 years your money has earned \d+\.\d% a year/);
+    expect(text(parts)).toMatch(/^Your 2 holdings are worth ₹[\d,.]+(L|Cr)?, up ₹[\d,.]+(L|Cr)? \(\d+\.\d%\) on what they cost\. Alpha Ltd is \d+\.\d% of it\. (Up|Down) ₹[\d,.]+ on the day, with USD\/INR at ₹90\. Over 2\.0 years your money has earned \d+\.\d% a year/);
     expect(parts.filter((p) => p.strong).length).toBeGreaterThanOrEqual(5);
   });
 
@@ -57,7 +57,7 @@ describe("summarySentence and greetingView", () => {
 
   it("says when prices are older than today", () => {
     const old = investmentOverview({ trades, instruments, closes, today: "2026-01-05" });
-    expect(text(summarySentence(old))).toMatch(/Prices are from Jan 1\./);
+    expect(text(summarySentence(old))).toMatch(/Prices are from Jan 1, (up|down) ₹[\d,.]+ on the day, with USD\/INR at ₹90\. /);
   });
 
   it("names a holding counted at cost for want of a price", () => {
@@ -140,5 +140,78 @@ describe("lensViews", () => {
 
   it("leaves out Made on sales for a holding never sold", () => {
     expect(lenses[1].stats.find((s) => s.label === "Made on sales")).toBeUndefined();
+  });
+});
+
+describe("the day's move in the greeting", () => {
+  it("points the day figure at a card that lists what moved and adds up to it", () => {
+    const parts = summarySentence(o);
+    expect(parts.some((p) => p.point === "day")).toBe(true);
+    const card = greetingView(o).day!;
+    expect(card.rows.length).toBeGreaterThan(0);
+    expect(card.total).toMatch(/^[+−]₹/);
+  });
+
+  it("has no day figure, and no card, when the day can't be told", () => {
+    const flat = new Map(closes);
+    flat.set("AAA.NS", days("2024-01-02", 731, () => 100));
+    const calm = investmentOverview({ trades, instruments, closes: flat, today: "2026-01-01" });
+    expect(summarySentence(calm).some((p) => p.point === "day")).toBe(false);
+    expect(greetingView(calm).day).toBeUndefined();
+  });
+});
+
+describe("pickerView", () => {
+  const cards = pickerView(o);
+
+  it("starts with Everything, then each holding in the page's order, tiles coloured the same as the table", () => {
+    expect(cards.map((c) => c.key)).toEqual(["all", ...o.lenses.map((l) => l.key)]);
+    expect(cards[0]).toMatchObject({ title: "Everything", subtitle: "2 holdings", colorKey: null });
+    expect(cards.slice(1).map((c) => c.colorKey)).toEqual(holdingsView(o).map((r) => r.colorKey));
+  });
+
+  it("says what was put in and the gain on cost for Everything, and what he holds for a holding", () => {
+    expect(cards[0].detail).toMatch(/^Put in ₹[\d,.]+L? · \+\d+% on cost$/);
+    expect(cards[1].detail).toMatch(/^You hold 90 · \+\d+% on cost$/);
+  });
+
+  it("draws the last three months, oldest first, and no more", () => {
+    expect(cards[0].spark).toHaveLength(91);
+    expect(cards[1].spark.length).toBeGreaterThan(2);
+    expect(cards[1].spark.length).toBeLessThanOrEqual(91);
+    expect(cards[1].spark[0]).toBeLessThan(cards[1].spark.at(-1)!); // a rising price
+  });
+
+  it("says the move as an arrow and a percent, 'today' only when the prices are today's", () => {
+    expect(cards[1].day).toMatch(/^▲ \d\.\d{2}% today$/);
+    expect(cards[1].dayTone).toBe("gain");
+    const old = pickerView(investmentOverview({ trades, instruments, closes, today: "2026-01-05" }));
+    expect(old[1].day).toMatch(/last close$/);
+  });
+
+  it("is empty with nothing held", () => {
+    expect(pickerView(investmentOverview({ trades: [], instruments, closes, today: "2026-01-01" }))).toEqual([]);
+  });
+});
+
+describe("review fixes", () => {
+  it("starts a sentence with the dollar's rate as 'USD/INR is at', not a fragment, when the day's move can't be told", () => {
+    const one = new Map(closes);
+    one.set("AAA.NS", [{ date: "2026-01-01", close: 150 }]); // one close: no day before to compare with
+    const young = investmentOverview({ trades: [trade({})], instruments, closes: one, today: "2026-01-01" });
+    expect(young.dayChangeInr).toBeNull();
+    expect(text(summarySentence(young))).toMatch(/of it\.|worth/);
+    expect(text(summarySentence(young))).toMatch(/\. USD\/INR is at ₹90\. /);
+  });
+
+  it("says 'last close' on a holding whose own close isn't from today, even when others' are", () => {
+    const mixed = new Map(closes);
+    mixed.set("AAA.NS", days("2024-01-02", 700, (i) => 100 + i * 0.1)); // ends 2025-12-02, not 2026-01-01
+    const m = investmentOverview({ trades, instruments, closes: mixed, today: "2026-01-01" });
+    const cards = pickerView(m);
+    const aaa = cards.find((c) => c.title === "AAA")!;
+    const bbb = cards.find((c) => c.title === "BBB")!;
+    expect(aaa.day).toMatch(/last close$/);
+    expect(bbb.day).toMatch(/today$|^—$/);
   });
 });
