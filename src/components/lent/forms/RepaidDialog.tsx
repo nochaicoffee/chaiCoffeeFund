@@ -19,6 +19,8 @@ export function RepaidDialog({ forms, loan, onClose, onSaved }: { forms: LentFor
   const [state, formAction, pending] = useActionState(markLentLoanRepaid, IDLE);
   const [closedDate, setClosedDate] = useState(forms.today);
   const own: LentRepayment[] = forms.repayments.filter((r) => r.loanId === loan.id).map((r) => ({ id: r.id, lentLoanId: r.loanId, date: r.date, amount: r.amount, kind: r.kind }));
+  // Principal not recorded as back: marking the loan repaid counts it as back, so the dialog says so.
+  const notRecorded = Math.max(0, loan.principalAmount - own.filter((r) => r.kind === "Principal").reduce((t, r) => t + r.amount, 0));
   const values = { closedDate };
   const check = readRepaidForm(values, loan, own, forms.today);
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
@@ -39,8 +41,15 @@ export function RepaidDialog({ forms, loan, onClose, onSaved }: { forms: LentFor
       title="Mark this loan repaid?"
       subtitle={`${loan.borrowerName} · lent ${formatDate(loan.startDate)}`}
       preview={
-        <PreviewPanel caption="A repaid loan leaves Who owes what and stops earning from the day it was paid back in full. You can reopen it later.">
-          <SummaryBox rows={[{ label: "Lent", value: formatInr(loan.principalAmount) }, { label: "Owes after", value: "₹0" }, { label: "Stops earning", value: closedDate ? formatDate(closedDate) : "—" }]} />
+        <PreviewPanel caption={`A repaid loan owes nothing and stops earning from the day it was paid back in full. You can reopen it later.${notRecorded > 0 ? ` ${formatInr(notRecorded)} of the principal isn't recorded as back yet. Marking the loan repaid counts it as back as of that day, without a repayment row.` : ""}`}>
+          <SummaryBox
+            rows={[
+              { label: "Lent", value: formatInr(loan.principalAmount) },
+              ...(notRecorded > 0 ? [{ label: "Not recorded as back", value: formatInr(notRecorded) }] : []),
+              { label: "Owes after", value: "₹0" },
+              { label: "Stops earning", value: closedDate ? formatDate(closedDate) : "—" },
+            ]}
+          />
         </PreviewPanel>
       }
       footerNote={<span className="max-md:hidden">Reopen it from the loan&apos;s menu.</span>}
