@@ -70,3 +70,25 @@ export function linePath(values: number[], scale: StageScale, width: number, hei
   for (let i = 1; i < n; i++) d += step ? ` L ${f(x(i))} ${f(y(values[i - 1]))} L ${f(x(i))} ${f(y(values[i]))}` : ` L ${f(x(i))} ${f(y(values[i]))}`;
   return d;
 }
+
+/** The first day a range shows, counted back from `end`, or null for All. */
+export function rangeStart(end: string, key: RangeKey): string | null {
+  const days = RANGES.find((r) => r.key === key)?.days ?? null;
+  return days === null ? null : new Date(Date.parse(`${end}T00:00:00Z`) - days * 86_400_000).toISOString().slice(0, 10);
+}
+
+/** A holding's points (trading days only) and markers inside a range, counted back from its last point. */
+export function lensWindow<P extends { date: string }, M extends { date: string }>(points: P[], markers: M[], key: RangeKey): { points: P[]; markers: M[] } {
+  const end = points.at(-1)?.date;
+  const start = end ? rangeStart(end, key) : null;
+  if (start === null) return { points, markers: markers.filter((m) => points.length > 0 && m.date >= points[0].date) };
+  const inside = points.filter((p) => p.date >= start);
+  return { points: inside, markers: markers.filter((m) => inside.length > 0 && m.date >= inside[0].date) };
+}
+
+/** The ranges worth offering for a holding: those shorter than the days its line covers, and All. */
+export function offeredLensRanges(points: { date: string }[]): RangeKey[] {
+  if (points.length < 2) return ["All"];
+  const span = (Date.parse(`${points.at(-1)!.date}T00:00:00Z`) - Date.parse(`${points[0].date}T00:00:00Z`)) / 86_400_000;
+  return RANGES.filter((r) => r.days === null || r.days < span).map((r) => r.key);
+}

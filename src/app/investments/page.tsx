@@ -16,7 +16,7 @@ import type { PricePoint } from "@/lib/prices/history";
 import { getPriceSeries } from "@/lib/prices/series";
 import { getCachedInstrumentsTab, getCachedInvestmentTransactionsTab } from "@/lib/sheets/cached";
 import { tradeFormsData } from "./tradeFormsData";
-import { greetingView, holdingsView, recentTradesView, returnsView, summarySentence } from "./views";
+import { greetingView, holdingsView, lensViews, recentTradesView, returnsView, summarySentence } from "./views";
 
 export const metadata: Metadata = { title: "Investments" };
 
@@ -59,7 +59,7 @@ export default async function InvestmentsPage() {
         )}
         <SkippedRowsNotice tabs={skipped} />
       </PageHeader>
-      <Stage series={overview.series} pricesNote={overview.pricesFrom && overview.pricesFrom < today ? `prices from ${formatShortDate(overview.pricesFrom)}` : undefined} />
+      <Stage series={overview.series} lenses={lensViews(overview)} pricesNote={overview.pricesFrom && overview.pricesFrom < today ? `prices from ${formatShortDate(overview.pricesFrom)}` : undefined} />
       <ReturnsRow cards={returnsView(overview)} />
       {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} />}
       <RecentTrades rows={recentTradesView(tradesTab.records, instrumentsTab.records)} />

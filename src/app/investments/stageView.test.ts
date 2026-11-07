@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { inRange, linePath, offeredRanges, readingAt, scaleOf, type StagePoint } from "./stageView";
+import { inRange, lensWindow, linePath, offeredLensRanges, offeredRanges, rangeStart, readingAt, scaleOf, type StagePoint } from "./stageView";
 
 const series = (n: number): StagePoint[] => Array.from({ length: n }, (_, i) => ({ date: `d${i}`, value: 100 + i, cost: 90 }));
 
@@ -66,5 +66,36 @@ describe("scaleOf and linePath", () => {
 
   it("is empty for no values", () => {
     expect(linePath([], { min: 0, max: 1 }, 10, 10)).toBe("");
+  });
+});
+
+describe("rangeStart and lensWindow", () => {
+  const pts = ["2026-01-02", "2026-06-01", "2026-10-01", "2026-11-04"].map((date) => ({ date }));
+  const marks = [{ date: "2026-01-02" }, { date: "2026-06-01" }, { date: "2026-10-20" }];
+
+  it("counts a range back from the last day, and has no start for All", () => {
+    expect(rangeStart("2026-11-04", "1M")).toBe("2026-10-05");
+    expect(rangeStart("2026-11-04", "All")).toBeNull();
+  });
+
+  it("keeps the points and the trades inside the range", () => {
+    const w = lensWindow(pts, marks, "3M");
+    expect(w.points.map((p) => p.date)).toEqual(["2026-10-01", "2026-11-04"]);
+    expect(w.markers.map((m) => m.date)).toEqual(["2026-10-20"]);
+  });
+
+  it("shows everything for All", () => {
+    const w = lensWindow(pts, marks, "All");
+    expect(w.points).toHaveLength(4);
+    expect(w.markers).toHaveLength(3);
+  });
+
+  it("is empty for no points", () => {
+    expect(lensWindow([], marks, "1M")).toEqual({ points: [], markers: [] });
+  });
+
+  it("offers the ranges a line is long enough for", () => {
+    expect(offeredLensRanges(pts)).toEqual(["1M", "3M", "6M", "All"]);
+    expect(offeredLensRanges([{ date: "2026-11-04" }])).toEqual(["All"]);
   });
 });
