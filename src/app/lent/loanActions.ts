@@ -54,7 +54,9 @@ export async function saveLentLoan(_previous: FormState, formData: FormData): Pr
     if (editing) {
       stored = await lentLoansRepository.get(editing);
       if (stored) own = repaymentsOf(await lentRepaymentsRepository.list(), editing);
-    } else if (formData.get("createIncomeSource") === "1") {
+    }
+    // An income source is made with a new loan, or for an existing paid-out loan that has none.
+    if (formData.get("createIncomeSource") === "1" && (!editing || (stored && !stored.incomeSourceId))) {
       accountIds = (await accountsRepository.list()).map((a) => a.id);
     }
   } catch (error) {
@@ -69,7 +71,7 @@ export async function saveLentLoan(_previous: FormState, formData: FormData): Pr
   if (editing && input.interestMode === "Paid-out" && own.some((r) => r.kind === "Interest")) {
     return { status: "invalid", errors: { interestMode: "Interest was recorded on this loan. A paid-out loan's interest arrives through Income, so delete those repayments first" } };
   }
-  return editing && stored ? editLoan(stored, input) : addLoan(input, formData, accountIds);
+  return editing && stored ? editLoan(stored, input, formData, accountIds) : addLoan(input, formData, accountIds);
 }
 
 /** Add: a Paid-out loan with "Set up an income source" ticked gets its source first, taken out again if the loan can't be written. */
@@ -106,18 +108,28 @@ async function addLoan(input: LentLoanInput, formData: FormData, accountIds: str
  * schedule to the new first payout; how often it pays can't change here, since the source's schedule lives in Income; switching to Accruing pauses the source (nothing is deleted). Those two source writes come after the
  * loan's, and if one fails the message says so.
  */
-async function editLoan(stored: LentLoan, input: LentLoanInput): Promise<FormState> {
+async function editLoan(stored: LentLoan, input: LentLoanInput, formData: FormData, accountIds: string[]): Promise<FormState> {
   let source: IncomeSource | null = null;
   try {
     if (stored.incomeSourceId) source = await incomeSourcesRepository.get(stored.incomeSourceId);
   } catch (error) {
     return failed("saveLentLoan", error);
   }
+  // A paid-out loan with no income source can be given one now: the source first, taken out again if the loan can't be saved.
+  const linking = !stored.incomeSourceId && input.interestMode === "Paid-out" && formData.get("createIncomeSource") === "1";
+  let extras: PayoutSourceExtras = {};
+  if (linking) {
+    const read = readPayoutSourceExtras(fields(formData), { accountIds });
+    if (!read.ok) return { status: "invalid", errors: read.errors };
+    extras = read.input;
+  }
+  let created: IncomeSource | undefined;
   if (source && input.interestMode === "Paid-out" && input.payoutFrequency !== source.frequency) {
     return { status: "invalid", errors: { payoutFrequency: "This loan's payouts follow an income source's schedule. Change how often it pays in Income, or take the loan off it" } };
   }
   const moved = stored.startDate !== input.startDate;
   try {
+    if (linking) created = await incomeSourcesRepository.create(createIncomeSourceSchema.parse(payoutIncomeSource(input, extras)));
     // "" blanks a cell: the fields of the mode it left, and the colour when none is chosen.
     const accruing = input.interestMode === "Accruing";
     await lentLoansRepository.update(
@@ -129,13 +141,24 @@ async function editLoan(stored: LentLoan, input: LentLoanInput): Promise<FormSta
         payoutAmount: input.payoutAmount ?? "",
         color: input.color ?? "",
         ...(accruing && { incomeSourceId: "" }),
+        ...(created && { incomeSourceId: created.id }),
       }) as Partial<Omit<LentLoan, "id">>,
     );
   } catch (error) {
+    if (created) {
+      try {
+        await incomeSourcesRepository.remove(created.id);
+      } catch (cleanup) {
+        console.error("[lent] saveLentLoan: couldn't take back the income source:", cleanup instanceof Error ? cleanup.message : String(cleanup));
+        updateTag(CACHE_TAGS.incomeSources);
+        return { status: "invalid", errors: { form: `The loan wasn't saved, and its income source "${created.name}" is still in Income. Delete it there before trying again, or it will be added twice.` } };
+      }
+    }
     if (error instanceof NotFoundError) return gone("loan");
     if (error instanceof InvalidRowError) return { status: "invalid", errors: { form: error.message } };
     return failed("saveLentLoan", error);
   }
+  if (created) return refreshed(CACHE_TAGS.lentLoans, CACHE_TAGS.incomeSources);
   if (!source) return refreshed(CACHE_TAGS.lentLoans);
   const patch =
     input.interestMode === "Accruing"

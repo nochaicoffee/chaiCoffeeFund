@@ -54,6 +54,11 @@ describe("loansTableView on his three loans", () => {
     expect(t4.rows[0]).toMatchObject({ interest: "₹1,63,693", interestNote: "₹1,23,693 owed, ₹40,000 paid", owed: "₹7,73,693" });
     expect(t4.total).toMatchObject({ interest: "₹1,63,693", interestNote: "₹40,000 received · ₹1,23,693 not yet" });
   });
+  it("calls an Active loan with everything back 'paid back', not repaid, so it can be marked repaid and not reopened", () => {
+    const t5 = loansTableView(lentModel({ loans: [{ ...b, incomeSourceId: undefined }], repayments: [{ id: "r", lentLoanId: "b", date: "2026-06-01", amount: 300000, kind: "Principal" }], sources: [], entries: [] }, TODAY))!;
+    expect(t5.rows[0]).toMatchObject({ repaid: false, settled: true, owed: "₹0", owedNote: "paid back in full", back: "₹3,00,000", next: "—", nextNote: "nothing owed", interestNote: "nothing owed" });
+    expect(t5.rows[0].verdicts).toBeUndefined();
+  });
   it("is nothing when nothing was ever lent", () => {
     expect(loansTableView(lentModel({ loans: [], repayments: [], sources: [], entries: [] }, TODAY))).toBeNull();
   });

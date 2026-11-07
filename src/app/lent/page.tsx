@@ -6,11 +6,13 @@ import { GreetingSentence } from "@/components/lent/GreetingSentence";
 import { InterestClock } from "@/components/lent/InterestClock";
 import { ComingUpCard, LoansTable, MoneyBackCard } from "@/components/lent/LentWidgets";
 import { WhoOwesWhat } from "@/components/lent/WhoOwesWhat";
+import { AddFirstLoanButton, HeaderButtons, LentFormsProvider } from "@/components/lent/forms/LentForms";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
 import { greetingFor, todayIso } from "@/lib/format/date";
-import { getCachedIncomeEntriesTab, getCachedIncomeSourcesTab, getCachedLentLoansTab, getCachedLentRepaymentsTab } from "@/lib/sheets/cached";
+import { getCachedAccounts, getCachedIncomeEntriesTab, getCachedIncomeSourcesTab, getCachedLentLoansTab, getCachedLentRepaymentsTab } from "@/lib/sheets/cached";
 import { clockView, PERIODS, type ClockPeriod } from "./clockView";
+import { lentFormsData } from "./formsData";
 import { heroView } from "./heroView";
 import { comingUpView, loansTableView, moneyBackView } from "./widgetsView";
 import { attentionView, greetingView, lentModel, summarySentence } from "./views";
@@ -25,10 +27,11 @@ export const metadata: Metadata = { title: "Lent out" };
 export default async function LentPage({ searchParams }: PageProps<"/lent">) {
   const params = await searchParams;
   const today = todayIso();
-  const [loansTab, repaymentsTab, sourcesTab, entriesTab] = await Promise.all([getCachedLentLoansTab(), getCachedLentRepaymentsTab(), getCachedIncomeSourcesTab(), getCachedIncomeEntriesTab()]);
+  const [loansTab, repaymentsTab, sourcesTab, entriesTab, accounts] = await Promise.all([getCachedLentLoansTab(), getCachedLentRepaymentsTab(), getCachedIncomeSourcesTab(), getCachedIncomeEntriesTab(), getCachedAccounts()]);
   const model = lentModel({ loans: loansTab.records, repayments: repaymentsTab.records, sources: sourcesTab.records, entries: entriesTab.records }, today);
   const hero = heroView(model);
   const requested = typeof params.who === "string" ? params.who : "all";
+  const forms = lentFormsData(model, accounts.filter((a) => a.status === "Active").map((a) => ({ id: a.id, name: a.name })));
   const clock = clockView(model);
   const table = loansTableView(model);
   const comingUp = comingUpView(model);
@@ -37,8 +40,9 @@ export default async function LentPage({ searchParams }: PageProps<"/lent">) {
   const skipped = [loansTab.skipped, repaymentsTab.skipped].filter((t) => t.rows.length > 0);
 
   return (
+    <LentFormsProvider forms={forms}>
     <div className="flex flex-col gap-6">
-      <PageHeader section="Lent out" title={`${greetingFor()}, ${appConfig.ownerName}`} actions={<RefreshButton iconOnly />}>
+      <PageHeader section="Lent out" title={`${greetingFor()}, ${appConfig.ownerName}`} actions={<><RefreshButton iconOnly /><HeaderButtons /></>}>
         <GreetingSentence parts={summarySentence(model)} cards={greetingView(model)} />
         <SkippedRowsNotice tabs={skipped} />
       </PageHeader>
@@ -54,9 +58,11 @@ export default async function LentPage({ searchParams }: PageProps<"/lent">) {
       )}
       {model.data.loans.length === 0 && (
         <section className="rounded-[22px] border border-surface-line bg-surface p-6 text-sm font-semibold text-muted">
-          Nothing lent yet. Money you lend to friends will show here: who owes what, what it earns a day, and which payouts have arrived.
+          <p>Nothing lent yet. Money you lend to friends will show here: who owes what, what it earns a day, and which payouts have arrived.</p>
+          <div className="mt-4"><AddFirstLoanButton /></div>
         </section>
       )}
     </div>
+    </LentFormsProvider>
   );
 }
