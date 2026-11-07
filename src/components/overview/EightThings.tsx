@@ -37,7 +37,7 @@ export function EightThings({ items }: { items: Insight[] }) {
         </div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by area">
           {(["all", ...INSIGHT_TAGS] as const).filter((t) => t === "all" || count(t) > 0).map((t) => (
-            <button key={t} type="button" aria-pressed={tag === t} onClick={() => setTag(t)} className={`inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 text-[13px] font-extrabold transition-colors focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-white text-black" : "bg-on-card-fill hover:bg-white/25"}`}>
+            <button key={t} type="button" aria-pressed={tag === t} onClick={() => setTag(t)} className={`inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 text-[13px] font-extrabold transition-colors focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-on-card text-ink" : "bg-on-card-fill hover:bg-white/25"}`}>
               {t === "all" ? "All" : cap(t)}
               <small className="text-[11px] opacity-70">{count(t)}</small>
             </button>

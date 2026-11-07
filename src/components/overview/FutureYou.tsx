@@ -69,7 +69,7 @@ export function FutureYou({ view }: { view: FutureView }) {
         <div className="mt-2 text-xs font-extrabold tracking-[0.05em] uppercase opacity-75">In</div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="How far ahead">
           {HORIZONS.map((h) => (
-            <button key={h} type="button" aria-pressed={years === h} onClick={() => setYears(h)} className={`min-h-9 rounded-full px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${years === h ? "bg-white text-black" : "bg-on-card-fill hover:bg-white/25"}`}>
+            <button key={h} type="button" aria-pressed={years === h} onClick={() => setYears(h)} className={`min-h-9 rounded-full px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${years === h ? "bg-on-card text-ink" : "bg-on-card-fill hover:bg-white/25"}`}>
               {h} <small className="font-bold opacity-70">{h === 1 ? "year" : "years"}</small>
             </button>
           ))}
