@@ -144,3 +144,47 @@ describe("investmentOverview: the totals behind the Returns row", () => {
     expect(o.rupeeGainInr).not.toBe(0);
   });
 });
+
+describe("investmentOverview: what the holdings table shows", () => {
+  const trades = [
+    trade({}),
+    trade({ id: "u", symbol: "BBB", market: "US", currency: "USD", quantity: 10, price: 10, total: 100, fxRateToInr: 80, tradeDate: "2024-03-01" }),
+    trade({ id: "v", symbol: "BBB", market: "US", currency: "USD", source: "RSU", tradeDate: "2024-07-01", quantity: 10, price: 20, total: 200, fxRateToInr: 90 }),
+  ];
+  const instruments = [inst({}), inst({ id: "j", symbol: "BBB", market: "US", name: "Beta Inc", priceTicker: "BBB" })];
+  const o = investmentOverview({ trades, instruments, closes, today: "2026-01-01" });
+  const a = o.holdings.find((h) => h.symbol === "AAA")!;
+  const b = o.holdings.find((h) => h.symbol === "BBB")!;
+
+  it("gives what he paid a share on average, in the holding's own currency", () => {
+    expect(a.avgCostNative).toBe(100);
+    expect(b.avgCostNative).toBe(15); // $300 over 20 shares
+  });
+
+  it("gives a US holding the rupees to a dollar he paid on average, weighted by the dollars, and none for an Indian one", () => {
+    expect(b.avgRateInr).toBeCloseTo((8_000 + 18_000) / 300, 9); // 80 on $100 and 90 on $200
+    expect(a.avgRateInr).toBeNull();
+  });
+
+  it("gives the day of the first trade, the share plans in it, and where the price comes from", () => {
+    expect(a).toMatchObject({ since: "2024-01-02", plans: [], priceSource: "Yahoo" });
+    expect(b).toMatchObject({ since: "2024-03-01", plans: ["RSU"], priceSource: "Yahoo" });
+  });
+
+  it("says AMFI for a fund priced by scheme code", () => {
+    const fund = investmentOverview({ trades: [trade({})], instruments: [inst({ priceTicker: "119551" })], closes: new Map([["119551", days("2024-01-02", 731, () => 10)]]), today: "2026-01-01" });
+    expect(fund.holdings[0].priceSource).toBe("AMFI");
+  });
+
+  it("gives the value in its own currency and the last day's move there, flat for a flat price", () => {
+    expect(b.valueNative).toBeCloseTo(20 * (10 + 730 * 0.001), 9);
+    expect(b.dayFraction).toBeCloseTo((10 + 730 * 0.001) / (10 + 729 * 0.001) - 1, 9);
+    expect(a.valueNative).toBe(15_000);
+    expect(a.dayFraction).toBe(0);
+  });
+
+  it("has no value or move for a holding with no price", () => {
+    const bare = investmentOverview({ trades: [trade({})], instruments: [], closes, today: "2026-01-01" });
+    expect(bare.holdings[0]).toMatchObject({ valueNative: null, dayFraction: null, priceSource: null });
+  });
+});

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { investmentOverview } from "@/lib/aggregate/investmentOverview";
 import type { PricePoint } from "@/lib/prices/history";
 import type { Instrument, InvestmentTransaction } from "@/lib/sheets/types";
-import { greetingView, holdingsView, lensViews, monthYear, pct, pickerView, recentTradesView, returnsView, summarySentence } from "./views";
+import { greetingView, holdingGroups, holdingsView, lensViews, monthYear, pct, pickerView, recentTradesView, returnsView, summarySentence } from "./views";
 
 const trade = (o: Partial<InvestmentTransaction>): InvestmentTransaction => ({
   id: "t", tradeDate: "2024-01-02", symbol: "AAA", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 100, price: 100, total: 10000, assetType: "Equity", broker: "B", ...o,
@@ -127,14 +127,60 @@ describe("holdingsView", () => {
 
   it("shows each holding in its own currency, biggest first, with its share and gain", () => {
     expect(rows.map((r) => r.name)).toEqual(["Alpha Ltd", "Beta Inc"]);
-    expect(rows[1]).toMatchObject({ sub: "BBB · US", price: "$10.00", quantity: "10" });
+    expect(rows[1]).toMatchObject({ market: "US", price: "$10.00", quantity: "10", kind: "BBB · Equity · since 2024" });
     expect(rows[0].worth).toMatch(/^₹/);
     expect(rows[0].gainTone).toBe("gain");
   });
 
-  it("says 'No price' and 'counted at cost' for a holding with none", () => {
+  it("shows what he paid a share on average, with the rate for a US holding", () => {
+    expect(rows[0].avgCost).toBe("₹100");
+    expect(rows[0].avgCostNote).toBeUndefined();
+    expect(rows[1].avgCost).toBe("$10.00");
+    expect(rows[1].avgCostNote).toBe("at ₹80");
+  });
+
+  it("shows the price's move as a percent chip, the rupee move under it, and the worth in dollars for a US holding", () => {
+    expect(rows[0].day).toMatch(/^▲ \d\.\d{2}%$/);
+    expect(rows[0].dayTone).toBe("gain");
+    expect(rows[0].dayInr).toMatch(/^\+₹/);
+    expect(rows[1].day).toBe("– 0.00%"); // BBB's price is flat in this sample: no arrow up or down
+    expect(rows[1].dayTone).toBe("plain");
+    expect(rows[1].worthNote).toBe("$100.00");
+    expect(rows[0].worthNote).toBeUndefined();
+  });
+
+  it("names where the price is from, tags a share plan and says 'No price' and 'counted at cost' for a holding with none", () => {
+    expect(rows[0].priceNote).toBe("Yahoo");
+    const withVest = holdingsView(investmentOverview({ trades: [...trades, trade({ id: "v", symbol: "BBB", market: "US", currency: "USD", source: "RSU", tradeDate: "2025-12-01", quantity: 2, price: 11, total: 22, fxRateToInr: 85 })], instruments, closes, today: "2026-01-01" }));
+    expect(withVest.find((r) => r.name === "Beta Inc")!.tags).toEqual(["RSU"]);
     const naked = holdingsView(investmentOverview({ trades, instruments: [inst({})], closes, today: "2026-01-01" }));
-    expect(naked.find((r) => r.name === "BBB")).toMatchObject({ price: "No price", priceNote: "counted at cost" });
+    expect(naked.find((r) => r.name === "BBB")).toMatchObject({ price: "No price", priceNote: "counted at cost", day: "—" });
+  });
+
+  it("tags a holding whose latest close is more than a week old, and says so under its price", () => {
+    const old = new Map(closes);
+    old.set("AAA.NS", days("2024-01-02", 400, () => 120)); // ends 2025-02-04
+    const stale = holdingsView(investmentOverview({ trades, instruments, closes: old, today: "2026-01-01" })).find((r) => r.name === "Alpha Ltd")!;
+    expect(stale.tags).toContain("Stale price");
+    expect(stale.priceNote).toMatch(/^from Feb 4, out of date$/);
+  });
+
+  it("colours the rupee move by its own sign, not the price's, and calls a move that rounds to nothing flat", () => {
+    const mixed = new Map(closes);
+    mixed.set("BBB", days("2024-01-02", 731, (i) => (i === 730 ? 10.01 : 10))); // up a tenth of a percent in dollars
+    mixed.set("USDINR", days("2024-01-02", 731, (i) => (i === 730 ? 89 : 90))); // the dollar down more than that
+    const r = holdingsView(investmentOverview({ trades, instruments, closes: mixed, today: "2026-01-01" })).find((x) => x.name === "Beta Inc")!;
+    expect(r.dayTone).toBe("gain");
+    expect(r.dayInrTone).toBe("loss");
+    const tiny = new Map(closes);
+    tiny.set("BBB", days("2024-01-02", 731, (i) => (i === 730 ? 10.0001 : 10)));
+    const t = holdingsView(investmentOverview({ trades, instruments, closes: tiny, today: "2026-01-01" })).find((x) => x.name === "Beta Inc")!;
+    expect(t.day).toBe("– 0.00%");
+    expect(t.dayTone).toBe("plain");
+  });
+
+  it("gives the rupees worth of each, so a group can add them up", () => {
+    expect(rows.reduce((s, r) => s + r.worthInr, 0)).toBeCloseTo(o.valueInr, 6);
   });
 });
 
@@ -259,5 +305,16 @@ describe("monthYear", () => {
     expect(monthYear("2025-09-05")).toBe("Sep 2025");
     expect(monthYear("2026-12-31")).toBe("Dec 2026");
     expect(monthYear("2026-01-01")).toBe("Jan 2026");
+  });
+});
+
+describe("holdingGroups", () => {
+  it("puts India first, then the US, each with its count and what it is worth, and leaves out an empty one", () => {
+    const groups = holdingGroups(holdingsView(o));
+    expect(groups.map((g) => g.market)).toEqual(["IND", "US"]);
+    expect(groups[0]).toMatchObject({ title: "India · INR", summary: expect.stringMatching(/^1 holding · ₹/) });
+    expect(groups[1].rows.map((r) => r.name)).toEqual(["Beta Inc"]);
+    expect(holdingGroups(holdingsView(o).filter((r) => r.market === "US")).map((g) => g.market)).toEqual(["US"]);
+    expect(holdingGroups([])).toEqual([]);
   });
 });
