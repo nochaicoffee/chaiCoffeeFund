@@ -35,6 +35,10 @@ export type InvestmentsGreetingCards = Partial<Record<InvestmentsPoint, Greeting
 
 const COLORS = ["sapphire", "teal", "emerald", "violet", "amber", "copper", "ocean", "rose"] as const;
 export const colorOf = (i: number) => COLORS[i % COLORS.length];
+/** What a holding is called across the cards: its market and symbol. */
+export const holdingKey = (h: { market: string; symbol: string }) => `${h.market}:${h.symbol}`;
+/** The letters on a holding's tile. */
+export const symbolTile = (symbol: string) => symbol.slice(0, 4);
 
 function top(o: Overview): HoldingRow | undefined {
   return o.holdings[0];
@@ -327,7 +331,7 @@ export function holdingsView(o: Overview): HoldingTableRow[] {
       name: h.name,
       tags: [...h.plans, ...(h.stale ? ["Stale price"] : [])],
       kind: `${h.symbol} · ${assetTypeText(h.assetType)} · since ${h.since.slice(0, 4)}`,
-      tile: h.symbol.slice(0, 4),
+      tile: symbolTile(h.symbol),
       colorKey: colorOf(i),
       quantity: quantityText(h.quantity),
       avgCost: h.avgCostNative === null ? "—" : formatMoney(currency, h.avgCostNative),
@@ -431,7 +435,7 @@ const isCoverSell = (m: { tradeType: "Buy" | "Sell"; source: "Market" | "RSU" | 
 function lensHeader(l: HoldingLens, h: HoldingRow, index: number): LensHeader {
   const trades = l.markers.filter((m) => !isCoverSell(m)).length;
   return {
-    tile: h.symbol.slice(0, 4),
+    tile: symbolTile(h.symbol),
     colorKey: colorOf(index),
     tags: [...h.plans, ...(h.stale ? ["Stale price"] : [])],
     kind: [h.symbol, assetTypeText(h.assetType), h.market === "US" ? "United States" : "India", `${plural(trades, "trade", "trades")} since ${h.since.slice(0, 4)}`].join(" · "),
