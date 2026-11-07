@@ -1,10 +1,15 @@
+"use client";
+
 import type { ReactNode } from "react";
 import type { ReturnCard } from "@/app/investments/views";
+import type { AsOfView } from "@/app/investments/asOfViews";
+import { formatDate } from "@/lib/format/date";
 import { Tip, TipBody } from "../shell/Tip";
+import { useAsOf } from "./AsOf";
 
 /**
  * The Returns row (docs/design/investments.md, "Key metrics"): six cards with an icon, the figure big, a grey line after it and sometimes a
- * dark pill. Hovering or focusing a card opens a light card that says what is behind the figure. It is for everything, as of today.
+ * dark pill. Hovering or focusing a card opens a light card that says what is behind the figure. It is for everything, as of today, or as of the day the stage went back to.
  */
 
 const ICONS: Record<ReturnCard["icon"], ReactNode> = {
@@ -23,13 +28,23 @@ function Icon({ name }: { name: ReturnCard["icon"] }) {
   );
 }
 
-export function ReturnsRow({ cards }: { cards: ReturnCard[] }) {
+export function ReturnsRow({ cards: now, asOf }: { cards: ReturnCard[]; asOf: Record<string, AsOfView> }) {
+  const { goBack, setGoBack } = useAsOf();
+  const then = goBack === "now" ? undefined : asOf[goBack];
+  const cards = then ? then.returns : now;
   if (cards.length === 0) return null;
   return (
     <section aria-label="Returns" className="flex flex-col gap-3">
       <h2 className="px-1 text-base font-extrabold">
         Returns
-        <small className="ml-2 text-xs font-semibold text-muted">for everything, as of today</small>
+        <small className="ml-2 text-xs font-semibold text-muted">for everything, as of {then ? formatDate(then.date) : "today"}</small>
+        {then && (
+          <span className="ml-3 align-middle">
+            <button type="button" onClick={() => setGoBack("now")} className="min-h-8 rounded-full bg-ink px-3.5 text-[12.5px] font-extrabold whitespace-nowrap text-on-ink focus-visible:outline-2 focus-visible:outline-offset-2">
+            Back to today
+          </button>
+          </span>
+        )}
       </h2>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {cards.map((c) => {

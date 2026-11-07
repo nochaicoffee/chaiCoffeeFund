@@ -8,6 +8,7 @@ import { formatLakh } from "@/lib/format/lakh";
 import { formatDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { nearestIndex } from "../accounts/trendChart";
+import { useAsOf } from "./AsOf";
 import { PickCarousel } from "./PickCarousel";
 import { PlanTag } from "./PlanTag";
 import { PlotFrame } from "./PlotFrame";
@@ -34,7 +35,7 @@ export function Stage({ series, race = [], lenses = [], picks = [], holdingCount
   const [pick, setPick] = useState<string>("all");
   // Kept here, not in the stage, so looking at a holding and coming back to Everything leaves the range and the day as he set them.
   const [range, setRange] = useState<RangeKey | null>(null);
-  const [goBack, setGoBack] = useState<GoBackKey>("now");
+  const { goBack, setGoBack } = useAsOf();
   const [view, setView] = useState<StageView>("worth");
   const [raceOn, setRaceOn] = useState<ReadonlySet<RaceKey>>(() => new Set<RaceKey>(["you", "nifty", "sp500"]));
   const lens = lenses.find((l) => l.key === pick);
