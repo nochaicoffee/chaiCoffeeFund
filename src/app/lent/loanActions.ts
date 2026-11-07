@@ -4,7 +4,7 @@ import { updateTag } from "next/cache";
 import { todayIso } from "@/lib/format/date";
 import type { FormState } from "@/lib/forms/formState";
 import { firstPayoutDate } from "@/lib/aggregate/lentPromises";
-import { payoutIncomeSource, readLentLoanForm, readPayoutSourceExtras, readRepaidForm, readRepaymentForm, type LentLoanInput, type PayoutSourceExtras } from "@/lib/forms/lentForms";
+import { payoutIncomeSource, readExistingSource, readLentLoanForm, readPayoutSourceExtras, readRepaidForm, readRepaymentForm, type LentLoanInput, type PayoutSourceExtras } from "@/lib/forms/lentForms";
 import { accountsRepository } from "@/lib/sheets/accounts";
 import { CACHE_TAGS } from "@/lib/sheets/cached";
 import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
@@ -20,6 +20,8 @@ import type { IncomeSource, LentLoan, LentRepayment } from "@/lib/sheets/types";
  *
  * - **A Paid-out loan can be added together with its income source** (ADR 0014): the source first, then the loan holding its id, and if the loan
  *   can't be written the source is taken out again, so it is both or neither. Unticked, the loan is saved on its own, "not linked".
+ * - **A Paid-out loan can instead use an income source he already has** (`incomeSourceId`): it has to be on, free, and the same frequency and amount,
+ *   and linking writes only the loan: his source is never changed by it.
  * - **A repayment names a loan that exists**, and principal above what is out is a warning ("Record it anyway"), never a block.
  * - **Marking a loan repaid needs the closing day.** Reopening puts it back as active.
  * - **Deleting a loan deletes its repayments with it.** The loan goes first, then every repayment row that names it (rows that fail validation
@@ -50,10 +52,19 @@ export async function saveLentLoan(_previous: FormState, formData: FormData): Pr
   let stored: LentLoan | null = null;
   let own: LentRepayment[] = [];
   let accountIds: string[] = [];
+  let sources: IncomeSource[] = [];
+  let linkedElsewhere: string[] = [];
+  const wantsExisting = idOf(formData, "incomeSourceId") !== undefined;
   try {
     if (editing) {
       stored = await lentLoansRepository.get(editing);
       if (stored) own = repaymentsOf(await lentRepaymentsRepository.list(), editing);
+    }
+    // An existing income source is linked to a new loan, or to a paid-out loan that has none.
+    if (wantsExisting && (!editing || (stored && !stored.incomeSourceId))) {
+      const [allSources, allLoans] = await Promise.all([incomeSourcesRepository.list(), lentLoansRepository.list()]);
+      sources = allSources;
+      linkedElsewhere = allLoans.filter((l) => l.id !== editing && l.incomeSourceId).map((l) => l.incomeSourceId as string);
     }
     // An income source is made with a new loan, or for an existing paid-out loan that has none.
     if (formData.get("createIncomeSource") === "1" && (!editing || (stored && !stored.incomeSourceId))) {
@@ -71,12 +82,18 @@ export async function saveLentLoan(_previous: FormState, formData: FormData): Pr
   if (editing && input.interestMode === "Paid-out" && own.some((r) => r.kind === "Interest")) {
     return { status: "invalid", errors: { interestMode: "Interest was recorded on this loan. A paid-out loan's interest arrives through Income, so delete those repayments first" } };
   }
-  return editing && stored ? editLoan(stored, input, formData, accountIds) : addLoan(input, formData, accountIds);
+  let linkTo: IncomeSource | undefined;
+  if (wantsExisting && input.interestMode === "Paid-out" && (!editing || !stored?.incomeSourceId)) {
+    const link = readExistingSource(fields(formData), input, { sources, linkedElsewhere });
+    if (!link.ok) return { status: "invalid", errors: link.errors };
+    linkTo = sources.find((x) => x.id === link.input.incomeSourceId);
+  }
+  return editing && stored ? editLoan(stored, input, formData, accountIds, linkTo) : addLoan(input, formData, accountIds, linkTo);
 }
 
 /** Add: a Paid-out loan with "Set up an income source" ticked gets its source first, taken out again if the loan can't be written. */
-async function addLoan(input: LentLoanInput, formData: FormData, accountIds: string[]): Promise<FormState> {
-  const withSource = input.interestMode === "Paid-out" && formData.get("createIncomeSource") === "1";
+async function addLoan(input: LentLoanInput, formData: FormData, accountIds: string[], linkTo?: IncomeSource): Promise<FormState> {
+  const withSource = !linkTo && input.interestMode === "Paid-out" && formData.get("createIncomeSource") === "1";
   let extras: PayoutSourceExtras = {};
   if (withSource) {
     const read = readPayoutSourceExtras(fields(formData), { accountIds });
@@ -86,7 +103,7 @@ async function addLoan(input: LentLoanInput, formData: FormData, accountIds: str
   let source: IncomeSource | undefined;
   try {
     if (withSource) source = await incomeSourcesRepository.create(createIncomeSourceSchema.parse(payoutIncomeSource(input, extras)));
-    await lentLoansRepository.create(createLentLoanSchema.parse({ ...input, ...(source && { incomeSourceId: source.id }), status: "Active" }));
+    await lentLoansRepository.create(createLentLoanSchema.parse({ ...input, ...((source ?? linkTo) && { incomeSourceId: (source ?? linkTo)!.id }), status: "Active" }));
   } catch (error) {
     if (source) {
       try {
@@ -108,7 +125,7 @@ async function addLoan(input: LentLoanInput, formData: FormData, accountIds: str
  * schedule to the new first payout; how often it pays can't change here, since the source's schedule lives in Income; switching to Accruing pauses the source (nothing is deleted). Those two source writes come after the
  * loan's, and if one fails the message says so.
  */
-async function editLoan(stored: LentLoan, input: LentLoanInput, formData: FormData, accountIds: string[]): Promise<FormState> {
+async function editLoan(stored: LentLoan, input: LentLoanInput, formData: FormData, accountIds: string[], linkTo?: IncomeSource): Promise<FormState> {
   let source: IncomeSource | null = null;
   try {
     if (stored.incomeSourceId) source = await incomeSourcesRepository.get(stored.incomeSourceId);
@@ -116,7 +133,7 @@ async function editLoan(stored: LentLoan, input: LentLoanInput, formData: FormDa
     return failed("saveLentLoan", error);
   }
   // A paid-out loan with no income source can be given one now: the source first, taken out again if the loan can't be saved.
-  const linking = !stored.incomeSourceId && input.interestMode === "Paid-out" && formData.get("createIncomeSource") === "1";
+  const linking = !linkTo && !stored.incomeSourceId && input.interestMode === "Paid-out" && formData.get("createIncomeSource") === "1";
   let extras: PayoutSourceExtras = {};
   if (linking) {
     const read = readPayoutSourceExtras(fields(formData), { accountIds });
@@ -141,7 +158,7 @@ async function editLoan(stored: LentLoan, input: LentLoanInput, formData: FormDa
         payoutAmount: input.payoutAmount ?? "",
         color: input.color ?? "",
         ...(accruing && { incomeSourceId: "" }),
-        ...(created && { incomeSourceId: created.id }),
+        ...((created ?? linkTo) && { incomeSourceId: (created ?? linkTo)!.id }),
       }) as Partial<Omit<LentLoan, "id">>,
     );
   } catch (error) {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { payoutIncomeSource, readLentLoanForm, readPayoutSourceExtras, readRepaidForm, readRepaymentForm } from "./lentForms";
+import { payoutIncomeSource, readExistingSource, readLentLoanForm, readPayoutSourceExtras, readRepaidForm, readRepaymentForm } from "./lentForms";
 import type { LentLoan, LentRepayment } from "../sheets/types";
 
 const TODAY = "2026-11-06";
@@ -111,3 +111,26 @@ describe("the payout loan's income source", () => {
   });
 });
 
+
+describe("using an income source he already has", () => {
+  const src = { id: "s1", name: "Lending - Hotel Sonali Nov", frequency: "Monthly" as const, expectedAmount: 6000, status: "Active" as const };
+  const loan = { payoutFrequency: "Monthly" as const, payoutAmount: 6000 };
+  const known = { sources: [src], linkedElsewhere: [] as string[] };
+
+  it("accepts a source that is on, free, and pays what the loan pays as often", () => {
+    expect(readExistingSource({ incomeSourceId: "s1" }, loan, known)).toEqual({ ok: true, input: { incomeSourceId: "s1" } });
+  });
+  it("asks for a source to be chosen, and says when the one chosen is gone", () => {
+    expect(readExistingSource({}, loan, known)).toMatchObject({ ok: false, errors: { incomeSourceId: "Choose the income source" } });
+    expect(readExistingSource({ incomeSourceId: "nope" }, loan, known)).toMatchObject({ ok: false, errors: { incomeSourceId: expect.stringContaining("isn't in Income") } });
+  });
+  it("refuses a source that another loan uses, or that is switched off", () => {
+    expect(readExistingSource({ incomeSourceId: "s1" }, loan, { ...known, linkedElsewhere: ["s1"] })).toMatchObject({ errors: { incomeSourceId: expect.stringContaining("another loan") } });
+    expect(readExistingSource({ incomeSourceId: "s1" }, loan, { sources: [{ ...src, status: "Inactive" }], linkedElsewhere: [] })).toMatchObject({ errors: { incomeSourceId: expect.stringContaining("switched off") } });
+  });
+  it("refuses a source whose frequency or amount isn't the loan's, saying both figures", () => {
+    expect(readExistingSource({ incomeSourceId: "s1" }, { ...loan, payoutFrequency: "Quarterly" }, known)).toMatchObject({ errors: { incomeSourceId: expect.stringMatching(/monthly in Income.*pays quarterly/) } });
+    const r = readExistingSource({ incomeSourceId: "s1" }, { ...loan, payoutAmount: 7000 }, known);
+    expect(r).toMatchObject({ ok: false, errors: { incomeSourceId: expect.stringMatching(/expects ₹6,000.*pays ₹7,000/) } });
+  });
+});

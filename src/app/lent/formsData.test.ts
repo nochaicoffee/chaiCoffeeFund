@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { lentFormsData } from "./formsData";
 import { lentModel } from "./views";
-import type { LentLoan, LentRepayment } from "@/lib/sheets/types";
+import type { IncomeSource, LentLoan, LentRepayment } from "@/lib/sheets/types";
 
 const a: LentLoan = { id: "a", borrowerName: "Friend", principalAmount: 650000, startDate: "2024-10-01", interestMode: "Accruing", interestRate: 12, status: "Active", color: "Copper" };
 const b: LentLoan = { id: "b", borrowerName: "B", principalAmount: 300000, startDate: "2025-11-01", interestMode: "Paid-out", payoutFrequency: "Monthly", payoutAmount: 6000, status: "Repaid", closedDate: "2026-06-01", incomeSourceId: "src" };
@@ -20,5 +20,18 @@ describe("lentFormsData", () => {
     expect(f.loans[0]).not.toHaveProperty("payoutAmount");
     expect(f.loans[1]).toMatchObject({ id: "b", status: "Repaid", closedDate: "2026-06-01", payoutFrequency: "Monthly", payoutAmount: 6000, colorChosen: false, linked: true });
     expect(typeof f.loans[1].color).toBe("string");
+  });
+});
+
+describe("the income sources a loan could use", () => {
+  const src = (id: string, over: Partial<IncomeSource> = {}): IncomeSource => ({ id, name: id, alias: id, category: "Investment", frequency: "Monthly", expectedAmount: 6000, status: "Active", ...over });
+  const sources = [src("free"), src("src"), src("off", { status: "Inactive" }), src("once", { frequency: "One-Time" }), src("quarterly", { frequency: "Quarterly", expectedAmount: 18000 })];
+  const f = lentFormsData(lentModel({ loans: [a, b], repayments: [], sources, entries: [] }, "2026-11-06"), []);
+
+  it("lists the active repeating ones no loan uses, with what each expects", () => {
+    expect(f.sources).toEqual([
+      { id: "free", name: "free", frequency: "Monthly", expectedAmount: 6000, status: "Active" },
+      { id: "quarterly", name: "quarterly", frequency: "Quarterly", expectedAmount: 18000, status: "Active" },
+    ]);
   });
 });

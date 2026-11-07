@@ -1,10 +1,11 @@
 import { lentLoanColor } from "@/lib/aggregate/lentOut";
+import type { LinkableSource } from "@/lib/forms/lentForms";
 import type { Color, LentInterestMode, LentLoan, LentRepaymentKind, RecurrenceCycle } from "@/lib/sheets/types";
 import type { LentModel } from "./views";
 
 /**
  * What the Lent forms need (docs/design/lent-out.md, C5), as plain data a client dialog can read: the loans with the terms they were
- * entered with, each loan's recorded repayments, the accounts a payout can land in, and today. The forms' own reading and warnings
+ * entered with, each loan's recorded repayments, the accounts a payout can land in, the income sources a loan could use, and today. The forms' own reading and warnings
  * are in lib/forms/lentForms.ts and the actions in loanActions.ts; this only hands them what to show.
  */
 
@@ -40,6 +41,8 @@ export interface LentFormsData {
   loans: LentLoanForm[];
   repayments: LentRepaymentForm[];
   accounts: { id: string; name: string }[];
+  /** Income sources a Paid-out loan could use: switched on, repeating (monthly to yearly) and not another loan's. */
+  sources: LinkableSource[];
 }
 
 const toForm = (loan: LentLoan): LentLoanForm => ({
@@ -58,11 +61,19 @@ const toForm = (loan: LentLoan): LentLoanForm => ({
   linked: Boolean(loan.incomeSourceId),
 });
 
+function linkableSources(m: LentModel): LinkableSource[] {
+  const taken = new Set(m.data.loans.map((l) => l.incomeSourceId).filter(Boolean));
+  return m.data.sources
+    .filter((s) => s.status === "Active" && s.frequency !== "One-Time" && !taken.has(s.id))
+    .map((s) => ({ id: s.id, name: s.name, frequency: s.frequency, expectedAmount: s.expectedAmount, status: s.status }));
+}
+
 export function lentFormsData(m: LentModel, accounts: { id: string; name: string }[]): LentFormsData {
   return {
     today: m.today,
     loans: m.data.loans.map(toForm),
     repayments: m.data.repayments.map((r) => ({ id: r.id, loanId: r.lentLoanId, date: r.date, amount: r.amount, kind: r.kind })),
     accounts,
+    sources: linkableSources(m),
   };
 }

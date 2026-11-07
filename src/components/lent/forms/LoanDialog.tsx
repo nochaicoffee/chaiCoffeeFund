@@ -9,7 +9,7 @@ import { freeColor } from "@/lib/format/colors";
 import { formatDate } from "@/lib/format/date";
 import { formatInr, parseAmountText } from "@/lib/format/money";
 import { IDLE } from "@/lib/forms/formState";
-import { LENT_PAYOUT_FREQUENCIES, readLentLoanForm } from "@/lib/forms/lentForms";
+import { LENT_PAYOUT_FREQUENCIES, readExistingSource, readLentLoanForm } from "@/lib/forms/lentForms";
 import { CARD_COLORS, type LentLoan } from "@/lib/sheets/types";
 import { SummaryBox } from "../../accounts/forms/MiniAccountCard";
 import { DateInput, Field, MoneyInput, PreviewPanel, Segmented, SelectInput, TextInput, describedBy } from "../../cards/forms/fields";
@@ -23,10 +23,16 @@ const MODES = [
   { value: "Paid-out", label: "Paid out" },
 ] as const;
 
+const SOURCE_CHOICES = [
+  { value: "existing", label: "Use one I have" },
+  { value: "new", label: "Set up a new one" },
+  { value: "none", label: "Not now" },
+] as const;
+
 /**
  * Add a loan, or Edit one (docs/design/lent-out.md, LeForms). A loan whose interest builds up says its yearly rate; a paid-out loan says how
- * often it pays and how much, and its rate is worked out from that. Adding a paid-out loan can also set up its income source (ticked by
- * default), so its payouts are matched to the bank credit and the page can say which are late.
+ * often it pays and how much, and its rate is worked out from that. A paid-out loan can use an income source he already has, or set up a new
+ * one (the default on a new loan), so its payouts are matched to the bank credit and the page can say which are late.
  */
 export function LoanDialog({ forms, loan, onClose, onSaved, onDelete }: { forms: LentFormsData; loan?: LentLoanForm; onClose: () => void; onSaved: () => void; onDelete?: () => void }) {
   const [state, formAction, pending] = useActionState(saveLentLoan, IDLE);
@@ -39,8 +45,10 @@ export function LoanDialog({ forms, loan, onClose, onSaved, onDelete }: { forms:
   const [payout, setPayout] = useState(loan?.payoutAmount !== undefined ? String(loan.payoutAmount) : "");
   // A new loan starts on a colour no other has; an edit keeps the one it was given, or none (worked out from its id).
   const [color, setColor] = useState<string>(loan ? (loan.colorChosen ? loan.color : "") : freeColor(forms.loans.map((l) => l.color)));
-  // On a new loan the source is set up unless he unticks it; on an existing unlinked one it is only if he ticks it.
+  // On a new loan a source is set up unless he chooses otherwise; on an existing unlinked one only if he asks.
   const [withSource, setWithSource] = useState(!loan);
+  const [useExisting, setUseExisting] = useState(false);
+  const [existingId, setExistingId] = useState("");
   const [statementMatch, setStatementMatch] = useState("");
   const [accountId, setAccountId] = useState("");
 
@@ -48,12 +56,21 @@ export function LoanDialog({ forms, loan, onClose, onSaved, onDelete }: { forms:
   const earliestRepayment = own.map((r) => r.date).sort()[0];
   const principalReturned = own.filter((r) => r.kind === "Principal").reduce((t, r) => t + r.amount, 0);
   const showSource = (!loan || !loan.linked) && mode === "Paid-out";
+  // The sources he could use are those that pay as often as the loan says; one is always selected while that choice is open.
+  const eligible = forms.sources.filter((s) => s.frequency === frequency);
+  const existing = showSource && useExisting && eligible.length > 0;
+  const selectedId = eligible.some((s) => s.id === existingId) ? existingId : (eligible[0]?.id ?? "");
+  const creating = showSource && withSource && !existing;
   const values: Record<string, string> = {
     borrowerName: name, principalAmount: principal, startDate, interestMode: mode, color,
     ...(mode === "Accruing" ? { interestRate: rate } : { payoutFrequency: frequency, payoutAmount: payout }),
-    ...(showSource && withSource && { createIncomeSource: "1", statementMatch, accountId }),
+    ...(creating && { createIncomeSource: "1", statementMatch, accountId }),
+    ...(existing && { incomeSourceId: selectedId }),
   };
-  const check = readLentLoanForm(values, { earliestRepayment, principalReturned: loan ? principalReturned : undefined }, forms.today);
+  const loanCheck = readLentLoanForm(values, { earliestRepayment, principalReturned: loan ? principalReturned : undefined }, forms.today);
+  // The source he picked has to suit the loan (same amount): the server checks again, with the other loans' links.
+  const link = existing && loanCheck.ok ? readExistingSource(values, loanCheck.input, { sources: forms.sources, linkedElsewhere: [] }) : null;
+  const check = link && !link.ok ? link : loanCheck;
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     if (check.ok) return markSubmitted();
@@ -68,7 +85,7 @@ export function LoanDialog({ forms, loan, onClose, onSaved, onDelete }: { forms:
 
   // What the preview says: the rate the terms work out to, what a loan whose interest builds up has earned so far, or when a paid-out loan pays first.
   const lent = parseAmountText(principal);
-  const preview: LentLoan | null = check.ok ? { id: "preview", ...check.input, status: "Active" } : null;
+  const preview: LentLoan | null = loanCheck.ok ? { id: "preview", ...loanCheck.input, status: "Active" } : null;
   const ratePercent = preview ? annualRatePercent(preview) : null;
   const sofar = preview && preview.interestMode === "Accruing" ? interestAccrued(preview, [], forms.today) : null;
   const first = preview && preview.interestMode === "Paid-out" ? firstPayoutDate(preview) : undefined;
@@ -144,14 +161,34 @@ export function LoanDialog({ forms, loan, onClose, onSaved, onDelete }: { forms:
         )}
         {showSource && (
           <div className="flex flex-col gap-3 rounded-[14px] bg-accent-tint px-4 py-3.5 md:col-span-2">
-            <label className="flex items-start gap-2.5 text-[13px] font-bold text-accent-text">
-              <input type="checkbox" checked={withSource} onChange={(e) => setWithSource(e.target.checked)} className="mt-0.5 size-4 accent-[var(--accent)]" />
-              <span>
-                {loan ? "Set up an income source for this loan's payouts" : "Also set up an income source for this loan's payouts"}
-                <small className="mt-0.5 block text-[11px] font-medium">So each payout is matched to the bank credit, shows in Income, and the page can tell when one is late. {loan ? "Until then nothing tracks them." : "Untick to add the loan on its own."}</small>
-              </span>
-            </label>
-            {withSource && (
+            {eligible.length > 0 ? (
+              <Segmented
+                name="sourceChoice"
+                legend="Tracking its payouts"
+                options={SOURCE_CHOICES}
+                value={existing ? "existing" : creating ? "new" : "none"}
+                onChange={(choice) => {
+                  setUseExisting(choice === "existing");
+                  setWithSource(choice === "new");
+                  if (choice === "existing") reveal("incomeSourceId");
+                }}
+                help={existing ? "Its payouts are matched by the income source you already have. Nothing in Income is changed." : creating ? "A new income source in Income, so each payout is matched to the bank credit." : loan ? "Until then nothing tracks them." : "The loan is added on its own."}
+              />
+            ) : (
+              <label className="flex items-start gap-2.5 text-[13px] font-bold text-accent-text">
+                <input type="checkbox" checked={withSource} onChange={(e) => setWithSource(e.target.checked)} className="mt-0.5 size-4 accent-[var(--accent)]" />
+                <span>
+                  {loan ? "Set up an income source for this loan's payouts" : "Also set up an income source for this loan's payouts"}
+                  <small className="mt-0.5 block text-[11px] font-medium">So each payout is matched to the bank credit, shows in Income, and the page can tell when one is late. {loan ? "Until then nothing tracks them." : "Untick to add the loan on its own."}</small>
+                </span>
+              </label>
+            )}
+            {existing && (
+              <Field id="incomeSourceId" label="Income source" required help={`These are your ${frequency.toLowerCase()} sources that no other loan uses.`} error={errors.incomeSourceId}>
+                <SelectInput id="incomeSourceId" name="incomeSourceId" invalid={Boolean(errors.incomeSourceId)} options={eligible.map((s) => ({ value: s.id, label: `${s.name} · ${formatInr(s.expectedAmount)} ${s.frequency.toLowerCase()}` }))} value={selectedId} onChange={(id) => { setExistingId(id); reveal("incomeSourceId"); }} />
+              </Field>
+            )}
+            {creating && (
               <div className="grid gap-x-3.5 gap-y-3 md:grid-cols-2">
                 <Field id="statementMatch" label="Bank statement text" help="The name on the credit, like RAVI KUMAR. At least 3 letters. Add it later if you don't have it." error={errors.statementMatch}>
                   <TextInput {...describedBy("statementMatch", errors.statementMatch, true)} name="statementMatch" value={statementMatch} onChange={(e) => setStatementMatch(e.target.value)} onBlur={() => reveal("statementMatch")} invalid={Boolean(errors.statementMatch)} />
