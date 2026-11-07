@@ -1,0 +1,80 @@
+{
+  "pages": [
+    {
+      "id": "overview",
+      "name": "Overview · illustration styles"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "NbA_StickerBento.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1500,
+      "page": "overview"
+    },
+    {
+      "file": "NbB_ChaiBuddy.dc.html",
+      "x": 1560,
+      "y": 0,
+      "w": 1440,
+      "h": 1790,
+      "page": "overview"
+    },
+    {
+      "file": "NbC_PopPoster.dc.html",
+      "x": 0,
+      "y": 2240,
+      "w": 1440,
+      "h": 2080,
+      "page": "overview"
+    },
+    {
+      "file": "NbD_MoneyTown.dc.html",
+      "x": 1560,
+      "y": 2040,
+      "w": 1440,
+      "h": 1880,
+      "page": "overview"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-0",
+      "x": 0,
+      "y": -90,
+      "w": 1440,
+      "page": "overview",
+      "text": "A · Sticker Bento — cream dot-grid paper, 3px ink outlines, hard offset shadows. Every tile gets its own colour and a spot illustration (piggy bank, safe, rocket, sprout…). Closest to today's layout: sidebar, hero, 4×2 tiles, trend and attention. Made-up figures."
+    },
+    {
+      "id": "note-1",
+      "x": 1560,
+      "y": -90,
+      "w": 1440,
+      "page": "overview",
+      "text": "B · Chai Buddy — the chai cup is a mascot who says the greeting out loud. Sky-blue page, a round icon rail instead of the sidebar, circular illustration badges on the tiles, net worth as one chunky segmented bar (assets) with a hatched strip for what you owe. Made-up figures."
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": 2150,
+      "w": 1440,
+      "page": "overview",
+      "text": "C · Pop Poster — the loudest one. Yellow page with pink halftone, Bowlby One display type, tilted tiles, a starburst for the monthly change, comic speech bubbles for the attention list, halftone-filled bars. Navigation becomes a strip of stickers across the top. Made-up figures."
+    },
+    {
+      "id": "note-3",
+      "x": 1560,
+      "y": 1950,
+      "w": 1440,
+      "page": "overview",
+      "text": "D · Money Town — the hero is a vector skyline: the bank, the investments tower with a rocket, the FD vault, the EPF tree, the house for loans and the card shop each carry a sign with their figure, under a net-worth billboard. Folder tabs for navigation, retro app windows for the tiles, and the bank trend as stacked blocks (1 block = ₹1 L). Made-up figures."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "overview"
+  }
+}
