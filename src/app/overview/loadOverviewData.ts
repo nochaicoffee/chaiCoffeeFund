@@ -23,6 +23,7 @@ import {
   getCachedPolicies,
   getCachedPolicyPayments,
   getCachedStatements,
+  getCachedSubscriptionPayments,
   getCachedSubscriptions,
 } from "@/lib/sheets/cached";
 import type { OverviewData } from "./model";
@@ -43,12 +44,13 @@ async function optional<T>(name: string, read: () => Promise<T>, empty: T): Prom
  * Dollar accounts are counted in rupees at today's rate once (ADR 0012); with no rate they are left out and flagged.
  */
 export async function loadOverviewData(): Promise<OverviewData> {
-  const [allAccounts, allSnapshots, cards, statements, subscriptions, loans, loanInstallments, trades, instruments, fixedDeposits, incomeEntries, incomeSources] = await Promise.all([
+  const [allAccounts, allSnapshots, cards, statements, subscriptions, subscriptionPayments, loans, loanInstallments, trades, instruments, fixedDeposits, incomeEntries, incomeSources] = await Promise.all([
     getCachedAccounts(),
     getCachedBalanceSnapshots(),
     getCachedCards(),
     getCachedStatements(),
     getCachedSubscriptions(),
+    getCachedSubscriptionPayments(),
     getCachedLoans(),
     getCachedLoanInstallments(),
     getCachedInvestmentTransactions(),
@@ -75,6 +77,7 @@ export async function loadOverviewData(): Promise<OverviewData> {
     cards,
     statements,
     subscriptions,
+    subscriptionPayments,
     loans,
     loanInstallments,
     loanPrepayments: prepayments.value,
