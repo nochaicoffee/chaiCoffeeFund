@@ -32,7 +32,7 @@ const STAGE = "flex flex-col gap-4 rounded-[28px] px-5 py-6 text-on-card md:px-[
 const STAGE_STYLE = { background: STAGE_BG, boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.08), 0 22px 50px oklch(0 0 0 / 0.22)" } as const;
 
 export function Stage({ series, race = [], lenses = [], picks = [], holdingCount = 0 }: { series: StagePoint[]; race?: RaceLine[]; lenses?: LensView[]; picks?: PickCard[]; holdingCount?: number }) {
-  const [pick, setPick] = useState<string>("all");
+  const { pick, setPick } = useAsOf();
   // Kept here, not in the stage, so looking at a holding and coming back to Everything leaves the range and the day as he set them.
   const [range, setRange] = useState<RangeKey | null>(null);
   const { goBack, setGoBack } = useAsOf();
@@ -348,16 +348,6 @@ function LensStage({ lens }: { lens: LensView }) {
         ))}
         <span className="ml-auto text-[11px]" style={{ color: MUTED }}>A dot for each of your trades</span>
       </div>
-
-      <dl className="grid grid-cols-2 gap-2.5 md:grid-cols-4 xl:grid-cols-7">
-        {lens.stats.map((st) => (
-          <div key={st.label} className="flex min-w-0 flex-col gap-0.5 rounded-[14px] p-3" style={{ background: "var(--on-card-fill)" }}>
-            <dt className="text-[10px] font-extrabold tracking-wider uppercase" style={{ color: MUTED }}>{st.label}</dt>
-            <dd className="m-0 text-base font-extrabold tabular-nums" style={{ color: st.tone === "gain" ? UP : st.tone === "loss" ? DOWN : undefined }}>{st.value}</dd>
-            {st.note && <small className="text-[11px] font-medium" style={{ color: MUTED }}>{st.note}</small>}
-          </div>
-        ))}
-      </dl>
     </section>
   );
 }

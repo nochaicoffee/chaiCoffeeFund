@@ -31,7 +31,7 @@ import { growthView, whatIfView } from "./scenarioViews";
 import { splitView } from "./splitView";
 import { tradeFormsData } from "./tradeFormsData";
 import { concentrationView, gainView, weightView } from "./understandViews";
-import { greetingView, holdingsView, lensViews, moneyInView, pickerView, recentTradesView, returnsView, sameMoneyView, summarySentence } from "./views";
+import { greetingView, holdingsView, lensReturnsView, lensViews, moneyInView, pickerView, recentTradesView, returnsView, sameMoneyView, summarySentence } from "./views";
 
 export const metadata: Metadata = { title: "Investments" };
 
@@ -90,7 +90,7 @@ export default async function InvestmentsPage() {
       </PageHeader>
       <AsOfProvider>
       <Stage series={overview.series} race={overview.race} lenses={lensViews(overview)} picks={pickerView(overview)} holdingCount={overview.holdings.length} />
-      <ReturnsRow cards={returnsView(overview)} asOf={asOf} />
+      <ReturnsRow cards={returnsView(overview)} asOf={asOf} holdings={lensReturnsView(overview)} />
       {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} asOf={asOf} />}
       </AsOfProvider>
       {cash && <CashCard view={cash} />}

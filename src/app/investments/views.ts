@@ -6,6 +6,7 @@ import { moneyIn, type MoneySource } from "@/lib/aggregate/moneyIn";
 import { DEPOSIT_RATE } from "@/lib/aggregate/raceLines";
 import type { HoldingLens, LensMarker, LensPoint } from "@/lib/aggregate/holdingLens";
 import type { HoldingRow, Overview } from "@/lib/aggregate/investmentOverview";
+import { yearRange } from "@/lib/aggregate/priceRange";
 import { formatDate, formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
 import { formatInr, formatInrExact, formatMoney } from "@/lib/format/money";
 import type { Instrument, InvestmentMarket, InvestmentTransaction } from "@/lib/sheets/types";
@@ -179,9 +180,9 @@ export interface ReturnTip {
   foot: string;
 }
 export interface ReturnCard {
-  key: "xirr" | "gap" | "total" | "realised" | "dividends" | "fall";
+  key: string;
   /** Which small icon sits beside the title. */
-  icon: "calendar" | "trend" | "check" | "coins" | "down";
+  icon: "calendar" | "trend" | "check" | "coins" | "down" | "layers" | "range";
   label: string;
   value: string;
   /** The grey words after the value: "a year · XIRR". */
@@ -398,13 +399,6 @@ export function recentTradesView(trades: InvestmentTransaction[], instruments: I
 }
 
 // ---------- The lens: one holding on its own ----------
-export interface LensStat {
-  label: string;
-  value: string;
-  note?: string;
-  tone: Tone;
-}
-
 export interface LensView {
   key: string;
   name: string;
@@ -416,7 +410,6 @@ export interface LensView {
   avgCost: number | null;
   /** The holding's own header on the stage (design: tile, name, share-plan tags, one line about it). */
   header: LensHeader;
-  stats: LensStat[];
 }
 
 export interface LensHeader {
@@ -428,21 +421,32 @@ export interface LensHeader {
   kind: string;
 }
 
-function lensStats(l: HoldingLens): LensStat[] {
+/**
+ * One holding's eight cards for the Returns row (the design's "one holding: eight stats"): what he holds, what he paid, the worth, the gain
+ * (with the share price and the rupee told apart for a US one), the yearly return on this holding alone, the share price's own yearly growth,
+ * what sales made and the price's range over the last year. `today` is the day the closes run to.
+ */
+export function lensReturnCards(l: HoldingLens, today: string): ReturnCard[] {
   const rateText = (rate: number | null, tooEarly: boolean) => (rate !== null ? pct(rate, 1, true) : tooEarly ? "Too early" : "—");
-  const stats: LensStat[] = [
-    { label: "Shares", value: quantityText(l.quantity), note: l.firstBuy ? `first bought ${formatDate(l.firstBuy)}` : undefined, tone: "plain" },
-    { label: "Average cost", value: l.avgCost === null ? "—" : formatMoney(l.currency, l.avgCost), note: "a share, fees included", tone: "plain" },
-    { label: "Worth", value: formatInr(l.valueInr), note: l.price === null ? "no price: counted at cost" : `at ${formatMoney(l.currency, l.price)} a share`, tone: "plain" },
-    { label: "Gain", value: `${l.gainInr < 0 ? MINUS : "+"}${formatInr(Math.abs(l.gainInr))}`, note: l.gainFraction === null ? undefined : pct(l.gainFraction, 1, true), tone: tone(l.gainInr) },
-    { label: "Yearly return", value: rateText(l.xirr.rate, l.xirr.tooEarly), note: l.xirr.rate === null ? "needs a year of history" : "on this holding alone", tone: tone(l.xirr.rate) },
-    { label: "Price a year", value: l.priceCagr === null ? "Too early" : pct(l.priceCagr, 1, true), note: "the share price's own growth", tone: tone(l.priceCagr) },
+  const money = (n: number) => formatMoney(l.currency, n);
+  const range = yearRange(l.points, today);
+  const sold = l.markers.some((m) => m.tradeType === "Sell" && !isCoverSell(m));
+  const cards: ReturnCard[] = [
+    { key: "hold", icon: "layers", label: "You hold", value: quantityText(l.quantity), small: l.firstBuy ? `shares · first bought ${formatDate(l.firstBuy)}` : "shares", muted: l.quantity === 0, tip: null },
+    { key: "paid", icon: "coins", label: "You paid", value: l.avgCost === null ? "—" : money(l.avgCost), small: "a share, fees included", muted: l.avgCost === null, tip: null },
+    { key: "worth", icon: "trend", label: "Worth", value: formatInr(l.valueInr), small: l.price === null ? "no price: counted at cost" : `at ${money(l.price)} a share`, muted: l.price === null, tip: null },
+    {
+      key: "gain", icon: "check", label: "Gain", value: `${l.gainInr < 0 ? MINUS : "+"}${formatInr(Math.abs(l.gainInr))}`, small: l.gainFraction === null ? "" : "on what it cost", pill: l.gainFraction === null ? undefined : pct(l.gainFraction, 1, true), muted: false,
+      tip: l.split ? { head: "Gain, in two parts", total: signedLakh(l.gainInr), detail: "a dollar holding's gain is the share price and the rupee together", rows: [{ name: "The share price", amount: signedLakh(l.split.pricePartInr) }, { name: "The rupee", amount: signedLakh(l.split.rupeePartInr) }], foot: "The price part is (worth − cost) in dollars at the rate you paid; the rupee part is the worth in dollars times how much the dollar has moved since." } : null,
+    },
+    { key: "xirr", icon: "calendar", label: "Yearly return", value: rateText(l.xirr.rate, l.xirr.tooEarly), small: l.xirr.rate === null ? "needs a year of history" : "a year · on this holding alone", muted: l.xirr.rate === null, tip: null },
+    { key: "cagr", icon: "trend", label: "Price a year", value: l.priceCagr === null ? "Too early" : pct(l.priceCagr, 1, true), small: l.priceCagr === null ? "needs a year of history" : "the share price's own growth", muted: l.priceCagr === null, tip: null },
+    { key: "sales", icon: "coins", label: "Made on sales", value: sold ? signedLakh(l.realisedInr) : "—", small: sold ? "shares already sold" : "nothing sold yet", muted: !sold, tip: null },
+    range
+      ? { key: "range", icon: "range", label: range.full ? "52-week range" : "Range so far", value: `${money(range.low)} – ${money(range.high)}`, small: `now ${pct(range.position, 0)} of the way up${range.full ? "" : `, since ${formatShortDate(range.from)}`}`, muted: false, tip: null }
+      : { key: "range", icon: "range", label: "52-week range", value: "—", small: "no price yet", muted: true, tip: null },
   ];
-  if (l.split) {
-    stats.push({ label: "Of the gain", value: `${signedLakh(l.split.pricePartInr)} price`, note: `${signedLakh(l.split.rupeePartInr)} from the rupee`, tone: "plain" });
-  }
-  if (l.markers.some((m) => m.tradeType === "Sell") && l.realisedInr !== 0) stats.push({ label: "Made on sales", value: signedLakh(l.realisedInr), note: "shares already sold", tone: tone(l.realisedInr) });
-  return stats;
+  return cards;
 }
 
 /** The shares sold at a vest to cover tax are not his trades to count. */
@@ -463,8 +467,14 @@ export function lensViews(o: Overview): LensView[] {
     // Matched on the holding's own market and symbol, never by position, so a filtered or reordered list can't give a lens another's header.
     const i = o.holdings.findIndex((h) => h.market === l.market && h.symbol === l.symbol);
     if (i < 0) return [];
-    return [{ key: l.key, name: l.name, symbol: l.symbol, currency: l.currency, points: l.points, markers: l.markers, avgCost: l.avgCost, header: lensHeader(l, o.holdings[i], i), stats: lensStats(l) }];
+    return [{ key: l.key, name: l.name, symbol: l.symbol, currency: l.currency, points: l.points, markers: l.markers, avgCost: l.avgCost, header: lensHeader(l, o.holdings[i], i) }];
   });
+}
+
+/** Each holding's own Returns row: its eight cards under the name the row is headed with. */
+export function lensReturnsView(o: Overview): { key: string; title: string; cards: ReturnCard[] }[] {
+  // The same holdings lensViews has: a holding sold out has no card to pick.
+  return o.lenses.filter((l) => o.holdings.some((h) => h.market === l.market && h.symbol === l.symbol)).map((l) => ({ key: l.key, title: l.name, cards: lensReturnCards(l, o.today) }));
 }
 
 // ---------- Pick what to look at ----------

@@ -3,7 +3,7 @@ import { investmentOverview } from "@/lib/aggregate/investmentOverview";
 import type { PricePoint } from "@/lib/prices/history";
 import type { Instrument, InvestmentTransaction } from "@/lib/sheets/types";
 import { cashView } from "./cashView";
-import { greetingView, holdingGroups, holdingsView, lensViews, moneyInView, monthYear, pct, pickerView, recentTradesView, returnsView, sameMoneyView, summarySentence } from "./views";
+import { greetingView, holdingGroups, holdingsView, lensReturnsView, lensViews, moneyInView, monthYear, pct, pickerView, recentTradesView, returnsView, sameMoneyView, summarySentence } from "./views";
 
 const trade = (o: Partial<InvestmentTransaction>): InvestmentTransaction => ({
   id: "t", tradeDate: "2024-01-02", symbol: "AAA", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 100, price: 100, total: 10000, assetType: "Equity", broker: "B", ...o,
@@ -230,13 +230,7 @@ describe("lensViews", () => {
     const a = lenses[0];
     expect(a.points.length).toBeGreaterThan(100);
     expect(a.markers.map((m) => m.tradeType)).toEqual(["Buy", "Sell"]);
-    expect(a.stats.map((s) => s.label)).toEqual(expect.arrayContaining(["Shares", "Average cost", "Worth", "Gain", "Yearly return", "Price a year", "Made on sales"]));
-    expect(a.stats.find((s) => s.label === "Average cost")!.value).toBe("₹100");
-  });
-
-  it("splits a US holding's gain into the price and the rupee, and has no such line for an Indian one", () => {
-    expect(lenses[1].stats.find((s) => s.label === "Of the gain")).toBeDefined();
-    expect(lenses[0].stats.find((s) => s.label === "Of the gain")).toBeUndefined();
+    expect(a).not.toHaveProperty("stats");
   });
 
   it("has a header for each holding: its tile, plan tags and one line saying what it is and how long he has traded it", () => {
@@ -265,8 +259,49 @@ describe("lensViews", () => {
     expect(once.header.kind).toMatch(/ · 1 trade since 2024$/);
   });
 
-  it("leaves out Made on sales for a holding never sold", () => {
-    expect(lenses[1].stats.find((s) => s.label === "Made on sales")).toBeUndefined();
+});
+
+describe("lensReturnsView", () => {
+  const rows = lensReturnsView(o);
+  const [a, b] = rows;
+  const card = (cards: typeof a.cards, key: string) => cards.find((c) => c.key === key)!;
+
+  it("gives each holding eight cards in the design's order, headed with its name", () => {
+    expect(rows.map((r) => r.title)).toEqual(lensViews(o).map((l) => l.name));
+    expect(a.cards.map((c) => c.key)).toEqual(["hold", "paid", "worth", "gain", "xirr", "cagr", "sales", "range"]);
+    expect(b.cards.map((c) => c.key)).toEqual(a.cards.map((c) => c.key));
+  });
+
+  it("words what he holds and paid, in the holding's own currency, and the gain with its sign", () => {
+    expect(card(a.cards, "paid").value).toBe("₹100");
+    expect(card(a.cards, "gain").value).toMatch(/^[+−]₹/);
+    expect(card(a.cards, "gain").pill).toMatch(/^[+−]\d/);
+  });
+
+  it("tells a US holding's gain apart in a hover card, and has none for an Indian one", () => {
+    expect(card(b.cards, "gain").tip?.rows.map((r) => r.name)).toEqual(["The share price", "The rupee"]);
+    expect(card(a.cards, "gain").tip).toBeNull();
+  });
+
+  it("says 'Range so far' for a holding with under a year of closes, and shows a dash for one with no closes", () => {
+    const young = lensReturnsView(investmentOverview({ trades: [trade({ tradeDate: "2025-10-01" })], instruments, closes: new Map([["AAA.NS", days("2025-10-01", 92, (i) => 100 + i)]]), today: "2026-01-01" }))[0];
+    expect(card(young.cards, "range")).toMatchObject({ label: "Range so far" });
+    expect(card(young.cards, "range").small).toMatch(/, since /);
+    expect(card(a.cards, "range").label).toBe("52-week range");
+    const bare = lensReturnsView(investmentOverview({ trades: [trade({})], instruments, closes: new Map(), today: "2026-01-01" }))[0];
+    expect(card(bare.cards, "range")).toMatchObject({ value: "—", muted: true });
+  });
+
+  it("leaves out a holding sold out, which has no card in the carousel to pick", () => {
+    const soldOut = investmentOverview({ trades: [trade({}), trade({ id: "s", tradeType: "Sell", tradeDate: "2024-06-03" })], instruments, closes, today: "2026-01-01" });
+    expect(lensReturnsView(soldOut).map((r) => r.key)).toEqual(lensViews(soldOut).map((l) => l.key));
+  });
+
+  it("says nothing sold for a holding never sold, and the range for one with prices", () => {
+    expect(card(b.cards, "sales")).toMatchObject({ value: "—", small: "nothing sold yet", muted: true });
+    expect(card(a.cards, "sales").muted).toBe(false);
+    expect(card(a.cards, "range").value).toMatch(/^₹[\d,.]+ – ₹[\d,.]+$/);
+    expect(card(b.cards, "range").small).toMatch(/of the way up/);
   });
 });
 
