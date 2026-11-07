@@ -68,7 +68,7 @@ export default async function InvestmentsPage() {
   const cash = cashFrom(cashData, overview.valueInr, today);
   const skipped = [tradesTab.skipped, instrumentsTab.skipped, ...(targetsTab ? [targetsTab.skipped] : [])].filter((t) => t.rows.length > 0);
 
-  const split = splitView(overview);
+  const split = splitView(overview, tradesTab.records);
   const weight = weightView(overview);
   const gain = gainView(overview);
   const whatIf = whatIfView(overview);

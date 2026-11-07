@@ -1,11 +1,11 @@
-import type { InvestmentAssetType, InvestmentMarket } from "../sheets/types";
+import type { InvestmentAssetType, InvestmentMarket, InvestmentSource } from "../sheets/types";
 
 /**
  * How what he holds is split (docs/design/investments.md, "How it's split"): the same holdings sliced by asset class, market, company or
  * fund, or one slice each. Worth is in rupees as the page counts it; a holding with no worth is left out. This is a measure, not advice.
  */
 
-export type SplitBy = "assetClass" | "market" | "kind" | "holding";
+export type SplitBy = "assetClass" | "market" | "kind" | "holding" | "source";
 
 export interface SplitHolding {
   symbol: string;
@@ -14,6 +14,8 @@ export interface SplitHolding {
   assetType: InvestmentAssetType;
   valueInr: number;
   costInr: number;
+  /** For the "how it came in" cut: the part of the holding that came in this way (its worth is that part's). */
+  source?: InvestmentSource;
 }
 
 export interface SplitMember {
@@ -63,6 +65,8 @@ export function assetClassOf(type: InvestmentAssetType): string {
 export const kindOf = (type: InvestmentAssetType): string => (type === "Equity" ? "Single companies" : "Funds");
 
 const MARKET_LABEL: Record<InvestmentMarket, string> = { IND: "India", US: "United States" };
+/** How shares came in: bought with cash (the market), an ESPP purchase, an RSU vest. */
+export const SOURCE_LABEL: Record<InvestmentSource, string> = { Market: "Cash", ESPP: "ESPP purchases", RSU: "RSU vests" };
 
 function sliceOf(by: SplitBy, h: SplitHolding): { key: string; label: string } {
   switch (by) {
@@ -78,6 +82,8 @@ function sliceOf(by: SplitBy, h: SplitHolding): { key: string; label: string } {
     }
     case "holding":
       return { key: `${h.market}:${h.symbol}`, label: h.symbol };
+    case "source":
+      return { key: h.source ?? "Market", label: SOURCE_LABEL[h.source ?? "Market"] };
   }
 }
 

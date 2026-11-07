@@ -84,6 +84,27 @@ describe("readTradeForm", () => {
   });
 });
 
+describe("readTradeForm, which shares a sale took", () => {
+  const sell = { ...buy, tradeType: "Sell" };
+
+  it("keeps the source a sale took, and leaves it off when none is marked", () => {
+    const marked = readTradeForm({ ...sell, soldFrom: "ESPP" }, ctx([t({ id: "b1", quantity: 10 })]), TODAY);
+    expect(marked.ok && marked.input.row.soldFrom).toBe("ESPP");
+    const blank = readTradeForm({ ...sell, soldFrom: "" }, ctx([t({ id: "b1", quantity: 10 })]), TODAY);
+    expect(blank.ok && "soldFrom" in blank.input.row).toBe(false);
+  });
+
+  it("drops it from a buy, which has no shares to take", () => {
+    const r = readTradeForm({ ...buy, soldFrom: "RSU" }, ctx(), TODAY);
+    expect(r.ok && "soldFrom" in r.input.row).toBe(false);
+  });
+
+  it("refuses a source that isn't one of the three", () => {
+    const r = readTradeForm({ ...sell, soldFrom: "Gift" }, ctx([t({ id: "b1", quantity: 10 })]), TODAY);
+    expect(r.ok === false && r.errors.soldFrom).toMatch(/Choose which shares/);
+  });
+});
+
 describe("readTradeForm, paid from a cash account", () => {
   const withCash = { ...ctx(), cashAccountIds: ["ibkr", "zerodha"] };
 

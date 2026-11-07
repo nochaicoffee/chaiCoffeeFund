@@ -57,8 +57,10 @@ export function SplitCard({ dimensions }: { dimensions: SplitDimensionView[] }) 
     }>
       {layout === "treemap" ? (
         <>
-          <SplitTreemap dimension={dim} />
-          <p className="border-t border-divider pt-2.5 text-[11px] font-semibold text-muted">Each block is a holding and its area is its worth. Slicing it a different way moves the blocks into their slice&apos;s tile. An ETF or a fund of shares counts as equity. A measure, never a suggestion.</p>
+          <SplitTreemap dimension={dim.key === "source" ? (dimensions.find((d) => d.key === "holding") ?? dim) : dim} />
+          <p className="border-t border-divider pt-2.5 text-[11px] font-semibold text-muted">
+            {dim.key === "source" ? "How it came in isn't a treemap, so this shows the holdings: a holding is one block whichever way it came in. " : "Each block is a holding and its area is its worth. Slicing it a different way moves the blocks into their slice's tile. "}An ETF or a fund of shares counts as equity. A measure, never a suggestion.
+          </p>
         </>
       ) : (
         <>
@@ -122,6 +124,7 @@ export function SplitCard({ dimensions }: { dimensions: SplitDimensionView[] }) 
       <p className="border-t border-divider pt-2.5 text-[11px] font-semibold text-muted">The pointer reads the slice at the top. Pick one from its chip or click it on the wheel: the wheel turns to it and the holdings in it show beside. An ETF or a fund of shares counts as equity. A measure, never a suggestion.</p>
         </>
       )}
+      {layout === "wheel" && dim.note && <p role="note" className="rounded-[12px] bg-fill px-3.5 py-2.5 text-xs font-semibold text-muted">{dim.note}</p>}
     </WidgetCard>
   );
 }

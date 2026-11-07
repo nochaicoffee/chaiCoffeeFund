@@ -67,7 +67,7 @@ async function withRate(raw: Record<string, FormDataEntryValue>, ctx: TradeFormC
 }
 
 const parseRow = (row: TradeInput) => createInvestmentTransactionSchema.parse(row);
-const patchOf = (row: TradeInput) => updateInvestmentTransactionSchema.parse({ ...row, fxRateToInr: row.fxRateToInr ?? "", settlementAccountId: row.settlementAccountId ?? "" }) as Partial<Omit<InvestmentTransaction, "id">>;
+const patchOf = (row: TradeInput) => updateInvestmentTransactionSchema.parse({ ...row, fxRateToInr: row.fxRateToInr ?? "", settlementAccountId: row.settlementAccountId ?? "", soldFrom: row.soldFrom ?? "" }) as Partial<Omit<InvestmentTransaction, "id">>;
 
 const withoutId = (row: InvestmentTransaction): TradeInput => {
   const copy: Partial<InvestmentTransaction> = { ...row };

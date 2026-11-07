@@ -1,4 +1,6 @@
-import { splitHoldings, type SplitBy, type Slice } from "@/lib/aggregate/investmentSplit";
+import { splitHoldings, type SplitBy, type SplitHolding, type Slice } from "@/lib/aggregate/investmentSplit";
+import { sourceMix, SOURCES } from "@/lib/aggregate/sourceMix";
+import type { InvestmentSource, InvestmentTransaction } from "@/lib/sheets/types";
 import type { Overview } from "@/lib/aggregate/investmentOverview";
 import { formatLakh } from "@/lib/format/lakh";
 import { colorOf, holdingKey, pct, shareText, type Tone } from "./views";
@@ -48,6 +50,8 @@ export interface SplitDimensionView {
   key: SplitBy;
   label: string;
   slices: SplitSliceView[];
+  /** Something to say about the cut: how it was worked out where it had to be guessed. */
+  note?: string;
 }
 
 const DIMENSIONS: { key: SplitBy; label: string }[] = [
@@ -55,16 +59,19 @@ const DIMENSIONS: { key: SplitBy; label: string }[] = [
   { key: "market", label: "Market" },
   { key: "kind", label: "Company or fund" },
   { key: "holding", label: "Holding" },
+  { key: "source", label: "How it came in" },
 ];
+/** How shares came in keeps the colours the page already gives them: cash teal, an ESPP purchase violet, an RSU vest blue (Money in). */
+const SOURCE_COLOUR: Record<InvestmentSource, string> = { Market: "teal", ESPP: "violet", RSU: "sapphire" };
 const COLOURS = ["teal", "sapphire", "amber", "violet", "rose", "emerald", "copper", "ocean"] as const;
 
 
-function sliceView(slice: Slice, index: number, start: number, colours: ReadonlyMap<string, string>): SplitSliceView {
+function sliceView(slice: Slice, index: number, start: number, colours: ReadonlyMap<string, string>, colour: string = COLOURS[index % COLOURS.length]): SplitSliceView {
   const gain = slice.gainFraction;
   return {
     key: slice.key,
     label: slice.label,
-    colour: COLOURS[index % COLOURS.length],
+    colour,
     value: formatLakh(slice.valueInr),
     percent: shareText(slice.fraction),
     fraction: slice.fraction,
@@ -91,14 +98,51 @@ export const spinTo = (start: number, fraction: number): number => -(start + fra
  */
 export const drawnLength = (length: number, gap: number): number => (length > 2 * gap ? length - gap : length / 2);
 
-export function splitView(o: Overview): { dimensions: SplitDimensionView[]; total: string; totalInr: number; costInr: number } | null {
+/** What to say where the cut had to guess: sales not marked (counted in proportion) and holdings the log couldn't trace (counted as cash). */
+function guessNote(unmarked: { name: string; sales: number }[], untraced: string[]): string | undefined {
+  const parts: string[] = [];
+  const sales = unmarked.reduce((sum, u) => sum + u.sales, 0);
+  if (sales > 0) {
+    const where = unmarked.map((u) => `${u.sales} ${u.sales === 1 ? "sale" : "sales"} of ${u.name}`).join(" and ");
+    parts.push(`${where} ${sales === 1 ? "isn't marked with which shares it took, so it is" : "aren't marked with which shares they took, so they are"} counted in proportion. Edit the sale and say which.`);
+  }
+  if (untraced.length > 0) parts.push(`${untraced.join(" and ")} couldn't be traced through your trades, so ${untraced.length === 1 ? "it is" : "they are"} counted as cash.`);
+  return parts.length > 0 ? parts.join(" ") : undefined;
+}
+
+/**
+ * Each holding cut into the parts that came in each way, with its worth in proportion to the shares left from each. Cost is left out
+ * (nothing is said of a source's gain: the page counts one average cost for a holding, so a part of it has no cost of its own).
+ */
+function bySource(o: Overview, trades: InvestmentTransaction[]): { holdings: SplitHolding[]; unmarked: { name: string; sales: number }[]; untraced: string[] } {
+  const mix = sourceMix(trades, o.today);
+  const holdings: SplitHolding[] = [];
+  const unmarked: { name: string; sales: number }[] = [];
+  const untraced: string[] = [];
+  for (const h of o.holdings) {
+    const found = mix.get(holdingKey(h));
+    const total = found ? SOURCES.reduce((s, k) => s + found.pools[k], 0) : 0;
+    if (!found || total <= 0) {
+      holdings.push({ ...h, costInr: 0, source: "Market" });
+      untraced.push(h.name);
+      continue;
+    }
+    for (const source of SOURCES) if (found.pools[source] > 0) holdings.push({ ...h, valueInr: (h.valueInr * found.pools[source]) / total, costInr: 0, source });
+    if (found.unmarkedSales > 0) unmarked.push({ name: h.name, sales: found.unmarkedSales });
+  }
+  return { holdings, unmarked, untraced };
+}
+
+export function splitView(o: Overview, trades: InvestmentTransaction[] = []): { dimensions: SplitDimensionView[]; total: string; totalInr: number; costInr: number } | null {
   // A holding keeps the colour it has on the rest of the page, whichever way it is sliced.
   const colours = new Map(o.holdings.map((h, i) => [holdingKey(h), colorOf(i)]));
   const dimensions = DIMENSIONS.flatMap(({ key, label }): SplitDimensionView[] => {
-    const slices = splitHoldings(o.holdings, key);
-    if (slices.length === 0) return [];
+    const cut = key === "source" ? bySource(o, trades) : null;
+    const slices = splitHoldings(cut ? cut.holdings : o.holdings, key);
+    // One way of coming in is no cut at all.
+    if (slices.length === 0 || (key === "source" && slices.length < 2)) return [];
     let start = 0;
-    return [{ key, label, slices: slices.map((s, i) => { const view = sliceView(s, i, start, colours); start += s.fraction; return view; }) }];
+    return [{ key, label, slices: slices.map((s, i) => { const view = sliceView(s, i, start, colours, key === "source" ? SOURCE_COLOUR[s.key as InvestmentSource] : undefined); start += s.fraction; return view; }), ...(cut && guessNote(cut.unmarked, cut.untraced) && { note: guessNote(cut.unmarked, cut.untraced) }) }];
   });
   return dimensions.length === 0 ? null : { dimensions, total: formatLakh(o.valueInr), totalInr: o.valueInr, costInr: o.costInr };
 }

@@ -1,7 +1,8 @@
 import { findOversells, holdingsAt } from "../aggregate/investments";
 import { formatDate } from "../format/date";
 import { parseAmountText } from "../format/money";
-import type { Instrument, InvestmentTransaction, TradeType } from "../sheets/types";
+import { SOURCES } from "../aggregate/sourceMix";
+import type { Instrument, InvestmentSource, InvestmentTransaction, TradeType } from "../sheets/types";
 import { FieldReader, type FormFields, type FormResult } from "./fields";
 
 /**
@@ -97,6 +98,9 @@ export function readTradeForm(fields: FormFields, ctx: TradeFormContext, today: 
   const total = typedTotal ?? (quantity !== undefined && price !== undefined ? round6(quantity * price) : undefined);
   const fx = rate(f, held?.market);
   const broker = f.text("broker", "Enter the broker");
+  // Which shares a sale took (only a sale has one); blank is not marked.
+  const soldFromText = f.raw("soldFrom").trim();
+  if (soldFromText !== "" && !(SOURCES as readonly string[]).includes(soldFromText)) f.fail("soldFrom", "Choose which shares the sale took, or leave it blank");
   const paidFrom = f.raw("settlementAccountId").trim();
   // The account the trade already has is always allowed, so a trade can be edited whatever that account has since become.
   const saved = editing ? ctx.trades.find((t) => t.id === editing)?.settlementAccountId : undefined;
@@ -107,6 +111,7 @@ export function readTradeForm(fields: FormFields, ctx: TradeFormContext, today: 
   const row: TradeInput = {
     tradeDate, symbol: held.symbol, market: held.market, currency: held.market === "US" ? "USD" : "INR", tradeType, source, quantity, price, total,
     assetType: held.assetType, broker, ...(fx !== undefined && { fxRateToInr: fx }), ...(paidFrom !== "" && { settlementAccountId: paidFrom }),
+    ...(tradeType === "Sell" && soldFromText !== "" && { soldFrom: soldFromText as InvestmentSource }),
   };
   const after = [...ctx.trades.filter((t) => t.id !== editing), withId(row, editing ?? "new")];
   const problem = newOversell(ctx.trades, after, namesOf(ctx.instruments));
