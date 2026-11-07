@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { inRange, lensWindow, linePath, offeredLensRanges, offeredRanges, rangeStart, readingAt, scaleOf, type StagePoint } from "./stageView";
+import { asOfReading, axisDate, axisTicks, dateTickIndexes, goBackIndex, inRange, lensWindow, linePath, goBackMark, moneyBars, offeredGoBack, offeredLensRanges, offeredRanges, rangeStart, readingAt, scaleOf, tickLabel, type StagePoint } from "./stageView";
 
 const series = (n: number): StagePoint[] => Array.from({ length: n }, (_, i) => ({ date: `d${i}`, value: 100 + i, cost: 90 }));
 
@@ -97,5 +97,107 @@ describe("rangeStart and lensWindow", () => {
   it("offers the ranges a line is long enough for", () => {
     expect(offeredLensRanges(pts)).toEqual(["1M", "3M", "6M", "All"]);
     expect(offeredLensRanges([{ date: "2026-11-04" }])).toEqual(["All"]);
+  });
+});
+
+describe("going back to a day", () => {
+  const withFlow = (n: number): StagePoint[] => Array.from({ length: n }, (_, i) => ({ date: `d${i}`, value: 1000 + i * 10, cost: 900, flow: i === 5 ? 200 : 0 }));
+
+  it("offers only the days that fall after his first trade, and always Today", () => {
+    expect(offeredGoBack(withFlow(100))).toEqual(["now", "1m"]);
+    expect(offeredGoBack(withFlow(400))).toEqual(["now", "1m", "6m", "1y"]);
+    expect(offeredGoBack(withFlow(2000))).toEqual(["now", "1m", "6m", "1y", "2y"]);
+    expect(offeredGoBack(withFlow(1))).toEqual(["now"]);
+  });
+
+  it("lands on the point that many days before the last, and on the last for Today", () => {
+    const s = withFlow(400);
+    expect(goBackIndex(s, "now")).toBe(399);
+    expect(goBackIndex(s, "1m")).toBe(369);
+    expect(goBackIndex(s, "1y")).toBe(34);
+    expect(goBackIndex(withFlow(10), "1y")).toBe(0);
+  });
+
+  it("splits what happened since into the money added and what the market did", () => {
+    const s = withFlow(10); // worth 1000 on d0 to 1090 on d9; 200 added on d5
+    const r = asOfReading(s, 2)!;
+    expect(r).toMatchObject({ date: "d2", value: 1020, cost: 900, gain: 120, addedSince: 200 });
+    expect(r.marketSince).toBe(1090 - 1020 - 200);
+    expect(r.addedSince + r.marketSince).toBe(1090 - 1020); // the two always make up the whole change
+  });
+
+  it("counts nothing added when the day is the last, or the flow is missing", () => {
+    expect(asOfReading(withFlow(10), 9)).toMatchObject({ addedSince: 0, marketSince: 0 });
+    expect(asOfReading([{ date: "a", value: 5, cost: 5 }, { date: "b", value: 8, cost: 5 }], 0)).toMatchObject({ addedSince: 0, marketSince: 3 });
+    expect(asOfReading([], 0)).toBeNull();
+  });
+
+  it("doesn't count the day itself: money added that day is in that day's worth already", () => {
+    expect(asOfReading(withFlow(10), 5)!.addedSince).toBe(0);
+  });
+});
+
+describe("moneyBars", () => {
+  it("sums each run's buys, as a fraction of the biggest run", () => {
+    const pts: StagePoint[] = Array.from({ length: 8 }, (_, i) => ({ date: `d${i}`, value: 0, cost: 0, flow: [100, 0, 0, 0, 50, 50, -300, 0][i] }));
+    expect(moneyBars(pts, 4)).toEqual([1, 0, 1, 0]); // runs of 2: 100, 0, 100 (50+50), 0 (a sale of 300 is not money added)
+  });
+
+  it("keeps a bar under its days when the range has fewer days than bars", () => {
+    const pts: StagePoint[] = Array.from({ length: 31 }, (_, i) => ({ date: `d${i}`, value: 0, cost: 0, flow: i === 0 || i === 30 ? 100 : 0 }));
+    const bars = moneyBars(pts); // 38 slices for 31 days: the first day under the first bar, the last day under the last
+    expect(bars).toHaveLength(38);
+    expect(bars[0]).toBe(1);
+    expect(bars[37]).toBe(1);
+    expect(bars.filter((b) => b > 0)).toHaveLength(2);
+  });
+
+  it("is all zero when nothing was added, and empty for no points", () => {
+    expect(moneyBars([{ date: "a", value: 1, cost: 1 }], 3)).toEqual([0, 0, 0]);
+    expect(moneyBars([])).toEqual([]);
+  });
+});
+
+describe("axes", () => {
+  it("hangs gridlines on round numbers inside the range", () => {
+    expect(axisTicks(3_200_000, 6_300_000)).toEqual([4_000_000, 5_000_000, 6_000_000]);
+    expect(axisTicks(0, 100)).toEqual([0, 25, 50, 75, 100]);
+    expect(axisTicks(5, 5)).toEqual([]);
+  });
+
+  it("prints a tick as the design does", () => {
+    expect(tickLabel(6_000_000)).toBe("60L");
+    expect(tickLabel(2_500_000)).toBe("25L");
+    expect(tickLabel(15_000_000)).toBe("1.5Cr");
+    expect(tickLabel(45_000)).toBe("45000");
+  });
+
+  it("spreads dates evenly from the first point to the last", () => {
+    expect(dateTickIndexes(101, 5)).toEqual([0, 20, 40, 60, 80, 100]);
+    expect(dateTickIndexes(1)).toEqual([0]);
+    expect(dateTickIndexes(3, 5)).toEqual([0, 1, 2]);
+  });
+});
+
+describe("axisDate", () => {
+  it("says the day and month on a short chart, the month and year on a long one", () => {
+    expect(axisDate("2026-06-14", 60)).toBe("14 Jun");
+    expect(axisDate("2026-06-14", 100)).toBe("14 Jun");
+    expect(axisDate("2021-09-01", 365)).toBe("Sep 21");
+  });
+});
+
+describe("goBackMark", () => {
+  const long = Array.from({ length: 800 }, (_, i) => ({ date: `d${i}`, value: 1, cost: 1 }));
+
+  it("finds the day among the points a range shows, which are the tail of the series", () => {
+    expect(goBackMark(long, 366, "1m")).toBe(366 - 1 - 30);
+    expect(goBackMark(long, 366, "1y")).toBe(0);
+    expect(goBackMark(long, 800, "1y")).toBe(800 - 1 - 365);
+  });
+
+  it("is null for Today, and for a day before the range starts", () => {
+    expect(goBackMark(long, 366, "now")).toBeNull();
+    expect(goBackMark(long, 91, "1y")).toBeNull();
   });
 });
