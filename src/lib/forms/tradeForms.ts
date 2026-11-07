@@ -16,6 +16,8 @@ export type TradeInput = Omit<InvestmentTransaction, "id">;
 export interface TradeFormContext {
   instruments: Pick<Instrument, "symbol" | "market" | "name" | "assetType">[];
   trades: InvestmentTransaction[];
+  /** The brokerage accounts a trade may be paid from; when given, a trade naming any other is refused. */
+  cashAccountIds?: string[];
 }
 
 /** A holding as one form value, "US:NTAP". */
@@ -95,12 +97,16 @@ export function readTradeForm(fields: FormFields, ctx: TradeFormContext, today: 
   const total = typedTotal ?? (quantity !== undefined && price !== undefined ? round6(quantity * price) : undefined);
   const fx = rate(f, held?.market);
   const broker = f.text("broker", "Enter the broker");
+  const paidFrom = f.raw("settlementAccountId").trim();
+  // The account the trade already has is always allowed, so a trade can be edited whatever that account has since become.
+  const saved = editing ? ctx.trades.find((t) => t.id === editing)?.settlementAccountId : undefined;
+  if (paidFrom !== "" && paidFrom !== saved && ctx.cashAccountIds && !ctx.cashAccountIds.includes(paidFrom)) f.fail("settlementAccountId", "Choose one of your broker cash accounts, or none");
 
   if (!f.ok || !tradeType || !source || !tradeDate || !held || quantity === undefined || price === undefined || total === undefined || !broker) return f.result(undefined as never);
 
   const row: TradeInput = {
     tradeDate, symbol: held.symbol, market: held.market, currency: held.market === "US" ? "USD" : "INR", tradeType, source, quantity, price, total,
-    assetType: held.assetType, broker, ...(fx !== undefined && { fxRateToInr: fx }),
+    assetType: held.assetType, broker, ...(fx !== undefined && { fxRateToInr: fx }), ...(paidFrom !== "" && { settlementAccountId: paidFrom }),
   };
   const after = [...ctx.trades.filter((t) => t.id !== editing), withId(row, editing ?? "new")];
   const problem = newOversell(ctx.trades, after, namesOf(ctx.instruments));

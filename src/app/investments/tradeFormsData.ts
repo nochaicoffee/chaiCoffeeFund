@@ -1,20 +1,35 @@
-import type { Instrument, InvestmentTransaction } from "@/lib/sheets/types";
+import type { BrokerCash } from "@/lib/aggregate/brokerCash";
+import type { AccountCurrency, Instrument, InvestmentTransaction } from "@/lib/sheets/types";
 
-/** What the trade forms need from the page: today, the holdings to choose from, the saved trades and the brokers already used. */
+/** A broker cash account a trade can be paid from (or its proceeds land in), with the balance last on record, in its own currency. */
+export interface CashOption {
+  id: string;
+  name: string;
+  currency: AccountCurrency;
+  balance: number;
+  /** The day that balance was read. */
+  date: string;
+}
+
+export const cashOptions = (cash: BrokerCash[]): CashOption[] => cash.map((c) => ({ id: c.account.id, name: c.account.name, currency: c.account.currency ?? "INR", balance: c.balance, date: c.date }));
+
+/** What the trade forms need from the page: today, the holdings to choose from, the saved trades, the brokers already used and the cash accounts. */
 export interface TradeFormsData {
   today: string;
   instruments: Pick<Instrument, "symbol" | "market" | "name" | "assetType">[];
   trades: InvestmentTransaction[];
   brokers: string[];
+  cash: CashOption[];
 }
 
-export function tradeFormsData(trades: InvestmentTransaction[], instruments: Instrument[], today: string): TradeFormsData {
+export function tradeFormsData(trades: InvestmentTransaction[], instruments: Instrument[], today: string, cash: BrokerCash[] = []): TradeFormsData {
   const brokers = [...new Set(trades.map((t) => t.broker))].sort();
   return {
     today,
     instruments: instruments.map(({ symbol, market, name, assetType }) => ({ symbol, market, name, assetType })).sort((a, b) => a.name.localeCompare(b.name)),
     trades,
     brokers,
+    cash: cashOptions(cash),
   };
 }
 

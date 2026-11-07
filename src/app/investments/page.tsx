@@ -55,7 +55,8 @@ export default async function InvestmentsPage() {
   const overview = investmentOverview(overviewInput);
   // The Returns row and the holdings table as they stood on each day the stage can go back to.
   const asOf = asOfViews(overviewInput, overview);
-  const cash = cashFrom(await cashRead, overview.valueInr, today);
+  const cashData = await cashRead;
+  const cash = cashFrom(cashData, overview.valueInr, today);
   const skipped = [tradesTab.skipped, instrumentsTab.skipped].filter((t) => t.rows.length > 0);
 
   const split = splitView(overview);
@@ -66,7 +67,7 @@ export default async function InvestmentsPage() {
   const concentrated = concentrationView(overview);
 
   return (
-    <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today)}>
+    <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today, cashData?.cash)}>
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Investments"

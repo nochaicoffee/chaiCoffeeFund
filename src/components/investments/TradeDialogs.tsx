@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { rateFor, saveEspp, saveTrade, saveVest } from "@/app/investments/tradeActions";
 import type { TradeFormsData } from "@/app/investments/tradeFormsData";
+import { cashAfterTrade } from "@/lib/aggregate/brokerCash";
 import { formatDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { IDLE, type FormState } from "@/lib/forms/formState";
@@ -104,7 +105,7 @@ function deleteLink(onDelete: (() => void) | undefined, label: string, fallback:
   );
 }
 
-const ctxOf = (forms: TradeFormsData): TradeFormContext => ({ instruments: forms.instruments, trades: forms.trades });
+const ctxOf = (forms: TradeFormsData): TradeFormContext => ({ instruments: forms.instruments, trades: forms.trades, cashAccountIds: forms.cash.map((c) => c.id) });
 
 /** Add a trade (a buy or a sell on the market) or Edit one, whatever its source. */
 export function TradeDialog({ forms, trade, onClose, onSaved, onDelete }: Common & { trade?: InvestmentTransaction }) {
@@ -116,8 +117,9 @@ export function TradeDialog({ forms, trade, onClose, onSaved, onDelete }: Common
   const [total, setTotal] = useState(trade ? fixed(trade.total) : "");
   const h = useHoldingFields(forms, { holding: trade ? holdingKey(trade.market, trade.symbol) : undefined, broker: trade?.broker, rate: trade?.fxRateToInr ? String(trade.fxRateToInr) : undefined, day: date });
   const source = trade?.source ?? "Market";
+  const [paidFrom, setPaidFrom] = useState(trade?.settlementAccountId ?? "");
 
-  const values: Record<string, string> = { tradeType, source, tradeDate: date, holding: h.holding, quantity, price, total, fxRateToInr: h.rate, broker: h.broker };
+  const values: Record<string, string> = { tradeType, source, tradeDate: date, holding: h.holding, quantity, price, total, fxRateToInr: h.rate, broker: h.broker, settlementAccountId: paidFrom };
   const check = readTradeForm(values, ctxOf(forms), forms.today, trade?.id);
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -137,6 +139,10 @@ export function TradeDialog({ forms, trade, onClose, onSaved, onDelete }: Common
   const currency = h.market === "US" ? "USD" : "INR";
   const before = h.instrument && date ? heldOn(forms.trades.filter((x) => x.id !== trade?.id), h.instrument.market, h.instrument.symbol, date) : null;
   const after = before !== null && Number.isFinite(q) && q > 0 ? before + (tradeType === "Buy" ? q : -q) : null;
+  const account = forms.cash.find((c) => c.id === paidFrom);
+  const typedTotal = total.trim() === "" ? null : Number(total.replace(/,/g, ""));
+  const amount = typedTotal !== null && Number.isFinite(typedTotal) ? typedTotal : worked;
+  const cashAfter = account && amount !== null ? cashAfterTrade(account.balance, { tradeType, total: amount, currency }, account.currency) : null;
 
   return (
     <FormDialog
@@ -181,8 +187,35 @@ export function TradeDialog({ forms, trade, onClose, onSaved, onDelete }: Common
         <Field id="total" label="Total" error={errors.total} help="Worked out as shares × price. Change it if your broker's total differs (fees).">
           <MoneyInput {...describedBy("total", errors.total, true)} symbol={h.market === "US" ? "$" : "₹"} inputMode="decimal" name="total" placeholder={worked !== null ? quantityText(worked) : ""} value={total} onChange={(e) => setTotal(e.target.value)} onBlur={() => reveal("total")} invalid={Boolean(errors.total)} />
         </Field>
+        {forms.cash.length === 0 && <input type="hidden" name="settlementAccountId" value={paidFrom} />}
+        {forms.cash.length > 0 && (
+          <div className="md:col-span-2">
+            <Field id="settlementAccountId" label={tradeType === "Buy" ? "Paid from" : "Proceeds go to"} error={errors.settlementAccountId} help={cashAfter ? undefined : "A broker cash account, if this trade moved its cash. Optional."}>
+              <SelectInput id="settlementAccountId" name="settlementAccountId" invalid={Boolean(errors.settlementAccountId)} placeholder="Not from a cash account" options={[{ value: "", label: "Not from a cash account" }, ...forms.cash.map((c) => ({ value: c.id, label: `${c.name} · ${formatMoney(c.currency, c.balance)}` })), ...(paidFrom !== "" && !account ? [{ value: paidFrom, label: "The account it was saved with" }] : [])]} value={paidFrom} onChange={setPaidFrom} />
+            </Field>
+            {account && cashAfter && <CashAfterNote account={account} after={cashAfter} tradeType={tradeType} tradeDate={date} />}
+          </div>
+        )}
       </div>
     </FormDialog>
+  );
+}
+
+/**
+ * What the picked cash account would hold after the trade, from the balance on record. A buy bigger than the cash is a warning, never a block:
+ * the balance may be old (PRD Q13). A trade in the other currency than the account's isn't worked out.
+ */
+function CashAfterNote({ account, after, tradeType, tradeDate }: { account: TradeFormsData["cash"][number]; after: ReturnType<typeof cashAfterTrade>; tradeType: "Buy" | "Sell"; tradeDate: string }) {
+  const read = `read ${formatDate(account.date)}`;
+  // A trade from before the balance was read is already in it: taking it off again would count it twice.
+  if (tradeDate !== "" && tradeDate < account.date) return <p role="status" className="mt-1.5 text-xs font-semibold text-muted">{account.name}&apos;s balance ({formatMoney(account.currency, account.balance)}) was {read}, after this trade, so it is already in it and isn&apos;t taken off again.</p>;
+  if (after.mismatch) return <p role="status" className="mt-1.5 text-xs font-semibold text-muted">This trade is in a different currency from {account.name}, so its balance isn&apos;t worked out ({formatMoney(account.currency, account.balance)}, {read}).</p>;
+  return (
+    <p role="status" className={`mt-1.5 text-xs font-semibold ${after.short ? "text-negative" : "text-muted"}`}>
+      {after.short
+        ? `This is ${formatMoney(account.currency, after.shortBy)} more than the cash on record (${formatMoney(account.currency, account.balance)}, ${read}). The balance may be old, so you can still save.`
+        : `${account.name} would hold ${formatMoney(account.currency, after.after)} after ${tradeType === "Buy" ? "paying for this" : "this sale"} (${formatMoney(account.currency, account.balance)} now, ${read}).`}
+    </p>
   );
 }
 

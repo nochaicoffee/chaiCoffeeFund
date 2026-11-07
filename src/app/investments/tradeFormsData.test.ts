@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { InvestmentTransaction } from "@/lib/sheets/types";
-import { editTarget, tradeFormsData } from "./tradeFormsData";
+import type { BrokerCash } from "@/lib/aggregate/brokerCash";
+import { cashOptions, editTarget, tradeFormsData } from "./tradeFormsData";
 
 const t = (o: Partial<InvestmentTransaction>): InvestmentTransaction => ({
   id: "t", tradeDate: "2025-02-15", symbol: "NTAP", market: "US", currency: "USD", tradeType: "Buy", source: "Market", quantity: 1, price: 1, total: 1, assetType: "Equity", broker: "E*TRADE", fxRateToInr: 85, ...o,
@@ -41,5 +42,22 @@ describe("tradeFormsData", () => {
     expect(data.instruments.map((i) => i.name)).toEqual(["Advanced Micro", "NetApp"]);
     expect(data.brokers).toEqual(["E*TRADE", "Groww"]);
     expect(data.today).toBe("2026-11-06");
+  });
+});
+
+describe("cashOptions", () => {
+  const account = (o: object) => ({ id: "a", name: "Vested cash", bank: "Vested", accountType: "Brokerage", startDate: "2023-01-01", status: "Active", purpose: "Investment", ...o });
+  const cash = [{ account: account({ id: "us", currency: "USD" }), balance: 3000, rupees: 270000, date: "2026-10-19", source: "Manual" }, { account: account({ id: "in", name: "Zerodha cash" }), balance: 1000, rupees: 1000, date: "2026-09-12", source: "Statement" }] as unknown as BrokerCash[];
+
+  it("lists each cash account with its own-currency balance and the day it was read", () => {
+    expect(cashOptions(cash)).toEqual([
+      { id: "us", name: "Vested cash", currency: "USD", balance: 3000, date: "2026-10-19" },
+      { id: "in", name: "Zerodha cash", currency: "INR", balance: 1000, date: "2026-09-12" },
+    ]);
+  });
+
+  it("hands the forms the cash accounts, and none by default", () => {
+    expect(tradeFormsData([], [], "2026-11-08", cash).cash).toHaveLength(2);
+    expect(tradeFormsData([], [], "2026-11-08").cash).toEqual([]);
   });
 });
