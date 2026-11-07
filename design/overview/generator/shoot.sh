@@ -18,7 +18,7 @@ for spec in names:
     if pick:
         js = "(() => { for (const k of '" + pick + "'.split('+')) { const r = document.getElementById(k); if (r) { r.checked = true; r.dispatchEvent(new Event('change', {bubbles: true})); } } return 1; })()"
     out = f"{S}/{n}{('@' + pick) if pick else ''}.png"
-    jobs.append({"url": f"file://{D}/{n}.dc.html", "w": w, "h": h.get(f"{n}.dc.html", 1200), "out": out, "wait": 1200, **({"eval": js} if js else {})})
+    jobs.append({"url": f"file://{D}/{n}.dc.html", "w": w, "h": h.get(f"{n}.dc.html", 1200), "out": out, "wait": 2600, **({"eval": js} if js else {})})
 json.dump(jobs, open(f"{G}/out/measure/shot.json", "w"))
 PY
 node $G/cdp.mjs $G/out/measure/shot.json > $G/out/measure/shot.out && python3 - "$G/out/measure/shot.out" <<'PY2'

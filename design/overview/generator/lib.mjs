@@ -144,3 +144,4 @@ I.lent = (s) => ic('<path d="M3 15h4l3 2h6a2 2 0 0 0 0-4h-3"></path><path d="M7 
 I.calendar = I.cal;
 I.hand = I.lent;
 I.coin = (s) => ic('<circle cx="12" cy="12" r="9"></circle><path d="M9 8h6M9 11h6M10 8c3 0 4 3 0 4l4 4"></path>', s ?? 14);
+I.list = (s) => ic('<line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><circle cx="4" cy="6" r="1"></circle><circle cx="4" cy="12" r="1"></circle><circle cx="4" cy="18" r="1"></circle>', s ?? 14);
