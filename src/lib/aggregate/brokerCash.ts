@@ -1,4 +1,4 @@
-import type { Account, AccountCurrency, InvestmentTransaction } from "../sheets/types";
+import type { Account, AccountCurrency, BalanceSource, InvestmentTransaction } from "../sheets/types";
 import type { RupeeSnapshot } from "./accountCurrency";
 import { balanceOn, isClosed } from "./accounts";
 
@@ -16,6 +16,8 @@ export interface BrokerCash {
   /** The same in rupees, at the rate it was counted at. */
   rupees: number;
   date: string;
+  /** Where the balance came from: read off a statement or typed in (a row with none was typed in). */
+  source: BalanceSource;
 }
 
 /** Every open Brokerage account with a balance, biggest in rupees first. `snapshots` are in rupees with `native` for a dollar account (inRupees). */
@@ -24,7 +26,7 @@ export function cashByBroker(accounts: Account[], snapshots: RupeeSnapshot[], to
   for (const account of accounts) {
     if (account.accountType !== "Brokerage" || isClosed(account)) continue;
     const latest = balanceOn(snapshots, account.id, today);
-    if (latest) held.push({ account, balance: latest.native ?? latest.balance, rupees: latest.balance, date: latest.date });
+    if (latest) held.push({ account, balance: latest.native ?? latest.balance, rupees: latest.balance, date: latest.date, source: latest.source ?? "Manual" });
   }
   return held.sort((a, b) => b.rupees - a.rupees);
 }

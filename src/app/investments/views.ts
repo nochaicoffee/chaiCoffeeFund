@@ -1,3 +1,4 @@
+import type { CashView } from "./cashView";
 import type { SentencePart } from "@/app/cards/summarySentence";
 import { formatLakh } from "@/lib/format/lakh";
 import type { GreetingRowData } from "@/components/shell/GreetingParts";
@@ -23,7 +24,7 @@ export const signedLakh = (n: number) => `${n < 0 ? MINUS : "+"}${formatLakh(Mat
 const years = (days: number) => (days / 365).toFixed(1);
 
 // ---------- The greeting ----------
-export type InvestmentsPoint = "worth" | "gain" | "top" | "day" | "yearly" | "gap";
+export type InvestmentsPoint = "worth" | "gain" | "top" | "day" | "yearly" | "gap" | "cash";
 export interface GreetingCard {
   title: string;
   total: string;
@@ -65,7 +66,7 @@ function pricesSentence(o: Overview): SentencePart[] {
   return parts;
 }
 
-export function summarySentence(o: Overview): SentencePart[] {
+export function summarySentence(o: Overview, cash: CashView | null = null): SentencePart[] {
   if (o.holdings.length === 0) return [{ text: "Nothing here yet. Add a trade, and this page shows what you hold, what it is worth and how it has done." }];
   const parts: SentencePart[] = [
     { text: `Your ` },
@@ -78,6 +79,7 @@ export function summarySentence(o: Overview): SentencePart[] {
   const t = top(o);
   if (t && o.holdings.length > 1) parts.push({ text: t.name, strong: true, point: "top" }, { text: " is " }, { text: pct(t.share), strong: true, point: "top" }, { text: " of it. " });
   parts.push(...pricesSentence(o));
+  if (cash && cash.tiles.length > 0) parts.push({ text: cash.total, strong: true, point: "cash" }, { text: ` waits as cash at ${plural(cash.brokers, "broker", "brokers")}. ` });
   if (o.unpriced.length > 0) parts.push({ text: `${plural(o.unpriced.length, "holding has", "holdings have")} no price and ${o.unpriced.length === 1 ? "is" : "are"} counted at cost. ` });
   if (!o.xirr.tooEarly && o.xirr.rate !== null) {
     parts.push({ text: `Over ${years(o.xirr.days)} years your money has earned ` }, { text: `${pct(o.xirr.rate)} a year`, strong: true, point: "yearly" }, ...gapSentence(o), { text: "." });
@@ -89,9 +91,10 @@ export function summarySentence(o: Overview): SentencePart[] {
 
 const row = (key: string, name: string, colorKey: string, amount: string, note?: string, fraction?: number): GreetingRowData => ({ key, name, colorKey, amount, note, fraction });
 
-export function greetingView(o: Overview): InvestmentsGreetingCards {
+export function greetingView(o: Overview, cash: CashView | null = null): InvestmentsGreetingCards {
   const cards: InvestmentsGreetingCards = {};
   if (o.holdings.length === 0) return cards;
+  if (cash && cash.tiles.length > 0) cards.cash = cash.greeting;
   const shown = o.holdings.slice(0, 5);
   const rest = o.holdings.slice(5);
   cards.worth = {

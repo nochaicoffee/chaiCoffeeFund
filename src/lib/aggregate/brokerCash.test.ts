@@ -22,6 +22,12 @@ describe("cashByBroker", () => {
     expect(cash[1]).toMatchObject({ balance: 100000, rupees: 100000 });
   });
 
+  it("carries where the balance came from: a statement, or typed in when the row says nothing", () => {
+    const withSource = inRupees([zerodha], [{ ...snap("zerodha", "2026-10-18", 1), source: "Statement" as const }], null);
+    expect(cashByBroker(withSource.accounts, withSource.snapshots, "2026-10-31")[0].source).toBe("Statement");
+    expect(cash.map((c) => c.source)).toEqual(["Manual", "Manual"]);
+  });
+
   it("uses the latest balance on or before the day", () => {
     expect(cashByBroker(counted.accounts, counted.snapshots, "2026-10-01")[0]).toMatchObject({ account: { id: "vested" }, balance: 2790 });
   });
