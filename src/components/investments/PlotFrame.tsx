@@ -6,7 +6,7 @@ import { axisDate, axisTicks, dateTickIndexes, tickLabel, type StageScale } from
  * bars along the foot). The lines themselves are the children, drawn over the plot area from 0 to 1 in both directions. `plot` goes on the
  * whole area to the right of the values, bars and dates included, so a pointer anywhere along the chart reads a day.
  */
-export function PlotFrame({ scale, dates, plot, plotRef, bars, formatTick = tickLabel, className = "h-56 md:h-[270px]", children }: {
+export function PlotFrame({ scale, dates, plot, plotRef, bars, formatTick = tickLabel, endGutter = 0, className = "h-56 md:h-[270px]", children }: {
   scale: StageScale;
   dates: string[];
   plot: HTMLAttributes<HTMLDivElement>;
@@ -14,6 +14,8 @@ export function PlotFrame({ scale, dates, plot, plotRef, bars, formatTick = tick
   /** Heights from 0 to 1, one bar each, drawn along the foot. */
   bars?: number[];
   formatTick?: (v: number) => string;
+  /** Room in pixels to the right of the plot, for labels at the end of the lines. */
+  endGutter?: number;
   className?: string;
   children: ReactNode;
 }) {
@@ -29,7 +31,7 @@ export function PlotFrame({ scale, dates, plot, plotRef, bars, formatTick = tick
           <span key={t} className="absolute right-0 -translate-y-1/2" style={{ top: top(t) }}>{formatTick(t)}</span>
         ))}
       </div>
-      <div ref={plotRef} {...plot} className={`min-w-0 flex-1 rounded-[10px] focus-visible:outline-2 focus-visible:outline-white ${plot.className ?? ""}`}>
+      <div ref={plotRef} {...plot} style={{ marginRight: endGutter, ...plot.style }} className={`min-w-0 flex-1 rounded-[10px] focus-visible:outline-2 focus-visible:outline-white ${plot.className ?? ""}`}>
         <div className={`relative ${className}`}>
           {ticks.map((t) => (
             <i key={t} aria-hidden="true" className="absolute inset-x-0 block h-px" style={{ top: top(t), background: "oklch(1 0 0 / 0.09)" }} />

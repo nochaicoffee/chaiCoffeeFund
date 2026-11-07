@@ -68,6 +68,12 @@ describe("investmentOverview", () => {
     expect(o.series.at(-1)!.value).toBe(Math.round(o.valueInr));
   });
 
+  it("gives the Race a line for him, Nifty, the S&P and a deposit on the same days as the stage", () => {
+    expect(o.race.map((l) => l.key)).toEqual(["you", "nifty", "sp500", "deposit"]);
+    for (const l of o.race) expect(l.values).toHaveLength(o.series.length);
+    expect(o.race[0].values[0]).toBe(1);
+  });
+
   it("gives a lens for each holding, in the same order, each pricing itself from its own line", () => {
     expect(o.lenses.map((l) => l.symbol)).toEqual(o.holdings.map((h) => h.symbol));
     expect(o.lenses[0]).toMatchObject({ symbol: "AAA", quantity: 100, price: 150, currency: "INR" });

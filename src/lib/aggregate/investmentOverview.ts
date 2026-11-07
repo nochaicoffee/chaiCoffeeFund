@@ -2,6 +2,7 @@ import type { Instrument, InvestmentAssetType, InvestmentMarket, InvestmentTrans
 import { priceOnOrBefore, type PricePoint } from "../prices/history";
 import { USD_INR_TICKER } from "../prices/refreshPlan";
 import { holdingLens, type HoldingLens } from "./holdingLens";
+import { raceLines, type RaceLine } from "./raceLines";
 import { computeHoldings, holdingsAt, totalRealisedGainInr } from "./investments";
 import { dayChange } from "./investmentValue";
 import { yearlyReturn, type YearlyReturn } from "./investmentReturns";
@@ -56,6 +57,8 @@ export interface Overview {
   unpriced: string[];
   /** Every day from his first trade to today: what he held was worth, and what it cost him (the stage draws these). */
   series: { date: string; value: number; cost: number; /** Money put in that day, less money taken out (a buy is in, a sell is out), in rupees: the stage's "money added" bars. */ flow: number }[];
+  /** The lines the Race draws, one value a day on the same days as `series`: him, Nifty 50, the S&P in rupees and a deposit. */
+  race: RaceLine[];
   /** Each holding on its own, in the same order as `holdings`: its price line, his trades on it and its stats (the lens). */
   lenses: HoldingLens[];
 }
@@ -125,6 +128,7 @@ export function investmentOverview({ trades, instruments, closes, today }: Overv
     pricesFrom: dates.length > 0 ? dates.reduce((a, b) => (a > b ? a : b)) : null,
     unpriced: rows.filter((r) => r.price === null).map((r) => r.symbol),
     lenses: rows.map((r) => holdingLens({ trades, instrument: tickerOf.get(`${r.market}:${r.symbol}`) ?? { symbol: r.symbol, market: r.market, name: r.name, priceTicker: "" }, closes, usdInr, today })),
+    race: raceLines({ dates: history.map((d) => d.date), youIndex: twr.index, closes }),
     series: history.map((d) => ({ date: d.date, value: Math.round(d.valueInr), cost: Math.round(d.costInr), flow: Math.round(d.netFlowInr) })),
   };
 }
