@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { drawnLength, spinTo, type SplitDimensionView, type SplitSliceView } from "@/app/investments/splitView";
 import { WidgetCard } from "../shell/WidgetCard";
+import { SplitTreemap } from "./SplitTreemap";
 
 const TONE = { gain: "text-positive", loss: "text-negative", plain: "text-muted" } as const;
 const SIZE = 200;
@@ -26,6 +27,7 @@ function Arc({ r, width, start, length, colour, opacity = 1 }: { r: number; widt
  */
 export function SplitCard({ dimensions }: { dimensions: SplitDimensionView[] }) {
   const [dimKey, setDimKey] = useState(dimensions[0].key);
+  const [layout, setLayout] = useState<"wheel" | "treemap">("wheel");
   const [picked, setPicked] = useState<Record<string, string>>({});
   const dim = dimensions.find((d) => d.key === dimKey) ?? dimensions[0];
   const slice = dim.slices.find((s) => s.key === picked[dim.key]) ?? dim.slices[0];
@@ -36,14 +38,30 @@ export function SplitCard({ dimensions }: { dimensions: SplitDimensionView[] }) 
 
   return (
     <WidgetCard label="How it's split" title="How it's split" note="slice it four ways" right={
-      <div role="group" aria-label="Slice it by" className="flex max-w-full flex-wrap rounded-full bg-fill p-1">
-        {dimensions.map((d) => (
-          <button key={d.key} type="button" aria-pressed={d.key === dim.key} onClick={() => setDimKey(d.key)} className={`min-h-8 rounded-full px-3 text-[12px] font-extrabold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 ${d.key === dim.key ? "bg-ink text-on-ink" : "text-muted hover:text-fg"}`}>
-            {d.label}
-          </button>
-        ))}
+      <div className="flex max-w-full flex-wrap items-center gap-2">
+        <div role="group" aria-label="Draw it as" className="flex rounded-full bg-fill p-1">
+          {([["wheel", "Spin wheel"], ["treemap", "Treemap"]] as const).map(([key, label]) => (
+            <button key={key} type="button" aria-pressed={layout === key} onClick={() => setLayout(key)} className={`min-h-8 rounded-full px-3 text-[12px] font-extrabold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 ${layout === key ? "bg-ink text-on-ink" : "text-muted hover:text-fg"}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+        <div role="group" aria-label="Slice it by" className="flex max-w-full flex-wrap rounded-full bg-fill p-1">
+          {dimensions.map((d) => (
+            <button key={d.key} type="button" aria-pressed={d.key === dim.key} onClick={() => setDimKey(d.key)} className={`min-h-8 rounded-full px-3 text-[12px] font-extrabold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 ${d.key === dim.key ? "bg-ink text-on-ink" : "text-muted hover:text-fg"}`}>
+              {d.label}
+            </button>
+          ))}
+        </div>
       </div>
     }>
+      {layout === "treemap" ? (
+        <>
+          <SplitTreemap dimension={dim} />
+          <p className="border-t border-divider pt-2.5 text-[11px] font-semibold text-muted">Each block is a holding and its area is its worth. Slicing it a different way moves the blocks into their slice&apos;s tile. An ETF or a fund of shares counts as equity. A measure, never a suggestion.</p>
+        </>
+      ) : (
+        <>
       <div className="flex flex-wrap gap-2" role="group" aria-label={`The ${dim.label.toLowerCase()} slices`}>
         {dim.slices.map((s) => (
           <button key={s.key} type="button" aria-pressed={s.key === slice.key} onClick={() => pick(s)} className={`flex min-h-8 items-center gap-2 rounded-full px-3 text-[12px] font-extrabold focus-visible:outline-2 focus-visible:outline-offset-2 ${s.key === slice.key ? "bg-ink text-on-ink" : "bg-fill hover:bg-divider"}`}>
@@ -102,6 +120,8 @@ export function SplitCard({ dimensions }: { dimensions: SplitDimensionView[] }) 
         </div>
       </div>
       <p className="border-t border-divider pt-2.5 text-[11px] font-semibold text-muted">The pointer reads the slice at the top. Pick one from its chip or click it on the wheel: the wheel turns to it and the holdings in it show beside. An ETF or a fund of shares counts as equity. A measure, never a suggestion.</p>
+        </>
+      )}
     </WidgetCard>
   );
 }

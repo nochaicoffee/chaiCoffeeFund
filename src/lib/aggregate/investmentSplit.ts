@@ -21,6 +21,8 @@ export interface SplitMember {
   market: InvestmentMarket;
   name: string;
   valueInr: number;
+  /** What it cost, in rupees. */
+  costInr: number;
   /** Its share of its slice, 0 to 1. */
   fractionOfSlice: number;
 }
@@ -102,7 +104,7 @@ export function splitHoldings(holdings: SplitHolding[], by: SplitBy): Slice[] {
         costInr,
         fraction: valueInr / total,
         gainFraction: costInr > 0 ? valueInr / costInr - 1 : null,
-        members: [...own].sort((a, b) => b.valueInr - a.valueInr).map((h) => ({ symbol: h.symbol, market: h.market, name: h.name, valueInr: h.valueInr, fractionOfSlice: h.valueInr / valueInr })),
+        members: [...own].sort((a, b) => b.valueInr - a.valueInr).map((h) => ({ symbol: h.symbol, market: h.market, name: h.name, valueInr: h.valueInr, costInr: h.costInr, fractionOfSlice: h.valueInr / valueInr })),
       };
     })
     .sort((a, b) => b.valueInr - a.valueInr);

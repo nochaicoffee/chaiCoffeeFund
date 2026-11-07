@@ -34,6 +34,17 @@ describe("splitView", () => {
     expect(equity.members.reduce((s, m) => s + m.fraction, 0)).toBeCloseTo(1, 12);
   });
 
+  it("gives each holding what the treemap needs: its rupees, its colour on the rest of the page, and its gain", () => {
+    const equity = view.dimensions[0].slices.find((s) => s.label === "Equity")!;
+    const aaa = equity.members.find((m) => m.symbol === "AAA")!;
+    expect(aaa.valueInr).toBeGreaterThan(0);
+    expect(aaa.costInr).toBeGreaterThan(0);
+    expect(aaa.gain).toMatch(/^[+−]?\d+%$/);
+    // The same colour in every cut, as on the holdings table.
+    const everywhere = view.dimensions.flatMap((d) => d.slices.flatMap((s) => s.members.filter((m) => m.symbol === "AAA").map((m) => m.colorKey)));
+    expect(new Set(everywhere).size).toBe(1);
+  });
+
   it("gives a share under 10% a decimal, so a small slice doesn't round to nothing", () => {
     const small = splitView(investmentOverview({ trades: [...trades, trade({ id: "s", symbol: "TNY", quantity: 10, price: 100, total: 1000 })], instruments: [...instruments, inst({ id: "k", symbol: "TNY", name: "Tiny", priceTicker: "TNY.NS" })], closes: new Map([...closes, ["TNY.NS", days(731, () => 100)]]), today: "2026-01-01" }))!;
     const tiny = small.dimensions[3].slices.find((s) => s.label === "TNY")!;
