@@ -10,6 +10,7 @@ import { SameMoney } from "@/components/investments/SameMoney";
 import { TradeButtons, TradeFormsProvider } from "@/components/investments/TradeForms";
 import { RefreshPricesButton } from "@/components/investments/RefreshPricesButton";
 import { Stage } from "@/components/investments/Stage";
+import { SplitCard } from "@/components/investments/SplitCard";
 import { ReturnsRow } from "@/components/investments/ReturnsRow";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { investmentOverview } from "@/lib/aggregate/investmentOverview";
@@ -19,6 +20,7 @@ import type { PricePoint } from "@/lib/prices/history";
 import { getPriceSeries } from "@/lib/prices/series";
 import { getCachedInstrumentsTab, getCachedInvestmentTransactionsTab } from "@/lib/sheets/cached";
 import { cashFrom, readCash } from "./loadCash";
+import { splitView } from "./splitView";
 import { tradeFormsData } from "./tradeFormsData";
 import { greetingView, holdingsView, lensViews, moneyInView, pickerView, recentTradesView, returnsView, sameMoneyView, summarySentence } from "./views";
 
@@ -43,6 +45,8 @@ export default async function InvestmentsPage() {
   const overview = investmentOverview({ trades: tradesTab.records, instruments: instrumentsTab.records, closes, today });
   const cash = cashFrom(await cashRead, overview.valueInr, today);
   const skipped = [tradesTab.skipped, instrumentsTab.skipped].filter((t) => t.rows.length > 0);
+
+  const split = splitView(overview);
 
   return (
     <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today)}>
@@ -71,6 +75,15 @@ export default async function InvestmentsPage() {
       {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} />}
       {cash && <CashCard view={cash} />}
       <MoneyAndSame money={moneyInView(tradesTab.records, instrumentsTab.records, today)} same={sameMoneyView(overview)} />
+      {split && (
+        <section aria-label="Understand it" className="flex flex-col gap-3">
+          <h2 className="px-1 text-base font-extrabold">
+            Understand it
+            <small className="ml-2 text-xs font-semibold text-muted">how it&apos;s split, where the weight sits, how it would move: arithmetic on your holdings, never a suggestion</small>
+          </h2>
+          <SplitCard dimensions={split.dimensions} />
+        </section>
+      )}
       <RecentTrades rows={recentTradesView(tradesTab.records, instrumentsTab.records)} />
     </div>
     </TradeFormsProvider>
