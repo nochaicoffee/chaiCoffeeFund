@@ -4,6 +4,8 @@ import { useActionState, useEffect, useRef, useState, type FormEvent, type React
 import { rateFor, saveEspp, saveTrade, saveVest } from "@/app/investments/tradeActions";
 import type { TradeFormsData } from "@/app/investments/tradeFormsData";
 import { cashAfterTrade } from "@/lib/aggregate/brokerCash";
+import { SOURCES, sourceMix } from "@/lib/aggregate/sourceMix";
+import { SOURCE_LABEL } from "@/lib/aggregate/investmentSplit";
 import { formatDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
 import { IDLE, type FormState } from "@/lib/forms/formState";
@@ -118,8 +120,9 @@ export function TradeDialog({ forms, trade, onClose, onSaved, onDelete }: Common
   const h = useHoldingFields(forms, { holding: trade ? holdingKey(trade.market, trade.symbol) : undefined, broker: trade?.broker, rate: trade?.fxRateToInr ? String(trade.fxRateToInr) : undefined, day: date });
   const source = trade?.source ?? "Market";
   const [paidFrom, setPaidFrom] = useState(trade?.settlementAccountId ?? "");
+  const [soldFrom, setSoldFrom] = useState<string>(trade?.soldFrom ?? "");
 
-  const values: Record<string, string> = { tradeType, source, tradeDate: date, holding: h.holding, quantity, price, total, fxRateToInr: h.rate, broker: h.broker, settlementAccountId: paidFrom };
+  const values: Record<string, string> = { tradeType, source, tradeDate: date, holding: h.holding, quantity, price, total, fxRateToInr: h.rate, broker: h.broker, settlementAccountId: paidFrom, soldFrom: tradeType === "Sell" ? soldFrom : "" };
   const check = readTradeForm(values, ctxOf(forms), forms.today, trade?.id);
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -139,6 +142,10 @@ export function TradeDialog({ forms, trade, onClose, onSaved, onDelete }: Common
   const currency = h.market === "US" ? "USD" : "INR";
   const before = h.instrument && date ? heldOn(forms.trades.filter((x) => x.id !== trade?.id), h.instrument.market, h.instrument.symbol, date) : null;
   const after = before !== null && Number.isFinite(q) && q > 0 ? before + (tradeType === "Buy" ? q : -q) : null;
+  // What was held by source on the day, without this trade: a sale can say which of them it took, once there is more than one to take from.
+  const held = h.instrument && date ? sourceMix(forms.trades.filter((x) => x.id !== trade?.id), date).get(holdingKey(h.instrument.market, h.instrument.symbol)) : undefined;
+  const sourcesHeld = held ? SOURCES.filter((k) => held.pools[k] > 1e-9) : [];
+  const picksSource = tradeType === "Sell" && (sourcesHeld.length > 1 || soldFrom !== "");
   const account = forms.cash.find((c) => c.id === paidFrom);
   const typedTotal = total.trim() === "" ? null : Number(total.replace(/,/g, ""));
   const amount = typedTotal !== null && Number.isFinite(typedTotal) ? typedTotal : worked;
@@ -187,6 +194,16 @@ export function TradeDialog({ forms, trade, onClose, onSaved, onDelete }: Common
         <Field id="total" label="Total" error={errors.total} help="Worked out as shares × price. Change it if your broker's total differs (fees).">
           <MoneyInput {...describedBy("total", errors.total, true)} symbol={h.market === "US" ? "$" : "₹"} inputMode="decimal" name="total" placeholder={worked !== null ? quantityText(worked) : ""} value={total} onChange={(e) => setTotal(e.target.value)} onBlur={() => reveal("total")} invalid={Boolean(errors.total)} />
         </Field>
+        {picksSource && (
+          <div className="md:col-span-2">
+            <Field id="soldFrom" label="Which shares did it take?" error={errors.soldFrom} help="Only for How it came in: your worth, gain and returns count every share alike.">
+              <SelectInput id="soldFrom" name="soldFrom" invalid={Boolean(errors.soldFrom)} placeholder="Not marked" options={[{ value: "", label: trade && trade.source !== "Market" ? `Its own: ${SOURCE_LABEL[trade.source]} (as recorded)` : "Not marked: counted in proportion" }, ...SOURCES.filter((k) => !held || held.pools[k] > 1e-9 || k === soldFrom).map((k) => ({ value: k, label: `${SOURCE_LABEL[k]}${held ? ` · ${Math.round(held.pools[k] * 1e4) / 1e4} held` : ""}` }))]} value={soldFrom} onChange={setSoldFrom} />
+            </Field>
+            {soldFrom !== "" && held && Number.isFinite(q) && q > held.pools[soldFrom as keyof typeof held.pools] + 1e-9 && (
+              <p role="status" className="mt-1.5 text-xs font-semibold text-muted">You held {Math.round(held.pools[soldFrom as keyof typeof held.pools] * 1e4) / 1e4} {SOURCE_LABEL[soldFrom as keyof typeof SOURCE_LABEL]} shares on that day, so the rest of the sale comes out of the others in proportion.</p>
+            )}
+          </div>
+        )}
         {forms.cash.length === 0 && <input type="hidden" name="settlementAccountId" value={paidFrom} />}
         {forms.cash.length > 0 && (
           <div className="md:col-span-2">

@@ -625,6 +625,12 @@ export interface InvestmentTransaction {
    * `market` is "US"; leave blank for "IND".
    */
   fxRateToInr?: number;
+  /**
+   * Which shares a Sell took: the ones bought with cash (Market), an ESPP purchase's or an RSU vest's. Only a Sell has it, and only
+   * "How it came in" reads it. Left blank, an ESPP sale or an RSU sell-to-cover took its own source's shares and any other sale is
+   * counted in proportion to what was held (docs/system-design.md, "How it came in").
+   */
+  soldFrom?: InvestmentSource;
 }
 
 // --- Fixed deposits ---

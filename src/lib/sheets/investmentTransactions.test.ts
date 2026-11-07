@@ -121,3 +121,18 @@ describe("the InvestmentTransactions tab's dropdowns", () => {
     expect(specs.find((spec) => spec.name === "fxRateToInr")?.type).toBe("DOUBLE");
   });
 });
+
+describe("soldFrom", () => {
+  const sell = { tradeDate: "2025-06-01", symbol: "NTAP", market: "US", currency: "USD", tradeType: "Sell", source: "Market", quantity: 5, price: 100, total: 500, assetType: "Equity", broker: "E*TRADE", fxRateToInr: 85 } as const;
+
+  it("is allowed on a sale and refused on a buy", () => {
+    expect(createInvestmentTransactionSchema.safeParse({ ...sell, soldFrom: "ESPP" }).success).toBe(true);
+    expect(createInvestmentTransactionSchema.safeParse({ ...sell, tradeType: "Buy", soldFrom: "ESPP" }).success).toBe(false);
+    expect(createInvestmentTransactionSchema.safeParse(sell).success).toBe(true);
+  });
+
+  it("is one of the three sources, and an update can clear it", () => {
+    expect(createInvestmentTransactionSchema.safeParse({ ...sell, soldFrom: "Gift" }).success).toBe(false);
+    expect(updateInvestmentTransactionSchema.safeParse({ soldFrom: "" }).success).toBe(true);
+  });
+});

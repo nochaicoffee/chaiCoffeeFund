@@ -21,11 +21,13 @@ const investmentTransactionFields = z.object({
   broker: nonEmptyString,
   settlementAccountId: nonEmptyString.optional(),
   fxRateToInr: positiveNumber.optional(),
+  // Added on the end for How it came in: which shares a Sell took.
+  soldFrom: z.enum(["Market", "RSU", "ESPP"]).optional(),
 });
 
 const CURRENCY_OF_MARKET = { IND: "INR", US: "USD" } as const;
 
-const tradeRules = rowRules<Pick<InvestmentTransaction, "market" | "currency" | "fxRateToInr">>([
+const tradeRules = rowRules<Pick<InvestmentTransaction, "market" | "currency" | "fxRateToInr" | "tradeType" | "soldFrom">>([
   {
     // `currency` is derivable from `market`, so a row that disagrees would be costed in the wrong money.
     path: "currency",
@@ -43,6 +45,11 @@ const tradeRules = rowRules<Pick<InvestmentTransaction, "market" | "currency" | 
     message: "Only a US trade has an exchange rate: leave it blank for an IND trade",
     broken: (row) => row.market === "IND" && row.fxRateToInr !== undefined,
   },
+  {
+    path: "soldFrom",
+    message: "Only a sale took shares from somewhere: leave 'sold from' blank on a buy",
+    broken: (row) => row.tradeType === "Buy" && row.soldFrom !== undefined,
+  },
 ]);
 
 /** The same rules on a whole row, which the repository runs on each new row and on the row after an update is merged over the stored one. */
@@ -57,6 +64,7 @@ export const createInvestmentTransactionSchema = investmentTransactionFields.sup
 export const updateInvestmentTransactionSchema = investmentTransactionFields.partial().extend({
   settlementAccountId: clearable(nonEmptyString).optional(),
   fxRateToInr: clearableToUnset(positiveNumber).optional(),
+  soldFrom: clearableToUnset(z.enum(["Market", "RSU", "ESPP"])).optional(),
 });
 
 /** A row as read back from the Sheet: a valid create, plus its id. */
@@ -78,6 +86,7 @@ export const INVESTMENT_TRANSACTION_COLUMNS: (keyof InvestmentTransaction)[] = [
   "broker",
   "settlementAccountId",
   "fxRateToInr",
+  "soldFrom",
 ];
 
 export const investmentTransactionsRepository = createRepository<InvestmentTransaction>({
