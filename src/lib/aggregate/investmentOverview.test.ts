@@ -188,3 +188,21 @@ describe("investmentOverview: what the holdings table shows", () => {
     expect(bare.holdings[0]).toMatchObject({ valueNative: null, dayFraction: null, priceSource: null });
   });
 });
+
+describe("investmentOverview: the same money somewhere else", () => {
+  const trades = [trade({})]; // 100 AAA at 100 on the first day, held two years
+  const o = investmentOverview({ trades, instruments: [inst({})], closes, today: "2026-01-01" });
+
+  it("puts what he put in into each line on the day he did, and grows it with the line", () => {
+    const nifty = o.sameMoney.find((l) => l.key === "nifty")!;
+    expect(nifty.valueInr).toBeCloseTo(10_000 * ((100 + 730 * 0.05) / 100), 4); // Nifty 100 to 136.5
+    const deposit = o.sameMoney.find((l) => l.key === "deposit")!;
+    expect(deposit.valueInr).toBeCloseTo(10_000 * Math.pow(1.07, 730 / 365), 2);
+    expect(o.sameMoney.find((l) => l.key === "sp500")!.valueInr).toBeCloseTo(10_000, 6); // flat in this sample
+  });
+
+  it("leaves a line out when there is no history to put the money in", () => {
+    const bare = investmentOverview({ trades, instruments: [inst({})], closes: new Map([["AAA.NS", closes.get("AAA.NS")!]]), today: "2026-01-01" });
+    expect(bare.sameMoney.map((l) => l.key)).toEqual(["deposit"]);
+  });
+});

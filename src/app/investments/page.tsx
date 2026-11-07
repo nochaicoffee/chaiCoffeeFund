@@ -3,7 +3,9 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { GreetingSentence } from "@/components/investments/GreetingSentence";
 import { HoldingsTable } from "@/components/investments/HoldingsTable";
+import { MoneyIn } from "@/components/investments/MoneyIn";
 import { RecentTrades } from "@/components/investments/RecentTrades";
+import { SameMoney } from "@/components/investments/SameMoney";
 import { TradeButtons, TradeFormsProvider } from "@/components/investments/TradeForms";
 import { RefreshPricesButton } from "@/components/investments/RefreshPricesButton";
 import { Stage } from "@/components/investments/Stage";
@@ -16,7 +18,7 @@ import type { PricePoint } from "@/lib/prices/history";
 import { getPriceSeries } from "@/lib/prices/series";
 import { getCachedInstrumentsTab, getCachedInvestmentTransactionsTab } from "@/lib/sheets/cached";
 import { tradeFormsData } from "./tradeFormsData";
-import { greetingView, holdingsView, lensViews, pickerView, recentTradesView, returnsView, summarySentence } from "./views";
+import { greetingView, holdingsView, lensViews, moneyInView, pickerView, recentTradesView, returnsView, sameMoneyView, summarySentence } from "./views";
 
 export const metadata: Metadata = { title: "Investments" };
 
@@ -62,8 +64,20 @@ export default async function InvestmentsPage() {
       <Stage series={overview.series} race={overview.race} lenses={lensViews(overview)} picks={pickerView(overview)} holdingCount={overview.holdings.length} />
       <ReturnsRow cards={returnsView(overview)} />
       {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} />}
+      <MoneyAndSame money={moneyInView(tradesTab.records, instrumentsTab.records, today)} same={sameMoneyView(overview)} />
       <RecentTrades rows={recentTradesView(tradesTab.records, instrumentsTab.records)} />
     </div>
     </TradeFormsProvider>
+  );
+}
+
+/** Money in beside the same money somewhere else, as the design sets them (two halves); either alone takes the whole row. */
+function MoneyAndSame({ money, same }: { money: ReturnType<typeof moneyInView>; same: ReturnType<typeof sameMoneyView> }) {
+  if (!money && same.length === 0) return null;
+  return (
+    <div className={`grid items-stretch gap-6 ${money && same.length > 0 ? "lg:grid-cols-2" : ""}`}>
+      {money && <MoneyIn view={money} />}
+      <SameMoney rows={same} />
+    </div>
   );
 }

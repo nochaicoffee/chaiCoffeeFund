@@ -1,10 +1,11 @@
 import type { SentencePart } from "@/app/cards/summarySentence";
 import { formatLakh } from "@/lib/format/lakh";
 import type { GreetingRowData } from "@/components/shell/GreetingParts";
+import { moneyIn, type MoneySource } from "@/lib/aggregate/moneyIn";
 import { DEPOSIT_RATE } from "@/lib/aggregate/raceLines";
 import type { HoldingLens, LensMarker, LensPoint } from "@/lib/aggregate/holdingLens";
 import type { HoldingRow, Overview } from "@/lib/aggregate/investmentOverview";
-import { formatDate, formatMonthShort, formatShortDate } from "@/lib/format/date";
+import { formatDate, formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
 import { formatInr, formatInrExact, formatMoney } from "@/lib/format/money";
 import type { Instrument, InvestmentMarket, InvestmentTransaction } from "@/lib/sheets/types";
 
@@ -463,4 +464,91 @@ export function pickerView(o: Overview): PickCard[] {
     });
   });
   return cards;
+}
+
+// ---------- Money in ----------
+export interface MoneyCellView {
+  key: string;
+  /** "March 2025". */
+  label: string;
+  state: "future" | "empty" | "on";
+  /** The colour token behind the cell, from the source that put in the most; null for a month with no buys. */
+  colorKey: "teal" | "violet" | "sapphire" | null;
+  /** How much of that colour, 0 to 100 (the rest is the card's fill). */
+  percent: number;
+  sold: boolean;
+  /** The hover card: what was put in, a line for a sale, and a row for each buy. Null for a month with nothing in it. */
+  tip: { head: string; total: string; detail: string; rows: { name: string; amount: string }[] } | null;
+}
+export interface MoneyYearView {
+  year: number;
+  cells: MoneyCellView[];
+  total: string;
+  /** 0 to 1 against the biggest year. */
+  fraction: number;
+}
+export interface MoneyInView {
+  years: MoneyYearView[];
+  /** "34 of 62". */
+  monthsLine: string;
+}
+
+const SOURCE_COLOUR: Record<MoneySource, "teal" | "violet" | "sapphire"> = { Market: "teal", ESPP: "violet", RSU: "sapphire" };
+
+/** The Money in grid: a cell a month for each year since his first trade, deeper for more, coloured by where the money came from. */
+export function moneyInView(trades: InvestmentTransaction[], instruments: Instrument[], today: string): MoneyInView | null {
+  const m = moneyIn(trades, instruments, today);
+  if (m.years.length === 0) return null;
+  return {
+    monthsLine: `${m.monthsWithBuy} of ${m.monthsSinceFirst}`,
+    years: m.years.map((y) => ({
+      year: y.year,
+      total: formatLakh(y.buyInr),
+      fraction: m.biggestYearInr > 0 ? y.buyInr / m.biggestYearInr : 0,
+      cells: y.months.map((c) => ({
+        key: c.key,
+        label: formatMonthYear(c.key),
+        state: c.state,
+        colorKey: c.dominant === null ? null : SOURCE_COLOUR[c.dominant],
+        percent: Math.round(c.strength * 100),
+        sold: c.sold,
+        tip: c.state !== "on" ? null : {
+          head: formatMonthYear(c.key),
+          total: c.buyInr > 0 ? formatInr(c.buyInr) : "No buys",
+          detail: c.sold ? (c.buyInr > 0 ? "and a sale" : "a sale") : "put in",
+          rows: c.items.map((i) => ({ name: i.label, amount: `${i.amountInr < 0 ? MINUS : ""}${formatInr(Math.abs(i.amountInr))}` })),
+        },
+      })),
+    })),
+  };
+}
+
+// ---------- The same money, somewhere else ----------
+export interface SameMoneyRow {
+  key: string;
+  label: string;
+  value: string;
+  /** 0 to 1 against the biggest line. */
+  fraction: number;
+  /** "₹3.2L more than you", or for him "+₹3.40L on ₹27.30L". */
+  note: string;
+  tone: Tone;
+  you: boolean;
+  colour: string;
+}
+
+const SAME_COLOUR = { you: "oklch(0.82 0.17 152)", nifty: "oklch(0.58 0.11 200)", sp500: "oklch(0.5 0.13 262)", deposit: "oklch(0.6 0.012 260)" } as const;
+
+/** Him as he went, and what the same buys and sales would be worth in each line: a counterfactual, never advice. */
+export function sameMoneyView(o: Overview): SameMoneyRow[] {
+  if (o.holdings.length === 0 || o.sameMoney.length === 0) return [];
+  const biggest = Math.max(o.valueInr, ...o.sameMoney.map((l) => l.valueInr));
+  return [
+    { key: "you", label: "You, as it went", value: formatLakh(o.valueInr), fraction: o.valueInr / biggest, note: `${signedLakh(o.gainInr)} on ${formatLakh(o.costInr)}`, tone: "plain" as Tone, you: true, colour: SAME_COLOUR.you },
+    ...o.sameMoney.map((l) => ({
+      key: l.key, label: l.label, value: formatLakh(l.valueInr), fraction: Math.max(0, l.valueInr / biggest),
+      note: l.valueInr > o.valueInr ? `${formatLakh(l.valueInr - o.valueInr)} more than you` : `${formatLakh(o.valueInr - l.valueInr)} less than you`,
+      tone: (l.valueInr > o.valueInr ? "loss" : "gain") as Tone, you: false, colour: SAME_COLOUR[l.key],
+    })),
+  ];
 }
