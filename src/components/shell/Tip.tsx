@@ -11,7 +11,7 @@ export function Tip({ children, card, className = "", place = "up", align = "cen
   return (
     <span tabIndex={0} aria-label={label} style={style} className={`group/tip relative focus-visible:outline-2 focus-visible:outline-accent ${className}`}>
       {children}
-      <span role="tooltip" className={`pointer-events-none invisible absolute z-30 ${x} ${place === "up" ? "bottom-[calc(100%+8px)]" : "top-[calc(100%+8px)]"} opacity-0 group-hover/tip:visible group-hover/tip:opacity-100 group-focus-visible/tip:visible group-focus-visible/tip:opacity-100 motion-safe:transition-opacity motion-safe:duration-150`} style={{ width }}>
+      <span role="tooltip" className={`pointer-events-none absolute z-30 hidden ${x} ${place === "up" ? "bottom-[calc(100%+8px)]" : "top-[calc(100%+8px)]"} group-hover/tip:block group-focus-visible/tip:block motion-safe:animate-tip-in`} style={{ width }}>
         <span className="block rounded-[14px] border border-[var(--tip-line)] bg-[var(--tip-surface)] p-3 text-left text-[var(--tip-fg)] shadow-[var(--tip-shadow)]">{card}</span>
       </span>
     </span>
