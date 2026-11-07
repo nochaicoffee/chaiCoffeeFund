@@ -130,3 +130,20 @@ describe("computeNetWorth", () => {
     });
   });
 });
+
+describe("computeNetWorth with investments at market value (F-OV-05)", () => {
+  const trade: InvestmentTransaction = { id: "t1", tradeDate: "2026-01-01", symbol: "AAA", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 10, price: 1000, total: 10000, assetType: "Equity", broker: "B" };
+  const base = { accounts: [], balanceSnapshots: [], cards: [], statements: [], loans: [], loanInstallments: [], investmentTransactions: [trade], fixedDeposits: [], asOfDate: "2026-08-25" };
+
+  it("counts investments at cost when no value is given, as before", () => {
+    expect(computeNetWorth(base).investmentValueInr).toBe(10000);
+  });
+  it("counts the value the caller gives instead, and net worth follows it", () => {
+    const result = computeNetWorth({ ...base, investmentValueInr: 14500 });
+    expect(result.investmentValueInr).toBe(14500);
+    expect(result.netWorth).toBe(14500);
+  });
+  it("takes a value of nothing as nothing, not as missing", () => {
+    expect(computeNetWorth({ ...base, investmentValueInr: 0 }).investmentValueInr).toBe(0);
+  });
+});

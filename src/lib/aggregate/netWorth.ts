@@ -33,12 +33,17 @@ export interface NetWorthInputs {
   /** Money lent to people, and what has come back. Optional: a page that has none to give leaves it out. */
   lentLoans?: LentLoan[];
   lentRepayments?: LentRepayment[];
+  /**
+   * What the holdings are worth today, in rupees, as the Investments page works it out (a holding with no price counted at its cost). Optional:
+   * without it investments stay at cost basis, as every caller did before the Overview moved to market value (F-OV-05).
+   */
+  investmentValueInr?: number;
   asOfDate: string;
 }
 
 export interface NetWorthBreakdown {
   bankBalances: number;
-  /** Cost basis, not market value — see the note on this function below. */
+  /** Market value when the caller gave it (inputs.investmentValueInr), else cost basis: see the note on this function below. */
   investmentValueInr: number;
   fixedDepositValueInr: number;
   /** EPF at the passbook figure: credits plus interest EPFO has credited, both shares. Never the interest still to come. */
@@ -56,14 +61,12 @@ export interface NetWorthBreakdown {
  * subscription cost isn't a liability the way a loan's remaining principal
  * or a card's outstanding balance is).
  *
- * `investmentValueInr` uses cost basis (totalCostBasisInr), not live market
- * value — the live-price/FX wiring is still an open question in the plan
- * for the investments phase. Once that's wired, swap in a valueHolding-based
- * total here instead; net worth will read as more accurate, not "different."
+ * `investmentValueInr` is the market value the caller passes in (the Overview does, from
+ * investmentOverview); without it, cost basis (totalCostBasisInr), as before.
  */
 export function computeNetWorth(inputs: NetWorthInputs): NetWorthBreakdown {
   const bankBalances = totalAccountBalance(inputs.accounts, inputs.balanceSnapshots);
-  const investmentValueInr = totalCostBasisInr(inputs.investmentTransactions);
+  const investmentValueInr = inputs.investmentValueInr ?? totalCostBasisInr(inputs.investmentTransactions);
   const fixedDepositValueInr = totalEstimatedFixedDepositValue(inputs.fixedDeposits, inputs.asOfDate);
   // Each account on its own (the balance functions take one account's entries): a closed account still holds its balance.
   const epfEntries = inputs.epfEntries ?? [];
