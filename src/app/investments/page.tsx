@@ -10,7 +10,9 @@ import { SameMoney } from "@/components/investments/SameMoney";
 import { TradeButtons, TradeFormsProvider } from "@/components/investments/TradeForms";
 import { RefreshPricesButton } from "@/components/investments/RefreshPricesButton";
 import { Stage } from "@/components/investments/Stage";
+import { GainCard } from "@/components/investments/GainCard";
 import { SplitCard } from "@/components/investments/SplitCard";
+import { WeightCard } from "@/components/investments/WeightCard";
 import { ReturnsRow } from "@/components/investments/ReturnsRow";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { investmentOverview } from "@/lib/aggregate/investmentOverview";
@@ -22,6 +24,7 @@ import { getCachedInstrumentsTab, getCachedInvestmentTransactionsTab } from "@/l
 import { cashFrom, readCash } from "./loadCash";
 import { splitView } from "./splitView";
 import { tradeFormsData } from "./tradeFormsData";
+import { gainView, weightView } from "./understandViews";
 import { greetingView, holdingsView, lensViews, moneyInView, pickerView, recentTradesView, returnsView, sameMoneyView, summarySentence } from "./views";
 
 export const metadata: Metadata = { title: "Investments" };
@@ -47,6 +50,8 @@ export default async function InvestmentsPage() {
   const skipped = [tradesTab.skipped, instrumentsTab.skipped].filter((t) => t.rows.length > 0);
 
   const split = splitView(overview);
+  const weight = weightView(overview);
+  const gain = gainView(overview);
 
   return (
     <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today)}>
@@ -75,13 +80,19 @@ export default async function InvestmentsPage() {
       {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} />}
       {cash && <CashCard view={cash} />}
       <MoneyAndSame money={moneyInView(tradesTab.records, instrumentsTab.records, today)} same={sameMoneyView(overview)} />
-      {split && (
+      {(split || weight || gain) && (
         <section aria-label="Understand it" className="flex flex-col gap-3">
           <h2 className="px-1 text-base font-extrabold">
             Understand it
             <small className="ml-2 text-xs font-semibold text-muted">how it&apos;s split, where the weight sits, how it would move: arithmetic on your holdings, never a suggestion</small>
           </h2>
-          <SplitCard dimensions={split.dimensions} />
+          {split && <SplitCard dimensions={split.dimensions} />}
+          {(weight || gain) && (
+            <div className={`grid items-stretch gap-6 ${weight && gain ? "lg:grid-cols-2" : ""}`}>
+              {weight && <WeightCard view={weight} />}
+              {gain && <GainCard view={gain} />}
+            </div>
+          )}
         </section>
       )}
       <RecentTrades rows={recentTradesView(tradesTab.records, instrumentsTab.records)} />

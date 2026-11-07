@@ -34,7 +34,7 @@ export interface GreetingCard {
 export type InvestmentsGreetingCards = Partial<Record<InvestmentsPoint, GreetingCard>>;
 
 const COLORS = ["sapphire", "teal", "emerald", "violet", "amber", "copper", "ocean", "rose"] as const;
-const colorOf = (i: number) => COLORS[i % COLORS.length];
+export const colorOf = (i: number) => COLORS[i % COLORS.length];
 
 function top(o: Overview): HoldingRow | undefined {
   return o.holdings[0];
@@ -163,7 +163,7 @@ export function greetingView(o: Overview, cash: CashView | null = null): Investm
 // ---------- The returns row ----------
 /** A figure's colour: a gain, a loss or neither. */
 export type Tone = "gain" | "loss" | "plain";
-const tone = (n: number | null): Tone => (n === null || n === 0 ? "plain" : n > 0 ? "gain" : "loss");
+export const tone = (n: number | null): Tone => (n === null || n === 0 ? "plain" : n > 0 ? "gain" : "loss");
 
 export interface ReturnTip {
   head: string;
