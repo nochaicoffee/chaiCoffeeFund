@@ -3,12 +3,13 @@
 import { updateTag } from "next/cache";
 import { todayIso } from "@/lib/format/date";
 import type { FormState } from "@/lib/forms/formState";
+import { readInstrumentForm } from "@/lib/forms/instrumentForm";
 import { deleteProblem, readEsppForm, readTradeForm, readVestForm, type TradeFormContext, type TradeInput } from "@/lib/forms/tradeForms";
 import { parseUsdInrOn, usdInrOnUrl } from "@/lib/prices/usdInrParse";
 import { CACHE_TAGS } from "@/lib/sheets/cached";
 import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
 import { accountsRepository } from "@/lib/sheets/accounts";
-import { instrumentsRepository } from "@/lib/sheets/instruments";
+import { createInstrumentSchema, instrumentsRepository } from "@/lib/sheets/instruments";
 import { createInvestmentTransactionSchema, investmentTransactionsRepository, updateInvestmentTransactionSchema } from "@/lib/sheets/investmentTransactions";
 import { InvalidRowError, NotFoundError } from "@/lib/sheets/repository";
 import type { InvestmentTransaction } from "@/lib/sheets/types";
@@ -74,6 +75,20 @@ const withoutId = (row: InvestmentTransaction): TradeInput => {
 
 type UndoToken = { op: "added"; ids: string[] } | { op: "deleted"; rows: TradeInput[] };
 const token = (value: UndoToken): string => JSON.stringify(value);
+
+/** Add a holding (an instrument): what it is and where its price comes from, so the trade forms can offer it. */
+export async function saveInstrument(_previous: FormState, formData: FormData): Promise<FormState> {
+  try {
+    const result = readInstrumentForm(fields(formData), await instrumentsRepository.list());
+    if (!result.ok) return { status: "invalid", errors: result.errors };
+    await instrumentsRepository.createMany([createInstrumentSchema.parse(result.input)]);
+    updateTag(CACHE_TAGS.instruments);
+    return { status: "saved", at: Date.now() };
+  } catch (error) {
+    if (error instanceof InvalidRowError) return { status: "invalid", errors: { form: error.message } };
+    return failed("saveInstrument", error);
+  }
+}
 
 /** Add a trade, or Edit one when the form carries an id. */
 export async function saveTrade(_previous: FormState, formData: FormData): Promise<FormState> {

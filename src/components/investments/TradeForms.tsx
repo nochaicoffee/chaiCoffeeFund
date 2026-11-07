@@ -9,6 +9,7 @@ import { AlertIcon } from "../cards/forms/icons";
 import { FormTriggerButton, HEADER_GHOST_CLASS } from "../shell/FormTriggerButton";
 import { useUndoToast } from "../shell/UndoToast";
 import { ConfirmDialog } from "../subscriptions/forms/ConfirmDialog";
+import { InstrumentDialog } from "./InstrumentDialog";
 import { EsppDialog, TradeDialog, VestDialog } from "./TradeDialogs";
 
 /**
@@ -16,7 +17,7 @@ import { EsppDialog, TradeDialog, VestDialog } from "./TradeDialogs";
  * that fits the trade) and Delete. A trade just added or deleted gets a toast with Undo for six seconds.
  */
 
-type Open = { kind: "add" } | { kind: "vest" } | { kind: "espp" } | { kind: "edit"; id: string } | { kind: "delete"; target: EditTarget };
+type Open = { kind: "add" } | { kind: "holding" } | { kind: "vest" } | { kind: "espp" } | { kind: "edit"; id: string } | { kind: "delete"; target: EditTarget };
 
 interface Controls {
   forms: TradeFormsData;
@@ -58,6 +59,7 @@ export function TradeFormsProvider({ forms, children }: { forms: TradeFormsData;
     <FormsContext.Provider value={{ forms, open: show }}>
       {children}
       {open?.kind === "add" && <TradeDialog forms={forms} onClose={close} onSaved={done("Saved.")} />}
+      {open?.kind === "holding" && <InstrumentDialog existing={forms.instruments} onClose={close} onSaved={() => saved(undefined, "Holding added.")} />}
       {open?.kind === "vest" && <VestDialog forms={forms} onClose={close} onSaved={done("Saved.")} />}
       {open?.kind === "espp" && <EsppDialog forms={forms} onClose={close} onSaved={done("Saved.")} />}
       {target?.kind === "trade" && <TradeDialog forms={forms} trade={find(target.ids[0])} onClose={close} onSaved={done("Saved.")} onDelete={toDelete(target)} />}
@@ -87,7 +89,7 @@ export function TradeFormsProvider({ forms, children }: { forms: TradeFormsData;
   );
 }
 
-/** The page header's three ways in. */
+/** The page header's four ways in. */
 export function TradeButtons() {
   const { open } = useTradeForms();
   return (
@@ -95,6 +97,7 @@ export function TradeButtons() {
       <FormTriggerButton className={HEADER_GHOST_CLASS} label="Add trade" onClick={() => open({ kind: "add" })} />
       <FormTriggerButton className={HEADER_GHOST_CLASS} label="RSU vest" onClick={() => open({ kind: "vest" })} />
       <FormTriggerButton className={HEADER_GHOST_CLASS} label="ESPP purchase" onClick={() => open({ kind: "espp" })} />
+      <FormTriggerButton className={HEADER_GHOST_CLASS} label="Add holding" onClick={() => open({ kind: "holding" })} />
     </>
   );
 }
