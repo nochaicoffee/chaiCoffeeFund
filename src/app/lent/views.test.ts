@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { attentionView, greetingView, lentModel, summarySentence, type LentData } from "./views";
+import { attentionView, greetingView, lentModel, overviewAttention, summarySentence, type LentData } from "./views";
 import type { IncomeEntry, IncomeSource, LentLoan, LentRepayment } from "@/lib/sheets/types";
 
 const TODAY = "2026-11-06";
@@ -117,5 +117,22 @@ describe("what needs attention", () => {
     const paid: LentRepayment[] = [{ id: "r", lentLoanId: "a", date: "2026-01-01", amount: 1000, kind: "Interest" }];
     expect(attentionView(lentModel({ ...data, loans: [a], repayments: paid }, TODAY))).toEqual([]);
     expect(attentionView(lentModel({ ...data, loans: [{ ...a, startDate: "2026-06-01" }] }, TODAY))).toEqual([]);
+  });
+});
+
+describe("what the Overview borrows", () => {
+  it("takes the payout that isn't here and the loan out a long time, worded as the page words them", () => {
+    const m = lentModel(data, TODAY);
+    expect(overviewAttention(m)).toEqual(attentionView(m).map((i) => ({ label: i.title, detail: i.text })));
+    expect(overviewAttention(m)).toHaveLength(2);
+  });
+  it("leaves out a payout loan nothing tracks, which is a setup gap and not an event", () => {
+    const unlinked: LentLoan = { ...b, incomeSourceId: undefined };
+    const m = lentModel({ ...data, loans: [unlinked], sources: [] }, TODAY);
+    expect(attentionView(m)).toHaveLength(1);
+    expect(overviewAttention(m)).toEqual([]);
+  });
+  it("is empty when nothing is wrong", () => {
+    expect(overviewAttention(lentModel({ ...data, loans: [], entries: [] }, TODAY))).toEqual([]);
   });
 });

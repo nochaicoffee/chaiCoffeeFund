@@ -191,7 +191,7 @@ Money Prathik has lent to friends, outside any bank. It is **not** a bank `Loan`
   - Owed today = principal still out + (accrued interest − interest paid, never below zero). A loan marked Repaid owes nothing whatever its rows say. A Paid-out loan accrues nothing here.
   - Nothing is stored: the accrued figure is recomputed from the loan and its repayments on every read, so it can't go stale.
 - **Net worth**: `lentOutInr` is its own asset line ("Lent out"), added to net worth. It is owed by a person and can go bad, so it is never folded into Fixed Deposits. If the tabs can't be read, Overview says so under "What needs attention" and leaves the line out instead of failing.
-- **Not built yet**: the Lent page (entry forms and a per-loan view), and the income sources for the two payout loans. Until then rows go in the Sheet, or through `/api/lent-loans` and `/api/lent-repayments`.
+- **The Lent page** (`/lent`, built 2026-11-07; design `docs/design/lent-out.md`): greeting, what needs attention, Who owes what, the interest clock, the loans table, interest coming up and money back, and the forms (add, edit, record a repayment, mark repaid, reopen, delete). A payout loan's promised payouts and what arrived are read from its income source (ADR 0014), whether the source was made with the loan or already existed. **Overview** shows the Lent out line, a Lent out tile that opens the page, and the page's late or missing payouts and long-out loans under "What needs attention" (`overviewAttention` in `src/app/lent/views.ts`).
 
 ### Investments page (designed 2026-11-02, proposals: nothing here is built or decided)
 
