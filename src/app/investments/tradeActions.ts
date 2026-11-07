@@ -7,6 +7,7 @@ import { deleteProblem, readEsppForm, readTradeForm, readVestForm, type TradeFor
 import { parseUsdInrOn, usdInrOnUrl } from "@/lib/prices/usdInrParse";
 import { CACHE_TAGS } from "@/lib/sheets/cached";
 import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
+import { accountsRepository } from "@/lib/sheets/accounts";
 import { instrumentsRepository } from "@/lib/sheets/instruments";
 import { createInvestmentTransactionSchema, investmentTransactionsRepository, updateInvestmentTransactionSchema } from "@/lib/sheets/investmentTransactions";
 import { InvalidRowError, NotFoundError } from "@/lib/sheets/repository";
@@ -34,9 +35,10 @@ function refreshed(undo?: { id: string; message: string }): FormState {
   return { status: "saved", at: Date.now(), ...(undo && { undo }) };
 }
 
-async function load(): Promise<TradeFormContext> {
-  const [instruments, trades] = await Promise.all([instrumentsRepository.list(), investmentTransactionsRepository.list()]);
-  return { instruments, trades };
+/** `withAccounts` also reads the Accounts tab, for a trade that names a cash account to be paid from: the other forms never do. */
+async function load(withAccounts = false): Promise<TradeFormContext> {
+  const [instruments, trades, accounts] = await Promise.all([instrumentsRepository.list(), investmentTransactionsRepository.list(), withAccounts ? accountsRepository.list() : Promise.resolve(null)]);
+  return { instruments, trades, ...(accounts && { cashAccountIds: accounts.filter((a) => a.accountType === "Brokerage").map((a) => a.id) }) };
 }
 
 /** Frankfurter's USD to INR for a day (the last working day's for a weekend), for the form to prefill and the action to fall back on. */
@@ -62,7 +64,7 @@ async function withRate(raw: Record<string, FormDataEntryValue>, ctx: TradeFormC
 }
 
 const parseRow = (row: TradeInput) => createInvestmentTransactionSchema.parse(row);
-const patchOf = (row: TradeInput) => updateInvestmentTransactionSchema.parse({ ...row, fxRateToInr: row.fxRateToInr ?? "" }) as Partial<Omit<InvestmentTransaction, "id">>;
+const patchOf = (row: TradeInput) => updateInvestmentTransactionSchema.parse({ ...row, fxRateToInr: row.fxRateToInr ?? "", settlementAccountId: row.settlementAccountId ?? "" }) as Partial<Omit<InvestmentTransaction, "id">>;
 
 const withoutId = (row: InvestmentTransaction): TradeInput => {
   const copy: Partial<InvestmentTransaction> = { ...row };
@@ -77,7 +79,7 @@ const token = (value: UndoToken): string => JSON.stringify(value);
 export async function saveTrade(_previous: FormState, formData: FormData): Promise<FormState> {
   const [editing] = ids(formData);
   try {
-    const ctx = await load();
+    const ctx = await load(String(formData.get("settlementAccountId") ?? "").trim() !== "");
     if (editing && !ctx.trades.some((t) => t.id === editing)) return gone;
     const result = readTradeForm(await withRate(fields(formData), ctx, "tradeDate"), ctx, todayIso(), editing);
     if (!result.ok) return { status: "invalid", errors: result.errors };

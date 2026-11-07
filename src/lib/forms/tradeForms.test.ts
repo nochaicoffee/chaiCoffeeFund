@@ -84,6 +84,38 @@ describe("readTradeForm", () => {
   });
 });
 
+describe("readTradeForm, paid from a cash account", () => {
+  const withCash = { ...ctx(), cashAccountIds: ["ibkr", "zerodha"] };
+
+  it("keeps the cash account the trade was paid from, and leaves it off when none is picked", () => {
+    const paid = readTradeForm({ ...buy, settlementAccountId: "ibkr" }, withCash, TODAY);
+    expect(paid.ok && paid.input.row.settlementAccountId).toBe("ibkr");
+    const none = readTradeForm({ ...buy, settlementAccountId: "" }, withCash, TODAY);
+    expect(none.ok && "settlementAccountId" in none.input.row).toBe(false);
+    const missing = readTradeForm(buy, withCash, TODAY);
+    expect(missing.ok && "settlementAccountId" in missing.input.row).toBe(false);
+  });
+
+  it("refuses an account that isn't a broker cash account", () => {
+    const r = readTradeForm({ ...buy, settlementAccountId: "hdfc-savings" }, withCash, TODAY);
+    expect(r.ok === false && r.errors.settlementAccountId).toMatch(/broker cash account/);
+  });
+
+  it("lets an edit keep the account the trade was saved with, whatever it has become, but refuses a new one off the list", () => {
+    const saved = t({ id: "old", settlementAccountId: "hdfc-savings" });
+    const keep = readTradeForm({ ...buy, settlementAccountId: "hdfc-savings" }, { ...withCash, trades: [saved] }, TODAY, "old");
+    expect(keep.ok && keep.input.row.settlementAccountId).toBe("hdfc-savings");
+    const other = readTradeForm({ ...buy, settlementAccountId: "other-bank" }, { ...withCash, trades: [saved] }, TODAY, "old");
+    expect(other.ok).toBe(false);
+    const adding = readTradeForm({ ...buy, settlementAccountId: "hdfc-savings" }, { ...withCash, trades: [saved] }, TODAY);
+    expect(adding.ok).toBe(false);
+  });
+
+  it("takes any account when the form wasn't told which are cash accounts", () => {
+    expect(readTradeForm({ ...buy, settlementAccountId: "anything" }, ctx(), TODAY).ok).toBe(true);
+  });
+});
+
 describe("readVestForm", () => {
   const vest = { tradeDate: "2026-11-05", holding: "US:NTAP", sharesVested: "14", fairValue: "118.4", sharesSold: "5", soldAt: "", fxRateToInr: "94.48", broker: "E*TRADE" };
 
