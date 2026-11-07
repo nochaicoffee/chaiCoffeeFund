@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { investmentOverview } from "@/lib/aggregate/investmentOverview";
 import type { PricePoint } from "@/lib/prices/history";
 import type { Instrument, InvestmentTransaction } from "@/lib/sheets/types";
-import { greetingView, holdingGroups, holdingsView, lensViews, monthYear, pct, pickerView, recentTradesView, returnsView, summarySentence } from "./views";
+import { greetingView, holdingGroups, holdingsView, lensViews, moneyInView, monthYear, pct, pickerView, recentTradesView, returnsView, sameMoneyView, summarySentence } from "./views";
 
 const trade = (o: Partial<InvestmentTransaction>): InvestmentTransaction => ({
   id: "t", tradeDate: "2024-01-02", symbol: "AAA", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 100, price: 100, total: 10000, assetType: "Equity", broker: "B", ...o,
@@ -316,5 +316,63 @@ describe("holdingGroups", () => {
     expect(groups[1].rows.map((r) => r.name)).toEqual(["Beta Inc"]);
     expect(holdingGroups(holdingsView(o).filter((r) => r.market === "US")).map((g) => g.market)).toEqual(["US"]);
     expect(holdingGroups([])).toEqual([]);
+  });
+});
+
+describe("moneyInView", () => {
+  const v = moneyInView(trades, instruments, "2026-01-01")!;
+  const cellOf = (key: string) => v.years.flatMap((y) => y.cells).find((c) => c.key === key)!;
+
+  it("gives a cell a month for each year from his first trade, with the month in words", () => {
+    expect(v.years.map((y) => y.year)).toEqual([2024, 2025, 2026]);
+    expect(cellOf("2024-01")).toMatchObject({ label: "January 2024", state: "on", colorKey: "teal" });
+    expect(cellOf("2026-02").state).toBe("future");
+  });
+
+  it("opens a card on a month with something in it, listing each line, and none on an empty month", () => {
+    const jan = cellOf("2024-01");
+    expect(jan.tip).toMatchObject({ head: "January 2024", total: expect.stringMatching(/^₹/), detail: "put in" });
+    expect(jan.tip!.rows.map((r) => r.name)).toEqual(["Alpha Ltd", "Beta Inc"]);
+    expect(cellOf("2024-04").tip).toBeNull();
+  });
+
+  it("marks a month he sold, and says a sale on its own was a sale", () => {
+    expect(cellOf("2025-06")).toMatchObject({ sold: true, colorKey: null });
+    expect(cellOf("2025-06").tip).toMatchObject({ total: "No buys", detail: "a sale" });
+    expect(cellOf("2025-06").tip!.rows[0].amount).toMatch(/^−₹/);
+  });
+
+  it("scales each year's bar to the biggest, and says how many months he bought in", () => {
+    expect(Math.max(...v.years.map((y) => y.fraction))).toBe(1);
+    expect(v.monthsLine).toMatch(/^\d+ of \d+$/);
+  });
+
+  it("is null with no trades", () => {
+    expect(moneyInView([], instruments, "2026-01-01")).toBeNull();
+  });
+});
+
+describe("sameMoneyView", () => {
+  const rows = sameMoneyView(o);
+
+  it("puts him first, then each line, each with what it is worth against his own", () => {
+    expect(rows[0]).toMatchObject({ key: "you", label: "You, as it went", you: true, value: expect.stringMatching(/^₹/) });
+    expect(rows.slice(1).map((r) => r.key)).toEqual(expect.arrayContaining(["nifty", "deposit"]));
+    for (const r of rows.slice(1)) expect(r.note).toMatch(/(more|less) than you$/);
+  });
+
+  it("colours a line that beat him as a loss for him, and one that didn't as a gain", () => {
+    for (const r of rows.slice(1)) {
+      const worth = o.sameMoney.find((l) => l.key === r.key)!.valueInr;
+      expect(r.tone).toBe(worth > o.valueInr ? "loss" : "gain");
+    }
+  });
+
+  it("draws the biggest as the full bar", () => {
+    expect(Math.max(...rows.map((r) => r.fraction))).toBe(1);
+  });
+
+  it("is empty with nothing held", () => {
+    expect(sameMoneyView(investmentOverview({ trades: [], instruments, closes, today: "2026-01-01" }))).toEqual([]);
   });
 });

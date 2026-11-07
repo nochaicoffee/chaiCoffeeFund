@@ -2,7 +2,8 @@ import type { Instrument, InvestmentAssetType, InvestmentMarket, InvestmentTrans
 import { priceOnOrBefore, sourceFor, type PricePoint } from "../prices/history";
 import { USD_INR_TICKER } from "../prices/refreshPlan";
 import { holdingLens, type HoldingLens } from "./holdingLens";
-import { raceLines, type RaceLine } from "./raceLines";
+import { DEPOSIT_RATE, raceLines, type RaceLine } from "./raceLines";
+import { sameMoneyIn } from "./sameMoney";
 import { computeHoldings, holdingsAt, realisedGains, totalInInr } from "./investments";
 import { dayChange } from "./investmentValue";
 import { yearlyReturn, type YearlyReturn } from "./investmentReturns";
@@ -79,6 +80,8 @@ export interface Overview {
   series: { date: string; value: number; cost: number; /** Money put in that day, less money taken out (a buy is in, a sell is out), in rupees: the stage's "money added" bars. */ flow: number }[];
   /** The lines the Race draws, one value a day on the same days as `series`: him, Nifty 50, the S&P in rupees and a deposit. */
   race: RaceLine[];
+  /** What the same money, each buy and sale on its own day, would be worth in Nifty 50, the S&P in rupees and a deposit (a line with too little history is left out). */
+  sameMoney: { key: "nifty" | "sp500" | "deposit"; label: string; valueInr: number }[];
   /** Each holding on its own, in the same order as `holdings`: its price line, his trades on it and its stats (the lens). */
   lenses: HoldingLens[];
 }
@@ -92,6 +95,7 @@ export interface OverviewInput {
 }
 
 const STALE_DAYS = 7;
+const SAME_LABEL = { nifty: "All in Nifty 50", sp500: "All in the S&P 500", deposit: `All in a ${Math.round(DEPOSIT_RATE * 100)}% deposit` } as const;
 
 /** Everything the Investments page shows, worked out from the trades and the saved prices. Pure. */
 export function investmentOverview({ trades, instruments, closes, today }: OverviewInput): Overview {
@@ -160,6 +164,7 @@ export function investmentOverview({ trades, instruments, closes, today }: Overv
     entry.gainInr += sale.gainInr;
     bySymbol.set(key, entry);
   }
+  const race = raceLines({ dates: history.map((d) => d.date), youIndex: twr.index, closes });
   const dates = rows.map((r) => r.priceDate).filter((d): d is string => d !== null);
   return {
     today, holdings: rows, valueInr, costInr, gainInr: valueInr - costInr, gainFraction: costInr > 0 ? (valueInr - costInr) / costInr : null, dayChangeInr,
@@ -171,7 +176,12 @@ export function investmentOverview({ trades, instruments, closes, today }: Overv
     pricesFrom: dates.length > 0 ? dates.reduce((a, b) => (a > b ? a : b)) : null,
     unpriced: rows.filter((r) => r.price === null).map((r) => r.symbol),
     lenses: lensList,
-    race: raceLines({ dates: history.map((d) => d.date), youIndex: twr.index, closes }),
+    race,
+    sameMoney: (["nifty", "sp500", "deposit"] as const).flatMap((key) => {
+      const line = race.find((l) => l.key === key);
+      const value = line ? sameMoneyIn(line.values, history.map((d) => d.netFlowInr)) : null;
+      return line && value !== null ? [{ key, label: SAME_LABEL[key], valueInr: value }] : [];
+    }),
     series: history.map((d) => ({ date: d.date, value: Math.round(d.valueInr), cost: Math.round(d.costInr), flow: Math.round(d.netFlowInr) })),
   };
 }
