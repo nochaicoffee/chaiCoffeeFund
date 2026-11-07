@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { asOfReading, axisDate, axisTicks, dateTickIndexes, goBackIndex, inRange, lensWindow, linePath, goBackMark, moneyBars, offeredGoBack, offeredLensRanges, offeredRanges, rangeStart, readingAt, scaleOf, tickLabel, type StagePoint } from "./stageView";
+import { asOfReading, axisDate, axisTicks, dateTickIndexes, goBackIndex, inRange, lensWindow, linePath, gappedPath, goBackMark, moneyBars, racePercent, raceScale, rebased, spreadLabels, offeredGoBack, offeredLensRanges, offeredRanges, rangeStart, readingAt, scaleOf, tickLabel, type StagePoint } from "./stageView";
 
 const series = (n: number): StagePoint[] => Array.from({ length: n }, (_, i) => ({ date: `d${i}`, value: 100 + i, cost: 90 }));
 
@@ -199,5 +199,59 @@ describe("goBackMark", () => {
   it("is null for Today, and for a day before the range starts", () => {
     expect(goBackMark(long, 366, "now")).toBeNull();
     expect(goBackMark(long, 91, "1y")).toBeNull();
+  });
+});
+
+describe("the Race", () => {
+  it("rebases a line to 100 on its first day, keeping gaps", () => {
+    const r = rebased([200, 220, null, 180])!;
+    expect(r[0]).toBe(100);
+    expect(r[1]).toBeCloseTo(110, 9);
+    expect(r[2]).toBeNull();
+    expect(r[3]).toBeCloseTo(90, 9);
+  });
+
+  it("leaves out a line that has nothing on its first day, or nothing but zero", () => {
+    expect(rebased([null, 5, 6])).toBeNull();
+    expect(rebased([0, 5])).toBeNull();
+    expect(rebased([])).toBeNull();
+  });
+
+  it("scales over every line with room, and copes with nothing or a flat line", () => {
+    const s = raceScale([[100, 130], [100, null, 90]]);
+    expect(s.min).toBeLessThan(90);
+    expect(s.max).toBeGreaterThan(130);
+    expect(raceScale([[null]])).toEqual({ min: 0, max: 1 });
+    const flat = raceScale([[100, 100]]);
+    expect(flat.max).toBeGreaterThan(flat.min);
+  });
+
+  it("says a level as a percent against 100", () => {
+    expect(racePercent(128.4)).toBe("+28%");
+    expect(racePercent(94.6, 1)).toBe("−5.4%");
+    expect(racePercent(100)).toBe("0%");
+    expect(racePercent(100.2)).toBe("0%"); // no sign on a change that rounds to nothing
+  });
+
+  it("keeps end labels apart, in the order given, and on the chart", () => {
+    const out = spreadLabels([0.5, 0.2, 0.52, 0.99, 1], 0.08);
+    expect(out).toHaveLength(5);
+    const sorted = [...out].sort((a, b) => a - b);
+    for (let i = 1; i < sorted.length; i++) expect(sorted[i] - sorted[i - 1]).toBeGreaterThanOrEqual(0.08 - 1e-9);
+    expect(Math.max(...out)).toBeLessThanOrEqual(1 + 1e-9);
+    expect(out[1]).toBeCloseTo(0.2, 9); // the lone one stays where it was
+    expect(out[0]).toBeLessThan(out[2]); // the order is kept
+    expect(spreadLabels([])).toEqual([]);
+  });
+});
+
+describe("gappedPath", () => {
+  it("breaks the line where a day has no value, and joins the days that have one", () => {
+    const d = gappedPath([0, 10, null, 5, 10], { min: 0, max: 10 }, 40, 10);
+    expect(d).toBe("M 0.0 10.0 L 10.0 0.0 M 30.0 5.0 L 40.0 0.0");
+  });
+
+  it("is empty when no day has a value", () => {
+    expect(gappedPath([null, null], { min: 0, max: 1 }, 10, 10)).toBe("");
   });
 });

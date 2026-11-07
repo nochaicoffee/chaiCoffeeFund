@@ -194,3 +194,60 @@ export function axisDate(iso: string, spanDays: number): string {
   const [y, m, d] = iso.split("-").map(Number);
   return spanDays <= 100 ? `${d} ${MONTHS[m - 1]}` : `${MONTHS[m - 1]} ${String(y).slice(2)}`;
 }
+
+// ---------- The Race ----------
+/** A line's levels as a percent of its level on its first day (100 then); null where it has no level, and null for the whole line when its first day has none. */
+export function rebased(values: (number | null)[]): (number | null)[] | null {
+  const base = values[0];
+  if (base === null || base === undefined || !(base > 0)) return null;
+  return values.map((v) => (v === null ? null : (v / base) * 100));
+}
+
+/** The range of percents the Race is drawn over: every shown line, with a tenth of room above and below. */
+export function raceScale(lines: (number | null)[][]): StageScale {
+  const all = lines.flat().filter((v): v is number => v !== null && Number.isFinite(v));
+  if (all.length === 0) return { min: 0, max: 1 };
+  const lo = Math.min(...all);
+  const hi = Math.max(...all);
+  const room = hi === lo ? Math.max(1, hi * 0.05) : (hi - lo) * 0.1;
+  return { min: lo - room, max: hi + room };
+}
+
+/** "+28%" or "−5%" for a level against 100. */
+export function racePercent(level: number, digits = 0): string {
+  const change = level - 100;
+  const text = Math.abs(change).toFixed(digits);
+  return `${Number(text) === 0 ? "" : change < 0 ? "−" : "+"}${text}%`;
+}
+
+/** Positions (0 top, 1 bottom) for a label at each line's end, kept at least `gap` apart so they don't sit on each other. Same order in and out. */
+export function spreadLabels(positions: number[], gap = 0.08): number[] {
+  const order = positions.map((p, i) => ({ p, i })).sort((a, b) => a.p - b.p);
+  const placed: number[] = [];
+  for (const { p } of order) placed.push(placed.length > 0 ? Math.max(p, placed.at(-1)! + gap) : p);
+  // What got pushed below the chart is pulled back up, and only what is in its way moves with it.
+  if (placed.length > 0) placed[placed.length - 1] = Math.min(placed.at(-1)!, 1);
+  for (let k = placed.length - 2; k >= 0; k--) placed[k] = Math.min(placed[k], placed[k + 1] - gap);
+  const out = positions.map(() => 0);
+  order.forEach(({ i }, k) => (out[i] = placed[k]));
+  return out;
+}
+
+/** SVG path data for a line that may have no value on some days: it is drawn in runs, with a gap where there is none. */
+export function gappedPath(values: (number | null)[], scale: StageScale, width: number, height: number): string {
+  const n = values.length;
+  const f = (v: number) => v.toFixed(1);
+  let d = "";
+  let open = false;
+  values.forEach((v, i) => {
+    if (v === null) {
+      open = false;
+      return;
+    }
+    const x = n === 1 ? 0 : (i / (n - 1)) * width;
+    const y = height - ((v - scale.min) / (scale.max - scale.min)) * height;
+    d += `${open ? " L" : d ? " M" : "M"} ${f(x)} ${f(y)}`;
+    open = true;
+  });
+  return d;
+}

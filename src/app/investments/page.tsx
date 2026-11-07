@@ -59,7 +59,7 @@ export default async function InvestmentsPage() {
         )}
         <SkippedRowsNotice tabs={skipped} />
       </PageHeader>
-      <Stage series={overview.series} lenses={lensViews(overview)} picks={pickerView(overview)} holdingCount={overview.holdings.length} />
+      <Stage series={overview.series} race={overview.race} lenses={lensViews(overview)} picks={pickerView(overview)} holdingCount={overview.holdings.length} />
       <ReturnsRow cards={returnsView(overview)} />
       {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} />}
       <RecentTrades rows={recentTradesView(tradesTab.records, instrumentsTab.records)} />
