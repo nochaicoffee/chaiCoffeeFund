@@ -1,7 +1,7 @@
 import { principalOutstanding, summariseLentLoan } from "../aggregate/lentOut";
 import { firstPayoutDate } from "../aggregate/lentPromises";
 import { formatInr } from "../format/money";
-import { CARD_COLORS, LENT_INTEREST_MODES, type CardColor, type LentInterestMode, type LentLoan, type LentRepayment, type LentRepaymentKind, type RecurrenceCycle } from "../sheets/types";
+import { CARD_COLORS, LENT_INTEREST_MODES, type CardColor, type IncomeSource, type LentInterestMode, type LentLoan, type LentRepayment, type LentRepaymentKind, type RecurrenceCycle } from "../sheets/types";
 import { FieldReader, type FieldErrors, type FormFields, type FormResult } from "./fields";
 
 /**
@@ -145,6 +145,30 @@ export function readPayoutSourceExtras(fields: FormFields, known: { accountIds: 
   const statementMatch = f.text("statementMatch");
   if (statementMatch && statementMatch.replace(/\s+/g, "").length < 3) f.fail("statementMatch", "Use at least 3 letters, like the name on the credit, so it doesn't match other deposits");
   return f.result({ ...(accountId && { accountId }), ...(statementMatch && { statementMatch }) });
+}
+
+/** What the link check needs to know of an income source. */
+export type LinkableSource = Pick<IncomeSource, "id" | "name" | "frequency" | "expectedAmount" | "status">;
+
+/**
+ * "Use an income source I already have" on a Paid-out loan (ADR 0014): the loan's payouts are then matched by that source instead of one made
+ * for it. The source has to exist, be switched on, not belong to another loan, pay as often as the loan says, and expect what the loan pays, so
+ * linking never changes his source and the page's "promised" and Income's "expected" are the same figure. `linkedElsewhere` are the source ids
+ * other loans already use. The source is chosen by `incomeSourceId`.
+ */
+export function readExistingSource(fields: FormFields, loan: Pick<LentLoanInput, "payoutFrequency" | "payoutAmount">, known: { sources: LinkableSource[]; linkedElsewhere: string[] }): FormResult<{ incomeSourceId: string }> {
+  const f = new FieldReader(fields);
+  const id = f.raw("incomeSourceId").trim();
+  if (!id) f.fail("incomeSourceId", "Choose the income source");
+  const source = id ? known.sources.find((s) => s.id === id) : undefined;
+  if (id && !source) f.fail("incomeSourceId", "That income source isn't in Income any more. Refresh and choose again");
+  if (source) {
+    if (known.linkedElsewhere.includes(source.id)) f.fail("incomeSourceId", `"${source.name}" already belongs to another loan`);
+    else if (source.status !== "Active") f.fail("incomeSourceId", `"${source.name}" is switched off in Income. Switch it on there first`);
+    else if (loan.payoutFrequency && source.frequency !== loan.payoutFrequency) f.fail("incomeSourceId", `"${source.name}" is ${source.frequency.toLowerCase()} in Income, and this loan pays ${loan.payoutFrequency.toLowerCase()}`);
+    else if (loan.payoutAmount !== undefined && source.expectedAmount !== loan.payoutAmount) f.fail("incomeSourceId", `"${source.name}" expects ${formatInr(source.expectedAmount)} each time and this loan pays ${formatInr(loan.payoutAmount)}. Make them the same first`);
+  }
+  return f.result({ incomeSourceId: id });
 }
 
 /** The income source a Paid-out loan's payouts arrive through: what it pays and how often, the first payout as its schedule, category Investment. */

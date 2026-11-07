@@ -17,7 +17,7 @@ The payouts of a Paid-out loan are money arriving in a bank account on a schedul
 - A loan with **no income source is "not linked"**, and nothing is called missing for it.
 - An **Inactive income source** is not yet decided: until the page tasks settle what pausing a source should mean (stop promising, or keep flagging), the loan reads it as it is and keeps promising its payouts. The question is open and is recorded in `docs/design/lent-out.md`.
 - Interest is **simple, never compounded**, counted in **actual days over 365**.
-- Adding a payout loan creates its income source and the loan together: both rows or neither.
+- Adding a payout loan creates its income source and the loan together: both rows or neither. A loan can instead **use an income source that already exists** (his case: he made the sources in Income first): it has to be switched on, not another loan's, and pay as often and as much as the loan says, and linking writes only the loan, never the source.
 
 ## Consequences
 - A payout is entered once, in Income (typed, or read from a bank statement by the existing import), and the Lent page picks it up. Nothing is typed twice and no payout history is stored on the loan.
