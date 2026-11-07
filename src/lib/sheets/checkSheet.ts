@@ -28,6 +28,7 @@ import { balanceReviewsRepository } from "./balanceReviews";
 import { lentLoansRepository } from "./lentLoans";
 import { lentRepaymentsRepository } from "./lentRepayments";
 import { instrumentsRepository } from "./instruments";
+import { investmentTargetsRepository } from "./investmentTargets";
 import { priceSnapshotsRepository } from "./priceSnapshots";
 
 /** Every repository, in the Sheet's tab order. A new entity's repository goes here too (entities.test.ts checks). */
@@ -59,6 +60,7 @@ export const checkedRepositories = [
   lentLoansRepository,
   lentRepaymentsRepository,
   instrumentsRepository,
+  investmentTargetsRepository,
   priceSnapshotsRepository,
 ];
 

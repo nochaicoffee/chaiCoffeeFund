@@ -715,6 +715,28 @@ export interface EpfRate {
   source: EpfRateSource;
 }
 
+// ---------- Targets and limits he sets on what he holds (docs/design/investments.md, "Your targets" and "How concentrated") ----------
+/** The four buckets a target is set on, as the design draws them. */
+export const TARGET_NAMES = ["India-Equity", "US-Equity", "Debt", "Gold"] as const;
+/**
+ * The limits he can set on his own holdings: no one holding above a share (One-Holding), dollars above a share (Dollars), debt below a share
+ * (Debt-Floor, the only floor) and single companies above a share (Single-Companies).
+ */
+export const LIMIT_NAMES = ["One-Holding", "Dollars", "Debt-Floor", "Single-Companies"] as const;
+export const INVESTMENT_TARGET_NAMES = [...TARGET_NAMES, ...LIMIT_NAMES] as const;
+export const INVESTMENT_TARGET_KINDS = ["Target", "Limit"] as const;
+export type InvestmentTargetKind = (typeof INVESTMENT_TARGET_KINDS)[number];
+export type InvestmentTargetName = (typeof INVESTMENT_TARGET_NAMES)[number];
+
+/** One number he sets: a target share for a bucket, or a limit on his holdings. Compared with what he holds, never suggested by the app. */
+export interface InvestmentTarget {
+  id: string;
+  kind: InvestmentTargetKind;
+  name: InvestmentTargetName;
+  /** A percent of what he holds, 0 to 100 (35 is 35%). */
+  percent: number;
+}
+
 // ---------- Prices (ADR 0013): what each instrument is, and the closes saved once a day ----------
 /** A holding's identity and where its price comes from. A holding with no Instruments row is valued at cost and the page says so. */
 export interface Instrument {
