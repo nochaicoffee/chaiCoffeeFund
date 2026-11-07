@@ -3,6 +3,7 @@ import { RefreshButton } from "@/components/RefreshButton";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { StatTile } from "@/components/StatTile";
 import { overviewAttention } from "@/app/fixed-income/views";
+import { lentModel, overviewAttention as lentAttention } from "@/app/lent/views";
 import { todayIso } from "@/lib/format/date";
 import { rupeeBalances, unpricedForPage } from "@/lib/prices/rupeeBalances";
 import { formatInr, formatUsd } from "@/lib/format/money";
@@ -155,6 +156,15 @@ export default async function OverviewPage() {
     });
   for (const item of goalsAttention) attention.push({ label: item.label, detail: item.detail });
 
+  // A late or missing payout, and a loan out a long time with nothing back (the Lent page's own attention items). Skipped when its tabs couldn't be read.
+  if (!lent.failed) {
+    try {
+      attention.push(...lentAttention(lentModel({ loans: lent.lentLoans, repayments: lent.lentRepayments, sources: incomeSources, entries: incomeEntries }, today)));
+    } catch (error) {
+      console.error("[overview] lent out attention failed:", error instanceof Error ? error.message : String(error));
+    }
+  }
+
   // A late EPF credit and a deposit that has matured and isn't closed (the Fixed Income page's own attention items).
   const fixedIncomeNow = fixedIncome({ epfAccounts: epf.epfAccounts, epfEntries: epf.epfEntries, epfRates: epf.epfRates, deposits: fixedDeposits }, today);
   attention.push(...overviewAttention(fixedIncomeNow, today));
@@ -190,7 +200,7 @@ export default async function OverviewPage() {
           value={formatInr(totalEstimatedFixedDepositValue(fixedDeposits, today))}
         />
         <StatTile label="EPF (passbook)" value={formatInr(netWorth.epfValueInr)} />
-        <StatTile label="Lent out (owed to you)" value={formatInr(netWorth.lentOutInr)} />
+        <StatTile label="Lent out (owed to you)" value={formatInr(netWorth.lentOutInr)} href="/lent" />
         <StatTile label="Monthly obligations" value={formatInr(monthlyObligationsTotal)} tone="negative" />
       </div>
 

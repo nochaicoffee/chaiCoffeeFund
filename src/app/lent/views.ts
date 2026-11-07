@@ -241,3 +241,13 @@ export function attentionView(m: LentModel): AttentionItem[] {
   const rank = { late: 0, warn: 1 } as const;
   return items.sort((a, c) => rank[a.tone] - rank[c.tone]);
 }
+
+/**
+ * What the Overview borrows from this page's attention items: a payout that is late or never came, and a loan out a long time with nothing back.
+ * A payout loan nothing tracks is left on this page: it is a gap in the setup, not something that happened.
+ */
+export function overviewAttention(m: LentModel): { label: string; detail: string }[] {
+  return attentionView(m)
+    .filter((i) => i.kind === "payout" || i.kind === "long-out")
+    .map((i) => ({ label: i.title, detail: i.text }));
+}

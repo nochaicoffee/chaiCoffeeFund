@@ -1,6 +1,6 @@
 # Lent out page (`/lent`)
 
-## Status: design final (2026-11-06): L3 Who owes what + the interest clock widget. Build planned (below), not started. Mockups only until then.
+## Status: design final (2026-11-06): L3 Who owes what + the interest clock widget. Built 2026-11-06 to 2026-11-07 (plan below); what is left is the empty-state and phone check (C6).
 
 Prathik's lent-out data is already tracked (merged: `LentLoans` and `LentRepayments`, `lib/aggregate/lentOut.ts`, the Lent out line in net worth; see "Lent out" in [`../system-design.md`](../system-design.md)). Round 1 designed the page that shows it, and Prathik picked **L3 Who owes what** as the hero and asked for the L2 **Interest clock** to sit under it as its own widget. Mockups: [`design/lent-out/`](../../design/lent-out/), built by [`design/lent-out/generator/`](../../design/lent-out/generator/) (a rebuild overwrites the artboards, so change the generator).
 
