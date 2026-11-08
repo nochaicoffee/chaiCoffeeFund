@@ -293,6 +293,8 @@ export interface UsualCell {
 
 export interface WhereView {
   title: string;
+  /** The month's statement: "October's statement". */
+  statement: { href: string; label: string };
   total: string;
   rows: WhereRow[];
   usual: UsualCell[] | null;
@@ -333,6 +335,7 @@ export function whereView(model: ExpenseModel): WhereView {
       : null;
   return {
     title: `Where ${monthWord(m.month)} went`,
+    statement: { href: `/expenses/statements?month=${m.month}`, label: `${monthWord(m.month)}'s statement` },
     total: rupees(total),
     rows,
     usual,

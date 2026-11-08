@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { BigSpendsCard, MonthsTable, WhereWentCard } from "@/components/expenses/ExpenseWidgets";
 import { AddBigSpendButton, ExpenseFormsProvider } from "@/components/expenses/forms/ExpenseForms";
 import { GreetingSentence } from "@/components/expenses/GreetingSentence";
 import { SplitHero } from "@/components/expenses/SplitHero";
+import { HEADER_GHOST_CLASS } from "@/components/shell/FormTriggerButton";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { appConfig } from "@/lib/appConfig";
-import { cardColorKey } from "@/lib/format/colors";
 import { greetingFor, todayIso } from "@/lib/format/date";
+import { expenseFormsData } from "./formsData";
 import { loadExpenseData } from "./loadExpenseData";
 import { bigSpendsView, expenseModel, greetingView, heroView, monthsView, summarySentence, whereView } from "./views";
 
@@ -23,18 +25,12 @@ export default async function ExpensesPage({ searchParams }: PageProps<"/expense
   const today = todayIso();
   const { data, skipped } = await loadExpenseData();
   const model = expenseModel(data, today, typeof params.month === "string" ? params.month : undefined);
-  const used = new Set(data.bigSpends.flatMap((s) => [s.paidFromAccountId, s.paidFromCardId].filter(Boolean)));
-  const forms = {
-    today,
-    spends: data.bigSpends,
-    accounts: data.accounts.filter((a) => a.status === "Active" || used.has(a.id)).map((a) => ({ id: a.id, name: a.name, inactive: a.status !== "Active" || undefined })),
-    cards: data.cards.filter((c) => c.status === "Active" || used.has(c.id)).map((c) => ({ id: c.id, name: c.alias || c.name, color: cardColorKey(c.color), inactive: c.status !== "Active" || undefined })),
-  };
+  const forms = expenseFormsData(data, today);
 
   return (
     <ExpenseFormsProvider forms={forms}>
       <div className="flex flex-col gap-6">
-        <PageHeader section="Expenses" title={`${greetingFor()}, ${appConfig.ownerName}`} actions={<><RefreshButton iconOnly /><AddBigSpendButton /></>}>
+        <PageHeader section="Expenses" title={`${greetingFor()}, ${appConfig.ownerName}`} actions={<><RefreshButton iconOnly /><Link href="/expenses/statements" className={HEADER_GHOST_CLASS}>Statements</Link><AddBigSpendButton /></>}>
           <GreetingSentence parts={summarySentence(model)} cards={greetingView(model)} />
           <SkippedRowsNotice tabs={skipped} />
         </PageHeader>
