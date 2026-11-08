@@ -462,3 +462,35 @@ export function monthsView(model: ExpenseModel): MonthsView {
     },
   };
 }
+
+// --- The Overview's Spent tile ---
+
+export interface SpentTile {
+  value: string;
+  tag: string;
+  sub: string;
+  card: { title: string; total: string; rows: { name: string; amount: string }[]; foot: string };
+}
+
+/** What the Overview's Spent tile says: the latest month worked out, or what's paid so far when none is yet. */
+export function spentTile(model: ExpenseModel): SpentTile {
+  const latest = [...model.months].reverse().find((m) => m.status === "done");
+  const rows = (m: MonthExpenses, keys: readonly PartKey[]) => keys.filter((k) => m.parts[k] !== 0).map((k) => ({ name: PART_NAMES[k], amount: rupees(m.parts[k]) }));
+  if (latest) {
+    const usual = model.usual !== null && latest.spent !== null ? latest.spent - model.usual : null;
+    return {
+      value: formatInrCompact(latest.spent ?? 0),
+      tag: `in ${formatMonthShort(latest.month)}`,
+      // Short, so it shares one line with the tag like the other tiles.
+      sub: usual !== null && model.months.filter((m) => m.status === "done").length > 1 ? `${formatInrCompact(Math.abs(usual))} ${usual <= 0 ? "under" : "over"} usual` : `${formatInrCompact(latest.parts.cash)} cash, UPI`,
+      card: { title: `Spent in ${formatMonthYear(latest.month)}`, total: rupees(latest.spent ?? 0), rows: rows(latest, PART_KEYS), foot: "Worked out from your accounts: what came in, less what was invested, lent and kept." },
+    };
+  }
+  const now = model.months[model.months.length - 1];
+  return {
+    value: formatInrCompact(now.explained),
+    tag: "so far",
+    sub: `paid in ${formatMonthShort(now.month)}`,
+    card: { title: `Paid so far in ${formatMonthYear(now.month)}`, total: rupees(now.explained), rows: rows(now, ["card", "emi", "subs", "ins"]), foot: "Card bills, EMIs, subscriptions and insurance. Cash and UPI, and what was spent in all, come when the month ends." },
+  };
+}

@@ -192,7 +192,7 @@ export function netWorthView(m: OverviewModel): NetWorthView | null {
 
 // ---------- The twelve tiles ----------
 
-export type TileKey = WarningPage | "due" | "left";
+export type TileKey = WarningPage | "due" | "spent";
 export interface TileCard {
   title: string;
   total: string;
@@ -219,13 +219,21 @@ export interface TileView {
   card: TileCard;
 }
 
-const GROUP: Record<TileKey, string> = { accounts: "Assets", invest: "Assets", fixed: "Assets", lent: "Assets", cards: "Debts", loans: "Debts", income: "Cash flow", subs: "Cash flow", goals: "Plans and cover", ins: "Plans and cover", due: "This month", left: "This month" };
+const GROUP: Record<TileKey, string> = { accounts: "Assets", invest: "Assets", fixed: "Assets", lent: "Assets", cards: "Debts", loans: "Debts", income: "Cash flow", subs: "Cash flow", goals: "Plans and cover", ins: "Plans and cover", due: "This month", spent: "This month" };
 
-export function tilesView(m: OverviewModel, warnings: OverviewWarning[]): TileView[] {
+/** The Expenses page's own words for its tile (app/expenses/views.ts, spentTile), or null when its tabs couldn't be read. */
+export interface SpentTileInput {
+  value: string;
+  tag: string;
+  sub: string;
+  card: TileCard;
+}
+
+export function tilesView(m: OverviewModel, warnings: OverviewWarning[], spent: SpentTileInput | null = null): TileView[] {
   const { data, worth, today, investments } = m;
   const byPage = warningCounts(warnings).byPage;
   const flags = (page: WarningPage) => (byPage[page] ?? []).map((w) => w.tone);
-  const tile = (t: Omit<TileView, "group" | "href" | "flags" | "glyph"> & { page?: WarningPage }): TileView => ({ group: GROUP[t.key], href: t.page ? PAGE_HREF[t.page] : "/", flags: t.page ? flags(t.page) : [], glyph: GLYPH_FOR[t.key], ...t });
+  const tile = (t: Omit<TileView, "group" | "href" | "flags" | "glyph"> & { page?: WarningPage; href?: string }): TileView => ({ group: GROUP[t.key], href: t.href ?? (t.page ? PAGE_HREF[t.page] : "/"), flags: t.page ? flags(t.page) : [], glyph: GLYPH_FOR[t.key], ...t });
   const balances = latestBalances(data.accounts, data.balanceSnapshots);
   const activeAccounts = data.accounts.filter((a) => a.status === "Active");
   const cardSummaries = computeCardSummaries(data.cards, data.statements, today);
@@ -262,10 +270,11 @@ export function tilesView(m: OverviewModel, warnings: OverviewWarning[]): TileVi
       card: { title: "Goals", total: plural(goals.length, "goal"), rows: goals.slice(0, 6).map((g) => ({ name: g.name, amount: formatInr(g.amount) })), foot: "Each goal's target." } }),
     tile({ key: "ins", page: "ins", name: "Insurance", value: formatInrCompact(cover), per: "cover", tag: "cover", owe: false, sub: plural(views.length, "policy", "policies"), colorKey: "amber",
       card: { title: "Insurance", total: `${formatInr(cover)} of cover`, rows: views.map((v) => ({ name: v.policy.name, amount: formatInr(v.policy.sumInsured) })) } }),
-    tile({ key: "due", name: "Due this month", value: formatInrCompact(due), tag: "you owe", owe: true, sub: `${formatInr(paid)} already paid`, colorKey: "amber",
+    tile({ key: "due", name: "Due this month", value: formatInrCompact(due), tag: "you owe", owe: true, sub: due <= 0 ? "nothing due" : stillToPay <= 0 ? "all paid" : `${formatInrCompact(stillToPay)} still to pay, ${Math.floor((paid / due) * 100)}% paid`, colorKey: "amber",
       card: { title: "Due this month", total: formatInr(due), detail: "what the month asks of you", rows: [{ name: "Paid so far", amount: formatInr(paid) }, { name: "Still to pay", amount: formatInr(stillToPay) }], foot: "Card bills, EMIs and subscriptions off a card; a subscription on a card is inside its bill." } }),
-    tile({ key: "left", name: "Still to pay", value: formatInrCompact(stillToPay), tag: "you owe", owe: true, sub: due > 0 ? `of ${formatInrCompact(due)}, ${Math.floor((paid / due) * 100)}% paid` : "nothing due", colorKey: "rose",
-      card: { title: "Still to pay", total: formatInr(stillToPay), rows: [{ name: "Paid so far", amount: formatInr(paid) }] } }),
+    // Spent took Still to pay's place (F-EX-01, #395), so the grid stays twelve; what's still to pay is on Due this month.
+    tile({ key: "spent", href: "/expenses", name: "Spent", owe: false, colorKey: "coral",
+      ...(spent ?? { value: "—", tag: "spent", sub: "couldn't be read", card: { title: "Spent", total: "—", rows: [], foot: "The Expenses figures couldn't be read. Refresh to try again." } }) }),
   ];
   void daysBetween;
   return tiles.map((t) => ({ ...t, flags: t.flags }));

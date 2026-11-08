@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { ExpenseData } from "@/lib/aggregate/expenses";
 import type { Account, BalanceSnapshot, BigSpend, Statement } from "@/lib/sheets/types";
-import { bigSpendsView, expenseModel, greetingView, heroView, monthsView, summarySentence, whereView } from "./views";
+import { bigSpendsView, expenseModel, greetingView, heroView, monthsView, spentTile, summarySentence, whereView } from "./views";
 
 const account = (id: string, over: Partial<Account> = {}): Account => ({ id, name: id.toUpperCase(), bank: "B", accountType: "Savings", purpose: "Spending", startDate: "2020-01-01", status: "Active", ...over });
 const bal = (accountId: string, date: string, balance: number): BalanceSnapshot => ({ id: `${accountId}@${date}`, accountId, date, balance });
@@ -104,5 +104,16 @@ describe("the page's blocks", () => {
     expect(view.doneCount).toBe(1);
     expect(view.total.spent).toBe("₹1,20,000");
     expect(view.rows[0]).toMatchObject({ month: "2026-12", spent: "so far" });
+  });
+});
+
+describe("the Overview's Spent tile", () => {
+  it("shows the latest month worked out", () => {
+    const tile = spentTile(expenseModel(data(), "2026-12-09"));
+    expect(tile).toMatchObject({ value: "₹1.2L", tag: "in Nov", sub: "₹60.0k cash, UPI" });
+    expect(tile.card.total).toBe("₹1,20,000");
+  });
+  it("shows what's paid so far when no month is worked out yet", () => {
+    expect(spentTile(expenseModel(data(), "2026-11-20"))).toMatchObject({ value: "₹60.0k", tag: "so far", sub: "paid in Nov" });
   });
 });

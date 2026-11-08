@@ -1,6 +1,6 @@
 # Expenses page (`/expenses`)
 
-## Status: E1 Split picked (2026-11-08); round 2 adds the Statements pages (`ExS1`, `ExS2`); both kept (2026-11-08). Build started 2026-11-09 with the defaults below (epic in GitHub, `F-EX-01`)
+## Status: E1 Split picked (2026-11-08); round 2 adds the Statements pages (`ExS1`, `ExS2`); both kept (2026-11-08). Built 2026-11-09 with the defaults below (epic #396: #397 design, #398 math, #399 BigSpends tab, #400 page, #402 statements, and the Overview tile)
 
 Mockups: [`design/expenses/`](../../design/expenses/), built by [`design/expenses/generator/`](../../design/expenses/generator/) (a rebuild overwrites the artboards, so change the generator). Every figure is made up, shaped like his money; "today" is Sun Nov 8, 2026, so October is the last whole month.
 
@@ -132,6 +132,8 @@ The open design questions got the defaults the boards already show, so the build
    - **A loan's disbursal** counts as came in (borrowed) when it lands in an account the app has: its principal less the fees, stamp duty and gap interest taken out of it.
    - **A manual loan prepayment** (and its charge) counts with the EMIs, as part of what went to loans. A part of an EMI payment above the EMI is already in that installment.
    - **Cash and UPI below zero** means the records explain more than left the pool (a missing income entry, a balance typed wrong). It's shown as it is, with that note, never hidden.
+
+9. **Overview's Spent tile takes Still to pay's place**, so the Overview keeps twelve tiles in four columns (a thirteenth would sit alone on a row). Due this month now says what's still to pay in its line, and its card already lists paid and still to pay. Spent shows the latest month worked out (with how far it is from a usual month), or what's paid so far while no month is.
 
 ## Open questions
 

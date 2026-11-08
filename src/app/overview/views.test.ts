@@ -75,8 +75,8 @@ describe("netWorthView", () => {
 
 describe("tilesView", () => {
   const tiles = tilesView(model, [warning("red", "loans"), warning("amber", "loans")]);
-  it("has twelve tiles in order, the pages then the two sums of the month", () => {
-    expect(tiles.map((t) => t.key)).toEqual(["accounts", "invest", "fixed", "lent", "cards", "loans", "income", "subs", "goals", "ins", "due", "left"]);
+  it("has twelve tiles in order, the pages then Due this month and Spent", () => {
+    expect(tiles.map((t) => t.key)).toEqual(["accounts", "invest", "fixed", "lent", "cards", "loans", "income", "subs", "goals", "ins", "due", "spent"]);
     expect(new Set(tiles.map((t) => t.group))).toEqual(new Set(["Assets", "Debts", "Cash flow", "Plans and cover", "This month"]));
   });
   it("shows investments at market value and debts as owed", () => {
@@ -89,9 +89,14 @@ describe("tilesView", () => {
     expect(tiles.find((t) => t.key === "cards")!.flags).toEqual([]);
     expect(tiles.find((t) => t.key === "goals")!.href).toBe("/goals");
   });
-  it("Due this month is what is still to pay plus what is paid, and Still to pay is the first part", () => {
+  it("Due this month is what is still to pay plus what is paid, and says how much is left", () => {
     expect(tiles.find((t) => t.key === "due")!.card.total).toBe("₹61,200");
-    expect(tiles.find((t) => t.key === "left")!.card.total).toBe("₹30,000");
-    expect(tiles.find((t) => t.key === "left")!.sub).toContain("50% paid");
+    expect(tiles.find((t) => t.key === "due")!.card.rows).toContainEqual({ name: "Still to pay", amount: "₹30,000" });
+    expect(tiles.find((t) => t.key === "due")!.sub).toContain("50% paid");
+  });
+  it("Spent opens Expenses with its own words, and says so when they couldn't be read", () => {
+    const spent = { value: "₹1.3L", tag: "in Oct", sub: "₹29.8k cash and UPI", card: { title: "Spent in October 2026", total: "₹1,30,878", rows: [] } };
+    expect(tilesView(model, [], spent).find((t) => t.key === "spent")).toMatchObject({ href: "/expenses", value: "₹1.3L", group: "This month" });
+    expect(tiles.find((t) => t.key === "spent")).toMatchObject({ value: "—", sub: "couldn't be read" });
   });
 });

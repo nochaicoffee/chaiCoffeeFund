@@ -17,6 +17,8 @@ import { loadOverviewData } from "./overview/loadOverviewData";
 import { loadWarnings } from "./overview/loadWarnings";
 import { overviewModel } from "./overview/model";
 import { greetingView, netWorthView, summarySentence, tilesView } from "./overview/views";
+import { loadExpenseData } from "./expenses/loadExpenseData";
+import { expenseModel, spentTile } from "./expenses/views";
 
 /**
  * The Overview (docs/design/overview.md, F-OV-05): the greeting whose figures point, net worth with its trend, a tile for every page, and
@@ -24,6 +26,14 @@ import { greetingView, netWorthView, summarySentence, tilesView } from "./overvi
  */
 export default async function OverviewPage() {
   const today = todayIso();
+  // The Spent tile is the Expenses page's own figure: read beside the rest, and the page still shows if it can't be.
+  const spentRead = loadExpenseData().then(
+    ({ data }) => spentTile(expenseModel(data, today)),
+    (error) => {
+      console.error("Overview: the Expenses figures couldn't be read", error);
+      return null;
+    },
+  );
   const model = overviewModel(await loadOverviewData(), today);
   const warnings = await loadWarnings(model, today);
   const worth = netWorthView(model);
@@ -35,7 +45,7 @@ export default async function OverviewPage() {
         <GreetingSentence parts={summarySentence(model, warnings)} cards={greetingView(model, warnings)} />
       </PageHeader>
       {worth && <NetWorthBlock view={worth} />}
-      <Tiles tiles={tilesView(model, warnings)} />
+      <Tiles tiles={tilesView(model, warnings, await spentRead)} />
       <EightThings items={insights(model, events)} />
       <FutureYou view={futureView(model)} />
       <Ending view={endingView(warnings, events, today, addDays(today, WINDOW_DAYS))} />
