@@ -137,6 +137,12 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 | F-LE-02 | A Lent page: Who owes what, the interest clock, forms to add, repay, mark repaid and delete | P1 | Built 2026-11-07 (`docs/design/lent-out.md`): greeting, what needs attention, Who owes what, the interest clock, loans table, coming up and money back, and the forms; late or missing payouts and a loan out long join Overview's "What needs attention", and its Lent out tile opens the page |
 | F-LE-03 | Income sources for the Paid-out loans' interest, matched to bank statements; the Lent page's promised-against-arrived reads them | P1 | Built 2026-11-07 (ADR 0014): a payout loan is added with a new income source, or uses one he already has; the page reads promised against arrived from Income |
 
+### Expenses (`F-EX`)
+
+| ID | Feature | Pri | Status |
+|---|---|---|---|
+| F-EX-01 | An Expenses page: what was spent each month, worked out from the pool (savings accounts and broker cash), split into card bills, EMIs, subscriptions, insurance and cash and UPI; big spends entered by hand; two Statements pages; a Spent tile on Overview | P1 | Designed 2026-11-08 (`docs/design/expenses.md`, E1 Split), build planned 2026-11-09 as epic #396 (#390 to #395) |
+
 ### Loans (`F-LO`)
 
 | ID | Feature | Pri | Status |
@@ -431,3 +437,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.37 | 2026-11-04 | The Accounts boards are redrawn for broker cash (`design/accounts/`, `docs/design/accounts.md` "Broker cash accounts"): a dollar account kept in dollars and counted in rupees at today's rate, a Brokerage type and a currency in the Add account form, a new Add a broker's cash form, the hero card and Balance history showing the dollars, and a state for it, desktop and phone. F-AC-05's sample is Vested cash ($3,000) and Zerodha cash (₹1,00,000). Only the final boards were rebuilt. Sample data. Nothing built. |
 | 1.38 | 2026-11-05 | Broker cash is planned (`docs/design/broker-cash.md`: two epics, ten tasks). Q13 (the rules) accepted and Q14 (where today's USD/INR comes from, and what happens when it can't be fetched) opened and answered; [ADR 0012](adr/0012-foreign-currency-balances.md) accepted. Nothing built; no issues created yet. |
 | 1.39 | 2026-11-05 | The Investments build is planned (`docs/design/investments-build.md`: prices, the maths, the page) and approved. The price-history spike passed (Yahoo, AMFI and Frankfurter cover every ticker he holds), which settles Q2. Trades from every broker are loaded from files with `scripts/importTrades.ts` (65 trades; FYERS before April 2024 and April 2025 to March 2026 still missing). F-IV-11 widened: edit or delete a saved trade (the edit forms are drawn on desktop and phone). |
+| 1.40 | 2026-11-09 | Expenses (F-EX-01) added: a page of its own for what's spent each month, worked out from the pool of savings accounts and broker cash (`docs/design/expenses.md`), from November 2026. Build planned as epic #396 with the defaults in the spec's "Build decisions". |
