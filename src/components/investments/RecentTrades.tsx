@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { TradeRow } from "@/app/investments/views";
 import { WidgetCard } from "../shell/WidgetCard";
 import { useTradeForms } from "./TradeForms";
@@ -9,7 +10,7 @@ export function RecentTrades({ rows }: { rows: TradeRow[] }) {
   const { open } = useTradeForms();
   if (rows.length === 0) return null;
   return (
-    <WidgetCard label="Recent trades" title="Recent trades" note="newest first · pick one to edit or delete it">
+    <WidgetCard label="Recent trades" title="Recent trades" note="newest first · pick one to edit or delete it" right={<Link href="/investments/trades" className="text-[12.5px] font-extrabold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">All trades →</Link>}>
       <ul className="flex flex-col">
         {rows.map((r) => (
           <li key={r.id} className="border-t border-divider first:border-t-0">

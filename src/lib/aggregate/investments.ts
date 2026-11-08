@@ -45,6 +45,21 @@ export interface RealisedSale {
   gainInr: number;
 }
 
+/** Where one position stood just after one of its trades: the Trades page's holding view reads one per trade. */
+export interface TradeStep {
+  transactionId: string;
+  /** Shares held just after this trade. */
+  quantityAfter: number;
+  /** Weighted-average cost of a share just after it, in rupees; 0 when none are held. A sale never moves it; a buy can. */
+  avgCostInrAfter: number;
+  /** The same in the trade's own currency (dollars for a US holding). */
+  avgCostNativeAfter: number;
+  /** What a sale made over the cost it took out, in rupees; null for a buy (or a sell of nothing). */
+  gainInr: number | null;
+  /** For a sell of more than was held, the shares it asked for beyond what was there; 0 otherwise. */
+  oversoldBy: number;
+}
+
 /**
  * Fractional units (mutual funds, fractional shares) leave float dust: 10.1 + 20.2 − 30.3 is
  * 5e-15, not 0. A quantity this small is nothing, so a position sold down to it is sold out.
@@ -86,12 +101,17 @@ function groupByPosition(transactions: InvestmentTransaction[]): InvestmentTrans
  * cost unchanged. A sell of more than is held sells what there is, so a later buy starts clean
  * instead of from a negative quantity, and is reported as an oversell.
  */
-function foldPosition(group: InvestmentTransaction[]) {
+function foldPosition(group: InvestmentTransaction[], collectSteps = false) {
   let quantity = 0;
   let totalCostInr = 0;
   let totalCostNative = 0;
   const oversells: Oversell[] = [];
   const sales: RealisedSale[] = [];
+  const steps: TradeStep[] = [];
+  // Only the Trades page wants a step per trade; holdingsAt runs this per day per holding, so it doesn't pay for them.
+  const step = (transactionId: string, gainInr: number | null, oversoldBy = 0) =>
+    collectSteps &&
+    steps.push({ transactionId, quantityAfter: quantity, avgCostInrAfter: quantity > 0 ? totalCostInr / quantity : 0, avgCostNativeAfter: quantity > 0 ? totalCostNative / quantity : 0, gainInr, oversoldBy });
 
   const ordered = inTradeOrder(group);
   for (const transaction of ordered) {
@@ -99,6 +119,7 @@ function foldPosition(group: InvestmentTransaction[]) {
       quantity += transaction.quantity;
       totalCostInr += totalInInr(transaction);
       totalCostNative += transaction.total;
+      step(transaction.id, null);
       continue;
     }
     if (transaction.quantity > quantity + QUANTITY_EPSILON) {
@@ -112,6 +133,8 @@ function foldPosition(group: InvestmentTransaction[]) {
       });
     }
     const sold = Math.min(transaction.quantity, quantity);
+    const oversoldBy = Math.max(0, transaction.quantity - quantity);
+    let gainInr: number | null = null;
     const fraction = quantity > 0 ? sold / quantity : 0;
     const costRemovedInr = totalCostInr * fraction;
     if (sold > 0) {
@@ -127,6 +150,7 @@ function foldPosition(group: InvestmentTransaction[]) {
         costRemovedInr,
         gainInr: proceedsInr - costRemovedInr,
       });
+      gainInr = proceedsInr - costRemovedInr;
     }
     totalCostNative -= totalCostNative * fraction;
     totalCostInr -= costRemovedInr;
@@ -136,8 +160,9 @@ function foldPosition(group: InvestmentTransaction[]) {
       totalCostInr = 0;
       totalCostNative = 0;
     }
+    step(transaction.id, gainInr, oversoldBy > QUANTITY_EPSILON ? oversoldBy : 0);
   }
-  return { quantity, totalCostInr, totalCostNative, oversells, sales, first: ordered[0] };
+  return { quantity, totalCostInr, totalCostNative, oversells, sales, steps, first: ordered[0] };
 }
 
 /**
@@ -155,6 +180,17 @@ export function computeHoldings(transactions: InvestmentTransaction[]): Holding[
     }
   }
   return holdings;
+}
+
+/**
+ * Every trade's step through the same fold as `computeHoldings`: the shares held and the weighted-average cost just after it, and what
+ * a sale made. Keyed by transaction id. A position's steps run in trade order (same-day Buy first), so a vest's sell-to-cover lands
+ * after its vest.
+ */
+export function tradeSteps(transactions: InvestmentTransaction[]): Map<string, TradeStep> {
+  const steps = new Map<string, TradeStep>();
+  for (const group of groupByPosition(transactions)) for (const s of foldPosition(group, true).steps) steps.set(s.transactionId, s);
+  return steps;
 }
 
 /**

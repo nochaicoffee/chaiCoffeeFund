@@ -322,7 +322,7 @@ export function holdingGroups(rows: HoldingTableRow[]): HoldingGroup[] {
 /** "Mutual-Fund" read as "Mutual Fund". */
 const assetTypeText = (type: string) => type.replaceAll("-", " ");
 
-const quantityText = (q: number) => (Number.isInteger(q) ? String(q) : String(Math.round(q * 10_000) / 10_000));
+export const quantityText = (q: number) => (Number.isInteger(q) ? String(q) : String(Math.round(q * 10_000) / 10_000));
 
 /** How a holding's price has moved from the day `then` shows to today (`now`'s): "sold" when he no longer holds it, null with no price on either day. */
 function priceSince(then: HoldingRow, now: HoldingRow | undefined): number | null | "sold" {

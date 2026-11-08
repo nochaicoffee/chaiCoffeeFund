@@ -1,5 +1,5 @@
 /** The share-plan tags beside a holding's name: RSU in blue, ESPP in violet, and a warm "Stale price" (design: srcb). */
-const PLAN_STYLE = {
+export const PLAN_STYLE = {
   RSU: { background: "oklch(0.94 0.03 258)", color: "oklch(0.42 0.1 258)" },
   ESPP: { background: "oklch(0.94 0.04 300)", color: "oklch(0.42 0.12 300)" },
 } as const;

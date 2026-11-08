@@ -1,6 +1,10 @@
 {
   "pages": [
     {
+      "id": "tradesfinal",
+      "name": "FINAL: Trades page (T1 + T2 book), page, phone, states"
+    },
+    {
       "id": "final",
       "name": "FINAL: L1 Giant, the page"
     },
@@ -15,6 +19,10 @@
     {
       "id": "forms",
       "name": "FINAL: forms"
+    },
+    {
+      "id": "trades",
+      "name": "Exploration · Trades page, round 1 (T3 Months, not picked)"
     },
     {
       "id": "donuts",
@@ -47,6 +55,38 @@
   ],
   "artboards": [
     {
+      "file": "InvT1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 5062,
+      "page": "tradesfinal"
+    },
+    {
+      "file": "InvT2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 2199,
+      "page": "tradesfinal"
+    },
+    {
+      "file": "InvTPhone.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1000,
+      "h": 1919,
+      "page": "tradesfinal"
+    },
+    {
+      "file": "InvTStates.dc.html",
+      "x": 4560,
+      "y": 0,
+      "w": 1600,
+      "h": 2706,
+      "page": "tradesfinal"
+    },
+    {
       "file": "InvFinal.dc.html",
       "x": 0,
       "y": 0,
@@ -77,6 +117,14 @@
       "w": 1100,
       "h": 6234,
       "page": "forms"
+    },
+    {
+      "file": "InvT3.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1249,
+      "page": "trades"
     },
     {
       "file": "InvDonuts.dc.html",
@@ -261,11 +309,27 @@
       "x": 0,
       "y": -90,
       "w": 1100,
+      "text": "The Trades page, picked 2026-11-08: T1 Tape is the page (every trade by month, filters by kind, India/US and financial year), and T2 Book is the same page with one holding picked (?holding=NTAP: shares held and average cost after each trade). A holding's name on the list opens its book; All trades goes back. Phone and states drawn. Sample data, made up; today is Saturday Oct 31, 2026.",
+      "page": "tradesfinal"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Not picked. The Trades page, round 1 (2026-11-08): every trade, like Cards' Statements and Income's Entries. T1 Tape (every trade by month, filters by kind, India/US and financial year, what each sale made), T2 Book (one holding: shares held and average cost after every trade, a step chart, how the shares came in), T3 Months (a calendar of money in and out, pick a month for its trades). All live in the browser. Sample data, made up; today is Saturday Oct 31, 2026.",
+      "page": "trades"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
       "text": "Donuts and pies, six unusual takes (2026-11-04): Morph (ten arcs that glide into each slicing), Spin wheel, Explode (a pie that unfolds its holdings), Gauge, a tilted 3D stack and a Rose. All interactive in the browser with no script. Sample data, made up.",
       "page": "donuts"
     },
     {
-      "id": "note-2",
+      "id": "note-4",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -273,7 +337,7 @@
       "page": "split2"
     },
     {
-      "id": "note-3",
+      "id": "note-5",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -281,7 +345,7 @@
       "page": "split"
     },
     {
-      "id": "note-4",
+      "id": "note-6",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -289,7 +353,7 @@
       "page": "final"
     },
     {
-      "id": "note-5",
+      "id": "note-7",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -297,7 +361,7 @@
       "page": "phone"
     },
     {
-      "id": "note-6",
+      "id": "note-8",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -305,7 +369,7 @@
       "page": "states"
     },
     {
-      "id": "note-7",
+      "id": "note-9",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -313,7 +377,7 @@
       "page": "forms"
     },
     {
-      "id": "note-8",
+      "id": "note-10",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -321,7 +385,7 @@
       "page": "r4"
     },
     {
-      "id": "note-9",
+      "id": "note-11",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -329,7 +393,7 @@
       "page": "r3"
     },
     {
-      "id": "note-10",
+      "id": "note-12",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -337,7 +401,7 @@
       "page": "r2"
     },
     {
-      "id": "note-11",
+      "id": "note-13",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -347,6 +411,6 @@
   ],
   "launch": {
     "view": "canvas",
-    "page": "final"
+    "page": "tradesfinal"
   }
 }

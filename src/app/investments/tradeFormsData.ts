@@ -1,3 +1,4 @@
+import { vestCovers } from "@/lib/aggregate/tradeHistory";
 import type { BrokerCash } from "@/lib/aggregate/brokerCash";
 import type { AccountCurrency, Instrument, InvestmentTarget, InvestmentTransaction } from "@/lib/sheets/types";
 
@@ -46,10 +47,13 @@ export function editTarget(trades: InvestmentTransaction[], id: string): EditTar
   const trade = trades.find((t) => t.id === id);
   if (!trade) return null;
   if (trade.source === "RSU") {
-    const sameDay = trades.filter((t) => t.source === "RSU" && t.symbol === trade.symbol && t.market === trade.market && t.tradeDate === trade.tradeDate);
-    const vest = sameDay.find((t) => t.tradeType === "Buy");
-    const cover = sameDay.find((t) => t.tradeType === "Sell");
-    if (vest) return { kind: "vest", ids: [vest.id, ...(cover ? [cover.id] : [])], vest: vest.id, ...(cover && { cover: cover.id }) };
+    // The same pairing the Trades page shows (two grants vesting on one day each keep their own cover).
+    const pairs = vestCovers(trades);
+    const vestId = trade.tradeType === "Buy" ? trade.id : [...pairs].find(([, c]) => c.id === trade.id)?.[0];
+    if (vestId) {
+      const cover = pairs.get(vestId);
+      return { kind: "vest", ids: [vestId, ...(cover ? [cover.id] : [])], vest: vestId, ...(cover && { cover: cover.id }) };
+    }
     return { kind: "trade", ids: [trade.id] };
   }
   if (trade.source === "ESPP" && trade.tradeType === "Buy") return { kind: "espp", ids: [trade.id] };

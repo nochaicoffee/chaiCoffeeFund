@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import { useState } from "react";
 import type { AsOfView } from "@/app/investments/asOfViews";
@@ -88,7 +89,9 @@ function Row({ r, dayLabel }: { r: HoldingTableRow; dayLabel: string }) {
         </span>
         <span className="min-w-0">
           <b className="block text-[13.5px] font-extrabold">
-            {r.name}
+            <Link href={`/investments/trades?holding=${encodeURIComponent(r.key)}`} title={`Every trade in ${r.name}`} className="hover:text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">
+              {r.name}
+            </Link>
             {r.tags.map((t) => (
               <PlanTag key={t} name={t} />
             ))}
