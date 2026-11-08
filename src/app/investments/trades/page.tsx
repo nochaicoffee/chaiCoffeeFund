@@ -27,8 +27,12 @@ export default async function TradesPage({ searchParams }: PageProps<"/investmen
   const params = await searchParams;
   const today = todayIso();
   const cashRead = readCash(today);
-  const [tradesTab, instrumentsTab] = await Promise.all([getCachedInvestmentTransactionsTab(), getCachedInstrumentsTab()]);
-  const closes = await getPriceSeries().catch(() => new Map<string, PricePoint[]>());
+  // Asked for together, so a cold page reads them in one batch.
+  const [tradesTab, instrumentsTab, closes] = await Promise.all([
+    getCachedInvestmentTransactionsTab(),
+    getCachedInstrumentsTab(),
+    getPriceSeries().catch(() => new Map<string, PricePoint[]>()),
+  ]);
   const trades = tradesTab.records;
   const held = holdingRows({ trades, instruments: instrumentsTab.records, closes, today });
   const entries = tradeEntries(trades);

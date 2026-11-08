@@ -3,6 +3,7 @@ import type { PricePoint } from "@/lib/prices/history";
 import { getPriceSeries } from "@/lib/prices/series";
 import {
   getCachedAccounts,
+  getCachedBalanceReviewsTab,
   getCachedBalanceSnapshots,
   getCachedCards,
   getCachedEpfAccounts,
@@ -44,7 +45,9 @@ async function optional<T>(name: string, read: () => Promise<T>, empty: T): Prom
  * Dollar accounts are counted in rupees at today's rate once (ADR 0012); with no rate they are left out and flagged.
  */
 export async function loadOverviewData(): Promise<OverviewData> {
-  const [allAccounts, allSnapshots, cards, statements, subscriptions, subscriptionPayments, loans, loanInstallments, trades, instruments, fixedDeposits, incomeEntries, incomeSources] = await Promise.all([
+  // Every read starts here, before any is awaited, so on a cold cache they all go to Sheets in one batch (lib/sheets/batchedReads.ts)
+  // and the page waits only for the slowest tab, not one round after another.
+  const core = Promise.all([
     getCachedAccounts(),
     getCachedBalanceSnapshots(),
     getCachedCards(),
@@ -59,16 +62,34 @@ export async function loadOverviewData(): Promise<OverviewData> {
     getCachedIncomeEntries(),
     getCachedIncomeSources(),
   ]);
-  const rupee = await rupeeBalances(allAccounts, allSnapshots);
-
-  const [epf, lent, goals, prepayments, insurance, prices] = await Promise.all([
-    optional("EPF", async () => ({ accounts: await getCachedEpfAccounts(), entries: await getCachedEpfEntries(), rates: await getCachedEpfRates() }), { accounts: [], entries: [], rates: [] }),
-    optional("lent out", async () => ({ loans: await getCachedLentLoans(), repayments: await getCachedLentRepayments() }), { loans: [], repayments: [] }),
-    optional("goals", async () => ({ goals: await getCachedGoals(), contributions: await getCachedGoalContributions() }), { goals: [], contributions: [] }),
+  const sources = Promise.all([
+    optional("EPF", async () => {
+      const [accounts, entries, rates] = await Promise.all([getCachedEpfAccounts(), getCachedEpfEntries(), getCachedEpfRates()]);
+      return { accounts, entries, rates };
+    }, { accounts: [], entries: [], rates: [] }),
+    optional("lent out", async () => {
+      const [loans, repayments] = await Promise.all([getCachedLentLoans(), getCachedLentRepayments()]);
+      return { loans, repayments };
+    }, { loans: [], repayments: [] }),
+    optional("goals", async () => {
+      const [goals, contributions] = await Promise.all([getCachedGoals(), getCachedGoalContributions()]);
+      return { goals, contributions };
+    }, { goals: [], contributions: [] }),
     optional("loan prepayments", () => getCachedLoanPrepayments(), []),
-    optional("insurance", async () => ({ policies: await getCachedPolicies(), payments: await getCachedPolicyPayments() }), { policies: [], payments: [] }),
+    optional("insurance", async () => {
+      const [policies, payments] = await Promise.all([getCachedPolicies(), getCachedPolicyPayments()]);
+      return { policies, payments };
+    }, { policies: [], payments: [] }),
     optional("prices", () => getPriceSeries(), new Map<string, PricePoint[]>()),
   ]);
+  // The balance reviews are read by the Accounts warnings (loadWarnings.ts), which can only start once the model is built. Asking for them
+  // now puts them in the same batch, and the warnings then find them cached. A failure here is left to the warnings to report.
+  void getCachedBalanceReviewsTab().catch(() => {});
+
+  // If the core fails the page shows its error; `sources` never rejects (each one is optional), so nothing is left unhandled.
+  const [allAccounts, allSnapshots, cards, statements, subscriptions, subscriptionPayments, loans, loanInstallments, trades, instruments, fixedDeposits, incomeEntries, incomeSources] = await core;
+  const rupee = await rupeeBalances(allAccounts, allSnapshots);
+  const [epf, lent, goals, prepayments, insurance, prices] = await sources;
 
   return {
     accounts: rupee.accounts,

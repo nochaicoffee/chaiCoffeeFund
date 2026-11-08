@@ -20,6 +20,7 @@ vi.mock("./client", () => ({
       get: async () => ({ data: { sheets: [{ properties: { title: "Things", sheetId: 7 } }, { properties: { title: "LoanInstallments", sheetId: 8 } }, { properties: { title: "Loans", sheetId: 9 } }] } }),
       values: {
         get: async ({ range }: { range: string }) => ({ data: { values: sheet.rows[range] ?? [] } }),
+        batchGet: async ({ ranges }: { ranges: string[] }) => ({ data: { valueRanges: ranges.map((range) => ({ range, values: sheet.rows[range] ?? [] })) } }),
         update: async ({ range, requestBody }: { range: string; requestBody: { values: unknown[][] } }) => {
           sheet.updates.push({ range, values: requestBody.values });
           return { data: {} };
