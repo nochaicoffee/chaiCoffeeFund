@@ -14,6 +14,10 @@ vi.mock("./client", () => ({
           sheet.reads++;
           return { data: { values: sheet.rows[range] ?? [] } };
         },
+        batchGet: async ({ ranges }: { ranges: string[] }) => {
+          sheet.reads++;
+          return { data: { valueRanges: ranges.map((range) => ({ range, values: sheet.rows[range] ?? [] })) } };
+        },
       },
     },
   }),

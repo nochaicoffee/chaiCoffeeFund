@@ -2,6 +2,7 @@ import "server-only";
 import { randomUUID } from "crypto";
 import type { z } from "zod";
 import { toUserEnteredCell } from "./cellValues";
+import { readRange } from "./batchedReads";
 import { getSheetsClient, getSpreadsheetId } from "./client";
 import { assertColumnsMatchSchema, columnExpectations, columnKinds, readRow, reportInvalidRow, type RowProblem, type SkippedRow } from "./rowReading";
 import { columnLetter } from "./tableStructure";
@@ -101,15 +102,9 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     return sheetId;
   }
 
-  async function fetchRows(): Promise<unknown[][]> {
-    const sheets = getSheetsClient();
-    const res = await sheets.spreadsheets.values.get({
-      spreadsheetId: getSpreadsheetId(),
-      range: dataRange,
-      valueRenderOption: "UNFORMATTED_VALUE",
-      dateTimeRenderOption: "SERIAL_NUMBER",
-    });
-    return res.data.values ?? [];
+  /** Every row below the header, read in one batch with any other tab read at the same moment (batchedReads.ts). */
+  function fetchRows(): Promise<unknown[][]> {
+    return readRange(dataRange);
   }
 
   /**

@@ -51,14 +51,16 @@ export default async function InvestmentsPage() {
     console.error("Investments: the targets and limits couldn't be read", error);
     return null;
   });
-  const [tradesTab, instrumentsTab] = await Promise.all([getCachedInvestmentTransactionsTab(), getCachedInstrumentsTab()]);
-  const targetsTab = await targetsRead;
-  const savedTargets = targetsTab?.records ?? [];
   // The saved prices not reading must not take the page down: the holdings are then counted at cost, and the page says so (design state B).
-  const prices = await getPriceSeries().then(
+  // Asked for with the other reads, not after them, so a cold page reads every tab in one batch.
+  const pricesRead = getPriceSeries().then(
     (closes) => ({ closes, failed: false }),
     () => ({ closes: new Map<string, PricePoint[]>(), failed: true }),
   );
+  const [tradesTab, instrumentsTab] = await Promise.all([getCachedInvestmentTransactionsTab(), getCachedInstrumentsTab()]);
+  const targetsTab = await targetsRead;
+  const savedTargets = targetsTab?.records ?? [];
+  const prices = await pricesRead;
   const closes = prices.closes;
   const overviewInput = { trades: tradesTab.records, instruments: instrumentsTab.records, closes, today };
   const overview = investmentOverview(overviewInput);
