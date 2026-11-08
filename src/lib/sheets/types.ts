@@ -813,3 +813,26 @@ export interface LentRepayment {
   amount: number;
   kind: LentRepaymentKind;
 }
+
+// --- Expenses (docs/design/expenses.md) ---
+
+/** What a big spend was, as the BigSpends tab's category dropdown lists it. Each has a colour and an icon on the page. */
+export const BIG_SPEND_CATEGORIES = ["Travel", "Shopping", "Electronics", "Home", "Health", "Gifts", "Vehicle", "Education", "Other"] as const;
+export type BigSpendCategory = (typeof BIG_SPEND_CATEGORIES)[number];
+
+/**
+ * A large purchase he enters by hand, so a month's spending can say what made it high. It explains part of a month and never adds to it:
+ * one on a card is already inside that card's bill, and one from a bank account is already inside cash and UPI.
+ */
+export interface BigSpend {
+  id: string;
+  date: string;
+  amount: number;
+  /** What it was: "Flights home", "Diwali shopping". */
+  name: string;
+  category: BigSpendCategory;
+  /** At most one set, as on payments: the bank account it left, or the card it was charged to. */
+  paidFromAccountId?: string;
+  paidFromCardId?: string;
+  note?: string;
+}
