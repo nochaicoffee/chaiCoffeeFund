@@ -28,6 +28,7 @@ import { priceSnapshotsRepository } from "./priceSnapshots";
 import { balanceReviewsRepository } from "./balanceReviews";
 import { lentLoansRepository } from "./lentLoans";
 import { lentRepaymentsRepository } from "./lentRepayments";
+import { bigSpendsRepository } from "./bigSpends";
 
 /**
  * Cached reads for every entity, one tag each — used by pages (Server
@@ -73,6 +74,7 @@ export const CACHE_TAGS = {
   balanceReviews: "balanceReviews",
   lentLoans: "lentLoans",
   lentRepayments: "lentRepayments",
+  bigSpends: "bigSpends",
   /** Today's USD to INR, for dollar accounts (lib/prices/usdInr.ts). */
   usdInr: "usdInr",
 } as const;
@@ -219,3 +221,7 @@ export const getCachedLentLoanById = cachedGetById(getCachedLentLoans);
 export const getCachedLentRepaymentsTab = cachedTab(lentRepaymentsRepository, CACHE_TAGS.lentRepayments);
 export const getCachedLentRepayments = cachedList(getCachedLentRepaymentsTab);
 export const getCachedLentRepaymentById = cachedGetById(getCachedLentRepayments);
+
+export const getCachedBigSpendsTab = cachedTab(bigSpendsRepository, CACHE_TAGS.bigSpends);
+export const getCachedBigSpends = cachedList(getCachedBigSpendsTab);
+export const getCachedBigSpendById = cachedGetById(getCachedBigSpends);

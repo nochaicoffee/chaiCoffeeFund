@@ -29,6 +29,7 @@ import { GOAL_CONTRIBUTION_COLUMNS, goalContributionRowSchema } from "@/lib/shee
 import { SYNC_RUN_COLUMNS, syncRunRowSchema } from "@/lib/sheets/syncRuns";
 import { SUBSCRIPTION_PAYMENT_COLUMNS, subscriptionPaymentRowSchema } from "@/lib/sheets/subscriptionPayments";
 import { SUBSCRIPTION_COLUMNS, subscriptionRowSchema } from "@/lib/sheets/subscriptions";
+import { BIG_SPEND_COLUMNS, bigSpendRowSchema } from "@/lib/sheets/bigSpends";
 import { columnSpecs, planNewTable, planTableColumns } from "@/lib/sheets/tableColumns";
 
 /** The tabs this can bring in line with their repository. Add one here when its columns change. */
@@ -60,10 +61,11 @@ const TABS = {
   PolicyPayments: () => columnSpecs(POLICY_PAYMENT_COLUMNS as string[], policyPaymentRowSchema),
   Goals: () => columnSpecs(GOAL_COLUMNS as string[], goalRowSchema),
   GoalContributions: () => columnSpecs(GOAL_CONTRIBUTION_COLUMNS as string[], goalContributionRowSchema),
+  BigSpends: () => columnSpecs(BIG_SPEND_COLUMNS as string[], bigSpendRowSchema),
 };
 
 /** Tabs the code needs that may not exist yet: the route creates them, with their Table, when they're missing. Existing tabs are never created over. */
-const CREATABLE = new Set(["LentLoans", "LentRepayments", "AccountStatementEmails", "BalanceReviews", "LoanPrepayments", "Policies", "PolicyPayments", "Goals", "GoalContributions", "EpfAccounts", "EpfEntries", "EpfRates", "Instruments", "PriceSnapshots", "InvestmentTargets"]);
+const CREATABLE = new Set(["LentLoans", "LentRepayments", "AccountStatementEmails", "BalanceReviews", "LoanPrepayments", "Policies", "PolicyPayments", "Goals", "GoalContributions", "EpfAccounts", "EpfEntries", "EpfRates", "Instruments", "PriceSnapshots", "InvestmentTargets", "BigSpends"]);
 
 type Plan =
   | { error: string }
