@@ -1,6 +1,6 @@
 import type { TileKey } from "./views";
 
-export type GlyphKey = "accounts" | "invest" | "fixed" | "lent" | "cards" | "loans" | "income" | "subs" | "goals" | "ins" | "due" | "left";
+export type GlyphKey = "accounts" | "invest" | "fixed" | "lent" | "cards" | "loans" | "income" | "subs" | "goals" | "ins" | "due" | "spent";
 
 /** Hand-drawn glyphs on a 24 x 24 grid: a fill shape (the body) and a line (the detail). The tiles draw them large and faint as watermarks (docs/design/overview.md). */
 export const GLYPHS: Record<GlyphKey, { fill: string; line: string }> = {
@@ -15,8 +15,8 @@ export const GLYPHS: Record<GlyphKey, { fill: string; line: string }> = {
   goals: { fill: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", line: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM12 11.2a.8.8 0 1 0 0 1.6.8.8 0 0 0 0-1.6z" },
   ins: { fill: "M12 3l8 3v6c0 4.5-3.3 8-8 9-4.7-1-8-4.5-8-9V6z", line: "M12 3l8 3v6c0 4.5-3.3 8-8 9-4.7-1-8-4.5-8-9V6zM9 12l2 2 4-4" },
   due: { fill: "M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z", line: "M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM3 10h18M8 2v4M16 2v4M12 14v3M12 19.2v.01" },
-  left: { fill: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z", line: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7v5l3 2" },
+  spent: { fill: "M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z", line: "M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2zM9 8h6M9 12h6M9 16h3" },
 };
 
 /** The glyph each tile carries. */
-export const GLYPH_FOR: Record<TileKey, GlyphKey> = { accounts: "accounts", invest: "invest", fixed: "fixed", lent: "lent", cards: "cards", loans: "loans", income: "income", subs: "subs", goals: "goals", ins: "ins", due: "due", left: "left" };
+export const GLYPH_FOR: Record<TileKey, GlyphKey> = { accounts: "accounts", invest: "invest", fixed: "fixed", lent: "lent", cards: "cards", loans: "loans", income: "income", subs: "subs", goals: "goals", ins: "ins", due: "due", spent: "spent" };

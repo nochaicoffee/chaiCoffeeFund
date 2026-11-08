@@ -141,7 +141,7 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 
 | ID | Feature | Pri | Status |
 |---|---|---|---|
-| F-EX-01 | An Expenses page: what was spent each month, worked out from the pool (savings accounts and broker cash), split into card bills, EMIs, subscriptions, insurance and cash and UPI; big spends entered by hand; two Statements pages; a Spent tile on Overview | P1 | Designed 2026-11-08 (`docs/design/expenses.md`, E1 Split), build planned 2026-11-09 as epic #396 (#390 to #395) |
+| F-EX-01 | An Expenses page: what was spent each month, worked out from the pool (savings accounts and broker cash), split into card bills, EMIs, subscriptions, insurance and cash and UPI; big spends entered by hand; two Statements pages; a Spent tile on Overview | P1 | Built 2026-11-09 (epic #396, #390 to #395; `docs/design/expenses.md`): the pool math, the BigSpends tab, `/expenses` (E1 Split), `/expenses/statements` (every month, and one month), and a Spent tile on Overview in Still to pay's place. Spending works out from November 2026 |
 
 ### Loans (`F-LO`)
 
@@ -439,3 +439,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.38 | 2026-11-05 | Broker cash is planned (`docs/design/broker-cash.md`: two epics, ten tasks). Q13 (the rules) accepted and Q14 (where today's USD/INR comes from, and what happens when it can't be fetched) opened and answered; [ADR 0012](adr/0012-foreign-currency-balances.md) accepted. Nothing built; no issues created yet. |
 | 1.39 | 2026-11-05 | The Investments build is planned (`docs/design/investments-build.md`: prices, the maths, the page) and approved. The price-history spike passed (Yahoo, AMFI and Frankfurter cover every ticker he holds), which settles Q2. Trades from every broker are loaded from files with `scripts/importTrades.ts` (65 trades; FYERS before April 2024 and April 2025 to March 2026 still missing). F-IV-11 widened: edit or delete a saved trade (the edit forms are drawn on desktop and phone). |
 | 1.40 | 2026-11-09 | Expenses (F-EX-01) added: a page of its own for what's spent each month, worked out from the pool of savings accounts and broker cash (`docs/design/expenses.md`), from November 2026. Build planned as epic #396 with the defaults in the spec's "Build decisions". |
+| 1.41 | 2026-11-09 | F-EX-01 built (epic #396). Overview's Still to pay tile is replaced by Spent, which opens Expenses; Due this month now says what's still to pay, so the grid stays twelve. |
