@@ -78,7 +78,7 @@ export default async function InvestmentsPage() {
   const limits = limitViews(overview, savedTargets);
 
   return (
-    <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today, cashData?.cash, savedTargets)}>
+    <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today, cashData?.accounts, cashData?.cash, savedTargets)}>
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Investments"

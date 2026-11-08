@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { InvestmentTransaction } from "../sheets/types";
-import { financialYear, howItCameIn, tradeEntries, tradeTotals, vestCovers } from "./tradeHistory";
+import { financialYear, howItCameIn, tradeEntries, tradeTotals, vestCovers, withAccountNames } from "./tradeHistory";
 
 const t = (o: Partial<InvestmentTransaction>): InvestmentTransaction => ({
   id: "t", tradeDate: "2026-01-01", symbol: "XYZ", market: "IND", currency: "INR", tradeType: "Buy", source: "Market",
@@ -120,5 +120,13 @@ describe("a buy and a vest on the same day", () => {
       us({ id: "c", tradeDate: "2026-05-15", source: "RSU", tradeType: "Sell", quantity: 5, total: 500 }),
     ]);
     expect(entries.every((e) => e.after.quantityAfter === 14)).toBe(true);
+  });
+});
+
+describe("withAccountNames", () => {
+  it("names a linked trade by its account as it is now, and leaves an unlinked one as saved", () => {
+    const [linked, loose] = withAccountNames([us({ id: "a", broker: "INDmoney (DriveWealth)", settlementAccountId: "acc" }), us({ id: "b", broker: "Old name" })], [{ id: "acc", name: "IND Money - Prathik" }]);
+    expect(linked.broker).toBe("IND Money - Prathik");
+    expect(loose.broker).toBe("Old name");
   });
 });

@@ -55,6 +55,12 @@ describe("planImport", () => {
     expect(plan.alreadyThere).toHaveLength(1);
   });
 
+  it("knows a trade by its brokerage account, so renaming the account doesn't make a re-import add it again", () => {
+    const stored = { ...row(), broker: "Old name", settlementAccountId: "acc-1" };
+    expect(planImport([{ ...row(), broker: "New name", settlementAccountId: "acc-1" }], [stored]).toAdd).toEqual([]);
+    expect(tradeKey({ ...row(), settlementAccountId: "acc-1" })).not.toBe(tradeKey({ ...row(), settlementAccountId: "acc-2" }));
+  });
+
   it("counts identical fills: one stored means one more is still to add", () => {
     expect(planImport([row(), row()], [row()]).toAdd).toHaveLength(1);
   });

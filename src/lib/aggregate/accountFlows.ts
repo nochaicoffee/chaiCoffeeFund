@@ -6,7 +6,7 @@ import { nextOccurrence } from "./recurring";
 import { addDays } from "./subscriptionRenewals";
 import { nextRenewalsFrom } from "./subscriptionNextCharges";
 import type { RupeeSnapshot } from "./accountCurrency";
-import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, IncomeSource, InvestmentTransaction, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment } from "../sheets/types";
+import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, IncomeSource, InvestmentTransaction, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment, Transfer } from "../sheets/types";
 
 /**
  * Where an account's money went and came from, worked out from records kept elsewhere
@@ -16,9 +16,12 @@ import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, Income
  * - Subscriptions: a paid payment charged to the account, or to nothing when the subscription's
  *   usual place is the account. A payment charged to a card is inside that card's bill instead.
  * - EMIs: an installment paid from the account, on its paid date (a card-paid one is in the card's bill).
- * - Investments: a Buy settled from the account, in rupees at the trade's frozen rate.
+ * - Investments: money sent from a bank account to a Brokerage account (a Transfer), on the bank's side. Trades don't count here:
+ *   they happen inside the broker, with its cash, so none of them leaves a bank.
  * - Came in: a received income entry landing in the account, on its received date.
- * - Sold: a Sell's proceeds. They move the balance but aren't earnings, so they're not "came in".
+ * - Taken back: money a Brokerage account sent back to a bank account (a Transfer), profit and all. It isn't earnings, so it's not
+ *   "came in": it's investing in reverse. Invested = sent − taken back, so a year that took more back than it sent is negative.
+ * - A transfer between two bank accounts, or two brokers, moves nothing in or out of "your bank", so it isn't counted.
  * - Expenses = card bills + subscriptions + EMIs. Saved = came in − expenses, so money invested
  *   counts as saved (decision 19); kept in the bank = saved − invested.
  * - Everything else: the balance change those don't explain (UPI, cash, transfers between your own
@@ -46,6 +49,8 @@ export interface AccountsData {
   loans: Loan[];
   installments: LoanInstallment[];
   trades: InvestmentTransaction[];
+  /** Money moved between his own accounts. Optional: data from before the Transfers tab has none. */
+  transfers?: Transfer[];
   incomeSources: IncomeSource[];
   incomeEntries: IncomeEntry[];
   /** Balances a bank statement disagreed with (BalanceReviews). Left out where there are none to show. */
@@ -60,7 +65,7 @@ export const OUT_KINDS = ["Card bills", "Subscriptions", "EMIs", "Investments"] 
 export type OutKind = (typeof OUT_KINDS)[number];
 
 export interface MoneyItem {
-  kind: OutKind | "Came in" | "Sold";
+  kind: OutKind | "Came in" | "Taken back";
   date: string;
   amount: number;
   accountId: string;
@@ -68,11 +73,6 @@ export interface MoneyItem {
 }
 
 const within = (date: string | undefined, from: string, to: string): date is string => !!date && date >= from && date <= to;
-
-/** A trade's total in rupees: a US one at its own frozen rate, never a live one (as in investments.ts). */
-function tradeInr(trade: InvestmentTransaction): number {
-  return trade.market === "IND" ? trade.total : trade.total * (trade.fxRateToInr ?? 0);
-}
 
 /** Every recorded movement of money through an account between two days, inclusive. */
 export function moneyItems(data: AccountsData, from: string, to: string): MoneyItem[] {
@@ -95,10 +95,20 @@ export function moneyItems(data: AccountsData, from: string, to: string): MoneyI
     const amount = i.amountPaid ?? i.totalDue;
     if (amount > 0) items.push({ kind: "EMIs", date: i.paidDate, amount, accountId: i.paidFromAccountId, label: loans.get(i.loanId)?.name ?? "Loan" });
   }
-  for (const t of data.trades) {
-    if (!t.settlementAccountId || !within(t.tradeDate, from, to)) continue;
-    const amount = tradeInr(t);
-    if (amount > 0) items.push({ kind: t.tradeType === "Buy" ? "Investments" : "Sold", date: t.tradeDate, amount, accountId: t.settlementAccountId, label: t.symbol });
+  // A transfer between a bank and a broker, counted on the bank's side (the broker's cash is what bought the shares, not the bank's).
+  // Dollar accounts left out of the totals because today's rate couldn't be had are still accounts: a transfer to one still left the bank.
+  const accountsById = new Map([...data.accounts, ...(data.unpriced?.accounts.map((u) => u.account) ?? [])].map((a) => [a.id, a]));
+  const sameCurrency = (t: Transfer) => (accountsById.get(t.fromAccountId)?.currency ?? "INR") === (accountsById.get(t.toAccountId)?.currency ?? "INR");
+  const isBroker = (id: string) => accountsById.get(id)?.accountType === "Brokerage";
+  const nameOf = (id: string) => accountsById.get(id)?.name ?? "Broker";
+  for (const t of data.transfers ?? []) {
+    if (!within(t.date, from, to) || !accountsById.has(t.fromAccountId) || !accountsById.has(t.toAccountId)) continue;
+    if (!isBroker(t.fromAccountId) && isBroker(t.toAccountId)) items.push({ kind: "Investments", date: t.date, amount: t.amount, accountId: t.fromAccountId, label: nameOf(t.toAccountId) });
+    else if (isBroker(t.fromAccountId) && !isBroker(t.toAccountId)) {
+      // Dollars back to a rupee bank count as the rupees that arrived; without them it can't be counted (the routes refuse such a row).
+      const amount = t.receivedAmount ?? (sameCurrency(t) ? t.amount : undefined);
+      if (amount !== undefined) items.push({ kind: "Taken back", date: t.date, amount, accountId: t.toAccountId, label: nameOf(t.fromAccountId) });
+    }
   }
   const sources = new Map(data.incomeSources.map((s) => [s.id, s]));
   for (const e of data.incomeEntries) {
@@ -113,13 +123,17 @@ export interface Flows {
   out: Record<OutKind, number>;
   /** Card bills + subscriptions + EMIs. */
   expenses: number;
+  /** Sent to brokers less taken back from them: negative when more came back than went. */
   invested: number;
-  sold: number;
+  /** Money sent from the bank to brokers. */
+  sent: number;
+  /** Money brokers sent back to the bank. */
+  takenBack: number;
   /** Came in − expenses: investing counts as saved (decision 19). */
   saved: number;
   /** Saved − invested. */
   keptInBank: number;
-  /** Everything that left the account: expenses and what was invested. */
+  /** Everything that left the account: expenses and what was sent to brokers. */
   leftBank: number;
 }
 
@@ -135,7 +149,9 @@ export function flows(items: FlowItem[], accountId: string | null): Flows {
   const cameIn = sum(mine, "Came in");
   const expenses = out["Card bills"] + out.Subscriptions + out.EMIs;
   const saved = cameIn - expenses;
-  return { cameIn, out, expenses, invested: out.Investments, sold: sum(mine, "Sold"), saved, keptInBank: saved - out.Investments, leftBank: expenses + out.Investments };
+  const takenBack = sum(mine, "Taken back");
+  const invested = out.Investments - takenBack;
+  return { cameIn, out, expenses, invested, sent: out.Investments, takenBack, saved, keptInBank: saved - invested, leftBank: expenses + out.Investments };
 }
 
 /** The movements after `after` up to and including `to`: the stretch between two readings of a line. Without `after`, everything up to `to`. */
@@ -204,7 +220,7 @@ export function everythingElse(data: AccountsData, items: MoneyItem[], accountId
     if (first) change += end.balance - first.balance;
   }
   const mine = accountId === null ? items : items.filter((i) => i.accountId === accountId);
-  const explained = sum(mine, "Came in") + sum(mine, "Sold") - OUT_KINDS.reduce((total, kind) => total + sum(mine, kind), 0);
+  const explained = sum(mine, "Came in") + sum(mine, "Taken back") - OUT_KINDS.reduce((total, kind) => total + sum(mine, kind), 0);
   return { change, explained, unexplained: change - explained };
 }
 
@@ -294,7 +310,7 @@ export interface BridgeStep {
 }
 
 /**
- * The bridge from where the span starts to where it ends: what came in, was sold, went out in
+ * The bridge from where the span starts to where it ends: what came in, came back from brokers, went out in
  * each kind, and everything else; then "Accounts opened", the balances accounts arrived with
  * when first read inside the span, which isn't money moving (confirmed by Prathik 2026-10-22).
  * It always ends on what's held at the span's end.
@@ -310,7 +326,7 @@ export function bridgeSteps(data: AccountsData, items: MoneyItem[], accountId: s
     if (amount !== 0) steps.push({ label, amount, kind: amount > 0 ? "up" : "down", worked });
   };
   add("Came in", f.cameIn);
-  add("Sold", f.sold);
+  add("Taken back", f.takenBack);
   for (const kind of OUT_KINDS) add(kind, -f.out[kind]);
   add("Everything else", rest.unexplained, true);
   add("Accounts opened", end - (start + rest.change));

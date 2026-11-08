@@ -5,17 +5,23 @@ import type { InvestmentTransaction } from "../sheets/types";
 const t = (o: Partial<InvestmentTransaction>): InvestmentTransaction => ({
   id: "t", tradeDate: "2025-01-10", symbol: "NTAP", market: "US", currency: "USD", tradeType: "Buy", source: "Market", quantity: 10, price: 100, total: 1000, assetType: "Equity", broker: "E*TRADE", fxRateToInr: 85, ...o,
 });
+const ACCOUNTS: TradeFormContext["brokerAccounts"] = [
+  { id: "etrade", name: "E*TRADE", currency: "USD" },
+  { id: "zerodha", name: "Zerodha", currency: "INR" },
+  { id: "old-broker", name: "Old broker", currency: "USD", closed: true },
+];
 const ctx = (trades: InvestmentTransaction[] = []): TradeFormContext => ({
   instruments: [{ symbol: "NTAP", market: "US", name: "NetApp", assetType: "Equity" }, { symbol: "FSL", market: "IND", name: "Firstsource", assetType: "Equity" }],
   trades,
+  brokerAccounts: ACCOUNTS,
 });
 const TODAY = "2026-11-06";
-const buy = { tradeType: "Buy", source: "Market", tradeDate: "2026-11-05", holding: "US:NTAP", quantity: "4", price: "170.5", total: "", fxRateToInr: "94.48", broker: "E*TRADE" };
+const buy = { tradeType: "Buy", source: "Market", tradeDate: "2026-11-05", holding: "US:NTAP", quantity: "4", price: "170.5", total: "", fxRateToInr: "94.48", brokerAccount: "etrade" };
 
 describe("readTradeForm", () => {
   it("reads a buy, working the total out as quantity × price when it is left blank", () => {
     const r = readTradeForm(buy, ctx(), TODAY);
-    expect(r).toEqual({ ok: true, input: { row: expect.objectContaining({ symbol: "NTAP", market: "US", currency: "USD", tradeType: "Buy", quantity: 4, price: 170.5, total: 682, fxRateToInr: 94.48, broker: "E*TRADE" }) } });
+    expect(r).toEqual({ ok: true, input: { row: expect.objectContaining({ symbol: "NTAP", market: "US", currency: "USD", tradeType: "Buy", quantity: 4, price: 170.5, total: 682, fxRateToInr: 94.48, broker: "E*TRADE", settlementAccountId: "etrade" }) } });
   });
 
   it("takes a typed total as it is, so fees stay in the cost", () => {
@@ -29,7 +35,7 @@ describe("readTradeForm", () => {
   });
 
   it("needs no rate for an Indian holding and leaves it off", () => {
-    const r = readTradeForm({ ...buy, holding: "IND:FSL", fxRateToInr: "" }, ctx(), TODAY);
+    const r = readTradeForm({ ...buy, holding: "IND:FSL", fxRateToInr: "", brokerAccount: "zerodha" }, ctx(), TODAY);
     expect(r.ok && r.input.row).toMatchObject({ market: "IND", currency: "INR" });
     expect(r.ok && "fxRateToInr" in r.input.row).toBe(false);
   });
@@ -46,7 +52,7 @@ describe("readTradeForm", () => {
     ["zero shares", { quantity: "0" }, "quantity"],
     ["text for shares", { quantity: "lots" }, "quantity"],
     ["a negative price", { price: "-1" }, "price"],
-    ["no broker", { broker: "" }, "broker"],
+    ["no brokerage account", { brokerAccount: "" }, "brokerAccount"],
     ["an odd rate", { fxRateToInr: "9" }, "fxRateToInr"],
   ])("refuses %s", (_name, change, field) => {
     const r = readTradeForm({ ...buy, ...change }, ctx(), TODAY);
@@ -74,7 +80,7 @@ describe("readTradeForm", () => {
 
   it("is not blocked by an oversell that was already there when the edit is about another trade", () => {
     const stored = [t({ id: "b", quantity: 40 }), t({ id: "s", tradeType: "Sell", tradeDate: "2025-02-01", quantity: 60 })];
-    expect(readTradeForm({ ...buy, symbol: "FSL", holding: "IND:FSL", fxRateToInr: "" }, ctx(stored), TODAY).ok).toBe(true);
+    expect(readTradeForm({ ...buy, symbol: "FSL", holding: "IND:FSL", fxRateToInr: "", brokerAccount: "zerodha" }, ctx(stored), TODAY).ok).toBe(true);
   });
 
   it("refuses an edit that moves a buy after the sell that depends on it", () => {
@@ -105,40 +111,58 @@ describe("readTradeForm, which shares a sale took", () => {
   });
 });
 
-describe("readTradeForm, paid from a cash account", () => {
-  const withCash = { ...ctx(), cashAccountIds: ["ibkr", "zerodha"] };
-
-  it("keeps the cash account the trade was paid from, and leaves it off when none is picked", () => {
-    const paid = readTradeForm({ ...buy, settlementAccountId: "ibkr" }, withCash, TODAY);
-    expect(paid.ok && paid.input.row.settlementAccountId).toBe("ibkr");
-    const none = readTradeForm({ ...buy, settlementAccountId: "" }, withCash, TODAY);
-    expect(none.ok && "settlementAccountId" in none.input.row).toBe(false);
-    const missing = readTradeForm(buy, withCash, TODAY);
-    expect(missing.ok && "settlementAccountId" in missing.input.row).toBe(false);
+describe("readTradeForm, its brokerage account", () => {
+  it("is the trade's broker: the account's id, with its name kept in broker", () => {
+    const r = readTradeForm(buy, ctx(), TODAY);
+    expect(r.ok && [r.input.row.settlementAccountId, r.input.row.broker]).toEqual(["etrade", "E*TRADE"]);
   });
 
-  it("refuses an account that isn't a broker cash account", () => {
-    const r = readTradeForm({ ...buy, settlementAccountId: "hdfc-savings" }, withCash, TODAY);
-    expect(r.ok === false && r.errors.settlementAccountId).toMatch(/broker cash account/);
+  it("refuses an account that isn't one of his brokerage accounts, or is closed", () => {
+    const other = readTradeForm({ ...buy, brokerAccount: "hdfc-savings" }, ctx(), TODAY);
+    expect(other.ok === false && other.errors.brokerAccount).toMatch(/Choose one of your brokerage accounts/);
+    expect(readTradeForm({ ...buy, brokerAccount: "old-broker" }, ctx(), TODAY).ok).toBe(false);
   });
 
-  it("lets an edit keep the account the trade was saved with, whatever it has become, but refuses a new one off the list", () => {
-    const saved = t({ id: "old", settlementAccountId: "hdfc-savings" });
-    const keep = readTradeForm({ ...buy, settlementAccountId: "hdfc-savings" }, { ...withCash, trades: [saved] }, TODAY, "old");
-    expect(keep.ok && keep.input.row.settlementAccountId).toBe("hdfc-savings");
-    const other = readTradeForm({ ...buy, settlementAccountId: "other-bank" }, { ...withCash, trades: [saved] }, TODAY, "old");
-    expect(other.ok).toBe(false);
-    const adding = readTradeForm({ ...buy, settlementAccountId: "hdfc-savings" }, { ...withCash, trades: [saved] }, TODAY);
-    expect(adding.ok).toBe(false);
+  it("refuses a rupee account for a US holding, and a dollar one for an Indian holding", () => {
+    const us = readTradeForm({ ...buy, brokerAccount: "zerodha" }, ctx(), TODAY);
+    expect(us.ok === false && us.errors.brokerAccount).toBe("Zerodha holds rupees, and this is a US holding");
+    const india = readTradeForm({ ...buy, holding: "IND:FSL", fxRateToInr: "", brokerAccount: "etrade" }, ctx(), TODAY);
+    expect(india.ok === false && india.errors.brokerAccount).toBe("E*TRADE holds dollars, and this is an Indian holding");
   });
 
-  it("takes any account when the form wasn't told which are cash accounts", () => {
-    expect(readTradeForm({ ...buy, settlementAccountId: "anything" }, ctx(), TODAY).ok).toBe(true);
+  it("lets an edit keep the account it was saved with, even closed, but a new trade can't pick a closed one", () => {
+    const saved = t({ id: "old", settlementAccountId: "old-broker", broker: "Old broker" });
+    const keep = readTradeForm({ ...buy, brokerAccount: "old-broker" }, { ...ctx([saved]) }, TODAY, "old");
+    expect(keep.ok && keep.input.row.settlementAccountId).toBe("old-broker");
+    expect(readTradeForm({ ...buy, brokerAccount: "old-broker" }, ctx([saved]), TODAY).ok).toBe(false);
+  });
+
+  it("refuses an edit that moves a trade to the other market while keeping its account", () => {
+    const saved = t({ id: "old", settlementAccountId: "etrade" });
+    const r = readTradeForm({ ...buy, holding: "IND:FSL", fxRateToInr: "", brokerAccount: "etrade" }, ctx([saved]), TODAY, "old");
+    expect(r.ok === false && r.errors.brokerAccount).toBe("E*TRADE holds dollars, and this is an Indian holding");
+  });
+
+  it("says to add a brokerage account first when there are none", () => {
+    const r = readTradeForm({ ...buy, brokerAccount: "" }, { ...ctx(), brokerAccounts: [] }, TODAY);
+    expect(r.ok === false && r.errors.brokerAccount).toMatch(/Add your brokerage account in Accounts first/);
+  });
+});
+
+describe("the vest and ESPP forms put both trades in the account", () => {
+  it("writes the account onto the vest and its sell-to-cover", () => {
+    const r = readVestForm({ tradeDate: "2026-11-05", holding: "US:NTAP", sharesVested: "14", fairValue: "118.4", sharesSold: "5", soldAt: "", fxRateToInr: "94.48", brokerAccount: "etrade" }, ctx(), TODAY);
+    expect(r.ok && [r.input.vest.settlementAccountId, r.input.cover?.settlementAccountId, r.input.vest.broker]).toEqual(["etrade", "etrade", "E*TRADE"]);
+  });
+
+  it("writes the account onto an ESPP purchase", () => {
+    const r = readEsppForm({ tradeDate: "2026-05-29", holding: "US:NTAP", quantity: "15", price: "83.9545", fxRateToInr: "95", brokerAccount: "etrade" }, ctx(), TODAY);
+    expect(r.ok && r.input.settlementAccountId).toBe("etrade");
   });
 });
 
 describe("readVestForm", () => {
-  const vest = { tradeDate: "2026-11-05", holding: "US:NTAP", sharesVested: "14", fairValue: "118.4", sharesSold: "5", soldAt: "", fxRateToInr: "94.48", broker: "E*TRADE" };
+  const vest = { tradeDate: "2026-11-05", holding: "US:NTAP", sharesVested: "14", fairValue: "118.4", sharesSold: "5", soldAt: "", fxRateToInr: "94.48", brokerAccount: "etrade" };
 
   it("makes two trades on the vest day: the vest in at fair value and the sell-to-cover out at the same value", () => {
     const r = readVestForm(vest, ctx(), TODAY);
@@ -174,12 +198,12 @@ describe("readVestForm", () => {
 
 describe("readEsppForm", () => {
   it("is one Buy at the price he paid, with the total worked out", () => {
-    const r = readEsppForm({ tradeDate: "2026-05-29", holding: "US:NTAP", quantity: "15", price: "83.9545", fxRateToInr: "95", broker: "E*TRADE" }, ctx(), TODAY);
+    const r = readEsppForm({ tradeDate: "2026-05-29", holding: "US:NTAP", quantity: "15", price: "83.9545", fxRateToInr: "95", brokerAccount: "etrade" }, ctx(), TODAY);
     expect(r.ok && r.input).toMatchObject({ tradeType: "Buy", source: "ESPP", quantity: 15, price: 83.9545, total: 1259.3175, fxRateToInr: 95 });
   });
 
   it("needs the price paid", () => {
-    const r = readEsppForm({ tradeDate: "2026-05-29", holding: "US:NTAP", quantity: "15", price: "", fxRateToInr: "95", broker: "E*TRADE" }, ctx(), TODAY);
+    const r = readEsppForm({ tradeDate: "2026-05-29", holding: "US:NTAP", quantity: "15", price: "", fxRateToInr: "95", brokerAccount: "etrade" }, ctx(), TODAY);
     expect(r.ok === false && r.errors.price).toMatch(/price you paid/);
   });
 });

@@ -7,7 +7,7 @@ import { TradeBook } from "@/components/investments/trades/TradeBook";
 import { TradesList } from "@/components/investments/trades/TradesList";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { holdingRows } from "@/lib/aggregate/investmentOverview";
-import { tradeEntries } from "@/lib/aggregate/tradeHistory";
+import { tradeEntries, withAccountNames } from "@/lib/aggregate/tradeHistory";
 import { todayIso } from "@/lib/format/date";
 import type { PricePoint } from "@/lib/prices/history";
 import { getPriceSeries } from "@/lib/prices/series";
@@ -29,7 +29,9 @@ export default async function TradesPage({ searchParams }: PageProps<"/investmen
   const cashRead = readCash(today);
   const [tradesTab, instrumentsTab] = await Promise.all([getCachedInvestmentTransactionsTab(), getCachedInstrumentsTab()]);
   const closes = await getPriceSeries().catch(() => new Map<string, PricePoint[]>());
-  const trades = tradesTab.records;
+  const cash = await cashRead;
+  // A trade's broker is its brokerage account, named as the account is now.
+  const trades = withAccountNames(tradesTab.records, cash?.accounts ?? []);
   const held = holdingRows({ trades, instruments: instrumentsTab.records, closes, today });
   const entries = tradeEntries(trades);
   const refs = holdingRefs(entries, instrumentsTab.records, held);
@@ -37,10 +39,9 @@ export default async function TradesPage({ searchParams }: PageProps<"/investmen
   const ref = findHolding(refs, asked);
   const book = ref ? bookView(trades, entries, ref, held.find((h) => h.market === ref.market && h.symbol === ref.symbol), today) : undefined;
   const skipped = [tradesTab.skipped, instrumentsTab.skipped].filter((t) => t.rows.length > 0);
-  const cash = await cashRead;
 
   return (
-    <TradeFormsProvider forms={tradeFormsData(trades, instrumentsTab.records, today, cash?.cash)}>
+    <TradeFormsProvider forms={tradeFormsData(trades, instrumentsTab.records, today, cash?.accounts, cash?.cash)}>
       <div className="flex flex-col gap-5">
         <PageHeader
           section="Investments"

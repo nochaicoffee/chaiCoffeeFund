@@ -1,8 +1,12 @@
 import type { NewInvestmentTransaction } from "./build";
 
-/** What makes two trades the same trade: a re-read file must add nothing. Total is to four places (the Sheet keeps what was written), so two fills that differ by a fraction of a cent stay two trades. */
+/**
+ * What makes two trades the same trade: a re-read file must add nothing. Total is to four places (the Sheet keeps what was written), so
+ * two fills that differ by a fraction of a cent stay two trades. The broker is its brokerage account when the trade has one, so renaming
+ * the account doesn't make a re-import add everything again.
+ */
 export function tradeKey(trade: NewInvestmentTransaction): string {
-  return [trade.broker, trade.tradeDate, trade.symbol, trade.market, trade.tradeType, trade.quantity.toFixed(6), trade.total.toFixed(4)].join("|");
+  return [trade.settlementAccountId ?? trade.broker, trade.tradeDate, trade.symbol, trade.market, trade.tradeType, trade.quantity.toFixed(6), trade.total.toFixed(4)].join("|");
 }
 
 /**
