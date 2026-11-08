@@ -65,7 +65,12 @@ export function WhereWentCard({ view }: { view: WhereView }) {
           </div>
         </div>
       )}
-      <p className="mt-auto text-xs font-semibold text-muted">{view.foot}</p>
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
+        <p className="text-xs font-semibold text-muted">{view.foot}</p>
+        <Link href={view.statement.href} className="text-[13px] font-extrabold whitespace-nowrap text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">
+          {view.statement.label} →
+        </Link>
+      </div>
     </WidgetCard>
   );
 }
@@ -121,7 +126,16 @@ export function BigSpendsCard({ view }: { view: BigSpendsView | null }) {
 export function MonthsTable({ view }: { view: MonthsView }) {
   const head = ["Month", "Came in", "Invested", "Lent out", "Kept", "Spent", "Cards", "EMIs", "Subs + insurance", "Cash and UPI"];
   return (
-    <WidgetCard label="Month by month" title="Month by month" note="came in = invested + lent out + kept + spent, every month worked out">
+    <WidgetCard
+      label="Month by month"
+      title="Month by month"
+      note="came in = invested + lent out + kept + spent, every month worked out"
+      right={
+        <Link href="/expenses/statements" className="text-[13px] font-extrabold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">
+          Every payment, month by month →
+        </Link>
+      }
+    >
       <div className="-mx-2 overflow-x-auto px-2">
         <table className="w-full min-w-[960px] border-collapse text-[13.5px]">
           <thead>
