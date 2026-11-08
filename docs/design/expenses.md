@@ -127,7 +127,7 @@ The open design questions got the defaults the boards already show, so the build
 5. **A card big spend counts in the month its bill is paid**, as the boards show. The bill is the card's first statement dated on or after the purchase. Until that statement is paid, the big spend shows as "waiting in the next bill". A big spend paid from a bank account counts on its own date, inside cash and UPI.
 6. **Categories:** Travel, Shopping, Electronics, Home, Health, Gifts, Vehicle, Education, Other.
 7. **Cash and UPI stays one line.** There's no PDF download yet (question 3 of round 2 stays open).
-8. **Things the pool needs that the spec didn't list:**
+8. **Things the pool needs that the spec didn't list** (confirmed by Prathik 2026-11-09: keep them):
    - **Every lent repayment** counts as came back, principal and interest: both are cash that landed. (A paid-out loan's interest arrives as income instead.)
    - **A loan's disbursal** counts as came in (borrowed) when it lands in an account the app has: its principal less the fees, stamp duty and gap interest taken out of it.
    - **A manual loan prepayment** (and its charge) counts with the EMIs, as part of what went to loans. A part of an EMI payment above the EMI is already in that installment.
