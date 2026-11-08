@@ -27,6 +27,7 @@ import { accountStatementEmailsRepository } from "./accountStatementEmails";
 import { balanceReviewsRepository } from "./balanceReviews";
 import { lentLoansRepository } from "./lentLoans";
 import { lentRepaymentsRepository } from "./lentRepayments";
+import { bigSpendsRepository } from "./bigSpends";
 import { instrumentsRepository } from "./instruments";
 import { investmentTargetsRepository } from "./investmentTargets";
 import { priceSnapshotsRepository } from "./priceSnapshots";
@@ -59,6 +60,7 @@ export const checkedRepositories = [
   balanceReviewsRepository,
   lentLoansRepository,
   lentRepaymentsRepository,
+  bigSpendsRepository,
   instrumentsRepository,
   investmentTargetsRepository,
   priceSnapshotsRepository,
