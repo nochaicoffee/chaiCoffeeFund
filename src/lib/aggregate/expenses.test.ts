@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { disbursedAmount, expenseMonths, monthExpenses, placeBigSpends, usualParts, usualSpent, type ExpenseData } from "./expenses";
+import { disbursedAmount, expenseMonths, monthExpenses, placeBigSpends, totalsOf, usualParts, usualSpent, type ExpenseData } from "./expenses";
 import type { Account, BalanceSnapshot, BigSpend, InvestmentTransaction, Statement } from "../sheets/types";
 
 const account = (id: string, over: Partial<Account> = {}): Account => ({ id, name: id, bank: "B", accountType: "Savings", purpose: "Spending", startDate: "2020-01-01", status: "Active", ...over });
@@ -226,5 +226,9 @@ describe("a usual month", () => {
     expect(usualSpent(months)).toBe((100000 + 150000) / 2);
     expect(usualParts(months)?.cash).toBe(125000);
     expect(usualSpent(months.slice(2))).toBeNull();
+    const totals = totalsOf(months);
+    expect(totals.months).toBe(2);
+    expect(totals.spent).toBe(250000);
+    expect(totals.cameIn).toBe(totals.invested + totals.lentOut + totals.kept + totals.spent);
   });
 });

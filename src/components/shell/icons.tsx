@@ -65,6 +65,13 @@ export const icons = {
       <circle cx="17.5" cy="17.5" r="2.5" />
     </Icon>
   ),
+  expenses: (
+    <Icon>
+      <path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2Z" />
+      <line x1="9" y1="8" x2="15" y2="8" />
+      <line x1="9" y1="12" x2="15" y2="12" />
+    </Icon>
+  ),
   lent: (
     <Icon>
       <circle cx="9" cy="9" r="5" />

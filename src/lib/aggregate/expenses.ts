@@ -340,6 +340,32 @@ export function expenseMonths(data: ExpenseData, from: MonthKey, to: MonthKey, t
   return months;
 }
 
+export interface ExpenseTotals {
+  months: number;
+  cameIn: number;
+  invested: number;
+  lentOut: number;
+  kept: number;
+  spent: number;
+  parts: Record<PartKey, number>;
+}
+
+/** The worked-out months added up (the months table's last row). Came in counts a disbursal and what came back, as the page does. */
+export function totalsOf(months: MonthExpenses[]): ExpenseTotals {
+  const done = months.filter((m) => m.status === "done");
+  const parts = { card: 0, emi: 0, subs: 0, ins: 0, cash: 0 } as Record<PartKey, number>;
+  for (const key of PART_KEYS) parts[key] = sum(done.map((m) => m.parts[key]));
+  return {
+    months: done.length,
+    cameIn: sum(done.map((m) => m.cameIn + m.borrowed + m.cameBack)),
+    invested: sum(done.map((m) => m.invested)),
+    lentOut: sum(done.map((m) => m.lentOut)),
+    kept: sum(done.map((m) => m.kept ?? 0)),
+    spent: sum(done.map((m) => m.spent ?? 0)),
+    parts,
+  };
+}
+
 /** A usual month: the average spent over the worked-out months given. Null with none. */
 export function usualSpent(months: MonthExpenses[]): number | null {
   const done = months.filter((m) => m.status === "done" && m.spent !== null);
