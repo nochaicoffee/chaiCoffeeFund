@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeHoldings, findOversells, holdingsAt, realisedGains, totalCostBasisInr, totalRealisedGainInr, valueHolding } from "./investments";
+import { computeHoldings, findOversells, holdingsAt, realisedGains, totalCostBasisInr, totalRealisedGainInr, tradeSteps, valueHolding } from "./investments";
 import type { InvestmentTransaction } from "../sheets/types";
 
 const tx = (overrides: Partial<InvestmentTransaction> = {}): InvestmentTransaction => ({
@@ -302,5 +302,56 @@ describe("realisedGains", () => {
     expect(totalRealisedGainInr(rows, "2026-03-01")).toBe(1000 + 3000);
     expect(totalRealisedGainInr(rows)).toBe(4000);
     expect(() => realisedGains(rows, "2026-2-1")).toThrow(RangeError);
+  });
+});
+
+describe("tradeSteps", () => {
+  it("gives shares and average cost after each trade: a buy moves the average, a sale never does", () => {
+    // 10 at ₹100, then 10 at ₹200: average ₹150. Sell 5 for ₹1,000: cost out 5 × 150 = 750, made 250, average still ₹150.
+    const steps = tradeSteps([
+      tx({ id: "b1" }),
+      tx({ id: "b2", tradeDate: "2026-02-01", price: 200, total: 2000 }),
+      tx({ id: "s1", tradeDate: "2026-03-01", tradeType: "Sell", quantity: 5, price: 200, total: 1000 }),
+    ]);
+    expect(steps.get("b1")).toMatchObject({ quantityAfter: 10, avgCostInrAfter: 100, gainInr: null, oversoldBy: 0 });
+    expect(steps.get("b2")).toMatchObject({ quantityAfter: 20, avgCostInrAfter: 150, gainInr: null });
+    expect(steps.get("s1")!.quantityAfter).toBe(15);
+    expect(steps.get("s1")!.avgCostInrAfter).toBeCloseTo(150, 9);
+    expect(steps.get("s1")!.gainInr).toBeCloseTo(250, 9);
+  });
+
+  it("puts a vest before its sell-to-cover on the same day, whatever order they were typed", () => {
+    const steps = tradeSteps([
+      tx({ id: "cover", market: "US", currency: "USD", tradeType: "Sell", source: "RSU", quantity: 5, price: 100, total: 500, fxRateToInr: 90 }),
+      tx({ id: "vest", market: "US", currency: "USD", source: "RSU", quantity: 14, price: 100, total: 1400, fxRateToInr: 90 }),
+    ]);
+    expect(steps.get("vest")!.quantityAfter).toBe(14);
+    expect(steps.get("cover")!.quantityAfter).toBe(9);
+    // Sold at the value it vested at, so the sell-to-cover makes nothing.
+    expect(steps.get("cover")!.gainInr).toBeCloseTo(0, 9);
+    expect(steps.get("cover")!.avgCostInrAfter).toBeCloseTo(9000, 9);
+    expect(steps.get("cover")!.avgCostNativeAfter).toBeCloseTo(100, 9);
+  });
+
+  it("marks a sell of more than was held, holds nothing after it, and a later buy starts clean", () => {
+    const steps = tradeSteps([
+      tx({ id: "b1", quantity: 40, total: 4000 }),
+      tx({ id: "s1", tradeDate: "2026-02-01", tradeType: "Sell", quantity: 60, total: 9000 }),
+      tx({ id: "b2", tradeDate: "2026-03-01", quantity: 10, price: 300, total: 3000 }),
+    ]);
+    expect(steps.get("s1")).toMatchObject({ quantityAfter: 0, avgCostInrAfter: 0, oversoldBy: 20 });
+    // Only the 40 held count: they brought in 40/60 of ₹9,000 = ₹6,000 against ₹4,000 of cost.
+    expect(steps.get("s1")!.gainInr).toBeCloseTo(2000, 9);
+    expect(steps.get("b2")).toMatchObject({ quantityAfter: 10, avgCostInrAfter: 300 });
+  });
+
+  it("agrees with computeHoldings on where each position ends", () => {
+    const rows = [tx({ id: "a" }), tx({ id: "b", tradeDate: "2026-02-01", quantity: 3, total: 450 }), tx({ id: "c", symbol: "INFY", quantity: 2, total: 300 })];
+    const steps = tradeSteps(rows);
+    for (const h of computeHoldings(rows)) {
+      const last = rows.filter((r) => r.symbol === h.symbol).at(-1)!;
+      expect(steps.get(last.id)!.quantityAfter).toBe(h.quantity);
+      expect(steps.get(last.id)!.avgCostInrAfter).toBeCloseTo(h.avgCostInr, 9);
+    }
   });
 });

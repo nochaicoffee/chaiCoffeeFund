@@ -97,13 +97,14 @@ export interface OverviewInput {
 const STALE_DAYS = 7;
 const SAME_LABEL = { nifty: "All in Nifty 50", sp500: "All in the S&P 500", deposit: `All in a ${Math.round(DEPOSIT_RATE * 100)}% deposit` } as const;
 
-/** Everything the Investments page shows, worked out from the trades and the saved prices. Pure. */
-export function investmentOverview({ trades, instruments, closes, today }: OverviewInput): Overview {
+/**
+ * What he holds today, each with its price, worth, gain and day's move, biggest first: the Investments page's holdings, and the Trades page
+ * reads them on their own (for the order its colours follow and a share's price today) without the history the rest of the overview needs.
+ */
+export function holdingRows({ trades, instruments, closes, today }: OverviewInput): HoldingRow[] {
   const tickerOf = new Map(instruments.map((i) => [`${i.market}:${i.symbol}`, i]));
   const usdInr = closes.get(USD_INR_TICKER) ?? [];
   const fxToday = priceOnOrBefore(usdInr, today)?.close;
-  const book: PriceBook = { closes, tickerFor: (symbol, market) => tickerOf.get(`${market}:${symbol}`)?.priceTicker, usdInr };
-
   const held = computeHoldings(trades.filter((t) => t.tradeDate <= today));
   const rows: HoldingRow[] = held.map((h) => {
     const instrument = tickerOf.get(`${h.market}:${h.symbol}`);
@@ -142,9 +143,21 @@ export function investmentOverview({ trades, instruments, closes, today }: Overv
   });
 
   const valueInr = rows.reduce((s, r) => s + r.valueInr, 0);
-  const costInr = rows.reduce((s, r) => s + r.costInr, 0);
   for (const r of rows) r.share = valueInr > 0 ? r.valueInr / valueInr : 0;
   rows.sort((a, b) => b.valueInr - a.valueInr);
+  return rows;
+}
+
+/** Everything the Investments page shows, worked out from the trades and the saved prices. Pure. */
+export function investmentOverview({ trades, instruments, closes, today }: OverviewInput): Overview {
+  const tickerOf = new Map(instruments.map((i) => [`${i.market}:${i.symbol}`, i]));
+  const usdInr = closes.get(USD_INR_TICKER) ?? [];
+  const fxToday = priceOnOrBefore(usdInr, today)?.close;
+  const book: PriceBook = { closes, tickerFor: (symbol, market) => tickerOf.get(`${market}:${symbol}`)?.priceTicker, usdInr };
+
+  const rows = holdingRows({ trades, instruments, closes, today });
+  const valueInr = rows.reduce((s, r) => s + r.valueInr, 0);
+  const costInr = rows.reduce((s, r) => s + r.costInr, 0);
   const changes = rows.map((r) => r.dayChangeInr);
   const dayChangeInr = changes.length > 0 && changes.every((c) => c !== null) ? changes.reduce<number>((s, c) => s + (c as number), 0) : null;
 

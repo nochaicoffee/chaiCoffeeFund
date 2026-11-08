@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 
 import { useMemo, useRef, useState, type Dispatch, type KeyboardEvent, type PointerEvent, type ReactNode, type SetStateAction } from "react";
 import { pct, signedLakh, type LensView, type PickCard } from "@/app/investments/views";
@@ -296,7 +297,12 @@ function LensStage({ lens }: { lens: LensView }) {
                 <PlanTag key={t} name={t} />
               ))}
             </div>
-            <p className="m-0 mt-0.5 text-[11.5px] font-semibold" style={{ color: MUTED }}>{lens.header.kind}</p>
+            <p className="m-0 mt-0.5 text-[11.5px] font-semibold" style={{ color: MUTED }}>
+              {lens.header.kind} ·{" "}
+              <Link href={`/investments/trades?holding=${encodeURIComponent(lens.key)}`} className="font-extrabold text-white/90 underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-white">
+                Every trade in it →
+              </Link>
+            </p>
           </div>
         </div>
         <div className="mt-3 text-[11px] font-extrabold tracking-[0.05em] uppercase" style={{ color: MUTED }}>

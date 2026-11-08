@@ -21,6 +21,17 @@ describe("editTarget", () => {
     expect(editTarget(trades, "cover")).toEqual({ kind: "vest", ids: ["vest", "cover"], vest: "vest", cover: "cover" });
   });
 
+  it("keeps each of two same-day vests with its own cover (two grants vesting on one day)", () => {
+    const two = [
+      t({ id: "v1", source: "RSU", tradeDate: "2027-02-15" }),
+      t({ id: "v2", source: "RSU", tradeDate: "2027-02-15" }),
+      t({ id: "c1", source: "RSU", tradeType: "Sell", tradeDate: "2027-02-15" }),
+      t({ id: "c2", source: "RSU", tradeType: "Sell", tradeDate: "2027-02-15" }),
+    ];
+    expect(editTarget(two, "v2")).toEqual({ kind: "vest", ids: ["v2", "c2"], vest: "v2", cover: "c2" });
+    expect(editTarget(two, "c2")).toEqual({ kind: "vest", ids: ["v2", "c2"], vest: "v2", cover: "c2" });
+  });
+
   it("opens a vest with nothing sold for tax on its own", () => {
     expect(editTarget(trades, "lone")).toEqual({ kind: "vest", ids: ["lone"], vest: "lone" });
   });

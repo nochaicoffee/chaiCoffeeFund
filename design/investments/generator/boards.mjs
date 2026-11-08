@@ -7,10 +7,13 @@ import * as FN from "./final.mjs";
 import * as SV from "./splitvariants.mjs";
 import * as SV2 from "./splitvariants2.mjs";
 import * as DN from "./donuts.mjs";
+import * as TR from "./trades.mjs";
 
-export const PAGES = [{ id: "donuts", name: "Exploration · Donuts and pies: six unusual takes" }, { id: "split2", name: "Exploration · How it's split: five cooler layouts" }, { id: "split", name: "Exploration · How it's split: five fuller layouts" }, { id: "final", name: "FINAL: L1 Giant, the page" }, { id: "phone", name: "FINAL: phone" }, { id: "states", name: "FINAL: states" }, { id: "forms", name: "FINAL: forms" }, { id: "r4", name: "Exploration · Round 4: Time machine, calmer hero (L1–L4)" }, { id: "r3", name: "Exploration · Round 3: Dark stage + lens, full-width (K1–K5)" }, { id: "r2", name: "Exploration · Round 2: Interactive, after the dashboard he shared (J1–J5)" }, { id: "r1", name: "Exploration · Round 1: Hero directions (I1–I5)" }];
+export const PAGES = [{ id: "tradesfinal", name: "FINAL: Trades page (T1 + T2 book), page, phone, states" }, { id: "trades", name: "Exploration · Trades page, round 1 (T3 Months, not picked)" }, { id: "donuts", name: "Exploration · Donuts and pies: six unusual takes" }, { id: "split2", name: "Exploration · How it's split: five cooler layouts" }, { id: "split", name: "Exploration · How it's split: five fuller layouts" }, { id: "final", name: "FINAL: L1 Giant, the page" }, { id: "phone", name: "FINAL: phone" }, { id: "states", name: "FINAL: states" }, { id: "forms", name: "FINAL: forms" }, { id: "r4", name: "Exploration · Round 4: Time machine, calmer hero (L1–L4)" }, { id: "r3", name: "Exploration · Round 3: Dark stage + lens, full-width (K1–K5)" }, { id: "r2", name: "Exploration · Round 2: Interactive, after the dashboard he shared (J1–J5)" }, { id: "r1", name: "Exploration · Round 1: Hero directions (I1–I5)" }];
 PAGES.sort((a, b) => (b.name.startsWith("FINAL") ? 1 : 0) - (a.name.startsWith("FINAL") ? 1 : 0));
 export const NOTES = [
+  { page: "tradesfinal", text: "The Trades page, picked 2026-11-08: T1 Tape is the page (every trade by month, filters by kind, India/US and financial year), and T2 Book is the same page with one holding picked (?holding=NTAP: shares held and average cost after each trade). A holding's name on the list opens its book; All trades goes back. Phone and states drawn. Sample data, made up; today is Saturday Oct 31, 2026." },
+  { page: "trades", text: "Not picked. The Trades page, round 1 (2026-11-08): every trade, like Cards' Statements and Income's Entries. T1 Tape (every trade by month, filters by kind, India/US and financial year, what each sale made), T2 Book (one holding: shares held and average cost after every trade, a step chart, how the shares came in), T3 Months (a calendar of money in and out, pick a month for its trades). All live in the browser. Sample data, made up; today is Saturday Oct 31, 2026." },
   { page: "donuts", text: "Donuts and pies, six unusual takes (2026-11-04): Morph (ten arcs that glide into each slicing), Spin wheel, Explode (a pie that unfolds its holdings), Gauge, a tilted 3D stack and a Rose. All interactive in the browser with no script. Sample data, made up." },
   { page: "split2", text: "How it's split, five cooler and more interactive layouts (2026-11-02): a Sunburst you zoom into, packed Bubbles, a Flow from one slicing into another, an accordion Pillar and animated Orbits, with the Treemap beside them. Sample data, made up." },
   { page: "split", text: "How it's split, five fuller layouts (2026-11-02): the donut and list leaves white space when a slice has few rows. Today's widget (first) beside a Treemap, a Waffle, Columns, nested Rings and Rows that show what is inside. The six slice chips drive every card at once. Sample data, made up." },
@@ -24,6 +27,11 @@ export const NOTES = [
   { page: "r1", text: "Investments, round 1 (2026-10-31): the /investments dashboard, five directions with the same greeting (whose figures point), attention strip and widgets, each with its own idea for the hero. I1 Bridge (who made the money: cost, then each holding's gain or loss, then what it is worth, with the rupee's move held apart), I2 Strata (the layers money was laid down in, month by month, capped by today's gain), I3 Exposure (how the whole is split, and the one company that is also the employer), I4 Board (a departures board: a row of flaps per holding), I5 Rulers (a ruler per holding: 52-week range, what you paid, where it is now). Sample data, made up; today is Saturday Oct 31, 2026, so every price is Friday's close. Prices and rates are F-IV-03 (not built); realised gain and the rupee split are proposals." },
 ];
 export const BOARDS = [
+  { file: "InvT1.dc.html", w: 1600, page: "tradesfinal", render: TR.tape },
+  { file: "InvT2.dc.html", w: 1600, page: "tradesfinal", render: TR.book },
+  { file: "InvTPhone.dc.html", w: 1000, page: "tradesfinal", render: TR.phoneBoard },
+  { file: "InvTStates.dc.html", w: 1600, page: "tradesfinal", render: TR.statesBoard },
+  { file: "InvT3.dc.html", w: 1600, page: "trades", render: TR.months },
   { file: "InvDonuts.dc.html", w: 1600, page: "donuts", render: DN.donutsBoard },
   { file: "InvSplit2.dc.html", w: 1600, page: "split2", render: SV2.split2Board },
   { file: "InvSplit.dc.html", w: 1600, page: "split", render: SV.splitBoard },

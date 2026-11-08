@@ -244,6 +244,29 @@ Prathik asked where the cash lying in his investment accounts is accounted for (
 - **Phone:** the card, a tile per account stacked, and the greeting figure.
 - **The sample's numbers:** holdings ₹55.48L, cash ₹3.70L ($3,000 at ₹90.15 and ₹1,00,000), ₹59.18L at the brokers all told, **6.3% of it idle**. The XIRR stays 16.1%.
 
+## The Trades page, round 1 (2026-11-08)
+
+Prathik noticed Investments had no full history the way Cards has Statements and Income has Entries: his trades only show in the eight-row Recent trades card. Round 1 draws three takes at `/investments/trades` on the canvas page "Exploration · Trades page, round 1" (`InvT1`–`InvT3`, generator `trades.mjs`). All three share the sub-page header (back link "Investments · Trades", title, one sentence) and four tiles: **Put in** (buys, ESPP at what he paid, RSU vests at their value on the day, as in Q12), **Taken out** (sales and sell-to-covers), **Net put in**, **Made on shares sold** (at weighted-average cost). An RSU vest and its sell-to-cover are one row, as in Recent trades.
+
+- **T1 Tape**: every trade, newest first, grouped by month with that month's money in and out. Filters: kind (buys, sales, RSU vests, ESPP), India or US, and **financial year** (April to March); the tiles follow the year. A US trade shows dollars with rupees under it at its saved rate. A sale shows what it made. Holding, broker and search are drawn but not live.
+- **T2 Book**: one holding (`?holding=NTAP`), reached from the stage or the holdings table. Every trade with **shares held after** and **average cost after**, with how much the trade moved the average (a sale never moves it). A step chart of shares held, a dot for each trade. "How the shares came in" splits bought / ESPP / RSU from what was sold, and what a share cost by how it came, compared with today's price. It could be T1's second mode or its own page.
+- **T3 Months**: a calendar, one square a month: what went in above the line (stacked by bought / ESPP / RSU), what came out below. Pick a month and its trades open on the right. The five biggest months are listed under it, and each row ends with that year's totals.
+
+Left out on purpose: capital-gains tax by holding period (needs his rules), dividends (not recorded yet), a phone layout (comes after the pick).
+
+**Picked 2026-11-08: T1 + T2.** T1 Tape is the page; T2 Book is the same page with one holding picked (`/investments/trades?holding=NTAP`). A holding's name on the list (or one picked in Every holding) opens its book; an **All trades** chip goes back. The stage's holding header and the Investments holdings table link to the book; Recent trades' **All trades** link opens the list. T3 is not picked (canvas page relabelled). Final boards on "FINAL: Trades page": `InvT1`, `InvT2`, `InvTPhone` (the list and one holding's book) and `InvTStates`:
+
+- A: no trades yet (zero tiles, Add a trade / Record an RSU vest / Record an ESPP purchase).
+- B: the filters match nothing (says what's missing and offers the nearest year that has some).
+- C: a sale more than was held (the row in red, Fix the trade; the book reads "Held after 0 · over by 20").
+- D: a holding sold out. Its book stays and it's listed under Sold out in the holding picker.
+- E: `?holding=` names a holding that isn't in the trades (notice, every trade shown).
+- F: rows that couldn't be read (the usual skipped-rows notice).
+
+Still open: the year filter is drawn as financial year (April to March) only; calendar year as well is his call. Defaulting to financial year until he says otherwise.
+
+**Built 2026-11-08** (F-IV-19). Differences from the boards: the holding chips list every holding (with a Sold out group), not four and "and N more"; on a phone the holding, broker and search controls wrap under the chips instead of a Filter sheet.
+
 ## Rules the sample assumes (each needs his yes before it's built)
 
 They are in `generator/data.mjs`. None of them is built in `lib/aggregate/`.
