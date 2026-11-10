@@ -145,6 +145,13 @@ describe("monthExpenses: when a month can be worked out", () => {
     expect(monthExpenses(data({ loans: [loan] }), "2026-11", TODAY).borrowed).toBe(0);
   });
 
+  it("leaves out a disbursal paid straight to the seller, even with an account on the loan", () => {
+    const base = { id: "ln", name: "Car", principalAmount: 1000000, processingFee: 0, stampDuty: 0, preEmiInterest: 0, disbursementDate: "2026-11-02", accountId: "hdfc" };
+    expect(monthExpenses(data({ loans: [{ ...base, disbursedTo: "Seller" } as never] }), "2026-11", TODAY).borrowed).toBe(0);
+    expect(monthExpenses(data({ loans: [{ ...base, accountId: undefined, disbursedTo: "Seller" } as never] }), "2026-11", TODAY).borrowed).toBe(0);
+    expect(monthExpenses(data({ loans: [{ ...base, disbursedTo: "Account" } as never] }), "2026-11", TODAY).borrowed).toBe(1000000);
+  });
+
   it("can't work out a month with a US trade it has no rate for, rather than counting it as ₹0", () => {
     const m = monthExpenses(data({ usdInrToday: null, trades: [trade({ market: "US", currency: "USD", symbol: "VOO", total: 500 })] }), "2026-11", TODAY);
     expect(m.status).toBe("unknown");

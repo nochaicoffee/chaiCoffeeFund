@@ -268,8 +268,9 @@ export function comingUp(data: AccountsData, accountId: string | null, today: st
   for (const loan of data.loans) {
     if (loan.status !== "Active") continue;
     for (const i of data.installments) {
-      if (i.loanId !== loan.id || i.status !== "Pending" || i.paidFromCardId) continue;
-      add({ kind: "EMI", date: i.dueDate, amount: i.totalDue, accountId: i.paidFromAccountId ?? loan.accountId, label: loan.name, about: false, short: emiExceedsBalance(i.totalDue, held(i.paidFromAccountId ?? loan.accountId)) });
+      const from = i.paidFromAccountId ?? loan.accountId;
+      if (i.loanId !== loan.id || i.status !== "Pending" || i.paidFromCardId || !from) continue;
+      add({ kind: "EMI", date: i.dueDate, amount: i.totalDue, accountId: from, label: loan.name, about: false, short: emiExceedsBalance(i.totalDue, held(from)) });
     }
   }
 

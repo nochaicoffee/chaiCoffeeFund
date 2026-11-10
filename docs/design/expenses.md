@@ -49,7 +49,7 @@ Running the calculation on his real records for 2025 and 2026 gave months like �
 1. **Money moved to brokers isn't recorded.** No `InvestmentTransactions` row says which bank paid for it (`settlementAccountId` is empty on all 91), and most buys are at US brokers (INDmoney, IBKR) paid from dollar cash or a remittance. What leaves the bank for investing has to be recorded as its own thing (a transfer from a bank account to a broker), or every remittance shows up as spending.
    - **Tried 2026-11-08: "every buy left HDFC and every sale landed in HDFC"** (his rule of thumb; sell-to-cover at an RSU vest left out). Trade by trade it doesn't hold: Jul 2026 comes out at −₹10.1L spent, Aug 2026 at +₹18.7L, Oct 2026 at −₹4.9L. In Aug he sold ₹18.1L but the bank balances fell ₹84k, and in Oct he bought ₹8.3L while they fell ₹1.75L: sale money mostly stays at the broker and buys the next thing. So the trades can't say what crossed the bank; only the money actually moved between HDFC and a broker can.
    - **Proposed:** read those transfers from the HDFC statements the Gmail import already parses (the way salary is matched by "NETAPP INDIA"): a line to or from INDmoney, IBKR, Zerodha, Groww or FYERS is money moved to or from investing. Waiting on Prathik.
-2. **Where the car loan's ₹11.1L went** (disbursed Jul 2026): straight to the seller, or into a bank account first? Only money that lands in a counted account belongs in "came in".
+2. **Where a loan's money went.** Answered 2026-11-10: it depends on the loan. A car loan usually goes straight to the dealer; personal and home loans land in his account. Each loan now says so (`disbursedTo`: Account or Seller; the Add loan form preselects Seller for a car loan). The ₹11.1L disbursed in Jul 2026 is his personal loan, paid into HDFC, so it counts as borrowed. (This question first called it a car loan, which was wrong.)
 3. **Where the loans he lent came from** (₹3L in Nov 2025, ₹1.82L in Jan 2026): the bank balances don't fall by that much, so the money may have come from somewhere not counted.
 4. **Card bills before 2026** have no paid-from account (statements only start Aug 2025, paid-from Jan 2026), and EMIs are only recorded from Aug 2026. Before that, those payments fall into cash and UPI.
 
@@ -129,7 +129,7 @@ The open design questions got the defaults the boards already show, so the build
 7. **Cash and UPI stays one line.** There's no PDF download yet (question 3 of round 2 stays open).
 8. **Things the pool needs that the spec didn't list** (confirmed by Prathik 2026-11-09: keep them):
    - **Every lent repayment** counts as came back, principal and interest: both are cash that landed. (A paid-out loan's interest arrives as income instead.)
-   - **A loan's disbursal** counts as came in (borrowed) when it lands in an account the app has: its principal less the fees, stamp duty and gap interest taken out of it.
+   - **A loan's disbursal** counts as came in (borrowed) when it lands in an account the app has: its principal less the fees, stamp duty and gap interest taken out of it. A loan paid straight to the seller (`disbursedTo` Seller) never counts: the money never reached his accounts.
    - **A manual loan prepayment** (and its charge) counts with the EMIs, as part of what went to loans. A part of an EMI payment above the EMI is already in that installment.
    - **Cash and UPI below zero** means the records explain more than left the pool (a missing income entry, a balance typed wrong). It's shown as it is, with that note, never hidden.
 

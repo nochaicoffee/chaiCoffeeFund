@@ -6,7 +6,7 @@ import { loanPrepaymentsRepository } from "./loanPrepayments";
 import { generateInstallments } from "../schedule/generateInstallments";
 import { planSchedule } from "../schedule/prepayments";
 import { clearable, isoDate, nonEmptyString, nonNegativeNumber } from "./validation";
-import { CARD_COLORS, LOAN_PREPAYMENT_EFFECTS, type Loan, type LoanInstallment } from "./types";
+import { CARD_COLORS, LOAN_DISBURSED_TO, LOAN_PREPAYMENT_EFFECTS, type Loan, type LoanInstallment } from "./types";
 
 /** A loan's fields. The repository reads column types from a plain object, so the cross-field check is added below. */
 const loanFields = z.object({
@@ -20,7 +20,8 @@ const loanFields = z.object({
   paymentFrequency: z.enum(["Monthly"]),
   processingFee: nonNegativeNumber,
   disbursementDate: isoDate,
-  accountId: nonEmptyString,
+  // Required unless the money went straight to the seller (the rule below).
+  accountId: nonEmptyString.optional(),
   status: z.enum(["Active", "Closed"]),
   firstEmiDate: isoDate,
   stampDuty: nonNegativeNumber,
@@ -35,9 +36,10 @@ const loanFields = z.object({
   prepaymentsPerYear: z.number().int().positive().optional(),
   prepaymentsInLoan: z.number().int().positive().optional(),
   prepaymentAfterEmis: z.number().int().min(0).optional(),
+  disbursedTo: z.enum(LOAN_DISBURSED_TO).optional(),
 });
 
-type LoanRules = Pick<Loan, "principalAmount" | "processingFee" | "stampDuty" | "preEmiInterest" | "disbursementDate" | "firstEmiDate" | "emiPaidFromAccountId" | "emiPaidFromCardId">;
+type LoanRules = Pick<Loan, "principalAmount" | "processingFee" | "stampDuty" | "preEmiInterest" | "disbursementDate" | "firstEmiDate" | "emiPaidFromAccountId" | "emiPaidFromCardId" | "accountId" | "disbursedTo">;
 
 /** Rules across a loan's fields, as [field, message] when one is broken. */
 function brokenLoanRule(loan: LoanRules): [keyof LoanRules, string] | null {
@@ -45,6 +47,7 @@ function brokenLoanRule(loan: LoanRules): [keyof LoanRules, string] | null {
   if (loan.processingFee + loan.stampDuty + loan.preEmiInterest >= loan.principalAmount) {
     return ["processingFee", "The fee, stamp duty and pre-EMI interest add up to more than the loan"];
   }
+  if (!loan.accountId && loan.disbursedTo !== "Seller") return ["accountId", "Choose the account it was paid into"];
   if (loan.emiPaidFromAccountId && loan.emiPaidFromCardId) return ["emiPaidFromCardId", "The EMI leaves an account or a card, not both"];
   return null;
 }
@@ -92,7 +95,7 @@ export const updateLoanSchema = loanFields
 /** A row as read back from the Sheet: a valid create, plus its id. */
 export const loanRowSchema = loanFields.extend({ id: nonEmptyString });
 
-/** The Loans tab's columns, in order. firstEmiDate, stampDuty and preEmiInterest were added on the end (2026-10-25), and the rest for the Loans page. */
+/** The Loans tab's columns, in order. firstEmiDate, stampDuty and preEmiInterest were added on the end (2026-10-25), and the rest for the Loans page; disbursedTo for Expenses (2026-11-10). */
 export const LOAN_COLUMNS: (keyof Loan)[] = [
   "id",
   "name",
@@ -119,6 +122,7 @@ export const LOAN_COLUMNS: (keyof Loan)[] = [
   "prepaymentsPerYear",
   "prepaymentsInLoan",
   "prepaymentAfterEmis",
+  "disbursedTo",
 ];
 
 export const loansRepository = createRepository<Loan>({
