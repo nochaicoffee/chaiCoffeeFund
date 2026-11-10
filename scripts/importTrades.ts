@@ -1,8 +1,11 @@
 /**
  * Reads a broker's trade file and adds its trades to the InvestmentTransactions tab.
  *
- *   npx tsx scripts/importTrades.ts --file <path> --broker "<name>"          (a dry run: prints what it would do)
- *   npx tsx scripts/importTrades.ts --file <path> --broker "<name>" --apply  (adds the trades that aren't there yet)
+ *   npx tsx scripts/importTrades.ts --file <path> --broker "<brokerage account>"          (a dry run: prints what it would do)
+ *   npx tsx scripts/importTrades.ts --file <path> --broker "<brokerage account>" --apply  (adds the trades that aren't there yet)
+ *
+ * `--broker` is one of his Brokerage accounts in Accounts (its name or id): every trade is written into that account
+ * (`settlementAccountId`, with its name as `broker`), the same as the trade forms do.
  *
  * Reads: an INDmoney trades report or a Groww order history or E*TRADE stock plan holdings (.xlsx), a US broker's Transaction History (.csv) and a FYERS
  * tradebook (.csv). The reading, the fee folding and the duplicate check are pure code in
@@ -26,7 +29,7 @@ import { ImportError, type ParseResult } from "../src/lib/tradeImport/types";
 import { parseZerodhaTradebook } from "../src/lib/tradeImport/zerodha";
 import { parseUsHistoryCsv } from "../src/lib/tradeImport/usHistoryCsv";
 import { parseUsdInrOn, usdInrOnUrl } from "../src/lib/prices/usdInrParse";
-import type { InvestmentTransaction } from "../src/lib/sheets/types";
+import type { Account, InvestmentTransaction } from "../src/lib/sheets/types";
 
 const APP_URL = process.env.CHAI_COFFEE_FUND_URL ?? "http://localhost:3000";
 
@@ -70,18 +73,33 @@ async function storedTrades(): Promise<InvestmentTransaction[]> {
   return body as InvestmentTransaction[];
 }
 
+/** The Brokerage account `--broker` names, by name (any case) or id. */
+async function brokerageAccount(name: string): Promise<Account> {
+  const response = await fetch(`${APP_URL}/api/accounts`);
+  if (!response.ok) throw new Error(`/api/accounts answered ${response.status}. Is \`npm run dev\` running?`);
+  const body = await response.json();
+  const accounts: Account[] = Array.isArray(body) ? body : body.records;
+  const found = accounts.find((a) => a.id === name || a.name.toLowerCase() === name.toLowerCase());
+  const brokers = accounts.filter((a) => a.accountType === "Brokerage").map((a) => a.name).join(", ");
+  if (!found || found.accountType !== "Brokerage") throw new Error(`"${name}" isn't one of your Brokerage accounts (${brokers}). Add it in Accounts first.`);
+  return found;
+}
+
 const money = (n: number) => n.toLocaleString("en-US", { maximumFractionDigits: 2 });
 
 async function main() {
   const { values } = parseArgs({ options: { file: { type: "string" }, broker: { type: "string" }, apply: { type: "boolean", default: false } } });
-  if (!values.file || !values.broker) throw new Error('Usage: npx tsx scripts/importTrades.ts --file <path> --broker "<name>" [--apply]');
+  if (!values.file || !values.broker) throw new Error('Usage: npx tsx scripts/importTrades.ts --file <path> --broker "<brokerage account>" [--apply]');
+  const account = await brokerageAccount(values.broker);
 
   const { trades, skipped } = await readTrades(values.file);
   console.log(`Read ${trades.length} trades from ${values.file}`);
   for (const line of skipped) console.log(`  left out on purpose: ${line.count} ${line.what}`);
 
   const rates = await fetchRates(datesNeedingRate(trades));
-  const incoming = trades.map((trade) => buildTransaction(trade, values.broker!, (date) => rates.get(date)));
+  const wrong = trades.find((t) => (t.market === "US" ? "USD" : "INR") !== (account.currency ?? "INR"));
+  if (wrong) throw new Error(`${account.name} holds ${account.currency === "USD" ? "dollars" : "rupees"}, but this file has ${wrong.market === "US" ? "US" : "Indian"} trades (${wrong.symbol}). Pick the account they were made in.`);
+  const incoming = trades.map((trade) => ({ ...buildTransaction(trade, account.name, (date) => rates.get(date)), settlementAccountId: account.id }));
   const stored = await storedTrades();
   const { toAdd, alreadyThere } = planImport(incoming, stored);
   console.log(`${alreadyThere.length} already in the Sheet, ${toAdd.length} to add`);

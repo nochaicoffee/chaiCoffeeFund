@@ -1,3 +1,4 @@
+import { investedTile } from "./investedTile";
 import { bridgeSteps, cameInBySource, comingUp, flows, monthlyFlows, moneyItems, type AccountsData, type BridgeStep as LibBridgeStep, type MoneyItem } from "@/lib/aggregate/accountFlows";
 import { accountColor, isClosed, lastMonthsOfSpan, monthEnds, monthsBetween, periodSpan } from "@/lib/aggregate/accounts";
 import type { SpendPeriod } from "@/lib/aggregate/cardSpend";
@@ -90,7 +91,7 @@ export function detailFor(data: AccountsData, accountId: string | null, period: 
   const tiles: InOutTile[] = [
     { label: "Came in", value: formatInr(f.cameIn), note: "Income received" },
     { label: "Expenses", value: formatInr(f.expenses), note: "Card bills, subscriptions, EMIs" },
-    { label: "Invested", value: formatInr(f.invested), note: "Shares bought" },
+    investedTile(f),
     { label: "Saved", value: signed(f.saved), note: f.invested > 0 ? `${formatInr(f.keptInBank)} kept in the bank` : "Came in less expenses", tone: f.saved >= 0 ? "positive" : "negative" },
   ];
 

@@ -5,7 +5,7 @@ import { todayIso } from "@/lib/format/date";
 import type { FormState } from "@/lib/forms/formState";
 import { readInstrumentForm } from "@/lib/forms/instrumentForm";
 import { planTargetWrites, readTargetsForm } from "@/lib/forms/targetsForm";
-import { deleteProblem, readEsppForm, readTradeForm, readVestForm, type TradeFormContext, type TradeInput } from "@/lib/forms/tradeForms";
+import { brokerAccountOptions, deleteProblem, readEsppForm, readTradeForm, readVestForm, type TradeFormContext, type TradeInput } from "@/lib/forms/tradeForms";
 import { parseUsdInrOn, usdInrOnUrl } from "@/lib/prices/usdInrParse";
 import { CACHE_TAGS } from "@/lib/sheets/cached";
 import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
@@ -39,9 +39,10 @@ function refreshed(undo?: { id: string; message: string }): FormState {
 }
 
 /** `withAccounts` also reads the Accounts tab, for a trade that names a cash account to be paid from: the other forms never do. */
-async function load(withAccounts = false): Promise<TradeFormContext> {
-  const [instruments, trades, accounts] = await Promise.all([instrumentsRepository.list(), investmentTransactionsRepository.list(), withAccounts ? accountsRepository.list() : Promise.resolve(null)]);
-  return { instruments, trades, ...(accounts && { cashAccountIds: accounts.filter((a) => a.accountType === "Brokerage").map((a) => a.id) }) };
+/** What the forms check against. A delete needs no accounts, so it doesn't read them. */
+async function load(withAccounts = true): Promise<TradeFormContext> {
+  const [instruments, trades, accounts] = await Promise.all([instrumentsRepository.list(), investmentTransactionsRepository.list(), withAccounts ? accountsRepository.list() : Promise.resolve([])]);
+  return { instruments, trades, brokerAccounts: brokerAccountOptions(accounts) };
 }
 
 /** Frankfurter's USD to INR for a day (the last working day's for a weekend), for the form to prefill and the action to fall back on. */
@@ -116,7 +117,7 @@ export async function saveInstrument(_previous: FormState, formData: FormData): 
 export async function saveTrade(_previous: FormState, formData: FormData): Promise<FormState> {
   const [editing] = ids(formData);
   try {
-    const ctx = await load(String(formData.get("settlementAccountId") ?? "").trim() !== "");
+    const ctx = await load();
     if (editing && !ctx.trades.some((t) => t.id === editing)) return gone;
     const result = readTradeForm(await withRate(fields(formData), ctx, "tradeDate"), ctx, todayIso(), editing);
     if (!result.ok) return { status: "invalid", errors: result.errors };
@@ -165,7 +166,7 @@ export async function saveEspp(_previous: FormState, formData: FormData): Promis
   try {
     const ctx = await load();
     if (editing && !ctx.trades.some((t) => t.id === editing)) return gone;
-    const result = readEsppForm(await withRate(fields(formData), ctx, "tradeDate"), ctx, todayIso());
+    const result = readEsppForm(await withRate(fields(formData), ctx, "tradeDate"), ctx, todayIso(), editing);
     if (!result.ok) return { status: "invalid", errors: result.errors };
     if (editing) {
       await investmentTransactionsRepository.update(editing, patchOf(result.input));
@@ -185,7 +186,7 @@ export async function deleteTrades(_previous: FormState, formData: FormData): Pr
   const wanted = ids(formData);
   if (wanted.length === 0) return gone;
   try {
-    const ctx = await load();
+    const ctx = await load(false);
     const rows = ctx.trades.filter((t) => wanted.includes(t.id));
     if (rows.length === 0) return gone;
     const problem = deleteProblem(ctx, wanted);

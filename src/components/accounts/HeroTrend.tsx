@@ -5,6 +5,7 @@ import type { CheckInsView, FactView, PickView } from "@/app/accounts/views";
 import { flows, flowsOverStretch, type FlowItem } from "@/lib/aggregate/accountFlows";
 import { trendStats } from "@/lib/aggregate/accountTrend";
 import { formatShortDate } from "@/lib/format/date";
+import { investedTile } from "@/app/accounts/investedTile";
 import { formatInr } from "@/lib/format/money";
 import { CheckInCalendar } from "./CheckInCalendar";
 import { blur, nearestIndex, normalise, smoothPath } from "./trendChart";
@@ -133,8 +134,8 @@ function Trend({ pick, flowItems, today }: { pick: PickView; flowItems: FlowItem
   const facts: FactView[] = [
     { label: "Came in", value: formatInr(money.cameIn), note: "Income received" },
     { label: "Spent", value: formatInr(money.expenses), note: "Bills, subscriptions, EMIs" },
-    { label: "Invested", value: formatInr(money.invested), note: "Shares bought" },
-    { label: "Left the bank", value: formatInr(money.leftBank), note: "Spent and invested" },
+    investedTile(money),
+    { label: "Left the bank", value: formatInr(money.leftBank), note: "Spent and sent to brokers" },
   ];
 
   if (n < 2) {

@@ -1,6 +1,7 @@
 import { vestCovers } from "@/lib/aggregate/tradeHistory";
 import type { BrokerCash } from "@/lib/aggregate/brokerCash";
-import type { AccountCurrency, Instrument, InvestmentTarget, InvestmentTransaction } from "@/lib/sheets/types";
+import { brokerAccountOptions, type BrokerAccountOption } from "@/lib/forms/tradeForms";
+import type { Account, AccountCurrency, Instrument, InvestmentTarget, InvestmentTransaction } from "@/lib/sheets/types";
 
 /** A broker cash account a trade can be paid from (or its proceeds land in), with the balance last on record, in its own currency. */
 export interface CashOption {
@@ -14,24 +15,25 @@ export interface CashOption {
 
 export const cashOptions = (cash: BrokerCash[]): CashOption[] => cash.map((c) => ({ id: c.account.id, name: c.account.name, currency: c.account.currency ?? "INR", balance: c.balance, date: c.date }));
 
-/** What the trade forms need from the page: today, the holdings to choose from, the saved trades, the brokers already used and the cash accounts. */
+/** What the trade forms need from the page: today, the holdings to choose from, the saved trades, the brokerage accounts and their cash. */
 export interface TradeFormsData {
   today: string;
   instruments: Pick<Instrument, "symbol" | "market" | "name" | "assetType">[];
   trades: InvestmentTransaction[];
-  brokers: string[];
+  /** His Brokerage accounts (from Accounts): a trade's broker is one of them. */
+  brokerAccounts: BrokerAccountOption[];
+  /** The ones with a balance on record, for what a trade leaves in cash. */
   cash: CashOption[];
   /** The targets and limits he has set, for the Your targets and limits form to open filled in. */
   targets: InvestmentTarget[];
 }
 
-export function tradeFormsData(trades: InvestmentTransaction[], instruments: Instrument[], today: string, cash: BrokerCash[] = [], targets: InvestmentTarget[] = []): TradeFormsData {
-  const brokers = [...new Set(trades.map((t) => t.broker))].sort();
+export function tradeFormsData(trades: InvestmentTransaction[], instruments: Instrument[], today: string, accounts: Account[] = [], cash: BrokerCash[] = [], targets: InvestmentTarget[] = []): TradeFormsData {
   return {
     today,
     instruments: instruments.map(({ symbol, market, name, assetType }) => ({ symbol, market, name, assetType })).sort((a, b) => a.name.localeCompare(b.name)),
     trades,
-    brokers,
+    brokerAccounts: brokerAccountOptions(accounts),
     cash: cashOptions(cash),
     targets,
   };

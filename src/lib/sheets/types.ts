@@ -32,6 +32,26 @@ export interface Account {
 export const BALANCE_SOURCES = ["Manual", "Statement"] as const;
 export type BalanceSource = (typeof BALANCE_SOURCES)[number];
 
+/**
+ * Money he moved between two of his own accounts: a bank to a broker (investing), a broker back to a bank, or bank to bank. It changes
+ * neither account's total on its own (the balances say where money sits); it says why money left one and arrived in the other. The
+ * Accounts page counts a transfer between a bank and a Brokerage account as invested, or taken back from investments.
+ */
+export interface Transfer {
+  id: string;
+  date: string;
+  fromAccountId: string;
+  toAccountId: string;
+  /** What left `fromAccountId`, in its own currency (rupees for a bank account). */
+  amount: number;
+  /** What arrived, when it's in another currency (dollars at a US broker). Left blank, it's the same as `amount`. */
+  receivedAmount?: number;
+  /** The broker's or bank's reference for it, so an import never records the same transfer twice. */
+  reference?: string;
+  /** Read off a statement, or typed in (a row with none was typed in). */
+  source?: BalanceSource;
+}
+
 export interface BalanceSnapshot {
   id: string;
   accountId: string;

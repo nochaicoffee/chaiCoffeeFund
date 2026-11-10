@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { InvestmentTransaction } from "@/lib/sheets/types";
+import type { Account, InvestmentTransaction } from "@/lib/sheets/types";
 import type { BrokerCash } from "@/lib/aggregate/brokerCash";
 import { cashOptions, editTarget, tradeFormsData } from "./tradeFormsData";
 
@@ -48,10 +48,15 @@ describe("editTarget", () => {
 });
 
 describe("tradeFormsData", () => {
-  it("lists the holdings by name and the brokers already used, sorted", () => {
-    const data = tradeFormsData(trades, [{ id: "1", symbol: "NTAP", market: "US", name: "NetApp", assetType: "Equity", priceTicker: "NTAP" }, { id: "2", symbol: "AMD", market: "US", name: "Advanced Micro", assetType: "Equity", priceTicker: "AMD" }], "2026-11-06");
+  it("lists the holdings by name, and only his Brokerage accounts as the brokers, by name", () => {
+    const accounts = [
+      { id: "z", name: "Zerodha", bank: "Zerodha", accountType: "Brokerage", purpose: "Investment", startDate: "2026-01-01", status: "Active" },
+      { id: "h", name: "HDFC Bank Account", bank: "HDFC", accountType: "Savings", purpose: "Spending", startDate: "2020-01-01", status: "Active" },
+      { id: "i", name: "IBKR", bank: "IBKR", accountType: "Brokerage", purpose: "Investment", startDate: "2024-01-01", status: "Inactive", currency: "USD" },
+    ] as Account[];
+    const data = tradeFormsData(trades, [{ id: "1", symbol: "NTAP", market: "US", name: "NetApp", assetType: "Equity", priceTicker: "NTAP" }, { id: "2", symbol: "AMD", market: "US", name: "Advanced Micro", assetType: "Equity", priceTicker: "AMD" }], "2026-11-06", accounts);
     expect(data.instruments.map((i) => i.name)).toEqual(["Advanced Micro", "NetApp"]);
-    expect(data.brokers).toEqual(["E*TRADE", "Groww"]);
+    expect(data.brokerAccounts).toEqual([{ id: "i", name: "IBKR", currency: "USD", closed: true }, { id: "z", name: "Zerodha", currency: "INR" }]);
     expect(data.today).toBe("2026-11-06");
   });
 });
@@ -68,7 +73,7 @@ describe("cashOptions", () => {
   });
 
   it("hands the forms the cash accounts, and none by default", () => {
-    expect(tradeFormsData([], [], "2026-11-08", cash).cash).toHaveLength(2);
+    expect(tradeFormsData([], [], "2026-11-08", [], cash).cash).toHaveLength(2);
     expect(tradeFormsData([], [], "2026-11-08").cash).toEqual([]);
   });
 });

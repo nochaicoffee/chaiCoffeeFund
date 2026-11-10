@@ -3,9 +3,10 @@ import { cashByBroker } from "@/lib/aggregate/brokerCash";
 import type { RupeeSnapshot } from "@/lib/aggregate/accountCurrency";
 import { rupeeBalances, unpricedForPage } from "@/lib/prices/rupeeBalances";
 import { getCachedAccountsTab, getCachedBalanceSnapshotsTab } from "@/lib/sheets/cached";
+import type { Account } from "@/lib/sheets/types";
 import { cashView, unpricedCash, type CashView } from "./cashView";
 
-type CashRead = Pick<Parameters<typeof cashView>[0], "cash" | "usdInr" | "unpriced" | "reason">;
+type CashRead = Pick<Parameters<typeof cashView>[0], "cash" | "usdInr" | "unpriced" | "reason"> & { accounts: Account[] };
 
 /**
  * Reads the cash at his brokers from the Accounts and balance tabs (ADR 0012: a dollar account is counted in rupees at today's rate right
@@ -18,7 +19,7 @@ export async function readCash(today: string): Promise<CashRead | null> {
     const rupee = await rupeeBalances(accounts.records, snapshots.records);
     const cash = cashByBroker(rupee.accounts, rupee.snapshots as RupeeSnapshot[], today);
     const unpriced = unpricedCash(unpricedForPage(rupee)?.accounts ?? []);
-    return { cash, usdInr: rupee.usdInr, unpriced, reason: unpriced.length > 0 ? rupee.rateProblem : null };
+    return { cash, usdInr: rupee.usdInr, unpriced, reason: unpriced.length > 0 ? rupee.rateProblem : null, accounts: accounts.records };
   } catch (error) {
     console.error("Investments: the cash at the brokers couldn't be read", error);
     return null;
@@ -27,5 +28,5 @@ export async function readCash(today: string): Promise<CashRead | null> {
 
 /** The card once the holdings' worth is known: null with no cash to show. */
 export function cashFrom(read: CashRead | null, holdingsInr: number, today: string): CashView | null {
-  return read ? cashView({ ...read, holdingsInr, today }) : null;
+  return read ? cashView({ cash: read.cash, usdInr: read.usdInr, unpriced: read.unpriced, reason: read.reason, holdingsInr, today }) : null;
 }

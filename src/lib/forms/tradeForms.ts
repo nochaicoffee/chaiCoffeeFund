@@ -2,7 +2,8 @@ import { findOversells, holdingsAt } from "../aggregate/investments";
 import { formatDate } from "../format/date";
 import { parseAmountText } from "../format/money";
 import { SOURCES } from "../aggregate/sourceMix";
-import type { Instrument, InvestmentSource, InvestmentTransaction, TradeType } from "../sheets/types";
+import { isClosed } from "../aggregate/accounts";
+import type { Account, Instrument, InvestmentSource, InvestmentTransaction, TradeType } from "../sheets/types";
 import { FieldReader, type FormFields, type FormResult } from "./fields";
 
 /**
@@ -17,9 +18,53 @@ export type TradeInput = Omit<InvestmentTransaction, "id">;
 export interface TradeFormContext {
   instruments: Pick<Instrument, "symbol" | "market" | "name" | "assetType">[];
   trades: InvestmentTransaction[];
-  /** The brokerage accounts a trade may be paid from; when given, a trade naming any other is refused. */
-  cashAccountIds?: string[];
+  /** The Brokerage accounts from Accounts: a trade is in one of them (its `settlementAccountId`), which is also its broker. */
+  brokerAccounts: BrokerAccountOption[];
 }
+
+/** A Brokerage account as the forms offer it. A US holding needs a dollar account, an Indian one a rupee account. */
+export interface BrokerAccountOption {
+  id: string;
+  name: string;
+  currency: "INR" | "USD";
+  /** Closed accounts aren't offered for a new trade, but a trade already in one keeps it. */
+  closed?: boolean;
+}
+
+/** His Brokerage accounts as the forms offer them, by name; a row with no currency is rupees (ADR 0012). */
+export function brokerAccountOptions(accounts: Account[]): BrokerAccountOption[] {
+  return accounts
+    .filter((a) => a.accountType === "Brokerage")
+    .map((a) => ({ id: a.id, name: a.name, currency: a.currency ?? "INR", ...(isClosed(a) && { closed: true }) }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/**
+ * The trade's brokerage account, from the `brokerAccount` field: one of his Brokerage accounts in the holding's currency. The account a
+ * trade already has is always accepted, so an edit never fails because that account has since closed or been renamed.
+ */
+function brokerAccount(f: FieldReader, ctx: TradeFormContext, market: string | undefined, saved?: InvestmentTransaction): { id: string; name: string } | undefined {
+  const id = f.raw("brokerAccount").trim();
+  if (id === "") {
+    f.fail("brokerAccount", ctx.brokerAccounts.length === 0 ? "Add your brokerage account in Accounts first (type Brokerage)" : "Choose the brokerage account");
+    return undefined;
+  }
+  const account = ctx.brokerAccounts.find((a) => a.id === id);
+  const kept = saved?.settlementAccountId === id;
+  if (!kept && (!account || account.closed)) {
+    f.fail("brokerAccount", "Choose one of your brokerage accounts");
+    return undefined;
+  }
+  // Checked for the account a trade already has too: an edit that moves it to the other market can't keep a wrong-currency account.
+  const wanted = market === "US" ? "USD" : "INR";
+  if (!account) return { id, name: saved!.broker };
+  if (market && account.currency !== wanted) {
+    f.fail("brokerAccount", `${account.name} holds ${account.currency === "USD" ? "dollars" : "rupees"}, and this is ${market === "US" ? "a US" : "an Indian"} holding`);
+    return undefined;
+  }
+  return { id: account.id, name: account.name };
+}
+
 
 /** A holding as one form value, "US:NTAP". */
 export const holdingKey = (market: string, symbol: string) => `${market}:${symbol}`;
@@ -97,20 +142,16 @@ export function readTradeForm(fields: FormFields, ctx: TradeFormContext, today: 
   const typedTotal = f.raw("total").trim() === "" ? undefined : decimal(f, "total", { required: "", label: "total" });
   const total = typedTotal ?? (quantity !== undefined && price !== undefined ? round6(quantity * price) : undefined);
   const fx = rate(f, held?.market);
-  const broker = f.text("broker", "Enter the broker");
+  const account = brokerAccount(f, ctx, held?.market, editing ? ctx.trades.find((t) => t.id === editing) : undefined);
   // Which shares a sale took (only a sale has one); blank is not marked.
   const soldFromText = f.raw("soldFrom").trim();
   if (soldFromText !== "" && !(SOURCES as readonly string[]).includes(soldFromText)) f.fail("soldFrom", "Choose which shares the sale took, or leave it blank");
-  const paidFrom = f.raw("settlementAccountId").trim();
-  // The account the trade already has is always allowed, so a trade can be edited whatever that account has since become.
-  const saved = editing ? ctx.trades.find((t) => t.id === editing)?.settlementAccountId : undefined;
-  if (paidFrom !== "" && paidFrom !== saved && ctx.cashAccountIds && !ctx.cashAccountIds.includes(paidFrom)) f.fail("settlementAccountId", "Choose one of your broker cash accounts, or none");
 
-  if (!f.ok || !tradeType || !source || !tradeDate || !held || quantity === undefined || price === undefined || total === undefined || !broker) return f.result(undefined as never);
+  if (!f.ok || !tradeType || !source || !tradeDate || !held || quantity === undefined || price === undefined || total === undefined || !account) return f.result(undefined as never);
 
   const row: TradeInput = {
     tradeDate, symbol: held.symbol, market: held.market, currency: held.market === "US" ? "USD" : "INR", tradeType, source, quantity, price, total,
-    assetType: held.assetType, broker, ...(fx !== undefined && { fxRateToInr: fx }), ...(paidFrom !== "" && { settlementAccountId: paidFrom }),
+    assetType: held.assetType, broker: account.name, settlementAccountId: account.id, ...(fx !== undefined && { fxRateToInr: fx }),
     ...(tradeType === "Sell" && soldFromText !== "" && { soldFrom: soldFromText as InvestmentSource }),
   };
   const after = [...ctx.trades.filter((t) => t.id !== editing), withId(row, editing ?? "new")];
@@ -143,10 +184,10 @@ export function readVestForm(fields: FormFields, ctx: TradeFormContext, today: s
   if (vested !== undefined && sold !== undefined && sold > vested) f.fail("sharesSold", "More shares were sold for tax than vested");
   const soldAt = f.raw("soldAt").trim() === "" ? fairValue : decimal(f, "soldAt", { required: "", label: "sale price", positive: true });
   const fx = rate(f, held?.market);
-  const broker = f.text("broker", "Enter the broker");
-  if (!f.ok || !tradeDate || !held || vested === undefined || fairValue === undefined || sold === undefined || soldAt === undefined || !broker) return f.result(undefined as never);
+  const account = brokerAccount(f, ctx, held?.market, ctx.trades.find((t) => t.id === editing[0]));
+  if (!f.ok || !tradeDate || !held || vested === undefined || fairValue === undefined || sold === undefined || soldAt === undefined || !account) return f.result(undefined as never);
 
-  const base = { tradeDate, symbol: held.symbol, market: held.market, currency: held.market === "US" ? "USD" : "INR", source: "RSU", assetType: held.assetType, broker, ...(fx !== undefined && { fxRateToInr: fx }) } as const;
+  const base = { tradeDate, symbol: held.symbol, market: held.market, currency: held.market === "US" ? "USD" : "INR", source: "RSU", assetType: held.assetType, broker: account.name, settlementAccountId: account.id, ...(fx !== undefined && { fxRateToInr: fx }) } as const;
   const vest: TradeInput = { ...base, tradeType: "Buy", quantity: vested, price: fairValue, total: round6(vested * fairValue) };
   const cover: TradeInput | undefined = sold > 0 ? { ...base, tradeType: "Sell", quantity: sold, price: soldAt, total: round6(sold * soldAt) } : undefined;
   const after = [...ctx.trades.filter((t) => !editing.includes(t.id)), withId(vest, "new-vest"), ...(cover ? [withId(cover, "new-cover")] : [])];
@@ -159,7 +200,7 @@ export function readVestForm(fields: FormFields, ctx: TradeFormContext, today: s
 }
 
 /** Record an ESPP purchase: one Buy at the price he paid, the discounted one (PRD Q12). The market price that day is only for show. */
-export function readEsppForm(fields: FormFields, ctx: TradeFormContext, today: string): FormResult<TradeInput> {
+export function readEsppForm(fields: FormFields, ctx: TradeFormContext, today: string, editing?: string): FormResult<TradeInput> {
   const f = new FieldReader(fields);
   const tradeDate = f.date("tradeDate", "Enter the purchase day");
   if (tradeDate && tradeDate > today) f.fail("tradeDate", "That day hasn't come yet");
@@ -167,11 +208,11 @@ export function readEsppForm(fields: FormFields, ctx: TradeFormContext, today: s
   const quantity = decimal(f, "quantity", { required: "Enter the shares bought", label: "shares bought", positive: true });
   const price = decimal(f, "price", { required: "Enter the price you paid", label: "price you paid", positive: true });
   const fx = rate(f, held?.market);
-  const broker = f.text("broker", "Enter the broker");
-  if (!f.ok || !tradeDate || !held || quantity === undefined || price === undefined || !broker) return f.result(undefined as never);
+  const account = brokerAccount(f, ctx, held?.market, editing ? ctx.trades.find((t) => t.id === editing) : undefined);
+  if (!f.ok || !tradeDate || !held || quantity === undefined || price === undefined || !account) return f.result(undefined as never);
   return f.result({
     tradeDate, symbol: held.symbol, market: held.market, currency: held.market === "US" ? "USD" : "INR", tradeType: "Buy", source: "ESPP", quantity, price,
-    total: round6(quantity * price), assetType: held.assetType, broker, ...(fx !== undefined && { fxRateToInr: fx }),
+    total: round6(quantity * price), assetType: held.assetType, broker: account.name, settlementAccountId: account.id, ...(fx !== undefined && { fxRateToInr: fx }),
   });
 }
 

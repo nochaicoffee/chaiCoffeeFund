@@ -10,7 +10,7 @@ const H = 150;
  */
 export function MoneyInOutCard({ detail }: { detail: PickDetail }) {
   const { columns } = detail;
-  const top = Math.max(1, ...columns.map((c) => Math.max(c.cameIn, c.expenses + c.invested)));
+  const top = Math.max(1, ...columns.map((c) => Math.max(c.cameIn, c.expenses + Math.max(0, c.invested))));
   const quiet = !detail.hasFlows;
   return (
     <section className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]" aria-label="Money in and out">
@@ -24,12 +24,12 @@ export function MoneyInOutCard({ detail }: { detail: PickDetail }) {
           <div className="flex gap-3 overflow-x-auto pb-1">
             <div className="flex min-w-full flex-1 items-end justify-between gap-2" style={{ minWidth: columns.length * 56 }}>
               {columns.map((c) => (
-                <div key={c.key} className="flex min-w-[44px] flex-1 flex-col items-center gap-1" title={`${c.label}: came in ${formatInr(c.cameIn)}, expenses ${formatInr(c.expenses)}, invested ${formatInr(c.invested)}`}>
+                <div key={c.key} className="flex min-w-[44px] flex-1 flex-col items-center gap-1" title={`${c.label}: came in ${formatInr(c.cameIn)}, expenses ${formatInr(c.expenses)}, ${c.invested < 0 ? `taken back from brokers ${formatInr(-c.invested)}` : `sent to brokers ${formatInr(c.invested)}`}`}>
                   <div className="flex items-end gap-1" style={{ height: H }}>
                     <i className="block w-3.5 rounded-t-[5px] bg-accent" style={{ height: Math.max(c.cameIn > 0 ? 3 : 0, (c.cameIn / top) * H) }} />
                     <span className="flex w-3.5 flex-col-reverse">
                       <i className="block rounded-b-[2px] bg-[var(--card-ruby)]" style={{ height: (c.expenses / top) * H }} />
-                      <i className="block rounded-t-[5px] bg-[var(--card-violet)]" style={{ height: (c.invested / top) * H }} />
+                      <i className="block rounded-t-[5px] bg-[var(--card-violet)]" style={{ height: (Math.max(0, c.invested) / top) * H }} />
                     </span>
                   </div>
                   <span className="text-[11px] font-bold text-muted">{c.label}</span>

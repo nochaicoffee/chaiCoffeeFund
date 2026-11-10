@@ -1,4 +1,4 @@
-import type { InvestmentCurrency, InvestmentMarket, InvestmentTransaction } from "../sheets/types";
+import type { Account, InvestmentCurrency, InvestmentMarket, InvestmentTransaction } from "../sheets/types";
 import { totalInInr, tradeSteps, type TradeStep } from "./investments";
 
 /**
@@ -155,4 +155,16 @@ export function howItCameIn(transactions: InvestmentTransaction[]): CameIn {
     if (quantity > 0) sources.push({ source, quantity, avgCostInr: buys.reduce((s, t) => s + totalInInr(t), 0) / quantity });
   }
   return { sources, sold: transactions.filter((t) => t.tradeType === "Sell").reduce((s, t) => s + t.quantity, 0) };
+}
+
+/**
+ * A trade's broker is its brokerage account: a trade linked to one (`settlementAccountId`) is named by the account as it is now, so
+ * renaming the account renames it everywhere. A trade not linked keeps the broker name it was saved with.
+ */
+export function withAccountNames(transactions: InvestmentTransaction[], accounts: Pick<Account, "id" | "name">[]): InvestmentTransaction[] {
+  const names = new Map(accounts.map((a) => [a.id, a.name]));
+  return transactions.map((t) => {
+    const name = t.settlementAccountId ? names.get(t.settlementAccountId) : undefined;
+    return name && name !== t.broker ? { ...t, broker: name } : t;
+  });
 }

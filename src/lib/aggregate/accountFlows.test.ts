@@ -5,6 +5,7 @@ const empty: AccountsData = {
   accounts: [
     { id: "sbi", name: "SBI", bank: "SBI", accountType: "Savings", purpose: "Spending", startDate: "2020-01-01", status: "Active" },
     { id: "hdfc", name: "HDFC", bank: "HDFC", accountType: "Savings", purpose: "Emergency-Fund", startDate: "2020-01-01", status: "Active" },
+    { id: "zerodha", name: "Zerodha", bank: "Zerodha", accountType: "Brokerage", purpose: "Investment", startDate: "2020-01-01", status: "Active" },
   ],
   snapshots: [],
   cards: [{ id: "c1", name: "Millennia", alias: "Millennia", issuer: "HDFC-Bank", cardType: "Cashback", creditLimit: 100000, statementDay: 6, dueDayBuffer: 20, status: "Active", defaultPaidFromAccountId: "sbi" }],
@@ -45,6 +46,12 @@ describe("moneyItems: what counts as going out of an account", () => {
       { id: "i1", loanId: "l1", installmentNumber: 1, dueDate: "2026-09-05", openingBalance: 500000, principalDue: 12000, interestDue: 4583, totalDue: 16_583, status: "Paid", amountPaid: 16_583, paidDate: "2026-09-05", paidFromAccountId: "sbi" },
       { id: "i2", loanId: "l1", installmentNumber: 2, dueDate: "2026-10-05", openingBalance: 488000, principalDue: 12100, interestDue: 4473, totalDue: 16_583, status: "Paid", amountPaid: 16_583, paidDate: "2026-10-05", paidFromCardId: "c1" },
     ],
+    // Bank to broker is invested, broker to bank is taken back, bank to bank is neither.
+    transfers: [
+      { id: "x1", date: "2026-09-15", fromAccountId: "sbi", toAccountId: "zerodha", amount: 23_300 },
+      { id: "x2", date: "2026-09-17", fromAccountId: "zerodha", toAccountId: "sbi", amount: 1_500 },
+      { id: "x3", date: "2026-09-18", fromAccountId: "sbi", toAccountId: "hdfc", amount: 50_000 },
+    ],
     trades: [
       { id: "t1", tradeDate: "2026-09-15", symbol: "INFY", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 10, price: 1500, total: 15_000, assetType: "Equity", broker: "Zerodha", settlementAccountId: "sbi" },
       { id: "t2", tradeDate: "2026-09-16", symbol: "NTAP", market: "US", currency: "USD", tradeType: "Buy", source: "Market", quantity: 1, price: 100, total: 100, assetType: "Equity", broker: "Schwab", settlementAccountId: "sbi", fxRateToInr: 83 },
@@ -62,7 +69,39 @@ describe("moneyItems: what counts as going out of an account", () => {
     expect(f.out["Card bills"]).toBe(30_000);
     expect(f.out.Subscriptions).toBe(1000);
     expect(f.out.EMIs).toBe(16_583);
-    expect(f.out.Investments).toBe(15_000 + 100 * 83);
+    expect(f.out.Investments).toBe(23_300);
+  });
+
+  it("counts money sent to and back from brokers, never trades (they happen inside the broker) or a bank-to-bank move", () => {
+    expect(items.filter((i) => i.kind === "Investments" || i.kind === "Taken back").map((i) => [i.kind, i.accountId, i.amount])).toEqual([
+      ["Investments", "sbi", 23_300],
+      ["Taken back", "sbi", 1_500],
+    ]);
+    const f = flows(items, "sbi");
+    expect([f.sent, f.takenBack, f.invested]).toEqual([23_300, 1_500, 21_800]);
+    // Nothing is counted on the broker's own side, so all accounts together don't count it twice.
+    expect(flows(items, null).invested).toBe(21_800);
+  });
+
+  it("goes negative when more came back than was sent, and counts what a US broker sent back in rupees", () => {
+    const back = moneyItems({ ...d, accounts: [...d.accounts, { id: "ibkr", name: "IBKR", bank: "IBKR", accountType: "Brokerage", purpose: "Investment", startDate: "2020-01-01", status: "Active", currency: "USD" }], transfers: [
+      { id: "y1", date: "2026-09-20", fromAccountId: "sbi", toAccountId: "zerodha", amount: 100_000 },
+      { id: "y2", date: "2026-09-21", fromAccountId: "zerodha", toAccountId: "sbi", amount: 259_048 },
+      { id: "y3", date: "2026-09-22", fromAccountId: "ibkr", toAccountId: "sbi", amount: 1_000, receivedAmount: 90_000 },
+    ] }, "2026-09-01", "2026-10-31");
+    const f = flows(back, "sbi");
+    expect(f.takenBack).toBe(259_048 + 90_000);
+    expect(f.invested).toBe(100_000 - 349_048);
+    expect(f.leftBank).toBe(f.expenses + 100_000);
+  });
+
+  it("never counts dollars back as rupees, and still counts a transfer to a dollar broker left out of the totals", () => {
+    const ibkr = { id: "ibkr", name: "IBKR", bank: "IBKR", accountType: "Brokerage" as const, purpose: "Investment" as const, startDate: "2020-01-01", status: "Active" as const, currency: "USD" as const };
+    const items2 = moneyItems({ ...d, unpriced: { accounts: [{ id: "ibkr", name: "IBKR", dollars: 10, account: ibkr, snapshots: [] }], reason: "no rate" }, transfers: [
+      { id: "z1", date: "2026-09-20", fromAccountId: "sbi", toAccountId: "ibkr", amount: 50_000 },
+      { id: "z2", date: "2026-09-21", fromAccountId: "ibkr", toAccountId: "sbi", amount: 1_000 },
+    ] }, "2026-09-01", "2026-10-31").filter((i) => i.kind === "Investments" || i.kind === "Taken back");
+    expect(items2.map((i) => [i.kind, i.amount])).toEqual([["Investments", 50_000]]);
   });
 
   it("leaves out what's charged to a card, because that card's bill already holds it", () => {
@@ -70,10 +109,10 @@ describe("moneyItems: what counts as going out of an account", () => {
     expect(all.map((i) => i.amount).sort((a, b) => a - b)).toEqual([1000, 16_583, 30_000]);
   });
 
-  it("counts income received, not pending, and a sale as sold, not as came in", () => {
+  it("counts income received, not pending, and money back from a broker as taken back, not as came in", () => {
     const f = flows(items, "sbi");
     expect(f.cameIn).toBe(200_000);
-    expect(f.sold).toBe(1_500);
+    expect(f.takenBack).toBe(1_500);
   });
 
   it("works saved as came in − expenses, so investing counts as saved (decision 19)", () => {
@@ -81,7 +120,8 @@ describe("moneyItems: what counts as going out of an account", () => {
     expect(f.expenses).toBe(30_000 + 1000 + 16_583);
     expect(f.saved).toBe(200_000 - f.expenses);
     expect(f.keptInBank).toBe(f.saved - f.invested);
-    expect(f.invested).toBe(23_300);
+    // ₹23,300 sent to the broker, ₹1,500 back.
+    expect(f.invested).toBe(21_800);
   });
 
   it("is zero for an account nothing went through, and sums all accounts with null", () => {

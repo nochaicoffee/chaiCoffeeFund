@@ -28,21 +28,26 @@ interface Common {
 const quantityText = (n: number) => String(Math.round(n * 1e6) / 1e6);
 const fixed = (n: number | undefined) => (n === undefined ? "" : quantityText(n));
 
-/** What the three dialogs share: the holding, the broker and, for a US holding, the dollar rate on the day (prefilled from Frankfurter until he types one). */
-function useHoldingFields(forms: TradeFormsData, initial: { holding?: string; broker?: string; rate?: string; day: string }) {
-  /** The broker he last used for a holding: a new trade of it is most likely there too. */
-  const lastBroker = (key: string) => forms.trades.filter((t) => holdingKey(t.market, t.symbol) === key).sort((a, b) => (a.tradeDate < b.tradeDate ? 1 : -1))[0]?.broker;
+/** What the three dialogs share: the holding, its brokerage account and, for a US holding, the dollar rate on the day (prefilled from Frankfurter until he types one). */
+function useHoldingFields(forms: TradeFormsData, initial: { holding?: string; account?: string; rate?: string; day: string }) {
+  const marketOf = (key: string) => forms.instruments.find((i) => holdingKey(i.market, i.symbol) === key)?.market;
+  const offered = (key: string) => forms.brokerAccounts.filter((a) => !a.closed && (!marketOf(key) || a.currency === (marketOf(key) === "US" ? "USD" : "INR")));
+  /** The account he last used for a holding (a new trade of it is most likely there too), else the only one in its currency. */
+  const likely = (key: string) => {
+    const last = forms.trades.filter((t) => holdingKey(t.market, t.symbol) === key && t.settlementAccountId).sort((a, b) => (a.tradeDate < b.tradeDate ? 1 : -1))[0]?.settlementAccountId;
+    const open = offered(key);
+    return last && open.some((a) => a.id === last) ? last : open.length === 1 ? open[0].id : "";
+  };
   const [holding, setHoldingState] = useState(initial.holding ?? "");
-  const [broker, setBrokerState] = useState(initial.broker ?? (initial.holding ? lastBroker(initial.holding) : undefined) ?? forms.brokers[0] ?? "");
-  const brokerTouched = useRef(Boolean(initial.broker));
+  const [account, setAccountState] = useState(initial.account ?? (initial.holding ? likely(initial.holding) : ""));
+  const accountTouched = useRef(Boolean(initial.account));
   const setHolding = (key: string) => {
     setHoldingState(key);
-    const last = lastBroker(key);
-    if (!brokerTouched.current && last) setBrokerState(last);
+    if (!accountTouched.current) setAccountState(likely(key));
   };
-  const setBroker = (value: string) => {
-    brokerTouched.current = true;
-    setBrokerState(value);
+  const setAccount = (value: string) => {
+    accountTouched.current = true;
+    setAccountState(value);
   };
   const [rate, setRate] = useState(initial.rate ?? "");
   const [rateNote, setRateNote] = useState<string | null>(null);
@@ -71,7 +76,7 @@ function useHoldingFields(forms: TradeFormsData, initial: { holding?: string; br
     };
   }, [market, initial.day]);
 
-  return { holding, setHolding, broker, setBroker, rate, setRate: (v: string) => { typed.current = true; setRate(v); }, rateNote, market, instrument };
+  return { holding, setHolding, account, setAccount, accounts: offered(holding), rate, setRate: (v: string) => { typed.current = true; setRate(v); }, rateNote, market, instrument };
 }
 
 function HoldingFieldsBlock({ forms, h, errors, reveal }: { forms: TradeFormsData; h: ReturnType<typeof useHoldingFields>; errors: Record<string, string>; reveal: (field: string) => void }) {
@@ -85,9 +90,16 @@ function HoldingFieldsBlock({ forms, h, errors, reveal }: { forms: TradeFormsDat
           <MoneyInput {...describedBy("fxRateToInr", errors.fxRateToInr, true)} symbol="₹" name="fxRateToInr" inputMode="decimal" value={h.rate} onChange={(e) => h.setRate(e.target.value)} onBlur={() => reveal("fxRateToInr")} invalid={Boolean(errors.fxRateToInr)} />
         </Field>
       )}
-      <Field id="broker" label="Broker" required error={errors.broker}>
-        <TextInput {...describedBy("broker", errors.broker, false)} list="trade-brokers" name="broker" value={h.broker} onChange={(e) => h.setBroker(e.target.value)} onBlur={() => reveal("broker")} invalid={Boolean(errors.broker)} />
-        <datalist id="trade-brokers">{forms.brokers.map((b) => <option key={b} value={b} />)}</datalist>
+      <Field id="brokerAccount" label="Brokerage account" required error={errors.brokerAccount} help={forms.brokerAccounts.length === 0 ? "Add your brokerage account in Accounts first (type Brokerage)." : "From your Accounts. A US holding is in a dollar account."}>
+        <SelectInput
+          id="brokerAccount"
+          name="brokerAccount"
+          invalid={Boolean(errors.brokerAccount)}
+          placeholder="Choose"
+          options={[...h.accounts.map((a) => ({ value: a.id, label: a.name })), ...(h.account !== "" && !h.accounts.some((a) => a.id === h.account) ? [{ value: h.account, label: forms.brokerAccounts.find((a) => a.id === h.account)?.name ?? "The account it was saved with" }] : [])]}
+          value={h.account}
+          onChange={h.setAccount}
+        />
       </Field>
     </>
   );
@@ -107,7 +119,7 @@ function deleteLink(onDelete: (() => void) | undefined, label: string, fallback:
   );
 }
 
-const ctxOf = (forms: TradeFormsData): TradeFormContext => ({ instruments: forms.instruments, trades: forms.trades, cashAccountIds: forms.cash.map((c) => c.id) });
+const ctxOf = (forms: TradeFormsData): TradeFormContext => ({ instruments: forms.instruments, trades: forms.trades, brokerAccounts: forms.brokerAccounts });
 
 /** Add a trade (a buy or a sell on the market) or Edit one, whatever its source. */
 export function TradeDialog({ forms, trade, onClose, onSaved, onDelete }: Common & { trade?: InvestmentTransaction }) {
@@ -117,12 +129,11 @@ export function TradeDialog({ forms, trade, onClose, onSaved, onDelete }: Common
   const [quantity, setQuantity] = useState(fixed(trade?.quantity));
   const [price, setPrice] = useState(fixed(trade?.price));
   const [total, setTotal] = useState(trade ? fixed(trade.total) : "");
-  const h = useHoldingFields(forms, { holding: trade ? holdingKey(trade.market, trade.symbol) : undefined, broker: trade?.broker, rate: trade?.fxRateToInr ? String(trade.fxRateToInr) : undefined, day: date });
+  const h = useHoldingFields(forms, { holding: trade ? holdingKey(trade.market, trade.symbol) : undefined, account: trade?.settlementAccountId, rate: trade?.fxRateToInr ? String(trade.fxRateToInr) : undefined, day: date });
   const source = trade?.source ?? "Market";
-  const [paidFrom, setPaidFrom] = useState(trade?.settlementAccountId ?? "");
   const [soldFrom, setSoldFrom] = useState<string>(trade?.soldFrom ?? "");
 
-  const values: Record<string, string> = { tradeType, source, tradeDate: date, holding: h.holding, quantity, price, total, fxRateToInr: h.rate, broker: h.broker, settlementAccountId: paidFrom, soldFrom: tradeType === "Sell" ? soldFrom : "" };
+  const values: Record<string, string> = { tradeType, source, tradeDate: date, holding: h.holding, quantity, price, total, fxRateToInr: h.rate, brokerAccount: h.account, soldFrom: tradeType === "Sell" ? soldFrom : "" };
   const check = readTradeForm(values, ctxOf(forms), forms.today, trade?.id);
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -146,7 +157,8 @@ export function TradeDialog({ forms, trade, onClose, onSaved, onDelete }: Common
   const held = h.instrument && date ? sourceMix(forms.trades.filter((x) => x.id !== trade?.id), date).get(holdingKey(h.instrument.market, h.instrument.symbol)) : undefined;
   const sourcesHeld = held ? SOURCES.filter((k) => held.pools[k] > 1e-9) : [];
   const picksSource = tradeType === "Sell" && (sourcesHeld.length > 1 || soldFrom !== "");
-  const account = forms.cash.find((c) => c.id === paidFrom);
+  // A market buy or a sale moves the account's cash (a sell-to-cover pays tax, and is edited in the vest form, not here).
+  const account = forms.cash.find((c) => c.id === h.account);
   const typedTotal = total.trim() === "" ? null : Number(total.replace(/,/g, ""));
   const amount = typedTotal !== null && Number.isFinite(typedTotal) ? typedTotal : worked;
   const cashAfter = account && amount !== null ? cashAfterTrade(account.balance, { tradeType, total: amount, currency }, account.currency) : null;
@@ -204,13 +216,9 @@ export function TradeDialog({ forms, trade, onClose, onSaved, onDelete }: Common
             )}
           </div>
         )}
-        {forms.cash.length === 0 && <input type="hidden" name="settlementAccountId" value={paidFrom} />}
-        {forms.cash.length > 0 && (
+        {account && cashAfter && (tradeType === "Sell" || source === "Market") && (
           <div className="md:col-span-2">
-            <Field id="settlementAccountId" label={tradeType === "Buy" ? "Paid from" : "Proceeds go to"} error={errors.settlementAccountId} help={cashAfter ? undefined : "A broker cash account, if this trade moved its cash. Optional."}>
-              <SelectInput id="settlementAccountId" name="settlementAccountId" invalid={Boolean(errors.settlementAccountId)} placeholder="Not from a cash account" options={[{ value: "", label: "Not from a cash account" }, ...forms.cash.map((c) => ({ value: c.id, label: `${c.name} · ${formatMoney(c.currency, c.balance)}` })), ...(paidFrom !== "" && !account ? [{ value: paidFrom, label: "The account it was saved with" }] : [])]} value={paidFrom} onChange={setPaidFrom} />
-            </Field>
-            {account && cashAfter && <CashAfterNote account={account} after={cashAfter} tradeType={tradeType} tradeDate={date} />}
+            <CashAfterNote account={account} after={cashAfter} tradeType={tradeType} tradeDate={date} />
           </div>
         )}
       </div>
@@ -244,9 +252,9 @@ export function VestDialog({ forms, vest, cover, onClose, onSaved, onDelete }: C
   const [fair, setFair] = useState(fixed(vest?.price));
   const [sold, setSold] = useState(cover ? fixed(cover.quantity) : "");
   const [soldAt, setSoldAt] = useState(cover && cover.price !== vest?.price ? fixed(cover.price) : "");
-  const h = useHoldingFields(forms, { holding: vest ? holdingKey(vest.market, vest.symbol) : forms.instruments.find((i) => i.symbol === "NTAP") ? "US:NTAP" : undefined, broker: vest?.broker, rate: vest?.fxRateToInr ? String(vest.fxRateToInr) : undefined, day: date });
+  const h = useHoldingFields(forms, { holding: vest ? holdingKey(vest.market, vest.symbol) : forms.instruments.find((i) => i.symbol === "NTAP") ? "US:NTAP" : undefined, account: vest?.settlementAccountId, rate: vest?.fxRateToInr ? String(vest.fxRateToInr) : undefined, day: date });
 
-  const values: Record<string, string> = { tradeDate: date, holding: h.holding, sharesVested: vested, fairValue: fair, sharesSold: sold, soldAt, fxRateToInr: h.rate, broker: h.broker };
+  const values: Record<string, string> = { tradeDate: date, holding: h.holding, sharesVested: vested, fairValue: fair, sharesSold: sold, soldAt, fxRateToInr: h.rate, brokerAccount: h.account };
   const editingIds = [vest?.id, cover?.id].filter((x): x is string => Boolean(x));
   const check = readVestForm(values, ctxOf(forms), forms.today, editingIds);
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
@@ -318,10 +326,10 @@ export function EsppDialog({ forms, purchase, onClose, onSaved, onDelete }: Comm
   const [date, setDate] = useState(purchase?.tradeDate ?? forms.today);
   const [quantity, setQuantity] = useState(fixed(purchase?.quantity));
   const [price, setPrice] = useState(fixed(purchase?.price));
-  const h = useHoldingFields(forms, { holding: purchase ? holdingKey(purchase.market, purchase.symbol) : forms.instruments.find((i) => i.symbol === "NTAP") ? "US:NTAP" : undefined, broker: purchase?.broker, rate: purchase?.fxRateToInr ? String(purchase.fxRateToInr) : undefined, day: date });
+  const h = useHoldingFields(forms, { holding: purchase ? holdingKey(purchase.market, purchase.symbol) : forms.instruments.find((i) => i.symbol === "NTAP") ? "US:NTAP" : undefined, account: purchase?.settlementAccountId, rate: purchase?.fxRateToInr ? String(purchase.fxRateToInr) : undefined, day: date });
 
-  const values: Record<string, string> = { tradeDate: date, holding: h.holding, quantity, price, fxRateToInr: h.rate, broker: h.broker };
-  const check = readEsppForm(values, ctxOf(forms), forms.today);
+  const values: Record<string, string> = { tradeDate: date, holding: h.holding, quantity, price, fxRateToInr: h.rate, brokerAccount: h.account };
+  const check = readEsppForm(values, ctxOf(forms), forms.today, purchase?.id);
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     if (check.ok) return markSubmitted();

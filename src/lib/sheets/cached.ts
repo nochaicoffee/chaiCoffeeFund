@@ -24,6 +24,7 @@ import { epfEntriesRepository } from "./epfEntries";
 import { epfRatesRepository } from "./epfRates";
 import { instrumentsRepository } from "./instruments";
 import { investmentTargetsRepository } from "./investmentTargets";
+import { transfersRepository } from "./transfers";
 import { priceSnapshotsRepository } from "./priceSnapshots";
 import { balanceReviewsRepository } from "./balanceReviews";
 import { lentLoansRepository } from "./lentLoans";
@@ -70,6 +71,7 @@ export const CACHE_TAGS = {
   epfRates: "epfRates",
   instruments: "instruments",
   investmentTargets: "investmentTargets",
+  transfers: "transfers",
   priceSnapshots: "priceSnapshots",
   balanceReviews: "balanceReviews",
   lentLoans: "lentLoans",
@@ -195,6 +197,8 @@ export const getCachedEpfRateById = cachedGetById(getCachedEpfRates);
 
 export const getCachedInstrumentsTab = cachedTab(instrumentsRepository, CACHE_TAGS.instruments);
 export const getCachedInvestmentTargetsTab = cachedTab(investmentTargetsRepository, CACHE_TAGS.investmentTargets);
+export const getCachedTransfersTab = cachedTab(transfersRepository, CACHE_TAGS.transfers);
+export const getCachedTransfers = cachedList(getCachedTransfersTab);
 export const getCachedInstruments = cachedList(getCachedInstrumentsTab);
 export const getCachedInstrumentById = cachedGetById(getCachedInstruments);
 
