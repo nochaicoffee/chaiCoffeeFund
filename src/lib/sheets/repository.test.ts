@@ -222,7 +222,7 @@ describe("deleteLoanWithSchedule", () => {
   const installment = (id: string, loanId: string, totalDue: unknown) => [id, loanId, 1, AUG_5, 100000, 8000, 1000, totalDue, "Pending"];
 
   beforeEach(() => {
-    sheet.rows["Loans!A2:Y"] = [["L1", "Car loan", "HDFC", "Auto", "Standard-Emi", 100000, 9, 12, "Monthly", 0, AUG_5, "acc", "Active", AUG_5 + 31, 0, 0, "", "", "", "", "", "", "", "", ""]];
+    sheet.rows["Loans!A2:Z"] = [["L1", "Car loan", "HDFC", "Auto", "Standard-Emi", 100000, 9, 12, "Monthly", 0, AUG_5, "acc", "Active", AUG_5 + 31, 0, 0, "", "", "", "", "", "", "", "", "", ""]];
     sheet.rows["LoanPrepayments!A2:L"] = [];
   });
 

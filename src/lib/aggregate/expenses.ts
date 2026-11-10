@@ -278,7 +278,7 @@ export function monthExpenses(data: ExpenseData, month: MonthKey, today: string,
   const ended = end < today;
 
   const cameIn = sum(data.incomeEntries.filter((e) => e.status === "Received" && inMonth(e.receivedDate, month)).map((e) => e.amount));
-  const borrowed = sum(data.loans.filter((l) => prepared.accountIds.has(l.accountId) && inMonth(l.disbursementDate, month)).map(disbursedAmount));
+  const borrowed = sum(data.loans.filter((l) => l.disbursedTo !== "Seller" && l.accountId !== undefined && prepared.accountIds.has(l.accountId) && inMonth(l.disbursementDate, month)).map(disbursedAmount));
   const cameBack =
     sum(data.fixedDeposits.filter((d) => d.status === "Closed" && inMonth(d.closedDate, month)).map((d) => d.receivedAmount ?? 0)) +
     sum(data.lentRepayments.filter((r) => inMonth(r.date, month)).map((r) => r.amount));

@@ -42,6 +42,7 @@ describe("readLoanForm", () => {
         processingFee: 7669,
         stampDuty: 500,
         preEmiInterest: 911,
+        disbursedTo: "Account",
         accountId: "hdfc",
         emiPaidFromAccountId: "hdfc",
         prepaymentEffect: "Reduce-Emi",
@@ -53,6 +54,16 @@ describe("readLoanForm", () => {
         prepaymentAfterEmis: 1,
       },
     });
+  });
+
+  it("needs no account for a loan paid straight to the seller", () => {
+    const r = readLoanForm({ ...loan, category: "Auto", disbursedTo: "Seller", accountId: "" }, known, false);
+    expect(r).toMatchObject({ ok: true, input: { disbursedTo: "Seller" } });
+    expect(r.ok && "accountId" in r.input).toBe(false);
+    // Into my account, the account is still needed.
+    const into = readLoanForm({ ...loan, disbursedTo: "Account", accountId: "" }, known, false);
+    expect(into.ok ? {} : into.errors).toMatchObject({ accountId: "Choose the account it was paid into" });
+    expect(readLoanForm({ ...loan, disbursedTo: "Dealer" }, known, false)).toMatchObject({ ok: false, errors: { disbursedTo: "Choose your account or the seller" } });
   });
 
   it("leaves the charges and the bank's rules optional", () => {

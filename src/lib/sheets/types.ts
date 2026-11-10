@@ -385,7 +385,8 @@ export interface Loan {
   /** Processing fee including GST, taken out of the disbursal. */
   processingFee: number;
   disbursementDate: string;
-  accountId: string;
+  /** The account the money was paid into. Blank only when it went straight to the seller (disbursedTo "Seller"). */
+  accountId?: string;
   status: LoanStatus;
   /** The first EMI's due date, from the sanction letter. Every later EMI falls on the same day of the month. */
   firstEmiDate: string;
@@ -412,7 +413,13 @@ export interface Loan {
   prepaymentsInLoan?: number;
   /** How many EMIs must be paid before the first part-payment (1 for HDFC: "only after the first EMI"). */
   prepaymentAfterEmis?: number;
+  /** Where the bank paid the money: into the account, or straight to the seller (a car loan usually goes to the dealer). Blank is the account. */
+  disbursedTo?: LoanDisbursedTo;
 }
+
+export const LOAN_DISBURSED_TO = ["Account", "Seller"] as const;
+/** Where a loan's money went when it was paid out. Only an Account disbursal is money that came into the pool (lib/aggregate/expenses.ts). */
+export type LoanDisbursedTo = (typeof LOAN_DISBURSED_TO)[number];
 
 export const LOAN_PREPAYMENT_EFFECTS = ["Reduce-Tenure", "Reduce-Emi"] as const;
 /** What a prepayment does to the rest of the schedule: the same EMI for fewer months, or a lower EMI to the same end. */

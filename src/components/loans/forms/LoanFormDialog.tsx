@@ -10,7 +10,7 @@ import { formatInr, parseAmountText } from "@/lib/format/money";
 import { IDLE } from "@/lib/forms/formState";
 import { LOAN_CATEGORIES, readLoanForm } from "@/lib/forms/loanForms";
 import { generateInstallments } from "@/lib/schedule/generateInstallments";
-import { CARD_COLORS, type LoanCategory } from "@/lib/sheets/types";
+import { CARD_COLORS, type LoanCategory, type LoanDisbursedTo } from "@/lib/sheets/types";
 import { DateInput, Field, MoneyInput, PreviewPanel, Segmented, SelectInput, TextInput, describedBy } from "../../cards/forms/fields";
 import { FormDialog } from "../../cards/forms/FormDialog";
 import { PlusIcon } from "../../cards/forms/icons";
@@ -44,6 +44,9 @@ export function LoanFormDialog({ forms, editing, onClose, onSaved, onDelete }: {
   const [stampDuty, setStamp] = useState(text(loan?.stampDuty));
   const [preEmiInterest, setPreEmi] = useState(text(loan?.preEmiInterest));
   const [accountId, setAccountId] = useState(loan?.accountId ?? "");
+  // A car loan usually goes straight to the dealer, the rest into an account: the category's default until one is chosen.
+  const [disbursedTo, setDisbursedTo] = useState<LoanDisbursedTo>(loan ? (loan.disbursedTo ?? "Account") : "Account");
+  const [disbursedChosen, setDisbursedChosen] = useState(Boolean(loan));
   const [chargedTo, setChargedTo] = useState(loan?.emiPaidFromCardId ? `card:${loan.emiPaidFromCardId}` : loan?.emiPaidFromAccountId ? `account:${loan.emiPaidFromAccountId}` : "");
   const [prepaymentEffect, setEffect] = useState<string>(loan ? usualEffect(loan) : "Reduce-Tenure");
   const [color, setColor] = useState<string>(loan ? loanColor(loan) : loanColor({ category: "Personal" }));
@@ -54,7 +57,7 @@ export function LoanFormDialog({ forms, editing, onClose, onSaved, onDelete }: {
   const [prepaymentsInLoan, setInLoan] = useState(text(loan?.prepaymentsInLoan));
   const [prepaymentAfterEmis, setAfterEmis] = useState(text(loan?.prepaymentAfterEmis));
 
-  const values = { name, lenderName, category, principalAmount, annualInterestRate, tenureMonths, firstEmiDate, disbursementDate, processingFee, stampDuty, preEmiInterest, accountId, chargedTo, prepaymentEffect, color, prepaymentChargePercent, prepaymentMaxPercent, prepaymentsPerYear, prepaymentsInLoan, prepaymentAfterEmis };
+  const values = { name, lenderName, category, principalAmount, annualInterestRate, tenureMonths, firstEmiDate, disbursementDate, processingFee, stampDuty, preEmiInterest, disbursedTo, accountId, chargedTo, prepaymentEffect, color, prepaymentChargePercent, prepaymentMaxPercent, prepaymentsPerYear, prepaymentsInLoan, prepaymentAfterEmis };
   const check = readLoanForm(values, { accountIds: forms.accounts.map((a) => a.id), cardIds: forms.cards.map((c) => c.id) }, Boolean(editing));
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(check, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
@@ -72,6 +75,7 @@ export function LoanFormDialog({ forms, editing, onClose, onSaved, onDelete }: {
   function chooseCategory(next: string) {
     setCategory(next);
     if (!colorChosen && (LOAN_CATEGORIES as readonly string[]).includes(next)) setColor(loanColor({ category: next as LoanCategory }));
+    if (!disbursedChosen) setDisbursedTo(next === "Auto" ? "Seller" : "Account");
   }
 
   // The preview works the schedule out as the app will, from the terms as typed.
@@ -86,7 +90,7 @@ export function LoanFormDialog({ forms, editing, onClose, onSaved, onDelete }: {
   const stamp = parseAmountText(stampDuty) ?? 0;
   const preEmi = parseAmountText(preEmiInterest) ?? 0;
   const interest = schedule.reduce((t, i) => t + i.interestDue, 0);
-  const intoAccount = forms.accounts.find((a) => a.id === accountId)?.name ?? "your account";
+  const intoAccount = disbursedTo === "Seller" ? "the seller" : (forms.accounts.find((a) => a.id === accountId)?.name ?? "your account");
 
   return (
     <FormDialog
@@ -198,6 +202,20 @@ export function LoanFormDialog({ forms, editing, onClose, onSaved, onDelete }: {
             </Field>
           </>
         )}
+        <div className="md:col-span-2">
+          <Segmented
+            name="disbursedTo"
+            legend="Paid out to"
+            options={[{ value: "Account", label: "My account" }, { value: "Seller", label: "Straight to the seller" }]}
+            value={disbursedTo}
+            onChange={(next) => {
+              setDisbursedTo(next);
+              setDisbursedChosen(true);
+            }}
+            help="A car loan usually goes to the dealer. Only money paid into your account counts as borrowed on Expenses."
+            error={errors.disbursedTo}
+          />
+        </div>
         <Field id="processingFee" label="Processing fee" help="With GST, as the bank charged it." error={errors.processingFee}>
           <MoneyInput {...describedBy("processingFee", errors.processingFee, true)} name="processingFee" value={processingFee} onChange={(e) => setFee(e.target.value)} onBlur={() => reveal("processingFee")} invalid={Boolean(errors.processingFee)} />
         </Field>
@@ -207,9 +225,11 @@ export function LoanFormDialog({ forms, editing, onClose, onSaved, onDelete }: {
         <Field id="preEmiInterest" label="Pre-EMI interest" help="The odd days before the EMI cycle starts, as the bank quotes it." error={errors.preEmiInterest}>
           <MoneyInput {...describedBy("preEmiInterest", errors.preEmiInterest, true)} name="preEmiInterest" value={preEmiInterest} onChange={(e) => setPreEmi(e.target.value)} onBlur={() => reveal("preEmiInterest")} invalid={Boolean(errors.preEmiInterest)} />
         </Field>
-        <Field id="accountId" label="Paid into" required error={errors.accountId}>
-          <SelectInput id="accountId" name="accountId" invalid={Boolean(errors.accountId)} options={forms.accounts.map((a) => ({ value: a.id, label: a.name }))} value={accountId} onChange={setAccountId} placeholder={forms.accounts.length ? "Choose account" : "No accounts yet"} />
-        </Field>
+        {disbursedTo === "Account" && (
+          <Field id="accountId" label="Paid into" required error={errors.accountId}>
+            <SelectInput id="accountId" name="accountId" invalid={Boolean(errors.accountId)} options={forms.accounts.map((a) => ({ value: a.id, label: a.name }))} value={accountId} onChange={setAccountId} placeholder={forms.accounts.length ? "Choose account" : "No accounts yet"} />
+          </Field>
+        )}
         <div className="md:col-span-2">
           <ChargedToField label="EMI paid from" value={chargedTo} onChange={setChargedTo} forms={{ cards: forms.cards.map((c) => ({ ...c, color: c.color })), accounts: forms.accounts }} help="An account, or a card if the EMI is charged to one." error={errors.chargedTo} />
         </div>

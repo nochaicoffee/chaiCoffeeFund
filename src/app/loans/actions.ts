@@ -123,7 +123,9 @@ export async function saveLoan(_previous: FormState, formData: FormData): Promis
         processingFee: input.processingFee,
         stampDuty: input.stampDuty,
         preEmiInterest: input.preEmiInterest,
-        accountId: input.accountId,
+        // Straight to the seller, the stored account (if any) stays: the math skips it either way.
+        ...(input.accountId && { accountId: input.accountId }),
+        disbursedTo: input.disbursedTo,
         emiPaidFromAccountId: input.emiPaidFromAccountId ?? "",
         emiPaidFromCardId: input.emiPaidFromCardId ?? "",
         prepaymentEffect: input.prepaymentEffect,

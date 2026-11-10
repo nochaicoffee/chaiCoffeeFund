@@ -38,6 +38,14 @@ describe("createLoanSchema", () => {
     expect(result.error?.issues[0]?.message).toBe("The fee, stamp duty and pre-EMI interest add up to more than the loan");
   });
 
+  it("needs the account it was paid into, unless it went straight to the seller", () => {
+    const noAccount = { ...valid, accountId: undefined };
+    expect(createLoanSchema.safeParse(noAccount).error?.issues[0]?.message).toBe("Choose the account it was paid into");
+    expect(createLoanSchema.safeParse({ ...noAccount, disbursedTo: "Account" }).success).toBe(false);
+    expect(createLoanSchema.safeParse({ ...noAccount, disbursedTo: "Seller" }).success).toBe(true);
+    expect(createLoanSchema.safeParse({ ...valid, disbursedTo: "Dealer" }).success).toBe(false);
+  });
+
   it("rejects quarterly and yearly loans", () => {
     expect(createLoanSchema.safeParse({ ...valid, paymentFrequency: "Quarterly" }).success).toBe(false);
   });

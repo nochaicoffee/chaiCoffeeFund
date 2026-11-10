@@ -1,4 +1,4 @@
-import { CARD_COLORS, LOAN_PREPAYMENT_EFFECTS, type CardColor, type LoanCategory, type LoanPrepaymentEffect, type PrepaymentEffect } from "../sheets/types";
+import { CARD_COLORS, LOAN_DISBURSED_TO, LOAN_PREPAYMENT_EFFECTS, type CardColor, type LoanCategory, type LoanDisbursedTo, type LoanPrepaymentEffect, type PrepaymentEffect } from "../sheets/types";
 import { FieldReader, readPaidFrom, type FormFields, type FormResult } from "./fields";
 
 /**
@@ -27,7 +27,9 @@ export interface LoanInput {
   processingFee: number;
   stampDuty: number;
   preEmiInterest: number;
-  accountId: string;
+  /** Where the money went. The seller: no account (an edit keeps the one stored). */
+  disbursedTo: LoanDisbursedTo;
+  accountId?: string;
   emiPaidFromAccountId?: string;
   emiPaidFromCardId?: string;
   prepaymentEffect: LoanPrepaymentEffect;
@@ -71,7 +73,8 @@ export function readLoanForm(fields: FormFields, known: Known, editing: boolean)
   const stampDuty = f.amount("stampDuty", { label: "stamp duty" }) ?? 0;
   const preEmiInterest = f.amount("preEmiInterest", { label: "pre-EMI interest" }) ?? 0;
   if (terms?.principalAmount && processingFee + stampDuty + preEmiInterest >= terms.principalAmount) f.fail("processingFee", "The fee, stamp duty and pre-EMI interest add up to more than the loan");
-  const accountId = f.choice("accountId", known.accountIds, "Choose the account it was paid into");
+  const disbursedTo = f.raw("disbursedTo").trim() === "" ? "Account" : f.choice("disbursedTo", LOAN_DISBURSED_TO, "Choose your account or the seller");
+  const accountId = disbursedTo === "Seller" ? undefined : f.choice("accountId", known.accountIds, "Choose the account it was paid into");
   const paidFrom = readPaidFrom(f, "chargedTo", known);
   const prepaymentEffect = f.choice("prepaymentEffect", LOAN_PREPAYMENT_EFFECTS, "Choose what a prepayment usually does");
   const color = f.choice("color", CARD_COLORS, "Pick a colour");
@@ -92,7 +95,8 @@ export function readLoanForm(fields: FormFields, known: Known, editing: boolean)
     processingFee,
     stampDuty,
     preEmiInterest,
-    accountId: accountId!,
+    disbursedTo: disbursedTo!,
+    ...(accountId && { accountId }),
     ...(paidFrom.paidFromAccountId && { emiPaidFromAccountId: paidFrom.paidFromAccountId }),
     ...(paidFrom.paidFromCardId && { emiPaidFromCardId: paidFrom.paidFromCardId }),
     prepaymentEffect: prepaymentEffect!,
