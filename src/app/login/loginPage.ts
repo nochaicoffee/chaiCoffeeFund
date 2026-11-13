@@ -4,22 +4,37 @@ function escapeHtml(value: string): string {
   return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
+/** Why the last sign-in didn't work. */
+export type SignInError = "denied" | "cancelled" | "failed";
+
+const ERROR_MESSAGES: Record<SignInError, string> = {
+  denied: "That Google account isn't allowed here.",
+  cancelled: "Sign-in was cancelled.",
+  failed: "Sign-in didn't work. Try again.",
+};
+
+/** The `error` in the page's address, if it is one of ours: anything else is ignored rather than shown. */
+export function signInError(value: string | null | undefined): SignInError | null {
+  return value && Object.hasOwn(ERROR_MESSAGES, value) ? (value as SignInError) : null;
+}
+
 export interface LoginPageProps {
   /** Where to go after signing in (already checked by `safeNextPath`). */
   next: string;
-  /** The last try was wrong. */
-  failed: boolean;
-  /** False when the host has no passphrase or secret set. */
+  /** Why the last try didn't work, if it didn't. */
+  error: SignInError | null;
+  /** False when the host has no Google client, allowed address or secret set. */
   configured: boolean;
 }
 
 /** The sign-in page's HTML, in the app's colours (the tokens in globals.css), working at phone width. */
-export function loginPage({ next, failed, configured }: LoginPageProps): string {
+export function loginPage({ next, error, configured }: LoginPageProps): string {
   const message = !configured
-    ? "Login isn't set up on this server yet. Set APP_PASSWORD and SESSION_SECRET."
-    : failed
-      ? "That passphrase isn't right."
+    ? "Login isn't set up on this server yet. Set GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, ALLOWED_EMAIL and SESSION_SECRET."
+    : error
+      ? ERROR_MESSAGES[error]
       : "";
+  const href = `/login/google${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -34,10 +49,9 @@ export function loginPage({ next, failed, configured }: LoginPageProps): string 
   main { width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--line); border-radius: 28px; padding: 28px; box-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06); }
   h1 { margin: 0 0 4px; font-size: 22px; letter-spacing: -0.01em; }
   p { margin: 0 0 20px; color: var(--muted); font-size: 14px; }
-  label { display: block; margin-bottom: 6px; font-size: 13px; font-weight: 600; }
-  input[type=password] { width: 100%; height: 48px; padding: 0 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--page); color: var(--fg); font-size: 16px; }
-  input[type=password]:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-  button { width: 100%; height: 48px; margin-top: 14px; border: 0; border-radius: 14px; background: var(--accent); color: var(--on-accent); font-size: 15px; font-weight: 700; cursor: pointer; }
+  .button { display: flex; align-items: center; justify-content: center; width: 100%; height: 48px; border-radius: 14px; background: var(--accent); color: var(--on-accent); font-size: 15px; font-weight: 700; text-decoration: none; }
+  .button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+  .button[aria-disabled=true] { opacity: 0.5; pointer-events: none; }
   .error { margin: 12px 0 0; color: var(--negative); font-size: 13px; }
 </style>
 </head>
@@ -45,13 +59,8 @@ export function loginPage({ next, failed, configured }: LoginPageProps): string 
 <main>
   <h1>${escapeHtml(appConfig.appName)}</h1>
   <p>Sign in to see ${escapeHtml(appConfig.ownerName)}'s money.</p>
-  <form method="post" action="/login">
-    <input type="hidden" name="next" value="${escapeHtml(next)}">
-    <label for="password">Passphrase</label>
-    <input id="password" name="password" type="password" autocomplete="current-password" autofocus required${configured ? "" : " disabled"}>
-    <button type="submit"${configured ? "" : " disabled"}>Sign in</button>
-    ${message ? `<p class="error" role="alert">${escapeHtml(message)}</p>` : ""}
-  </form>
+  <a class="button" href="${escapeHtml(href)}"${configured ? "" : ' aria-disabled="true" tabindex="-1"'}>Continue with Google</a>
+  ${message ? `<p class="error" role="alert">${escapeHtml(message)}</p>` : ""}
 </main>
 </body>
 </html>`;

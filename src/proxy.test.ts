@@ -2,17 +2,10 @@ import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { sessionKey } from "@/lib/auth/config";
 import { createSessionToken, SESSION_COOKIE } from "@/lib/auth/session";
+import { stubHostedEnv, TOKEN } from "@/lib/auth/google.testutil";
 import { proxy } from "./proxy";
 
-const SECRET = "s".repeat(40);
-const TOKEN = "t".repeat(40);
-
-beforeEach(() => {
-  vi.stubEnv("NODE_ENV", "production");
-  vi.stubEnv("APP_PASSWORD", "a long passphrase");
-  vi.stubEnv("SESSION_SECRET", SECRET);
-  vi.stubEnv("MCP_ACCESS_TOKEN", TOKEN);
-});
+beforeEach(() => stubHostedEnv((name, value) => vi.stubEnv(name, value)));
 afterEach(() => vi.unstubAllEnvs());
 
 const request = (path: string, headers: Record<string, string> = {}) => new NextRequest(`https://app.example${path}`, { headers });
@@ -24,6 +17,16 @@ describe("proxy", () => {
     const res = await proxy(request("/subscriptions?x=1"));
     expect(res.status).toBe(307);
     expect(res.headers.get("location")).toBe("https://app.example/login?next=%2Fsubscriptions%3Fx%3D1");
+  });
+
+  it("turns a signed-out POST into a GET of /login, so it doesn't hit a page that only answers GET", async () => {
+    const res = await proxy(new NextRequest("https://app.example/subscriptions", { method: "POST" }));
+    expect(res.status).toBe(303);
+    expect(res.headers.get("location")).toContain("/login?next=");
+  });
+
+  it("lets a signed-out POST to /logout through", async () => {
+    expect(passedThrough(await proxy(new NextRequest("https://app.example/logout", { method: "POST" })))).toBe(true);
   });
 
   it("sends the home page to a bare /login", async () => {
@@ -42,8 +45,8 @@ describe("proxy", () => {
     expect(passedThrough(await proxy(request("/api/accounts", { cookie })))).toBe(true);
   });
 
-  it("lets the login page through, signed out", async () => {
-    expect(passedThrough(await proxy(request("/login")))).toBe(true);
+  it("lets the login page and the Google steps through, signed out", async () => {
+    for (const path of ["/login", "/login/google", "/login/google/callback?code=x&state=y"]) expect(passedThrough(await proxy(request(path)))).toBe(true);
   });
 
   it("takes the bearer token for /api/mcp and refuses it elsewhere", async () => {
@@ -60,7 +63,7 @@ describe("proxy", () => {
   });
 
   it("serves nothing, with a 503, when the login isn't set up", async () => {
-    vi.stubEnv("APP_PASSWORD", "");
+    vi.stubEnv("GOOGLE_CLIENT_ID", "");
     expect((await proxy(request("/accounts"))).status).toBe(503);
     expect((await proxy(request("/api/accounts"))).status).toBe(503);
   });

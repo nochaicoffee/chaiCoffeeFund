@@ -1,4 +1,5 @@
 import { safeEqual } from "./safeEqual";
+import { hmac } from "./signing";
 
 /** The signed-in cookie's name. */
 export const SESSION_COOKIE = "chai_session";
@@ -6,19 +7,8 @@ export const SESSION_COOKIE = "chai_session";
 export const SESSION_DAYS = 30;
 export const SESSION_MAX_AGE_SECONDS = SESSION_DAYS * 24 * 60 * 60;
 
-const encoder = new TextEncoder();
-
-function toBase64Url(bytes: Uint8Array): string {
-  let binary = "";
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
 async function sign(secret: string, expiresAt: number): Promise<string> {
-  const key = await crypto.subtle.importKey("raw", encoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
-  // The prefix keeps this signature from ever being valid for some other use of the same secret.
-  const mac = await crypto.subtle.sign("HMAC", key, encoder.encode(`session.v1.${expiresAt}`));
-  return toBase64Url(new Uint8Array(mac));
+  return hmac(secret, `session.v1.${expiresAt}`);
 }
 
 /** A cookie value that says "signed in until `expiresAt`", signed with the server's secret. Nothing is stored server-side. */

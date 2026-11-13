@@ -1,6 +1,6 @@
 # 0007. Host the app with a login so it works on a phone
 
-- **Status:** Proposed. The requirement is decided; the platform and login method aren't.
+- **Status:** Proposed. The requirement is decided and the login method is now Google sign-in ([ADR 0016](0016-google-sign-in.md)); the platform isn't.
 - **Date:** 2026-10-16
 
 ## Context

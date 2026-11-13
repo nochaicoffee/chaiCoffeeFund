@@ -1,6 +1,6 @@
 # 0015. A passphrase login for the pages, and a bearer-token MCP endpoint for Claude
 
-- **Status:** Accepted, with the login method as a default Prathik hasn't confirmed (he asked for Vercel and for Claude to add data once deployed, 2026-11-13; he can still swap the passphrase for Google sign-in or a passkey)
+- **Status:** Accepted, except the login method: the passphrase described below was replaced by Google sign-in the same day ([ADR 0016](0016-google-sign-in.md)). The proxy, fail-closed production, the session cookie and the MCP endpoint stand as written.
 - **Date:** 2026-11-13
 
 ## Context
@@ -9,6 +9,8 @@
 Prathik also wants to tell Claude what to add ("log this subscription payment") and have it land in the Sheet once the app is on Vercel. Claude reaches an app through a remote MCP server added as a custom connector. A connector can't fill in a login page. Claude's connector dialog does take fixed request headers, so it can send a bearer token. Claude Code and the desktop app can do the same.
 
 ## Decision
+> **Superseded in part by [ADR 0016](0016-google-sign-in.md):** the first bullet below (a passphrase, `APP_PASSWORD`, the one-second pause) describes the login this ADR first shipped. It is now Google sign-in, with `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and `ALLOWED_EMAIL` in place of `APP_PASSWORD`. Everything else here still holds.
+
 - **Pages and API routes: a passphrase, then a signed cookie.** `src/proxy.ts` runs before every route. A request without a valid `chai_session` cookie goes to `/login` (pages) or gets a 401 (API routes). `/login` checks the passphrase against `APP_PASSWORD` and sets an HMAC-signed, HTTP-only, `SameSite=Lax`, `Secure` cookie that lasts 30 days. Nothing is stored server-side; the cookie says "signed in until T" and is signed with `SESSION_SECRET` and `APP_PASSWORD` together, so changing either signs every device out. `POST /logout` clears this device's cookie (there is no button for it yet). A wrong passphrase waits a second before answering.
 - **Fails closed.** A production build requires the login whether or not it's configured; with `APP_PASSWORD` or `SESSION_SECRET` missing (or shorter than 16 and 32 characters) it serves a 503 instead of the app. Local `next dev` stays open until `APP_PASSWORD` is set, so working on the app is unchanged.
 - **Claude: `/api/mcp`, with a bearer token only.** The proxy and the route both require `Authorization: Bearer <MCP_ACCESS_TOKEN>` (32 characters or more). A session cookie doesn't open it, and the token doesn't open anything else. With no token set the endpoint is off in every environment, local included.

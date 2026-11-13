@@ -34,7 +34,7 @@ Create `.env.local` yourself (gitignored, and blocked from tool writes by permis
 - `GOOGLE_SERVICE_ACCOUNT_KEY_FILE` — path to the service account JSON key, e.g. `./secrets/service-account.json` (the `secrets/` directory is gitignored).
 - `GOOGLE_SHEETS_SPREADSHEET_ID` — the target spreadsheet's ID (the long id in its URL between `/d/` and `/edit`).
 
-On a host (Vercel) three more are required, set in its settings and never in the repo: `APP_PASSWORD`, `SESSION_SECRET` (the login) and `MCP_ACCESS_TOKEN` (Claude's `/api/mcp` endpoint). Without the first two a production build serves nothing; without the third `/api/mcp` is off. See "Secrets & auth" and "Deployment" in `docs/system-design.md`.
+On a host (Vercel) more are required, set in its settings and never in the repo: `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_EMAIL` and `SESSION_SECRET` (the Google sign-in) and `MCP_ACCESS_TOKEN` (Claude's `/api/mcp` endpoint). Without any of the four sign-in variables a production build serves nothing; without the token `/api/mcp` is off. See "Secrets & auth" and "Deployment" in `docs/system-design.md`.
 
 # Code Maintainability & Architecture
 

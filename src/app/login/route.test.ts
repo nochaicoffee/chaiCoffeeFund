@@ -1,98 +1,52 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { sessionKey } from "@/lib/auth/config";
-import { verifySessionToken } from "@/lib/auth/session";
-import { GET, POST } from "./route";
+import { stubHostedEnv } from "@/lib/auth/google.testutil";
+import { GET } from "./route";
 
-const PASSPHRASE = "correct horse battery staple";
-const SECRET = "s".repeat(40);
+beforeEach(() => stubHostedEnv((name, value) => vi.stubEnv(name, value)));
+afterEach(() => vi.unstubAllEnvs());
 
-/** The pauses the route asked for. A pause runs at once here, so a test doesn't wait for it. */
-let pauses: number[] = [];
-
-beforeEach(() => {
-  vi.stubEnv("NODE_ENV", "production");
-  vi.stubEnv("APP_PASSWORD", PASSPHRASE);
-  vi.stubEnv("SESSION_SECRET", SECRET);
-  pauses = [];
-  vi.spyOn(globalThis, "setTimeout").mockImplementation(((callback: () => void, ms?: number) => {
-    pauses.push(ms ?? 0);
-    callback();
-    return 0;
-  }) as unknown as typeof setTimeout);
-});
-afterEach(() => {
-  vi.restoreAllMocks();
-  vi.unstubAllEnvs();
-});
-
-const post = (fields: Record<string, string>) => {
-  const body = new URLSearchParams(fields);
-  return POST(new Request("https://app.example/login", { method: "POST", body, headers: { "Content-Type": "application/x-www-form-urlencoded" } }));
-};
-
-const signIn = post;
+const page = (query = "") => GET(new Request(`https://app.example/login${query}`));
 
 describe("GET /login", () => {
-  it("shows the form, with the page to return to carried along", async () => {
-    const res = await GET(new Request("https://app.example/login?next=/accounts"));
+  it("shows the Google button, with the page to return to carried along", async () => {
+    const res = await page("?next=/accounts");
     const html = await res.text();
     expect(res.status).toBe(200);
-    expect(html).toContain('name="password"');
-    expect(html).toContain('value="/accounts"');
+    expect(html).toContain('href="/login/google?next=%2Faccounts"');
+    expect(html).toContain("Continue with Google");
+    expect(html).not.toContain('type="password"');
     expect(res.headers.get("cache-control")).toBe("no-store");
   });
 
+  it("has a plain button when there is nowhere to return to", async () => {
+    expect(await (await page()).text()).toContain('href="/login/google"');
+  });
+
   it("escapes the page to return to, and drops one that leaves the site", async () => {
-    const quoted = await (await GET(new Request(`https://app.example/login?next=${encodeURIComponent('/a"><script>x</script>')}`))).text();
+    const quoted = await (await page(`?next=${encodeURIComponent('/a"><script>x</script>')}`)).text();
     expect(quoted).not.toContain("<script>x");
-    const offsite = await (await GET(new Request("https://app.example/login?next=//evil.example"))).text();
-    expect(offsite).not.toContain("evil.example");
+    expect(await (await page("?next=//evil.example")).text()).not.toContain("evil.example");
   });
 
-  it("says so, with a 503, when the host has no login set up", async () => {
-    vi.stubEnv("APP_PASSWORD", "");
-    const res = await GET(new Request("https://app.example/login"));
+  it("says why the last sign-in failed, for the reasons it knows", async () => {
+    expect(await (await page("?error=denied")).text()).toContain("isn&#39;t allowed here");
+    expect(await (await page("?error=cancelled")).text()).toContain("cancelled");
+    expect(await (await page("?error=failed")).text()).toContain("didn&#39;t work");
+  });
+
+  it("shows nothing it was given as the reason, so a link can't put words on the page", async () => {
+    const html = await (await page("?error=Send%20money%20to%20evil")).text();
+    expect(html).not.toContain("evil");
+    expect(html).not.toContain('role="alert"');
+    expect(await (await page("?error=constructor")).text()).not.toContain('role="alert"');
+  });
+
+  it("says so, with a 503 and a disabled button, when the host has no login set up", async () => {
+    vi.stubEnv("GOOGLE_CLIENT_SECRET", "");
+    const res = await page();
+    const html = await res.text();
     expect(res.status).toBe(503);
-    expect(await res.text()).toContain("set up on this server");
-  });
-});
-
-describe("POST /login", () => {
-  it("sets a signed, http-only session cookie and goes to the page asked for", async () => {
-    const res = await signIn({ password: PASSPHRASE, next: "/subscriptions" });
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toBe("https://app.example/subscriptions");
-    const cookie = res.cookies.get("chai_session");
-    expect(cookie?.httpOnly).toBe(true);
-    expect(cookie?.secure).toBe(true);
-    expect(cookie?.sameSite).toBe("lax");
-    expect(await verifySessionToken(cookie?.value, sessionKey(process.env))).toBe(true);
-    expect(pauses).toEqual([]);
-  });
-
-  it("goes home when the page asked for hides its way off the site behind a tab", async () => {
-    const res = await signIn({ password: PASSPHRASE, next: "/\t/evil.example" });
-    expect(res.headers.get("location")).toBe("https://app.example/");
-  });
-
-  it("goes home when the page asked for would leave the site", async () => {
-    const res = await signIn({ password: PASSPHRASE, next: "//evil.example" });
-    expect(res.headers.get("location")).toBe("https://app.example/");
-  });
-
-  it("sets no cookie and goes back to the form on a wrong passphrase, after a one-second pause", async () => {
-    const res = await post({ password: "wrong", next: "/accounts" });
-    expect(pauses).toEqual([1000]);
-    expect(res.status).toBe(303);
-    expect(res.headers.get("location")).toBe("https://app.example/login?error=1&next=%2Faccounts");
-    expect(res.cookies.get("chai_session")).toBeUndefined();
-  });
-
-  it("refuses a missing passphrase, and anything at all when the host has no login set up", async () => {
-    expect((await signIn({ next: "/" })).headers.get("location")).toContain("error=1");
-    vi.stubEnv("SESSION_SECRET", "");
-    const res = await post({ password: PASSPHRASE });
-    expect(res.status).toBe(503);
-    expect(res.cookies.get("chai_session")).toBeUndefined();
+    expect(html).toContain("set up on this server");
+    expect(html).toContain('aria-disabled="true"');
   });
 });
