@@ -15,6 +15,8 @@ Running only locally also limits the Gmail import (ADR 0006): a scheduled sync o
 - Scheduled jobs, such as the statement sync, run on the host's scheduler instead of launchd.
 
 ## Still to decide, in the tech design
+_Update 2026-11-13: the login method and how Claude gets in are in [ADR 0015](0015-login-and-mcp-endpoint.md). The platform is Vercel (Prathik's plan); its cron and secret store are still to do._
+
 - **Platform:** for example, Vercel (fits Next.js, and its cron could run the sync), a self-hosted box on Tailscale (private network, so no public URL), or another option.
 - **Login method:** for example, Google sign-in restricted to one email, a passkey, or putting the app behind Tailscale or Cloudflare Access.
 - Whether the Sheets service account key can live in a hosted secret store, or should be replaced with something like workload identity federation.

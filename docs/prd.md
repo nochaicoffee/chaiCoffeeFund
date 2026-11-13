@@ -75,8 +75,9 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 
 | ID | Feature | Pri | Status |
 |---|---|---|---|
-| F-PL-01 | Login: a single allowed user, protecting every page and API route | P0 | Not started ([ADR 0007](adr/0007-hosted-with-login.md)) |
-| F-PL-02 | Hosted and reachable from a phone | P0 | Not started (ADR 0007) |
+| F-PL-01 | Login: a single allowed user, protecting every page and API route | P0 | Built: a passphrase and a signed cookie, every page and API route ([ADR 0015](adr/0015-login-and-mcp-endpoint.md)). Turns on when `APP_PASSWORD` and `SESSION_SECRET` are set on the host; the method is a default he hasn't confirmed. |
+| F-PL-02 | Hosted and reachable from a phone | P0 | Not started (ADR 0007). Planned on Vercel. |
+| F-PL-09 | Tell Claude to add or correct data: an MCP endpoint for Claude's custom connector | P1 | Built: four tools over every record type, no delete ([ADR 0015](adr/0015-login-and-mcp-endpoint.md)) |
 | F-PL-03 | Responsive: every screen and form fully usable at phone width | P0 | Not started. Mockups are desktop-only (1600–1700px). |
 | F-PL-04 | Light and dark mode | P0 | Designed |
 | F-PL-05 | App shell: collapsible sidebar and nav across all sections | P0 | Built (basic nav, not collapsible), and designed |
@@ -441,3 +442,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.39 | 2026-11-05 | The Investments build is planned (`docs/design/investments-build.md`: prices, the maths, the page) and approved. The price-history spike passed (Yahoo, AMFI and Frankfurter cover every ticker he holds), which settles Q2. Trades from every broker are loaded from files with `scripts/importTrades.ts` (65 trades; FYERS before April 2024 and April 2025 to March 2026 still missing). F-IV-11 widened: edit or delete a saved trade (the edit forms are drawn on desktop and phone). |
 | 1.40 | 2026-11-09 | Expenses (F-EX-01) added: a page of its own for what's spent each month, worked out from the pool of savings accounts and broker cash (`docs/design/expenses.md`), from November 2026. Build planned as epic #396 with the defaults in the spec's "Build decisions". |
 | 1.41 | 2026-11-09 | F-EX-01 built (epic #396). Overview's Still to pay tile is replaced by Spent, which opens Expenses; Due this month now says what's still to pay, so the grid stays twelve. |
+| 1.42 | 2026-11-13 | Login (F-PL-01) built as a passphrase and signed cookie, and F-PL-09 added: an MCP endpoint so Claude can add and correct data once the app is hosted (ADR 0015). Hosting itself (F-PL-02) and the scheduled sync on the host are still to do. |
