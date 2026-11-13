@@ -124,7 +124,7 @@ export function BigSpendsCard({ view }: { view: BigSpendsView | null }) {
 
 /** Month by month (ExF1): a row per month, newest first; came in = invested + lent out + kept + spent on every worked-out row. */
 export function MonthsTable({ view }: { view: MonthsView }) {
-  const head = ["Month", "Came in", "Invested", "Lent out", "Kept", "Spent", "Cards", "EMIs", "Subs + insurance", "Cash and UPI"];
+  const head = ["Month", "Came in", "Invested", "Lent out", "Kept", "Spent", "Cards", "EMIs", "Subs + insurance", "Big spends", "Cash and UPI"];
   return (
     <WidgetCard
       label="Month by month"
@@ -164,6 +164,7 @@ export function MonthsTable({ view }: { view: MonthsView }) {
                 <td className="px-2.5 text-right tabular-nums">{r.card}</td>
                 <td className="px-2.5 text-right tabular-nums">{r.emi}</td>
                 <td className="px-2.5 text-right tabular-nums">{r.subsIns}</td>
+                <td className="px-2.5 text-right tabular-nums">{r.bigSpent}</td>
                 <td className="px-2.5 text-right tabular-nums">{r.cash}</td>
               </tr>
             ))}
@@ -180,6 +181,7 @@ export function MonthsTable({ view }: { view: MonthsView }) {
                 <td className="px-2.5 text-right tabular-nums">{view.total.card}</td>
                 <td className="px-2.5 text-right tabular-nums">{view.total.emi}</td>
                 <td className="px-2.5 text-right tabular-nums">{view.total.subsIns}</td>
+                <td className="px-2.5 text-right tabular-nums">{view.total.bigSpent}</td>
                 <td className="rounded-r-[12px] px-2.5 text-right tabular-nums">{view.total.cash}</td>
               </tr>
             </tfoot>

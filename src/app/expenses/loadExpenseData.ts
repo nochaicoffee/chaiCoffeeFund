@@ -10,10 +10,10 @@ import {
   getCachedBigSpendsTab,
   getCachedCardsTab,
   getCachedFixedDepositsTab,
+  getCachedGoalsTab,
   getCachedIncomeEntriesTab,
   getCachedIncomeSourcesTab,
-  getCachedInvestmentTransactionsTab,
-  getCachedLentLoansTab,
+    getCachedLentLoansTab,
   getCachedLentRepaymentsTab,
   getCachedLoanInstallmentsTab,
   getCachedLoanPrepaymentsTab,
@@ -23,6 +23,7 @@ import {
   getCachedStatementsTab,
   getCachedSubscriptionPaymentsTab,
   getCachedSubscriptionsTab,
+  getCachedTransfersTab,
 } from "@/lib/sheets/cached";
 import type { SkippedRows } from "@/lib/sheets/rowReading";
 
@@ -35,7 +36,7 @@ export interface ExpensePageData {
 /**
  * Everything the Expenses page reads (docs/design/expenses.md): every tab a month's money touches, the saved USD to INR closes and today's rate.
  * A dollar balance stays in dollars here; the math turns its change into rupees at the month's rate. The closes not reading leaves today's rate,
- * and no rate at all leaves months with a dollar account unknown, said so on the page.
+ * and no rate at all leaves months with a dollar bank account unknown, said so on the page.
  */
 export async function loadExpenseData(): Promise<ExpensePageData> {
   const closes = getPriceSeries().then(
@@ -45,7 +46,7 @@ export async function loadExpenseData(): Promise<ExpensePageData> {
       return [] as PricePoint[];
     },
   );
-  const [accounts, snapshots, incomeEntries, incomeSources, cards, statements, subscriptions, subscriptionPayments, loans, installments, prepayments, policies, policyPayments, trades, fixedDeposits, lentLoans, lentRepayments, bigSpends] = await Promise.all([
+  const [accounts, snapshots, incomeEntries, incomeSources, cards, statements, subscriptions, subscriptionPayments, loans, installments, prepayments, policies, policyPayments, transfers, fixedDeposits, lentLoans, lentRepayments, bigSpends, goals] = await Promise.all([
     getCachedAccountsTab(),
     getCachedBalanceSnapshotsTab(),
     getCachedIncomeEntriesTab(),
@@ -59,15 +60,17 @@ export async function loadExpenseData(): Promise<ExpensePageData> {
     getCachedLoanPrepaymentsTab(),
     getCachedPoliciesTab(),
     getCachedPolicyPaymentsTab(),
-    getCachedInvestmentTransactionsTab(),
+    getCachedTransfersTab(),
     getCachedFixedDepositsTab(),
     getCachedLentLoansTab(),
     getCachedLentRepaymentsTab(),
     getCachedBigSpendsTab(),
+    getCachedGoalsTab(),
   ]);
-  const needsRate = accounts.records.some((a) => a.currency === "USD") || trades.records.some((t) => t.market === "US");
+  // Only a dollar bank account needs the rate: a broker's dollars never reach the pool.
+  const needsRate = accounts.records.some((a) => a.currency === "USD" && a.accountType !== "Brokerage");
   const [usdInr, today] = await Promise.all([closes, needsRate ? getUsdInr() : Promise.resolve(null)]);
-  const tabs = [accounts, snapshots, incomeEntries, statements, subscriptionPayments, installments, prepayments, policyPayments, trades, fixedDeposits, lentLoans, lentRepayments, bigSpends];
+  const tabs = [accounts, snapshots, incomeEntries, statements, subscriptionPayments, installments, prepayments, policyPayments, transfers, fixedDeposits, lentLoans, lentRepayments, bigSpends, goals];
   return {
     data: {
       accounts: accounts.records,
@@ -85,11 +88,12 @@ export async function loadExpenseData(): Promise<ExpensePageData> {
       prepayments: prepayments.records,
       policies: policies.records,
       policyPayments: policyPayments.records,
-      trades: trades.records,
+      transfers: transfers.records,
       fixedDeposits: fixedDeposits.records,
       lentLoans: lentLoans.records,
       lentRepayments: lentRepayments.records,
       bigSpends: bigSpends.records,
+      goals: goals.records,
     },
     skipped: tabs.map((t) => t.skipped).filter((s) => s.rows.length > 0),
   };

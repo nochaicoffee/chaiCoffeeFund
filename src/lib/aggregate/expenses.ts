@@ -8,11 +8,11 @@ import type {
   Account,
   BalanceSnapshot,
   BigSpend,
+  BigSpendCategory,
   Card,
   FixedDeposit,
   IncomeEntry,
   IncomeSource,
-  InvestmentTransaction,
   LentLoan,
   LentRepayment,
   Loan,
@@ -20,25 +20,30 @@ import type {
   LoanPrepayment,
   Policy,
   PolicyPayment,
+  Goal,
   Statement,
   Subscription,
   SubscriptionPayment,
+  Transfer,
 } from "../sheets/types";
 
 /**
  * What he spent each month (docs/design/expenses.md, "The calculation: the pool" and "Build decisions"). Pure.
  *
- * Every account the app has, savings and broker cash alike, is one pool, so money moved between them is never counted:
+ * The pool is his bank accounts, every one that isn't a Brokerage account, so money moved between them is never counted. A broker's cash
+ * has no balance history (it is typed in by hand), so brokers are met through the Transfers instead, the same rule as Accounts: money sent
+ * from a bank to a broker leaves the pool, money a broker sent back enters it, and what happens inside the broker (trades, dividends) never
+ * touches the bank.
  *
- *   spent = came in + borrowed + came back + sold − bought − lent out − (pool at the month's end − pool at its start)
+ *   spent = came in + borrowed + came back + taken back − sent to brokers − new deposits − lent out − (pool at the month's end − pool at its start)
  *
  * Spent splits into what the records explain (card bills paid that month, EMIs in full, subscriptions not on a card, insurance not on a
- * card) and cash and UPI, the rest. A month needs a balance for every account at both ends: a savings account with none yet is held flat at
- * its first, a broker account with none makes the month "can't be worked out". A dollar account's change is taken in dollars and turned into
- * rupees at the rate on the month's last day, so a move in the rate on idle dollars is never money in or out.
+ * card) and cash and UPI, the rest. A month needs a balance for every bank account at both ends: one with none yet is held flat at its
+ * first. A dollar bank account's change is taken in dollars and turned into rupees at the rate on the month's last day, so a move in the
+ * rate on idle dollars is never money in or out.
  */
 
-export const PART_KEYS = ["card", "emi", "subs", "ins", "cash"] as const;
+export const PART_KEYS = ["card", "emi", "subs", "ins", "big", "cash"] as const;
 export type PartKey = (typeof PART_KEYS)[number];
 
 /** A payment that explains part of a month's spending. Cash and UPI is one worked-out payment on the month's last day. */
@@ -77,8 +82,6 @@ export interface AccountEnd {
   end: number;
   /** The change in rupees: a dollar account's at the month's rate. */
   changeInr: number;
-  /** A broker account's end balance date, when it's from before the month began (carried, perhaps not updated). */
-  carriedFrom?: string;
 }
 
 export interface MonthExpenses {
@@ -92,14 +95,16 @@ export interface MonthExpenses {
   borrowed: number;
   /** A deposit closed and paid out, and money lent coming back. */
   cameBack: number;
+  /** Money a broker sent back to a bank account (a Transfer), profit and all. */
   sold: number;
+  /** Money sent from a bank account to a broker (a Transfer), and new deposits. */
   bought: number;
   lentOut: number;
-  /** Bought − sold: what went into investments, less what came out. */
+  /** Bought − sold: what went into investing, less what came back. */
   invested: number;
-  /** The records' parts. `cash` is the worked-out rest, only on a done month. */
+  /** The records' parts. `cash` is the worked-out rest, only on a done month. A big spend paid from an account is `big`. */
   parts: Record<PartKey, number>;
-  /** Card bills + EMIs + subscriptions + insurance: what the records explain. */
+  /** Card bills + EMIs + subscriptions + insurance + big spends paid from an account: what the records explain. */
   explained: number;
   /** Everything spent, on a done month. */
   spent: number | null;
@@ -134,15 +139,17 @@ export interface ExpenseData {
   prepayments: LoanPrepayment[];
   policies: Policy[];
   policyPayments: PolicyPayment[];
-  trades: InvestmentTransaction[];
+  /** Money moved between his accounts: a bank and a broker, either way, is what counts here. */
+  transfers: Transfer[];
   fixedDeposits: FixedDeposit[];
   lentLoans: LentLoan[];
   lentRepayments: LentRepayment[];
   bigSpends: BigSpend[];
+  /** A goal marked bought counts as a big spend, under its own name (Accounts counts it the same way). */
+  goals: Goal[];
 }
 
 const inMonth = (date: string | undefined, month: MonthKey): date is string => !!date && monthOf(date) === month;
-const firstDay = (month: MonthKey) => `${month}-01`;
 const isDollar = (a: Pick<Account, "currency">) => a.currency === "USD";
 const usable = (rate: number | null | undefined): rate is number => typeof rate === "number" && Number.isFinite(rate) && rate > 0;
 
@@ -152,17 +159,20 @@ function rateOn(data: Pick<ExpenseData, "usdInr" | "usdInrToday">, day: string):
   return usable(close) ? close : usable(data.usdInrToday) ? data.usdInrToday : null;
 }
 
-/** A trade in rupees at its own frozen rate (a US one without one, at that day's). Null when there's no rate at all. */
-function tradeInr(trade: InvestmentTransaction, data: ExpenseData): number | null {
-  if (trade.market === "IND" || trade.currency === "INR") return trade.total;
-  const rate = usable(trade.fxRateToInr) ? trade.fxRateToInr : rateOn(data, trade.tradeDate);
-  return rate ? trade.total * rate : null;
-}
+/** The pool: every account but a broker's. */
+const inPool = (a: Pick<Account, "accountType">) => a.accountType !== "Brokerage";
 
-/** The shares sold at an RSU vest to pay its tax (an RSU Sell on the same day and symbol as an RSU Buy), by id. They never reach him. */
-function sellsToCover(trades: InvestmentTransaction[]): Set<string> {
-  const vests = new Set(trades.filter((t) => t.tradeType === "Buy" && t.source === "RSU").map((t) => `${t.symbol}@${t.tradeDate}`));
-  return new Set(trades.filter((t) => t.tradeType === "Sell" && t.source === "RSU" && vests.has(`${t.symbol}@${t.tradeDate}`)).map((t) => t.id));
+/**
+ * A transfer's bank side, when it is between a bank account and a Brokerage account: what left the bank for a broker (`out`) or what a
+ * broker's money became in the bank (`back`), in rupees. A transfer between two banks nets out inside the pool, and one between two
+ * brokers never touches it.
+ */
+function bankSide(t: Transfer, accounts: Map<string, Account>, rate: number | null): { kind: "out" | "back"; inr: number } | null {
+  const from = accounts.get(t.fromAccountId);
+  const to = accounts.get(t.toAccountId);
+  if (!from || !to || inPool(from) === inPool(to)) return null;
+  const inrOf = (a: Account, amount: number) => (isDollar(a) ? amount * (rate ?? 0) : amount);
+  return inPool(from) ? { kind: "out", inr: inrOf(from, t.amount) } : { kind: "back", inr: inrOf(to, t.receivedAmount ?? t.amount) };
 }
 
 /** What a disbursal put in the account: the principal less the fee, the stamp duty and the gap interest taken out of it. */
@@ -175,16 +185,14 @@ function earliest(snapshots: BalanceSnapshot[], accountId: string): BalanceSnaps
 }
 
 /**
- * An account's balance at the end of a day, by the rules: nothing before it opened; its latest on or before the day; a savings account with
- * none yet held flat at its first (dormant accounts); a broker account with none yet is unknown (its cash has no history).
+ * A bank account's balance at the end of a day, by the rules: nothing before it opened; its latest on or before the day; one with none yet
+ * held flat at its first (dormant accounts).
  */
-function balanceAt(account: Account, snapshots: BalanceSnapshot[], day: string): { balance: number; date: string | null } | null {
+function balanceAt(account: Account, snapshots: BalanceSnapshot[], day: string): number {
   const latest = balanceOn(snapshots, account.id, day);
-  if (latest) return { balance: latest.balance, date: latest.date };
-  if (account.startDate > day) return { balance: 0, date: null };
-  if (account.accountType === "Brokerage") return null;
-  const first = earliest(snapshots, account.id);
-  return { balance: first?.balance ?? 0, date: null };
+  if (latest) return latest.balance;
+  if (account.startDate > day) return 0;
+  return earliest(snapshots, account.id)?.balance ?? 0;
 }
 
 /** The bill a card purchase lands in: the card's first statement dated on or after it. */
@@ -200,12 +208,24 @@ function billFor(spend: BigSpend, statements: Statement[]): Statement | null {
  */
 const paidMonth = (s: Statement): MonthKey | null => (s.status === "Paid" && s.paidDate && !s.paidFromCardId ? monthOf(s.paidDate) : null);
 
-/** Every big spend in the month it counts in (a card one once its bill is paid), newest first. */
+const GOAL_TO_BIG: Partial<Record<Goal["category"], BigSpendCategory>> = { Vehicle: "Vehicle", Home: "Home", Travel: "Travel", Education: "Education", Health: "Health" };
+
+/** A goal marked bought (Done, with its day, cost and where it was paid from) as the big spend it is, so it counts like one typed in. */
+export function goalBigSpends(goals: Goal[]): BigSpend[] {
+  return goals
+    .filter((g) => g.status === "Done" && g.doneOn && (g.actualCost ?? 0) > 0 && (g.paidFromAccountId || g.paidFromCardId))
+    .map((g) => ({ id: `goal:${g.id}`, date: g.doneOn as string, amount: g.actualCost as number, name: g.name, category: GOAL_TO_BIG[g.category] ?? "Other", paidFromAccountId: g.paidFromAccountId, paidFromCardId: g.paidFromCardId, note: "A goal marked bought" }));
+}
+
+/**
+ * Every big spend in the month it counts in (a card one once its bill is paid), newest first. One paid from a bank account is a payment of
+ * its own (part `big`), since the records name it; one that names no account stays inside cash and UPI, where nothing else explains it.
+ */
 export function placeBigSpends(spends: BigSpend[], statements: Statement[]): PlacedBigSpend[] {
   return [...spends]
     .sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id))
     .map((spend) => {
-      if (!spend.paidFromCardId) return { spend, part: "cash" as const, month: monthOf(spend.date) };
+      if (!spend.paidFromCardId) return { spend, part: spend.paidFromAccountId ? ("big" as const) : ("cash" as const), month: monthOf(spend.date) };
       const bill = billFor(spend, statements);
       return { spend, part: "card" as const, month: bill ? paidMonth(bill) : null, statementId: bill?.id };
     });
@@ -215,18 +235,18 @@ export function placeBigSpends(spends: BigSpend[], statements: Statement[]): Pla
 export interface Prepared {
   placed: PlacedBigSpend[];
   installmentsOf: Map<string, number>;
-  sellsToCover: Set<string>;
   accountIds: Set<string>;
+  accounts: Map<string, Account>;
 }
 
 export function prepare(data: ExpenseData): Prepared {
   const installmentsOf = new Map<string, number>();
   for (const i of data.installments) installmentsOf.set(i.loanId, Math.max(installmentsOf.get(i.loanId) ?? 0, i.installmentNumber));
-  return { placed: placeBigSpends(data.bigSpends, data.statements), installmentsOf, sellsToCover: sellsToCover(data.trades), accountIds: new Set(data.accounts.map((a) => a.id)) };
+  return { placed: placeBigSpends([...data.bigSpends, ...goalBigSpends(data.goals ?? [])], data.statements), installmentsOf, accountIds: new Set(data.accounts.map((a) => a.id)), accounts: new Map(data.accounts.map((a) => [a.id, a])) };
 }
 
 /** The payments the records explain in a month, oldest first. */
-function recordedPayments(data: ExpenseData, month: MonthKey, { installmentsOf }: Prepared): ExpensePayment[] {
+function recordedPayments(data: ExpenseData, month: MonthKey, { installmentsOf, placed }: Prepared): ExpensePayment[] {
   const out: ExpensePayment[] = [];
   const cards = new Map(data.cards.map((c) => [c.id, c]));
   for (const s of data.statements) {
@@ -266,6 +286,10 @@ function recordedPayments(data: ExpenseData, month: MonthKey, { installmentsOf }
     const policy = policies.get(p.policyId);
     out.push({ key: `ins:${p.id}`, date: day, part: "ins", amount: p.amount, label: policy?.name ?? "Insurance", detail: p.years > 1 ? `premium for ${p.years} years` : "premium", accountId: p.paidFromAccountId });
   }
+  for (const b of placed) {
+    if (b.part !== "big" || b.month !== month || !(b.spend.amount > 0)) continue;
+    out.push({ key: `big:${b.spend.id}`, date: b.spend.date, part: "big", amount: b.spend.amount, label: b.spend.name, detail: b.spend.category.toLowerCase(), accountId: b.spend.paidFromAccountId });
+  }
   return out.sort((a, b) => a.date.localeCompare(b.date) || a.key.localeCompare(b.key));
 }
 
@@ -283,44 +307,32 @@ export function monthExpenses(data: ExpenseData, month: MonthKey, today: string,
   const cameBack =
     sum(data.fixedDeposits.filter((d) => d.status === "Closed" && inMonth(d.closedDate, month)).map((d) => d.receivedAmount ?? 0)) +
     sum(data.lentRepayments.filter((r) => inMonth(r.date, month)).map((r) => r.amount));
-  const monthTrades = data.trades.filter((t) => inMonth(t.tradeDate, month));
-  const buys = monthTrades.filter((t) => t.tradeType === "Buy" && t.source === "Market");
-  const sells = monthTrades.filter((t) => t.tradeType === "Sell" && !prepared.sellsToCover.has(t.id));
-  const unpricedTrades = [...buys, ...sells].filter((t) => tradeInr(t, data) === null);
-  const bought = sum(buys.map((t) => tradeInr(t, data) ?? 0)) + sum(data.fixedDeposits.filter((d) => inMonth(d.startDate, month)).map((d) => d.principalAmount));
-  const sold = sum(sells.map((t) => tradeInr(t, data) ?? 0));
+  const rate = rateOn(data, ended ? end : today);
+  const sides = data.transfers.filter((t) => inMonth(t.date, month)).map((t) => bankSide(t, prepared.accounts, rate)).filter((x) => x !== null);
+  const sent = sum(sides.filter((x) => x.kind === "out").map((x) => x.inr));
+  const sold = sum(sides.filter((x) => x.kind === "back").map((x) => x.inr));
+  const bought = sent + sum(data.fixedDeposits.filter((d) => inMonth(d.startDate, month)).map((d) => d.principalAmount));
   const lentOut = sum(data.lentLoans.filter((l) => inMonth(l.startDate, month)).map((l) => l.principalAmount));
 
   const payments = recordedPayments(data, month, prepared);
-  const parts: Record<PartKey, number> = { card: 0, emi: 0, subs: 0, ins: 0, cash: 0 };
+  const parts: Record<PartKey, number> = { card: 0, emi: 0, subs: 0, ins: 0, big: 0, cash: 0 };
   for (const p of payments) parts[p.part] += p.amount;
-  const explained = parts.card + parts.emi + parts.subs + parts.ins;
+  const explained = parts.card + parts.emi + parts.subs + parts.ins + parts.big;
   const bigSpends = prepared.placed.filter((b) => b.month === month);
 
   const base = { month, cameIn, borrowed, cameBack, sold, bought, lentOut, invested: bought - sold, parts, explained, payments, bigSpends };
   const blank = { spent: null, kept: null, poolStart: null, poolEnd: null };
 
-  const rate = rateOn(data, ended ? end : today);
   const accounts: AccountEnd[] = [];
-  const missing: string[] = [];
-  for (const account of data.accounts) {
-    const a = balanceAt(account, data.snapshots, startDay);
-    const b = balanceAt(account, data.snapshots, ended ? end : today);
-    if (!a || !b) {
-      missing.push(account.name);
-      continue;
-    }
-    const change = b.balance - a.balance;
-    // Broker cash is typed by hand, so a month-end balance from before the month began is pointed out: it may not be updated. A bank's
-    // balances come from its statements, and a dormant account's never change, so theirs aren't.
-    const carriedFrom = account.accountType === "Brokerage" && b.date && b.date < firstDay(month) ? b.date : undefined;
-    accounts.push({ account, start: a.balance, end: b.balance, changeInr: isDollar(account) ? change * (rate ?? 0) : change, carriedFrom });
+  for (const account of data.accounts.filter(inPool)) {
+    const start = balanceAt(account, data.snapshots, startDay);
+    const finish = balanceAt(account, data.snapshots, ended ? end : today);
+    const change = finish - start;
+    accounts.push({ account, start, end: finish, changeInr: isDollar(account) ? change * (rate ?? 0) : change });
   }
 
   if (!ended) return { ...base, ...blank, status: "progress", accounts, usdInr: rate };
-  if (missing.length > 0) return { ...base, ...blank, status: "unknown", reason: `broker cash not recorded (${missing.join(", ")})`, accounts, usdInr: rate };
-  if (unpricedTrades.length > 0) return { ...base, ...blank, status: "unknown", reason: `no USD to INR rate for ${unpricedTrades.map((t) => t.symbol).join(", ")} on ${unpricedTrades[0].tradeDate}`, accounts, usdInr: rate };
-  if (!rate && data.accounts.some(isDollar)) return { ...base, ...blank, status: "unknown", reason: "no USD to INR rate for the month", accounts, usdInr: null };
+  if (!rate && accounts.some((a) => isDollar(a.account))) return { ...base, ...blank, status: "unknown", reason: "no USD to INR rate for the month", accounts, usdInr: null };
 
   const inr = (a: AccountEnd, v: number) => (isDollar(a.account) ? v * (rate as number) : v);
   const poolStart = round2(sum(accounts.map((a) => inr(a, a.start))));
@@ -354,7 +366,7 @@ export interface ExpenseTotals {
 /** The worked-out months added up (the months table's last row). Came in counts a disbursal and what came back, as the page does. */
 export function totalsOf(months: MonthExpenses[]): ExpenseTotals {
   const done = months.filter((m) => m.status === "done");
-  const parts = { card: 0, emi: 0, subs: 0, ins: 0, cash: 0 } as Record<PartKey, number>;
+  const parts = { card: 0, emi: 0, subs: 0, ins: 0, big: 0, cash: 0 } as Record<PartKey, number>;
   for (const key of PART_KEYS) parts[key] = sum(done.map((m) => m.parts[key]));
   return {
     months: done.length,
@@ -377,7 +389,7 @@ export function usualSpent(months: MonthExpenses[]): number | null {
 export function usualParts(months: MonthExpenses[]): Record<PartKey, number> | null {
   const done = months.filter((m) => m.status === "done");
   if (done.length === 0) return null;
-  const out = { card: 0, emi: 0, subs: 0, ins: 0, cash: 0 } as Record<PartKey, number>;
+  const out = { card: 0, emi: 0, subs: 0, ins: 0, big: 0, cash: 0 } as Record<PartKey, number>;
   for (const key of PART_KEYS) out[key] = sum(done.map((m) => m.parts[key])) / done.length;
   return out;
 }
