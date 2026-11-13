@@ -3,6 +3,7 @@ import { AsOfProvider } from "@/components/investments/AsOf";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { CashCard } from "@/components/investments/CashCard";
+import { TransfersCard } from "@/components/investments/TransfersCard";
 import { GreetingSentence } from "@/components/investments/GreetingSentence";
 import { HoldingsTable } from "@/components/investments/HoldingsTable";
 import { MoneyIn } from "@/components/investments/MoneyIn";
@@ -25,7 +26,7 @@ import { appConfig } from "@/lib/appConfig";
 import { greetingFor, todayIso } from "@/lib/format/date";
 import type { PricePoint } from "@/lib/prices/history";
 import { getPriceSeries } from "@/lib/prices/series";
-import { getCachedInstrumentsTab, getCachedInvestmentTargetsTab, getCachedInvestmentTransactionsTab } from "@/lib/sheets/cached";
+import { getCachedInstrumentsTab, getCachedInvestmentTargetsTab, getCachedInvestmentTransactionsTab, getCachedTransfersTab } from "@/lib/sheets/cached";
 import { asOfViews } from "./asOfViews";
 import { cashFrom, readCash } from "./loadCash";
 import { limitViews, targetsView } from "./targetViews";
@@ -33,6 +34,7 @@ import { growthView, whatIfView } from "./scenarioViews";
 import { splitView } from "./splitView";
 import { tradeFormsData } from "./tradeFormsData";
 import { concentrationView, gainView, weightView } from "./understandViews";
+import { transferRows } from "./transferView";
 import { greetingView, holdingsView, lensReturnsView, lensViews, moneyInView, pickerView, recentTradesView, returnsView, sameMoneyView, summarySentence } from "./views";
 
 export const metadata: Metadata = { title: "Investments" };
@@ -47,6 +49,10 @@ export default async function InvestmentsPage() {
   // The cash at his brokers is read beside the holdings (it needs nothing from them) and counted outside their worth (F-IV-18).
   const cashRead = readCash(today);
   // His targets and limits are a side card: if their tab can't be read the page still shows everything else (they just read as none set).
+  const transfersRead = getCachedTransfersTab().catch((error) => {
+    console.error("Investments: the transfers couldn't be read", error);
+    return null;
+  });
   const targetsRead = getCachedInvestmentTargetsTab().catch((error) => {
     console.error("Investments: the targets and limits couldn't be read", error);
     return null;
@@ -65,6 +71,7 @@ export default async function InvestmentsPage() {
   // The Returns row and the holdings table as they stood on each day the stage can go back to.
   const asOf = asOfViews(overviewInput, overview);
   const cashData = await cashRead;
+  const transfers = (await transfersRead)?.records ?? null;
   const cash = cashFrom(cashData, overview.valueInr, today);
   const skipped = [tradesTab.skipped, instrumentsTab.skipped, ...(targetsTab ? [targetsTab.skipped] : [])].filter((t) => t.rows.length > 0);
 
@@ -78,7 +85,7 @@ export default async function InvestmentsPage() {
   const limits = limitViews(overview, savedTargets);
 
   return (
-    <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today, cashData?.accounts, cashData?.cash, savedTargets)}>
+    <TradeFormsProvider forms={tradeFormsData(tradesTab.records, instrumentsTab.records, today, cashData?.accounts, cashData?.cash, savedTargets, transfers ?? [])}>
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Investments"
@@ -105,6 +112,7 @@ export default async function InvestmentsPage() {
       {overview.holdings.length > 0 && <HoldingsTable rows={holdingsView(overview)} asOf={asOf} />}
       </AsOfProvider>
       {cash && <CashCard view={cash} />}
+      {cashData && transfers && <TransfersCard rows={transferRows(transfers, cashData.accounts)} />}
       <MoneyAndSame money={moneyInView(tradesTab.records, instrumentsTab.records, today)} same={sameMoneyView(overview)} />
       {(split || weight || gain || whatIf || growth || concentrated || targets) && (
         <section aria-label="Understand it" className="flex flex-col gap-3">

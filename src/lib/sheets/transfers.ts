@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { createRepository } from "./repository";
-import { isoDate, nonEmptyString, positiveNumber, rowRules } from "./validation";
+import { clearableToUnset, isoDate, nonEmptyString, positiveNumber, rowRules } from "./validation";
 import { BALANCE_SOURCES, type Transfer } from "./types";
 
 /**
@@ -23,7 +23,11 @@ const transferRules = rowRules<Omit<Transfer, "id">>([{ path: "toAccountId", mes
 export const createTransferSchema = transferFields.superRefine(transferRules.refine);
 
 /** A partial update is merged over the stored row and checked whole (the repository's `check`). */
-export const updateTransferSchema = transferFields.partial();
+export const updateTransferSchema = transferFields.partial().extend({
+  // "" clears them: an edit from a dollar broker to a rupee one leaves no received amount, and a reference can be taken off.
+  receivedAmount: clearableToUnset(positiveNumber).optional(),
+  reference: clearableToUnset(nonEmptyString).optional(),
+});
 
 /** A row as read back from the Sheet: a valid create, plus its id. */
 export const transferRowSchema = transferFields.extend({ id: nonEmptyString }).superRefine(transferRules.refine);

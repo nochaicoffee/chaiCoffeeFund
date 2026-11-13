@@ -4,6 +4,7 @@ import { updateTag } from "next/cache";
 import { todayIso } from "@/lib/format/date";
 import type { FormState } from "@/lib/forms/formState";
 import { readInstrumentForm } from "@/lib/forms/instrumentForm";
+import { readTransferForm, transferAccounts } from "@/lib/forms/transferForm";
 import { planTargetWrites, readTargetsForm } from "@/lib/forms/targetsForm";
 import { brokerAccountOptions, deleteProblem, readEsppForm, readTradeForm, readVestForm, type TradeFormContext, type TradeInput } from "@/lib/forms/tradeForms";
 import { parseUsdInrOn, usdInrOnUrl } from "@/lib/prices/usdInrParse";
@@ -12,9 +13,10 @@ import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
 import { accountsRepository } from "@/lib/sheets/accounts";
 import { createInstrumentSchema, instrumentsRepository } from "@/lib/sheets/instruments";
 import { createInvestmentTransactionSchema, investmentTransactionsRepository, updateInvestmentTransactionSchema } from "@/lib/sheets/investmentTransactions";
+import { createTransferSchema, transfersRepository, updateTransferSchema } from "@/lib/sheets/transfers";
 import { investmentTargetsRepository } from "@/lib/sheets/investmentTargets";
 import { InvalidRowError, NotFoundError } from "@/lib/sheets/repository";
-import type { InvestmentTransaction } from "@/lib/sheets/types";
+import type { InvestmentTransaction, Transfer } from "@/lib/sheets/types";
 
 /**
  * The trade forms' server actions (docs/design/investments.md, InvForms), used with useActionState like the other dashboards': each
@@ -220,4 +222,42 @@ export async function undoTrade(raw: string): Promise<{ ok: boolean; message: st
   }
   updateTag(CACHE_TAGS.investmentTransactions);
   return { ok: true, message: "Put back as it was." };
+}
+
+/**
+ * Add a transfer, or Edit one when the form carries an id: money moved between a bank account and a Brokerage account, either way. It is
+ * checked against the Accounts tab (an unknown or closed account is refused) and the transfers already saved (a broker's reference is
+ * never recorded twice). Accounts counts it as Invested or Taken back from its next read, and Expenses' month reads the same tab.
+ */
+export async function saveTransfer(_previous: FormState, formData: FormData): Promise<FormState> {
+  const [editing] = ids(formData);
+  try {
+    const [accounts, transfers] = await Promise.all([accountsRepository.list(), transfersRepository.list()]);
+    const saved = editing ? transfers.find((t) => t.id === editing) : undefined;
+    if (editing && !saved) return { status: "invalid", errors: { form: "This transfer isn't in the Sheet any more. Close this and refresh." } };
+    const result = readTransferForm(fields(formData), { accounts: transferAccounts(accounts), transfers, today: todayIso(), ...(saved && { editing: saved }) });
+    if (!result.ok) return { status: "invalid", errors: result.errors };
+    if (saved) await transfersRepository.update(saved.id, updateTransferSchema.parse({ ...result.input, receivedAmount: result.input.receivedAmount ?? "", reference: result.input.reference ?? "" }) as Partial<Omit<Transfer, "id">>);
+    else await transfersRepository.createMany([createTransferSchema.parse(result.input)]);
+    updateTag(CACHE_TAGS.transfers);
+    return { status: "saved", at: Date.now() };
+  } catch (error) {
+    if (error instanceof NotFoundError) return { status: "invalid", errors: { form: "This transfer isn't in the Sheet any more. Close this and refresh." } };
+    if (error instanceof InvalidRowError) return { status: "invalid", errors: { form: error.message } };
+    return failed("saveTransfer", error);
+  }
+}
+
+/** Delete a transfer. It leaves the Transfers tab for good; Accounts stops counting it as Invested or Taken back. */
+export async function deleteTransfer(_previous: FormState, formData: FormData): Promise<FormState> {
+  const [id] = ids(formData);
+  if (!id) return { status: "invalid", errors: { form: "This transfer isn't in the Sheet any more. Close this and refresh." } };
+  try {
+    await transfersRepository.remove(id);
+    updateTag(CACHE_TAGS.transfers);
+    return { status: "saved", at: Date.now() };
+  } catch (error) {
+    if (error instanceof NotFoundError) return { status: "invalid", errors: { form: "This transfer isn't in the Sheet any more. Close this and refresh." } };
+    return failed("deleteTransfer", error);
+  }
 }
