@@ -55,10 +55,13 @@ export function Sidebar({
   initiallyExpanded,
   appName,
   ownerName,
+  showSignOut,
 }: {
   initiallyExpanded: boolean;
   appName: string;
   ownerName: string;
+  /** Whether the app is behind a login. Without one (local development) there is nothing to sign out of. */
+  showSignOut: boolean;
 }) {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(initiallyExpanded);
@@ -144,6 +147,19 @@ export function Sidebar({
           >
             {expanded ? icons.collapse : icons.expand}
           </button>
+          {showSignOut && (
+            // A POST, so a link on another site can't sign him out (app/logout/route.ts).
+            <form method="post" action="/logout" className="flex">
+              <button
+                type="submit"
+                aria-label="Sign out"
+                title="Sign out"
+                className={`flex size-[30px] items-center justify-center rounded-full text-muted hover:bg-fill hover:text-fg ${FOCUS_RING}`}
+              >
+                {icons.signOut}
+              </button>
+            </form>
+          )}
           <div
             className="flex size-[30px] items-center justify-center rounded-full bg-ink text-xs font-extrabold text-on-ink"
             title={ownerName}
@@ -202,6 +218,17 @@ export function Sidebar({
                 />
               ))}
             </nav>
+            {showSignOut && (
+              <form method="post" action="/logout" className="mt-auto pt-3">
+                <button
+                  type="submit"
+                  className={`flex min-h-11 w-full items-center gap-3 rounded-full px-4 text-[15px] font-semibold text-muted hover:bg-fill hover:text-fg ${FOCUS_RING}`}
+                >
+                  {icons.signOut}
+                  Sign out
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}

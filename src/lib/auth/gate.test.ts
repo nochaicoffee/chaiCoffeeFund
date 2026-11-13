@@ -1,12 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { AuthEnv } from "./config";
-import { loginConfigured, loginRequired, mcpConfigured, sessionKey } from "./config";
-import { bearerToken, decideAccess, hasValidMcpToken, safeNextPath } from "./gate";
+import { allowedEmail, loginConfigured, loginRequired, mcpConfigured, sessionKey } from "./config";
+import { bearerToken, decideAccess, hasValidMcpToken, isLoginPath, safeNextPath } from "./gate";
 import { createSessionToken } from "./session";
 
-const SECRET = "s".repeat(40);
-const TOKEN = "t".repeat(40);
-const hosted: AuthEnv = { NODE_ENV: "production", APP_PASSWORD: "a long passphrase", SESSION_SECRET: SECRET, MCP_ACCESS_TOKEN: TOKEN };
+import { hosted, SECRET, TOKEN } from "./google.testutil";
+
 const local: AuthEnv = { NODE_ENV: "development" };
 const KEY = sessionKey(hosted)!;
 
@@ -14,22 +13,32 @@ const ask = (pathname: string, env: AuthEnv, extra: { cookie?: string; authoriza
   decideAccess({ pathname, cookie: extra.cookie, authorization: extra.authorization ?? null, env });
 
 describe("config", () => {
-  it("requires a login in production, or wherever a passphrase is set", () => {
+  it("requires a login in production, or wherever an allowed address is set", () => {
     expect(loginRequired({ NODE_ENV: "production" })).toBe(true);
     expect(loginRequired({ NODE_ENV: "development" })).toBe(false);
-    expect(loginRequired({ NODE_ENV: "development", APP_PASSWORD: "x" })).toBe(true);
+    expect(loginRequired({ NODE_ENV: "development", ALLOWED_EMAIL: "me@example.com" })).toBe(true);
+    expect(loginRequired({ NODE_ENV: "development", ALLOWED_EMAIL: "  " })).toBe(false);
   });
 
-  it("treats a short passphrase or secret as not configured", () => {
+  it("needs the Google client, one address and a long enough secret to be configured", () => {
     expect(loginConfigured(hosted)).toBe(true);
-    expect(loginConfigured({ ...hosted, APP_PASSWORD: "short" })).toBe(false);
-    expect(loginConfigured({ ...hosted, APP_PASSWORD: "fifteen chars!!" })).toBe(false); // 15: one under the minimum
-    expect(loginConfigured({ ...hosted, APP_PASSWORD: "sixteen chars!!!" })).toBe(true);
+    expect(loginConfigured({ ...hosted, GOOGLE_CLIENT_ID: undefined })).toBe(false);
+    expect(loginConfigured({ ...hosted, GOOGLE_CLIENT_ID: "  " })).toBe(false);
+    expect(loginConfigured({ ...hosted, GOOGLE_CLIENT_SECRET: undefined })).toBe(false);
+    expect(loginConfigured({ ...hosted, ALLOWED_EMAIL: undefined })).toBe(false);
+    expect(loginConfigured({ ...hosted, ALLOWED_EMAIL: "not-an-address" })).toBe(false);
+    expect(loginConfigured({ ...hosted, ALLOWED_EMAIL: "a@b.c, d@e.f" })).toBe(false); // one person, not a list
     expect(loginConfigured({ ...hosted, SESSION_SECRET: "short" })).toBe(false);
-    expect(loginConfigured({ ...hosted, APP_PASSWORD: undefined })).toBe(false);
+    expect(loginConfigured({ ...hosted, SESSION_SECRET: "s".repeat(31) })).toBe(false);
+    expect(loginConfigured({ ...hosted, SESSION_SECRET: "s".repeat(32) })).toBe(true);
     expect(mcpConfigured(hosted)).toBe(true);
     expect(mcpConfigured({ MCP_ACCESS_TOKEN: "short" })).toBe(false);
     expect(mcpConfigured({})).toBe(false);
+  });
+
+  it("reads the allowed address in lower case, trimmed", () => {
+    expect(allowedEmail({ ALLOWED_EMAIL: "  Owner@Example.com " })).toBe("owner@example.com");
+    expect(allowedEmail({})).toBe("");
   });
 });
 
@@ -78,9 +87,10 @@ describe("decideAccess for pages and API routes", () => {
     expect(await ask("/accounts", hosted, { cookie })).toEqual({ action: "login" });
   });
 
-  it("signs a session out when the passphrase changes, and when the secret does", async () => {
+  it("signs a session out when the allowed address changes, and when the secret does", async () => {
     const cookie = await createSessionToken(KEY);
-    expect(await ask("/accounts", { ...hosted, APP_PASSWORD: "another long passphrase" }, { cookie })).toEqual({ action: "login" });
+    expect(await ask("/accounts", { ...hosted, ALLOWED_EMAIL: "someone.else@example.com" }, { cookie })).toEqual({ action: "login" });
+    expect(await ask("/accounts", { ...hosted, ALLOWED_EMAIL: " owner@EXAMPLE.com " }, { cookie })).toEqual({ action: "allow" }); // same address, written differently
     expect(await ask("/accounts", { ...hosted, SESSION_SECRET: "n".repeat(40) }, { cookie })).toEqual({ action: "login" });
     expect(await ask("/accounts", hosted, { cookie })).toEqual({ action: "allow" });
   });
@@ -91,19 +101,26 @@ describe("decideAccess for pages and API routes", () => {
     expect(await ask("/api/mcp", hosted, { cookie })).toEqual({ action: "unauthorized" });
   });
 
-  it("serves the login page without a session", async () => {
-    expect(await ask("/login", hosted)).toEqual({ action: "allow" });
+  it("serves the login page and the Google steps under it without a session", async () => {
+    for (const path of ["/login", "/login/google", "/login/google/callback"]) expect(await ask(path, hosted)).toEqual({ action: "allow" });
+    expect(await ask("/loginx", hosted)).toEqual({ action: "login" }); // only the real paths
+    expect(isLoginPath("/login/")).toBe(true);
+    expect(isLoginPath("/logout")).toBe(false);
+  });
+
+  it("lets a signed-out request reach /logout, so an expired session can still press Sign out", async () => {
+    expect(await ask("/logout", hosted)).toEqual({ action: "allow" });
   });
 
   it("serves nothing when the host has no login set up, instead of everything", async () => {
     expect(await ask("/accounts", { NODE_ENV: "production" })).toEqual({ action: "misconfigured" });
-    expect(await ask("/api/accounts", { NODE_ENV: "production", APP_PASSWORD: "a long passphrase" })).toEqual({ action: "misconfigured" });
+    expect(await ask("/api/accounts", { NODE_ENV: "production", SESSION_SECRET: SECRET, ALLOWED_EMAIL: "owner@example.com" })).toEqual({ action: "misconfigured" }); // no Google client
   });
 
-  it("leaves local development open until a passphrase is set", async () => {
+  it("leaves local development open until an allowed address is set", async () => {
     expect(await ask("/accounts", local)).toEqual({ action: "allow" });
     expect(await ask("/api/accounts", local)).toEqual({ action: "allow" });
-    expect(await ask("/accounts", { ...local, APP_PASSWORD: "a long passphrase", SESSION_SECRET: SECRET })).toEqual({ action: "login" });
+    expect(await ask("/accounts", { ...hosted, NODE_ENV: "development" })).toEqual({ action: "login" });
   });
 });
 
@@ -137,7 +154,7 @@ describe("safeNextPath", () => {
   });
   it("falls back to the home page for anything that could leave the site or loop", () => {
     for (const next of [
-      null, undefined, "", "https://evil.example", "//evil.example", "/\\evil.example", "evil", "/login", "/login?next=/", "/api/accounts",
+      null, undefined, "", "https://evil.example", "//evil.example", "/\\evil.example", "evil", "/login", "/login?next=/", "/login/google", "/login/google/callback", "/logout", "/api/accounts",
       // The URL parser drops tabs and newlines, which would turn these into "//evil.example".
       "/\t/evil.example", "/\n/evil.example", "/\r/evil.example", "/\t\\evil.example",
     ]) {

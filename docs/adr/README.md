@@ -22,7 +22,8 @@ ADRs 0001–0006 were backfilled on 2026-10-16 from decisions made between 2026-
 | [0012](0012-foreign-currency-balances.md) | Keep a balance in its account's own currency, and count it in rupees at today's rate | Accepted |
 | [0013](0013-price-sources-and-history.md) | Prices come from Yahoo, AMFI and Frankfurter, saved once a day | Accepted |
 | [0014](0014-lent-out-payouts-are-income.md) | A lent loan's payouts arrive as Income, and the loan keeps its income source's id | Accepted |
-| [0015](0015-login-and-mcp-endpoint.md) | A passphrase login for the pages, and a bearer-token MCP endpoint for Claude | Accepted |
+| [0015](0015-login-and-mcp-endpoint.md) | A login for the pages (passphrase, since replaced), and a bearer-token MCP endpoint for Claude | Accepted |
+| [0016](0016-google-sign-in.md) | Sign in with Google, for one allowed address, instead of a passphrase | Accepted |
 
 ## Template
 

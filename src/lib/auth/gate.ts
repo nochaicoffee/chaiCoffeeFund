@@ -16,6 +16,12 @@ export type Access =
 
 export const MCP_PATH = "/api/mcp";
 export const LOGIN_PATH = "/login";
+export const LOGOUT_PATH = "/logout";
+
+/** The sign-in page and the Google steps under it (/login/google, /login/google/callback): open to someone signed out. */
+export function isLoginPath(pathname: string): boolean {
+  return pathname === LOGIN_PATH || pathname.startsWith(`${LOGIN_PATH}/`);
+}
 
 export function isMcpPath(pathname: string): boolean {
   return pathname === MCP_PATH || pathname.startsWith(`${MCP_PATH}/`);
@@ -54,7 +60,8 @@ export async function decideAccess({ pathname, cookie, authorization, env, now }
     if (!mcpConfigured(env)) return { action: "mcp-disabled" };
     return (await hasValidMcpToken(authorization, env)) ? { action: "allow" } : { action: "unauthorized" };
   }
-  if (pathname === LOGIN_PATH) return { action: "allow" };
+  // Signing out needs no session: clearing a cookie gives nothing away, and an expired session must still be able to press Sign out.
+  if (isLoginPath(pathname) || pathname === LOGOUT_PATH) return { action: "allow" };
   if (!loginRequired(env)) return { action: "allow" };
   if (!loginConfigured(env)) return { action: "misconfigured" };
   if (await verifySessionToken(cookie, sessionKey(env), now)) return { action: "allow" };
@@ -79,6 +86,7 @@ export function safeNextPath(next: string | null | undefined): string {
     return "/";
   }
   if (url.origin !== PLACEHOLDER_ORIGIN) return "/";
-  if (url.pathname === LOGIN_PATH || url.pathname.startsWith("/api/")) return "/";
+  // /logout only answers POST, so landing on it after signing in would be a 405.
+  if (isLoginPath(url.pathname) || url.pathname === LOGOUT_PATH || url.pathname.startsWith("/api/")) return "/";
   return url.pathname + url.search;
 }
