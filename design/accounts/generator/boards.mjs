@@ -19,12 +19,18 @@ import { R12_DESKTOPS } from "./r12.mjs";
 import { R13_DESKTOPS } from "./r13.mjs";
 import { R14_DESKTOPS } from "./r14.mjs";
 import { R17_DESKTOPS } from "./r17.mjs";
+import { R18_DESKTOPS } from "./r18.mjs";
+import { R19_DESKTOPS } from "./r19.mjs";
+import { R20_DESKTOPS } from "./r20.mjs";
 import { statesPhoneBoard, formsPhoneBoard } from "./r15.mjs";
 import { statesBoardNew, formsBoardNew } from "./r16.mjs";
 import { WIDGET_DESKTOPS, widgetsPhoneBoard, WIDGET_PHONE_W } from "./widgets.mjs";
 
 export const BOARDS = [
   { file: "AccountsReadme.dc.html", w: 1300, page: "readme", render: readmeBoard },
+  ...R20_DESKTOPS.map((x) => ({ ...x, page: "cards20" })),
+  ...R19_DESKTOPS.map((x) => ({ ...x, page: "hero19" })),
+  ...R18_DESKTOPS.map((x) => ({ ...x, page: "money" })),
   ...R17_DESKTOPS.map((x) => ({ ...x, page: "history" })),
   ...R14_DESKTOPS.map((x) => ({ ...x, page: "final", measureAll: true })),
   { file: "AccountsFinalPageStates.dc.html", w: 1700, page: "final", render: statesBoardNew },
@@ -71,6 +77,9 @@ export const BOARDS = [
 
 export const PAGES = [
   { id: "readme", name: "Read me first" },
+  { id: "cards20", name: "Round 20 · account card alternatives (V1–V3)" },
+  { id: "hero19", name: "Round 19 · hero alternatives (N1–N3)" },
+  { id: "money", name: "Round 18 · one money section (M1–M3)" },
   { id: "history", name: "Balance history page (H1–H3)" },
   { id: "final", name: "Final design" },
   { id: "r13", name: "Round 13 · selector inside the hero" },
@@ -93,6 +102,9 @@ export const PAGES = [
 ];
 
 export const NOTES = [
+  { page: "cards20", text: "Round 20 (2026-11-13): alternatives for the folded account cards in the shipped hero (WalletCards.tsx), once he had 12 real accounts in it (5 banks, 7 brokers) and found a dozen full-bleed colour strips a lot to scroll past. The open card, the balance and Trend/Check-ins are unchanged. V1 Compact rows: a thin colour edge instead of full colour. V2 Grouped by purpose: sections with a subtotal, a section past four collapsing to \"+N more\". V3 Compact grid: two columns of small tiles, about half the height. Sample data, made up, his real shape." },
+  { page: "hero19", text: "Round 19 (2026-11-13): hero alternatives for the real AccountsHero/WalletCards/HeroTrend (rounds 19 and 24), each keeping Check-ins (the toggle for when a balance was read). N1 Coin dock: circular tokens, one big balance, Trend/Check-ins as a toggle. N2 Always both: a slim account list, each row with its own check-in strip, so check-ins never hide behind a toggle; the stage is Trend only. N3 Ring stage: a bolder graphic hero, an arc of chips around a dominant balance, toggle underneath. Each pairs with M2 (round 18, his pick for the money section). Sample data, made up." },
+  { page: "money", text: "Round 18 (2026-11-13): one section in place of This year in and out, Over time and Money in and out, which Prathik found out of place and hard to read (the saved figure left out money with no record, the loan sat inside Came in and Invested, and spending was one number). Each direction answers four things at a glance: what came into the banks, what was spent, what was invested, what was left in the bank. The loan is kept apart from income; spending splits into card bills, EMIs, big spends and cash and UPI, the last hatched because it is worked out from the balances. M1 River, M2 Four answers, M3 Receipt. The hero, the mix, Balance history and Coming up are as on the final page. Sample data, made up." },
   { page: "history", text: "Round 17 (2026-10-23): the Balance history page, /accounts/history, the Accounts counterpart of Cards' Statements and Subscriptions' Renewals. Three directions, desktop and phone: H1 Ledger (Renewals' layout: summary tiles, filters, month groups), H2 Check-in grid (which accounts were read when, then the rows), H3 Passbook (one account's running balance, the others on the left). One state of each is drawn, with the row menu open. Sample data, made up." },
   { page: "r13", text: "Round 13 (2026-10-22): the selector goes inside the hero, as Subscriptions does. Five ways: H1 cover flow inside the hero, H2 glass strip along the bottom, H3 wallet stack beside the figure, H4 the cards are the hero, H5 a rail of rings. Pick a card and the stage follows. Sample data, made up." },
   { page: "r12", text: "Round 12 (2026-10-22): Prathik liked a strip of coloured account cards and asked for it as the selector in the cover flow. Five styles under one live hero: S1 strip, S2 cover flow, S3 accordion, S4 dock, S5 fan. Pick a card and the hero recolours. Sample data, made up." },
