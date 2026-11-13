@@ -46,7 +46,7 @@ describe("moneyItems: what counts as going out of an account", () => {
       { id: "i1", loanId: "l1", installmentNumber: 1, dueDate: "2026-09-05", openingBalance: 500000, principalDue: 12000, interestDue: 4583, totalDue: 16_583, status: "Paid", amountPaid: 16_583, paidDate: "2026-09-05", paidFromAccountId: "sbi" },
       { id: "i2", loanId: "l1", installmentNumber: 2, dueDate: "2026-10-05", openingBalance: 488000, principalDue: 12100, interestDue: 4473, totalDue: 16_583, status: "Paid", amountPaid: 16_583, paidDate: "2026-10-05", paidFromCardId: "c1" },
     ],
-    // Bank to broker is invested, broker to bank is taken back, bank to bank is neither.
+    // Bank to broker is invested, broker to bank is taken back, bank to bank is a move between his own accounts.
     transfers: [
       { id: "x1", date: "2026-09-15", fromAccountId: "sbi", toAccountId: "zerodha", amount: 23_300 },
       { id: "x2", date: "2026-09-17", fromAccountId: "zerodha", toAccountId: "sbi", amount: 1_500 },
@@ -119,7 +119,9 @@ describe("moneyItems: what counts as going out of an account", () => {
     const f = flows(items, "sbi");
     expect(f.expenses).toBe(30_000 + 1000 + 16_583);
     expect(f.saved).toBe(200_000 - f.expenses);
-    expect(f.keptInBank).toBe(f.saved - f.invested);
+    // ₹50,000 moved to HDFC is out of what SBI kept, though it's neither spent nor invested.
+    expect(f.moved).toBe(-50_000);
+    expect(f.keptInBank).toBe(f.saved - f.invested - 50_000);
     // ₹23,300 sent to the broker, ₹1,500 back.
     expect(f.invested).toBe(21_800);
   });
@@ -250,6 +252,61 @@ describe("Lent out and paid back", () => {
     // 1,82,000 lent, 50,000 of it back in March: 1,32,000 on the closing day.
     expect(back).toEqual([{ kind: "Paid back", date: "2026-06-30", amount: 132_000, accountId: "hdfc", label: "Hotel Sonali Jan" }]);
     expect(flows(moneyItems(repaid, "2026-01-01", "2026-06-30"), "hdfc").lent).toBe(0);
+  });
+});
+
+describe("Moved between his own banks", () => {
+  const d = data({
+    snapshots: [snap("sbi", "2026-03-31", 100_000), snap("sbi", "2026-04-30", 10_000), snap("hdfc", "2026-03-31", 5_000), snap("hdfc", "2026-04-30", 95_000)],
+    transfers: [
+      { id: "m1", date: "2026-04-05", fromAccountId: "sbi", toAccountId: "hdfc", amount: 90_000 },
+      // Bank to broker is still invested, never a move.
+      { id: "m2", date: "2026-04-06", fromAccountId: "hdfc", toAccountId: "zerodha", amount: 0.01 },
+    ],
+  });
+  const span = { from: "2026-04-01", to: "2026-04-30" };
+  const items = moneyItems(d, span.from, span.to);
+
+  it("is out of one and into the other, and nothing across all accounts", () => {
+    expect(items.filter((i) => i.kind === "Moved out" || i.kind === "Moved in").map((i) => [i.kind, i.accountId, i.amount])).toEqual([["Moved out", "sbi", 90_000], ["Moved in", "hdfc", 90_000]]);
+    expect(flows(items, "sbi").moved).toBe(-90_000);
+    expect(flows(items, "hdfc").moved).toBe(90_000);
+    expect(flows(items, null).moved).toBe(0);
+  });
+
+  it("isn't income, spending or money that left the bank, but explains each account's balance", () => {
+    const sbi = flows(items, "sbi");
+    expect(sbi.cameIn).toBe(0);
+    expect(sbi.expenses).toBe(0);
+    expect(sbi.leftBank).toBe(0);
+    expect(sbi.keptInBank).toBe(-90_000);
+    expect(everythingElse(d, items, "sbi", span.from, span.to).unexplained).toBe(0);
+    expect(everythingElse(d, items, "hdfc", span.from, span.to).unexplained).toBeCloseTo(0.01);
+  });
+
+  it("shows on one account's bridge, and not on all accounts'", () => {
+    expect(bridgeSteps(d, items, "hdfc", span).find((s) => s.label === "Your other accounts")?.amount).toBe(90_000);
+    expect(bridgeSteps(d, items, null, span).some((s) => s.label === "Your other accounts")).toBe(false);
+  });
+
+  it("leaves out a move dated before an account's first balance from that account's change", () => {
+    // SBI first read on Apr 30: the Apr 5 move out is already in that balance, so SBI has nothing unexplained.
+    const late = data({ ...d, snapshots: [snap("sbi", "2026-04-30", 10_000), snap("hdfc", "2026-03-31", 5_000), snap("hdfc", "2026-04-30", 95_000)] });
+    const its = moneyItems(late, span.from, span.to);
+    expect(everythingElse(late, its, "sbi", span.from, span.to).unexplained).toBe(0);
+    // The bridge still ends on what's held.
+    const steps = bridgeSteps(late, its, null, span);
+    expect(steps.slice(0, -1).reduce((t, s) => t + s.amount, 0)).toBeCloseTo(steps.at(-1)!.amount);
+  });
+
+  it("leaves out a transfer between two dollar bank accounts", () => {
+    const usd = data({ accounts: [...empty.accounts, { id: "us1", name: "US one", bank: "X", accountType: "Savings", purpose: "Spending", startDate: "2020-01-01", status: "Active", currency: "USD" }, { id: "us2", name: "US two", bank: "Y", accountType: "Savings", purpose: "Spending", startDate: "2020-01-01", status: "Active", currency: "USD" }], transfers: [{ id: "u", date: "2026-04-05", fromAccountId: "us1", toAccountId: "us2", amount: 100 }] });
+    expect(moneyItems(usd, span.from, span.to)).toEqual([]);
+  });
+
+  it("leaves out a transfer between two brokers", () => {
+    const brokers = data({ accounts: [...empty.accounts, { id: "ibkr", name: "IBKR", bank: "IBKR", accountType: "Brokerage", purpose: "Investment", startDate: "2020-01-01", status: "Active" }], transfers: [{ id: "b", date: "2026-04-05", fromAccountId: "zerodha", toAccountId: "ibkr", amount: 5_000 }] });
+    expect(moneyItems(brokers, span.from, span.to)).toEqual([]);
   });
 });
 
