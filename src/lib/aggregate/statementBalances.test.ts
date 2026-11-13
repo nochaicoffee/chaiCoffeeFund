@@ -125,7 +125,7 @@ describe("balancesFromStatement", () => {
     ]);
   });
 
-  it("a yearly statement gives the balance at the end of each month with movements, and the closing balance once", () => {
+  it("a yearly statement gives the balance at the end of every month, and the closing balance once", () => {
     const s = statementOf("2026-01-01", "2026-04-30", 1000, [
       ["2026-01-05", 100],
       ["2026-01-20", -50],
@@ -136,16 +136,19 @@ describe("balancesFromStatement", () => {
     expect(points.map((p) => [p.date, p.balance, p.kind])).toEqual([
       ["2025-12-31", 1000, "opening"],
       ["2026-01-31", 1050, "month-end"],
+      ["2026-02-28", 1050, "month-end"],
       ["2026-03-31", 1450, "month-end"],
       ["2026-04-30", 1440, "closing"],
     ]);
   });
 
-  it("a month with no movements is left out, and carrying the balance forward gives the same figure for it", () => {
+  it("a month with no movements still gets its month-end: the balance carried on, as the statement shows nothing moved", () => {
     const s = statementOf("2026-01-01", "2026-03-31", 1000, [["2026-01-05", 100]]);
     const carried: BalanceSnapshot[] = balancesFromStatement(s).map((p, i) => snap(`s${i}`, p.date, p.balance));
-    expect(balancesFromStatement(s).some((p) => p.date === "2026-02-28")).toBe(false);
+    expect(balancesFromStatement(s).find((p) => p.date === "2026-02-28")).toEqual({ date: "2026-02-28", balance: 1100, kind: "month-end" });
     expect(balanceOn(carried, "acc-1", "2026-02-28")?.balance).toBe(1100);
+    // A quiet first month too: the opening balance carried on.
+    expect(balancesFromStatement(statementOf("2026-01-01", "2026-03-31", 1000, [["2026-02-05", 100]])).find((p) => p.date === "2026-01-31")?.balance).toBe(1000);
   });
 
   it("every month-end is the last balance on or before it: the statement's own running balance", () => {
@@ -298,7 +301,7 @@ describe("reconcile", () => {
     const second = reconcile(existing, "acc-1", balancesFromStatement(yearly));
     expect(second.find((a) => a.date === "2026-08-31")?.type).toBe("unchanged");
     expect(second.find((a) => a.date === "2026-07-31")?.type).toBe("unchanged");
-    expect(second.filter((a) => a.type === "create").map((a) => a.date)).toEqual(["2025-12-31", "2026-02-28"]);
+    expect(second.filter((a) => a.type === "create").map((a) => a.date)).toEqual(["2025-12-31", "2026-01-31", "2026-02-28", "2026-03-31", "2026-04-30", "2026-05-31", "2026-06-30"]);
   });
 
   it("only touches the account it is for", () => {

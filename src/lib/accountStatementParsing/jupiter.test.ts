@@ -42,13 +42,17 @@ describe("parseJupiter", () => {
     ]);
   });
 
-  it("gives a statement whose numbers add up, month-ends for months with movements", () => {
+  it("gives a statement whose numbers add up, and a month-end for every month it covers", () => {
     if (!result.ok) throw new Error(result.problem);
     expect(checkStatement(result.parsed.statement)).toEqual({ ok: true });
-    expect(balancesFromStatement(result.parsed.statement).map((p) => [p.date, p.kind])).toEqual([
-      ["2022-02-09", "opening"],
-      ["2022-02-28", "month-end"],
-      ["2026-10-23", "closing"],
+    const points = balancesFromStatement(result.parsed.statement);
+    // Feb 2022 to Sep 2026: 56 month-ends, the quiet ones carrying the balance on.
+    expect(points.filter((p) => p.kind === "month-end")).toHaveLength(56);
+    expect(points.map((p) => [p.date, p.balance, p.kind]).filter((_, i, all) => i < 3 || i === all.length - 1)).toEqual([
+      ["2022-02-09", 1000, "opening"],
+      ["2022-02-28", 5749.5, "month-end"],
+      ["2022-03-31", 5749.5, "month-end"],
+      ["2026-10-23", 761.75, "closing"],
     ]);
   });
 

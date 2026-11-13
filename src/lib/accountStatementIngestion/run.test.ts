@@ -122,7 +122,7 @@ vi.mock("@/lib/sheets/syncRuns", () => ({
   },
 }));
 
-const { runAccountStatementSync } = await import("./run");
+const { importAccountStatementFile, runAccountStatementSync } = await import("./run");
 
 const slice = (overrides: Partial<Account> = {}): Account => ({ id: "slice", name: "Slice Bank Account", bank: "slice small finance bank", accountType: "Savings", purpose: "Spending", startDate: "2025-01-01", status: "Active", last4: "1128", statementPdfPassword: "pw", ...overrides });
 const statement = (periodStart: string, periodEnd: string, opening: number, movements: [string, number][], last4 = "1128") => {
@@ -278,9 +278,11 @@ describe("runAccountStatementSync", () => {
     await sync();
     const aug31 = fake.snapshots.find((s) => s.date === "2026-08-31")!;
     expect(aug31.balance).toBe(800);
-    expect(fake.reviews).toHaveLength(1);
-    expect(fake.reviews[0].snapshotId).toBe(aug31.id);
-    expect(fake.reviews[0]).toMatchObject({ recordedBalance: 800, statementBalance: 810 });
+    // The monthly disagrees on Jul 31 too (its opening 1000 against the range's 800), now that the range gives every month-end.
+    expect(fake.reviews.map((r) => r.date)).toEqual(["2026-07-31", "2026-08-31"]);
+    const review = fake.reviews.find((r) => r.date === "2026-08-31")!;
+    expect(review.snapshotId).toBe(aug31.id);
+    expect(review).toMatchObject({ recordedBalance: 800, statementBalance: 810 });
   });
 
   it("a locked PDF is logged as Failed with the reason, and tried again next sync", async () => {
@@ -405,5 +407,47 @@ describe("runAccountStatementSync", () => {
     fake.runs = [{ id: "cards", trigger: "Manual", status: "Running", startedAt: "2026-10-23T05:59:00.000Z" }];
     const result = await sync();
     expect(result.outcomes[0].result).toBe("imported");
+  });
+});
+
+describe("importAccountStatementFile: a statement PDF given by hand", () => {
+  const importFile = (id: string, dryRun = false) =>
+    importAccountStatementFile({ fileName: `${id}.pdf`, bytes: new TextEncoder().encode(id), dryRun, now: () => new Date("2026-10-23T06:00:00Z") });
+
+  it("adds its balances as the sync would, and writes nothing to the email log", async () => {
+    fake.emails = [{ id: "aug", parse: AUG() }];
+    const result = await importFile("aug");
+    expect(result).toMatchObject({ messageId: "file:aug.pdf", subject: "aug.pdf", result: "imported", dryRun: false });
+    expect(result.statements[0]).toMatchObject({ accountId: "slice", created: 2, unchanged: 0 });
+    expect(fake.snapshots.map((s) => [s.date, s.balance, s.source])).toEqual([["2026-07-31", 1000, "Statement"], ["2026-08-31", 800, "Statement"]]);
+    expect(fake.writes).toEqual(["snapshots.createMany"]);
+    expect(fake.log).toEqual([]);
+  });
+
+  it("adds nothing the second time, and nothing at all on a dry run", async () => {
+    fake.emails = [{ id: "aug", parse: AUG() }];
+    expect((await importFile("aug", true)).statements[0]).toMatchObject({ created: 2 });
+    expect(fake.writes).toEqual([]);
+    await importFile("aug");
+    const again = await importFile("aug");
+    expect(again).toMatchObject({ result: "unchanged" });
+    expect(again.statements[0]).toMatchObject({ created: 0, unchanged: 2 });
+    expect(fake.snapshots).toHaveLength(2);
+  });
+
+  it("opens a review naming the file when the statement disagrees with a recorded balance, which stays as it was", async () => {
+    fake.snapshots = [snap("s1", "2026-08-31", 750)];
+    fake.emails = [{ id: "aug", parse: AUG() }];
+    const result = await importFile("aug");
+    expect(result.statements[0].reviews).toEqual([expect.objectContaining({ date: "2026-08-31", recordedBalance: 750, statementBalance: 800 })]);
+    expect(fake.reviews).toEqual([expect.objectContaining({ messageId: "file:aug.pdf", status: "Open", snapshotId: "s1" })]);
+    expect(fake.snapshots.find((s) => s.id === "s1")!.balance).toBe(750);
+  });
+
+  it("says why when the PDF won't open or isn't a statement it reads", async () => {
+    fake.emails = [{ id: "locked", failure: "no_password_matched" }, { id: "leaflet" }];
+    expect(await importFile("locked")).toMatchObject({ result: "skipped", problem: "locked" });
+    expect(await importFile("leaflet")).toMatchObject({ result: "skipped", problem: "unknown-layout" });
+    expect(fake.writes).toEqual([]);
   });
 });

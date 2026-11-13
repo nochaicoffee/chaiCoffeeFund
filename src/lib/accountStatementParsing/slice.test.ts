@@ -142,15 +142,13 @@ describe("parseSlice", () => {
     ]);
   });
 
-  it("gives a statement whose numbers add up, and month-ends for the months with movements", () => {
+  it("gives a statement whose numbers add up, and a month-end for every month it covers", () => {
     if (!result.ok) throw new Error(result.problem);
     expect(checkStatement(result.parsed.statement)).toEqual({ ok: true });
-    expect(balancesFromStatement(result.parsed.statement).map((p) => [p.date, p.kind])).toEqual([
-      ["2025-08-01", "opening"],
-      ["2025-08-31", "month-end"],
-      ["2025-09-30", "month-end"],
-      ["2026-10-23", "closing"],
-    ]);
+    const points = balancesFromStatement(result.parsed.statement);
+    // Aug 2025 to Sep 2026: 14 month-ends.
+    expect(points.map((p) => p.kind)).toEqual(["opening", ...Array(14).fill("month-end"), "closing"]);
+    expect([points[0].date, points[1].date, points[2].date, points[14].date, points[15].date]).toEqual(["2025-08-01", "2025-08-31", "2025-09-30", "2026-09-30", "2026-10-23"]);
   });
 
   it("a row the page header would swallow still gets its own date: the first row after a page break", () => {

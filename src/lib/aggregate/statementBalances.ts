@@ -1,5 +1,5 @@
 import { balanceBefore, dayBefore, isBigDrop, lastDayOfMonth, sameDayBalance } from "./accounts";
-import { monthOf } from "./cardSpend";
+import { addMonths, monthOf } from "./cardSpend";
 import type { Account, BalanceSnapshot, ReviewStatus } from "../sheets/types";
 
 /**
@@ -9,9 +9,9 @@ import type { Account, BalanceSnapshot, ReviewStatus } from "../sheets/types";
  * - A statement is trusted only if its own numbers add up (`checkStatement`):
  *   opening plus each movement is the running balance, and the last one is the
  *   closing balance. If not, nothing from it is written.
- * - It gives a balance at the end of every month it has movements in, and one at
- *   its own end (`balancesFromStatement`). A month with none is left out:
- *   carrying the last balance forward (`balanceOn`) already gives the same.
+ * - It gives a balance at the end of every month it covers, and one at its own
+ *   end (`balancesFromStatement`). A month with no movements gets the balance
+ *   carried on, since the statement shows nothing moved, so it isn't shown as missing.
  * - Against what's recorded (`reconcile`), each is created, already there, or
  *   differs from a balance recorded for the same day. The recorded balance wins:
  *   it is left as it is and the difference becomes a review (`planReviews`) that
@@ -103,8 +103,8 @@ export interface BalancePoint {
 
 /**
  * The balances a checked statement gives, oldest first: the opening balance (the
- * day before the period), the balance at the end of each month it has movements
- * in before the last one, and the closing balance on the period's last day.
+ * day before the period), the balance at the end of every month before the last
+ * one, quiet months included, and the closing balance on the period's last day.
  * A month ending on the period's own last day is the closing balance, listed once.
  * Money held outside the rows (`held`) is added to the opening and closing balance, and to
  * month-ends only when it didn't move; if it did, the days between aren't known, so there are none.
@@ -113,12 +113,15 @@ export function balancesFromStatement(statement: AccountStatement): BalancePoint
   const { periodStart, periodEnd, openingBalance, closingBalance, rows, held } = statement;
   const plus = (rupees: number, extra: number) => Math.round((rupees + extra) * 100) / 100;
   const points: BalancePoint[] = [{ date: dayBefore(periodStart), balance: plus(openingBalance, held?.opening ?? 0), kind: "opening" }];
-  const lastRowOfMonth = new Map<string, StatementRow>();
-  for (const row of rows) lastRowOfMonth.set(monthOf(row.date), row);
-  for (const [month, row] of lastRowOfMonth) {
-    const monthEnd = lastDayOfMonth(month);
-    if (monthEnd >= periodEnd || (held && !held.constant)) continue;
-    points.push({ date: monthEnd, balance: plus(row.balance, held?.opening ?? 0), kind: "month-end" });
+  // Every month the statement covers ends on a balance, quiet months too: the statement shows nothing moved, so it's the last one carried on.
+  if (!held || held.constant) {
+    let i = 0;
+    let balance = openingBalance;
+    for (let month = monthOf(periodStart); lastDayOfMonth(month) < periodEnd; month = addMonths(month, 1)) {
+      const monthEnd = lastDayOfMonth(month);
+      while (i < rows.length && rows[i].date <= monthEnd) balance = rows[i++].balance;
+      points.push({ date: monthEnd, balance: plus(balance, held?.opening ?? 0), kind: "month-end" });
+    }
   }
   points.push({ date: periodEnd, balance: plus(closingBalance, held?.closing ?? 0), kind: "closing" });
   return points.sort((a, b) => (a.date === b.date ? kindOrder(a.kind) - kindOrder(b.kind) : a.date < b.date ? -1 : 1));
