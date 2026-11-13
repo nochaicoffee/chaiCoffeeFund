@@ -20,6 +20,11 @@ function installmentsForLoan(loanId: string, installments: LoanInstallment[]): L
  * stamp duty and pre-EMI interest the bank takes out of the disbursal. The EMIs
  * are still on the full loan amount.
  */
+/** A loan whose money reached one of his accounts: one paid straight to a seller never did. Accounts' Borrowed and Expenses' borrowed share it. */
+export function paidIntoAccount<L extends Pick<Loan, "disbursedTo" | "accountId">>(loan: L): loan is L & { accountId: string } {
+  return loan.disbursedTo !== "Seller" && !!loan.accountId;
+}
+
 export function netDisbursedAmount(loan: Pick<Loan, "principalAmount" | "processingFee" | "stampDuty" | "preEmiInterest">): number {
   return Math.round((loan.principalAmount - loan.processingFee - loan.stampDuty - loan.preEmiInterest) * 100) / 100;
 }

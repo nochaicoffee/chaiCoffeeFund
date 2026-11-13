@@ -143,6 +143,57 @@ describe("moneyItems: what counts as going out of an account", () => {
   });
 });
 
+describe("Borrowed: a loan paid into an account", () => {
+  const loan = { id: "l1", name: "Personal loan", lenderName: "HDFC", category: "Personal", repaymentStructure: "Standard-Emi", annualInterestRate: 9.99, tenureMonths: 12, paymentFrequency: "Monthly", status: "Active", firstEmiDate: "2026-08-07" } as const;
+  // His HDFC loan: ₹11,10,000 less the ₹7,669 fee, ₹500 stamp duty and ₹911 gap interest = ₹11,00,920 reached the account.
+  const hdfcLoan = { ...loan, principalAmount: 1_110_000, processingFee: 7_669, stampDuty: 500, preEmiInterest: 911, disbursementDate: "2026-07-04", accountId: "hdfc" };
+  const d = data({
+    loans: [hdfcLoan, { ...loan, id: "car", name: "Car loan", principalAmount: 800_000, processingFee: 0, stampDuty: 0, preEmiInterest: 0, disbursementDate: "2026-07-10", disbursedTo: "Seller" }],
+    transfers: [{ id: "x1", date: "2026-07-21", fromAccountId: "hdfc", toAccountId: "zerodha", amount: 1_100_920 }],
+    incomeEntries: [{ id: "e1", incomeSourceId: "salary", expectedDate: "2026-07-31", receivedDate: "2026-07-31", amount: 200_000, status: "Received", accountId: "hdfc", tag: "Regular" }],
+  });
+  const items = moneyItems(d, "2026-07-01", "2026-07-31");
+  const f = flows(items, "hdfc");
+
+  it("counts what reached the account, after the bank's fees, on the disbursement day", () => {
+    expect(items.filter((i) => i.kind === "Borrowed")).toEqual([{ kind: "Borrowed", date: "2026-07-04", amount: 1_100_920, accountId: "hdfc", label: "Personal loan" }]);
+    expect(f.borrowed).toBe(1_100_920);
+  });
+
+  it("is neither income nor saved, but is money the bank held, so kept in the bank counts it", () => {
+    expect(f.cameIn).toBe(200_000);
+    expect(f.saved).toBe(200_000);
+    expect(f.invested).toBe(1_100_920);
+    // Borrowed and sent straight on to a broker: the salary is what stayed.
+    expect(f.keptInBank).toBe(200_000);
+  });
+
+  it("counts in the all-accounts total and in its own month only", () => {
+    expect(flows(items, null).borrowed).toBe(1_100_920);
+    expect(flows(items, "sbi").borrowed).toBe(0);
+    const months = monthlyFlows(moneyItems(d, "2026-06-01", "2026-08-31"), null, monthsIn("2026-06-01", "2026-08-31"));
+    expect(months.map((m) => m.flows.borrowed)).toEqual([0, 1_100_920, 0]);
+  });
+
+  it("leaves out a loan paid into an account that isn't listed", () => {
+    const stray = data({ ...d, loans: [{ ...hdfcLoan, accountId: "gone" }] });
+    expect(moneyItems(stray, "2026-07-01", "2026-07-31").some((i) => i.kind === "Borrowed")).toBe(false);
+  });
+
+  it("leaves out a loan paid to a seller, and one outside the span", () => {
+    expect(items.some((i) => i.label === "Car loan")).toBe(false);
+    expect(moneyItems(d, "2026-08-01", "2026-08-31").some((i) => i.kind === "Borrowed")).toBe(false);
+  });
+
+  it("explains the balance it added, and shows as its own step on the bridge", () => {
+    const withBalances = data({ ...d, snapshots: [snap("hdfc", "2026-06-30", 50_000), snap("hdfc", "2026-07-31", 250_000)] });
+    const span = { from: "2026-07-01", to: "2026-07-31" };
+    const its = moneyItems(withBalances, span.from, span.to);
+    expect(everythingElse(withBalances, its, "hdfc", span.from, span.to).unexplained).toBe(0);
+    expect(bridgeSteps(withBalances, its, "hdfc", span).find((s) => s.label === "Borrowed")?.amount).toBe(1_100_920);
+  });
+});
+
 describe("everythingElse: the change the records don't explain (decision 2)", () => {
   const base = data({
     snapshots: [snap("sbi", "2026-08-31", 100_000), snap("sbi", "2026-09-30", 150_000)],

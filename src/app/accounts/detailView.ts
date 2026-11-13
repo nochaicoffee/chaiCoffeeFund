@@ -1,4 +1,4 @@
-import { investedTile } from "./investedTile";
+import { cameInTile, investedTile, savedNote } from "./investedTile";
 import { bridgeSteps, cameInBySource, comingUp, flows, monthlyFlows, moneyItems, type AccountsData, type BridgeStep as LibBridgeStep, type MoneyItem } from "@/lib/aggregate/accountFlows";
 import { accountColor, isClosed, lastMonthsOfSpan, monthEnds, monthsBetween, periodSpan } from "@/lib/aggregate/accounts";
 import type { SpendPeriod } from "@/lib/aggregate/cardSpend";
@@ -25,6 +25,8 @@ export interface MonthColumn {
   key: string;
   label: string;
   cameIn: number;
+  /** Loans paid in that month: drawn on top of came in, apart from it, since it isn't income. */
+  borrowed: number;
   expenses: number;
   invested: number;
   saved: number;
@@ -89,16 +91,17 @@ export function detailFor(data: AccountsData, accountId: string | null, period: 
   const name = periodName(period, today);
 
   const tiles: InOutTile[] = [
-    { label: "Came in", value: formatInr(f.cameIn), note: "Income received" },
+    cameInTile(f),
     { label: "Expenses", value: formatInr(f.expenses), note: "Card bills, subscriptions, EMIs" },
     investedTile(f),
-    { label: "Saved", value: signed(f.saved), note: f.invested > 0 ? `${formatInr(f.keptInBank)} kept in the bank` : "Came in less expenses", tone: f.saved >= 0 ? "positive" : "negative" },
+    { label: "Saved", value: signed(f.saved), note: savedNote(f), tone: f.saved >= 0 ? "positive" : "negative" },
   ];
 
   const columns = monthlyFlows(items, accountId, months).map(({ month, flows: m }): MonthColumn => ({
     key: month,
     label: formatMonthShort(month),
     cameIn: m.cameIn,
+    borrowed: m.borrowed,
     expenses: m.expenses,
     invested: m.invested,
     saved: m.saved,
