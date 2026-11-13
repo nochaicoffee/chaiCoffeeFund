@@ -6,7 +6,7 @@ import { nextOccurrence } from "./recurring";
 import { addDays } from "./subscriptionRenewals";
 import { nextRenewalsFrom } from "./subscriptionNextCharges";
 import type { RupeeSnapshot } from "./accountCurrency";
-import type { Account, BalanceReview, BalanceSnapshot, BigSpend, Card, IncomeEntry, IncomeSource, InvestmentTransaction, LentLoan, LentRepayment, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment, Transfer } from "../sheets/types";
+import type { Account, BalanceReview, BalanceSnapshot, BigSpend, Card, Goal, IncomeEntry, IncomeSource, InvestmentTransaction, LentLoan, LentRepayment, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment, Transfer } from "../sheets/types";
 
 /**
  * Where an account's money went and came from, worked out from records kept elsewhere
@@ -33,7 +33,9 @@ import type { Account, BalanceReview, BalanceSnapshot, BigSpend, Card, IncomeEnt
  *   between two brokers, or between accounts in different currencies that aren't a bank and a broker, isn't counted.
  * - Big spends: a large purchase entered by hand (BigSpends) that left a bank account, on its date: a car bought from savings. One
  *   charged to a card is inside that card's bill, so only the bank-paid ones count here. On Expenses a big spend only explains a month
- *   worked out from balances; here nothing else records that money leaving, so it is an expense like a bill.
+ *   worked out from balances; here nothing else records that money leaving, so it is an expense like a bill. A goal marked bought
+ *   (Done, with its day, cost and the account it was paid from) counts the same way, under the goal's name, so a purchase
+ *   recorded on Goals isn't typed again as a big spend.
  * - Expenses = card bills + subscriptions + EMIs + big spends. Saved = came in − expenses, so money invested
  *   counts as saved (decision 19); kept in the bank = saved + borrowed − invested.
  * - Everything else: the balance change those don't explain (UPI, cash, transfers between your own
@@ -68,6 +70,8 @@ export interface AccountsData {
   lentRepayments?: LentRepayment[];
   /** Large purchases entered by hand. Optional: the demo and older callers have none. */
   bigSpends?: BigSpend[];
+  /** Goals, whose bought ones paid from an account count as big spends. Optional, like big spends. */
+  goals?: Goal[];
   incomeSources: IncomeSource[];
   incomeEntries: IncomeEntry[];
   /** Balances a bank statement disagreed with (BalanceReviews). Left out where there are none to show. */
@@ -133,6 +137,10 @@ export function moneyItems(data: AccountsData, from: string, to: string): MoneyI
   }
   for (const b of data.bigSpends ?? []) {
     if (b.paidFromAccountId && accountsById.has(b.paidFromAccountId) && within(b.date, from, to) && b.amount > 0) items.push({ kind: "Big spends", date: b.date, amount: b.amount, accountId: b.paidFromAccountId, label: b.name });
+  }
+  for (const g of data.goals ?? []) {
+    if (g.status !== "Done" || !g.paidFromAccountId || !accountsById.has(g.paidFromAccountId) || !within(g.doneOn, from, to) || !((g.actualCost ?? 0) > 0)) continue;
+    items.push({ kind: "Big spends", date: g.doneOn, amount: g.actualCost!, accountId: g.paidFromAccountId, label: g.name });
   }
   for (const l of data.loans) {
     // Only into an account he has, like a transfer: a loan naming one that isn't listed reached nothing counted here.
