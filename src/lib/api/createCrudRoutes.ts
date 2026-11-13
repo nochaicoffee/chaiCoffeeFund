@@ -2,6 +2,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import type { z } from "zod";
+import { isQuotaError, QUOTA_ROUTE_MESSAGE } from "@/lib/sheets/errors";
 import { InvalidRowError, NotFoundError } from "@/lib/sheets/repository";
 
 interface Repository<T extends { id: string }> {
@@ -52,6 +53,9 @@ export async function handleRouteErrors(fn: () => Promise<NextResponse>): Promis
     if (error instanceof InvalidRowError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
+    // Google's own quota text ("Quota exceeded for quota metric ... project_number:...") is no use to read, and the button that
+    // asked for this shows whatever `error` says. A 429 is the honest status: nothing is broken, the minute just has to pass.
+    if (isQuotaError(error)) return NextResponse.json({ error: QUOTA_ROUTE_MESSAGE }, { status: 429 });
     const message = error instanceof Error ? error.message : "Unexpected error";
     return NextResponse.json({ error: message }, { status: 500 });
   }

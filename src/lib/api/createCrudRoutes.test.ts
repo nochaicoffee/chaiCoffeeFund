@@ -41,6 +41,42 @@ describe("createListRoute and createItemRoute", () => {
   });
 });
 
+describe("a Sheets quota refusal", () => {
+  it("answers 429 in plain words, never Google's own text or project number", async () => {
+    const quota = new Error("Quota exceeded for quota metric 'Read requests' and limit 'Read requests per minute per user' of service 'sheets.googleapis.com' for consumer 'project_number:958936430412'.");
+    const { GET } = createListRoute({ ...repository, list: async () => { throw quota; } }, "t", schema);
+    const response = await GET();
+    expect(response.status).toBe(429);
+    const { error } = (await response.json()) as { error: string };
+    expect(error).toMatch(/Try again in a minute/);
+    expect(error).not.toMatch(/project_number|googleapis/);
+  });
+
+  it("does the same on a create, an update and a delete, and says a save is to be checked before it's repeated", async () => {
+    const quota = Object.assign(new Error("Quota exceeded"), { code: 429 });
+    const failing = {
+      list: async () => rows,
+      create: async () => { throw quota; },
+      update: async () => { throw quota; },
+      remove: async () => { throw quota; },
+    };
+    const { POST } = createListRoute(failing, "t", schema);
+    const { PATCH, DELETE } = createItemRoute(failing, "t", schema.partial());
+    const ctx = { params: Promise.resolve({ id: "1" }) };
+    for (const response of [await POST(post({ name: "two" })), await PATCH(post({ name: "x" }), ctx), await DELETE(post({}), ctx)]) {
+      expect(response.status).toBe(429);
+      expect(((await response.json()) as { error: string }).error).toMatch(/check it before repeating/);
+    }
+  });
+
+  it("leaves other failures as the 500 they were", async () => {
+    const { GET } = createListRoute({ ...repository, list: async () => { throw new Error("boom"); } }, "t", schema);
+    const response = await GET();
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "boom" });
+  });
+});
+
 describe("write guards", () => {
   const ctx = { params: Promise.resolve({ id: "1" }) };
   it("refuse a create with a 409 and the message, and write nothing", async () => {

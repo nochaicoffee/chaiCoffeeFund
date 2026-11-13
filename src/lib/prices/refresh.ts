@@ -110,10 +110,14 @@ async function runRefresh(options: { today: string; dryRun?: boolean }): Promise
 
   const allRows = results.flatMap((r) => r.rows);
   if (!options.dryRun && allRows.length > 0) {
-    // One tab, so one write at a time (concurrent writes to a tab race).
-    for (let i = 0; i < allRows.length; i += WRITE_CHUNK) await priceSnapshotsRepository.createMany(allRows.slice(i, i + WRITE_CHUNK));
-    revalidateTag(CACHE_TAGS.priceSnapshots, "max");
-    invalidatePriceSeries();
+    try {
+      // One tab, so one write at a time (concurrent writes to a tab race).
+      for (let i = 0; i < allRows.length; i += WRITE_CHUNK) await priceSnapshotsRepository.createMany(allRows.slice(i, i + WRITE_CHUNK));
+    } finally {
+      // Even when a later chunk fails (the quota, say): the earlier chunks are saved, and the page that redraws next must show them.
+      revalidateTag(CACHE_TAGS.priceSnapshots, "max");
+      invalidatePriceSeries();
+    }
   }
   return results.map((r) => r.report);
 }

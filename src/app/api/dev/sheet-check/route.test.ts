@@ -28,9 +28,9 @@ describe("GET /api/dev/sheet-check", () => {
 
   it("turns a failed read into a 500 with the error, which the script prints", async () => {
     vi.stubEnv("NODE_ENV", "development");
-    checkSheet.mockRejectedValue(new Error("Quota exceeded"));
+    checkSheet.mockRejectedValue(new Error("Sheet unreachable"));
     const res = await GET();
     expect(res.status).toBe(500);
-    expect(await res.json()).toEqual({ error: "Quota exceeded" });
+    expect(await res.json()).toEqual({ error: "Sheet unreachable" });
   });
 });
