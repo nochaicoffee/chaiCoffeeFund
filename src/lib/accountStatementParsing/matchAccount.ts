@@ -6,6 +6,8 @@ const BANK_WORDS: Record<StatementBank, RegExp> = {
   Slice: /\bslice\b/i,
   HDFC: /\bhdfc\b/i,
   Jupiter: /\b(jupiter|federal)\b/i,
+  Canara: /\bcanara\b/i,
+  SBI: /\b(sbi|state bank)\b/i,
 };
 
 export type AccountMatch =

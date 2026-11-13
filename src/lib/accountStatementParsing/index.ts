@@ -1,11 +1,13 @@
+import { isCanaraStatement, parseCanara } from "./canara";
 import { parseHdfc, isHdfcStatement } from "./hdfc";
 import { isHdfcNetBankingStatement, parseHdfcNetBanking } from "./hdfcNetBanking";
 import { isJupiterStatement, parseJupiter } from "./jupiter";
+import { isSbiStatement, parseSbi } from "./sbi";
 import { isSliceStatement, parseSlice } from "./slice";
 import type { ParseResult } from "./types";
 
 /**
- * Reads a bank account statement's text, whichever of the three banks it is. Each bank is
+ * Reads a bank account statement's text, whichever of the five banks it is. Each bank is
  * recognised by its statement's own layout, not by its name alone: a UPI narration in one bank's
  * statement names the others. A statement can hold several accounts (HDFC's combined one), so the
  * answer is a list. Null when it's none of them.
@@ -15,6 +17,8 @@ export function parseAccountStatements(text: string): ParseResult[] | null {
   if (isJupiterStatement(text)) return [parseJupiter(text)];
   if (isHdfcStatement(text)) return parseHdfc(text);
   if (isHdfcNetBankingStatement(text)) return [parseHdfcNetBanking(text)];
+  if (isCanaraStatement(text)) return [parseCanara(text)];
+  if (isSbiStatement(text)) return [parseSbi(text)];
   if (isSliceStatement(text)) return [parseSlice(text)];
   return null;
 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parseAccountStatements } from "./index";
 
 describe("parseAccountStatements", () => {
-  it("is none of the three banks for other text, so the email is reported rather than guessed at", () => {
+  it("is none of the banks for other text, so the email is reported rather than guessed at", () => {
     expect(parseAccountStatements("State Bank of India statement")).toBeNull();
   });
 

@@ -118,18 +118,15 @@ interface Working {
   seq: number;
 }
 
-async function syncEmails(o: { startedAt: number; timeBudgetMs: number; emailTimeoutMs: number; now: () => Date; dryRun: boolean; trigger: SyncTrigger; reread: boolean }): Promise<Extract<AccountSyncResult, { status: "done" }>> {
-  const gmail = getGmailClient();
-  const [accountRows, snapshotRows, reviewRows, log, messageRefs, incomeSources, incomeEntries] = await Promise.all([
+/** What a sync or a file import plans against: the Sheet as it is, plus what's planned so far. And the saved PDF passwords. */
+async function loadWorking(): Promise<{ working: Working; passwords: string[] }> {
+  const [accountRows, snapshotRows, reviewRows, incomeSources, incomeEntries] = await Promise.all([
     accountsRepository.readAll(),
     balanceSnapshotsRepository.readAll(),
     balanceReviewsRepository.readAll(),
-    accountStatementEmailsRepository.list(),
-    listMessagesWithLabel(gmail, getAccountStatementLabel()),
     incomeSourcesRepository.list(),
     incomeEntriesRepository.list(),
   ]);
-
   const working: Working = {
     accounts: accountRows.records.map((a) => ({ ...a })),
     snapshots: [...snapshotRows.records],
@@ -143,6 +140,12 @@ async function syncEmails(o: { startedAt: number; timeBudgetMs: number; emailTim
   const passwords = [
     ...new Set([...accountRows.records.map((a) => a.statementPdfPassword), ...accountRows.invalid.map((row) => row.values.statementPdfPassword)].filter((p): p is string => typeof p === "string" && p !== "")),
   ];
+  return { working, passwords };
+}
+
+async function syncEmails(o: { startedAt: number; timeBudgetMs: number; emailTimeoutMs: number; now: () => Date; dryRun: boolean; trigger: SyncTrigger; reread: boolean }): Promise<Extract<AccountSyncResult, { status: "done" }>> {
+  const gmail = getGmailClient();
+  const [{ working, passwords }, log, messageRefs] = await Promise.all([loadWorking(), accountStatementEmailsRepository.list(), listMessagesWithLabel(gmail, getAccountStatementLabel())]);
 
   // An unattended run leaves out emails that failed within the last day; the button retries every one.
   const skipFailedSince = o.trigger === "Scheduled" ? new Date(o.now().getTime() - RETRY_FAILED_AFTER_MS).toISOString() : undefined;
@@ -167,9 +170,20 @@ async function syncEmails(o: { startedAt: number; timeBudgetMs: number; emailTim
 
 /** Balances first, then reviews, then the log: an email is never logged done without its balances. */
 async function writeAll(working: Working, read: { outcome: EmailOutcome; logged: Parameters<typeof accountLogEntry>[1] }[], now: () => Date) {
-  const { pending } = working;
-  const timestamp = () => now().toISOString().replace(/\.\d{3}Z$/, "Z");
+  await writePending(working, now);
+  const triedAt = stamp(now);
+  const entries = read.map(({ outcome, logged }) => ({ logged, entry: accountLogEntry(outcome, logged, triedAt) }));
+  const fresh = entries.filter((e) => !e.logged);
+  const retried = entries.flatMap((e) => (e.logged ? [{ id: e.logged.id, patch: e.entry }] : []));
+  if (fresh.length > 0) await accountStatementEmailsRepository.createMany(fresh.map((e) => e.entry));
+  if (retried.length > 0) await accountStatementEmailsRepository.updateMany(retried);
+}
 
+const stamp = (now: () => Date) => now().toISOString().replace(/\.\d{3}Z$/, "Z");
+
+/** What the plans made, in order: balances, income, reviews, then any last 4 filled in. Never the email log. */
+async function writePending(working: Working, now: () => Date) {
+  const { pending } = working;
   const created = pending.snapshots.length > 0 ? await balanceSnapshotsRepository.createMany(pending.snapshots.map(({ accountId, date, balance }) => ({ accountId, date, balance, source: "Statement" as const }))) : [];
   const realId = new Map(pending.snapshots.map((s, i) => [s.tempId, created[i].id]));
 
@@ -177,10 +191,10 @@ async function writeAll(working: Working, read: { outcome: EmailOutcome; logged:
   if (pending.income.length > 0) await incomeEntriesRepository.createMany(pending.income);
 
   if (pending.reviews.length > 0) {
-    await balanceReviewsRepository.createMany(pending.reviews.map(({ input }) => ({ ...input, snapshotId: realId.get(input.snapshotId) ?? input.snapshotId, createdAt: timestamp() })));
+    await balanceReviewsRepository.createMany(pending.reviews.map(({ input }) => ({ ...input, snapshotId: realId.get(input.snapshotId) ?? input.snapshotId, createdAt: stamp(now) })));
   }
   if (pending.supersede.size > 0) {
-    await balanceReviewsRepository.updateMany([...pending.supersede].map((id) => ({ id, patch: { status: "Superseded" as const, resolvedAt: timestamp() } })));
+    await balanceReviewsRepository.updateMany([...pending.supersede].map((id) => ({ id, patch: { status: "Superseded" as const, resolvedAt: stamp(now) } })));
   }
   // A failed save is only noted: the balances themselves are in.
   for (const { accountId, last4, outcome } of pending.last4) {
@@ -188,13 +202,6 @@ async function writeAll(working: Working, read: { outcome: EmailOutcome; logged:
       outcome.notes = outcome.notes.map((n) => (n.startsWith("filled in") ? `couldn't save the account's last 4 (${last4}): ${error instanceof Error ? error.message : String(error)}` : n));
     });
   }
-
-  const triedAt = timestamp();
-  const entries = read.map(({ outcome, logged }) => ({ logged, entry: accountLogEntry(outcome, logged, triedAt) }));
-  const fresh = entries.filter((e) => !e.logged);
-  const retried = entries.flatMap((e) => (e.logged ? [{ id: e.logged.id, patch: e.entry }] : []));
-  if (fresh.length > 0) await accountStatementEmailsRepository.createMany(fresh.map((e) => e.entry));
-  if (retried.length > 0) await accountStatementEmailsRepository.updateMany(retried);
 }
 
 async function processEmailSafely(gmail: gmail_v1.Gmail, messageId: string, working: Working, passwords: string[], today: string, signal: AbortSignal): Promise<EmailOutcome> {
@@ -210,7 +217,7 @@ const REASONS = {
   "no-pdf": "no PDF attachment found",
   locked: "none of the saved account PDF passwords opens it",
   "no-text": "the PDF has no text to read, so it may be a scanned image",
-  "unknown-layout": "this isn't a layout the import reads (HDFC, Slice or Jupiter)",
+  "unknown-layout": "this isn't a layout the import reads (HDFC, Slice, Jupiter, Canara or SBI)",
 } as const;
 
 async function processEmail(gmail: gmail_v1.Gmail, messageId: string, working: Working, passwords: string[], today: string, signal: AbortSignal): Promise<EmailOutcome> {
@@ -247,10 +254,15 @@ async function processEmail(gmail: gmail_v1.Gmail, messageId: string, working: W
   // Given up on (withTimeout): change nothing.
   if (signal.aborted) return { ...base, result: "skipped", problem: "timeout", reason: "given up on", statements: [] };
 
+  return summarizeEmail(base, planReads(results, working, today, messageId));
+}
+
+/** Plans each statement a PDF held into the working state, with the income in it (#187). `sourceId` is what a review says it came from. */
+function planReads(results: ParseResult[], working: Working, today: string, sourceId: string): StatementOutcome[] {
   const statements: StatementOutcome[] = [];
   for (const read of results) {
     const plan = planStatement(read, { accounts: working.accounts, snapshots: working.snapshots, reviews: working.reviews, today, singleStatement: results.length === 1 });
-    applyToWorking(working, plan.writes, plan.outcome, messageId);
+    applyToWorking(working, plan.writes, plan.outcome, sourceId);
     // A statement that's used (its numbers add up and it matched an account) also gives the income in it (#187).
     if (read.ok && plan.outcome.result !== "skipped" && plan.outcome.accountId && working.incomeSources.length > 0) {
       const income = incomeFromStatement(read.parsed.statement.rows, plan.outcome.accountId, working.incomeSources, working.incomeEntries);
@@ -261,7 +273,37 @@ async function processEmail(gmail: gmail_v1.Gmail, messageId: string, working: W
     }
     statements.push(plan.outcome);
   }
-  return summarizeEmail(base, statements);
+  return statements;
+}
+
+export interface FileImportOptions {
+  /** The PDF's file name: a review it opens says it came from "file:<name>". */
+  fileName: string;
+  bytes: Uint8Array;
+  /** Read and plan, write nothing. */
+  dryRun?: boolean;
+  now?: () => Date;
+}
+
+/**
+ * One bank statement PDF given by hand instead of found in Gmail, for a bank whose statements don't come by email
+ * (Canara's ePassbook, an SBI download). Read, matched and planned exactly as the sync does an email's (planReads),
+ * under the same rule that a recorded balance is never changed, and written the same way, except that nothing
+ * goes in the email log, since it isn't an email. Importing the same file again adds only what isn't recorded yet.
+ */
+export async function importAccountStatementFile({ fileName, bytes, dryRun = false, now = () => new Date() }: FileImportOptions): Promise<EmailOutcome & { dryRun: boolean }> {
+  const { working, passwords } = await loadWorking();
+  const base = { messageId: `file:${fileName}`, subject: fileName };
+  const opened = await decryptAndExtractText(bytes, passwords);
+  if ("failure" in opened) {
+    const problem = opened.failure === "no_password_matched" ? "locked" : "no-text";
+    return { ...base, result: "skipped", problem, reason: REASONS[problem], statements: [], dryRun };
+  }
+  const results = parseAccountStatements(opened.text);
+  if (!results) return { ...base, result: "skipped", problem: "unknown-layout", reason: REASONS["unknown-layout"], statements: [], dryRun };
+  const outcome = summarizeEmail(base, planReads(results, working, todayIso(now()), base.messageId));
+  if (!dryRun) await writePending(working, now);
+  return { ...outcome, dryRun };
 }
 
 /** Counts a plan's writes as done, so the emails after it see them (a monthly after the range that holds it). */

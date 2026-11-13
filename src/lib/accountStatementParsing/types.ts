@@ -1,7 +1,7 @@
 import type { AccountStatement } from "../aggregate/statementBalances";
 
 /** The banks whose account statements the import reads. */
-export const STATEMENT_BANKS = ["Slice", "HDFC", "Jupiter"] as const;
+export const STATEMENT_BANKS = ["Slice", "HDFC", "Jupiter", "Canara", "SBI"] as const;
 export type StatementBank = (typeof STATEMENT_BANKS)[number];
 
 /** One account's statement as read from a PDF. */
