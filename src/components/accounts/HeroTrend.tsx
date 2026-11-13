@@ -135,7 +135,7 @@ function Trend({ pick, flowItems, today }: { pick: PickView; flowItems: FlowItem
     cameInTile(money),
     { label: "Spent", value: formatInr(money.expenses), note: "Bills, subscriptions, EMIs" },
     investedTile(money),
-    { label: "Left the bank", value: formatInr(money.leftBank), note: "Spent and sent to brokers" },
+    { label: "Left the bank", value: formatInr(money.leftBank), note: money.lentOut > 0 ? "Spent, sent to brokers and lent" : "Spent and sent to brokers" },
   ];
 
   if (n < 2) {

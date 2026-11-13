@@ -29,6 +29,8 @@ export interface MonthColumn {
   borrowed: number;
   expenses: number;
   invested: number;
+  /** Lent to people less paid back that month: drawn on top of invested when positive. */
+  lent: number;
   saved: number;
   savedText: string;
 }
@@ -104,6 +106,7 @@ export function detailFor(data: AccountsData, accountId: string | null, period: 
     borrowed: m.borrowed,
     expenses: m.expenses,
     invested: m.invested,
+    lent: m.lent,
     saved: m.saved,
     savedText: signed(m.saved),
   }));

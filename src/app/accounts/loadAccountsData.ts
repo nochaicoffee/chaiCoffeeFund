@@ -12,6 +12,8 @@ import {
   getCachedTransfersTab,
   getCachedLoanInstallments,
   getCachedLoans,
+  getCachedLentLoansTab,
+  getCachedLentRepaymentsTab,
   getCachedStatements,
   getCachedSubscriptionPayments,
   getCachedSubscriptions,
@@ -34,7 +36,7 @@ export async function loadAccountsData(
     const sample = demoAccountsData(today);
     return { demo, data: { ...sample, reviews: demoReviews(sample, today) }, skipped: [] };
   }
-  const [accounts, snapshots, reviews, cards, statements, subscriptions, subscriptionPayments, loans, installments, trades, incomeSources, incomeEntries, transfers] = await Promise.all([
+  const [accounts, snapshots, reviews, cards, statements, subscriptions, subscriptionPayments, loans, installments, trades, incomeSources, incomeEntries, transfers, lentLoans, lentRepayments] = await Promise.all([
     getCachedAccountsTab(),
     getCachedBalanceSnapshotsTab(),
     getCachedBalanceReviewsTab(),
@@ -48,12 +50,14 @@ export async function loadAccountsData(
     getCachedIncomeSources(),
     getCachedIncomeEntries(),
     getCachedTransfersTab(),
+    getCachedLentLoansTab(),
+    getCachedLentRepaymentsTab(),
   ]);
   // A dollar account is counted in rupees at today's rate right here, so nothing below learns about currencies (ADR 0012).
   const rupee = await rupeeBalances(accounts.records, snapshots.records);
   return {
     demo,
-    data: { accounts: rupee.accounts, snapshots: rupee.snapshots, unpriced: unpricedForPage(rupee), usdInr: rupee.usdInr ?? undefined, reviews: reviews.records, cards, statements, subscriptions, subscriptionPayments, loans, installments, trades, incomeSources, incomeEntries, transfers: transfers.records },
-    skipped: [accounts.skipped, snapshots.skipped, reviews.skipped, transfers.skipped],
+    data: { accounts: rupee.accounts, snapshots: rupee.snapshots, unpriced: unpricedForPage(rupee), usdInr: rupee.usdInr ?? undefined, reviews: reviews.records, cards, statements, subscriptions, subscriptionPayments, loans, installments, trades, incomeSources, incomeEntries, transfers: transfers.records, lentLoans: lentLoans.records, lentRepayments: lentRepayments.records },
+    skipped: [accounts.skipped, snapshots.skipped, reviews.skipped, transfers.skipped, lentLoans.skipped, lentRepayments.skipped],
   };
 }

@@ -17,7 +17,8 @@ export function cameInTile(f: Pick<Flows, "cameIn" | "borrowed">): { label: stri
 }
 
 /** The note under Saved: what stayed in the bank once brokers and loans are counted, or the plain rule when neither moved money. */
-export function savedNote(f: Pick<Flows, "invested" | "borrowed" | "keptInBank">): string {
-  if (f.invested === 0 && f.borrowed === 0) return "Came in less expenses";
-  return f.keptInBank >= 0 ? `${formatInr(f.keptInBank)} kept in the bank` : `${formatInr(-f.keptInBank)} more left the bank than you saved`;
+export function savedNote(f: Pick<Flows, "invested" | "borrowed" | "lent" | "keptInBank">): string {
+  if (f.invested === 0 && f.borrowed === 0 && f.lent === 0) return "Came in less expenses";
+  const kept = f.keptInBank >= 0 ? `${formatInr(f.keptInBank)} kept in the bank` : `${formatInr(-f.keptInBank)} more left the bank than you saved`;
+  return f.lent > 0 ? `${kept} · ${formatInr(f.lent)} lent out` : kept;
 }

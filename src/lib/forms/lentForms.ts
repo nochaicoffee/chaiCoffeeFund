@@ -24,14 +24,17 @@ export interface LentLoanInput {
   payoutAmount?: number;
   /** Blank is none: the loan gets a stable colour from its id (`lentLoanColor`). */
   color?: CardColor;
+  /** The account the money left. Blank is not set: Accounts then doesn't count the loan. */
+  paidFromAccountId?: string;
 }
 
 /**
  * Add a loan, and Edit one. An Accruing loan says its yearly rate; a Paid-out loan says how often it pays and how much, and its
  * rate is worked out from that. `earliestRepayment` is the day of the first repayment already recorded, which the loan can't start after, and
- * `principalReturned` is the principal already back, which the amount lent can't be less than.
+ * `principalReturned` is the principal already back, which the amount lent can't be less than. `accountIds` are the accounts the money can
+ * have left; without them the account isn't checked.
  */
-export function readLentLoanForm(fields: FormFields, known: { earliestRepayment?: string; principalReturned?: number }, today: string): FormResult<LentLoanInput> {
+export function readLentLoanForm(fields: FormFields, known: { earliestRepayment?: string; principalReturned?: number; accountIds?: string[] }, today: string): FormResult<LentLoanInput> {
   const f = new FieldReader(fields);
   const borrowerName = f.text("borrowerName", "Enter who borrowed it");
   const principalAmount = f.amount("principalAmount", { required: "Enter the amount you lent", label: "amount lent" });
@@ -60,6 +63,8 @@ export function readLentLoanForm(fields: FormFields, known: { earliestRepayment?
     if ((CARD_COLORS as readonly string[]).includes(colorText)) color = colorText as CardColor;
     else f.fail("color", "Choose one of the colours");
   }
+  const paidFromAccountId = f.raw("paidFromAccountId").trim() || undefined;
+  if (paidFromAccountId && known.accountIds && !known.accountIds.includes(paidFromAccountId)) f.fail("paidFromAccountId", "That account isn't in Accounts any more. Choose another");
 
   return f.result({
     borrowerName: borrowerName!,
@@ -70,6 +75,7 @@ export function readLentLoanForm(fields: FormFields, known: { earliestRepayment?
     ...(payoutFrequency && { payoutFrequency }),
     ...(payoutAmount !== undefined && { payoutAmount }),
     ...(color && { color }),
+    ...(paidFromAccountId && { paidFromAccountId }),
   });
 }
 

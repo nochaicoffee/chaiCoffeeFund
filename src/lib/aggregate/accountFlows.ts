@@ -6,7 +6,7 @@ import { nextOccurrence } from "./recurring";
 import { addDays } from "./subscriptionRenewals";
 import { nextRenewalsFrom } from "./subscriptionNextCharges";
 import type { RupeeSnapshot } from "./accountCurrency";
-import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, IncomeSource, InvestmentTransaction, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment, Transfer } from "../sheets/types";
+import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, IncomeSource, InvestmentTransaction, LentLoan, LentRepayment, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment, Transfer } from "../sheets/types";
 
 /**
  * Where an account's money went and came from, worked out from records kept elsewhere
@@ -24,6 +24,10 @@ import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, Income
  * - Borrowed: a loan's disbursal into the account (what reached it, after the bank's fees), on its disbursement day. It isn't income,
  *   so it's not "came in" and not saved; it is money the bank account held, so kept in the bank counts it. A loan paid straight to a
  *   seller never reached an account and isn't counted.
+ * - Lent out: money lent to a person (a LentLoan naming the account it left), on the day it was lent. Paid back: what came back on it
+ *   (LentRepayments), counted into the same account, principal and interest alike, like money taken back from a broker. A loan with no
+ *   account named isn't counted. Like investing, lending isn't spending: it stays in saved, and kept in the bank = saved + borrowed −
+ *   invested − lent (lent out less paid back). A paid-out loan's interest arrives as income and is in came in already.
  * - A transfer between two bank accounts, or two brokers, moves nothing in or out of "your bank", so it isn't counted.
  * - Expenses = card bills + subscriptions + EMIs. Saved = came in − expenses, so money invested
  *   counts as saved (decision 19); kept in the bank = saved + borrowed − invested.
@@ -54,6 +58,9 @@ export interface AccountsData {
   trades: InvestmentTransaction[];
   /** Money moved between his own accounts. Optional: data from before the Transfers tab has none. */
   transfers?: Transfer[];
+  /** Money lent to people, and what came back. Optional: the demo and older callers have none. */
+  lentLoans?: LentLoan[];
+  lentRepayments?: LentRepayment[];
   incomeSources: IncomeSource[];
   incomeEntries: IncomeEntry[];
   /** Balances a bank statement disagreed with (BalanceReviews). Left out where there are none to show. */
@@ -68,7 +75,7 @@ export const OUT_KINDS = ["Card bills", "Subscriptions", "EMIs", "Investments"] 
 export type OutKind = (typeof OUT_KINDS)[number];
 
 export interface MoneyItem {
-  kind: OutKind | "Came in" | "Taken back" | "Borrowed";
+  kind: OutKind | "Came in" | "Taken back" | "Borrowed" | "Lent out" | "Paid back";
   date: string;
   amount: number;
   accountId: string;
@@ -119,6 +126,24 @@ export function moneyItems(data: AccountsData, from: string, to: string): MoneyI
     const amount = netDisbursedAmount(l);
     if (amount > 0) items.push({ kind: "Borrowed", date: l.disbursementDate, amount, accountId: l.accountId, label: l.name });
   }
+  const lent = new Map<string, LentLoan>();
+  for (const l of data.lentLoans ?? []) {
+    if (!l.paidFromAccountId || !accountsById.has(l.paidFromAccountId)) continue;
+    lent.set(l.id, l);
+    if (within(l.startDate, from, to)) items.push({ kind: "Lent out", date: l.startDate, amount: l.principalAmount, accountId: l.paidFromAccountId, label: l.borrowerName });
+  }
+  const principalBack = new Map<string, number>();
+  for (const r of data.lentRepayments ?? []) {
+    const l = lent.get(r.lentLoanId);
+    if (!l?.paidFromAccountId) continue;
+    if (r.kind === "Principal") principalBack.set(l.id, (principalBack.get(l.id) ?? 0) + r.amount);
+    if (within(r.date, from, to) && r.amount > 0) items.push({ kind: "Paid back", date: r.date, amount: r.amount, accountId: l.paidFromAccountId, label: l.borrowerName });
+  }
+  // Mark repaid writes no repayment: the principal still out on the closing day came back that day.
+  for (const l of lent.values()) {
+    const rest = l.principalAmount - (principalBack.get(l.id) ?? 0);
+    if (l.status === "Repaid" && l.paidFromAccountId && within(l.closedDate, from, to) && rest > 0) items.push({ kind: "Paid back", date: l.closedDate, amount: rest, accountId: l.paidFromAccountId, label: l.borrowerName });
+  }
   const sources = new Map(data.incomeSources.map((s) => [s.id, s]));
   for (const e of data.incomeEntries) {
     if (e.status !== "Received" || !e.accountId || !within(e.receivedDate, from, to) || !(e.amount > 0)) continue;
@@ -140,11 +165,15 @@ export interface Flows {
   takenBack: number;
   /** Loans paid into the account (net of the bank's fees). Not income, so not in came in or saved. */
   borrowed: number;
+  /** Money lent to people less what they paid back: negative when more came back than went. */
+  lent: number;
+  lentOut: number;
+  paidBack: number;
   /** Came in − expenses: investing counts as saved (decision 19). */
   saved: number;
-  /** Saved + borrowed − invested. */
+  /** Saved + borrowed − invested − lent. */
   keptInBank: number;
-  /** Everything that left the account: expenses and what was sent to brokers. */
+  /** Everything that left the account: expenses, what was sent to brokers and what was lent. */
   leftBank: number;
 }
 
@@ -163,7 +192,10 @@ export function flows(items: FlowItem[], accountId: string | null): Flows {
   const takenBack = sum(mine, "Taken back");
   const invested = out.Investments - takenBack;
   const borrowed = sum(mine, "Borrowed");
-  return { cameIn, out, expenses, invested, sent: out.Investments, takenBack, borrowed, saved, keptInBank: saved + borrowed - invested, leftBank: expenses + out.Investments };
+  const lentOut = sum(mine, "Lent out");
+  const paidBack = sum(mine, "Paid back");
+  const lent = lentOut - paidBack;
+  return { cameIn, out, expenses, invested, sent: out.Investments, takenBack, borrowed, lent, lentOut, paidBack, saved, keptInBank: saved + borrowed - invested - lent, leftBank: expenses + out.Investments + lentOut };
 }
 
 /** The movements after `after` up to and including `to`: the stretch between two readings of a line. Without `after`, everything up to `to`. */
@@ -232,7 +264,7 @@ export function everythingElse(data: AccountsData, items: MoneyItem[], accountId
     if (first) change += end.balance - first.balance;
   }
   const mine = accountId === null ? items : items.filter((i) => i.accountId === accountId);
-  const explained = sum(mine, "Came in") + sum(mine, "Taken back") + sum(mine, "Borrowed") - OUT_KINDS.reduce((total, kind) => total + sum(mine, kind), 0);
+  const explained = sum(mine, "Came in") + sum(mine, "Taken back") + sum(mine, "Borrowed") + sum(mine, "Paid back") - sum(mine, "Lent out") - OUT_KINDS.reduce((total, kind) => total + sum(mine, kind), 0);
   return { change, explained, unexplained: change - explained };
 }
 
@@ -341,7 +373,9 @@ export function bridgeSteps(data: AccountsData, items: MoneyItem[], accountId: s
   add("Came in", f.cameIn);
   add("Taken back", f.takenBack);
   add("Borrowed", f.borrowed);
+  add("Paid back", f.paidBack);
   for (const kind of OUT_KINDS) add(kind, -f.out[kind]);
+  add("Lent out", -f.lentOut);
   add("Everything else", rest.unexplained, true);
   add("Accounts opened", end - (start + rest.change));
   steps.push({ label: "Now", amount: end, kind: "total" });

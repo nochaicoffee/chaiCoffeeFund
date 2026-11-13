@@ -11,7 +11,7 @@ const H = 150;
  */
 export function MoneyInOutCard({ detail }: { detail: PickDetail }) {
   const { columns } = detail;
-  const top = Math.max(1, ...columns.map((c) => Math.max(c.cameIn + c.borrowed, c.expenses + Math.max(0, c.invested))));
+  const top = Math.max(1, ...columns.map((c) => Math.max(c.cameIn + c.borrowed, c.expenses + Math.max(0, c.invested) + Math.max(0, c.lent))));
   const quiet = !detail.hasFlows;
   return (
     <section className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]" aria-label="Money in and out">
@@ -25,7 +25,7 @@ export function MoneyInOutCard({ detail }: { detail: PickDetail }) {
           <div className="flex gap-3 overflow-x-auto pb-1">
             <div className="flex min-w-full flex-1 items-end justify-between gap-2" style={{ minWidth: columns.length * 56 }}>
               {columns.map((c) => (
-                <div key={c.key} className="flex min-w-[44px] flex-1 flex-col items-center gap-1" title={`${c.label}: came in ${formatInr(c.cameIn)}${c.borrowed > 0 ? `, borrowed ${formatInr(c.borrowed)}` : ""}, expenses ${formatInr(c.expenses)}, ${c.invested < 0 ? `taken back from brokers ${formatInr(-c.invested)}` : `sent to brokers ${formatInr(c.invested)}`}`}>
+                <div key={c.key} className="flex min-w-[44px] flex-1 flex-col items-center gap-1" title={`${c.label}: came in ${formatInr(c.cameIn)}${c.borrowed > 0 ? `, borrowed ${formatInr(c.borrowed)}` : ""}, expenses ${formatInr(c.expenses)}, ${c.invested < 0 ? `taken back from brokers ${formatInr(-c.invested)}` : `sent to brokers ${formatInr(c.invested)}`}${c.lent > 0 ? `, lent ${formatInr(c.lent)}` : c.lent < 0 ? `, paid back to you ${formatInr(-c.lent)}` : ""}`}>
                   <div className="flex items-end gap-1" style={{ height: H }}>
                     <span className="flex w-3.5 flex-col-reverse">
                       <i className="block rounded-b-[2px] bg-accent" style={{ height: Math.max(c.cameIn > 0 ? 3 : 0, (c.cameIn / top) * H) }} />
@@ -33,7 +33,8 @@ export function MoneyInOutCard({ detail }: { detail: PickDetail }) {
                     </span>
                     <span className="flex w-3.5 flex-col-reverse">
                       <i className="block rounded-b-[2px] bg-[var(--card-ruby)]" style={{ height: (c.expenses / top) * H }} />
-                      <i className="block rounded-t-[5px] bg-[var(--card-violet)]" style={{ height: (Math.max(0, c.invested) / top) * H }} />
+                      <i className="block bg-[var(--card-violet)]" style={{ height: (Math.max(0, c.invested) / top) * H }} />
+                      <i className="block rounded-t-[5px] bg-[var(--card-amber)]" style={{ height: (Math.max(0, c.lent) / top) * H }} />
                     </span>
                   </div>
                   <span className="text-[11px] font-bold text-muted">{c.label}</span>
@@ -49,6 +50,9 @@ export function MoneyInOutCard({ detail }: { detail: PickDetail }) {
             )}
             <li className="inline-flex items-center gap-1.5"><i aria-hidden="true" className="size-2 rounded-[3px] bg-[var(--card-ruby)]" />Expenses</li>
             <li className="inline-flex items-center gap-1.5"><i aria-hidden="true" className="size-2 rounded-[3px] bg-[var(--card-violet)]" />Invested</li>
+            {columns.some((c) => c.lent > 0) && (
+              <li className="inline-flex items-center gap-1.5"><i aria-hidden="true" className="size-2 rounded-[3px] bg-[var(--card-amber)]" />Lent</li>
+            )}
             <li>Under each month: saved</li>
           </ul>
         </>

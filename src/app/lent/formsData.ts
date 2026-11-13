@@ -26,6 +26,8 @@ export interface LentLoanForm {
   colorChosen: boolean;
   /** A payout loan with an income source. */
   linked: boolean;
+  /** The account the money left, when set. */
+  paidFromAccountId?: string;
 }
 
 export interface LentRepaymentForm {
@@ -59,6 +61,7 @@ const toForm = (loan: LentLoan): LentLoanForm => ({
   color: lentLoanColor(loan),
   colorChosen: Boolean(loan.color),
   linked: Boolean(loan.incomeSourceId),
+  ...(loan.paidFromAccountId && { paidFromAccountId: loan.paidFromAccountId }),
 });
 
 function linkableSources(m: LentModel): LinkableSource[] {

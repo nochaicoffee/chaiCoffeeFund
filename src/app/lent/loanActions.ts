@@ -67,7 +67,8 @@ export async function saveLentLoan(_previous: FormState, formData: FormData): Pr
       linkedElsewhere = allLoans.filter((l) => l.id !== editing && l.incomeSourceId).map((l) => l.incomeSourceId as string);
     }
     // An income source is made with a new loan, or for an existing paid-out loan that has none.
-    if (formData.get("createIncomeSource") === "1" && (!editing || (stored && !stored.incomeSourceId))) {
+    // Accounts are read for a new income source's landing account, and for the account the money left.
+    if ((formData.get("createIncomeSource") === "1" && (!editing || (stored && !stored.incomeSourceId))) || idOf(formData, "paidFromAccountId") !== undefined) {
       accountIds = (await accountsRepository.list()).map((a) => a.id);
     }
   } catch (error) {
@@ -76,7 +77,9 @@ export async function saveLentLoan(_previous: FormState, formData: FormData): Pr
   if (editing && !stored) return gone("loan");
   const earliestRepayment = own.map((r) => r.date).sort()[0];
   const principalReturned = own.filter((r) => r.kind === "Principal").reduce((t, r) => t + r.amount, 0);
-  const result = readLentLoanForm(fields(formData), { earliestRepayment, principalReturned: editing ? principalReturned : undefined }, todayIso());
+  // An account that has since closed or gone can stay on a loan that already named it.
+  const lentFrom = stored?.paidFromAccountId ? [...accountIds, stored.paidFromAccountId] : accountIds;
+  const result = readLentLoanForm(fields(formData), { earliestRepayment, principalReturned: editing ? principalReturned : undefined, accountIds: idOf(formData, "paidFromAccountId") !== undefined ? lentFrom : undefined }, todayIso());
   if (!result.ok) return { status: "invalid", errors: result.errors };
   const input = result.input;
   if (editing && input.interestMode === "Paid-out" && own.some((r) => r.kind === "Interest")) {
@@ -157,6 +160,7 @@ async function editLoan(stored: LentLoan, input: LentLoanInput, formData: FormDa
         payoutFrequency: input.payoutFrequency ?? "",
         payoutAmount: input.payoutAmount ?? "",
         color: input.color ?? "",
+        paidFromAccountId: input.paidFromAccountId ?? "",
         ...(accruing && { incomeSourceId: "" }),
         ...((created ?? linkTo) && { incomeSourceId: (created ?? linkTo)!.id }),
       }) as Partial<Omit<LentLoan, "id">>,
