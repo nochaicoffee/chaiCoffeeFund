@@ -96,7 +96,7 @@ export function detailFor(data: AccountsData, accountId: string | null, period: 
 
   const tiles: InOutTile[] = [
     cameInTile(f),
-    { label: "Expenses", value: formatInr(f.expenses), note: "Card bills, subscriptions, EMIs" },
+    { label: "Expenses", value: formatInr(f.expenses), note: f.out["Big spends"] > 0 ? "Card bills, subscriptions, EMIs, big spends" : "Card bills, subscriptions, EMIs" },
     investedTile(f),
     { label: "Saved", value: signed(f.saved), note: savedNote(f), tone: f.saved >= 0 ? "positive" : "negative" },
   ];
