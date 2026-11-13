@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isQuotaError, isTimeoutError, sheetsFailureMessage } from "./errors";
+import { isQuotaError, isTimeoutError, QUOTA_ROUTE_MESSAGE, sheetsFailureMessage } from "./errors";
 
 describe("isQuotaError", () => {
   it("recognises Google's quota refusal by its status or its message", () => {
@@ -21,6 +21,15 @@ describe("sheetsFailureMessage", () => {
     const other = sheetsFailureMessage(new Error("ECONNRESET 10.0.0.1"));
     expect(other).toBe("Couldn't save to the Sheet, so nothing was written. Try again.");
     expect(other).not.toContain("ECONNRESET");
+  });
+});
+
+describe("QUOTA_ROUTE_MESSAGE", () => {
+  it("starts the way the dialog's message does, but doesn't promise nothing was saved", () => {
+    const start = "Google Sheets is busy: this minute's requests are used up.";
+    expect(QUOTA_ROUTE_MESSAGE.startsWith(start)).toBe(true);
+    expect(sheetsFailureMessage({ code: 429 }).startsWith(start)).toBe(true);
+    expect(QUOTA_ROUTE_MESSAGE).not.toMatch(/Nothing was saved/);
   });
 });
 

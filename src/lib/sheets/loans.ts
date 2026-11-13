@@ -1,5 +1,6 @@
 import "server-only";
 import { z } from "zod";
+import { isQuotaError } from "./errors";
 import { createRepository } from "./repository";
 import { loanInstallmentsRepository } from "./loanInstallments";
 import { loanPrepaymentsRepository } from "./loanPrepayments";
@@ -156,7 +157,18 @@ export async function createLoanWithSchedule(
     const installments = await loanInstallmentsRepository.createMany(schedule);
     return { loan, installments };
   } catch (error) {
-    await loansRepository.remove(loan.id);
+    try {
+      await loansRepository.remove(loan.id);
+    } catch (removeError) {
+      // Said apart from the schedule's own error: the loan is still in the Sheet, and trying again would add a second one.
+      throw new Error(
+        `Failed to generate installment schedule for loan ${loan.id}, and the loan couldn't be rolled back: it's still in the Loans tab and has to be deleted there before trying again.`,
+        { cause: removeError },
+      );
+    }
+    // Rolled back, so a refused request (the Sheets quota) left nothing written and is safe to send again as it is. Wrapping it
+    // would bury that: the route knows a quota refusal by its own error.
+    if (isQuotaError(error)) throw error;
     throw new Error(
       `Failed to generate installment schedule for loan ${loan.id} — the loan was rolled back. Original error: ${
         error instanceof Error ? error.message : String(error)
