@@ -52,6 +52,8 @@ import * as subscriptionsList from "@/app/api/subscriptions/route";
 import * as subscriptionsItem from "@/app/api/subscriptions/[id]/route";
 import * as transfersList from "@/app/api/transfers/route";
 import * as transfersItem from "@/app/api/transfers/[id]/route";
+import * as heldMoneyList from "@/app/api/held-money/route";
+import * as heldMoneyItem from "@/app/api/held-money/[id]/route";
 import { createAccountSchema, updateAccountSchema } from "@/lib/sheets/accounts";
 import { createBalanceSnapshotSchema, updateBalanceSnapshotSchema } from "@/lib/sheets/balanceSnapshots";
 import { createBigSpendSchema, updateBigSpendSchema } from "@/lib/sheets/bigSpends";
@@ -78,6 +80,7 @@ import { createStatementSchema, updateStatementSchema } from "@/lib/sheets/state
 import { createSubscriptionPaymentSchema, updateSubscriptionPaymentSchema } from "@/lib/sheets/subscriptionPayments";
 import { createSubscriptionSchema, updateSubscriptionSchema } from "@/lib/sheets/subscriptions";
 import { createTransferSchema, updateTransferSchema } from "@/lib/sheets/transfers";
+import { createHeldMoneySchema, updateHeldMoneySchema } from "@/lib/sheets/heldMoney";
 
 /** A route handler's shape: what the app's own API routes export, called here in-process. */
 export type ListHandler = (request: Request) => Promise<Response>;
@@ -156,6 +159,7 @@ export const MCP_ENTITIES: McpEntity[] = [
   entity("investment_transactions", "Investment transactions", "One buy, sell, vest or similar trade of an instrument.", investmentTransactionsList, investmentTransactionsItem, createInvestmentTransactionSchema, updateInvestmentTransactionSchema),
   entity("investment_targets", "Investment targets", "A target share, as a percent, of what is held for an asset group.", investmentTargetsList, investmentTargetsItem, createInvestmentTargetSchema, updateInvestmentTargetSchema),
   entity("price_snapshots", "Price snapshots", "An instrument's price on a day.", priceSnapshotsList, priceSnapshotsItem, createPriceSnapshotSchema, updatePriceSnapshotSchema),
+  entity("held_money", "HeldMoney", "Money held for someone else (a friend's share of an investment) that landed in or left one of the user's accounts.", heldMoneyList, heldMoneyItem, createHeldMoneySchema, updateHeldMoneySchema),
   entity("transfers", "Transfers", "Money moved between the user's own accounts, including to a brokerage.", transfersList, transfersItem, createTransferSchema, updateTransferSchema),
   entity("epf_accounts", "EPF accounts", "A provident fund account.", epfAccountsList, epfAccountsItem, createEpfAccountSchema, updateEpfAccountSchema),
   entity("epf_entries", "EPF entries", "One contribution, interest credit or withdrawal in a provident fund account.", epfEntriesList, epfEntriesItem, createEpfEntrySchema, updateEpfEntrySchema),

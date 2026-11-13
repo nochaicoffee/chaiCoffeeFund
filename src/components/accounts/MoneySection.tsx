@@ -20,6 +20,7 @@ interface Part {
 const COLOR = {
   cameIn: "var(--accent)",
   borrowed: "var(--card-ocean)",
+  held: "var(--card-aubergine)",
   cardBills: "var(--card-ruby)",
   emis: "var(--card-copper)",
   bigSpends: "var(--card-magenta)",
@@ -35,6 +36,7 @@ const COLOR = {
 const INCOME_RAMP = ["var(--accent)", "color-mix(in oklab, var(--accent) 70%, white)", "color-mix(in oklab, var(--accent) 45%, white)", "color-mix(in oklab, var(--accent) 28%, white)"];
 const SHARE_COLOR: Record<Exclude<ShareKind, "income">, string> = {
   borrowed: COLOR.borrowed,
+  held: COLOR.held,
   cardBills: COLOR.cardBills,
   emis: COLOR.emis,
   bigSpends: COLOR.bigSpends,
@@ -44,6 +46,7 @@ const SHARE_COLOR: Record<Exclude<ShareKind, "income">, string> = {
   sentOwn: "color-mix(in oklab, var(--card-violet) 55%, white)",
   takenBack: COLOR.takenBack,
   lent: "var(--card-amber)",
+  returned: "var(--card-bronze)",
 };
 const shareColor = (sh: MoneyShare, index: number) => (sh.kind === "income" ? INCOME_RAMP[Math.min(index, INCOME_RAMP.length - 1)] : SHARE_COLOR[sh.kind]);
 
@@ -54,7 +57,7 @@ function partsOf(which: Which, m: MoneyMonth): { up: Part[]; down: Part[]; total
   const cashOut = Math.max(0, -m.cashUpi);
   switch (which) {
     case "in":
-      return { up: [{ name: "Came in", value: m.cameIn, color: COLOR.cameIn }, { name: "Borrowed", value: m.borrowed, color: COLOR.borrowed }], down: [], total: m.cameIn };
+      return { up: [{ name: "Came in", value: m.cameIn, color: COLOR.cameIn }, { name: "Borrowed", value: m.borrowed, color: COLOR.borrowed }, { name: "Held for others", value: m.held, color: COLOR.held }], down: [], total: m.cameIn };
     case "spent": {
       const up: Part[] = [
         { name: "Card bills", value: m.cardBills, color: COLOR.cardBills },

@@ -58,7 +58,7 @@ const rupees = (n: number) => formatInr(Math.round(n));
 const monthWord = (month: MonthKey) => MONTH_NAMES[Number(month.slice(5, 7)) - 1];
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 /** Came in, in the sense the page uses: income, a disbursal, and what came back. */
-export const allIn = (m: MonthExpenses) => m.cameIn + m.borrowed + m.cameBack;
+export const allIn = (m: MonthExpenses) => m.cameIn + m.borrowed + m.held + m.cameBack;
 
 // --- The greeting ---
 
@@ -123,10 +123,12 @@ export function greetingView(model: ExpenseModel): ExpenseGreetingCards {
     [
       { key: "in", name: "Came in", amount: m.cameIn, note: "salary and other income" },
       { key: "borrowed", name: "Borrowed", amount: m.borrowed, note: "a loan paid into your account" },
+      { key: "held", name: "Held for others", amount: m.held, note: "a friend's money, to invest with yours" },
       { key: "back", name: "Came back", amount: m.cameBack, note: "deposits paid out, money lent repaid" },
       { key: "sold", name: "Back from brokers", amount: m.sold, note: "money your brokers sent back" },
       { key: "bought", name: "Sent to brokers", amount: -m.bought, note: "and new deposits" },
       { key: "lent", name: "Lent out", amount: -m.lentOut, note: "money lent to people" },
+      { key: "returned", name: "Handed back", amount: -m.returned, note: "a friend's share, returned" },
       { key: "kept", name: "Kept", amount: -(m.kept ?? 0), note: "what stayed in your accounts" },
     ]
       .filter((r) => r.amount !== 0)
@@ -231,7 +233,7 @@ export function heroView(model: ExpenseModel): HeroView {
     ? [
         { key: "spent", label: "Spent", value: positive(m.spent), colorKey: "coral" },
         { key: "invested", label: "Invested", value: positive(m.invested), colorKey: "sky" },
-        { key: "lent", label: "Lent out", value: positive(m.lentOut), colorKey: "honey" },
+        { key: "lent", label: "Lent or handed back", value: positive(m.lentOut + m.returned), colorKey: "honey" },
         { key: "kept", label: "Kept", value: positive(m.kept), colorKey: "jade" },
       ]
     : [];
@@ -432,7 +434,7 @@ export function monthsView(model: ExpenseModel): MonthsView {
       picked: m.month === model.picked.month,
       cameIn: dash(allIn(m)),
       invested: dash(m.invested),
-      lentOut: dash(m.lentOut),
+      lentOut: dash(m.lentOut + m.returned),
       kept: done ? `${kept > 0 ? "+" : ""}${rupees(kept)}` : "–",
       keptTone: !done ? "plain" : kept >= 0 ? "good" : "bad",
       spent: done ? rupees(m.spent ?? 0) : m.status === "progress" ? "so far" : "not worked out",
@@ -453,7 +455,7 @@ export function monthsView(model: ExpenseModel): MonthsView {
       label: plural(t.months, "month worked out", "months worked out"),
       cameIn: dash(t.cameIn),
       invested: dash(t.invested),
-      lentOut: dash(t.lentOut),
+      lentOut: dash(t.lentOut + t.returned),
       kept: t.months ? `${t.kept > 0 ? "+" : ""}${rupees(t.kept)}` : "–",
       keptTone: t.kept >= 0 ? "good" : "bad",
       spent: dash(t.spent),

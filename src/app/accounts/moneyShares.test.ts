@@ -45,10 +45,23 @@ describe("investedShares", () => {
   });
 });
 
+describe("incomeShares with money held for others", () => {
+  it("puts held money on its own row after the loan, and leaves it out when there is none", () => {
+    const rows = incomeShares([{ source: "Salary", amount: 100 }], 50, 20);
+    expect(rows.map((r) => [r.kind, r.name, r.value])).toEqual([["income", "Salary", 100], ["borrowed", "Borrowed", 50], ["held", "Held for others", 20]]);
+    expect(incomeShares([{ source: "Salary", amount: 100 }], 0).map((r) => r.kind)).toEqual(["income"]);
+  });
+});
+
 describe("leftShares", () => {
   it("names money lent out less what came back, and nothing when none is out", () => {
-    expect(leftShares({ lent: 182_000 }).map((s) => [s.kind, s.name, s.value])).toEqual([["lent", "Lent to people", 182_000]]);
-    expect(leftShares({ lent: 0 })).toEqual([]);
-    expect(leftShares({ lent: -5_000 })).toEqual([]);
+    expect(leftShares({ lent: 182_000, returned: 0 }).map((s) => [s.kind, s.name, s.value])).toEqual([["lent", "Lent to people", 182_000]]);
+    expect(leftShares({ lent: 0, returned: 0 })).toEqual([]);
+    expect(leftShares({ lent: -5_000, returned: 0 })).toEqual([]);
+  });
+
+  it("names money handed back to someone whose money he held, apart from money lent", () => {
+    expect(leftShares({ lent: 0, returned: 258_357 }).map((s) => [s.kind, s.name, s.value])).toEqual([["returned", "Handed back to others", 258_357]]);
+    expect(leftShares({ lent: 10_000, returned: 5_000 }).map((s) => s.kind)).toEqual(["lent", "returned"]);
   });
 });

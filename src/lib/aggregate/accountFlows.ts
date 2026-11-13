@@ -6,7 +6,7 @@ import { nextOccurrence } from "./recurring";
 import { addDays } from "./subscriptionRenewals";
 import { nextRenewalsFrom } from "./subscriptionNextCharges";
 import type { RupeeSnapshot } from "./accountCurrency";
-import type { Account, BalanceReview, BalanceSnapshot, BigSpend, Card, Goal, IncomeEntry, IncomeSource, InvestmentTransaction, LentLoan, LentRepayment, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment, Transfer } from "../sheets/types";
+import type { Account, BalanceReview, BalanceSnapshot, BigSpend, Card, Goal, HeldMoney, IncomeEntry, IncomeSource, InvestmentTransaction, LentLoan, LentRepayment, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment, Transfer } from "../sheets/types";
 
 /**
  * Where an account's money went and came from, worked out from records kept elsewhere
@@ -72,6 +72,8 @@ export interface AccountsData {
   bigSpends?: BigSpend[];
   /** Goals, whose bought ones paid from an account count as big spends. Optional, like big spends. */
   goals?: Goal[];
+  /** A friend's money held with his and handed back: neither income nor spending. Optional, like big spends. */
+  heldMoney?: HeldMoney[];
   incomeSources: IncomeSource[];
   incomeEntries: IncomeEntry[];
   /** Balances a bank statement disagreed with (BalanceReviews). Left out where there are none to show. */
@@ -86,7 +88,7 @@ export const OUT_KINDS = ["Card bills", "Subscriptions", "EMIs", "Big spends", "
 export type OutKind = (typeof OUT_KINDS)[number];
 
 export interface MoneyItem {
-  kind: OutKind | "Came in" | "Taken back" | "Borrowed" | "Lent out" | "Paid back" | "Moved out" | "Moved in";
+  kind: OutKind | "Came in" | "Taken back" | "Borrowed" | "Lent out" | "Paid back" | "Moved out" | "Moved in" | "Held" | "Returned";
   date: string;
   amount: number;
   accountId: string;
@@ -142,6 +144,11 @@ export function moneyItems(data: AccountsData, from: string, to: string): MoneyI
     if (g.status !== "Done" || !g.paidFromAccountId || !accountsById.has(g.paidFromAccountId) || !within(g.doneOn, from, to) || !((g.actualCost ?? 0) > 0)) continue;
     items.push({ kind: "Big spends", date: g.doneOn, amount: g.actualCost!, accountId: g.paidFromAccountId, label: g.name });
   }
+  // Money held for someone: what he sent is money in that isn't income (and isn't a loan), what was handed back is money out that isn't spending.
+  for (const h of data.heldMoney ?? []) {
+    if (!accountsById.has(h.accountId) || !within(h.date, from, to) || !(h.amount > 0)) continue;
+    items.push({ kind: h.direction === "Received" ? "Held" : "Returned", date: h.date, amount: h.amount, accountId: h.accountId, label: h.person });
+  }
   for (const l of data.loans) {
     // Only into an account he has, like a transfer: a loan naming one that isn't listed reached nothing counted here.
     if (!paidIntoAccount(l) || !accountsById.has(l.accountId) || !within(l.disbursementDate, from, to)) continue;
@@ -191,11 +198,15 @@ export interface Flows {
   lent: number;
   lentOut: number;
   paidBack: number;
+  /** A friend's money that landed in the account to be invested with his: not income and not a loan. */
+  held: number;
+  /** Handed back to someone whose money he held (a friend's share): out of the bank, neither spending nor investing. */
+  returned: number;
   /** Moved in from his other bank accounts less moved out to them: always 0 across all accounts. */
   moved: number;
   /** Came in − expenses: investing counts as saved (decision 19). */
   saved: number;
-  /** Saved + borrowed − invested − lent + moved. */
+  /** Saved + borrowed + held − invested − lent − returned + moved. */
   keptInBank: number;
   /** Everything that left the account: expenses, what was sent to brokers and what was lent. */
   leftBank: number;
@@ -219,8 +230,10 @@ export function flows(items: FlowItem[], accountId: string | null): Flows {
   const lentOut = sum(mine, "Lent out");
   const paidBack = sum(mine, "Paid back");
   const lent = lentOut - paidBack;
+  const held = sum(mine, "Held");
+  const returned = sum(mine, "Returned");
   const moved = sum(mine, "Moved in") - sum(mine, "Moved out");
-  return { cameIn, out, expenses, invested, sent: out.Investments, takenBack, borrowed, lent, lentOut, paidBack, moved, saved, keptInBank: saved + borrowed - invested - lent + moved, leftBank: expenses + out.Investments + lentOut };
+  return { cameIn, out, expenses, invested, sent: out.Investments, takenBack, borrowed, lent, lentOut, paidBack, held, returned, moved, saved, keptInBank: saved + borrowed + held - invested - lent - returned + moved, leftBank: expenses + out.Investments + lentOut + returned };
 }
 
 /** The movements after `after` up to and including `to`: the stretch between two readings of a line. Without `after`, everything up to `to`. */
@@ -296,7 +309,7 @@ export function everythingElse(data: AccountsData, items: MoneyItem[], accountId
   }
   // An account first read inside the span already holds what moved before that reading, and one with no balance has nothing to explain.
   const mine = items.filter((i) => (accountId === null || i.accountId === accountId) && i.date > (measuredAfter.get(i.accountId) ?? "9999-12-31"));
-  const explained = sum(mine, "Came in") + sum(mine, "Taken back") + sum(mine, "Borrowed") + sum(mine, "Paid back") - sum(mine, "Lent out") + sum(mine, "Moved in") - sum(mine, "Moved out") - OUT_KINDS.reduce((total, kind) => total + sum(mine, kind), 0);
+  const explained = sum(mine, "Came in") + sum(mine, "Taken back") + sum(mine, "Borrowed") + sum(mine, "Held") + sum(mine, "Paid back") - sum(mine, "Lent out") - sum(mine, "Returned") + sum(mine, "Moved in") - sum(mine, "Moved out") - OUT_KINDS.reduce((total, kind) => total + sum(mine, kind), 0);
   return { change, explained, unexplained: change - explained };
 }
 

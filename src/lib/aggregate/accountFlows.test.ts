@@ -464,3 +464,35 @@ describe("a goal marked bought counts like a big spend", () => {
     expect(moneyItems(d, "2026-11-01", "2026-11-30")).toEqual([]);
   });
 });
+
+describe("money held for someone else", () => {
+  const held = data({
+    snapshots: [snap("sbi", "2026-03-31", 100_000), snap("sbi", "2026-05-31", 100_000 + 200_000 - 258_357)],
+    heldMoney: [
+      { id: "h1", person: "Trishal", date: "2026-04-07", direction: "Received", amount: 100_000, accountId: "sbi" },
+      { id: "h2", person: "Trishal", date: "2026-04-08", direction: "Received", amount: 100_000, accountId: "sbi" },
+      { id: "h3", person: "Trishal", date: "2026-05-16", direction: "Returned", amount: 258_357, accountId: "sbi" },
+      { id: "h4", person: "Trishal", date: "2026-05-16", direction: "Returned", amount: 1, accountId: "gone" },
+    ],
+  });
+
+  it("counts what was held as its own money in (not income, not a loan) and what was handed back as its own out, only through accounts he has", () => {
+    const items = moneyItems(held, "2026-04-01", "2026-05-31");
+    expect(items.filter((i) => i.label === "Trishal").map((i) => [i.kind, i.amount])).toEqual([["Held", 100_000], ["Held", 100_000], ["Returned", 258_357]]);
+    const f = flows(items, null);
+    expect(f.cameIn).toBe(0);
+    expect(f.borrowed).toBe(0);
+    expect(f.held).toBe(200_000);
+    expect(f.returned).toBe(258_357);
+    expect(f.expenses).toBe(0);
+    expect(f.keptInBank).toBe(200_000 - 258_357);
+    expect(f.leftBank).toBe(258_357);
+  });
+
+  it("leaves nothing unexplained when the balance moved by exactly what was held and handed back", () => {
+    const items = moneyItems(held, "2026-04-01", "2026-05-31");
+    const rest = everythingElse(held, items, "sbi", "2026-04-01", "2026-05-31");
+    expect(rest.change).toBe(200_000 - 258_357);
+    expect(rest.unexplained).toBe(0);
+  });
+});

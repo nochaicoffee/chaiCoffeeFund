@@ -206,6 +206,26 @@ describe("big spends from an account, and goals marked bought", () => {
   });
 });
 
+describe("money held for someone else", () => {
+  const held = (direction: "Received" | "Returned", date: string, amount: number, accountId = "hdfc") => ({ id: `${direction}${date}`, person: "Trishal", date, direction, amount, accountId });
+
+  it("is neither income nor spending: what lands is not came in, what is handed back is not spent", () => {
+    const base = monthExpenses(data(), "2026-11", TODAY);
+    const m = monthExpenses(data({ heldMoney: [held("Received", "2026-11-08", 100000), held("Returned", "2026-11-16", 58357)], snapshots: [bal("hdfc", "2026-10-31", 100000), bal("hdfc", "2026-11-30", 120000 + 100000 - 58357)] }), "2026-11", TODAY);
+    expect(m.held).toBe(100000);
+    expect(m.returned).toBe(58357);
+    expect(m.cameIn).toBe(base.cameIn);
+    expect(m.spent).toBe(base.spent);
+    expect(m.cameIn + m.borrowed + m.held + m.cameBack).toBeCloseTo(m.invested + m.lentOut + m.returned + (m.kept ?? 0) + (m.spent ?? 0), 6);
+  });
+
+  it("leaves out a movement through an account that is a broker's or isn't there", () => {
+    const m = monthExpenses(data({ heldMoney: [held("Received", "2026-11-08", 5000, "ind"), held("Returned", "2026-11-09", 7000, "gone")] }), "2026-11", TODAY);
+    expect(m.held).toBe(0);
+    expect(m.returned).toBe(0);
+  });
+});
+
 describe("placeBigSpends", () => {
   const spend = (over: Partial<BigSpend>): BigSpend => ({ id: "b", date: "2026-10-03", amount: 18600, name: "Flights", category: "Travel", ...over });
 

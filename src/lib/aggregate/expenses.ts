@@ -21,6 +21,7 @@ import type {
   Policy,
   PolicyPayment,
   Goal,
+  HeldMoney,
   Statement,
   Subscription,
   SubscriptionPayment,
@@ -35,7 +36,7 @@ import type {
  * from a bank to a broker leaves the pool, money a broker sent back enters it, and what happens inside the broker (trades, dividends) never
  * touches the bank.
  *
- *   spent = came in + borrowed + came back + taken back − sent to brokers − new deposits − lent out − (pool at the month's end − pool at its start)
+ *   spent = came in + borrowed + held for others + came back + taken back − sent to brokers − new deposits − lent out − handed back to others − (pool at the month's end − pool at its start)
  *
  * Spent splits into what the records explain (card bills paid that month, EMIs in full, subscriptions not on a card, insurance not on a
  * card) and cash and UPI, the rest. A month needs a balance for every bank account at both ends: one with none yet is held flat at its
@@ -100,6 +101,10 @@ export interface MonthExpenses {
   /** Money sent from a bank account to a broker (a Transfer), and new deposits. */
   bought: number;
   lentOut: number;
+  /** A friend's money that landed in a bank account to be invested with his: not income, so apart from came in. */
+  held: number;
+  /** What was handed back to him (his share, profit and all): out of the pool, neither spending nor investing. */
+  returned: number;
   /** Bought − sold: what went into investing, less what came back. */
   invested: number;
   /** The records' parts. `cash` is the worked-out rest, only on a done month. A big spend paid from an account is `big`. */
@@ -147,6 +152,8 @@ export interface ExpenseData {
   bigSpends: BigSpend[];
   /** A goal marked bought counts as a big spend, under its own name (Accounts counts it the same way). */
   goals: Goal[];
+  /** A friend's money held with his and handed back: neither income nor spending. Optional: older callers have none. */
+  heldMoney?: HeldMoney[];
 }
 
 const inMonth = (date: string | undefined, month: MonthKey): date is string => !!date && monthOf(date) === month;
@@ -312,6 +319,9 @@ export function monthExpenses(data: ExpenseData, month: MonthKey, today: string,
   const sent = sum(sides.filter((x) => x.kind === "out").map((x) => x.inr));
   const sold = sum(sides.filter((x) => x.kind === "back").map((x) => x.inr));
   const bought = sent + sum(data.fixedDeposits.filter((d) => inMonth(d.startDate, month)).map((d) => d.principalAmount));
+  const heldIn = (direction: HeldMoney["direction"]) => sum((data.heldMoney ?? []).filter((h) => h.direction === direction && inMonth(h.date, month) && prepared.accounts.has(h.accountId) && inPool(prepared.accounts.get(h.accountId)!)).map((h) => h.amount));
+  const held = heldIn("Received");
+  const returned = heldIn("Returned");
   const lentOut = sum(data.lentLoans.filter((l) => inMonth(l.startDate, month)).map((l) => l.principalAmount));
 
   const payments = recordedPayments(data, month, prepared);
@@ -320,7 +330,7 @@ export function monthExpenses(data: ExpenseData, month: MonthKey, today: string,
   const explained = parts.card + parts.emi + parts.subs + parts.ins + parts.big;
   const bigSpends = prepared.placed.filter((b) => b.month === month);
 
-  const base = { month, cameIn, borrowed, cameBack, sold, bought, lentOut, invested: bought - sold, parts, explained, payments, bigSpends };
+  const base = { month, cameIn, borrowed, cameBack, sold, bought, lentOut, held, returned, invested: bought - sold, parts, explained, payments, bigSpends };
   const blank = { spent: null, kept: null, poolStart: null, poolEnd: null };
 
   const accounts: AccountEnd[] = [];
@@ -338,7 +348,7 @@ export function monthExpenses(data: ExpenseData, month: MonthKey, today: string,
   const poolStart = round2(sum(accounts.map((a) => inr(a, a.start))));
   const poolEnd = round2(sum(accounts.map((a) => inr(a, a.end))));
   const kept = round2(poolEnd - poolStart);
-  const spent = round2(cameIn + borrowed + cameBack + sold - bought - lentOut - kept);
+  const spent = round2(cameIn + borrowed + held + cameBack + sold - bought - lentOut - returned - kept);
   const cash = round2(spent - explained);
   parts.cash = cash;
   if (cash !== 0) payments.push({ key: `cash:${month}`, date: end, part: "cash", amount: cash, label: "Cash and UPI", detail: "worked out: what no record explains" });
@@ -358,6 +368,8 @@ export interface ExpenseTotals {
   cameIn: number;
   invested: number;
   lentOut: number;
+  held: number;
+  returned: number;
   kept: number;
   spent: number;
   parts: Record<PartKey, number>;
@@ -370,9 +382,11 @@ export function totalsOf(months: MonthExpenses[]): ExpenseTotals {
   for (const key of PART_KEYS) parts[key] = sum(done.map((m) => m.parts[key]));
   return {
     months: done.length,
-    cameIn: sum(done.map((m) => m.cameIn + m.borrowed + m.cameBack)),
+    cameIn: sum(done.map((m) => m.cameIn + m.borrowed + m.held + m.cameBack)),
     invested: sum(done.map((m) => m.invested)),
     lentOut: sum(done.map((m) => m.lentOut)),
+    held: sum(done.map((m) => m.held)),
+    returned: sum(done.map((m) => m.returned)),
     kept: sum(done.map((m) => m.kept ?? 0)),
     spent: sum(done.map((m) => m.spent ?? 0)),
     parts,

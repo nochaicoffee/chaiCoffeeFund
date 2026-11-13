@@ -5,7 +5,7 @@ import { formatInrCompact } from "@/lib/format/money";
  * What each of the money section's four tiles is made of, as the rows under its figure and the parts of its bar. Plain, already-formatted
  * data (the view builds them from `Flows` and the income split); the component only draws them.
  */
-export type ShareKind = "income" | "borrowed" | "cardBills" | "emis" | "bigSpends" | "subscriptions" | "cashUpi" | "sentLoan" | "sentOwn" | "takenBack" | "lent";
+export type ShareKind = "income" | "borrowed" | "held" | "cardBills" | "emis" | "bigSpends" | "subscriptions" | "cashUpi" | "sentLoan" | "sentOwn" | "takenBack" | "lent" | "returned";
 
 export interface MoneyShare {
   kind: ShareKind;
@@ -19,11 +19,11 @@ const share = (kind: ShareKind, name: string, value: number, text = formatInrCom
 /** Income sources shown by name; the rest are one "Other income", so a tile never grows past five rows. */
 export const INCOME_ROWS = 3;
 
-/** What came in: each income source, biggest first, then money borrowed on its own row (it isn't income). */
-export function incomeShares(sources: { source: string; amount: number }[], borrowed: number): MoneyShare[] {
+/** What came in: each income source, biggest first, then money borrowed and money held for a friend, each on its own row (neither is income). */
+export function incomeShares(sources: { source: string; amount: number }[], borrowed: number, held = 0): MoneyShare[] {
   const named = sources.filter((s) => s.amount > 0).slice(0, INCOME_ROWS).map((s) => share("income", s.source, s.amount));
   const other = sources.filter((s) => s.amount > 0).slice(INCOME_ROWS).reduce((total, s) => total + s.amount, 0);
-  return [...named, ...(other > 0 ? [share("income", "Other income", other)] : []), ...(borrowed > 0 ? [share("borrowed", "Borrowed", borrowed)] : [])];
+  return [...named, ...(other > 0 ? [share("income", "Other income", other)] : []), ...(borrowed > 0 ? [share("borrowed", "Borrowed", borrowed)] : []), ...(held > 0 ? [share("held", "Held for others", held)] : [])];
 }
 
 /** What was spent: the recorded parts, then the cash and UPI that left with no record. Parts with nothing in them are left out. */
@@ -51,7 +51,7 @@ export function investedShares(f: Pick<Flows, "sent" | "takenBack" | "borrowed">
   ].filter((s) => s.value > 0);
 }
 
-/** What the Left in the bank tile names beside the balances: money out with people, which isn't spending. */
-export function leftShares(f: Pick<Flows, "lent">): MoneyShare[] {
-  return f.lent > 0 ? [share("lent", "Lent to people", f.lent)] : [];
+/** What the In the bank now tile names beside the balances: money out with people, and money handed back to a friend, neither of which is spending. */
+export function leftShares(f: Pick<Flows, "lent" | "returned">): MoneyShare[] {
+  return [...(f.lent > 0 ? [share("lent", "Lent to people", f.lent)] : []), ...(f.returned > 0 ? [share("returned", "Handed back to others", f.returned)] : [])];
 }

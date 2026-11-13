@@ -214,8 +214,10 @@ export function monthStatementView(model: ExpenseModel): MonthStatementView {
         { key: "start", label: "In your accounts at the start", amount: rupees(m.poolStart ?? 0), tone: "plain" as const },
         { key: "in", label: "Came in", note: "salary and other income", amount: `+${rupees(m.cameIn)}`, tone: "in" as const },
         ...(m.borrowed ? [{ key: "borrowed", label: "Borrowed", note: "a loan paid into an account", amount: `+${rupees(m.borrowed)}`, tone: "in" as const }] : []),
+        ...(m.held ? [{ key: "held", label: "Held for others", note: "a friend's money, to invest with yours", amount: `+${rupees(m.held)}`, tone: "in" as const }] : []),
         ...(m.cameBack ? [{ key: "back", label: "Came back", note: "deposits paid out, money lent repaid", amount: `+${rupees(m.cameBack)}`, tone: "in" as const }] : []),
         ...(m.invested !== 0 ? [{ key: "inv", label: m.invested > 0 ? "Moved to investing" : "Came out of investing", note: "sent to brokers less sent back, and new deposits", amount: `${m.invested > 0 ? "−" : "+"}${rupees(Math.abs(m.invested))}`, tone: (m.invested > 0 ? "out" : "in") as "in" | "out" }] : []),
+        ...(m.returned ? [{ key: "returned", label: "Handed back", note: "a friend's share, returned", amount: `−${rupees(m.returned)}`, tone: "out" as const }] : []),
         ...(m.lentOut ? [{ key: "lent", label: "Lent out", note: "money lent to people", amount: `−${rupees(m.lentOut)}`, tone: "out" as const }] : []),
         { key: "spent", label: "Spent", note: "the payments on the left", amount: `−${rupees(m.spent ?? 0)}`, tone: "out" as const },
       ]
