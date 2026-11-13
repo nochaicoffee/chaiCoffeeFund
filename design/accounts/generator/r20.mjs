@@ -17,16 +17,16 @@ const { inr, inrS, grad, I, btn, esc } = L;
 
 // ---------- A local sample of 12 accounts, his real shape: 5 banks, 7 brokers ----------
 const ACCTS = [
-  { id: "hdfc", name: "HDFC Bank Account", bank: "HDFC Bank", purpose: "Loan Payments", color: "sapphire", series: [17521, 16047, 148396, 137977, 97449, 118277, 86367, 313289, 224790, 6438] },
-  { id: "slice", name: "Slice Bank Account", bank: "Slice Small Finance Bank", purpose: "Spending", color: "ruby", series: [2347, 9100, 4200, 6800, 3100, 5200, 2900, 7600, 4300, 278] },
-  { id: "jupiter", name: "Jupiter Bank Account", bank: "Federal Bank", purpose: "Spending", color: "copper", series: [3668, 2900, 4100, 1800, 3300, 2200, 3900, 1500, 2600, 974] },
-  { id: "canara", name: "Canara Bank Account", bank: "Canara Bank", purpose: "Spending", color: "emerald", series: [689, 53, 589, 53, 75, 776, 726, 676, 629, 529] },
-  { id: "sbi", name: "SBI Bank Account", bank: "SBI", purpose: "Spending", color: "teal", series: [0, 0, 10043, 10064, 23736, 2736, 902, 4951, 4998, 4999] },
-  { id: "ind-mom", name: "IND Money · Mom", bank: "INDmoney", purpose: "Investment", color: "violet", series: [280000, 282000, 285000, 290000, 300000, 305000, 320000, 325000, 328000, 331241], broker: true },
-  { id: "ind-prathik", name: "IND Money · Prathik", bank: "INDmoney", purpose: "Investment", color: "onyx", series: [190000, 195000, 198000, 202000, 208000, 212000, 220000, 225000, 228000, 232233], broker: true },
-  { id: "ibkr", name: "IBKR", bank: "Interactive Brokers", purpose: "Investment", color: "sapphire", series: [95000, 98000, 102000, 108000, 112000, 118000, 125000, 130000, 136000, 140120], broker: true },
-  { id: "etrade", name: "E*TRADE", bank: "E*TRADE", purpose: "Investment", color: "ruby", series: [8000, 8400, 9000, 9500, 10100, 10600, 11200, 11800, 12200, 12616], broker: true },
-  { id: "zerodha", name: "Zerodha", bank: "Zerodha", purpose: "Investment", color: "teal", series: [500, 450, 600, 300, 700, 200, 400, 150, 100, -91], broker: true },
+  { id: "hdfc", name: "HDFC Bank Account", bank: "HDFC Bank", purpose: "Loan Payments", color: "sapphire", series: [17521, 16047, 148396, 137977, 97449, 118277, 86367, 313289, 224790, 6210] },
+  { id: "slice", name: "Slice Bank Account", bank: "Slice Small Finance Bank", purpose: "Spending", color: "ruby", series: [2347, 9100, 4200, 6800, 3100, 5200, 2900, 7600, 4300, 312] },
+  { id: "jupiter", name: "Jupiter Bank Account", bank: "Federal Bank", purpose: "Spending", color: "copper", series: [3668, 2900, 4100, 1800, 3300, 2200, 3900, 1500, 2600, 886] },
+  { id: "canara", name: "Canara Bank Account", bank: "Canara Bank", purpose: "Spending", color: "emerald", series: [689, 53, 589, 53, 75, 776, 726, 676, 629, 541] },
+  { id: "sbi", name: "SBI Bank Account", bank: "SBI", purpose: "Spending", color: "teal", series: [0, 0, 10043, 10064, 23736, 2736, 902, 4951, 4998, 5120] },
+  { id: "ind-mom", name: "IND Money · Mom", bank: "INDmoney", purpose: "Investment", color: "violet", series: [280000, 282000, 285000, 290000, 300000, 305000, 320000, 325000, 328000, 327900], broker: true },
+  { id: "ind-prathik", name: "IND Money · Prathik", bank: "INDmoney", purpose: "Investment", color: "onyx", series: [190000, 195000, 198000, 202000, 208000, 212000, 220000, 225000, 228000, 229400], broker: true },
+  { id: "ibkr", name: "IBKR", bank: "Interactive Brokers", purpose: "Investment", color: "sapphire", series: [95000, 98000, 102000, 108000, 112000, 118000, 125000, 130000, 136000, 137800], broker: true },
+  { id: "etrade", name: "E*TRADE", bank: "E*TRADE", purpose: "Investment", color: "ruby", series: [8000, 8400, 9000, 9500, 10100, 10600, 11200, 11800, 12200, 12350], broker: true },
+  { id: "zerodha", name: "Zerodha", bank: "Zerodha", purpose: "Investment", color: "teal", series: [500, 450, 600, 300, 700, 200, 400, 150, 100, -85], broker: true },
   { id: "groww", name: "Groww", bank: "Groww", purpose: "Investment", color: "copper", series: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], broker: true },
   { id: "fyers", name: "FYERS", bank: "FYERS", purpose: "Investment", color: "violet", series: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0], broker: true },
 ];

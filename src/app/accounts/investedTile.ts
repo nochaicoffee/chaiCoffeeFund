@@ -1,5 +1,6 @@
 import type { Flows } from "@/lib/aggregate/accountFlows";
-import { formatInr } from "@/lib/format/money";
+import { formatShortDate } from "@/lib/format/date";
+import { formatInr, formatInrCompact } from "@/lib/format/money";
 
 /**
  * The Invested tile on Accounts: money sent to brokers less money they sent back (Transfers). A stretch that took more back than it
@@ -14,6 +15,37 @@ export function investedTile(f: Pick<Flows, "invested" | "sent" | "takenBack">):
 /** The Came in tile: income only. Money borrowed into the accounts in the stretch is named under it, since it isn't income. */
 export function cameInTile(f: Pick<Flows, "cameIn" | "borrowed">): { label: string; value: string; note: string } {
   return { label: "Came in", value: formatInr(f.cameIn), note: f.borrowed > 0 ? `Income, plus ${formatInr(f.borrowed)} borrowed` : "Income received" };
+}
+
+/**
+ * The Spent tile: the expenses the records explain (card bills, subscriptions, EMIs, big spends) plus the cash and UPI the balances
+ * say left with no record. `cashUpi` is the balance change nothing explains: negative is money out, so it counts as spending; positive
+ * is money that came in with no record, which is not spending and is named under In the bank now instead.
+ */
+export function spentTile(f: Pick<Flows, "expenses" | "out">, cashUpi: number): { label: string; value: string; note: string } {
+  const unrecorded = Math.max(0, -cashUpi);
+  const recorded = f.out["Big spends"] > 0 ? "Card bills, subscriptions, EMIs, big spends" : "Card bills, subscriptions, EMIs";
+  return { label: "Spent", value: formatInr(f.expenses + unrecorded), note: unrecorded > 0 ? `${formatInr(f.expenses)} recorded, ${formatInr(unrecorded)} cash and UPI` : recorded };
+}
+
+/**
+ * The In the bank now tile: what the bank accounts hold now, from their recorded balances, with how far that moved since the period began
+ * (the figure the month columns add up to). The note gives the move and the balance it began from. The footnote says so
+ * when it is exactly that difference (an account first read inside the period counts from its first balance, so then it says why not),
+ * and names money that came in with no record. Money lent out is a row of its own (moneyShares.ts).
+ */
+export function leftTile(left: number, cashUpi: number, banks: { start: number; end: number; from: string }): { label: string; value: string; note: string; footnote: string; tone?: "positive" } {
+  const matches = Math.abs(banks.end - banks.start - left) < 0.5;
+  const footnote = [matches ? "Matches your balances, to the rupee" : "Accounts first read in this period count from their first balance", ...(cashUpi > 0 ? [`${formatInr(cashUpi)} came in with no record`] : [])].join(" · ");
+  const change = `${left >= 0 ? "Up" : "Down"} ${formatInr(Math.abs(left))} since ${formatShortDate(banks.from)}`;
+  return {
+    label: "In the bank now",
+    value: formatInr(banks.end),
+    note: `${change}, from ${formatInrCompact(banks.start)}`,
+    footnote,
+    tone: left >= 0 ? "positive" : undefined,
+  };
+
 }
 
 /** The note under Saved: what stayed in the bank once brokers and loans are counted, or the plain rule when neither moved money. */

@@ -5,10 +5,8 @@ import { usePickInAddress } from "../usePickInAddress";
 import { AccountsHero } from "./AccountsHero";
 import { ComingUpCard } from "./ComingUpCard";
 import { HistoryCard } from "./HistoryCard";
-import { InOutCard } from "./InOutCard";
 import { MixCard } from "./MixCard";
-import { MoneyInOutCard } from "./MoneyInOutCard";
-import { OverTimeCard } from "./OverTimeCard";
+import { MoneySection } from "./MoneySection";
 
 /**
  * The Accounts page under the greeting (#162): the hero, and below it what's built as the
@@ -32,12 +30,8 @@ export function AccountsDashboard({ view, initialPick }: { view: AccountsPageVie
       )}
       {view.hasAccounts && (
         <>
-          <InOutCard detail={pick.detail} />
-          <OverTimeCard key={pick.id} detail={pick.detail} />
-          <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-2">
-            <MoneyInOutCard detail={pick.detail} />
-            <ComingUpCard detail={pick.detail} />
-          </div>
+          <MoneySection detail={pick.detail} />
+          <ComingUpCard detail={pick.detail} />
         </>
       )}
     </div>

@@ -1,54 +1,54 @@
-import { cameInTile, investedTile, savedNote } from "./investedTile";
-import { bridgeSteps, cameInBySource, comingUp, flows, monthlyFlows, moneyItems, type AccountsData, type BridgeStep as LibBridgeStep, type MoneyItem } from "@/lib/aggregate/accountFlows";
-import { accountColor, isClosed, lastMonthsOfSpan, monthEnds, monthsBetween, periodSpan } from "@/lib/aggregate/accounts";
+import { cameInTile, investedTile, leftTile, spentTile } from "./investedTile";
+import { incomeShares, investedShares, leftShares, spentShares, type MoneyShare } from "./moneyShares";
+import { cameInBySource, comingUp, everythingElse, flows, monthlyFlows, moneyItems, type AccountsData, type MoneyItem } from "@/lib/aggregate/accountFlows";
+import { accountColor, dayBefore, isClosed, lastDayOfMonth, lastMonthsOfSpan, monthsBetween, periodSpan, totalOn } from "@/lib/aggregate/accounts";
 import type { SpendPeriod } from "@/lib/aggregate/cardSpend";
 import { periodName } from "@/lib/aggregate/period";
-import { formatMonthShort, formatShortDate } from "@/lib/format/date";
-import { formatInr, formatInrCompact } from "@/lib/format/money";
+import { formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
+import { formatInr } from "@/lib/format/money";
 import { cardColorKey, whenFrom, type ColorKey } from "@/lib/format/subscriptionLabels";
 
 /**
- * What sits under the hero for one pick (docs/design/accounts.md, "The final design"): this
- * year in and out, Over time (the glow line, River and Bridge), Money in and out by month, and
- * Coming up. Plain, already-formatted data from lib/aggregate/accountFlows.ts, which does the
- * work; every figure that comes from other pages' records is marked "worked out".
+ * What sits under the hero for one pick (docs/design/accounts.md, "The money section"): the four
+ * answers (what came in, what was spent, what was invested, what was left in the bank), the months
+ * behind each, and Coming up. Plain, already-formatted data from lib/aggregate/accountFlows.ts, which
+ * does the work; every figure that comes from other pages' records is marked "worked out".
  */
 
-export interface InOutTile {
+export interface MoneyAnswer {
   label: string;
   value: string;
   note?: string;
+  /** A line under the rows, where the tile has one. */
+  footnote?: string;
   tone?: "positive" | "negative";
+  /** What the figure is made of: the rows under it, and the parts of its bar. */
+  shares: MoneyShare[];
 }
 
-export interface MonthColumn {
+/**
+ * One month of the money section. The recorded parts come from the records kept elsewhere; `cashUpi` is the bank accounts'
+ * balance change that nothing records (negative: money out), and `left` is their real change that month, from recorded balances.
+ */
+export interface MoneyMonth {
   key: string;
   label: string;
+  /** The full month name and year, for the hover card. */
+  name: string;
   cameIn: number;
-  /** Loans paid in that month: drawn on top of came in, apart from it, since it isn't income. */
+  /** Loans paid in that month: apart from came in, since it isn't income. */
   borrowed: number;
-  expenses: number;
-  invested: number;
-  /** Lent to people less paid back that month: drawn on top of invested when positive. */
+  cardBills: number;
+  emis: number;
+  bigSpends: number;
+  subscriptions: number;
+  cashUpi: number;
+  /** Sent to brokers, and what they sent back. */
+  sent: number;
+  takenBack: number;
+  /** Lent to people less paid back that month. */
   lent: number;
-  /** Moved in from his other banks less moved out to them that month: only in the tooltip, since it's neither in nor out of his money. */
-  moved: number;
-  saved: number;
-  savedText: string;
-}
-
-export interface OverTimeMonth {
-  key: string;
-  label: string;
-  total: number;
-  /** What the total moved that month. */
-  change: number;
-  /** Each account's balance at the month's end, for River. */
-  parts: { id: string; name: string; color: ColorKey; balance: number }[];
-}
-
-export interface BridgeStep extends LibBridgeStep {
-  text: string;
+  left: number;
 }
 
 export interface ComingItemView {
@@ -66,17 +66,14 @@ export interface ComingItemView {
 
 export interface PickDetail {
   periodName: string;
-  tiles: InOutTile[];
-  /** What came in, split by source, for the one bar. */
-  split: { source: string; amount: number; text: string; share: number }[];
-  columns: MonthColumn[];
-  overTime: { months: OverTimeMonth[]; bridge: BridgeStep[]; river: boolean };
+  /** Came in, Spent, Invested, In the bank now. */
+  answers: MoneyAnswer[];
+  months: MoneyMonth[];
   coming: ComingItemView[];
   /** Whether anything is recorded in the period to draw, so a quiet pick shows a plain note instead of empty charts. */
   hasFlows: boolean;
 }
 
-const signed = (n: number) => `${n >= 0 ? "+" : "−"}${formatInr(Math.abs(n))}`;
 
 /** Money items by span, shared by every pick of one page build so each span is worked out once. */
 export type ItemsCache = Map<string, MoneyItem[]>;
@@ -91,42 +88,46 @@ export function detailFor(data: AccountsData, accountId: string | null, period: 
   cache.set(key, items);
   const f = flows(items, accountId);
   const months = monthsBetween(span.from, span.to);
-  const split = cameInBySource(data, span.from, span.to, accountId);
   const name = periodName(period, today);
 
-  const tiles: InOutTile[] = [
-    cameInTile(f),
-    { label: "Expenses", value: formatInr(f.expenses), note: f.out["Big spends"] > 0 ? "Card bills, subscriptions, EMIs, big spends" : "Card bills, subscriptions, EMIs" },
-    investedTile(f),
-    { label: "Saved", value: signed(f.saved), note: savedNote(f), tone: f.saved >= 0 ? "positive" : "negative" },
+  // What the bank accounts hold is a bank's story (UPI, cash, the card bills paid from it), so a broker's own balance, which moves with
+  // the market, never counts toward what was left or what went with no record.
+  const banks = { ...data, accounts: data.accounts.filter((a) => a.accountType !== "Brokerage" && (accountId === null || a.id === accountId)) };
+  const rest = everythingElse(banks, items, accountId, span.from, span.to);
+
+  const monthRows = monthlyFlows(items, accountId, months).map(({ month, flows: m }): MoneyMonth => {
+    // A month is worked out on its own days: its items, and the balances at its two ends (the first month from the span's first day).
+    const from = `${month}-01` < span.from ? span.from : `${month}-01`;
+    const last = lastDayOfMonth(month);
+    const to = last > span.to ? span.to : last;
+    const monthRest = everythingElse(banks, items.filter((i) => i.date >= from && i.date <= to), accountId, from, to);
+    return {
+      key: month,
+      label: formatMonthShort(month),
+      name: formatMonthYear(month),
+      cameIn: m.cameIn,
+      borrowed: m.borrowed,
+      cardBills: m.out["Card bills"],
+      emis: m.out.EMIs,
+      bigSpends: m.out["Big spends"],
+      subscriptions: m.out.Subscriptions,
+      cashUpi: monthRest.unexplained,
+      sent: m.sent,
+      takenBack: m.takenBack,
+      lent: m.lent,
+      left: monthRest.change,
+    };
+  });
+
+  const cashOut = Math.max(0, -rest.unexplained);
+  const start = totalOn(banks.accounts, data.snapshots, dayBefore(span.from));
+  const end = totalOn(banks.accounts, data.snapshots, span.to);
+  const answers: MoneyAnswer[] = [
+    { ...cameInTile(f), shares: incomeShares(cameInBySource(data, span.from, span.to, accountId), f.borrowed) },
+    { ...spentTile(f, rest.unexplained), shares: spentShares(f, cashOut) },
+    { ...investedTile(f), shares: investedShares(f) },
+    { ...leftTile(rest.change, rest.unexplained, { start, end, from: span.from }), shares: leftShares(f) },
   ];
-
-  const columns = monthlyFlows(items, accountId, months).map(({ month, flows: m }): MonthColumn => ({
-    key: month,
-    label: formatMonthShort(month),
-    cameIn: m.cameIn,
-    borrowed: m.borrowed,
-    expenses: m.expenses,
-    invested: m.invested,
-    lent: m.lent,
-    moved: m.moved,
-    saved: m.saved,
-    savedText: signed(m.saved),
-  }));
-
-  const accountsById = new Map(scope.map((a) => [a.id, a]));
-  const overMonths = monthEnds(scope, data.snapshots, span).map(
-    (m): OverTimeMonth => ({
-      key: m.month,
-      label: formatMonthShort(m.month),
-      total: m.total,
-      change: m.change,
-      // Only All draws River, so a single account carries no parts.
-      parts: accountId === null ? m.parts.map((p) => ({ id: p.accountId, name: accountsById.get(p.accountId)!.name, color: cardColorKey(accountColor(accountsById.get(p.accountId)!)), balance: p.balance })) : [],
-    }),
-  );
-
-  const bridge: BridgeStep[] = bridgeSteps(data, items, accountId, span).map((b) => ({ ...b, text: b.kind === "total" ? formatInr(b.amount) : signed(b.amount) }));
 
   const names = new Map(data.accounts.map((a) => [a.id, a]));
   const coming = comingUp(data, accountId, today).filter((c) => {
@@ -147,11 +148,9 @@ export function detailFor(data: AccountsData, accountId: string | null, period: 
 
   return {
     periodName: name,
-    tiles,
-    split: split.map((s) => ({ ...s, text: formatInrCompact(s.amount), share: f.cameIn > 0 ? s.amount / f.cameIn : 0 })),
-    columns,
-    overTime: { months: overMonths, bridge, river: accountId === null && scope.length > 1 },
+    answers,
+    months: monthRows,
     coming,
-    hasFlows: items.some((i) => accountId === null || i.accountId === accountId),
+    hasFlows: items.some((i) => accountId === null || i.accountId === accountId) || rest.unexplained !== 0,
   };
 }
