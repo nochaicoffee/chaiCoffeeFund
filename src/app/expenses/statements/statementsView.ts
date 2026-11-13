@@ -113,7 +113,7 @@ export interface LedgerView {
 
 export function ledgerView(model: ExpenseModel): LedgerView {
   const months = [...model.months].reverse().map((m) => ({ month: m.month, title: formatMonthYear(m.month), status: m.status, summary: monthSummary(m), rows: rowsOf(model, m), loose: looseOf(m) }));
-  const counts = { all: 0, card: 0, emi: 0, subs: 0, ins: 0, cash: 0 } as Record<"all" | PartKey, number>;
+  const counts = { all: 0, card: 0, emi: 0, subs: 0, ins: 0, big: 0, cash: 0 } as Record<"all" | PartKey, number>;
   for (const row of months.flatMap((x) => x.rows)) {
     counts.all += 1;
     counts[row.part] += 1;
@@ -148,7 +148,7 @@ export function ledgerView(model: ExpenseModel): LedgerView {
     ],
     months,
     counts,
-    bigCount: months.reduce((s, x) => s + x.rows.filter((r) => r.tags.length > 0).length + (x.loose.length ? 1 : 0), 0),
+    bigCount: months.reduce((s, x) => s + x.rows.filter((r) => r.tags.length > 0 || r.part === "big").length + (x.loose.length ? 1 : 0), 0),
   };
 }
 
@@ -193,7 +193,7 @@ export interface MonthStatementView {
   versus: SentencePart[] | null;
 }
 
-const NOTES: Record<PartKey, string> = { card: "statements paid this month", emi: "interest and principal", subs: "not charged to a card", ins: "premiums not on a card", cash: "worked out: what's left" };
+const NOTES: Record<PartKey, string> = { card: "statements paid this month", emi: "interest and principal", subs: "not charged to a card", ins: "premiums not on a card", big: "bought from your accounts", cash: "worked out: what's left" };
 
 export function monthStatementView(model: ExpenseModel): MonthStatementView {
   const m = model.picked;
@@ -215,7 +215,7 @@ export function monthStatementView(model: ExpenseModel): MonthStatementView {
         { key: "in", label: "Came in", note: "salary and other income", amount: `+${rupees(m.cameIn)}`, tone: "in" as const },
         ...(m.borrowed ? [{ key: "borrowed", label: "Borrowed", note: "a loan paid into an account", amount: `+${rupees(m.borrowed)}`, tone: "in" as const }] : []),
         ...(m.cameBack ? [{ key: "back", label: "Came back", note: "deposits paid out, money lent repaid", amount: `+${rupees(m.cameBack)}`, tone: "in" as const }] : []),
-        ...(m.invested !== 0 ? [{ key: "inv", label: m.invested > 0 ? "Moved to investing" : "Came out of investing", note: "bought less sold, and new deposits", amount: `${m.invested > 0 ? "−" : "+"}${rupees(Math.abs(m.invested))}`, tone: (m.invested > 0 ? "out" : "in") as "in" | "out" }] : []),
+        ...(m.invested !== 0 ? [{ key: "inv", label: m.invested > 0 ? "Moved to investing" : "Came out of investing", note: "sent to brokers less sent back, and new deposits", amount: `${m.invested > 0 ? "−" : "+"}${rupees(Math.abs(m.invested))}`, tone: (m.invested > 0 ? "out" : "in") as "in" | "out" }] : []),
         ...(m.lentOut ? [{ key: "lent", label: "Lent out", note: "money lent to people", amount: `−${rupees(m.lentOut)}`, tone: "out" as const }] : []),
         { key: "spent", label: "Spent", note: "the payments on the left", amount: `−${rupees(m.spent ?? 0)}`, tone: "out" as const },
       ]
@@ -241,7 +241,7 @@ export function monthStatementView(model: ExpenseModel): MonthStatementView {
     notice: done ? undefined : m.status === "progress" ? "The month isn't over: these are the payments so far. Cash and UPI, and what was spent in all, come once it ends and its balances are in." : `What was spent in all can't be worked out: ${m.reason}. These are the payments recorded.`,
     tiles: done
       ? [
-          { label: startLabel, value: rupees(m.poolStart ?? 0), note: "in your accounts and broker cash" },
+          { label: startLabel, value: rupees(m.poolStart ?? 0), note: "in your bank accounts" },
           { label: "Came in", value: rupees(allIn(m)), note: m.invested > 0 ? `${rupees(m.invested)} of it invested` : "salary and other income" },
           { label: "Spent", value: rupees(m.spent ?? 0), note: `${plural(m.payments.filter((p) => p.part !== "cash").length, "payment", "payments")} · ${m.spent ? Math.round((m.parts.cash / m.spent) * 100) : 0}% cash and UPI` },
           { label: endLabel, value: rupees(m.poolEnd ?? 0), note: `${(m.kept ?? 0) >= 0 ? "+" : "−"}${rupees(Math.abs(m.kept ?? 0))} over the month` },
@@ -249,7 +249,7 @@ export function monthStatementView(model: ExpenseModel): MonthStatementView {
       : [
           { label: "Came in", value: rupees(allIn(m)), note: m.status === "progress" ? "so far" : "recorded" },
           { label: m.status === "progress" ? "Paid so far" : "Paid", value: rupees(m.explained), note: "card bills, EMIs, subscriptions, insurance" },
-          { label: "Invested", value: rupees(m.invested), note: "bought less sold" },
+          { label: "Invested", value: rupees(m.invested), note: "sent to brokers less sent back" },
           { label: "Spent", value: "—", note: m.status === "progress" ? "when the month ends" : "can't be worked out" },
         ],
     sections,

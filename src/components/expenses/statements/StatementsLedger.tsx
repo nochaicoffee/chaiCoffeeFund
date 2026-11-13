@@ -10,7 +10,7 @@ import { HATCH } from "../hatch";
 import { PartIcon } from "./PartIcon";
 
 type Kind = "all" | PartKey;
-const KINDS: Kind[] = ["all", "card", "emi", "subs", "ins", "cash"];
+const KINDS: Kind[] = ["all", "card", "emi", "subs", "ins", "big", "cash"];
 const MONTHS_FIRST = 4;
 
 /** A line's icon: its kind's colour, the worked-out cash and UPI hatched. */

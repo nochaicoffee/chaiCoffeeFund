@@ -1,7 +1,7 @@
 import type { SentencePart } from "@/app/cards/summarySentence";
 import type { GreetingRowData } from "@/components/shell/GreetingParts";
 import { addMonths, monthOf, type MonthKey } from "@/lib/aggregate/cardSpend";
-import { expenseMonths, PART_KEYS, placeBigSpends, totalsOf, usualParts, usualSpent, type ExpenseData, type MonthExpenses, type PartKey, type PlacedBigSpend } from "@/lib/aggregate/expenses";
+import { expenseMonths, goalBigSpends, PART_KEYS, placeBigSpends, totalsOf, usualParts, usualSpent, type ExpenseData, type MonthExpenses, type PartKey, type PlacedBigSpend } from "@/lib/aggregate/expenses";
 import { formatMonthShort, formatMonthYear, formatShortDate, MONTH_NAMES } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import type { BigSpendCategory } from "@/lib/sheets/types";
@@ -14,11 +14,11 @@ import type { BigSpendCategory } from "@/lib/sheets/types";
 /** How many months the page looks back over, the month today is in included. */
 export const MONTHS_SHOWN = 12;
 
-export const PART_NAMES: Record<PartKey, string> = { card: "Card bills", emi: "EMIs", subs: "Subscriptions", ins: "Insurance", cash: "Cash and UPI" };
-export const PART_SHORT: Record<PartKey, string> = { card: "Cards", emi: "EMIs", subs: "Subs", ins: "Insurance", cash: "Cash, UPI" };
-const PART_NOTES: Record<PartKey, string> = { card: "statements paid this month", emi: "interest and principal", subs: "not charged to a card", ins: "premiums not on a card", cash: "worked out: what's left" };
+export const PART_NAMES: Record<PartKey, string> = { card: "Card bills", emi: "EMIs", subs: "Subscriptions", ins: "Insurance", big: "Big spends", cash: "Cash and UPI" };
+export const PART_SHORT: Record<PartKey, string> = { card: "Cards", emi: "EMIs", subs: "Subs", ins: "Insurance", big: "Big", cash: "Cash, UPI" };
+const PART_NOTES: Record<PartKey, string> = { card: "statements paid this month", emi: "interest and principal", subs: "not charged to a card", ins: "premiums not on a card", big: "bought from your accounts", cash: "worked out: what's left" };
 /** Colour token keys (`var(--card-<key>)`). */
-export const PART_COLORS: Record<PartKey, string> = { card: "ruby", emi: "teal", subs: "plum", ins: "amber", cash: "copper" };
+export const PART_COLORS: Record<PartKey, string> = { card: "ruby", emi: "teal", subs: "plum", ins: "amber", big: "magenta", cash: "copper" };
 export const CATEGORY_COLORS: Record<BigSpendCategory, string> = { Travel: "azure", Shopping: "raspberry", Electronics: "indigo", Home: "forest", Health: "coral", Gifts: "orchid", Vehicle: "spruce", Education: "honey", Other: "slate" };
 
 export interface ExpenseModel {
@@ -48,7 +48,7 @@ export function expenseModel(data: ExpenseData, today: string, requested?: strin
     usual: usualSpent(past),
     usualParts: usualParts(past),
     // Counted in a month shown, or still waiting in a card bill and bought since the first month shown.
-    placed: placeBigSpends(data.bigSpends, data.statements).filter((p) => (p.month ? p.month >= months[0].month && p.month <= current : p.spend.date >= `${months[0].month}-01`)),
+    placed: placeBigSpends([...data.bigSpends, ...goalBigSpends(data.goals ?? [])], data.statements).filter((p) => (p.month ? p.month >= months[0].month && p.month <= current : p.spend.date >= `${months[0].month}-01`)),
     accountName: new Map(data.accounts.map((a) => [a.id, a.name])),
     cardName: new Map(data.cards.map((c) => [c.id, c.alias || c.name])),
   };
@@ -124,8 +124,8 @@ export function greetingView(model: ExpenseModel): ExpenseGreetingCards {
       { key: "in", name: "Came in", amount: m.cameIn, note: "salary and other income" },
       { key: "borrowed", name: "Borrowed", amount: m.borrowed, note: "a loan paid into your account" },
       { key: "back", name: "Came back", amount: m.cameBack, note: "deposits paid out, money lent repaid" },
-      { key: "sold", name: "Sold", amount: m.sold, note: "investments sold" },
-      { key: "bought", name: "Bought", amount: -m.bought, note: "investments and new deposits" },
+      { key: "sold", name: "Back from brokers", amount: m.sold, note: "money your brokers sent back" },
+      { key: "bought", name: "Sent to brokers", amount: -m.bought, note: "and new deposits" },
       { key: "lent", name: "Lent out", amount: -m.lentOut, note: "money lent to people" },
       { key: "kept", name: "Kept", amount: -(m.kept ?? 0), note: "what stayed in your accounts" },
     ]
@@ -140,8 +140,8 @@ export function greetingView(model: ExpenseModel): ExpenseGreetingCards {
       title: kept >= 0 ? "What stayed in your accounts" : "What came out of savings",
       total: rupees(Math.abs(kept)),
       rows: m.accounts
-        .filter((a) => a.changeInr !== 0 || a.carriedFrom)
-        .map((a) => ({ key: a.account.id, name: a.account.name, colorKey: a.changeInr >= 0 ? "jade" : "coral", amount: `${a.changeInr >= 0 ? "+" : ""}${rupees(a.changeInr)}`, note: a.carriedFrom ? `balance from ${formatShortDate(a.carriedFrom)}: update it` : a.account.accountType === "Brokerage" ? "cash at the broker" : undefined, warn: Boolean(a.carriedFrom) })),
+        .filter((a) => a.changeInr !== 0)
+        .map((a) => ({ key: a.account.id, name: a.account.name, colorKey: a.changeInr >= 0 ? "jade" : "coral", amount: `${a.changeInr >= 0 ? "+" : ""}${rupees(a.changeInr)}` })),
       note: `Your accounts held ${rupees(m.poolStart ?? 0)} at the start and ${rupees(m.poolEnd ?? 0)} at the end${m.usdInr && m.accounts.some((a) => a.account.currency === "USD") ? `, dollars at ₹${m.usdInr.toFixed(2)}` : ""}.`,
     };
   } else {
@@ -158,8 +158,8 @@ export function greetingView(model: ExpenseModel): ExpenseGreetingCards {
       title: "Into investments",
       total: rupees(m.invested),
       rows: [
-        { key: "bought", name: "Bought", colorKey: "sapphire", amount: rupees(m.bought), note: "market buys and new deposits" },
-        { key: "sold", name: "Sold", colorKey: "slate", amount: `−${rupees(m.sold)}`, note: "the money stays with you until spent" },
+        { key: "bought", name: "Sent to brokers", colorKey: "sapphire", amount: rupees(m.bought), note: "transfers to brokers, and new deposits" },
+        { key: "sold", name: "Back from brokers", colorKey: "slate", amount: `−${rupees(m.sold)}`, note: "the money stays with you until spent" },
       ].filter((r) => r.amount !== "₹0" && r.amount !== "−₹0"),
       note: "RSU vests and ESPP purchases aren't here: no money of yours moved.",
     };
@@ -207,7 +207,7 @@ export interface HeroView {
   notice?: string;
   cameIn: { label: string; amount: string } | null;
   split: SplitSegment[];
-  /** What the split leaves out because it's below zero: taken from savings, more sold than bought. */
+  /** What the split leaves out because it's below zero: taken from savings, more back from brokers than sent. */
   splitNote?: string;
   parts: SplitSegment[];
   chips: MonthChip[];
@@ -239,7 +239,7 @@ export function heroView(model: ExpenseModel): HeroView {
   const split = splitRaw.filter((s) => s.value > 0).map((s) => ({ key: s.key, label: s.label, amount: formatInrCompact(s.value), share: s.value / splitTotal, colorKey: s.colorKey }));
   const notes: string[] = [];
   if (done && (m.kept ?? 0) < 0) notes.push(`${rupees(-(m.kept ?? 0))} came out of savings`);
-  if (done && m.invested < 0) notes.push(`${rupees(-m.invested)} more was sold than bought`);
+  if (done && m.invested < 0) notes.push(`${rupees(-m.invested)} more came back from brokers than was sent`);
 
   const partTotal = PART_KEYS.reduce((t, k) => t + Math.max(0, m.parts[k]), 0);
   const parts = PART_KEYS.filter((k) => m.parts[k] > 0).map((k) => ({ key: k, label: PART_SHORT[k], amount: formatInrCompact(m.parts[k]), share: m.parts[k] / partTotal, colorKey: PART_COLORS[k], hatched: k === "cash" }));
@@ -407,6 +407,7 @@ export interface MonthRow {
   card: string;
   emi: string;
   subsIns: string;
+  bigSpent: string;
   cash: string;
   bigs: { key: string; category: BigSpendCategory; colorKey: string }[];
   bigLabel?: string;
@@ -438,6 +439,7 @@ export function monthsView(model: ExpenseModel): MonthsView {
       card: dash(m.parts.card),
       emi: dash(m.parts.emi),
       subsIns: dash(m.parts.subs + m.parts.ins),
+      bigSpent: dash(m.parts.big),
       cash: done ? rupees(m.parts.cash) : "–",
       bigs: m.bigSpends.map((b) => ({ key: b.spend.id, category: b.spend.category, colorKey: CATEGORY_COLORS[b.spend.category] })),
       bigLabel: m.bigSpends.length === 1 ? m.bigSpends[0].spend.name : m.bigSpends.length > 1 ? `${m.bigSpends.length} big spends` : undefined,
@@ -458,6 +460,7 @@ export function monthsView(model: ExpenseModel): MonthsView {
       card: dash(t.parts.card),
       emi: dash(t.parts.emi),
       subsIns: dash(t.parts.subs + t.parts.ins),
+      bigSpent: dash(t.parts.big),
       cash: dash(t.parts.cash),
     },
   };

@@ -59,6 +59,21 @@ A page of its own for what Prathik spends each month. Overview gets one small ti
 2. How much of it was card bills, subscriptions, EMIs, and how much was cash / UPI (the leftover)?
 3. What were the big spends that made a month high?
 
+## Changed 2026-11-13: the pool is the bank accounts, and brokers are met through Transfers
+
+**Supersedes "The calculation: the pool" below for how brokers count.** The pool above put every broker's cash in the pool because money sent to brokers wasn't recorded. It now is: every transfer between his banks and his brokers is in the Transfers tab (the Accounts page reads the same tab, and Investments has an *Add transfer* button and a Transfers card), so the page now uses the bank-only pool with those transfers, exactly as Accounts does.
+
+```
+Spent = Came in + Borrowed + Came back + Taken back − Sent to brokers − New deposits − Lent out − (banks at end of M − banks at end of M−1)
+```
+
+- **The pool** is every account that isn't `Brokerage`. A broker's balance is never read, so no broker needs a month-end balance and **every month can be worked out**, not only those after 31 Oct 2026. (Asked and agreed 2026-11-13: October reads cash and UPI without any broker cash.)
+- **Sent to brokers** is a Transfer from a bank account to a Brokerage account in M, in rupees (the rupees that left the bank). **Taken back** is one the other way, at what arrived in the bank (`receivedAmount`, else `amount`). Both show in the Invested figure (sent less taken back) and the months table. A transfer between two banks nets out in the pool; one between two brokers never touches it.
+- **Trades no longer count here.** What happens inside a broker (buys, sells, dividends, RSU vests, ESPP) never touches a bank, so it is in neither bought nor sold. New fixed deposits still count as money out of the pool, and a closed one's payout as came back.
+- **An unrecorded transfer** (or money that came in with no record) shows up as cash and UPI, below zero when more left to brokers than the records explain. Adding the transfer fixes the month.
+- **Big spends paid from an account are a part of their own (`big`), no longer inside cash and UPI** (found 2026-11-13: October's "cash and UPI ₹1,14,480" held ₹93,000 of car upgrades, the Suspension, Alloy Wheels, Tyres and fitting goals, which Accounts already counted). A big spend with `paidFromAccountId`, and a goal marked bought with an account (Done, `doneOn`, `actualCost`), is a payment on its day and counts as explained, so cash and UPI is only what no record explains (October: ₹21,480). What was spent in all doesn't change. One charged to a card stays inside that card's bill; one naming no account stays inside cash and UPI. The months table gained a Big spends column so every row adds up.
+- **The only reason left for "can't be worked out"** is a dollar bank account with no USD to INR rate. The broker-cash notice is gone.
+
 ## The calculation: the pool (agreed 2026-11-08, replaces the bank-only version)
 
 His savings and salary accounts **and the cash at every broker** (the `Brokerage` accounts: IND Money - Prathik, IND Money - Mom, which is his own money, IBKR and E\*TRADE) are one **pool**. Moving money between them (HDFC to Jupiter, a wire from HDFC to IBKR) moves nothing out of the pool, so nobody has to tag which account paid for what. He usually wires to a broker first and buys from the broker's cash, so trades happen inside the pool. For a month M:

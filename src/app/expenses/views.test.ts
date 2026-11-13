@@ -9,10 +9,11 @@ const paid = (id: string, paidDate: string, amount: number, statementDate = "202
 
 function data(over: Partial<ExpenseData> = {}): ExpenseData {
   return {
-    accounts: [account("hdfc"), account("ibkr", { name: "IBKR", accountType: "Brokerage", currency: "USD" })],
+    // A dollar bank account with a rate only from Nov 30 on: the months before it can't be worked out, which these tests lean on.
+    accounts: [account("hdfc"), account("usd", { name: "Dollar account", currency: "USD" }), account("ibkr", { name: "IBKR", accountType: "Brokerage", currency: "USD" })],
     snapshots: [bal("hdfc", "2026-10-31", 100000), bal("hdfc", "2026-11-30", 130000), bal("ibkr", "2026-10-31", 1000), bal("ibkr", "2026-11-30", 1000)],
     usdInr: [{ date: "2026-11-30", close: 88 }],
-    usdInrToday: 88,
+    usdInrToday: null,
     incomeEntries: [{ id: "i", incomeSourceId: "s", expectedDate: "2026-11-01", receivedDate: "2026-11-01", amount: 200000, status: "Received", tag: "Regular" }],
     incomeSources: [],
     cards: [{ id: "c1", name: "Regalia", alias: "HDFC Regalia", issuer: "HDFC-Bank", cardType: "Reward-Points", creditLimit: 1, statementDay: 20, dueDayBuffer: 19, status: "Active" }],
@@ -24,11 +25,12 @@ function data(over: Partial<ExpenseData> = {}): ExpenseData {
     prepayments: [],
     policies: [],
     policyPayments: [],
-    trades: [{ id: "t", tradeDate: "2026-11-10", symbol: "NIFTYBEES", market: "IND", currency: "INR", tradeType: "Buy", source: "Market", quantity: 1, price: 50000, total: 50000, assetType: "ETF", broker: "Zerodha" }],
+    transfers: [{ id: "t", date: "2026-11-10", fromAccountId: "hdfc", toAccountId: "ibkr", amount: 50000, receivedAmount: 570 }],
     fixedDeposits: [],
     lentLoans: [],
     lentRepayments: [],
     bigSpends: [],
+    goals: [],
     ...over,
   } as ExpenseData;
 }
@@ -70,9 +72,9 @@ describe("the Expenses greeting", () => {
   });
 
   it("on a month that can't be worked out, says why", () => {
-    const model = expenseModel(data({ snapshots: [bal("hdfc", "2026-10-31", 1), bal("ibkr", "2026-11-30", 1)] }), "2026-12-09", "2026-11");
-    expect(summarySentence(model)[0].text).toContain("broker cash not recorded (IBKR)");
-    expect(heroView(model).notice).toContain("IBKR");
+    const model = expenseModel(data({ accounts: [account("hdfc"), account("usd", { name: "Dollar account", currency: "USD" })], usdInr: [], usdInrToday: null, snapshots: [bal("hdfc", "2026-10-31", 1), bal("hdfc", "2026-11-30", 1)] }), "2026-12-09", "2026-11");
+    expect(summarySentence(model)[0].text).toContain("no USD to INR rate for the month");
+    expect(heroView(model).notice).toContain("USD to INR");
   });
 });
 
