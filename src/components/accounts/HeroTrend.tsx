@@ -133,7 +133,7 @@ function Trend({ pick, flowItems, today }: { pick: PickView; flowItems: FlowItem
 
   const facts: FactView[] = [
     cameInTile(money),
-    { label: "Spent", value: formatInr(money.expenses), note: "Bills, subscriptions, EMIs" },
+    { label: "Spent", value: formatInr(money.expenses), note: money.out["Big spends"] > 0 ? "Bills, subscriptions, EMIs, big spends" : "Bills, subscriptions, EMIs" },
     investedTile(money),
     { label: "Left the bank", value: formatInr(money.leftBank), note: money.lentOut > 0 ? "Spent, sent to brokers and lent" : "Spent and sent to brokers" },
   ];
