@@ -1,5 +1,6 @@
 import { formatMonthYear } from "../format/date";
 import { balanceOn, lastDayOfMonth } from "./accounts";
+import { netDisbursedAmount, paidIntoAccount } from "./loans";
 import { addMonths, monthOf, type MonthKey } from "./cardSpend";
 import { priceOnOrBefore } from "../prices/history";
 import type { PricePoint } from "../prices/history";
@@ -165,7 +166,7 @@ function sellsToCover(trades: InvestmentTransaction[]): Set<string> {
 }
 
 /** What a disbursal put in the account: the principal less the fee, the stamp duty and the gap interest taken out of it. */
-export const disbursedAmount = (loan: Loan): number => loan.principalAmount - loan.processingFee - loan.stampDuty - loan.preEmiInterest;
+export const disbursedAmount = (loan: Loan): number => netDisbursedAmount(loan);
 
 function earliest(snapshots: BalanceSnapshot[], accountId: string): BalanceSnapshot | null {
   let found: BalanceSnapshot | null = null;
@@ -278,7 +279,7 @@ export function monthExpenses(data: ExpenseData, month: MonthKey, today: string,
   const ended = end < today;
 
   const cameIn = sum(data.incomeEntries.filter((e) => e.status === "Received" && inMonth(e.receivedDate, month)).map((e) => e.amount));
-  const borrowed = sum(data.loans.filter((l) => l.disbursedTo !== "Seller" && l.accountId !== undefined && prepared.accountIds.has(l.accountId) && inMonth(l.disbursementDate, month)).map(disbursedAmount));
+  const borrowed = sum(data.loans.filter((l) => paidIntoAccount(l) && prepared.accountIds.has(l.accountId) && inMonth(l.disbursementDate, month)).map(disbursedAmount));
   const cameBack =
     sum(data.fixedDeposits.filter((d) => d.status === "Closed" && inMonth(d.closedDate, month)).map((d) => d.receivedAmount ?? 0)) +
     sum(data.lentRepayments.filter((r) => inMonth(r.date, month)).map((r) => r.amount));

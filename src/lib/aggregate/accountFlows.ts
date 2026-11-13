@@ -1,6 +1,6 @@
 import { balanceOn, dayBefore, totalOn } from "./accounts";
 import { dueDateFor, nextStatementDate } from "./cardSchedule";
-import { emiExceedsBalance } from "./loans";
+import { emiExceedsBalance, netDisbursedAmount, paidIntoAccount } from "./loans";
 import { monthRange, type MonthKey } from "./cardSpend";
 import { nextOccurrence } from "./recurring";
 import { addDays } from "./subscriptionRenewals";
@@ -21,9 +21,12 @@ import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, Income
  * - Came in: a received income entry landing in the account, on its received date.
  * - Taken back: money a Brokerage account sent back to a bank account (a Transfer), profit and all. It isn't earnings, so it's not
  *   "came in": it's investing in reverse. Invested = sent − taken back, so a year that took more back than it sent is negative.
+ * - Borrowed: a loan's disbursal into the account (what reached it, after the bank's fees), on its disbursement day. It isn't income,
+ *   so it's not "came in" and not saved; it is money the bank account held, so kept in the bank counts it. A loan paid straight to a
+ *   seller never reached an account and isn't counted.
  * - A transfer between two bank accounts, or two brokers, moves nothing in or out of "your bank", so it isn't counted.
  * - Expenses = card bills + subscriptions + EMIs. Saved = came in − expenses, so money invested
- *   counts as saved (decision 19); kept in the bank = saved − invested.
+ *   counts as saved (decision 19); kept in the bank = saved + borrowed − invested.
  * - Everything else: the balance change those don't explain (UPI, cash, transfers between your own
  *   accounts, which aren't recorded anywhere).
  */
@@ -65,7 +68,7 @@ export const OUT_KINDS = ["Card bills", "Subscriptions", "EMIs", "Investments"] 
 export type OutKind = (typeof OUT_KINDS)[number];
 
 export interface MoneyItem {
-  kind: OutKind | "Came in" | "Taken back";
+  kind: OutKind | "Came in" | "Taken back" | "Borrowed";
   date: string;
   amount: number;
   accountId: string;
@@ -110,6 +113,12 @@ export function moneyItems(data: AccountsData, from: string, to: string): MoneyI
       if (amount !== undefined) items.push({ kind: "Taken back", date: t.date, amount, accountId: t.toAccountId, label: nameOf(t.fromAccountId) });
     }
   }
+  for (const l of data.loans) {
+    // Only into an account he has, like a transfer: a loan naming one that isn't listed reached nothing counted here.
+    if (!paidIntoAccount(l) || !accountsById.has(l.accountId) || !within(l.disbursementDate, from, to)) continue;
+    const amount = netDisbursedAmount(l);
+    if (amount > 0) items.push({ kind: "Borrowed", date: l.disbursementDate, amount, accountId: l.accountId, label: l.name });
+  }
   const sources = new Map(data.incomeSources.map((s) => [s.id, s]));
   for (const e of data.incomeEntries) {
     if (e.status !== "Received" || !e.accountId || !within(e.receivedDate, from, to) || !(e.amount > 0)) continue;
@@ -129,9 +138,11 @@ export interface Flows {
   sent: number;
   /** Money brokers sent back to the bank. */
   takenBack: number;
+  /** Loans paid into the account (net of the bank's fees). Not income, so not in came in or saved. */
+  borrowed: number;
   /** Came in − expenses: investing counts as saved (decision 19). */
   saved: number;
-  /** Saved − invested. */
+  /** Saved + borrowed − invested. */
   keptInBank: number;
   /** Everything that left the account: expenses and what was sent to brokers. */
   leftBank: number;
@@ -151,7 +162,8 @@ export function flows(items: FlowItem[], accountId: string | null): Flows {
   const saved = cameIn - expenses;
   const takenBack = sum(mine, "Taken back");
   const invested = out.Investments - takenBack;
-  return { cameIn, out, expenses, invested, sent: out.Investments, takenBack, saved, keptInBank: saved - invested, leftBank: expenses + out.Investments };
+  const borrowed = sum(mine, "Borrowed");
+  return { cameIn, out, expenses, invested, sent: out.Investments, takenBack, borrowed, saved, keptInBank: saved + borrowed - invested, leftBank: expenses + out.Investments };
 }
 
 /** The movements after `after` up to and including `to`: the stretch between two readings of a line. Without `after`, everything up to `to`. */
@@ -220,7 +232,7 @@ export function everythingElse(data: AccountsData, items: MoneyItem[], accountId
     if (first) change += end.balance - first.balance;
   }
   const mine = accountId === null ? items : items.filter((i) => i.accountId === accountId);
-  const explained = sum(mine, "Came in") + sum(mine, "Taken back") - OUT_KINDS.reduce((total, kind) => total + sum(mine, kind), 0);
+  const explained = sum(mine, "Came in") + sum(mine, "Taken back") + sum(mine, "Borrowed") - OUT_KINDS.reduce((total, kind) => total + sum(mine, kind), 0);
   return { change, explained, unexplained: change - explained };
 }
 
@@ -328,6 +340,7 @@ export function bridgeSteps(data: AccountsData, items: MoneyItem[], accountId: s
   };
   add("Came in", f.cameIn);
   add("Taken back", f.takenBack);
+  add("Borrowed", f.borrowed);
   for (const kind of OUT_KINDS) add(kind, -f.out[kind]);
   add("Everything else", rest.unexplained, true);
   add("Accounts opened", end - (start + rest.change));
