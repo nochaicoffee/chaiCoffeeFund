@@ -826,6 +826,8 @@ export interface LentLoan {
   incomeSourceId?: string;
   /** The loan's colour on the Lent page. A row without one gets a stable one from its id (lentLoanColor in lib/aggregate/lentOut.ts). */
   color?: CardColor;
+  /** The bank account the money left, so Accounts counts it going out (and repayments coming back to it). Blank: not counted there. */
+  paidFromAccountId?: string;
 }
 
 /** What a repayment paid: some of the principal, or some interest. */

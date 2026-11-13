@@ -14,6 +14,16 @@ describe("readLentLoanForm", () => {
     expect(readLentLoanForm(accruing, {}, TODAY)).toEqual({ ok: true, input: { borrowerName: "Friend", principalAmount: 650000, startDate: "2024-10-01", interestMode: "Accruing", interestRate: 12 } });
     expect(readLentLoanForm(paidOut, {}, TODAY)).toEqual({ ok: true, input: { borrowerName: "Friend", principalAmount: 300000, startDate: "2025-11-01", interestMode: "Paid-out", payoutFrequency: "Monthly", payoutAmount: 6000 } });
   });
+
+  it("keeps the account the money left, and refuses one that isn't in Accounts", () => {
+    const named = readLentLoanForm({ ...paidOut, paidFromAccountId: "hdfc" }, { accountIds: ["hdfc"] }, TODAY);
+    expect(named.ok && named.input.paidFromAccountId).toBe("hdfc");
+    const gone = readLentLoanForm({ ...paidOut, paidFromAccountId: "closed" }, { accountIds: ["hdfc"] }, TODAY);
+    expect(!gone.ok && gone.errors.paidFromAccountId).toMatch(/isn't in Accounts/);
+    // Blank is not set.
+    const blank = readLentLoanForm({ ...paidOut, paidFromAccountId: "" }, { accountIds: ["hdfc"] }, TODAY);
+    expect(blank.ok && "paidFromAccountId" in blank.input).toBe(false);
+  });
   it("ignores the other mode's fields, so switching the mode drops them", () => {
     const r = readLentLoanForm({ ...accruing, payoutFrequency: "Monthly", payoutAmount: "6000" }, {}, TODAY);
     expect(r).toMatchObject({ ok: true });

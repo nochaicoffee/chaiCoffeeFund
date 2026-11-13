@@ -51,6 +51,9 @@ export function LoanDialog({ forms, loan, onClose, onSaved, onDelete }: { forms:
   const [existingId, setExistingId] = useState("");
   const [statementMatch, setStatementMatch] = useState("");
   const [accountId, setAccountId] = useState("");
+  const [lentFrom, setLentFrom] = useState(loan?.paidFromAccountId ?? "");
+  // A loan keeps an account it already named even after that account is closed.
+  const lentFromOptions = loan?.paidFromAccountId && !forms.accounts.some((a) => a.id === loan.paidFromAccountId) ? [...forms.accounts, { id: loan.paidFromAccountId, name: "An account no longer open" }] : forms.accounts;
 
   const own = loan ? forms.repayments.filter((r) => r.loanId === loan.id) : [];
   const earliestRepayment = own.map((r) => r.date).sort()[0];
@@ -62,12 +65,12 @@ export function LoanDialog({ forms, loan, onClose, onSaved, onDelete }: { forms:
   const selectedId = eligible.some((s) => s.id === existingId) ? existingId : (eligible[0]?.id ?? "");
   const creating = showSource && withSource && !existing;
   const values: Record<string, string> = {
-    borrowerName: name, principalAmount: principal, startDate, interestMode: mode, color,
+    borrowerName: name, principalAmount: principal, startDate, interestMode: mode, color, paidFromAccountId: lentFrom,
     ...(mode === "Accruing" ? { interestRate: rate } : { payoutFrequency: frequency, payoutAmount: payout }),
     ...(creating && { createIncomeSource: "1", statementMatch, accountId }),
     ...(existing && { incomeSourceId: selectedId }),
   };
-  const loanCheck = readLentLoanForm(values, { earliestRepayment, principalReturned: loan ? principalReturned : undefined }, forms.today);
+  const loanCheck = readLentLoanForm(values, { earliestRepayment, principalReturned: loan ? principalReturned : undefined, accountIds: lentFromOptions.map((a) => a.id) }, forms.today);
   // The source he picked has to suit the loan (same amount): the server checks again, with the other loans' links.
   const link = existing && loanCheck.ok ? readExistingSource(values, loanCheck.input, { sources: forms.sources, linkedElsewhere: [] }) : null;
   const check = link && !link.ok ? link : loanCheck;
@@ -141,6 +144,9 @@ export function LoanDialog({ forms, loan, onClose, onSaved, onDelete }: { forms:
         </Field>
         <Field id="startDate" label="Lent on" required error={errors.startDate}>
           <DateInput {...describedBy("startDate", errors.startDate, false)} label="Lent on" name="startDate" value={startDate} onChange={setStartDate} onBlur={() => reveal("startDate")} today={forms.today} invalid={Boolean(errors.startDate)} />
+        </Field>
+        <Field id="paidFromAccountId" label="Lent from" help="The account the money left. Accounts counts it going out, and repayments coming back to it." error={errors.paidFromAccountId}>
+          <SelectInput id="paidFromAccountId" name="paidFromAccountId" invalid={Boolean(errors.paidFromAccountId)} options={[{ value: "", label: "Not set", quiet: true }, ...lentFromOptions.map((a) => ({ value: a.id, label: a.name }))]} value={lentFrom} onChange={setLentFrom} placeholder="Not set" />
         </Field>
         <div className="md:col-span-2">
           <Segmented name="interestMode" legend="How the interest works" required options={MODES} value={mode} onChange={setMode} help={mode === "Accruing" ? "It builds up, and is paid with the principal whenever they pay." : "A fixed amount arrives every period, and the principal stays out until it is returned."} error={errors.interestMode} />

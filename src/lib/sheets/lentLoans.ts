@@ -18,6 +18,8 @@ const lentLoanFields = z.object({
   // Added on the end for the Lent page (docs/design/lent-out.md, A1).
   incomeSourceId: nonEmptyString.optional(),
   color: z.enum(CARD_COLORS).optional(),
+  // Added on the end so Accounts can count lending (docs/system-design.md, "Lent out on Accounts").
+  paidFromAccountId: nonEmptyString.optional(),
 });
 
 const lentLoanRules = rowRules<Omit<LentLoan, "id">>([
@@ -46,6 +48,7 @@ export const updateLentLoanSchema = lentLoanFields
     closedDate: clearableToUnset(isoDate).optional(),
     incomeSourceId: clearableToUnset(nonEmptyString).optional(),
     color: clearableToUnset(z.enum(CARD_COLORS)).optional(),
+    paidFromAccountId: clearableToUnset(nonEmptyString).optional(),
   });
 
 /** A row as read back from the Sheet: a valid create, plus its id. */
@@ -54,7 +57,7 @@ export const lentLoanRowSchema = lentLoanFields.extend({ id: nonEmptyString }).s
 /** The LentLoans tab's columns, in order. The tab is created by `/api/dev/sheet-columns?tab=LentLoans`. */
 export const LENT_LOAN_COLUMNS: (keyof LentLoan)[] = [
   "id", "borrowerName", "principalAmount", "startDate", "interestMode", "interestRate", "payoutFrequency", "payoutAmount", "status", "closedDate",
-  "incomeSourceId", "color",
+  "incomeSourceId", "color", "paidFromAccountId",
 ];
 
 export const lentLoansRepository = createRepository<LentLoan>({

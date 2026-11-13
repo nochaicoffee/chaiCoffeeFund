@@ -194,6 +194,65 @@ describe("Borrowed: a loan paid into an account", () => {
   });
 });
 
+describe("Lent out and paid back", () => {
+  const loan = { borrowerName: "Hotel Sonali Jan", principalAmount: 182_000, startDate: "2026-01-01", interestMode: "Paid-out", payoutFrequency: "Quarterly", payoutAmount: 18_000, status: "Active" } as const;
+  const d = data({
+    snapshots: [snap("hdfc", "2025-12-31", 200_000), snap("hdfc", "2026-03-31", 268_000)],
+    lentLoans: [
+      { ...loan, id: "j", paidFromAccountId: "hdfc" },
+      // No account named, and one naming an account that isn't listed: neither is counted.
+      { ...loan, id: "n", borrowerName: "Ranjith" },
+      { ...loan, id: "g", borrowerName: "Gone", paidFromAccountId: "gone" },
+    ],
+    lentRepayments: [
+      { id: "r1", lentLoanId: "j", date: "2026-03-01", amount: 50_000, kind: "Principal" },
+      { id: "r2", lentLoanId: "n", date: "2026-03-01", amount: 9_999, kind: "Principal" },
+    ],
+    incomeEntries: [{ id: "e1", incomeSourceId: "salary", expectedDate: "2026-02-28", receivedDate: "2026-02-28", amount: 200_000, status: "Received", accountId: "hdfc", tag: "Regular" }],
+  });
+  const span = { from: "2026-01-01", to: "2026-03-31" };
+  const items = moneyItems(d, span.from, span.to);
+  const f = flows(items, "hdfc");
+
+  it("counts the money lent on the day it left its account, and what came back into that account", () => {
+    expect(items.filter((i) => i.kind === "Lent out")).toEqual([{ kind: "Lent out", date: "2026-01-01", amount: 182_000, accountId: "hdfc", label: "Hotel Sonali Jan" }]);
+    expect(items.filter((i) => i.kind === "Paid back")).toEqual([{ kind: "Paid back", date: "2026-03-01", amount: 50_000, accountId: "hdfc", label: "Hotel Sonali Jan" }]);
+    expect(f.lentOut).toBe(182_000);
+    expect(f.paidBack).toBe(50_000);
+    expect(f.lent).toBe(132_000);
+  });
+
+  it("isn't spending: saved stays came in less expenses, and kept in the bank takes the lending out", () => {
+    expect(f.expenses).toBe(0);
+    expect(f.saved).toBe(200_000);
+    expect(f.keptInBank).toBe(200_000 - 132_000);
+    expect(f.leftBank).toBe(182_000);
+    expect(flows(items, null).lent).toBe(132_000);
+  });
+
+  it("explains the balance it moved, and shows both on the bridge", () => {
+    // 2,00,000 + 2,00,000 salary − 1,82,000 lent + 50,000 back = 2,68,000: nothing left over.
+    expect(everythingElse(d, items, "hdfc", span.from, span.to).unexplained).toBe(0);
+    const steps = bridgeSteps(d, items, "hdfc", span);
+    expect(steps.find((s) => s.label === "Lent out")?.amount).toBe(-182_000);
+    expect(steps.find((s) => s.label === "Paid back")?.amount).toBe(50_000);
+  });
+
+  it("only counts a loan lent inside the span, but counts repayments on one lent before it", () => {
+    const later = moneyItems(d, "2026-02-01", "2026-03-31");
+    expect(later.some((i) => i.kind === "Lent out")).toBe(false);
+    expect(later.filter((i) => i.kind === "Paid back").map((i) => i.amount)).toEqual([50_000]);
+  });
+
+  it("counts the principal still out as paid back on the day a loan is marked repaid", () => {
+    const repaid = data({ ...d, lentLoans: [{ ...loan, id: "j", paidFromAccountId: "hdfc", status: "Repaid", closedDate: "2026-06-30" }] });
+    const back = moneyItems(repaid, "2026-04-01", "2026-06-30").filter((i) => i.kind === "Paid back");
+    // 1,82,000 lent, 50,000 of it back in March: 1,32,000 on the closing day.
+    expect(back).toEqual([{ kind: "Paid back", date: "2026-06-30", amount: 132_000, accountId: "hdfc", label: "Hotel Sonali Jan" }]);
+    expect(flows(moneyItems(repaid, "2026-01-01", "2026-06-30"), "hdfc").lent).toBe(0);
+  });
+});
+
 describe("everythingElse: the change the records don't explain (decision 2)", () => {
   const base = data({
     snapshots: [snap("sbi", "2026-08-31", 100_000), snap("sbi", "2026-09-30", 150_000)],
