@@ -410,3 +410,39 @@ describe("bridgeSteps", () => {
     expect(steps.find((s) => s.label === "Everything else")).toBeUndefined();
   });
 });
+
+describe("big spends: a large purchase entered by hand", () => {
+  const d = data({
+    snapshots: [snap("sbi", "2026-06-30", 300_000), snap("sbi", "2026-07-31", 40_000)],
+    bigSpends: [
+      { id: "b1", date: "2026-07-20", amount: 260_000, name: "Car", category: "Vehicle", paidFromAccountId: "sbi" },
+      // On a card: already inside that card's bill, so never the bank's.
+      { id: "b2", date: "2026-07-21", amount: 50_000, name: "Laptop", category: "Electronics", paidFromCardId: "c1" },
+      // Paid from nothing named, or outside the span: not counted.
+      { id: "b3", date: "2026-07-22", amount: 9_000, name: "Cash gift", category: "Gifts" },
+      { id: "b4", date: "2026-08-02", amount: 7_000, name: "Phone", category: "Electronics", paidFromAccountId: "sbi" },
+    ],
+  });
+  const span = { from: "2026-07-01", to: "2026-07-31" };
+  const items = moneyItems(d, span.from, span.to);
+
+  it("counts one paid from a bank account as money that left it, and only that one", () => {
+    expect(items).toEqual([{ kind: "Big spends", date: "2026-07-20", amount: 260_000, accountId: "sbi", label: "Car" }]);
+  });
+
+  it("is an expense: it lowers saved and kept in the bank, and is in what left the bank", () => {
+    const f = flows(items, "sbi");
+    expect(f.out["Big spends"]).toBe(260_000);
+    expect(f.expenses).toBe(260_000);
+    expect(f.saved).toBe(-260_000);
+    expect(f.keptInBank).toBe(-260_000);
+    expect(f.leftBank).toBe(260_000);
+  });
+
+  it("explains the balance it took, so nothing is left in everything else, and is its own step on the bridge", () => {
+    expect(everythingElse(d, items, "sbi", span.from, span.to).unexplained).toBe(0);
+    const steps = bridgeSteps(d, items, "sbi", span);
+    expect(steps.find((s) => s.label === "Big spends")).toMatchObject({ amount: -260_000, kind: "down" });
+    expect(steps.find((s) => s.label === "Everything else")).toBeUndefined();
+  });
+});

@@ -6,7 +6,7 @@ import { nextOccurrence } from "./recurring";
 import { addDays } from "./subscriptionRenewals";
 import { nextRenewalsFrom } from "./subscriptionNextCharges";
 import type { RupeeSnapshot } from "./accountCurrency";
-import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, IncomeSource, InvestmentTransaction, LentLoan, LentRepayment, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment, Transfer } from "../sheets/types";
+import type { Account, BalanceReview, BalanceSnapshot, BigSpend, Card, IncomeEntry, IncomeSource, InvestmentTransaction, LentLoan, LentRepayment, Loan, LoanInstallment, Statement, Subscription, SubscriptionPayment, Transfer } from "../sheets/types";
 
 /**
  * Where an account's money went and came from, worked out from records kept elsewhere
@@ -31,7 +31,10 @@ import type { Account, BalanceReview, BalanceSnapshot, Card, IncomeEntry, Income
  * - A transfer between two of his rupee bank accounts is Moved out of one and Moved in to the other: across all accounts the two cancel,
  *   and on one account's view it explains that account's balance. It isn't income or spending, and isn't in Left the bank. A transfer
  *   between two brokers, or between accounts in different currencies that aren't a bank and a broker, isn't counted.
- * - Expenses = card bills + subscriptions + EMIs. Saved = came in − expenses, so money invested
+ * - Big spends: a large purchase entered by hand (BigSpends) that left a bank account, on its date: a car bought from savings. One
+ *   charged to a card is inside that card's bill, so only the bank-paid ones count here. On Expenses a big spend only explains a month
+ *   worked out from balances; here nothing else records that money leaving, so it is an expense like a bill.
+ * - Expenses = card bills + subscriptions + EMIs + big spends. Saved = came in − expenses, so money invested
  *   counts as saved (decision 19); kept in the bank = saved + borrowed − invested.
  * - Everything else: the balance change those don't explain (UPI, cash, transfers between your own
  *   accounts, which aren't recorded anywhere).
@@ -63,6 +66,8 @@ export interface AccountsData {
   /** Money lent to people, and what came back. Optional: the demo and older callers have none. */
   lentLoans?: LentLoan[];
   lentRepayments?: LentRepayment[];
+  /** Large purchases entered by hand. Optional: the demo and older callers have none. */
+  bigSpends?: BigSpend[];
   incomeSources: IncomeSource[];
   incomeEntries: IncomeEntry[];
   /** Balances a bank statement disagreed with (BalanceReviews). Left out where there are none to show. */
@@ -73,7 +78,7 @@ export interface AccountsData {
   usdInr?: number;
 }
 
-export const OUT_KINDS = ["Card bills", "Subscriptions", "EMIs", "Investments"] as const;
+export const OUT_KINDS = ["Card bills", "Subscriptions", "EMIs", "Big spends", "Investments"] as const;
 export type OutKind = (typeof OUT_KINDS)[number];
 
 export interface MoneyItem {
@@ -126,6 +131,9 @@ export function moneyItems(data: AccountsData, from: string, to: string): MoneyI
       items.push({ kind: "Moved in", date: t.date, amount: t.amount, accountId: t.toAccountId, label: nameOf(t.fromAccountId) });
     }
   }
+  for (const b of data.bigSpends ?? []) {
+    if (b.paidFromAccountId && accountsById.has(b.paidFromAccountId) && within(b.date, from, to) && b.amount > 0) items.push({ kind: "Big spends", date: b.date, amount: b.amount, accountId: b.paidFromAccountId, label: b.name });
+  }
   for (const l of data.loans) {
     // Only into an account he has, like a transfer: a loan naming one that isn't listed reached nothing counted here.
     if (!paidIntoAccount(l) || !accountsById.has(l.accountId) || !within(l.disbursementDate, from, to)) continue;
@@ -161,7 +169,7 @@ export function moneyItems(data: AccountsData, from: string, to: string): MoneyI
 export interface Flows {
   cameIn: number;
   out: Record<OutKind, number>;
-  /** Card bills + subscriptions + EMIs. */
+  /** Card bills + subscriptions + EMIs + big spends. */
   expenses: number;
   /** Sent to brokers less taken back from them: negative when more came back than went. */
   invested: number;
@@ -193,9 +201,9 @@ const sum = (items: FlowItem[], kind: MoneyItem["kind"]) => items.filter((i) => 
 /** What came in and went out, for one account or (null) all of them, between two days. */
 export function flows(items: FlowItem[], accountId: string | null): Flows {
   const mine = accountId === null ? items : items.filter((i) => i.accountId === accountId);
-  const out = { "Card bills": sum(mine, "Card bills"), Subscriptions: sum(mine, "Subscriptions"), EMIs: sum(mine, "EMIs"), Investments: sum(mine, "Investments") };
+  const out = { "Card bills": sum(mine, "Card bills"), Subscriptions: sum(mine, "Subscriptions"), EMIs: sum(mine, "EMIs"), "Big spends": sum(mine, "Big spends"), Investments: sum(mine, "Investments") };
   const cameIn = sum(mine, "Came in");
-  const expenses = out["Card bills"] + out.Subscriptions + out.EMIs;
+  const expenses = out["Card bills"] + out.Subscriptions + out.EMIs + out["Big spends"];
   const saved = cameIn - expenses;
   const takenBack = sum(mine, "Taken back");
   const invested = out.Investments - takenBack;

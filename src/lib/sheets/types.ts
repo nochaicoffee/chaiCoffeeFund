@@ -850,8 +850,9 @@ export const BIG_SPEND_CATEGORIES = ["Travel", "Shopping", "Electronics", "Home"
 export type BigSpendCategory = (typeof BIG_SPEND_CATEGORIES)[number];
 
 /**
- * A large purchase he enters by hand, so a month's spending can say what made it high. It explains part of a month and never adds to it:
- * one on a card is already inside that card's bill, and one from a bank account is already inside cash and UPI.
+ * A large purchase he enters by hand, so a month's spending can say what made it high. On Expenses it explains part of a month and never
+ * adds to it: one on a card is already inside that card's bill, and one from a bank account is already inside cash and UPI. On Accounts one
+ * from a bank account is money that left it, an expense like a bill, since nothing else records it (lib/aggregate/accountFlows.ts).
  */
 export interface BigSpend {
   id: string;
