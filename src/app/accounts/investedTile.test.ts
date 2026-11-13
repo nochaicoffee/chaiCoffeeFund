@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cameInTile, investedTile, savedNote } from "./investedTile";
+import { cameInTile, investedTile, leftTile, savedNote, spentTile } from "./investedTile";
 
 describe("investedTile", () => {
   it("is what was sent to brokers less what came back, with both under it", () => {
@@ -32,5 +32,32 @@ describe("savedNote", () => {
     expect(savedNote({ invested: 0, borrowed: 0, lent: 182000, moved: 0, keptInBank: 18000 })).toBe("₹18,000 kept in the bank · ₹1,82,000 lent out");
     // Money moved in from another of his banks counts in what this one kept.
     expect(savedNote({ invested: 0, borrowed: 0, lent: 0, moved: 92000, keptInBank: 1_00_000 })).toBe("₹1,00,000 kept in the bank");
+  });
+});
+
+describe("spentTile", () => {
+  const out = { "Card bills": 700330, Subscriptions: 4390, EMIs: 390324, "Big spends": 560066, Investments: 0 };
+  it("adds the cash and UPI that left with no record to what the records explain, and says how much of it there is", () => {
+    expect(spentTile({ expenses: 1655110, out }, -316061)).toEqual({ label: "Spent", value: "₹19,71,171", note: "₹16,55,110 recorded, ₹3,16,061 cash and UPI" });
+  });
+  it("is the recorded expenses alone when nothing left unrecorded, and never counts money that came in with no record as spending", () => {
+    expect(spentTile({ expenses: 1655110, out }, 0).value).toBe("₹16,55,110");
+    expect(spentTile({ expenses: 1655110, out }, 25000)).toEqual({ label: "Spent", value: "₹16,55,110", note: "Card bills, subscriptions, EMIs, big spends" });
+    expect(spentTile({ expenses: 5000, out: { ...out, "Big spends": 0 } }, 0).note).toBe("Card bills, subscriptions, EMIs");
+  });
+});
+
+describe("leftTile", () => {
+  const banks = { start: 24224, end: 13218, from: "2026-01-01" };
+  it("is the balance now, with how far it moved since the period began", () => {
+    expect(leftTile(-11006, 0, banks)).toEqual({ label: "In the bank now", value: "₹13,218", note: "Down ₹11,006 since Jan 1, from ₹24.2k", footnote: "Matches your balances, to the rupee", tone: undefined });
+    expect(leftTile(42000, 0, { start: 100000, end: 142000, from: "2026-01-01" })).toMatchObject({ value: "₹1,42,000", note: "Up ₹42,000 since Jan 1, from ₹1.0L", tone: "positive" });
+  });
+  it("says so when an account opened inside the period, since then the change is not the two balances' difference", () => {
+    expect(leftTile(-11006, 0, { start: 10000, end: 13218, from: "2026-01-01" }).footnote).toBe("Accounts first read in this period count from their first balance");
+  });
+  it("names money that came in with no record, but not cash and UPI out, which Spent already holds", () => {
+    expect(leftTile(-11006, -316061, banks).footnote).toBe("Matches your balances, to the rupee");
+    expect(leftTile(-11006, 25000, banks).footnote).toBe("Matches your balances, to the rupee · ₹25,000 came in with no record");
   });
 });

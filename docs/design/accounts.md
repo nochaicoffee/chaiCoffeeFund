@@ -330,3 +330,16 @@ Cash lying in a brokerage account (his example: $3,000 at the US broker, ₹1 la
 - **What it needs from the Sheet** (proposed, PRD F-AC-05): **Accounts · `accountType`** gains `Brokerage` in its dropdown, and a new **`currency`** column (`INR` default, `USD`). **BalanceSnapshots** hold a balance in the account's own currency. Nothing is built.
 - **Not redrawn:** the earlier explorations (A to Y, rounds 10 to 16's other pages) and their phones still show the five-account sample, since only the final boards were rebuilt. A full `node build.mjs` would add the two cash accounts to them too.
 - **The build plan** (tasks, order, the decisions to settle first) is [`broker-cash.md`](broker-cash.md).
+
+## The money section (built 2026-11-13, replaces This year in and out, Over time and Money in and out)
+
+Prathik found the three cards out of place and hard to read: Saved was income less recorded spending, so it left out the money that left with no record; a loan sat inside Came in and Invested; and Expenses was one lump. Round 18 (`design/accounts/generator/r18.mjs`, boards `AccountsMoneyM1` to `M3`, published for the pick) tried a river, four answers and a receipt. **He picked M2, "Four answers"**, and said to keep the shipped hero as it is (rounds 19 and 20 tried other heroes and other ways to fold the account cards; none was taken).
+
+One section, `components/accounts/MoneySection.tsx`, fed by `detailFor` in `app/accounts/detailView.ts`:
+- **Four tiles for the period.** *Came in* is income, with money borrowed named under it (never income). *Spent* is the recorded expenses (card bills, subscriptions, EMIs, big spends) plus the cash and UPI the balances say left with no record. *Invested* is sent to brokers less taken back. *In the bank now* is the real change in what the bank accounts hold, from their recorded balances, so it always matches the balances; its note names money lent out and any money that came in with no record.
+- **The months behind one tile.** Pick a tile and the columns below show its months: Came in splits income from borrowed; Spent splits card bills, EMIs, big spends, subscriptions and cash and UPI (hatched, since it is worked out, not recorded); Invested draws what was sent above the line and what came back below it; Left draws each month's change up or down. The default is Spent.
+- **Cash and UPI is `everythingElse().unexplained`**, the same figure the Bridge's "Everything else" step showed, taken over the bank accounts only: a broker's own balance moves with the market and is never UPI or cash. Each month is worked out on its own days (its items, and the balances at its two ends), and the months add up to the period's figures (tested).
+- Where Saved used to say income less expenses (decision 19: investing counts as saved), the section now answers the four things separately. `savedNote` is still in `investedTile.ts` and tested; `flows().saved` and `keptInBank` are unchanged and used elsewhere.
+- Removed: the glow line, River, Bridge and Flow views of Over time (the hero's Trend already shows the balance line), the income-by-source bar, and the paired Money in and out columns. `bridgeSteps` and `cameInBySource` stay in `accountFlows.ts`, tested, though nothing on the page calls them now.
+
+Phone: the tiles are two across and the month columns scroll sideways inside the card.
