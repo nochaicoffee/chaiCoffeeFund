@@ -656,13 +656,42 @@ Next.js (App Router), TypeScript:
 
 ## Secrets & auth
 
-Already covered by [CLAUDE.md](../CLAUDE.md)'s Secrets Handling rule and [.gitignore](../.gitignore): the service account JSON key and Spreadsheet ID live in a local, gitignored `.env.local`, read only server-side. No OAuth, no login flow, no user-facing auth needed for a single-user local app. If hosting happens later, the same env vars move to that platform's secret store unchanged.
+Secrets are covered by [CLAUDE.md](../CLAUDE.md)'s Secrets Handling rule and [.gitignore](../.gitignore): the service account JSON key and Spreadsheet ID live in a local, gitignored `.env.local`, read only server-side. On a host they move to its secret store.
+
+**The login ([ADR 0015](adr/0015-login-and-mcp-endpoint.md), built 2026-11-13).** `src/proxy.ts` runs before every route. The rules are one pure function, `decideAccess` in `lib/auth/gate.ts` (tested without a server); the proxy only turns its answer into a response.
+- **Pages and API routes** need the `chai_session` cookie. `GET/POST /login` (a route handler in `app/login/`, so the page stands alone without the sidebar) checks the passphrase and sets it. The cookie is `"<expiry ms>.<HMAC-SHA256 signature>"`, made with Web Crypto in `lib/auth/session.ts`: it is stateless, lasts 30 days, and the signature covers the expiry so it can't be stretched. The key is the secret and the passphrase together (`sessionKey`), so changing either signs every device out; `POST /logout` clears one device. A signed-out page goes to `/login?next=…` (only a path on this site is followed: `safeNextPath` resolves it with the same URL parser the redirect uses, because that parser drops tabs and newlines, so `/\t/evil.example` would otherwise leave the site); a signed-out API route gets a 401.
+- **Production fails closed.** `loginRequired` is true for every production build. If `APP_PASSWORD` (16 characters or more) or `SESSION_SECRET` (32 or more) is missing, every page and API route answers 503 instead of serving. Locally (`next dev`) the gate is off until `APP_PASSWORD` is set, so `npm run dev` and `npm run check-sheet` work as before.
+- **`/api/mcp`** takes only `Authorization: Bearer <MCP_ACCESS_TOKEN>` (32 characters or more), checked in the proxy and again in the route. A cookie doesn't open it and the token opens nothing else. With no token set it answers 503, in every environment.
+- Comparisons of the passphrase, the token and the signature go through `safeEqual` (both sides hashed, then compared over 32 bytes). A wrong passphrase waits one second, which slows one client but not parallel guesses: there is no lockout (it would need somewhere to count, and a Vercel function has none), so the 16-character minimum is the defence.
+- **Not covered yet:** the sync routes' Vercel Cron call has no credential (see Deployment).
+
+**Claude's MCP endpoint (`/api/mcp`).** `lib/mcp/` holds it; `app/api/mcp/route.ts` is thin.
+- `server.ts` builds an `McpServer` per request (stateless Streamable HTTP, plain JSON replies, `WebStandardStreamableHTTPServerTransport`), with four tools: `list_entities`, `list_records`, `add_record`, `update_record`, and instructions for Claude (look ids up, never invent one, say what you'll write first, nothing can be deleted).
+- `entities.ts` is the registry: for each record type its key, a one-line description, the app's own list and item route modules, and its create and update zod schemas. `tools.ts` calls those route handlers in-process with a `Request`, so a write gets the schema check, the entity's guards, the cache invalidation and the secret-stripping serializers exactly as the pages do. `list_records` reads through the same GET, so a card's or account's statement PDF password is never in the answer. `SECRET_FIELDS` (`statementPdfPassword`, `policyNumber`) are also removed from the fields `list_entities` shows and refused if sent. `list_entities` with no argument gives only names; with an `entity` it gives that type's fields. A rule the pages keep in a Server Action but a route lacks belongs in the route as a guard (the first such: one balance per account and day, `lib/sheets/balanceGuards.ts`, which refuses a second and names the row to update).
+- The tests: `tools.test.ts` (against the real route factories over an in-memory repository: validation refusals, guard refusals in words, no secret either way), `server.test.ts` (the protocol: initialize, tools/list, tools/call, no delete tool), `entities.test.ts` (every record type's schemas turn into JSON Schema, none exposes a secret, and every `/api/<entity>` route is either listed or named as sync-only), and `proxy.test.ts`, `gate.test.ts`, `session.test.ts`, `login/route.test.ts`, `api/mcp/route.test.ts` for the gate.
+- **Adding an entity with an API route** means one line in `MCP_ENTITIES`; `entities.test.ts` fails until it's there.
+- Verified 2026-11-13 against the real Sheet on a production build (`next build --webpack`, `next start`): signed out gets a redirect (pages) or 401; a wrong passphrase is a 303 back after a second, a right one sets an HTTP-only cookie; the cookie opens pages and API routes but not `/api/mcp`, and the token opens `/api/mcp` (that it opens nothing else is in `proxy.test.ts`); add, refused add, update, clear an optional field with `""`, not-found and read-back through MCP on a Big spend, then the row deleted by its id through the app's route and the tab back to its starting empty state. 12 accounts and 5 cards list with `hasPdfPassword` and no password.
 
 ## Deployment
 
-Deferred by design — v1 is `npm run dev` only (hosting is M2: #4, #17, #18, #19, and ADR 0007). Config is env-var driven, and the statement sync keeps its state in the Sheet since #82, but two things still assume this laptop:
+Hosting is M2 (#4, #17, #18, #19, and [ADR 0007](adr/0007-hosted-with-login.md)). The login and the MCP endpoint are built; two things still assume this laptop:
 - The Sheets service account key is read from a file path (`GOOGLE_SERVICE_ACCOUNT_KEY_FILE`). A host needs it from a secret setting holding the key itself.
-- The scheduled sync is `scripts/ingestStatements.ts`, run by launchd against a running dev server. On Vercel it would be a Vercel Cron request to `/api/statements/sync`, which needs the login (#17) or a cron secret first.
+- The scheduled sync is `scripts/ingestStatements.ts`, run by launchd against a running dev server. On Vercel it would be a Vercel Cron request to `/api/statements/sync` and `/api/account-statements/sync`, which the proxy now refuses without a session cookie: they need a `CRON_SECRET` check (Vercel Cron sends it as a bearer token) added to the proxy's rules for those two paths.
+
+**Environment variables on the host** (Vercel → Settings → Environment Variables; never in the repo):
+
+| Variable | What it is |
+|---|---|
+| `APP_PASSWORD` | The passphrase for the login. Long: 16 characters is the least it accepts, and a sentence is better. Changing it signs every device out. |
+| `SESSION_SECRET` | Signs the cookie. `openssl rand -base64 48`. Changing it signs everyone out. |
+| `MCP_ACCESS_TOKEN` | The bearer token Claude sends. `openssl rand -base64 48`. Leave it out and `/api/mcp` is off. |
+| `GOOGLE_SHEETS_SPREADSHEET_ID`, the service account key, Gmail credentials | As in CLAUDE.md, once the key can come from a setting. |
+
+**Connecting Claude once it's deployed** (`https://<the app>/api/mcp`):
+- **Claude (web, desktop, phone):** Settings → Connectors → Add custom connector. URL as above. Under advanced settings add a request header `Authorization` with the value `Bearer <MCP_ACCESS_TOKEN>` (the word Bearer, a space, then the token).
+- **Claude Code:** `claude mcp add --transport http chaicoffee https://<the app>/api/mcp --header "Authorization: Bearer <MCP_ACCESS_TOKEN>"`.
+- To try it on this laptop first, set `MCP_ACCESS_TOKEN` in `.env.local` and point the client at `http://localhost:3000/api/mcp` (Claude Code only; the web connector needs a public URL).
+- If the token leaks, change it in Vercel and in the connector. Nothing else uses it.
 
 ## Phased implementation roadmap
 
