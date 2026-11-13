@@ -23,12 +23,14 @@ describe("cameInTile", () => {
 
 describe("savedNote", () => {
   it("gives what was kept in the bank once brokers or loans moved money, and the plain rule otherwise", () => {
-    expect(savedNote({ invested: 0, borrowed: 0, lent: 0, keptInBank: 5000 })).toBe("Came in less expenses");
-    expect(savedNote({ invested: 1100920, borrowed: 1100920, lent: 0, keptInBank: 200000 })).toBe("₹2,00,000 kept in the bank");
-    expect(savedNote({ invested: 300000, borrowed: 0, lent: 0, keptInBank: -100000 })).toBe("₹1,00,000 more left the bank than you saved");
+    expect(savedNote({ invested: 0, borrowed: 0, lent: 0, moved: 0, keptInBank: 5000 })).toBe("Came in less expenses");
+    expect(savedNote({ invested: 1100920, borrowed: 1100920, lent: 0, moved: 0, keptInBank: 200000 })).toBe("₹2,00,000 kept in the bank");
+    expect(savedNote({ invested: 300000, borrowed: 0, lent: 0, moved: 0, keptInBank: -100000 })).toBe("₹1,00,000 more left the bank than you saved");
     // More taken back from brokers than sent: the bank kept more than was saved, and says so.
-    expect(savedNote({ invested: -160000, borrowed: 0, lent: 0, keptInBank: 260000 })).toBe("₹2,60,000 kept in the bank");
+    expect(savedNote({ invested: -160000, borrowed: 0, lent: 0, moved: 0, keptInBank: 260000 })).toBe("₹2,60,000 kept in the bank");
     // Lending alone is enough to work out what was kept, and the note says how much is out with people.
-    expect(savedNote({ invested: 0, borrowed: 0, lent: 182000, keptInBank: 18000 })).toBe("₹18,000 kept in the bank · ₹1,82,000 lent out");
+    expect(savedNote({ invested: 0, borrowed: 0, lent: 182000, moved: 0, keptInBank: 18000 })).toBe("₹18,000 kept in the bank · ₹1,82,000 lent out");
+    // Money moved in from another of his banks counts in what this one kept.
+    expect(savedNote({ invested: 0, borrowed: 0, lent: 0, moved: 92000, keptInBank: 1_00_000 })).toBe("₹1,00,000 kept in the bank");
   });
 });

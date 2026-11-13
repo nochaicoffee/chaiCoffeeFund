@@ -25,7 +25,7 @@ export function MoneyInOutCard({ detail }: { detail: PickDetail }) {
           <div className="flex gap-3 overflow-x-auto pb-1">
             <div className="flex min-w-full flex-1 items-end justify-between gap-2" style={{ minWidth: columns.length * 56 }}>
               {columns.map((c) => (
-                <div key={c.key} className="flex min-w-[44px] flex-1 flex-col items-center gap-1" title={`${c.label}: came in ${formatInr(c.cameIn)}${c.borrowed > 0 ? `, borrowed ${formatInr(c.borrowed)}` : ""}, expenses ${formatInr(c.expenses)}, ${c.invested < 0 ? `taken back from brokers ${formatInr(-c.invested)}` : `sent to brokers ${formatInr(c.invested)}`}${c.lent > 0 ? `, lent ${formatInr(c.lent)}` : c.lent < 0 ? `, paid back to you ${formatInr(-c.lent)}` : ""}`}>
+                <div key={c.key} className="flex min-w-[44px] flex-1 flex-col items-center gap-1" title={`${c.label}: came in ${formatInr(c.cameIn)}${c.borrowed > 0 ? `, borrowed ${formatInr(c.borrowed)}` : ""}, expenses ${formatInr(c.expenses)}, ${c.invested < 0 ? `taken back from brokers ${formatInr(-c.invested)}` : `sent to brokers ${formatInr(c.invested)}`}${c.lent > 0 ? `, lent ${formatInr(c.lent)}` : c.lent < 0 ? `, paid back to you ${formatInr(-c.lent)}` : ""}${c.moved > 0 ? `, ${formatInr(c.moved)} in from your other accounts` : c.moved < 0 ? `, ${formatInr(-c.moved)} out to your other accounts` : ""}`}>
                   <div className="flex items-end gap-1" style={{ height: H }}>
                     <span className="flex w-3.5 flex-col-reverse">
                       <i className="block rounded-b-[2px] bg-accent" style={{ height: Math.max(c.cameIn > 0 ? 3 : 0, (c.cameIn / top) * H) }} />
