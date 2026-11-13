@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useRef, useState, type ReactNode } from "react";
-import { deleteTrades, undoTrade } from "@/app/investments/tradeActions";
+import { deleteTrades, deleteTransfer, undoTrade } from "@/app/investments/tradeActions";
 import { editTarget, type EditTarget, type TradeFormsData } from "@/app/investments/tradeFormsData";
 import { formatDate } from "@/lib/format/date";
 import { formatMoney } from "@/lib/format/money";
@@ -11,6 +11,7 @@ import { useUndoToast } from "../shell/UndoToast";
 import { ConfirmDialog } from "../subscriptions/forms/ConfirmDialog";
 import { InstrumentDialog } from "./InstrumentDialog";
 import { TargetsDialog } from "./TargetsDialog";
+import { TransferDialog } from "./TransferDialog";
 import { EsppDialog, TradeDialog, VestDialog } from "./TradeDialogs";
 
 /**
@@ -18,7 +19,7 @@ import { EsppDialog, TradeDialog, VestDialog } from "./TradeDialogs";
  * that fits the trade) and Delete. A trade just added or deleted gets a toast with Undo for six seconds.
  */
 
-type Open = { kind: "add" } | { kind: "holding" } | { kind: "targets" } | { kind: "vest" } | { kind: "espp" } | { kind: "edit"; id: string } | { kind: "delete"; target: EditTarget };
+type Open = { kind: "add" } | { kind: "holding" } | { kind: "targets" } | { kind: "transfer" } | { kind: "editTransfer"; id: string } | { kind: "deleteTransfer"; id: string } | { kind: "vest" } | { kind: "espp" } | { kind: "edit"; id: string } | { kind: "delete"; target: EditTarget };
 
 interface Controls {
   forms: TradeFormsData;
@@ -52,6 +53,10 @@ export function TradeFormsProvider({ forms, children }: { forms: TradeFormsData;
   const toDelete = (t: EditTarget) => () => setOpen({ kind: "delete", target: t });
   const done = (message: string) => (undo?: { id: string; message: string }) => saved(undo, message);
 
+  const editedTransfer = open?.kind === "editTransfer" ? forms.transfers.find((t) => t.id === open.id) : undefined;
+  const deletedTransfer = open?.kind === "deleteTransfer" ? forms.transfers.find((t) => t.id === open.id) : undefined;
+  const deletedTransferText = deletedTransfer ? formatMoney(forms.transfer?.brokers.some((b) => b.id === deletedTransfer.fromAccountId) ? (forms.transfer.brokers.find((b) => b.id === deletedTransfer.fromAccountId)?.currency ?? "INR") : "INR", deletedTransfer.amount) : "";
+
   const deleting = open?.kind === "delete" ? open.target : null;
   const deletingRows = deleting ? deleting.ids.map(find).filter((t) => t !== undefined) : [];
   const first = deletingRows[0];
@@ -61,6 +66,23 @@ export function TradeFormsProvider({ forms, children }: { forms: TradeFormsData;
       {children}
       {open?.kind === "add" && <TradeDialog forms={forms} onClose={close} onSaved={done("Saved.")} />}
       {open?.kind === "holding" && <InstrumentDialog existing={forms.instruments} onClose={close} onSaved={() => saved(undefined, "Holding added.")} />}
+      {open?.kind === "transfer" && <TransferDialog accounts={forms.transfer} today={forms.today} onClose={close} onSaved={() => saved(undefined, "Transfer added.")} />}
+      {editedTransfer && <TransferDialog accounts={forms.transfer} today={forms.today} transfer={editedTransfer} onClose={close} onSaved={() => saved(undefined, "Saved.")} onDelete={() => setOpen({ kind: "deleteTransfer", id: editedTransfer.id })} />}
+      {deletedTransfer && (
+        <ConfirmDialog
+          tone="danger"
+          icon={<AlertIcon />}
+          title="Delete this transfer?"
+          body={`The transfer of ${deletedTransferText} on ${formatDate(deletedTransfer.date)} is removed from the Transfers tab of your Sheet, and Accounts stops counting it as invested or taken back. This can't be undone from here.`}
+          hidden={{ id: deletedTransfer.id }}
+          keepLabel="Keep it"
+          confirmLabel="Delete transfer"
+          action={deleteTransfer}
+          today={forms.today}
+          onClose={close}
+          onSaved={() => saved(undefined, "Transfer deleted.")}
+        />
+      )}
       {open?.kind === "targets" && <TargetsDialog saved={forms.targets} onClose={close} onSaved={() => saved(undefined, "Targets and limits saved.")} />}
       {open?.kind === "vest" && <VestDialog forms={forms} onClose={close} onSaved={done("Saved.")} />}
       {open?.kind === "espp" && <EsppDialog forms={forms} onClose={close} onSaved={done("Saved.")} />}
@@ -91,7 +113,7 @@ export function TradeFormsProvider({ forms, children }: { forms: TradeFormsData;
   );
 }
 
-/** The page header's four ways in. */
+/** The page header's five ways in. */
 export function TradeButtons() {
   const { open } = useTradeForms();
   return (
@@ -99,6 +121,7 @@ export function TradeButtons() {
       <FormTriggerButton className={HEADER_GHOST_CLASS} label="Add trade" onClick={() => open({ kind: "add" })} />
       <FormTriggerButton className={HEADER_GHOST_CLASS} label="RSU vest" onClick={() => open({ kind: "vest" })} />
       <FormTriggerButton className={HEADER_GHOST_CLASS} label="ESPP purchase" onClick={() => open({ kind: "espp" })} />
+      <FormTriggerButton className={HEADER_GHOST_CLASS} label="Add transfer" onClick={() => open({ kind: "transfer" })} />
       <FormTriggerButton className={HEADER_GHOST_CLASS} label="Add holding" onClick={() => open({ kind: "holding" })} />
     </>
   );
