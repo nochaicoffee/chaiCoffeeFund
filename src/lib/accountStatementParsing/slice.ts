@@ -7,8 +7,10 @@ import type { ParseResult } from "./types";
  * no line breaks (see "Reading statement PDFs" in docs/system-design.md).
  *   - The monthly statement is the same table with a "Statement overview" ahead of the summary, a grievance line
  *     after the support line in the footer (which, left in, glued a page's last row to the next page's first), and
- *     a closing "Round ups atom" section for the round-up account, which is not read: a statement whose rows
- *     don't chain (an atom section with movements would break it) is refused, not written.
+ *     closing sections for each "atom" (the round-up account, and any savings pot he makes, like "Car Upgrade atom",
+ *     first seen in October 2026). Each has its own summary and rows. Their money is part of the account's balance,
+ *     so their opening and closing balances are added up as `held`, and the savings rows stop where the first atom
+ *     section starts: read on, an atom's rows were taken for the account's and its last balance for the closing one.
  *   - Every page starts with "02 Aug '25 - 23 Oct '26  1/22": the statement's period and the
  *     page number. It and "Need help? … slice small finance bank" are taken out first, since
  *     the header begins with a date and would be read as the start of a row.
@@ -40,8 +42,10 @@ function sliceAmount(token: string): number | null {
   return rupees === null ? null : /^[-\d]₹/.test(token) ? -rupees : rupees;
 }
 
+// Every atom's summary: "Round ups atom  Opening balance …", "Car Upgrade atom  Opening balance …". "Total atom closing balance" isn't one.
 const ATOM = new RegExp(
-  String.raw`Round ups atom\s+Opening balance\s+Total credits\s+Interest earned\s+Total debits\s+Closing balance\s+\+\s+\+\s+-\s+=\s+(${AMOUNT})\s+(${AMOUNT})\s+(${AMOUNT})\s+(${AMOUNT})\s+(${AMOUNT})`,
+  String.raw`\batom\s+Opening balance\s+Total credits\s+Interest earned\s+Total debits\s+Closing balance\s+\+\s+\+\s+-\s+=\s+(${AMOUNT})\s+(${AMOUNT})\s+(${AMOUNT})\s+(${AMOUNT})\s+(${AMOUNT})`,
+  "g",
 );
 const TOTAL_WITH_ATOMS = new RegExp(String.raw`Total closing balance \(incl\. atoms\)\s+(${AMOUNT})`);
 
@@ -63,18 +67,26 @@ export function parseSlice(text: string): ParseResult {
   if (opening === null) return { ok: false, problem: "couldn't read the opening balance" };
   if (closing === null) return { ok: false, problem: "couldn't read the closing balance" };
 
-  // The monthly statement also reports the round-up (atom) account, whose money is part of the balance the
-  // range statements print. Its opening and closing balance come from its own summary.
+  // The monthly statement also reports each atom (the round-up account, savings pots), whose money is part of the balance the
+  // range statements print. Their opening and closing balances come from their own summaries, added up.
   let held: { opening: number; closing: number; constant: boolean } | undefined;
-  const atom = ATOM.exec(text);
-  if (atom) {
+  const atoms = [...text.matchAll(ATOM)];
+  for (const atom of atoms) {
     const [aOpen, aCredits, aInterest, aDebits, aClose] = [1, 2, 3, 4, 5].map((i) => sliceAmount(atom[i]));
-    if ([aOpen, aCredits, aInterest, aDebits, aClose].includes(null)) return { ok: false, problem: "couldn't read the round-up account's balances" };
-    held = { opening: aOpen!, closing: aClose!, constant: aCredits === 0 && aInterest === 0 && aDebits === 0 && aOpen === aClose };
+    if ([aOpen, aCredits, aInterest, aDebits, aClose].includes(null)) return { ok: false, problem: "couldn't read an atom's balances" };
+    const constant = aCredits === 0 && aInterest === 0 && aDebits === 0 && aOpen === aClose;
+    const paise = (n: number) => Math.round(n * 100);
+    held = {
+      opening: (paise(held?.opening ?? 0) + paise(aOpen!)) / 100,
+      closing: (paise(held?.closing ?? 0) + paise(aClose!)) / 100,
+      constant: (held?.constant ?? true) && constant,
+    };
   }
 
   const accountNumber = /A\/C number\s+(\d+)/.exec(text)?.[1];
-  const body = text.slice((summary.index ?? 0) + summary[0].length).replace(PAGE_HEADER, " ").replace(FOOTER, " ").replace(GENERATED, " ");
+  // The savings rows end where the first atom's section begins: its rows are the atom's, not the account's.
+  const bodyEnd = atoms[0]?.index ?? text.length;
+  const body = text.slice((summary.index ?? 0) + summary[0].length, bodyEnd).replace(PAGE_HEADER, " ").replace(FOOTER, " ").replace(GENERATED, " ");
 
   const rows: StatementRow[] = [];
   for (const m of body.matchAll(ROW)) {

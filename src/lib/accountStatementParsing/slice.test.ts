@@ -95,6 +95,20 @@ describe("the monthly statement", () => {
     ]);
   });
 
+  it("reads every atom, a savings pot with movements too, and stops the account's rows where the first atom's section starts", () => {
+    // Money went into a "Car Upgrade" pot and back out within the month; the round-ups ended at nothing. Their rows must not be
+    // read as the account's, or the last one (₹0) would be taken for its closing balance.
+    const pot = "Car Upgrade atom  Opening balance   Total credits   Interest earned   Total debits   Closing balance  +   +   -   =  ₹0   ₹200   ₹1   ₹201   ₹0  DATE   DETAILS   REF NO.   AMOUNT   BALANCE  08 Sep '26   Add money   1_1   ₹200   ₹200  23 Sep '26   Transfer to savings   2_1   -₹201   ₹0";
+    const roundUps = "Round ups atom  Opening balance   Total credits   Interest earned   Total debits   Closing balance  +   +   -   =  ₹5   ₹3   ₹0   ₹8   ₹0  DATE   DETAILS   REF NO.   AMOUNT   BALANCE  08 Sep '26   Round ups   3_1   ₹3   ₹8  23 Sep '26   Transfer to savings   4_1   -₹8   ₹0";
+    const text = monthly.replace("₹305.5", "₹300.5").replace(atom, `${pot} ${support} ${GRIEVANCE} 1 Sep '26 - 30 Sep '26  4/4 ${roundUps} Generated on 1 October 2026 9:00PM`);
+    const r = parseSlice(text);
+    if (!r.ok) throw new Error(r.problem);
+    expect(r.parsed.statement.rows).toHaveLength(3);
+    expect(r.parsed.statement.closingBalance).toBe(300.5);
+    expect(r.parsed.statement.held).toEqual({ opening: 5, closing: 0, constant: false });
+    expect(balancesFromStatement(r.parsed.statement).map((p) => [p.date, p.balance])).toEqual([["2026-08-31", 105], ["2026-09-30", 300.5]]);
+  });
+
   it("refuses a statement whose savings and round-up balances do not add up to the total it prints", () => {
     expect(parseSlice(monthly.replace("₹305.5", "₹306.5"))).toEqual({ ok: false, problem: "the savings and round-up balances don't add up to the total the statement prints" });
   });
