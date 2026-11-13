@@ -446,3 +446,21 @@ describe("big spends: a large purchase entered by hand", () => {
     expect(steps.find((s) => s.label === "Everything else")).toBeUndefined();
   });
 });
+
+describe("a goal marked bought counts like a big spend", () => {
+  const goal = { name: "Alloy Wheels", category: "Vehicle" as const, necessity: "Want" as const, scale: "Minor" as const, amount: 37_000, startDate: "2026-09-01" };
+  const d = data({
+    goals: [
+      { ...goal, id: "g1", status: "Done", doneOn: "2026-10-26", actualCost: 37_000, paidFromAccountId: "sbi" },
+      // On a card (inside its bill), still being saved for, or bought with no account named: not counted.
+      { ...goal, id: "g2", name: "Tyres", status: "Done", doneOn: "2026-10-26", actualCost: 31_000, paidFromCardId: "c1" },
+      { ...goal, id: "g3", name: "Seat covers", status: "Active" },
+      { ...goal, id: "g4", name: "Mats", status: "Done", doneOn: "2026-10-27", actualCost: 2_000 },
+    ],
+  });
+
+  it("is money that left the account it was paid from, on the day it was bought, under its name", () => {
+    expect(moneyItems(d, "2026-10-01", "2026-10-31")).toEqual([{ kind: "Big spends", date: "2026-10-26", amount: 37_000, accountId: "sbi", label: "Alloy Wheels" }]);
+    expect(moneyItems(d, "2026-11-01", "2026-11-30")).toEqual([]);
+  });
+});
