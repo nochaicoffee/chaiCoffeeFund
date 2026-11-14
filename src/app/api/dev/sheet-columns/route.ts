@@ -15,6 +15,7 @@ import { INVESTMENT_TRANSACTION_COLUMNS, investmentTransactionRowSchema } from "
 import { INSTRUMENT_COLUMNS, instrumentRowSchema } from "@/lib/sheets/instruments";
 import { INVESTMENT_TARGET_COLUMNS, investmentTargetRowSchema } from "@/lib/sheets/investmentTargets";
 import { TRANSFER_COLUMNS, transferRowSchema } from "@/lib/sheets/transfers";
+import { HELD_MONEY_COLUMNS, heldMoneyRowSchema } from "@/lib/sheets/heldMoney";
 import { PRICE_SNAPSHOT_COLUMNS, priceSnapshotRowSchema } from "@/lib/sheets/priceSnapshots";
 import { INCOME_ENTRY_COLUMNS, incomeEntryRowSchema } from "@/lib/sheets/incomeEntries";
 import { INCOME_SOURCE_COLUMNS, incomeSourceRowSchema } from "@/lib/sheets/incomeSources";
@@ -54,6 +55,7 @@ const TABS = {
   Instruments: () => columnSpecs(INSTRUMENT_COLUMNS as string[], instrumentRowSchema),
   InvestmentTargets: () => columnSpecs(INVESTMENT_TARGET_COLUMNS as string[], investmentTargetRowSchema),
   Transfers: () => columnSpecs(TRANSFER_COLUMNS as string[], transferRowSchema),
+  HeldMoney: () => columnSpecs(HELD_MONEY_COLUMNS as string[], heldMoneyRowSchema),
   PriceSnapshots: () => columnSpecs(PRICE_SNAPSHOT_COLUMNS as string[], priceSnapshotRowSchema),
   FixedDeposits: () => columnSpecs(FIXED_DEPOSIT_COLUMNS as string[], fixedDepositRowSchema),
   EpfAccounts: () => columnSpecs(EPF_ACCOUNT_COLUMNS as string[], epfAccountRowSchema),
@@ -67,7 +69,7 @@ const TABS = {
 };
 
 /** Tabs the code needs that may not exist yet: the route creates them, with their Table, when they're missing. Existing tabs are never created over. */
-const CREATABLE = new Set(["LentLoans", "LentRepayments", "AccountStatementEmails", "BalanceReviews", "LoanPrepayments", "Policies", "PolicyPayments", "Goals", "GoalContributions", "EpfAccounts", "EpfEntries", "EpfRates", "Instruments", "PriceSnapshots", "InvestmentTargets", "BigSpends", "Transfers"]);
+const CREATABLE = new Set(["HeldMoney", "LentLoans", "LentRepayments", "AccountStatementEmails", "BalanceReviews", "LoanPrepayments", "Policies", "PolicyPayments", "Goals", "GoalContributions", "EpfAccounts", "EpfEntries", "EpfRates", "Instruments", "PriceSnapshots", "InvestmentTargets", "BigSpends", "Transfers"]);
 
 type Plan =
   | { error: string }

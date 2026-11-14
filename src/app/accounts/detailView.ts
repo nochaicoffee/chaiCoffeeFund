@@ -38,6 +38,8 @@ export interface MoneyMonth {
   cameIn: number;
   /** Loans paid in that month: apart from came in, since it isn't income. */
   borrowed: number;
+  /** A friend's money held for him that landed that month: apart from came in and from loans. */
+  held: number;
   cardBills: number;
   emis: number;
   bigSpends: number;
@@ -107,6 +109,7 @@ export function detailFor(data: AccountsData, accountId: string | null, period: 
       name: formatMonthYear(month),
       cameIn: m.cameIn,
       borrowed: m.borrowed,
+      held: m.held,
       cardBills: m.out["Card bills"],
       emis: m.out.EMIs,
       bigSpends: m.out["Big spends"],
@@ -123,7 +126,7 @@ export function detailFor(data: AccountsData, accountId: string | null, period: 
   const start = totalOn(banks.accounts, data.snapshots, dayBefore(span.from));
   const end = totalOn(banks.accounts, data.snapshots, span.to);
   const answers: MoneyAnswer[] = [
-    { ...cameInTile(f), shares: incomeShares(cameInBySource(data, span.from, span.to, accountId), f.borrowed) },
+    { ...cameInTile(f), shares: incomeShares(cameInBySource(data, span.from, span.to, accountId), f.borrowed, f.held) },
     { ...spentTile(f, rest.unexplained), shares: spentShares(f, cashOut) },
     { ...investedTile(f), shares: investedShares(f) },
     { ...leftTile(rest.change, rest.unexplained, { start, end, from: span.from }), shares: leftShares(f) },

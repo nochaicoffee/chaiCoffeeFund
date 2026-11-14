@@ -16,8 +16,13 @@ describe("investedTile", () => {
 
 describe("cameInTile", () => {
   it("is income only, naming money borrowed under it", () => {
-    expect(cameInTile({ cameIn: 200000, borrowed: 0 })).toEqual({ label: "Came in", value: "₹2,00,000", note: "Income received" });
-    expect(cameInTile({ cameIn: 200000, borrowed: 1100920 }).note).toBe("Income, plus ₹11,00,920 borrowed");
+    expect(cameInTile({ cameIn: 200000, borrowed: 0, held: 0 })).toEqual({ label: "Came in", value: "₹2,00,000", note: "Income received" });
+    expect(cameInTile({ cameIn: 200000, borrowed: 1100920, held: 0 }).note).toBe("Income, plus ₹11,00,920 borrowed");
+  });
+
+  it("names money held for a friend apart from loans, and never as income", () => {
+    expect(cameInTile({ cameIn: 200000, borrowed: 0, held: 200000 })).toMatchObject({ value: "₹2,00,000", note: "Income, plus ₹2,00,000 held for others" });
+    expect(cameInTile({ cameIn: 0, borrowed: 1100920, held: 200000 }).note).toBe("Income, plus ₹11,00,920 borrowed and ₹2,00,000 held for others");
   });
 });
 

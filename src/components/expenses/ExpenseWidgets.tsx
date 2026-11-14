@@ -122,14 +122,14 @@ export function BigSpendsCard({ view }: { view: BigSpendsView | null }) {
   );
 }
 
-/** Month by month (ExF1): a row per month, newest first; came in = invested + lent out + kept + spent on every worked-out row. */
+/** Month by month (ExF1): a row per month, newest first; came in = invested + lent or handed back + kept + spent on every worked-out row. */
 export function MonthsTable({ view }: { view: MonthsView }) {
-  const head = ["Month", "Came in", "Invested", "Lent out", "Kept", "Spent", "Cards", "EMIs", "Subs + insurance", "Big spends", "Cash and UPI"];
+  const head = ["Month", "Came in", "Invested", "Lent or handed back", "Kept", "Spent", "Cards", "EMIs", "Subs + insurance", "Big spends", "Cash and UPI"];
   return (
     <WidgetCard
       label="Month by month"
       title="Month by month"
-      note="came in = invested + lent out + kept + spent, every month worked out"
+      note="came in = invested + lent or handed back + kept + spent, every month worked out"
       right={
         <Link href="/expenses/statements" className="text-[13px] font-extrabold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">
           Every payment, month by month →

@@ -12,9 +12,10 @@ export function investedTile(f: Pick<Flows, "invested" | "sent" | "takenBack">):
   return { label: "Invested", value: formatInr(f.invested), note: f.takenBack > 0 ? both : f.sent > 0 ? "Sent to your brokers" : "Nothing sent to brokers" };
 }
 
-/** The Came in tile: income only. Money borrowed into the accounts in the stretch is named under it, since it isn't income. */
-export function cameInTile(f: Pick<Flows, "cameIn" | "borrowed">): { label: string; value: string; note: string } {
-  return { label: "Came in", value: formatInr(f.cameIn), note: f.borrowed > 0 ? `Income, plus ${formatInr(f.borrowed)} borrowed` : "Income received" };
+/** The Came in tile: income only. Money borrowed, and a friend's money held for him, are named under it, since neither is income. */
+export function cameInTile(f: Pick<Flows, "cameIn" | "borrowed" | "held">): { label: string; value: string; note: string } {
+  const apart = [f.borrowed > 0 ? `${formatInr(f.borrowed)} borrowed` : "", f.held > 0 ? `${formatInr(f.held)} held for others` : ""].filter(Boolean);
+  return { label: "Came in", value: formatInr(f.cameIn), note: apart.length > 0 ? `Income, plus ${apart.join(" and ")}` : "Income received" };
 }
 
 /**

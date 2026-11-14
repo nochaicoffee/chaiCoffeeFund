@@ -11,6 +11,7 @@ import {
   getCachedCardsTab,
   getCachedFixedDepositsTab,
   getCachedGoalsTab,
+  getCachedHeldMoneyTab,
   getCachedIncomeEntriesTab,
   getCachedIncomeSourcesTab,
     getCachedLentLoansTab,
@@ -46,7 +47,7 @@ export async function loadExpenseData(): Promise<ExpensePageData> {
       return [] as PricePoint[];
     },
   );
-  const [accounts, snapshots, incomeEntries, incomeSources, cards, statements, subscriptions, subscriptionPayments, loans, installments, prepayments, policies, policyPayments, transfers, fixedDeposits, lentLoans, lentRepayments, bigSpends, goals] = await Promise.all([
+  const [accounts, snapshots, incomeEntries, incomeSources, cards, statements, subscriptions, subscriptionPayments, loans, installments, prepayments, policies, policyPayments, transfers, fixedDeposits, lentLoans, lentRepayments, bigSpends, goals, heldMoney] = await Promise.all([
     getCachedAccountsTab(),
     getCachedBalanceSnapshotsTab(),
     getCachedIncomeEntriesTab(),
@@ -66,11 +67,12 @@ export async function loadExpenseData(): Promise<ExpensePageData> {
     getCachedLentRepaymentsTab(),
     getCachedBigSpendsTab(),
     getCachedGoalsTab(),
+    getCachedHeldMoneyTab(),
   ]);
   // Only a dollar bank account needs the rate: a broker's dollars never reach the pool.
   const needsRate = accounts.records.some((a) => a.currency === "USD" && a.accountType !== "Brokerage");
   const [usdInr, today] = await Promise.all([closes, needsRate ? getUsdInr() : Promise.resolve(null)]);
-  const tabs = [accounts, snapshots, incomeEntries, statements, subscriptionPayments, installments, prepayments, policyPayments, transfers, fixedDeposits, lentLoans, lentRepayments, bigSpends, goals];
+  const tabs = [accounts, snapshots, incomeEntries, statements, subscriptionPayments, installments, prepayments, policyPayments, transfers, fixedDeposits, lentLoans, lentRepayments, bigSpends, goals, heldMoney];
   return {
     data: {
       accounts: accounts.records,
@@ -94,6 +96,7 @@ export async function loadExpenseData(): Promise<ExpensePageData> {
       lentRepayments: lentRepayments.records,
       bigSpends: bigSpends.records,
       goals: goals.records,
+      heldMoney: heldMoney.records,
     },
     skipped: tabs.map((t) => t.skipped).filter((s) => s.rows.length > 0),
   };

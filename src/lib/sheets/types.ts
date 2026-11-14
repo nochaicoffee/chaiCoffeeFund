@@ -37,6 +37,26 @@ export type BalanceSource = (typeof BALANCE_SOURCES)[number];
  * neither account's total on its own (the balances say where money sits); it says why money left one and arrived in the other. The
  * Accounts page counts a transfer between a bank and a Brokerage account as invested, or taken back from investments.
  */
+export const HELD_DIRECTIONS = ["Received", "Returned"] as const;
+export type HeldDirection = (typeof HELD_DIRECTIONS)[number];
+
+/**
+ * Money held for someone else: a friend's share of an investment he sent to Prathik, and what Prathik handed back. Neither is income or
+ * spending. `Received` landed in the account, `Returned` left it (the friend's share, profit and all). The accounts counts them like a loan
+ * taken and paid back, so a month's cash and UPI isn't made up by them.
+ */
+export interface HeldMoney {
+  id: string;
+  /** Whose money it is: "Trishal". */
+  person: string;
+  date: string;
+  direction: HeldDirection;
+  amount: number;
+  /** The bank account it landed in or left. */
+  accountId: string;
+  note?: string;
+}
+
 export interface Transfer {
   id: string;
   date: string;
