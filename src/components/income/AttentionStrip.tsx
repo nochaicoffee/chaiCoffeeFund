@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import type { AttentionItem } from "@/app/income/views";
 import { FormTrigger, useIncomeForms } from "./forms/IncomeForms";
 
@@ -11,9 +12,9 @@ export function AttentionStrip({ items }: { items: AttentionItem[] }) {
   const { receive } = useIncomeForms();
   if (items.length === 0) return null;
   return (
-    <section aria-label="Income that hasn't landed" className="flex flex-col gap-2 rounded-[18px] border border-warning/30 bg-warning-tint px-4 py-3 md:px-5">
+    <section aria-label="Income that needs a look" className="flex flex-col gap-2 rounded-[18px] border border-warning/30 bg-warning-tint px-4 py-3 md:px-5">
       {items.map((item) => (
-        <div key={item.sourceId} className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <div key={item.id} className="flex flex-wrap items-center gap-x-4 gap-y-2">
         <p className="flex min-w-0 flex-1 items-start gap-2.5 text-[13px] font-semibold text-warning-text">
           <svg className="mt-0.5 shrink-0" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
@@ -27,7 +28,11 @@ export function AttentionStrip({ items }: { items: AttentionItem[] }) {
             {item.text}
           </span>
         </p>
+        {item.kind === "mismatch" ? (
+          <Link href="/income/entries" className="inline-flex min-h-9 items-center rounded-full bg-accent-tint px-4 text-xs font-extrabold text-accent-text hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-accent">Open the entries</Link>
+        ) : (
         <FormTrigger className="min-h-9 rounded-full bg-accent-tint px-4 text-xs font-extrabold text-accent-text hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-accent" label="Mark received" onClick={() => receive(item.sourceId)} />
+        )}
         </div>
       ))}
     </section>

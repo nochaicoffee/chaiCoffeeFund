@@ -40,7 +40,7 @@ const TONE_RANK: Record<WarningTone, number> = { red: 0, amber: 1, info: 2 };
 // ---------- What each page hands over (only the fields used; each page's own AttentionItem fits) ----------
 
 export interface LoansItem { installmentId: string; loanId: string; name: string; amount: string; text: string; overdue: boolean; dueDate?: string }
-export interface IncomeItem { sourceId: string; name: string; text: string; amount: string }
+export interface IncomeItem { sourceId: string; name: string; text: string; amount: string; id?: string; kind?: "late" | "mismatch" }
 export interface LentItem { id: string; kind: "payout" | "long-out" | "unlinked"; tone: "warn" | "late"; title: string; text: string; href?: string; action?: string }
 export interface FixedItem { id: string; kind: string; tone: "warn" | "late" | "ok"; title: string; text: string; depositId?: string }
 export interface InsuranceItem { policyId: string; name: string; text: string; tone: "lapsed" | "soon"; renewsOn?: string }
@@ -63,7 +63,11 @@ export function fromLoans(items: LoansItem[], today: string): OverviewWarning[] 
   }));
 }
 export function fromIncome(items: IncomeItem[]): OverviewWarning[] {
-  return items.map((i) => ({ id: `income:${i.sourceId}`, tone: "amber", page: "income", text: `${i.name} not received`, detail: `${i.amount} ${clause(i.text)}`, act: "Match a credit", href: PAGE_HREF.income, date: null }));
+  return items.map((i) =>
+    i.kind === "mismatch"
+      ? { id: `income:${i.id ?? i.sourceId}`, tone: "red", page: "income", text: `${i.name} entries don't match the bank`, detail: `${i.amount} apart. ${clause(i.text)}`, act: "Fix the entry", href: "/income/entries", date: null }
+      : { id: `income:${i.sourceId}`, tone: "amber", page: "income", text: `${i.name} not received`, detail: `${i.amount} ${clause(i.text)}`, act: "Match a credit", href: PAGE_HREF.income, date: null },
+  );
 }
 export function fromLent(items: LentItem[]): OverviewWarning[] {
   // A payout loan nothing tracks is a gap in the setup, not something that happened: it stays on the Lent page (as the old Overview did).
