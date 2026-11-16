@@ -3,7 +3,7 @@ import type { ExpenseData } from "@/lib/aggregate/expenses";
 import { parsePeriodParam } from "@/lib/aggregate/period";
 import type { Account, BalanceSnapshot, Statement, Transfer } from "@/lib/sheets/types";
 import { formatInrCompact } from "@/lib/format/money";
-import { columnLabel, earliestFlowMonth, FLOW_META, menuYears, monthlyView, periodMenu, periodMenuValue, rangePickerStart } from "./monthlyView";
+import { columnLabel, earliestFlowMonth, FLOW_META, menuYears, monthlyView, ordinal, periodMenu, periodMenuValue, rangePickerStart } from "./monthlyView";
 
 // Mid-November 2026: October is the last month that has ended, November is in progress.
 const TODAY = "2026-11-16";
@@ -113,6 +113,58 @@ describe("monthlyView", () => {
   it("gives each measure a colour and a page", () => {
     expect(FLOW_META.cards).toMatchObject({ href: "/cards", colorKey: "ruby" });
     expect(FLOW_META.cash.href).toBe("/expenses");
+  });
+});
+
+describe("the card over a month", () => {
+  const view = monthlyView(data(), parsePeriodParam(undefined, TODAY), TODAY);
+  const tip = (key: string, month: string) => measure(view, key).tips[month];
+
+  it("has a card only for a month with a figure", () => {
+    expect(tip("income", "2026-10")).toBeDefined();
+    expect(tip("income", "2026-08")).toBeUndefined();
+    expect(tip("emis", "2026-10")).toBeUndefined();
+  });
+  it("gives the figure, what it is made of and where it stands", () => {
+    const t = tip("income", "2026-10");
+    expect(t.total).toBe("₹2,00,000");
+    expect(t.rows).toEqual([{ name: "Income", amount: "₹2,00,000" }]);
+    expect(t.tag).toBe("Peak");
+    expect(t.rank).toBe("1st highest of 2");
+  });
+  it("compares with a usual month of the period, and says whether that is good news for the measure", () => {
+    // Over September and October income was 1.5L and 2L: a usual month is 1.75L, so October is above (good news) and September below (bad).
+    const two = monthlyView(data(), parsePeriodParam("2026-09..2026-10", TODAY), TODAY);
+    const t = (month: string) => measure(two, "income").tips[month];
+    expect(t("2026-10").versus).toMatchObject({ tone: "good" });
+    expect(t("2026-10").versus?.text).toContain("above a usual month of ₹1,75,000");
+    expect(t("2026-09").versus).toMatchObject({ tone: "bad" });
+  });
+  it("counts a usual month over the months that have ended, so a year with few records reads low", () => {
+    expect(tip("income", "2026-10").versus?.text).toContain("a usual month of ₹35,000");
+  });
+  it("lists the card bill paid, and the money sent to the broker", () => {
+    expect(tip("cards", "2026-10").rows.map((r) => r.amount)).toEqual(["₹30,000"]);
+    expect(tip("invested", "2026-10").rows).toEqual([{ name: "Sent to brokers and new deposits", amount: "₹40,000" }]);
+  });
+  it("shows what cash and UPI is the rest of", () => {
+    const t = tip("cash", "2026-10");
+    expect(t.rows.map((r) => r.name)).toEqual(["Spent in all", "Explained by records"]);
+    expect(t.foot).toContain("no record explains");
+  });
+  it("gives the month in progress no comparison or rank, and says it is only so far, never calling it the peak", () => {
+    // November's 5,000 is the lowest, but give it a larger one: it must still read "This month", not "Peak".
+    const big = monthlyView(data({ incomeEntries: [income("2026-09-01", 100), income("2026-11-01", 900000)] }), parsePeriodParam(undefined, TODAY), TODAY);
+    expect(measure(big, "income").tips["2026-11"].tag).toBe("This month");
+    const t = tip("income", "2026-11");
+    expect(t).toMatchObject({ tag: "This month", versus: null, rank: null });
+    expect(t.foot).toContain("isn't over");
+  });
+});
+
+describe("ordinal", () => {
+  it("says 1st, 2nd, 3rd, 4th, and 11th to 13th as th", () => {
+    expect([1, 2, 3, 4, 10, 11, 12, 13, 21, 22, 23, 101, 111].map(ordinal)).toEqual(["1st", "2nd", "3rd", "4th", "10th", "11th", "12th", "13th", "21st", "22nd", "23rd", "101st", "111th"]);
   });
 });
 

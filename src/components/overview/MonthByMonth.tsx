@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type CSSProperties } from "react";
-import { columnLabel, type MeasureView, type MonthlyView } from "@/app/overview/monthlyView";
+import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { columnLabel, type MeasureView, type MonthlyView, type MonthTipView } from "@/app/overview/monthlyView";
 import { FLOW_KEYS, type FlowKey } from "@/lib/aggregate/monthlyFlows";
 import { colorGradient } from "@/lib/format/colors";
+import { formatMonthYear } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import { Cell, SpendHeatmap } from "../cards/SpendHeatmap";
+import { MonthCardHover } from "../shell/MonthCardHover";
 
 /** A measure's own five shades, the Cards heatmap's green turned to its hue; every cell under it reads these (`--heat-1` to `--heat-5`). */
 function heatStyle(hue: number): CSSProperties {
@@ -18,6 +20,54 @@ function heatStyle(hue: number): CSSProperties {
 }
 
 type Focus = FlowKey | "all";
+
+/** A cell is a measure's month: the row or panel it sits in names the measure (`data-measure`), the cell the month (`data-month`). */
+const keyOf = (cell: HTMLElement) => {
+  const measure = cell.closest<HTMLElement>("[data-measure]")?.dataset.measure;
+  return measure && cell.dataset.month ? `${measure}:${cell.dataset.month}` : null;
+};
+
+function MeasureHover({ view, children }: { view: MonthlyView; children: ReactNode }) {
+  const tips = useMemo(() => new Map<string, MonthTipView>(view.measures.flatMap((m) => Object.values(m.tips).map((t): [string, MonthTipView] => [`${m.meta.key}:${t.month}`, t]))), [view]);
+  return (
+    <MonthCardHover resolve={(cell) => {
+      const key = keyOf(cell);
+      return key && tips.has(key) ? key : null;
+    }} render={(key) => <TipCard tip={tips.get(key)!} />}>
+      {children}
+    </MonthCardHover>
+  );
+}
+
+/** The card over a month: its figure, against a usual month and the others, and what it is made of (monthlyView.ts, monthTip). */
+function TipCard({ tip }: { tip: MonthTipView }) {
+  return (
+    <>
+      <div className="flex items-center justify-between gap-2 text-xs font-bold text-muted">
+        <span>{formatMonthYear(tip.month)}</span>
+        {tip.tag === "Peak" ? (
+          <span className="rounded-full bg-accent-tint px-2 py-0.5 text-[10px] font-extrabold text-accent-text">Peak</span>
+        ) : tip.tag === "This month" ? (
+          <span className="rounded-full bg-fill px-2 py-0.5 text-[10px] font-extrabold">This month</span>
+        ) : null}
+      </div>
+      <div className="mt-0.5 text-2xl leading-tight font-extrabold tabular-nums">{tip.total}</div>
+      {tip.versus && <div className={`mt-0.5 text-xs font-semibold ${tip.versus.tone === "good" ? "text-positive" : tip.versus.tone === "bad" ? "text-negative" : "text-muted"}`}>{tip.versus.text}</div>}
+      {tip.rank && <div className="mt-0.5 text-xs font-semibold text-muted">{tip.rank}</div>}
+      {tip.rows.length > 0 && (
+        <ul className="mt-2.5 flex flex-col gap-1 border-t border-divider pt-2">
+          {tip.rows.map((r, i) => (
+            <li key={`${r.name}${i}`} className="flex items-center gap-2 text-xs font-semibold">
+              <span className="min-w-0 flex-1 truncate text-muted">{r.name}</span>
+              <span className="font-extrabold tabular-nums">{r.amount}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      {tip.foot && <div className="mt-2.5 border-t border-divider pt-2 text-[11px] font-semibold text-muted">{tip.foot}</div>}
+    </>
+  );
+}
 
 const BUTTON_BASE = "flex min-h-[52px] min-w-0 flex-1 basis-[210px] cursor-pointer items-center gap-2.5 rounded-[20px] border border-surface-line px-4 py-2.5 text-left shadow-soft transition-[translate,background,color] duration-200 motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
@@ -106,7 +156,8 @@ export function MonthByMonth({ view }: { view: MonthlyView }) {
       {view.empty ? (
         <p className="rounded-[24px] border border-surface-line bg-surface p-6 text-center text-sm text-muted shadow-soft">Nothing recorded in this period yet.</p>
       ) : one ? (
-        <div style={heatStyle(one.meta.hue)}>
+        <MeasureHover view={view}>
+        <div data-measure={one.meta.key} style={heatStyle(one.meta.hue)}>
           <SpendHeatmap
             title={view.periodName}
             heading={`${one.meta.name} heatmap`}
@@ -126,8 +177,11 @@ export function MonthByMonth({ view }: { view: MonthlyView }) {
             Open {one.meta.page} →
           </Link>
         </div>
+        </MeasureHover>
       ) : (
-        <Together view={view} />
+        <MeasureHover view={view}>
+          <Together view={view} />
+        </MeasureHover>
       )}
     </section>
   );
@@ -158,7 +212,7 @@ function Together({ view }: { view: MonthlyView }) {
           </span>
         </div>
         {view.measures.map((m) => (
-          <div key={m.meta.key} role="row" className="grid items-center gap-1.5 rounded-[24px] border border-surface-line bg-surface px-[22px] py-3.5 shadow-soft" style={{ ...grid, ...heatStyle(m.meta.hue) }}>
+          <div key={m.meta.key} role="row" data-measure={m.meta.key} className="grid items-center gap-1.5 rounded-[24px] border border-surface-line bg-surface px-[22px] py-3.5 shadow-soft" style={{ ...grid, ...heatStyle(m.meta.hue) }}>
             <div role="rowheader" className="flex min-w-0 items-center gap-2.5">
               <FlowBadge m={m} />
               <Link href={m.meta.href} className="min-w-0 leading-tight hover:underline">

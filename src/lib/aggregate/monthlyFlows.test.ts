@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { MonthKey, SpendPeriod } from "./cardSpend";
 import type { MonthExpenses } from "./expenses";
-import { flowAmount, flowAmounts, flowHeat, flowRow, latestFigure, monthsSoFarIn, shownColumns, showsTogether, spanToLoad } from "./monthlyFlows";
+import { flowAmount, flowAmounts, flowHeat, flowRow, latestFigure, monthsSoFarIn, rankOf, shownColumns, showsTogether, spanToLoad } from "./monthlyFlows";
 
 // "Today" is mid-November 2026: October is the last month that has ended, November is in progress.
 const TODAY = "2026-11-16";
@@ -156,11 +156,17 @@ describe("flowRow: one measure over the months drawn side by side", () => {
   });
 });
 
-describe("latestFigure", () => {
+describe("latestFigure and rankOf", () => {
   const amounts = new Map<MonthKey, number>([["2026-09", 70], ["2026-10", 100], ["2026-11", 30]]);
   it("takes the latest month so far as the button's headline, and says when it is still in progress", () => {
     expect(latestFigure(amounts, year(2026), TODAY, "2025-04")).toEqual({ month: "2026-11", amount: 30, inProgress: true });
     expect(latestFigure(amounts, range("2026-06", "2026-10"), TODAY, "2025-04")).toEqual({ month: "2026-10", amount: 100, inProgress: false });
     expect(latestFigure(amounts, year(2027), TODAY, "2025-04")).toBeNull();
+  });
+  it("ranks a month among those with a figure, 1 being the highest", () => {
+    const months: MonthKey[] = ["2026-08", "2026-09", "2026-10", "2026-11"];
+    expect(rankOf(amounts, "2026-10", months)).toEqual({ rank: 1, of: 3 });
+    expect(rankOf(amounts, "2026-11", months)).toEqual({ rank: 3, of: 3 });
+    expect(rankOf(amounts, "2026-08", months)).toBeNull();
   });
 });
