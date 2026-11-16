@@ -1,6 +1,8 @@
 import { computeNetWorth, type NetWorthBreakdown } from "@/lib/aggregate/netWorth";
 import { investmentOverview, type Overview } from "@/lib/aggregate/investmentOverview";
 import { worthChange, worthSeries, type WorthChange, type WorthInputs, type WorthSeriesPoint } from "@/lib/aggregate/netWorthOn";
+import { lastDayOfMonth } from "@/lib/aggregate/accounts";
+import { monthOf, type MonthKey } from "@/lib/aggregate/cardSpend";
 import type { PricePoint } from "@/lib/prices/history";
 import type { AccountsData } from "@/lib/aggregate/accountFlows";
 import type {
@@ -47,6 +49,11 @@ export interface OverviewModel {
   change: WorthChange;
   /** The inputs the past-date functions take, kept so a view can ask about a date. */
   worthInputs: WorthInputs;
+  /**
+   * The period the page follows (docs/design/overview.md, MzB), when it was given one: its months up to today, whether it runs to today, and
+   * how net worth moved over it, against the month-end before it began (or the first month the series has). Null on the default series.
+   */
+  range: { months: MonthKey[]; includesToday: boolean; change: { from: string; amount: number; fraction: number | null } | null } | null;
 }
 
 /** What the holdings were worth on a day, from the Investments page's own daily series: nothing before his first trade, the nearest earlier day after it. */
@@ -63,7 +70,11 @@ export function investmentsOnFrom(series: Overview["series"], today: string): (d
   };
 }
 
-export function overviewModel(data: OverviewData, today: string): OverviewModel {
+/**
+ * With `rangeMonths` the series covers those months, plus the month-end before them as the base to measure the change from, and ends at the
+ * range's last month-end (today when the range runs to this month). Without it, the last 13 month-ends, as before.
+ */
+export function overviewModel(data: OverviewData, today: string, rangeMonths?: MonthKey[]): OverviewModel {
   const investments = investmentOverview({ trades: data.trades, instruments: data.instruments, closes: data.closes, today });
   const worth = computeNetWorth({
     accounts: data.accounts,
@@ -95,7 +106,13 @@ export function overviewModel(data: OverviewData, today: string): OverviewModel 
     investmentsOn: investmentsOnFrom(investments.series, today),
   };
   // The last point is today, and must be the figure the page headlines (computeNetWorth), so "the change on last month" is against the number shown.
-  const rebuilt = worthSeries(worthInputs, today, 13);
-  const series = rebuilt.map((p, i) => (i === rebuilt.length - 1 && p.month === today.slice(0, 7) ? { ...p, net: worth.netWorth, owed: worth.cardOutstanding + worth.loanOutstanding, owned: worth.netWorth + worth.cardOutstanding + worth.loanOutstanding } : p));
-  return { today, data, investments, worth, series, change: worthChange(series), worthInputs };
+  const months = rangeMonths && rangeMonths.length > 0 ? rangeMonths : null;
+  const includesToday = !months || months[months.length - 1] === monthOf(today);
+  const asOf = includesToday ? today : lastDayOfMonth(months![months!.length - 1]);
+  const rebuilt = worthSeries(worthInputs, asOf, months ? months.length + 1 : 13);
+  const series = rebuilt.map((p, i) => (includesToday && i === rebuilt.length - 1 && p.month === today.slice(0, 7) ? { ...p, net: worth.netWorth, owed: worth.cardOutstanding + worth.loanOutstanding, owned: worth.netWorth + worth.cardOutstanding + worth.loanOutstanding } : p));
+  const first = series[0];
+  const last = series[series.length - 1];
+  const range = months ? { months, includesToday, change: series.length >= 2 ? { from: first.month, amount: last.net - first.net, fraction: first.net > 0 ? (last.net - first.net) / first.net : null } : null } : null;
+  return { today, data, investments, worth, series, change: worthChange(series), worthInputs, range };
 }

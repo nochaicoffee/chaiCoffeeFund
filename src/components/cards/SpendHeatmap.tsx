@@ -14,7 +14,7 @@ function Swatch({ style, className = "" }: { style?: CSSProperties; className?: 
   return <span aria-hidden="true" className={`inline-block size-3 rounded-[4px] ${className}`} style={style} />;
 }
 
-function Cell({ cell, isPeak, isCurrent, noData }: { cell: HeatCell; isPeak: boolean; isCurrent: boolean; noData: string }) {
+export function Cell({ cell, isPeak, isCurrent, noData }: { cell: HeatCell; isPeak: boolean; isCurrent: boolean; noData: string }) {
   const label = formatMonthYear(cell.month);
   // A month outside the page's range is left blank (#113), keeping its place so the columns still line up.
   if (cell.state === "outside") {

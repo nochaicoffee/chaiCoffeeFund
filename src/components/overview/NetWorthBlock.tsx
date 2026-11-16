@@ -34,6 +34,8 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
   const [pick, setPick] = useState(view.months.length - 1);
   const month = view.months[pick];
   const n = view.months.length;
+  // A long period has a point for every month: label about a dozen of them (always the last), so they never overprint.
+  const labelStep = Math.max(1, Math.ceil(n / 13));
   const nets = view.months.map((m) => m.net);
   const lo = Math.min(...nets);
   const hi = Math.max(...nets);
@@ -79,7 +81,7 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
                 <span className={`absolute left-1/2 -translate-x-1/2 -translate-y-full rounded-[9px] bg-white px-2 py-1 text-[11.5px] font-extrabold whitespace-nowrap text-ink transition-opacity ${i === pick ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} style={{ top: `calc(${(y(m.net) / H) * 100}% - 14px)` }}>
                   {formatInrCompact(m.net)}
                 </span>
-                <span className={`absolute inset-x-0 bottom-1 text-center text-[10.5px] font-bold opacity-75 ${(n - 1 - i) % 2 === 1 ? "max-sm:hidden" : ""}`}>{m.label}</span>
+                <span className={`absolute inset-x-0 bottom-1 text-center text-[10.5px] font-bold opacity-75 ${(n - 1 - i) % labelStep !== 0 ? "hidden" : labelStep === 1 && (n - 1 - i) % 2 === 1 ? "max-sm:hidden" : ""}`}>{m.label}</span>
               </button>
             ))}
           </div>
