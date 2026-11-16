@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addContribution, addGoal, deleteGoal, dropGoal, editContribution, editGoal, markBought, pauseGoal, removeContribution, reopenGoal, restoreDeleted, restoreGoal, resumeGoal, snapshotGoal, undoStatus, type GoalRepos } from "./goalWrites";
+import { addContribution, addGoal, closeGoal, deleteGoal, dropGoal, editContribution, editGoal, markBought, pauseGoal, removeContribution, reopenGoal, restoreDeleted, restoreGoal, resumeGoal, snapshotGoal, undoStatus, type GoalRepos } from "./goalWrites";
 import { earmarksByAccount, savedOf, targetOf, totals } from "../aggregate/goals";
 import { InvalidRowError, NotFoundError } from "../sheets/repository";
 import type { Goal, GoalContribution } from "../sheets/types";
@@ -272,5 +272,107 @@ describe("review findings", () => {
     calls = 0;
     await expect(addContribution(racing, aside(car.id, 800, { kind: "Take-back" }))).rejects.toThrow(/another take-back came in first/);
     expect(contributions.rows.filter((c) => c.kind === "Take-back")).toHaveLength(1);
+  });
+});
+
+describe("closing a goal", () => {
+  async function carWithParts() {
+    const ctx = setup();
+    const car = await addGoal(ctx.repos, input({ name: "Honda", amount: 10000 }));
+    const tyres = await addGoal(ctx.repos, input({ name: "Tyres", parentId: car.id, amount: 35000 }));
+    const wheels = await addGoal(ctx.repos, input({ name: "Wheels", parentId: car.id, amount: 37000 }));
+    return { ...ctx, car, tyres, wheels };
+  }
+  const bought = (repos: GoalRepos, id: string, over: Partial<Parameters<typeof markBought>[2]> = {}) => markBought(repos, id, { doneOn: "2026-10-26", actualCost: 31000, paidFromAccountId: "hdfc", ...over });
+
+  it("marks the goal bought for what its parts cost, on the last day, with no account", async () => {
+    const { repos, goals, car, tyres, wheels } = await carWithParts();
+    await bought(repos, tyres.id);
+    await bought(repos, wheels.id, { doneOn: "2026-11-08", actualCost: 37000, paidFromCardId: "card", paidFromAccountId: undefined });
+    await closeGoal(repos, car.id);
+    const closed = goals.rows.find((g) => g.id === car.id)!;
+    expect(closed).toMatchObject({ status: "Done", doneOn: "2026-11-08", actualCost: 68000 });
+    expect(closed.paidFromAccountId ?? "").toBe("");
+    expect(closed.paidFromCardId ?? "").toBe("");
+  });
+  it("releases what's earmarked, and a Reopen brings the goal back as it was", async () => {
+    const { repos, goals, contributions, car, tyres, wheels } = await carWithParts();
+    await addContribution(repos, aside(car.id, 5000, { accountId: "hdfc" }));
+    await bought(repos, tyres.id, { fromGoal: 0 });
+    await dropGoal(repos, wheels.id, TODAY);
+    const earmarked = () => earmarksByAccount({ goals: goals.rows, contributions: contributions.rows }).hdfc ?? 0;
+    expect(earmarked()).toBe(5000);
+    await closeGoal(repos, car.id);
+    expect(earmarked()).toBe(0);
+    await reopenGoal(repos, car.id);
+    expect(goals.rows.find((g) => g.id === car.id)).toMatchObject({ status: "Active", amount: 10000 });
+    expect(earmarked()).toBe(5000);
+  });
+  it("refuses while a part is open, when nothing was bought, and for a part or a goal already bought", async () => {
+    const { repos, car, tyres, wheels } = await carWithParts();
+    await expect(closeGoal(repos, car.id)).rejects.toThrow(/open parts/);
+    await bought(repos, tyres.id);
+    await dropGoal(repos, wheels.id, TODAY);
+    await closeGoal(repos, car.id);
+    await expect(closeGoal(repos, car.id)).rejects.toThrow(/bought/);
+    await expect(closeGoal(repos, tyres.id)).rejects.toThrow(/part of another goal/);
+    const lone = await carWithParts();
+    await dropGoal(lone.repos, lone.tyres.id, TODAY);
+    await dropGoal(lone.repos, lone.wheels.id, TODAY);
+    await expect(closeGoal(lone.repos, lone.car.id)).rejects.toThrow(/None of Honda's parts was bought/);
+  });
+  it("Undo puts the status and the bought fields back", async () => {
+    const { repos, goals, car, tyres } = await carWithParts();
+    await bought(repos, tyres.id);
+    await dropGoal(repos, (await goals.list()).find((g) => g.name === "Wheels")!.id, TODAY);
+    const changes = await closeGoal(repos, car.id);
+    await undoStatus(repos, changes);
+    const back = goals.rows.find((g) => g.id === car.id)!;
+    expect(back.status).toBe("Active");
+    expect(back.actualCost ?? "").toBe("");
+    expect(back.doneOn ?? "").toBe("");
+  });
+});
+
+describe("deleting and correcting an entry from the page", () => {
+  it("a set-aside can be deleted once nothing taken back depends on it, and a take-back at any time", async () => {
+    const { repos, contributions } = setup();
+    const car = await addGoal(repos, input());
+    const first = await addContribution(repos, aside(car.id, 30000));
+    const second = await addContribution(repos, aside(car.id, 20000));
+    const back = await addContribution(repos, aside(car.id, 40000, { kind: "Take-back" }));
+    await expect(removeContribution(repos, first.id)).rejects.toThrow(/Take back the entries that came after it first/);
+    await removeContribution(repos, back.id);
+    await removeContribution(repos, first.id);
+    expect(contributions.rows.map((c) => c.id)).toEqual([second.id]);
+  });
+  it("the entry a delete returns can be written again, which is what Undo does", async () => {
+    const { repos, contributions } = setup();
+    const car = await addGoal(repos, input());
+    const entry = await addContribution(repos, aside(car.id, 12000, { accountId: "hdfc", note: "Bonus" }));
+    await removeContribution(repos, entry.id);
+    const rest = { goalId: entry.goalId, date: entry.date, amount: entry.amount, kind: entry.kind, accountId: entry.accountId, note: entry.note };
+    const again = await addContribution(repos, rest);
+    expect(contributions.rows).toEqual([{ ...rest, id: again.id }]);
+  });
+  it("correcting an entry changes its day, amount, account and note, and \"\" clears the last two", async () => {
+    const { repos, contributions } = setup();
+    const car = await addGoal(repos, input());
+    const entry = await addContribution(repos, aside(car.id, 12000, { accountId: "hdfc", note: "Bonus" }));
+    await editContribution(repos, entry.id, { amount: 15000, date: "2026-10-05", accountId: "", note: "" } as never);
+    const row = contributions.rows[0];
+    expect(row).toMatchObject({ amount: 15000, date: "2026-10-05" });
+    expect(row.accountId ?? "").toBe("");
+    expect(row.note ?? "").toBe("");
+    // Put back as it was (Undo).
+    await editContribution(repos, entry.id, { amount: 12000, date: "2026-10-01", accountId: "hdfc", note: "Bonus" });
+    expect(contributions.rows[0]).toMatchObject({ amount: 12000, accountId: "hdfc", note: "Bonus" });
+  });
+  it("a correction can't leave a goal with less than nothing set aside", async () => {
+    const { repos } = setup();
+    const car = await addGoal(repos, input());
+    const entry = await addContribution(repos, aside(car.id, 30000));
+    await addContribution(repos, aside(car.id, 25000, { kind: "Take-back" }));
+    await expect(editContribution(repos, entry.id, { amount: 20000 })).rejects.toThrow(/more back than is set aside/);
   });
 });

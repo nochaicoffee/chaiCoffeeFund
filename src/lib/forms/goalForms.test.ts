@@ -50,6 +50,10 @@ describe("the set aside form", () => {
     expect(readEntryForm(entry, known)).toEqual({ ok: true, input: { goalId: "a", kind: "Set-aside", amount: 15000, date: "2026-10-29" } });
     expect(readEntryForm({ ...entry, kind: "Take-back", accountId: "hdfc", note: "price came down" }, known)).toMatchObject({ ok: true, input: { kind: "Take-back", accountId: "hdfc", note: "price came down" } });
   });
+  it("keeps the move wording for moves: a typed note can't start like one, or its entry would drop out of the lists", () => {
+    for (const note of ["Given to Tyres", "Moved back from the bonus", "From the pot of Car"]) expect(readEntryForm({ ...entry, note }, known)).toMatchObject({ ok: false, errors: { note: expect.stringContaining("Start the note with other words") } });
+    expect(readEntryForm({ ...entry, note: "Given by Mom" }, known)).toMatchObject({ ok: true });
+  });
   it("refuses a goal or account that isn't there, a zero amount, and no day", () => {
     expect(readEntryForm({ ...entry, goalId: "z" }, known)).toMatchObject({ ok: false, errors: { goalId: "Choose the goal" } });
     expect(readEntryForm({ ...entry, accountId: "z" }, known)).toMatchObject({ ok: false, errors: { accountId: expect.any(String) } });

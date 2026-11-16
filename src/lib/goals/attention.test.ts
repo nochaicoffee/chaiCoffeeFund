@@ -55,4 +55,13 @@ describe("what needs attention", () => {
     expect(attentionItems(input({ goals: [], contributions: [] }), TODAY)).toEqual([]);
     expect(goal).toBeDefined();
   });
+  it("a goal whose parts are all bought asks to be closed, once", () => {
+    const data = { goals: [goal({ id: "car", name: "Car", amount: 10000 }), goal({ id: "t", name: "Tyres", amount: 35000, parentId: "car", status: "Done", doneOn: "2026-10-26", actualCost: 31000 }), goal({ id: "w", name: "Wheels", amount: 37000, parentId: "car", status: "Done", doneOn: "2026-11-08", actualCost: 37000 })], contributions: [] };
+    const items = attentionItems(input(data), TODAY);
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({ id: "car", tone: "warning", close: true, label: "Car · all 2 parts are bought" });
+    expect(items[0].detail).toBe("₹68,000 spent in all. Close the goal to finish it: what's still set aside in it is released.");
+    data.goals[0].status = "Done";
+    expect(attentionItems(input(data), TODAY)).toEqual([]);
+  });
 });

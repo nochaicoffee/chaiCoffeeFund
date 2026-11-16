@@ -278,6 +278,7 @@ function SideGoal({ view }: { view: GoalSideView }) {
               <MenuAction icon={<UndoIcon />} label="Take back" onSelect={() => open({ kind: "take-back", goalId: view.id })} />
               <MenuAction icon={<PencilIcon />} label="Edit goal and parts" onSelect={() => open({ kind: "edit", goalId: view.id })} />
               <MenuAction icon={<PauseIcon />} label={paused ? "Resume" : "Pause"} onSelect={() => open({ kind: paused ? "resume" : "pause", goalId: view.id })} />
+              {view.closable && <MenuAction icon={<CheckIcon />} label="Close goal" onSelect={() => open({ kind: "close", goalId: view.id })} />}
               <MenuAction icon={<CheckIcon />} label={done ? "Reopen" : "Mark bought"} onSelect={() => open({ kind: done ? "reopen" : "bought", goalId: view.id })} />
               <MenuAction icon={<CloseIcon />} label={dropped ? "Restore" : "Drop"} onSelect={() => open({ kind: dropped ? "restore" : "drop", goalId: view.id })} />
               <MenuAction icon={<CloseIcon />} label="Delete" danger onSelect={() => open({ kind: "delete", goalId: view.id })} />
@@ -339,23 +340,46 @@ function SideGoal({ view }: { view: GoalSideView }) {
           </>
         )}
         <b className={`mb-1 text-sm font-extrabold ${view.parts.length || view.settled.length ? "mt-3" : ""}`}>Set aside lately</b>
-        {view.entries.length ? (
-          view.entries.map((entry) => (
-            <div key={entry.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-divider py-1.5 last:border-b-0">
-              <div className="min-w-0">
-                <b className="block text-[13px] font-extrabold">{entry.kind === "Take-back" ? "Taken back" : "Set aside"}</b>
-                <small className="block truncate text-[11px] font-semibold text-muted">{entry.note}</small>
-              </div>
-              <div className="text-right">
-                <b className={`block text-[13px] font-extrabold tabular-nums ${entry.kind === "Take-back" ? "text-negative" : ""}`}>{entry.amount}</b>
-                <small className="block text-[11px] font-semibold text-muted">{entry.date}</small>
-              </div>
-            </div>
-          ))
-        ) : (
-          <p className="flex flex-1 items-center justify-center text-sm font-semibold text-muted">Nothing set aside yet.</p>
-        )}
+        <EntryList entries={view.entries} />
       </div>
+    </>
+  );
+}
+
+/** How many entries a goal's panel shows before "Show all": the newest, so a recent mistake is at hand and an old one is still one click away. */
+const ENTRIES_SHOWN = 4;
+
+/** A goal's set-asides and take-backs, newest first, each with Edit and Delete. */
+function EntryList({ entries }: { entries: GoalSideView["entries"] }) {
+  const { open } = useGoalsForms();
+  const [all, setAll] = useState(false);
+  if (entries.length === 0) return <p className="flex flex-1 items-center justify-center text-sm font-semibold text-muted">Nothing set aside yet.</p>;
+  const shown = all ? entries : entries.slice(0, ENTRIES_SHOWN);
+  return (
+    <>
+      {shown.map((entry) => (
+        <div key={entry.id} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 border-b border-divider py-1.5 last:border-b-0">
+          <div className="min-w-0">
+            <b className="block text-[13px] font-extrabold">{entry.kind === "Take-back" ? "Taken back" : "Set aside"}</b>
+            <small className="block truncate text-[11px] font-semibold text-muted">{entry.note}</small>
+          </div>
+          <div className="text-right">
+            <b className={`block text-[13px] font-extrabold tabular-nums ${entry.kind === "Take-back" ? "text-negative" : ""}`}>{entry.amount}</b>
+            <small className="block text-[11px] font-semibold text-muted">{entry.date}</small>
+          </div>
+          <span className="text-fg">
+            <RowMenu triggerLabel={`More for the ${entry.amount} entry of ${entry.date}`} menuLabel="Entry actions">
+              <MenuAction icon={<PencilIcon />} label="Edit entry" onSelect={() => open({ kind: "edit-entry", entryId: entry.id })} />
+              <MenuAction icon={<CloseIcon />} label="Delete entry" danger onSelect={() => open({ kind: "delete-entry", entryId: entry.id })} />
+            </RowMenu>
+          </span>
+        </div>
+      ))}
+      {entries.length > ENTRIES_SHOWN && (
+        <button type="button" onClick={() => setAll(!all)} className="mt-1 self-start rounded-full px-1 py-1 text-xs font-extrabold text-accent-text focus-visible:outline-2 focus-visible:outline-accent">
+          {all ? "Show fewer" : `Show all ${entries.length} entries`}
+        </button>
+      )}
     </>
   );
 }

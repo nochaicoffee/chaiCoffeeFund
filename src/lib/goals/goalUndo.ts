@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GOAL_STATUSES } from "../sheets/types";
+import { GOAL_CONTRIBUTION_KINDS, GOAL_STATUSES } from "../sheets/types";
 
 /**
  * What a Goals toast's Undo takes back, as the token the browser holds. It comes from the browser, so it's read strictly and the writes it asks
@@ -11,6 +11,10 @@ export const EDITABLE_GOAL_FIELDS = ["name", "category", "necessity", "scale", "
 const goalUndoSchema = z.discriminatedUnion("undo", [
   z.object({ undo: z.literal("add"), goalId: z.string().min(1) }),
   z.object({ undo: z.literal("entry"), entryId: z.string().min(1), moved: z.array(z.string().min(1)).max(40).optional() }),
+  /** A deleted entry, to be written again (under a new id). */
+  z.object({ undo: z.literal("entry-restore"), entry: z.object({ goalId: z.string().min(1), date: z.string().min(1), amount: z.number().positive(), kind: z.enum(GOAL_CONTRIBUTION_KINDS), accountId: z.string().min(1).optional(), note: z.string().min(1).optional() }) }),
+  /** An edited entry as it was ("" is how an update clears the account or note). */
+  z.object({ undo: z.literal("entry-edit"), entryId: z.string().min(1), previous: z.object({ amount: z.number().positive(), date: z.string().min(1), accountId: z.string(), note: z.string() }) }),
   z.object({ undo: z.literal("status"), changes: z.array(z.object({ id: z.string().min(1), was: z.enum(GOAL_STATUSES) })).min(1).max(20) }),
   z.object({ undo: z.literal("edit"), goalId: z.string().min(1), previous: z.partialRecord(z.enum(EDITABLE_GOAL_FIELDS), scalar) }),
   z.object({ undo: z.literal("delete"), goals: z.array(z.record(z.string(), z.unknown())).min(1).max(40), contributions: z.array(z.record(z.string(), z.unknown())).max(500) }),

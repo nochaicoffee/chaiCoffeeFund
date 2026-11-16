@@ -7,11 +7,11 @@ describe("undo tokens", () => {
     expect(parseGoalUndo(JSON.stringify({ undo: "edit", goalId: "g", previous: { parentId: "x" } }))).toBeNull();
   });
   it("round trip each kind", () => {
-    const kinds: GoalUndo[] = [{ undo: "add", goalId: "g" }, { undo: "entry", entryId: "e" }, { undo: "status", changes: [{ id: "g", was: "Active" }] }, { undo: "edit", goalId: "g", previous: { name: "A", amount: 10 } }, { undo: "delete", goals: [{ id: "g", name: "A" }], contributions: [] }];
+    const kinds: GoalUndo[] = [{ undo: "add", goalId: "g" }, { undo: "entry", entryId: "e" }, { undo: "entry-restore", entry: { goalId: "g", date: "2026-10-01", amount: 5, kind: "Set-aside", note: "n" } }, { undo: "entry-edit", entryId: "e", previous: { amount: 5, date: "2026-10-01", accountId: "", note: "" } }, { undo: "status", changes: [{ id: "g", was: "Active" }] }, { undo: "edit", goalId: "g", previous: { name: "A", amount: 10 } }, { undo: "delete", goals: [{ id: "g", name: "A" }], contributions: [] }];
     for (const undo of kinds) expect(parseGoalUndo(goalUndoToken(undo))).toEqual(undo);
   });
   it("refuses anything else: not JSON, an unknown kind, a status that isn't one, an empty id", () => {
-    for (const bad of ["nope", "{}", JSON.stringify({ undo: "wipe" }), JSON.stringify({ undo: "status", changes: [{ id: "g", was: "Gone" }] }), JSON.stringify({ undo: "add", goalId: "" }), JSON.stringify({ undo: "status", changes: [] })])
+    for (const bad of ["nope", "{}", JSON.stringify({ undo: "wipe" }), JSON.stringify({ undo: "entry-restore", entry: { goalId: "g", date: "2026-10-01", amount: -5, kind: "Set-aside" } }), JSON.stringify({ undo: "entry-restore", entry: { goalId: "g", date: "2026-10-01", amount: 5, kind: "Gift" } }), JSON.stringify({ undo: "entry-edit", entryId: "e", previous: { amount: 0, date: "d", accountId: "", note: "" } }), JSON.stringify({ undo: "status", changes: [{ id: "g", was: "Gone" }] }), JSON.stringify({ undo: "add", goalId: "" }), JSON.stringify({ undo: "status", changes: [] })])
       expect(parseGoalUndo(bad)).toBeNull();
   });
 });

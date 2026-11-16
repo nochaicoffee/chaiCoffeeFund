@@ -154,3 +154,37 @@ describe("money given from a pot to a part", () => {
     expect(lately.filter((e) => e.name === "Car upgrade")).toHaveLength(8);
   });
 });
+
+describe("a closed goal", () => {
+  /** The sample's car, with its parts bought and the goal itself closed over them (no account or card on the goal). */
+  function closedCar() {
+    const data = sample();
+    const kids = data.goals.filter((g) => g.parentId === "car");
+    kids.forEach((kid, i) => Object.assign(kid, { status: "Done", doneOn: `2026-10-${10 + i}`, actualCost: kid.amount - 1000, paidFromAccountId: "demo-hdfc" }));
+    Object.assign(data.goals.find((g) => g.id === "car")!, { status: "Done", doneOn: `2026-10-${9 + kids.length}`, actualCost: kids.reduce((total, kid) => total + kid.amount - 1000, 0) });
+    return { data, kids };
+  }
+  it("Finished lists it against its parts' estimate, not its own part", () => {
+    const { data, kids } = closedCar();
+    const row = finishedView(data).find((r) => r.id === "car")!;
+    const estimate = kids.reduce((total, kid) => total + kid.amount, 0);
+    expect(row.estimate).toBe(`of ${estimate.toLocaleString("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 })}`);
+    expect(row.verdict).toBe(`Came in ₹${(kids.length * 1000).toLocaleString("en-IN")} under the estimate`);
+    expect(row.under).toBe(true);
+    expect(row.note).toContain(`all ${kids.length} parts bought, closed`);
+  });
+  it("the table reads closed, with the same estimate", () => {
+    const { data, kids } = closedCar();
+    const row = tableRows(data, TODAY).find((r) => r.id === "car")!;
+    expect(row.settled).toContain("closed");
+    expect(row.settled).toContain(`₹${(kids.length * 1000).toLocaleString("en-IN")} under`);
+    expect(rupees(row.target)).toBe(kids.reduce((total, kid) => total + kid.amount, 0));
+  });
+  it("a goal bought with an account named is a purchase, not a closure", () => {
+    const { data } = closedCar();
+    Object.assign(data.goals.find((g) => g.id === "car")!, { paidFromAccountId: "demo-hdfc" });
+    expect(finishedView(data).find((r) => r.id === "car")!.note).toContain("bought");
+    expect(finishedView(data).find((r) => r.id === "car")!.note).not.toContain("closed");
+  });
+});
+

@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect, useState, type FormEvent } from "react";
 import { saveEntry } from "@/app/goals/actions";
-import type { GoalsFormsData } from "@/app/goals/formsView";
+import type { FormEntry, GoalsFormsData } from "@/app/goals/formsView";
 import { formatShortDate } from "@/lib/format/date";
 import { formatInr, parseAmountText } from "@/lib/format/money";
 import { IDLE } from "@/lib/forms/formState";
@@ -24,19 +24,20 @@ const Line = ({ label, value, strong = false }: { label: string; value: string; 
 /**
  * Set aside and Take back (GoalsForms 3, GoalsForms2 Take back): the same form either way. Setting aside records money you've put towards a goal, and
  * nothing moves in your accounts; taking back releases it, for when the plan changes or the price came down. The preview shows the goal before and after,
- * and a take-back can't be more than what's set aside in that goal. `amount` starts the field at what a button on the page suggested.
+ * and a take-back can't be more than what's set aside in that goal. `amount` starts the field at what a button on the page suggested. With `editing`
+ * it corrects an entry that's already there: its goal and kind stay, and the day, amount, account and note can change.
  */
-export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSaved }: { forms: GoalsFormsData; kind: "Set-aside" | "Take-back"; goalId?: string; amount?: number; onClose: () => void; onSaved: (undo: { id: string; message: string } | undefined, message: string) => void }) {
+export function EntryDialog({ forms, kind, goalId, amount: start, editing, onClose, onSaved }: { forms: GoalsFormsData; kind: "Set-aside" | "Take-back"; goalId?: string; amount?: number; editing?: FormEntry; onClose: () => void; onSaved: (undo: { id: string; message: string } | undefined, message: string) => void }) {
   const [state, formAction, pending] = useActionState(saveEntry, IDLE);
   const take = kind === "Take-back";
   // Only an open main goal takes money (a part is funded from its goal's pot), and a take-back can come from any one with something free in its pot.
-  const choices = forms.goals.filter((g) => !g.parentId && (take ? g.saved > 0 : g.status === "Active" || g.status === "Paused"));
+  const choices = editing ? forms.goals.filter((g) => g.id === editing.goalId) : forms.goals.filter((g) => !g.parentId && (take ? g.saved > 0 : g.status === "Active" || g.status === "Paused"));
   const first = choices.find((g) => g.id === goalId) ?? choices[0];
   const [chosen, setChosen] = useState(first?.id ?? "");
-  const [amount, setAmount] = useState(start ? String(start) : take && first ? String(Math.max(0, first.saved - first.amount) || "") : "");
-  const [date, setDate] = useState(forms.today);
-  const [accountId, setAccountId] = useState("");
-  const [note, setNote] = useState("");
+  const [amount, setAmount] = useState(editing ? String(editing.amount) : start ? String(start) : take && first ? String(Math.max(0, first.saved - first.amount) || "") : "");
+  const [date, setDate] = useState(editing?.date ?? forms.today);
+  const [accountId, setAccountId] = useState(editing?.accountId ?? "");
+  const [note, setNote] = useState(editing?.note ?? "");
   const [give, setGive] = useState(true);
   const goal = choices.find((g) => g.id === chosen);
   const hasParts = Boolean(goal && goal.parts.length > 0);
@@ -45,14 +46,15 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
   const read = readEntryForm(values, { goalIds: choices.map((g) => g.id), accountIds: forms.accounts.map((a) => a.id) });
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(read, state, values);
   const paid = parseAmountText(amount) ?? 0;
-  const tooMuch = take && goal !== undefined && paid > goal.saved;
+  // What the entry now counts for is taken out first when it's being corrected, so a take-back can be raised up to what's free plus what it already took.
+  const tooMuch = take && goal !== undefined && paid > goal.saved + (editing?.amount ?? 0);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     if (read.ok && !tooMuch) return markSubmitted();
     event.preventDefault();
     revealAll();
   }
   useEffect(() => {
-    if (state.status === "saved") onSaved(state.undo, take ? "Taken back" : "Set aside");
+    if (state.status === "saved") onSaved(state.undo, editing ? "Entry corrected" : take ? "Taken back" : "Set aside");
     // Only when a save comes back.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
@@ -60,7 +62,8 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
   // A goal with parts shows its whole pot (what's given to parts and what's free) against its whole total.
   const before = goal ? (hasParts ? goal.pot : goal.saved) : 0;
   const goalTarget = goal ? (hasParts ? goal.target : goal.amount) : 0;
-  const after = goal ? (take ? Math.max(0, before - paid) : before + paid) : 0;
+  const base = before - (editing ? (take ? -editing.amount : editing.amount) : 0);
+  const after = goal ? Math.max(0, take ? base - paid : base + paid) : 0;
   const left = goal ? Math.max(0, goalTarget - after) : 0;
   const needsAfter = goal?.dueDate && !hasParts ? requiredFor(left, goal.targetDate ?? goal.dueDate, forms.today) : 0;
   const needsBefore = goal?.dueDate && !hasParts ? requiredFor(Math.max(0, goalTarget - before), goal.targetDate ?? goal.dueDate, forms.today) : 0;
@@ -72,8 +75,8 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
   return (
     <FormDialog
       icon={<CheckIcon />}
-      title={take ? "Take back" : "Set aside"}
-      subtitle={take ? "Release money from a goal. Nothing moves in your accounts." : "Record money you've put towards a goal. Nothing moves in your accounts."}
+      title={editing ? (take ? "Edit take-back" : "Edit set-aside") : take ? "Take back" : "Set aside"}
+      subtitle={editing ? "Correct the day, the amount, where it sits or the note. Nothing moves in your accounts." : take ? "Release money from a goal. Nothing moves in your accounts." : "Record money you've put towards a goal. Nothing moves in your accounts."}
       preview={
         <PreviewPanel caption={take ? "The money is free again. It isn't set aside for anything until you give it to another goal." : "A goal never changes your net worth: the money is already in your accounts."}>
           {goal ? (
@@ -94,7 +97,7 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
                 <Line label={hasParts ? "In the goal" : "Set aside"} value={`${formatInr(before)} → ${formatInr(after)}`} strong />
                 <Line label="Still to go" value={`${formatInr(Math.max(0, goalTarget - before))} → ${formatInr(left)}`} />
                 {goal.dueDate && !hasParts && <Line label="Needed a month" value={`${formatInr(needsBefore)} → ${formatInr(needsAfter)}`} />}
-                {hasParts && !take && (
+                {hasParts && !take && !editing && (
                   <Line label="Given to parts" value={give ? (givenTotal ? `${formatInr(givenTotal)}${filled ? ` · ${filled} filled` : ""}` : "nothing to fill") : "stays not given to a part"} />
                 )}
               </dl>
@@ -110,8 +113,8 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
           )}
         </PreviewPanel>
       }
-      footerNote={<span className="max-md:hidden">{take ? "A take-back never takes a goal below zero." : "A take-back is this form the other way round."}</span>}
-      primaryLabel={take ? (paid ? `Take back ${formatInr(paid)}` : "Take back") : paid ? `Set aside ${formatInr(paid)}` : "Set aside"}
+      footerNote={<span className="max-md:hidden">{editing ? "A correction can't leave a goal with less than nothing set aside." : take ? "A take-back never takes a goal below zero." : "A take-back is this form the other way round."}</span>}
+      primaryLabel={editing ? "Save changes" : take ? (paid ? `Take back ${formatInr(paid)}` : "Take back") : paid ? `Set aside ${formatInr(paid)}` : "Set aside"}
       pending={pending}
       errorCount={count + (tooMuch ? 1 : 0)}
       saveFailed={state.status === "failed"}
@@ -121,6 +124,7 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
       formProps={{ action: formAction, onSubmit }}
     >
       <input type="hidden" name="kind" value={kind} />
+      {editing && <input type="hidden" name="entryId" value={editing.id} />}
       {state.status === "invalid" && state.errors.form && (
         <p role="alert" className="rounded-[12px] bg-negative-tint px-3.5 py-2.5 text-xs font-semibold text-negative">
           {state.errors.form}
@@ -128,17 +132,24 @@ export function EntryDialog({ forms, kind, goalId, amount: start, onClose, onSav
       )}
       <div className="grid gap-x-3.5 gap-y-4 md:grid-cols-2">
         <div className="md:col-span-2">
-          <Field id="goalId" label="Goal" required error={errors.goalId}>
+          <Field id="goalId" label="Goal" required help={editing ? "An entry stays with its goal. To move it, delete it and add it again." : undefined} error={errors.goalId}>
+            {editing ? (
+              <>
+                <input type="hidden" name="goalId" value={chosen} />
+                <div className="flex min-h-11 items-center rounded-[12px] bg-fill px-3.5 text-sm font-semibold text-muted">{goal?.name ?? "This goal"}</div>
+              </>
+            ) : (
             <SelectInput id="goalId" name="goalId" invalid={Boolean(errors.goalId)} options={choices.map((g) => ({ value: g.id, label: g.partCount ? `${g.name} · ${g.partCount} parts` : g.name, meta: take ? `${formatInr(g.saved)} ${g.parts.length ? "free" : "set aside"}` : g.dueDate ? `due ${formatShortDate(g.dueDate)}` : undefined, swatch: { background: `var(--card-${g.colorKey})` } }))} value={chosen} onChange={setChosen} placeholder="Choose the goal" />
+            )}
           </Field>
         </div>
-        <Field id="amount" label="Amount" required help={take && goal ? `At most ${formatInr(goal.saved)}: ${hasParts ? "what isn't given to any part" : "what's set aside"}.` : undefined} error={errors.amount ?? (tooMuch && goal ? hasParts ? `Only ${formatInr(goal.saved)} of ${goal.name}'s money isn't given to a part` : `Only ${formatInr(goal.saved)} is set aside in ${goal.name}` : undefined)}>
+        <Field id="amount" label="Amount" required help={take && goal ? `At most ${formatInr(goal.saved + (editing?.amount ?? 0))}: ${hasParts ? "what isn't given to any part" : "what's set aside"}.` : undefined} error={errors.amount ?? (tooMuch && goal ? hasParts ? `Only ${formatInr(goal.saved + (editing?.amount ?? 0))} of ${goal.name}'s money isn't given to a part` : `Only ${formatInr(goal.saved + (editing?.amount ?? 0))} is set aside in ${goal.name}` : undefined)}>
           <MoneyInput {...describedBy("amount", errors.amount, Boolean(take && goal))} data-autofocus name="amount" value={amount} onChange={(e) => setAmount(e.target.value)} onBlur={() => reveal("amount")} invalid={Boolean(errors.amount || tooMuch)} />
         </Field>
         <Field id="date" label="Date" required error={errors.date}>
           <DateInput {...describedBy("date", errors.date, false)} label="Date" name="date" value={date} onChange={setDate} onBlur={() => reveal("date")} today={forms.today} invalid={Boolean(errors.date)} />
         </Field>
-        {hasParts && !take && (
+        {hasParts && !take && !editing && (
           <label className="flex items-start gap-2.5 text-[12.5px] font-semibold md:col-span-2">
             <input type="checkbox" name="give" checked={give} onChange={(e) => setGive(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[var(--color-accent)]" />
             <span>

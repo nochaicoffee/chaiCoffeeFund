@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  closeFigures,
+  estimateOf,
+  isClosedGoal,
   fillInOrder,
   type GoalsData,
   earmarkProblems,
@@ -434,5 +437,58 @@ describe("filling a goal's parts from its pot", () => {
   it("a Fixed date comes before a Need", () => {
     const fixed = parts.map((p) => (p.id === "music" ? { ...p, dateType: "Fixed" as const } : p));
     expect(fillInOrder(fixed, 70000)).toEqual({ music: 60000, tyres: 10000 });
+  });
+});
+
+describe("closing a goal whose parts are all bought", () => {
+  const car = goal({ id: "car", name: "Car", amount: 10000 });
+  const part = (id: string, amount: number, over: Partial<Parameters<typeof goal>[0]> = {}) => goal({ id, name: id, amount, parentId: "car", status: "Done", doneOn: "2026-10-26", actualCost: amount, paidFromAccountId: "hdfc", ...over });
+  const data = (...parts: ReturnType<typeof goal>[]) => ({ goals: [car, ...parts], contributions: [] });
+
+  it("adds up what the bought parts cost and were estimated at, and takes the last day", () => {
+    const d = data(part("tyres", 35000, { actualCost: 31000 }), part("wheels", 37000, { doneOn: "2026-11-08" }), part("nuts", 5000));
+    expect(closeFigures(d, car)).toEqual({ count: 3, cost: 31000 + 37000 + 5000, estimate: 35000 + 37000 + 5000, doneOn: "2026-11-08" });
+  });
+  it("leaves out the goal's own part and any part that was dropped", () => {
+    const d = data(part("tyres", 35000), part("spare", 9000, { status: "Dropped", doneOn: undefined, actualCost: undefined }));
+    expect(closeFigures(d, car)).toMatchObject({ count: 1, cost: 35000, estimate: 35000 });
+  });
+  it("can't close a goal with an open part, with nothing bought, with no parts, or a part itself", () => {
+    expect(closeFigures(data(part("tyres", 35000), part("wheels", 37000, { status: "Active", doneOn: undefined, actualCost: undefined })), car)).toBeNull();
+    expect(closeFigures(data(part("wheels", 37000, { status: "Paused", doneOn: undefined, actualCost: undefined })), car)).toBeNull();
+    expect(closeFigures(data(part("spare", 9000, { status: "Dropped", doneOn: undefined, actualCost: undefined })), car)).toBeNull();
+    expect(closeFigures(data(), car)).toBeNull();
+    expect(closeFigures(data(part("tyres", 35000)), part("tyres", 35000))).toBeNull();
+  });
+  it("can't close a goal that is already bought or dropped", () => {
+    const d = data(part("tyres", 35000));
+    expect(closeFigures(d, { ...car, status: "Done" })).toBeNull();
+    expect(closeFigures(d, { ...car, status: "Dropped" })).toBeNull();
+  });
+  it("a closed goal is a bought goal with parts and no account or card, and is estimated at its parts", () => {
+    const d = data(part("tyres", 35000, { actualCost: 31000 }), part("nuts", 5000));
+    const closed = { ...car, status: "Done" as const, doneOn: "2026-10-26", actualCost: 36000 };
+    expect(isClosedGoal(d, closed)).toBe(true);
+    expect(estimateOf(d, closed)).toBe(40000);
+    // One bought as a purchase of its own part (an account or a card named) keeps its own estimate.
+    expect(isClosedGoal(d, { ...closed, paidFromAccountId: "hdfc" })).toBe(false);
+    expect(estimateOf(d, { ...closed, paidFromCardId: "c" })).toBe(10000);
+    // A bought goal with no parts is estimated at its amount.
+    expect(estimateOf({ goals: [closed], contributions: [] }, closed)).toBe(10000);
+  });
+  it("a goal bought for its own part with Paid from left empty stays a purchase, estimated at its own amount", () => {
+    const d = data(part("tyres", 35000, { actualCost: 31000 }), part("nuts", 5000));
+    const bought = { ...car, status: "Done" as const, doneOn: "2026-10-26", actualCost: 9500 };
+    expect(isClosedGoal(d, bought)).toBe(false);
+    expect(estimateOf(d, bought)).toBe(10000);
+  });
+  it("closing adds up only the parts that say what they cost, and the estimate follows the same parts", () => {
+    const d = data(part("tyres", 35000, { actualCost: 31000 }), part("typed", 9000, { actualCost: undefined, doneOn: undefined }));
+    expect(closeFigures(d, car)).toMatchObject({ count: 1, cost: 31000, estimate: 35000 });
+    expect(estimateOf(d, { ...car, status: "Done", doneOn: "2026-10-26", actualCost: 31000 })).toBe(35000);
+  });
+  it("a reopened goal is no longer closed", () => {
+    const d = data(part("tyres", 35000));
+    expect(isClosedGoal(d, { ...car, status: "Active" })).toBe(false);
   });
 });

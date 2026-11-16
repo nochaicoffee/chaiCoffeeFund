@@ -1,4 +1,5 @@
 import { GOAL_CATEGORIES, GOAL_COLORS, GOAL_CONTRIBUTION_KINDS, GOAL_DATE_TYPES, GOAL_NECESSITIES, GOAL_SCALES, type Goal, type GoalCategory, type GoalColor, type GoalContribution, type GoalDateType, type GoalNecessity, type GoalScale } from "../sheets/types";
+import { looksLikeMove } from "../aggregate/goals";
 import { formatInr } from "../format/money";
 import { FieldReader, readPaidFrom, type FormFields, type FormResult } from "./fields";
 
@@ -120,6 +121,7 @@ export function readEntryForm(fields: FormFields, known: { goalIds: readonly str
   const accountText = f.raw("accountId").trim();
   const accountId = accountText === "" ? undefined : f.choice("accountId", known.accountIds, "Choose an account from the list");
   const note = f.text("note");
+  if (note !== undefined && looksLikeMove(note)) f.fail("note", "Start the note with other words: it would read as money moved between a goal and its parts, and the entry would drop out of the lists");
   if (!f.ok || !goalId || !kind || amount === undefined || !date) return { ok: false, errors: f.errors };
   return f.result({ goalId, kind, amount, date, ...(accountId !== undefined && { accountId }), ...(note !== undefined && { note }) });
 }
