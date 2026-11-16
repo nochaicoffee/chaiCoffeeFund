@@ -1,10 +1,32 @@
 import { describe, expect, it } from "vitest";
 import { demoGoalsData } from "@/lib/demo/goalsDemo";
+import { goalSides, skyView } from "./views";
 import { affordView, comingUpView, finishedView, goalsWidgets, monthView, needsWantsView, setAsidesView, stairView, tableRows } from "./widgetsView";
 
 const TODAY = "2026-10-29";
 const sample = (variant = "") => demoGoalsData(TODAY, variant);
 const rupees = (text: string) => Number(text.replace(/[^\d]/g, ""));
+
+describe("a goal with a bought part", () => {
+  const bought = () => {
+    const data = sample();
+    data.goals = data.goals.map((g) => (g.id === "tyres" ? { ...g, status: "Done" as const, doneOn: "2026-10-01", actualCost: 36000, paidFromAccountId: "demo-acct" } : g));
+    return data;
+  };
+  it("counts what the part cost in the table's total, bar and percent, and in the planet and the panel", () => {
+    const plain = tableRows(sample(), TODAY).find((r) => r.id === "car")!;
+    const row = tableRows(bought(), TODAY).find((r) => r.id === "car")!;
+    // The bought part leaves the live total, so the total is the rest of the live total plus the 36,000 it cost.
+    expect(rupees(row.target)).toBe(rupees(plain.target) - 38000 + 36000);
+    expect(row.savedText).toContain("spent");
+    expect(row.progress).toBeGreaterThanOrEqual(36000 / rupees(row.target));
+    expect(row.progress).toBeLessThan(1);
+    const panel = goalSides(bought(), TODAY).car;
+    expect(panel.facts[0]).toEqual({ name: "Already spent", value: "₹36,000" });
+    expect(panel.savedText).toContain("₹36,000 spent");
+    expect(skyView(bought(), TODAY).planets.find((p) => p.key === "car")!.progress).toBeCloseTo(panel.progress, 6);
+  });
+});
 
 describe("the goals table", () => {
   const rows = tableRows(sample(), TODAY);
