@@ -1,0 +1,144 @@
+{
+  "pages": [
+    {
+      "id": "r3",
+      "name": "Round 3 · C picked, mixed with A: all five together up to a year, one at a time past it, and the range at the top of the dashboard"
+    },
+    {
+      "id": "r2",
+      "name": "Round 2 · the same widgets over three years: range picker, a row per year, and gaps where records start late"
+    },
+    {
+      "id": "r1",
+      "name": "Round 1 · Overview month-by-month widget: five separate measures, five layouts, and where it sits"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "MzA.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1480,
+      "h": 753,
+      "page": "r3"
+    },
+    {
+      "file": "MzB.dc.html",
+      "x": 1600,
+      "y": 0,
+      "w": 1480,
+      "h": 1452,
+      "page": "r3"
+    },
+    {
+      "file": "MyA.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1480,
+      "h": 1365,
+      "page": "r2"
+    },
+    {
+      "file": "MyB.dc.html",
+      "x": 1600,
+      "y": 0,
+      "w": 1480,
+      "h": 481,
+      "page": "r2"
+    },
+    {
+      "file": "MyC.dc.html",
+      "x": 3200,
+      "y": 0,
+      "w": 1480,
+      "h": 633,
+      "page": "r2"
+    },
+    {
+      "file": "MyD.dc.html",
+      "x": 4800,
+      "y": 0,
+      "w": 1480,
+      "h": 762,
+      "page": "r2"
+    },
+    {
+      "file": "MoA.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1480,
+      "h": 675,
+      "page": "r1"
+    },
+    {
+      "file": "MoB.dc.html",
+      "x": 1600,
+      "y": 0,
+      "w": 1480,
+      "h": 415,
+      "page": "r1"
+    },
+    {
+      "file": "MoC.dc.html",
+      "x": 3200,
+      "y": 0,
+      "w": 1480,
+      "h": 530,
+      "page": "r1"
+    },
+    {
+      "file": "MoD.dc.html",
+      "x": 4800,
+      "y": 0,
+      "w": 1480,
+      "h": 754,
+      "page": "r1"
+    },
+    {
+      "file": "MoE.dc.html",
+      "x": 6400,
+      "y": 0,
+      "w": 1480,
+      "h": 519,
+      "page": "r1"
+    },
+    {
+      "file": "MoX.dc.html",
+      "x": 8000,
+      "y": 0,
+      "w": 1480,
+      "h": 1333,
+      "page": "r1"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-1",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 3 (2026-11-16), Prathik's answers: all five together up to 12 months; a button focuses one measure at any range; the range is the whole dashboard's. Last 12 months and This year show 'All five' (one row each) or any one measure; Last 2 years and Last 3 years show one measure at a time and 'All five' goes dim. MzB proposes which Overview parts follow the range.",
+      "page": "r3"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Round 2 (2026-11-16): a range of several years, Nov 2023 to Oct 2026. The last twelve months are the Expenses canvas's; the earlier two years are made up. Records start late for some measures (cash expenses Jan 2025, card bills Aug 2025, EMIs Aug 2026), so a long range has honest blanks at the start.",
+      "page": "r2"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Overview · Month by month (round 1, 2026-11-16). Income, investments, EMIs, credit card bills and cash expenses as five separate widgets, five ways. Every figure is the Expenses canvas's made-up year (Nov 2025 to Oct 2026), so the widget agrees with /expenses. Hover any month for its detail; C and E are interactive.",
+      "page": "r1"
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "r3"
+  }
+}

@@ -1,0 +1,669 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700;800&family=Manrope:wght@500;600;700;800&family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,500;1,6..72,600&display=swap">
+  <style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.chai-app {
+  --page: oklch(0.965 0.004 90); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06); --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+  --pop-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.16);
+  --accent: oklch(0.72 0.19 145); --accent-tint: oklch(0.93 0.06 145); --accent-text: oklch(0.42 0.14 145); --on-accent: oklch(0.99 0 0);
+  --accent-edge: oklch(0.72 0.19 145 / 0.45); --accent-ring: oklch(0.72 0.19 145 / 0.22); --negative-ring: oklch(0.55 0.16 25 / 0.18);
+  --ink: oklch(0.16 0.008 260); --on-ink: oklch(0.99 0 0);
+  --positive: oklch(0.42 0.14 145); --warning: oklch(0.72 0.14 75); --warning-text: oklch(0.47 0.1 70); --warning-tint: oklch(0.95 0.05 85);
+  --negative: oklch(0.55 0.16 25); --negative-tint: oklch(0.95 0.035 40);
+  --feature-tile: oklch(0.935 0.052 148); --feature-tile-line: oklch(0.62 0.15 150 / 0.24); --feature-tile-glow: oklch(1 0 0 / 0.55);
+  --rings-ink: oklch(0.42 0.1 152); --rings-light: oklch(1 0 0); --bar-glow: oklch(1 0 0 / 0.26);
+  --heat-1: oklch(0.95 0.03 150); --heat-2: oklch(0.87 0.07 150); --heat-3: oklch(0.76 0.11 151); --heat-4: oklch(0.6 0.12 153); --heat-5: oklch(0.42 0.1 156);
+  --heat-ink: oklch(0.24 0.05 152); --heat-no-data: oklch(0 0 0 / 0.04); --heat-upcoming: oklch(0 0 0 / 0.13); --trend-no-data: oklch(0 0 0 / 0.1); --trend-peak-shadow: oklch(0.3 0.09 155 / 0.26);
+  --card-emerald-from: oklch(0.42 0.11 155); --card-emerald-to: oklch(0.24 0.07 162); --card-emerald: oklch(0.6 0.12 153);
+  --card-sapphire-from: oklch(0.32 0.09 258); --card-sapphire-to: oklch(0.16 0.05 258); --card-sapphire: oklch(0.48 0.1 258);
+  --card-ruby-from: oklch(0.3 0.11 20); --card-ruby-to: oklch(0.15 0.07 20); --card-ruby: oklch(0.57 0.13 22);
+  --card-onyx-from: oklch(0.28 0.02 75); --card-onyx-to: oklch(0.15 0.01 75); --card-onyx: oklch(0.56 0.04 75);
+  --card-violet-from: oklch(0.31 0.1 300); --card-violet-to: oklch(0.16 0.06 300); --card-violet: oklch(0.53 0.13 300);
+  --card-teal-from: oklch(0.32 0.07 200); --card-teal-to: oklch(0.16 0.04 200); --card-teal: oklch(0.56 0.09 200);
+  --card-copper-from: oklch(0.33 0.09 50); --card-copper-to: oklch(0.16 0.05 50); --card-copper: oklch(0.6 0.12 50);
+  --card-emerald-glow: oklch(0.8 0.17 140 / 0.55);
+  --on-card: oklch(0.95 0.004 260); --on-card-muted: oklch(1 0 0 / 0.6); --on-card-faint: oklch(1 0 0 / 0.5); --on-card-fill: oklch(1 0 0 / 0.16); --on-card-line: oklch(1 0 0 / 0.12); --on-card-line-top: oklch(1 0 0 / 0.22); --on-card-lime: oklch(0.88 0.17 138);
+  --card-chip: oklch(0.8 0.13 80); --card-chip-mid: oklch(0.68 0.13 80); --card-chip-deep: oklch(0.55 0.1 80);
+  --tile-shadow: 0 10px 26px oklch(0 0 0 / 0.4);
+  --tile-shadow-selected: 0 10px 26px oklch(0.3 0.09 155 / 0.35), 0 0 0 4px oklch(1 0 0 / 0.08), 0 0 18px oklch(1 0 0 / 0.2);
+  --due-pulse-ring: oklch(0.82 0.12 40 / 0.2); --due-pulse-fill: oklch(0.7 0.14 35 / 0.55);
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  position: relative; overflow: hidden; font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; background: var(--page); color: var(--fg);
+  font-size: 13px; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+}
+.chai-app h1, .chai-app h2, .chai-app h3, .chai-app p { margin: 0; }
+.glass { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); }
+.glass-strong { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); }
+.muted { color: var(--muted); }
+.strong { color: var(--fg); font-weight: 800; }
+.row { display: flex; align-items: center; gap: 10px; }
+.between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.grow { flex: 1; min-width: 0; }
+
+/* ---- Shell ---- */
+.desk { display: flex; gap: 20px; padding: 24px; }
+.rail { width: 64px; flex-shrink: 0; border-radius: 999px; display: flex; flex-direction: column; align-items: center; padding: 18px 0; gap: 10px; }
+.rail-item { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; color: var(--muted); }
+.rail-item.active { background: var(--ink); color: var(--on-ink); }
+.rail-me { margin-top: auto; width: 30px; height: 30px; border-radius: 50%; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+.main { flex: 1; min-width: 0; border-radius: 36px; padding: 26px; display: flex; flex-direction: column; gap: 20px; }
+.ph { display: flex; flex-direction: column; border-radius: 34px; border: 1px solid var(--fill-strong); }
+.ph-status { height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; font-size: 14px; font-weight: 700; }
+.ph-icons { display: flex; gap: 4px; } .ph-icons i { width: 16px; height: 9px; border-radius: 3px; background: var(--fg); opacity: 0.85; }
+.ph-bar { height: 56px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 16px; border-bottom: 1px solid var(--divider); font-size: 16px; font-weight: 800; }
+.ph-menu { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; }
+.ph-body { flex: 1; min-height: 0; padding: 18px 16px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ---- Header ---- */
+.pg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.pg-text { display: flex; flex-direction: column; gap: 10px; max-width: 980px; }
+.eyebrow { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+.pg-head h1 { font-size: 30px; font-weight: 800; line-height: 1.15; }
+.lede { font-size: 16px; font-weight: 500; line-height: 1.7; color: var(--muted); text-wrap: pretty; }
+.lede b { color: var(--fg); font-weight: 700; }
+.pg-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; margin-top: 4px; }
+.ph-head { flex-direction: column; gap: 14px; }
+.ph-head h1 { font-size: 26px; }
+.ph-head .lede { font-size: 15px; line-height: 1.6; }
+.ph-head .pg-actions { flex-wrap: wrap; margin-top: 0; }
+
+/* ---- Buttons, pills, segmented, chips ---- */
+.btn { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 18px; border-radius: 999px; font-size: 13px; font-weight: 700; white-space: nowrap; cursor: pointer; user-select: none; }
+.btn-primary { background: var(--ink); color: var(--on-ink); position: relative; overflow: hidden; }
+.btn-primary::after { content: ""; position: absolute; top: -60%; left: -30%; width: 46%; height: 220%; background: linear-gradient(100deg, transparent, oklch(1 0 0 / 0.25), transparent); transform: rotate(14deg); pointer-events: none; }
+.btn-ghost { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--fg); }
+.btn-soft { background: var(--fill); color: var(--fg); }
+.btn-accent { background: var(--accent-tint); color: var(--accent-text); }
+.btn-danger { background: var(--negative-tint); color: var(--negative); }
+.btn-icon { width: 40px; padding: 0; justify-content: center; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); color: var(--muted); }
+.btn-sm { min-height: 30px; padding: 0 12px; font-size: 12px; gap: 6px; }
+.btn-xs { min-height: 26px; padding: 0 10px; font-size: 11px; gap: 5px; }
+.ph .btn { min-height: 44px; }
+.ph .btn-sm { min-height: 36px; }
+.pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.pill-on { background: var(--accent-tint); color: var(--accent-text); }
+.pill-off { background: var(--fill); color: var(--muted); }
+.pill-soon { background: var(--warning-tint); color: var(--warning-text); }
+.pill-due { background: var(--negative-tint); color: var(--negative); animation: due-pulse 2.2s ease-in-out infinite; }
+.pill-warn { background: var(--warning-tint); color: var(--warning-text); }
+.pill-ink { background: var(--ink); color: var(--on-ink); }
+@keyframes due-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px var(--due-pulse-ring); } }
+@media (prefers-reduced-motion: reduce) { .pill-due { animation: none; } }
+.chg { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.chg-up { color: var(--negative); } .chg-down { color: var(--positive); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--fill); gap: 2px; }
+.seg-i { display: inline-flex; align-items: center; gap: 6px; padding: 6px 13px; border-radius: 999px; font-size: 12px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.seg-i em { font-style: normal; font-size: 11px; color: var(--muted); font-weight: 700; }
+.seg-i.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--fill); color: var(--fg); white-space: nowrap; }
+.chip.on { background: var(--ink); color: var(--on-ink); }
+.chip i { width: 8px; height: 8px; border-radius: 3px; display: inline-block; }
+.chip em { font-style: normal; color: var(--muted); font-size: 11px; }
+.chip.on em { color: oklch(1 0 0 / 0.6); }
+.sample { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; background: var(--warning-tint); color: var(--warning-text); font-size: 11px; font-weight: 800; letter-spacing: 0.01em; white-space: nowrap; }
+.sample::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--warning); }
+.tag-new { display: inline-flex; padding: 2px 7px; border-radius: 999px; font-size: 9.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; background: oklch(0.93 0.05 258); color: oklch(0.42 0.1 258); vertical-align: 1px; }
+
+/* ---- Monograms, card chips ---- */
+.mono { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; color: var(--on-card); font-weight: 800; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18), 0 2px 6px oklch(0 0 0 / 0.18); }
+.mono-off { filter: grayscale(1); opacity: 0.55; }
+.via { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--fg); white-space: nowrap; }
+.minitile { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; box-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2); }
+.minibank { width: 20px; height: 14px; border-radius: 4px; flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center; background: var(--fill-strong); color: var(--muted); }
+
+/* ---- Cards (surfaces) ---- */
+.card { border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.card-h { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.card-t { font-size: 15px; font-weight: 800; }
+.card-t small { font-size: 12px; font-weight: 600; color: var(--muted); margin-left: 8px; }
+.card-note { font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.55; }
+.link { display: inline-flex; align-items: center; gap: 5px; font-size: 13px; font-weight: 700; color: var(--accent-text); white-space: nowrap; }
+.tex { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; z-index: -1; pointer-events: none; }
+.tex svg, .tex .sheen { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.textured { position: relative; isolation: isolate; }
+
+/* Summary tiles, as on the Statements page: one feature tile in mint with rings. */
+.tiles { display: grid; gap: 16px; }
+.stile { position: relative; isolation: isolate; border-radius: 22px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.stile .k { font-size: 12px; font-weight: 600; color: var(--muted); }
+.stile .v { font-size: 28px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.2; }
+.stile .v small { font-size: 14px; font-weight: 700; color: var(--muted); letter-spacing: 0; }
+.stile .s { font-size: 12px; color: var(--muted); font-weight: 500; }
+.stile .s b { color: var(--fg); font-weight: 700; }
+.feature { background: var(--feature-tile); border: 1px solid var(--feature-tile-line); }
+.feature .k, .feature .s { color: oklch(0.38 0.06 152); }
+
+/* Dark tiles, like the card tiles */
+.dtile { position: relative; isolation: isolate; flex-shrink: 0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow); }
+.dtile .dt-muted { color: var(--on-card-muted); font-size: 11px; font-weight: 600; }
+.dtile .dt-faint { color: var(--on-card-faint); font-size: 10px; font-weight: 600; }
+.dtile.sel { border: 1.5px solid var(--accent); box-shadow: var(--tile-shadow-selected); }
+.dtile .dt-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--on-card-fill); white-space: nowrap; }
+.dtile .dt-pill.due { background: oklch(0.7 0.14 35 / 0.55); animation: due-pulse 2.2s ease-in-out infinite; }
+.dtile .dt-pill.soon { background: oklch(0.8 0.13 80 / 0.35); }
+.dtile.off { filter: grayscale(0.85); opacity: 0.6; box-shadow: none; }
+.dtile .tick { display: none; } .dtile.sel .tick { display: flex; }
+.tick { position: absolute; top: -9px; right: -9px; width: 21px; height: 21px; border-radius: 50%; background: var(--accent); color: var(--on-accent); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px oklch(0 0 0 / 0.4); }
+.addtile { flex-shrink: 0; border-radius: 22px; border: 1.5px dashed var(--fill-strong); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 700; }
+
+/* ---- Fitting neatly: rows of cards end level, and content fills the card ---- */
+.stack-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.stack-col > :last-child { flex: 1 1 auto; }
+.spread { flex: 1 1 auto; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
+.foot { margin-top: auto; }
+.card > .tmap { flex: 1 1 auto; }
+
+/* ---- Tables ---- */
+.th { font-size: 10px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+.tgroup { display: flex; align-items: center; justify-content: space-between; padding: 14px 0 8px; border-bottom: 1px solid var(--divider); font-size: 13px; font-weight: 800; }
+.tgroup span { font-size: 12px; font-weight: 600; color: var(--muted); }
+.cell-name { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.cell-name b { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cell-name small { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+.num { font-weight: 800; }
+.sub2 { display: block; font-size: 11px; color: var(--muted); font-weight: 600; margin-top: 2px; white-space: nowrap; }
+
+/* ---- Bars ---- */
+.track { height: 6px; border-radius: 999px; background: var(--fill); overflow: hidden; }
+.track > span { display: block; height: 100%; border-radius: inherit; }
+.stack { display: flex; height: 14px; border-radius: 999px; overflow: hidden; gap: 2px; }
+.stack > span { display: block; height: 100%; position: relative; }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { width: 9px; height: 9px; border-radius: 3px; display: inline-block; }
+.legend b { color: var(--fg); font-weight: 700; }
+
+/* ---- Notice ---- */
+.notice { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); color: var(--warning-text); font-size: 13px; font-weight: 600; }
+.notice b { color: oklch(0.36 0.08 65); font-weight: 800; }
+.notice .grow { color: oklch(0.4 0.08 68); }
+.notice svg { flex-shrink: 0; }
+
+/* ---- Dropdown (the app's own, #112) ---- */
+.sel { position: relative; display: inline-block; }
+.sel > summary { list-style: none; } .sel > summary::-webkit-details-marker { display: none; }
+.sel-trigger { position: relative; display: flex; align-items: center; gap: 8px; border: 1px solid var(--surface-line); background: var(--surface); cursor: pointer; text-align: left; max-width: 100%; }
+.sel-value { min-width: 0; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sel-chev { flex-shrink: 0; color: var(--muted); display: flex; transition: transform 160ms var(--ease-out); }
+.sel[open] .sel-chev { transform: rotate(180deg); }
+.sel-icon { display: flex; color: var(--muted); }
+.sel--pill .sel-trigger { min-height: 40px; border-radius: 999px; box-shadow: var(--soft-shadow); padding: 9px 15px; font-size: 13px; font-weight: 700; }
+.sel--pill[open] .sel-trigger { border-color: var(--accent-edge); }
+.sel--small .sel-trigger { min-height: 34px; border-radius: 999px; padding: 6px 12px; font-size: 12px; font-weight: 700; background: var(--fill); border-color: transparent; }
+.sel--field { display: block; }
+.sel--field .sel-trigger { width: 100%; height: 40px; border-radius: 12px; padding: 0 12px 0 14px; font-size: 14px; font-weight: 600; }
+.sel--field[open] .sel-trigger { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.ph .sel--field .sel-trigger { height: 44px; } .ph .sel--pill .sel-trigger { min-height: 44px; }
+.is-placeholder { color: var(--muted); font-weight: 500; }
+.pop { position: absolute; z-index: 20; top: calc(100% + 8px); left: 0; background: var(--surface); border: 1px solid var(--surface-line); border-radius: 16px; box-shadow: var(--pop-shadow); padding: 6px; min-width: 100%; }
+.pop.align-end { left: auto; right: 0; }
+.sel[open] .pop { animation: pop-in 150ms var(--ease-out) both; }
+@keyframes pop-in { from { opacity: 0; transform: translateY(-4px) scale(0.98); } }
+@media (prefers-reduced-motion: reduce) { .sel[open] .pop { animation: none; } .sel-chev { transition: none; } }
+.lb { min-width: 210px; max-height: 300px; overflow-y: auto; }
+.sel--field .lb { min-width: 0; }
+.lb-group { padding: 8px 12px 4px; font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.lb-divider { height: 1px; margin: 6px 8px; background: var(--divider); }
+.opt { display: flex; align-items: center; gap: 12px; min-height: 36px; padding: 0 10px 0 12px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--fg); cursor: pointer; }
+.sel--field .opt { font-size: 14px; font-weight: 600; }
+.opt:hover { background: var(--fill); }
+.opt-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.opt-meta { flex-shrink: 0; font-size: 12px; font-weight: 600; color: var(--muted); }
+.opt-check { flex-shrink: 0; width: 14px; color: var(--accent-text); visibility: hidden; display: flex; }
+.opt[aria-selected="true"] { background: var(--accent-tint); color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-meta { color: var(--accent-text); }
+.opt[aria-selected="true"] .opt-check { visibility: visible; }
+.ph .opt { min-height: 44px; }
+
+/* ---- Light hover card (#104/#105) ---- */
+.hc { width: 250px; border-radius: 16px; padding: 14px; background: var(--surface); color: var(--fg); box-shadow: var(--pop-shadow); border: 1px solid var(--surface-line); }
+.hc .h { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: var(--muted); }
+.hc .t { font-size: 22px; font-weight: 800; line-height: 1.25; margin-top: 2px; }
+.hc .d { font-size: 12px; font-weight: 700; margin-top: 2px; color: var(--muted); }
+.hc ul { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 6px; }
+.hc li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+.hc li .nm { flex: 1; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hc li b { font-weight: 800; }
+.hc .f { margin-top: 10px; padding-top: 9px; border-top: 1px solid var(--divider); font-size: 11px; font-weight: 600; color: var(--muted); }
+.hc-arrow { position: absolute; width: 12px; height: 12px; background: var(--surface); border: 1px solid var(--surface-line); border-top: none; border-left: none; transform: rotate(45deg); }
+.hov { position: relative; }
+.hov > .hc-wrap { position: absolute; z-index: 30; opacity: 0; pointer-events: none; transform: translateY(4px); transition: opacity 160ms ease, transform 240ms var(--ease-out); }
+.hov:hover > .hc-wrap, .hov.is-open > .hc-wrap { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { .hov > .hc-wrap { transition: none; transform: none; } }
+
+/* ---- Heatmap ---- */
+.heat { display: grid; gap: 8px; align-items: center; }
+.heat-m { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.heat-m.now { color: var(--fg); }
+.hcell { position: relative; isolation: isolate; height: 54px; border-radius: 13px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; }
+.ph .hcell .cap { display: none; }
+.hcell .cap { font-size: 9px; font-weight: 600; opacity: 0.85; margin-top: 1px; white-space: nowrap; }
+.hcell.up { border: 1.5px dashed var(--heat-upcoming); color: var(--muted); background: transparent; }
+.hcell.up.big { border-color: oklch(0.6 0.12 153 / 0.6); color: var(--heat-ink); background: oklch(0.95 0.03 150 / 0.5); }
+.hcell.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); }
+.hcell.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* ---- Forms (as docs/design/cards-forms.md) ---- */
+.dlg { position: relative; background: var(--surface); border-radius: 28px; box-shadow: var(--pop-shadow); display: flex; flex-direction: column; }
+.dlg-h { display: flex; align-items: flex-start; gap: 14px; padding: 26px 28px 0; }
+.dlg-ic { width: 40px; height: 40px; border-radius: 12px; background: var(--accent-tint); color: var(--accent-text); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dlg-h h3 { font-size: 18px; font-weight: 800; } .dlg-h p { font-size: 13px; color: var(--muted); font-weight: 500; margin-top: 3px; }
+.dlg-x { margin-left: auto; width: 34px; height: 34px; border-radius: 50%; background: var(--fill); display: flex; align-items: center; justify-content: center; color: var(--fg); flex-shrink: 0; }
+.dlg-b { display: grid; grid-template-columns: 320px 1fr; gap: 24px; padding: 20px 28px; }
+.dlg-f { display: flex; align-items: center; gap: 10px; padding: 16px 28px 22px; border-top: 1px solid var(--divider); }
+.dlg-f .note { flex: 1; font-size: 12px; color: var(--muted); font-weight: 500; }
+.preview { position: relative; isolation: isolate; border-radius: 20px; background: var(--feature-tile); border: 1px solid var(--feature-tile-line); padding: 18px; display: flex; flex-direction: column; gap: 14px; overflow: hidden; }
+.pv-k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: oklch(0.38 0.1 150); }
+.pv-box { background: oklch(1 0 0 / 0.72); border-radius: 14px; padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; font-size: 12px; }
+.pv-box .between span:first-child { color: var(--muted); font-weight: 600; }
+.pv-box .between span:last-child { font-weight: 700; }
+.fields { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 14px; align-content: start; }
+.fld { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.fld.full { grid-column: 1 / -1; }
+.lbl { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.lbl .req { color: var(--negative); margin-left: 2px; }
+.lbl .opt-tag { font-size: 10px; font-weight: 700; color: var(--muted); opacity: 0.8; margin-left: 6px; letter-spacing: 0.04em; }
+.inp { height: 40px; border-radius: 12px; border: 1px solid var(--surface-line); background: var(--surface); box-shadow: inset 0 1px 1px oklch(0 0 0 / 0.02); padding: 0 14px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; }
+.ph .inp { height: 44px; }
+.inp .pre { color: var(--muted); font-weight: 600; } .inp .suf { color: var(--muted); font-weight: 500; font-size: 13px; }
+.inp.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.inp.err { border-color: var(--negative); box-shadow: 0 0 0 3px var(--negative-ring); }
+.inp .ph-text { color: var(--muted); font-weight: 500; }
+.help { display: flex; gap: 6px; align-items: flex-start; font-size: 12px; color: var(--muted); font-weight: 500; line-height: 1.45; }
+.help svg { flex-shrink: 0; margin-top: 2px; }
+.help.err { color: var(--negative); font-weight: 600; }
+.help.warn { color: var(--warning-text); font-weight: 600; }
+.fseg { display: flex; padding: 3px; border-radius: 13px; background: var(--fill); gap: 2px; }
+.fseg span { flex: 1; text-align: center; padding: 9px 8px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.fseg span.on { background: var(--surface); color: var(--accent-text); box-shadow: 0 1px 3px oklch(0 0 0 / 0.14); }
+.ph .fseg span { padding: 11px 6px; }
+.checkrow { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: var(--warning-tint); font-size: 13px; color: oklch(0.36 0.08 65); font-weight: 600; line-height: 1.45; }
+.box { width: 18px; height: 18px; border-radius: 6px; background: var(--ink); color: var(--on-ink); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+.box.off { background: var(--surface); border: 1.5px solid var(--fill-strong); }
+.scrim { position: absolute; inset: 0; background: oklch(0.16 0.008 260 / 0.38); }
+
+/* ---- Canvas furniture (labels on the boards themselves) ---- */
+.board { padding: 48px; display: flex; flex-direction: column; gap: 36px; }
+.board-h h2 { font-size: 28px; font-weight: 800; }
+.board-h p { font-size: 14px; color: var(--muted); font-weight: 500; line-height: 1.6; margin-top: 8px; max-width: 1100px; }
+.board-h p b { color: var(--fg); }
+.sec-h { display: flex; gap: 12px; align-items: flex-start; }
+.sec-n { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.sec-h h3 { font-size: 16px; font-weight: 800; }
+.sec-h p { font-size: 13px; color: var(--muted); font-weight: 500; line-height: 1.55; margin-top: 3px; max-width: 980px; }
+.frame-l { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 10px; }
+.stage { position: relative; border-radius: 28px; background: oklch(0.9 0.005 90); overflow: hidden; }
+.callout { position: absolute; z-index: 40; display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 999px; background: oklch(0.55 0.2 300); color: white; font-size: 11px; font-weight: 800; box-shadow: 0 4px 12px oklch(0.3 0.15 300 / 0.35); white-space: nowrap; }
+.callout::before { content: attr(data-n); width: 16px; height: 16px; border-radius: 50%; background: white; color: oklch(0.45 0.2 300); display: inline-flex; align-items: center; justify-content: center; font-size: 10px; }
+
+/* ===================== Accounts additions ===================== */
+.pill-stale { background: var(--warning-tint); color: var(--warning-text); }
+.pill-stale.pulse { animation: stale-pulse 2.6s ease-in-out infinite; }
+@keyframes stale-pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 5px oklch(0.72 0.14 75 / 0.22); } }
+.pill-derived { background: oklch(0.94 0.03 258); color: oklch(0.42 0.1 258); }
+.chg-up { color: var(--positive); } .chg-down { color: var(--negative); }
+.chg-out { color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .pill-stale.pulse { animation: none; } }
+
+/* Hidden radios that hold the pick (All or an account) */
+.pk-in { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+label.pk, label.sx { cursor: pointer; }
+
+/* Cover flow (as the Subscriptions final design) */
+.cstage { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: pan-y; outline: none; border-radius: 18px; }
+.cstage:active { cursor: grabbing; }
+.cstage:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
+.cstage .sx { transition: transform 520ms cubic-bezier(0.22, 0.8, 0.2, 1), opacity 380ms, filter 380ms !important; -webkit-user-drag: none; }
+.chint { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); z-index: 70; display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; background: oklch(1 0 0 / 0.72); border: 1px solid var(--surface-line); font-size: 11px; font-weight: 700; color: var(--muted); white-space: nowrap; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); pointer-events: none; }
+.chint kbd { font: inherit; font-weight: 800; padding: 0 5px; border-radius: 5px; background: var(--fill); color: var(--fg); }
+.stg { position: absolute; inset: 0; border-radius: inherit; opacity: 0; z-index: -2; transition: opacity 650ms ease; pointer-events: none; }
+.stage-dark { --fg: oklch(0.97 0.004 260); --muted: oklch(1 0 0 / 0.62); --divider: oklch(1 0 0 / 0.14); --fill: oklch(1 0 0 / 0.12); --fill-strong: oklch(1 0 0 / 0.22); --accent-text: var(--on-card-lime); --surface: oklch(0.22 0.012 260); --surface-line: oklch(1 0 0 / 0.1); color: var(--fg); border-color: transparent !important; }
+.stage-dark .btn-soft { background: oklch(1 0 0 / 0.14); color: var(--fg); }
+.stage-dark .btn-icon { background: oklch(1 0 0 / 0.14); color: var(--fg); border-color: transparent; }
+.stage-dark .chint { background: oklch(0 0 0 / 0.35); border-color: oklch(1 0 0 / 0.12); }
+.stage-dark .pill-off { background: oklch(1 0 0 / 0.14); color: var(--fg); }
+.stage-dark .pill-stale { background: oklch(0.8 0.13 80 / 0.28); color: oklch(0.93 0.09 85); }
+.stage-deep .pk-bar { background: var(--pick-soft, var(--on-card-lime)) !important; transition: background 500ms; }
+.stage-deep .btn-primary { background: var(--pick-soft, var(--on-card-lime)); color: var(--pick-ink, var(--ink)); transition: background 500ms, color 500ms; }
+.stage-deep .chint kbd { background: var(--pick-soft, var(--fill)); color: var(--pick-ink, var(--fg)); }
+.cnav { display: none; }
+@media (prefers-reduced-motion: reduce) { .cstage .sx, .stg { transition: none !important; } }
+
+/* The hero panes: one per pick, only the picked one shows */
+.hp { display: none; }
+
+/* Hero stats */
+.hstat { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.hstat .k { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.hstat .v { font-size: 17px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hstat .s { font-size: 12px; font-weight: 600; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Account tiles (the Cards tiles' grammar) */
+.atile { position: relative; isolation: isolate; flex-shrink: 0; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; justify-content: space-between; color: var(--on-card); border: 1px solid var(--on-card-line); border-top-color: var(--on-card-line-top); box-shadow: var(--tile-shadow); overflow: hidden; }
+.atile .t-muted { color: var(--on-card-muted); font-size: 11px; font-weight: 600; }
+.atile .t-faint { color: var(--on-card-faint); font-size: 10.5px; font-weight: 600; }
+.atile .t-pill { font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: var(--on-card-fill); white-space: nowrap; display: inline-flex; align-items: center; gap: 4px; }
+.atile .t-pill.stale { background: oklch(0.8 0.13 80 / 0.38); color: oklch(0.97 0.05 90); animation: stale-pulse 2.6s ease-in-out infinite; }
+.atile.off { filter: grayscale(0.85); opacity: 0.62; box-shadow: none; }
+.atile .bank { width: 28px; height: 28px; border-radius: 9px; background: var(--on-card-fill); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+.tilewrap { position: relative; flex-shrink: 0; display: block; }
+.tilewrap .tick { display: none; }
+@media (prefers-reduced-motion: reduce) { .atile .t-pill.stale { animation: none; } }
+
+/* Treemap ("Where it sits") */
+.tmap { position: relative; }
+.tblock { position: absolute; border-radius: 14px; padding: 12px 14px; color: var(--on-card); overflow: hidden; display: flex; flex-direction: column; justify-content: space-between; isolation: isolate; transition: transform 160ms var(--ease-out), opacity 240ms, filter 240ms; }
+.tblock b { font-size: 14px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tblock .tb-s { font-size: 11px; font-weight: 600; color: var(--on-card-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tblock .tb-v { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.tblock .tb-p { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 700; color: var(--on-card-faint); }
+label.tblock:hover { transform: translateY(-2px); }
+.tgroup-l { position: absolute; font-size: 10px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); }
+
+/* Charts */
+.chart { display: block; overflow: visible; }
+.chart text { font-family: 'Manrope', ui-sans-serif, system-ui, sans-serif; }
+.acm { transition: opacity 260ms ease, filter 260ms ease; }
+.axis-t { font-size: 10.5px; font-weight: 700; fill: var(--muted); }
+.axis-l { stroke: var(--divider); stroke-dasharray: 3 4; }
+.vlabel { font-size: 11px; font-weight: 800; fill: var(--fg); }
+.hatch-fill { fill: url(#hatch); }
+
+/* Snapshot calendar */
+.scal { display: grid; gap: 6px; align-items: center; }
+.scal .sc-h { font-size: 10px; color: var(--muted); font-weight: 700; text-align: center; text-transform: uppercase; letter-spacing: 0.02em; }
+.scal .sc-h.now { color: var(--fg); }
+.scell { position: relative; height: 44px; border-radius: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11.5px; font-weight: 800; transition: opacity 240ms; }
+.scell small { font-size: 9px; font-weight: 700; opacity: 0.8; margin-top: 1px; }
+.scell.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 6px, transparent 6px 12px); color: var(--muted); font-weight: 700; }
+.scell.stale { background: repeating-linear-gradient(135deg, oklch(0.95 0.05 85) 0 6px, oklch(0.98 0.02 85) 6px 12px); color: var(--warning-text); border: 1.5px dashed oklch(0.72 0.14 75 / 0.6); }
+.scell.closed { background: var(--fill); color: var(--muted); font-weight: 700; }
+.scell.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+
+/* Account rows (direction C) */
+.arow { display: grid; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--divider); }
+.arow:last-child { border-bottom: 0; }
+.qinp { height: 36px; border-radius: 11px; border: 1px solid var(--surface-line); background: var(--surface); padding: 0 12px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; box-shadow: inset 0 1px 1px oklch(0 0 0 / 0.02); }
+.qinp .pre { color: var(--muted); font-weight: 600; }
+.qinp.focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-ring); }
+.qinp.ghost { color: var(--muted); font-weight: 600; }
+
+/* Passbooks (direction D) */
+.pbook { position: relative; isolation: isolate; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; transition: transform 160ms var(--ease-out), box-shadow 200ms, opacity 240ms; }
+label.pbook:hover { transform: translateY(-2px); }
+.pbook .spine { position: absolute; left: 0; top: 0; bottom: 0; width: 6px; }
+
+/* Paper laid on the green stage: back to the light tokens */
+.on-paper { --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --divider: oklch(0 0 0 / 0.08); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07); --accent-text: oklch(0.42 0.14 145); color: var(--fg); }
+.stage-dark .on-paper .btn-soft { background: var(--fill); color: var(--fg); }
+.stage-dark .on-paper .btn-icon { background: var(--surface); color: var(--muted); border-color: var(--surface-line); }
+.stage-dark .on-paper .pill-off { background: var(--fill); color: var(--muted); }
+.stage-dark .on-paper .pill-stale { background: var(--warning-tint); color: var(--warning-text); }
+
+.mo { padding: 28px 32px 40px; display: flex; flex-direction: column; gap: 18px; }
+.mo .cap { display: flex; align-items: baseline; gap: 14px; padding: 0 4px; }
+.mo .cap b { font-size: 15px; font-weight: 800; } .mo .cap span { color: var(--muted); font-size: 13px; font-weight: 600; }
+.mo .sec-h { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 8px 24px; padding: 0 4px; }
+.mo .sec-h .eyebrow { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.mo .sec-h h2 { font-size: 20px; font-weight: 800; letter-spacing: -0.01em; margin-top: 2px; }
+.mo .sec-h .sub { color: var(--muted); font-size: 12.5px; font-weight: 600; }
+.mo .mleg { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--muted); }
+.mo .mleg i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; }
+.mo .mleg .st { background: repeating-linear-gradient(135deg, var(--fill-strong) 0 2px, transparent 2px 4px); }
+.mo .mleg .sh { margin-left: 8px; }
+
+/* one hue per measure, five shades each */
+.m-inc { --H: 150; --g1: var(--card-emerald-from); --g2: var(--card-emerald-to); }
+.m-inv { --H: 258; --g1: var(--card-sapphire-from); --g2: var(--card-sapphire-to); }
+.m-emi { --H: 200; --g1: var(--card-teal-from); --g2: var(--card-teal-to); }
+.m-card { --H: 22; --g1: var(--card-ruby-from); --g2: var(--card-ruby-to); }
+.m-cash { --H: 50; --g1: var(--card-copper-from); --g2: var(--card-copper-to); }
+.mo [class*="m-"] { --s1: oklch(0.95 0.03 var(--H)); --s2: oklch(0.87 0.07 var(--H)); --s3: oklch(0.76 0.11 var(--H)); --s4: oklch(0.6 0.12 var(--H)); --s5: oklch(0.42 0.1 var(--H)); --ink: oklch(0.24 0.05 var(--H)); --pill: oklch(0.93 0.05 var(--H)); --pill-ink: oklch(0.38 0.1 var(--H)); }
+
+.mo .icn { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; background: linear-gradient(145deg, var(--g1), var(--g2)); color: oklch(0.97 0.01 var(--H)); flex-shrink: 0; }
+.mo .icn svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.mo .icn.sm { width: 28px; height: 28px; border-radius: 9px; } .mo .icn.sm svg { width: 14px; height: 14px; }
+.mo .nm { font-size: 14px; font-weight: 800; line-height: 1.15; } .mo .nm small { display: block; margin-top: 2px; font-size: 11px; font-weight: 600; color: var(--muted); }
+.mo .go { margin-left: auto; font-size: 11px; font-weight: 700; color: var(--muted); display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.mo .go::after { content: "→"; } .mo .go.ar { font-size: 15px; color: var(--fg); opacity: 0.45; }
+
+/* the heatmap cell (the app's Cell: shade, rings, caption) */
+.mh { position: relative; height: 52px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; background: var(--s1); color: var(--ink); isolation: isolate; cursor: default; transition: translate 0.2s var(--ease-out), box-shadow 0.2s; }
+.mh .rg { position: absolute; inset: 0; border-radius: inherit; overflow: hidden; z-index: -1; background: repeating-radial-gradient(circle at 100% 100%, transparent 0 10px, oklch(0.42 0.1 var(--H) / 0.11) 10px 11px), radial-gradient(circle at 90% 8%, oklch(1 0 0 / 0.26), transparent 58%); }
+.mh.l1 { background: var(--s1); } .mh.l2 { background: var(--s2); } .mh.l3 { background: var(--s3); }
+.mh.l4 { background: var(--s4); color: var(--on-accent); } .mh.l5 { background: var(--s5); color: var(--on-accent); }
+.mh.l4 .rg, .mh.l5 .rg { background: repeating-radial-gradient(circle at 100% 100%, transparent 0 10px, oklch(1 0 0 / 0.1) 10px 11px), radial-gradient(circle at 90% 8%, oklch(1 0 0 / 0.2), transparent 58%); }
+.mh i { font-style: normal; font-size: 9px; font-weight: 700; opacity: 0.85; margin-top: 1px; }
+.mh.now { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mh.none { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 5px, transparent 5px 11px); color: var(--muted); font-weight: 600; font-size: 12px; }
+.mh.none .rg, .mh.out .rg, .mh.up .rg { display: none; }
+.mh.up { background: transparent; border: 1.5px dashed var(--heat-upcoming); } .mh.out { background: transparent; }
+.mh.sm { height: 30px; border-radius: 7px; }
+.mh:not(.none):not(.out):not(.up):hover { translate: 0 -3px; box-shadow: var(--soft-shadow); z-index: 4; }
+.mh[data-tip]::after, .bar[data-tip]::after { content: attr(data-tip); position: absolute; bottom: calc(100% + 9px); left: 50%; transform: translateX(-50%); white-space: pre; text-align: left; background: var(--surface); color: var(--fg); border: 1px solid var(--surface-line); box-shadow: var(--pop-shadow); border-radius: 12px; padding: 8px 11px; font-size: 11px; font-weight: 600; line-height: 1.45; opacity: 0; pointer-events: none; transition: opacity 0.15s; z-index: 20; }
+.mh[data-tip]:hover::after, .bar[data-tip]:hover::after { opacity: 1; }
+
+.b-grid > div > .mc, .d-grid > div > .mc, .e-grid > div > .mc { height: 100%; }
+.mo .mc { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); border-radius: 24px; padding: 18px 22px; }
+.mo .delta { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 800; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.mo .delta.good { background: oklch(0.94 0.06 150); color: oklch(0.38 0.12 150); } .mo .delta.bad { background: var(--negative-tint); color: oklch(0.45 0.14 25); } .mo .delta.flat { background: var(--fill); color: var(--muted); }
+.mo .big { font-size: 30px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; }
+.mo .big small { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: 0; margin-left: 4px; }
+.mo .mfoot { font-size: 11.5px; font-weight: 600; color: var(--muted); } .mo .mfoot b { color: var(--fg); font-weight: 800; }
+
+/* A · five heatmaps */
+.a-head, .a-row { display: grid; grid-template-columns: 210px repeat(12, minmax(0, 1fr)) 156px; gap: 6px; align-items: center; }
+.a-head { padding: 0 23px; margin-bottom: -6px; }
+.a-head span { text-align: center; font-size: 10px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted); }
+.a-head span.now { color: var(--fg); } .a-head span.now::after { content: ""; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-left: 4px; vertical-align: middle; }
+.a-head span:last-child { text-align: right; }
+.a-row.mc { padding: 14px 22px; } .a-row .lh { display: flex; align-items: center; gap: 10px; }
+.a-row .tot { text-align: right; line-height: 1.2; } .a-row .tot b { display: block; font-size: 15px; font-weight: 800; } .a-row .tot span { font-size: 10px; font-weight: 600; color: var(--muted); }
+.a-stack { display: flex; flex-direction: column; gap: 12px; }
+
+/* B · five tiles with a strip */
+.b-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.b-tile { display: flex; flex-direction: column; gap: 12px; padding: 18px 20px 16px; }
+.b-tile .top { display: flex; align-items: center; gap: 10px; }
+.b-tile .fig { display: flex; flex-direction: column; gap: 8px; }
+.b-tile .mon { font-size: 11px; font-weight: 700; color: var(--muted); }
+.strip { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; }
+.strip.big .mh { height: 34px; }
+.strip-m { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; margin-top: -6px; }
+.strip-m span { text-align: center; font-size: 8.5px; font-weight: 800; color: var(--muted); text-transform: uppercase; } .strip-m span.now { color: var(--fg); }
+.mh.mini { height: 30px; border-radius: 6px; } .mh.mini .rg { background: radial-gradient(circle at 90% 8%, oklch(1 0 0 / 0.26), transparent 58%); }
+
+/* C · one heatmap, five tabs */
+.c-tabs { display: flex; gap: 10px; } .c-tabs input, .e-chips input, .c-panel { }
+.mo input[type=radio] { position: absolute; opacity: 0; pointer-events: none; }
+.c-tab { flex: 1; display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 20px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); cursor: pointer; transition: all 0.25s var(--ease-out); }
+.c-tab .v { margin-left: auto; text-align: right; font-size: 15px; font-weight: 800; line-height: 1.1; } .c-tab .v small { display: block; font-size: 10px; font-weight: 700; color: var(--muted); }
+.c-tab .nm small { display: none; }
+.c-panel { display: none; }
+.c-grid { display: grid; grid-template-columns: 56px repeat(12, minmax(0, 1fr)) 170px; gap: 6px; align-items: center; }
+.c-grid .yr { font-size: 12px; font-weight: 800; } .c-grid .hdr { text-align: center; font-size: 10px; font-weight: 800; text-transform: uppercase; color: var(--muted); }
+.c-grid .tot { text-align: right; line-height: 1.2; } .c-grid .tot b { display: block; font-size: 14px; font-weight: 800; } .c-grid .tot span { font-size: 10px; font-weight: 600; color: var(--muted); }
+.c-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) auto; gap: 14px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--divider); align-items: center; }
+.c-stats div b { display: block; font-size: 17px; font-weight: 800; } .c-stats div span { font-size: 11px; font-weight: 600; color: var(--muted); }
+
+/* D · bar cards */
+.d-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; } .d-grid .mc { grid-column: span 2; } .d-grid .mc.w { grid-column: span 3; }
+.d-card { display: flex; flex-direction: column; gap: 14px; }
+.d-card .hd { display: flex; align-items: center; gap: 10px; }
+.d-card .hd .t { margin-left: auto; text-align: right; line-height: 1.15; } .d-card .hd .t b { display: block; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; } .d-card .hd .t span { font-size: 10.5px; font-weight: 700; color: var(--muted); }
+.bars { position: relative; height: 128px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px; align-items: end; border-bottom: 1px solid var(--divider); }
+.bar { position: relative; border-radius: 8px 8px 3px 3px; background: var(--s3); min-height: 5px; transition: filter 0.2s; }
+.bar.pk { background: var(--s5); } .bar.nw { background: var(--s4); box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.bar.none { background: repeating-linear-gradient(135deg, var(--fill-strong) 0 3px, transparent 3px 6px); height: 6px !important; }
+.bar:hover { filter: brightness(1.07); }
+.bar .blab { position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 800; white-space: nowrap; color: var(--fg); }
+.avg { position: absolute; left: 0; right: 0; border-top: 1.5px dashed oklch(0.3 0.03 var(--H) / 0.5); pointer-events: none; }
+.bars-m { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px; margin-top: -8px; }
+.bars-m span { text-align: center; font-size: 9.5px; font-weight: 800; text-transform: uppercase; color: var(--muted); } .bars-m span.now { color: var(--fg); }
+
+/* E · pick a month */
+.e-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.e-chips label { padding: 8px 15px; border-radius: 999px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); font-size: 12px; font-weight: 800; cursor: pointer; color: var(--muted); transition: all 0.2s; }
+.e-chips label:hover { color: var(--fg); }
+.e-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.e-card { display: flex; flex-direction: column; gap: 14px; padding: 18px 20px 16px; }
+.e-card .v { display: none; flex-direction: column; gap: 10px; }
+.e-card .rank { font-size: 11.5px; font-weight: 600; color: var(--muted); } .e-card .rank b { color: var(--fg); font-weight: 800; }
+.e-bars { position: relative; height: 70px; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; align-items: end; border-bottom: 1px solid var(--divider); }
+.e-bars .bar { background: var(--s2); border-radius: 4px 4px 2px 2px; min-height: 4px; } .e-bars .bar.none { height: 5px !important; }
+.e-bars .bar::after { display: none; }
+
+/* the page around it (board X) */
+.ghost { border-radius: 24px; background: var(--fill); border: 1.5px dashed var(--fill-strong); display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 12px; font-weight: 700; }
+.ghost.stage { background: linear-gradient(135deg, oklch(0.4 0.1 280), oklch(0.26 0.08 275)); border: 0; color: oklch(1 0 0 / 0.55); }
+.ghost.tile { border-radius: 20px; }
+.slot { position: relative; margin-top: 30px; border-radius: 28px; outline: 2px dashed var(--accent); outline-offset: 10px; }
+.slot-tag { position: absolute; top: -34px; left: 6px; font-size: 11px; font-weight: 800; background: var(--accent); color: var(--on-accent); padding: 3px 10px; border-radius: 999px; z-index: 5; }
+
+.mh.h40 { height: 40px; border-radius: 10px; font-size: 10.5px; } .mh.h46 { height: 46px; border-radius: 11px; } .mh.h16 { height: 17px; border-radius: 5px; }
+.mh.h16 .rg { background: radial-gradient(circle at 90% 8%, oklch(1 0 0 / 0.26), transparent 58%); }
+.seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: var(--fill); }
+.seg label { padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 800; color: var(--muted); cursor: pointer; transition: all 0.2s; } .seg label.off { opacity: 0.55; cursor: default; }
+.rangechip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); font-size: 12px; font-weight: 800; } .rangechip small { color: var(--muted); font-weight: 600; } .rangechip::after { content: "▾"; color: var(--muted); }
+.y-head { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 6px; padding: 0 23px; margin-bottom: -6px; }
+.y-inner { display: grid; grid-template-columns: 38px repeat(12, minmax(0, 1fr)) 156px; gap: 6px; align-items: center; }
+.y-head .y-inner span { text-align: center; font-size: 10px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; color: var(--muted); } .y-head .y-inner span:last-child { text-align: right; }
+.y-card { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 6px; align-items: center; padding: 14px 22px; }
+.y-rows { display: flex; flex-direction: column; gap: 6px; }
+.y-inner .yl { font-size: 11px; font-weight: 800; color: var(--muted); }
+.y-inner .tot { text-align: right; line-height: 1.2; } .y-inner .tot b { display: block; font-size: 13px; font-weight: 800; } .y-inner .tot span { font-size: 10px; font-weight: 600; color: var(--muted); }
+.y-stack { display: flex; flex-direction: column; gap: 12px; }
+.mo .yr-r12, .mo .yr-r24, .mo .yr-r36 { display: none; }
+.yrow { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 6px; align-items: center; } .yrow > span { font-size: 9px; font-weight: 800; color: var(--muted); }
+.yrow .strip { gap: 2px; } .yrows { display: flex; flex-direction: column; gap: 3px; }
+.yoy { display: flex; gap: 10px; flex-wrap: wrap; }
+.yoy div { background: var(--fill); border-radius: 14px; padding: 8px 14px; line-height: 1.2; } .yoy b { display: block; font-size: 15px; font-weight: 800; } .yoy span { font-size: 10.5px; font-weight: 700; color: var(--muted); } .yoy em { font-style: normal; font-size: 10.5px; font-weight: 800; margin-left: 6px; }
+.yoy em.good { color: oklch(0.38 0.12 150); } .yoy em.bad { color: oklch(0.45 0.14 25); } .yoy em.flat { color: var(--muted); }
+.long-bars { position: relative; height: 128px; display: grid; grid-template-columns: repeat(36, minmax(0, 1fr)); gap: 2px; align-items: end; border-bottom: 1px solid var(--divider); }
+.long-bars .bar { border-radius: 4px 4px 2px 2px; } .long-bars .bar .blab { font-size: 9.5px; }
+.yavg { position: absolute; border-top: 1.5px dashed oklch(0.3 0.03 var(--H) / 0.55); pointer-events: none; }
+.ylabels { display: grid; grid-template-columns: repeat(36, minmax(0, 1fr)); gap: 2px; margin-top: -8px; } .ylabels span { text-align: center; font-size: 10px; font-weight: 800; color: var(--muted); border-left: 1px solid var(--divider); padding-top: 3px; overflow: hidden; white-space: nowrap; }
+.mfoot em { font-style: normal; }
+
+.pz { display: none; flex-direction: column; gap: 12px; }
+.z-chips { display: flex; gap: 10px; } .z-chips .c-tab { cursor: default; pointer-events: none; }
+.z-hint { font-size: 12.5px; font-weight: 600; color: var(--muted); padding: 0 4px; display: flex; align-items: center; gap: 8px; }
+.z-hint .h-tabs { display: none; } .z-hint b { color: var(--fg); font-weight: 800; }
+.z-hint .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.z-page { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; } .z-page .lbl { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.mo-z .seg label[for^="r-"] { cursor: pointer; }
+
+.mo-z .z-chips .c-tab { cursor: pointer; pointer-events: auto; } .mo-z .z-chips .c-tab:hover { transform: translateY(-2px); }
+.c-tab.t-all { --H: 260; --g1: oklch(0.3 0.012 260); --g2: oklch(0.16 0.01 260); flex: 0.8; }
+.c-tab.t-all .icn svg { fill: currentColor; stroke: none; }
+.z-hint span { display: none; }
+.z-hint .tag { font-size: 10.5px; font-weight: 800; padding: 2px 9px; border-radius: 999px; background: var(--fill); color: var(--muted); display: inline-block; margin-left: 6px; }
+.z-page .note { font-size: 11.5px; font-weight: 600; color: var(--muted); max-width: 220px; line-height: 1.3; }
+.pg-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
+.pg-head .eyebrow { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.pg-head h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; margin-top: 2px; }
+.pg-head p { color: var(--muted); font-size: 13.5px; font-weight: 600; margin-top: 6px; max-width: 640px; }
+.pg-range { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; } .pg-range .lbl { font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.pg-range .seg input:checked + label { background: oklch(0.2 0.01 260); color: var(--on-ink); }
+.follows { position: relative; } .follows::after { content: attr(data-tag); position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 800; padding: 3px 9px; border-radius: 999px; background: var(--accent); color: var(--on-accent); }
+.rt { position: relative; border-radius: 20px; padding: 14px 16px 12px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); min-height: 104px; display: flex; flex-direction: column; gap: 3px; } .rt.on { border-color: oklch(0.72 0.19 145 / 0.5); } .rt .n { font-size: 11px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); } .rt .h { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; line-height: 1.15; } .rt .l { font-size: 11.5px; font-weight: 600; color: var(--muted); }
+.nowtag { position: absolute; top: 8px; right: 10px; font-size: 9.5px; font-weight: 800; padding: 2px 8px; border-radius: 999px; background: var(--fill-strong); color: var(--muted); }
+.rt .nowtag.on { background: var(--accent); color: var(--on-accent); }
+.ghost.tile { position: relative; flex-direction: column; gap: 2px; } .ghost.tile.rng { border-color: var(--accent); background: oklch(0.95 0.05 145 / 0.5); color: var(--accent-text); } .ghost.tile .nowtag.on { background: var(--accent); color: var(--on-accent); }
+.mo-c:has(#c-inc:checked) .c-panel.p-inc { display: block; } .mo-c:has(#c-inc:checked) .c-tab.t-inc { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-c:has(#c-inc:checked) .c-tab.t-inc .icn { background: oklch(1 0 0 / 0.18); } .mo-c:has(#c-inc:checked) .c-tab.t-inc .v small { color: oklch(1 0 0 / 0.65); }
+.mo-c:has(#c-inv:checked) .c-panel.p-inv { display: block; } .mo-c:has(#c-inv:checked) .c-tab.t-inv { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-c:has(#c-inv:checked) .c-tab.t-inv .icn { background: oklch(1 0 0 / 0.18); } .mo-c:has(#c-inv:checked) .c-tab.t-inv .v small { color: oklch(1 0 0 / 0.65); }
+.mo-c:has(#c-emi:checked) .c-panel.p-emi { display: block; } .mo-c:has(#c-emi:checked) .c-tab.t-emi { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-c:has(#c-emi:checked) .c-tab.t-emi .icn { background: oklch(1 0 0 / 0.18); } .mo-c:has(#c-emi:checked) .c-tab.t-emi .v small { color: oklch(1 0 0 / 0.65); }
+.mo-c:has(#c-card:checked) .c-panel.p-card { display: block; } .mo-c:has(#c-card:checked) .c-tab.t-card { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-c:has(#c-card:checked) .c-tab.t-card .icn { background: oklch(1 0 0 / 0.18); } .mo-c:has(#c-card:checked) .c-tab.t-card .v small { color: oklch(1 0 0 / 0.65); }
+.mo-c:has(#c-cash:checked) .c-panel.p-cash { display: block; } .mo-c:has(#c-cash:checked) .c-tab.t-cash { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-c:has(#c-cash:checked) .c-tab.t-cash .icn { background: oklch(1 0 0 / 0.18); } .mo-c:has(#c-cash:checked) .c-tab.t-cash .v small { color: oklch(1 0 0 / 0.65); }
+.mo-y:has(#y-12:checked) .yr-r12 { display: flex; } .mo-y:has(#y-12:checked) label[for=y-12] { background: oklch(0.2 0.01 260); color: var(--on-ink); }
+.mo-y:has(#y-24:checked) .yr-r24 { display: flex; } .mo-y:has(#y-24:checked) label[for=y-24] { background: oklch(0.2 0.01 260); color: var(--on-ink); }
+.mo-y:has(#y-36:checked) .yr-r36 { display: flex; } .mo-y:has(#y-36:checked) label[for=y-36] { background: oklch(0.2 0.01 260); color: var(--on-ink); }
+.mo-e:has(#e-2025-11:checked) .v-2025-11 { display: flex; } .mo-e:has(#e-2025-11:checked) label[for=e-2025-11] { background: var(--ink-chip, oklch(0.2 0.01 260)); color: var(--on-ink); border-color: transparent; } .mo-e:has(#e-2025-11:checked) .e-bars .b-2025-11 { background: var(--s5); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--s4); } .mo-e:has(#e-2025-11:checked) .strip .s-2025-11 { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mo-e:has(#e-2025-12:checked) .v-2025-12 { display: flex; } .mo-e:has(#e-2025-12:checked) label[for=e-2025-12] { background: var(--ink-chip, oklch(0.2 0.01 260)); color: var(--on-ink); border-color: transparent; } .mo-e:has(#e-2025-12:checked) .e-bars .b-2025-12 { background: var(--s5); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--s4); } .mo-e:has(#e-2025-12:checked) .strip .s-2025-12 { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mo-e:has(#e-2026-01:checked) .v-2026-01 { display: flex; } .mo-e:has(#e-2026-01:checked) label[for=e-2026-01] { background: var(--ink-chip, oklch(0.2 0.01 260)); color: var(--on-ink); border-color: transparent; } .mo-e:has(#e-2026-01:checked) .e-bars .b-2026-01 { background: var(--s5); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--s4); } .mo-e:has(#e-2026-01:checked) .strip .s-2026-01 { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mo-e:has(#e-2026-02:checked) .v-2026-02 { display: flex; } .mo-e:has(#e-2026-02:checked) label[for=e-2026-02] { background: var(--ink-chip, oklch(0.2 0.01 260)); color: var(--on-ink); border-color: transparent; } .mo-e:has(#e-2026-02:checked) .e-bars .b-2026-02 { background: var(--s5); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--s4); } .mo-e:has(#e-2026-02:checked) .strip .s-2026-02 { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mo-e:has(#e-2026-03:checked) .v-2026-03 { display: flex; } .mo-e:has(#e-2026-03:checked) label[for=e-2026-03] { background: var(--ink-chip, oklch(0.2 0.01 260)); color: var(--on-ink); border-color: transparent; } .mo-e:has(#e-2026-03:checked) .e-bars .b-2026-03 { background: var(--s5); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--s4); } .mo-e:has(#e-2026-03:checked) .strip .s-2026-03 { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mo-e:has(#e-2026-04:checked) .v-2026-04 { display: flex; } .mo-e:has(#e-2026-04:checked) label[for=e-2026-04] { background: var(--ink-chip, oklch(0.2 0.01 260)); color: var(--on-ink); border-color: transparent; } .mo-e:has(#e-2026-04:checked) .e-bars .b-2026-04 { background: var(--s5); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--s4); } .mo-e:has(#e-2026-04:checked) .strip .s-2026-04 { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mo-e:has(#e-2026-05:checked) .v-2026-05 { display: flex; } .mo-e:has(#e-2026-05:checked) label[for=e-2026-05] { background: var(--ink-chip, oklch(0.2 0.01 260)); color: var(--on-ink); border-color: transparent; } .mo-e:has(#e-2026-05:checked) .e-bars .b-2026-05 { background: var(--s5); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--s4); } .mo-e:has(#e-2026-05:checked) .strip .s-2026-05 { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mo-e:has(#e-2026-06:checked) .v-2026-06 { display: flex; } .mo-e:has(#e-2026-06:checked) label[for=e-2026-06] { background: var(--ink-chip, oklch(0.2 0.01 260)); color: var(--on-ink); border-color: transparent; } .mo-e:has(#e-2026-06:checked) .e-bars .b-2026-06 { background: var(--s5); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--s4); } .mo-e:has(#e-2026-06:checked) .strip .s-2026-06 { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mo-e:has(#e-2026-07:checked) .v-2026-07 { display: flex; } .mo-e:has(#e-2026-07:checked) label[for=e-2026-07] { background: var(--ink-chip, oklch(0.2 0.01 260)); color: var(--on-ink); border-color: transparent; } .mo-e:has(#e-2026-07:checked) .e-bars .b-2026-07 { background: var(--s5); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--s4); } .mo-e:has(#e-2026-07:checked) .strip .s-2026-07 { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mo-e:has(#e-2026-08:checked) .v-2026-08 { display: flex; } .mo-e:has(#e-2026-08:checked) label[for=e-2026-08] { background: var(--ink-chip, oklch(0.2 0.01 260)); color: var(--on-ink); border-color: transparent; } .mo-e:has(#e-2026-08:checked) .e-bars .b-2026-08 { background: var(--s5); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--s4); } .mo-e:has(#e-2026-08:checked) .strip .s-2026-08 { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mo-e:has(#e-2026-09:checked) .v-2026-09 { display: flex; } .mo-e:has(#e-2026-09:checked) label[for=e-2026-09] { background: var(--ink-chip, oklch(0.2 0.01 260)); color: var(--on-ink); border-color: transparent; } .mo-e:has(#e-2026-09:checked) .e-bars .b-2026-09 { background: var(--s5); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--s4); } .mo-e:has(#e-2026-09:checked) .strip .s-2026-09 { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mo-e:has(#e-2026-10:checked) .v-2026-10 { display: flex; } .mo-e:has(#e-2026-10:checked) label[for=e-2026-10] { background: var(--ink-chip, oklch(0.2 0.01 260)); color: var(--on-ink); border-color: transparent; } .mo-e:has(#e-2026-10:checked) .e-bars .b-2026-10 { background: var(--s5); box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--s4); } .mo-e:has(#e-2026-10:checked) .strip .s-2026-10 { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.mo-z:has(#r-12:checked) label[for=r-12] { background: oklch(0.2 0.01 260); color: var(--on-ink); }
+.mo-z:has(#r-12:checked):has(#t-all:checked) .pz-12-all { display: flex; } .mo-z:has(#r-12:checked):has(#t-all:checked) .c-tab.t-all { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-12:checked):has(#t-all:checked) .c-tab.t-all .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-12:checked):has(#t-all:checked) .c-tab.t-all .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-12:checked):has(#t-all:checked) .z-hint .h-all { display: inline; }
+.mo-z:has(#r-12:checked):has(#t-inc:checked) .pz-12-inc { display: flex; } .mo-z:has(#r-12:checked):has(#t-inc:checked) .c-tab.t-inc { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-12:checked):has(#t-inc:checked) .c-tab.t-inc .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-12:checked):has(#t-inc:checked) .c-tab.t-inc .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-12:checked):has(#t-inc:checked) .z-hint .h-one { display: inline; }
+.mo-z:has(#r-12:checked):has(#t-inv:checked) .pz-12-inv { display: flex; } .mo-z:has(#r-12:checked):has(#t-inv:checked) .c-tab.t-inv { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-12:checked):has(#t-inv:checked) .c-tab.t-inv .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-12:checked):has(#t-inv:checked) .c-tab.t-inv .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-12:checked):has(#t-inv:checked) .z-hint .h-one { display: inline; }
+.mo-z:has(#r-12:checked):has(#t-emi:checked) .pz-12-emi { display: flex; } .mo-z:has(#r-12:checked):has(#t-emi:checked) .c-tab.t-emi { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-12:checked):has(#t-emi:checked) .c-tab.t-emi .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-12:checked):has(#t-emi:checked) .c-tab.t-emi .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-12:checked):has(#t-emi:checked) .z-hint .h-one { display: inline; }
+.mo-z:has(#r-12:checked):has(#t-card:checked) .pz-12-card { display: flex; } .mo-z:has(#r-12:checked):has(#t-card:checked) .c-tab.t-card { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-12:checked):has(#t-card:checked) .c-tab.t-card .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-12:checked):has(#t-card:checked) .c-tab.t-card .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-12:checked):has(#t-card:checked) .z-hint .h-one { display: inline; }
+.mo-z:has(#r-12:checked):has(#t-cash:checked) .pz-12-cash { display: flex; } .mo-z:has(#r-12:checked):has(#t-cash:checked) .c-tab.t-cash { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-12:checked):has(#t-cash:checked) .c-tab.t-cash .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-12:checked):has(#t-cash:checked) .c-tab.t-cash .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-12:checked):has(#t-cash:checked) .z-hint .h-one { display: inline; }
+.mo-z:has(#r-ty:checked) label[for=r-ty] { background: oklch(0.2 0.01 260); color: var(--on-ink); }
+.mo-z:has(#r-ty:checked):has(#t-all:checked) .pz-ty-all { display: flex; } .mo-z:has(#r-ty:checked):has(#t-all:checked) .c-tab.t-all { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-ty:checked):has(#t-all:checked) .c-tab.t-all .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-ty:checked):has(#t-all:checked) .c-tab.t-all .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-ty:checked):has(#t-all:checked) .z-hint .h-all { display: inline; }
+.mo-z:has(#r-ty:checked):has(#t-inc:checked) .pz-ty-inc { display: flex; } .mo-z:has(#r-ty:checked):has(#t-inc:checked) .c-tab.t-inc { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-ty:checked):has(#t-inc:checked) .c-tab.t-inc .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-ty:checked):has(#t-inc:checked) .c-tab.t-inc .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-ty:checked):has(#t-inc:checked) .z-hint .h-one { display: inline; }
+.mo-z:has(#r-ty:checked):has(#t-inv:checked) .pz-ty-inv { display: flex; } .mo-z:has(#r-ty:checked):has(#t-inv:checked) .c-tab.t-inv { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-ty:checked):has(#t-inv:checked) .c-tab.t-inv .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-ty:checked):has(#t-inv:checked) .c-tab.t-inv .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-ty:checked):has(#t-inv:checked) .z-hint .h-one { display: inline; }
+.mo-z:has(#r-ty:checked):has(#t-emi:checked) .pz-ty-emi { display: flex; } .mo-z:has(#r-ty:checked):has(#t-emi:checked) .c-tab.t-emi { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-ty:checked):has(#t-emi:checked) .c-tab.t-emi .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-ty:checked):has(#t-emi:checked) .c-tab.t-emi .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-ty:checked):has(#t-emi:checked) .z-hint .h-one { display: inline; }
+.mo-z:has(#r-ty:checked):has(#t-card:checked) .pz-ty-card { display: flex; } .mo-z:has(#r-ty:checked):has(#t-card:checked) .c-tab.t-card { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-ty:checked):has(#t-card:checked) .c-tab.t-card .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-ty:checked):has(#t-card:checked) .c-tab.t-card .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-ty:checked):has(#t-card:checked) .z-hint .h-one { display: inline; }
+.mo-z:has(#r-ty:checked):has(#t-cash:checked) .pz-ty-cash { display: flex; } .mo-z:has(#r-ty:checked):has(#t-cash:checked) .c-tab.t-cash { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-ty:checked):has(#t-cash:checked) .c-tab.t-cash .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-ty:checked):has(#t-cash:checked) .c-tab.t-cash .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-ty:checked):has(#t-cash:checked) .z-hint .h-one { display: inline; }
+.mo-z:has(#r-24:checked) label[for=r-24] { background: oklch(0.2 0.01 260); color: var(--on-ink); }
+.mo-z:has(#r-24:checked) .c-tab.t-all { opacity: 0.4; pointer-events: none; } .mo-z:has(#r-24:checked) .z-hint .h-long { display: inline; }
+.mo-z:has(#r-24:checked):has(#t-all:checked) .pz-24-inc { display: flex; } .mo-z:has(#r-24:checked):has(#t-all:checked) .c-tab.t-inc { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-24:checked):has(#t-all:checked) .c-tab.t-inc .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-24:checked):has(#t-all:checked) .c-tab.t-inc .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-24:checked):has(#t-inc:checked) .pz-24-inc { display: flex; } .mo-z:has(#r-24:checked):has(#t-inc:checked) .c-tab.t-inc { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-24:checked):has(#t-inc:checked) .c-tab.t-inc .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-24:checked):has(#t-inc:checked) .c-tab.t-inc .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-24:checked):has(#t-inv:checked) .pz-24-inv { display: flex; } .mo-z:has(#r-24:checked):has(#t-inv:checked) .c-tab.t-inv { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-24:checked):has(#t-inv:checked) .c-tab.t-inv .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-24:checked):has(#t-inv:checked) .c-tab.t-inv .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-24:checked):has(#t-emi:checked) .pz-24-emi { display: flex; } .mo-z:has(#r-24:checked):has(#t-emi:checked) .c-tab.t-emi { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-24:checked):has(#t-emi:checked) .c-tab.t-emi .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-24:checked):has(#t-emi:checked) .c-tab.t-emi .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-24:checked):has(#t-card:checked) .pz-24-card { display: flex; } .mo-z:has(#r-24:checked):has(#t-card:checked) .c-tab.t-card { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-24:checked):has(#t-card:checked) .c-tab.t-card .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-24:checked):has(#t-card:checked) .c-tab.t-card .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-24:checked):has(#t-cash:checked) .pz-24-cash { display: flex; } .mo-z:has(#r-24:checked):has(#t-cash:checked) .c-tab.t-cash { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-24:checked):has(#t-cash:checked) .c-tab.t-cash .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-24:checked):has(#t-cash:checked) .c-tab.t-cash .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-36:checked) label[for=r-36] { background: oklch(0.2 0.01 260); color: var(--on-ink); }
+.mo-z:has(#r-36:checked) .c-tab.t-all { opacity: 0.4; pointer-events: none; } .mo-z:has(#r-36:checked) .z-hint .h-long { display: inline; }
+.mo-z:has(#r-36:checked):has(#t-all:checked) .pz-36-inc { display: flex; } .mo-z:has(#r-36:checked):has(#t-all:checked) .c-tab.t-inc { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-36:checked):has(#t-all:checked) .c-tab.t-inc .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-36:checked):has(#t-all:checked) .c-tab.t-inc .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-36:checked):has(#t-inc:checked) .pz-36-inc { display: flex; } .mo-z:has(#r-36:checked):has(#t-inc:checked) .c-tab.t-inc { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-36:checked):has(#t-inc:checked) .c-tab.t-inc .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-36:checked):has(#t-inc:checked) .c-tab.t-inc .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-36:checked):has(#t-inv:checked) .pz-36-inv { display: flex; } .mo-z:has(#r-36:checked):has(#t-inv:checked) .c-tab.t-inv { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-36:checked):has(#t-inv:checked) .c-tab.t-inv .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-36:checked):has(#t-inv:checked) .c-tab.t-inv .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-36:checked):has(#t-emi:checked) .pz-36-emi { display: flex; } .mo-z:has(#r-36:checked):has(#t-emi:checked) .c-tab.t-emi { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-36:checked):has(#t-emi:checked) .c-tab.t-emi .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-36:checked):has(#t-emi:checked) .c-tab.t-emi .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-36:checked):has(#t-card:checked) .pz-36-card { display: flex; } .mo-z:has(#r-36:checked):has(#t-card:checked) .c-tab.t-card { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-36:checked):has(#t-card:checked) .c-tab.t-card .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-36:checked):has(#t-card:checked) .c-tab.t-card .v small { color: oklch(1 0 0 / 0.65); }
+.mo-z:has(#r-36:checked):has(#t-cash:checked) .pz-36-cash { display: flex; } .mo-z:has(#r-36:checked):has(#t-cash:checked) .c-tab.t-cash { background: linear-gradient(145deg, var(--g1), var(--g2)); border-color: transparent; color: oklch(0.97 0.01 var(--H)); box-shadow: 0 10px 22px oklch(0.2 0.06 var(--H) / 0.35); } .mo-z:has(#r-36:checked):has(#t-cash:checked) .c-tab.t-cash .icn { background: oklch(1 0 0 / 0.18); } .mo-z:has(#r-36:checked):has(#t-cash:checked) .c-tab.t-cash .v small { color: oklch(1 0 0 / 0.65); }
+</style>
+</helmet>
+<div class="chai-app mo " style="width:1480px;height:481px">
+  <div class="cap"><b>B · Five tiles, a small row per year</b><span>Stays tile-sized; the months are squares and the average a month tells the direction.</span></div>
+  <div class="sec-h"><div><div class="eyebrow">Month by month · last 12 months</div><h2>This month at a glance, and the years behind it</h2></div><div class="sub">Usual means the whole range. Each tile's squares run January to December, a row for each year.</div><span class="rangechip">Last 3 years <small>Nov 2023 to Oct 2026</small></span></div><div class="b-grid"><div class="m-inc "><div class="mc b-tile"><div class="top"><span class="icn sm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/></svg></span><div class="nm">Income</div><span class="go ar"></span></div>
+      <div class="fig"><div class="mon">October</div><div class="big">₹1.8L</div><div><span class="delta flat">= in line with usual</span></div></div>
+      <div class="yrows"><div class="yrow"><span>’23</span><div class="strip"><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 l2 s-2023-11" tabindex="0" data-tip="November 2023&#10;₹1,00,600&#10;45% below usual (₹1.8L)&#10;36th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2023-12" tabindex="0" data-tip="December 2023&#10;₹1,33,500&#10;28% below usual (₹1.8L)&#10;28th highest of 36"><span class="rg"></span></div></div></div><div class="yrow"><span>’24</span><div class="strip"><div class="mh mini h16 l2 s-2024-01" tabindex="0" data-tip="January 2024&#10;₹1,22,600&#10;33% below usual (₹1.8L)&#10;32nd highest of 36"><span class="rg"></span></div><div class="mh mini h16 l4 s-2024-02" tabindex="0" data-tip="February 2024&#10;₹2,45,600&#10;33% above usual (₹1.8L)&#10;8th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l4 s-2024-03" tabindex="0" data-tip="March 2024&#10;₹2,53,000&#10;37% above usual (₹1.8L)&#10;7th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2024-04" tabindex="0" data-tip="April 2024&#10;₹1,12,800&#10;39% below usual (₹1.8L)&#10;35th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2024-05" tabindex="0" data-tip="May 2024&#10;₹1,24,900&#10;32% below usual (₹1.8L)&#10;30th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2024-06" tabindex="0" data-tip="June 2024&#10;₹1,23,800&#10;33% below usual (₹1.8L)&#10;31st highest of 36"><span class="rg"></span></div><div class="mh mini h16 l4 s-2024-07" tabindex="0" data-tip="July 2024&#10;₹2,60,500&#10;41% above usual (₹1.8L)&#10;6th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2024-08" tabindex="0" data-tip="August 2024&#10;₹1,59,800&#10;13% below usual (₹1.8L)&#10;17th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2024-09" tabindex="0" data-tip="September 2024&#10;₹1,35,600&#10;26% below usual (₹1.8L)&#10;26th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2024-10" tabindex="0" data-tip="October 2024&#10;₹1,33,200&#10;28% below usual (₹1.8L)&#10;29th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2024-11" tabindex="0" data-tip="November 2024&#10;₹1,45,000&#10;21% below usual (₹1.8L)&#10;24th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2024-12" tabindex="0" data-tip="December 2024&#10;₹1,18,300&#10;36% below usual (₹1.8L)&#10;34th highest of 36"><span class="rg"></span></div></div></div><div class="yrow"><span>’25</span><div class="strip"><div class="mh mini h16 l3 s-2025-01" tabindex="0" data-tip="January 2025&#10;₹1,56,100&#10;15% below usual (₹1.8L)&#10;19th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l5 s-2025-02" tabindex="0" data-tip="February 2025&#10;₹3,12,200&#10;69% above usual (₹1.8L)&#10;4th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2025-03" tabindex="0" data-tip="March 2025&#10;₹2,22,400&#10;21% above usual (₹1.8L)&#10;9th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2025-04" tabindex="0" data-tip="April 2025&#10;₹1,63,500&#10;11% below usual (₹1.8L)&#10;16th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-05" tabindex="0" data-tip="May 2025&#10;₹1,34,700&#10;27% below usual (₹1.8L)&#10;27th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-06" tabindex="0" data-tip="June 2025&#10;₹1,20,400&#10;35% below usual (₹1.8L)&#10;33rd highest of 36"><span class="rg"></span></div><div class="mh mini h16 l5 s-2025-07" tabindex="0" data-tip="July 2025&#10;₹3,88,400&#10;111% above usual (₹1.8L)&#10;1st highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-08" tabindex="0" data-tip="August 2025&#10;₹1,49,100&#10;19% below usual (₹1.8L)&#10;23rd highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2025-09" tabindex="0" data-tip="September 2025&#10;₹1,56,300&#10;15% below usual (₹1.8L)&#10;18th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2025-10" tabindex="0" data-tip="October 2025&#10;₹1,83,400&#10;in line with usual (₹1.8L)&#10;11th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-11" tabindex="0" data-tip="November 2025&#10;₹1,43,338&#10;22% below usual (₹1.8L)&#10;25th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-12" tabindex="0" data-tip="December 2025&#10;₹1,50,126&#10;19% below usual (₹1.8L)&#10;22nd highest of 36"><span class="rg"></span></div></div></div><div class="yrow"><span>’26</span><div class="strip"><div class="mh mini h16 l3 s-2026-01" tabindex="0" data-tip="January 2026&#10;₹1,72,329&#10;6% below usual (₹1.8L)&#10;14th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l5 s-2026-02" tabindex="0" data-tip="February 2026&#10;₹3,21,621&#10;75% above usual (₹1.8L)&#10;3rd highest of 36"><span class="rg"></span></div><div class="mh mini h16 l4 s-2026-03" tabindex="0" data-tip="March 2026&#10;₹2,90,527&#10;58% above usual (₹1.8L)&#10;5th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2026-04" tabindex="0" data-tip="April 2026&#10;₹1,67,349&#10;9% below usual (₹1.8L)&#10;15th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2026-05" tabindex="0" data-tip="May 2026&#10;₹1,50,161&#10;19% below usual (₹1.8L)&#10;21st highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2026-06" tabindex="0" data-tip="June 2026&#10;₹1,51,720&#10;18% below usual (₹1.8L)&#10;20th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l5 s-2026-07" tabindex="0" data-tip="July 2026&#10;₹3,83,304&#10;108% above usual (₹1.8L)&#10;2nd highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2026-08" tabindex="0" data-tip="August 2026&#10;₹1,81,677&#10;1% below usual (₹1.8L)&#10;12th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2026-09" tabindex="0" data-tip="September 2026&#10;₹1,81,677&#10;1% below usual (₹1.8L)&#10;13th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 now s-2026-10" tabindex="0" data-tip="October 2026&#10;₹1,83,526&#10;in line with usual (₹1.8L)&#10;10th highest of 36"><span class="rg"></span></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div></div></div></div><div class="strip-m" style="grid-template-columns:22px repeat(12,minmax(0,1fr));gap:2px;margin-top:-2px"><span></span><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span></div>
+      <div class="mfoot">A month, on average: <b>’24</b> ₹1.6L · <b>’25</b> ₹1.9L · <b>’26</b> ₹2.2L</div></div></div><div class="m-inv "><div class="mc b-tile"><div class="top"><span class="icn sm"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 17 6-6 4 4 8-8M15 7h6v6"/></svg></span><div class="nm">Investments</div><span class="go ar"></span></div>
+      <div class="fig"><div class="mon">October</div><div class="big">₹45k</div><div><span class="delta good">▲ 13% above usual</span></div></div>
+      <div class="yrows"><div class="yrow"><span>’23</span><div class="strip"><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 l1 s-2023-11" tabindex="0" data-tip="November 2023&#10;₹11,100&#10;72% below usual (₹40k)&#10;34th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l1 s-2023-12" tabindex="0" data-tip="December 2023&#10;₹8,900&#10;78% below usual (₹40k)&#10;36th highest of 36"><span class="rg"></span></div></div></div><div class="yrow"><span>’24</span><div class="strip"><div class="mh mini h16 l1 s-2024-01" tabindex="0" data-tip="January 2024&#10;₹10,900&#10;73% below usual (₹40k)&#10;35th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2024-02" tabindex="0" data-tip="February 2024&#10;₹56,500&#10;42% above usual (₹40k)&#10;7th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2024-03" tabindex="0" data-tip="March 2024&#10;₹46,900&#10;18% above usual (₹40k)&#10;11th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l1 s-2024-04" tabindex="0" data-tip="April 2024&#10;₹17,300&#10;56% below usual (₹40k)&#10;32nd highest of 36"><span class="rg"></span></div><div class="mh mini h16 l1 s-2024-05" tabindex="0" data-tip="May 2024&#10;₹19,100&#10;52% below usual (₹40k)&#10;29th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l1 s-2024-06" tabindex="0" data-tip="June 2024&#10;₹22,500&#10;43% below usual (₹40k)&#10;26th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2024-07" tabindex="0" data-tip="July 2024&#10;₹29,500&#10;26% below usual (₹40k)&#10;21st highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2024-08" tabindex="0" data-tip="August 2024&#10;₹25,400&#10;36% below usual (₹40k)&#10;22nd highest of 36"><span class="rg"></span></div><div class="mh mini h16 l1 s-2024-09" tabindex="0" data-tip="September 2024&#10;₹18,100&#10;54% below usual (₹40k)&#10;30th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l1 s-2024-10" tabindex="0" data-tip="October 2024&#10;₹20,500&#10;48% below usual (₹40k)&#10;27th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l1 s-2024-11" tabindex="0" data-tip="November 2024&#10;₹17,900&#10;55% below usual (₹40k)&#10;31st highest of 36"><span class="rg"></span></div><div class="mh mini h16 l1 s-2024-12" tabindex="0" data-tip="December 2024&#10;₹12,400&#10;69% below usual (₹40k)&#10;33rd highest of 36"><span class="rg"></span></div></div></div><div class="yrow"><span>’25</span><div class="strip"><div class="mh mini h16 l1 s-2025-01" tabindex="0" data-tip="January 2025&#10;₹23,800&#10;40% below usual (₹40k)&#10;25th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l4 s-2025-02" tabindex="0" data-tip="February 2025&#10;₹78,500&#10;98% above usual (₹40k)&#10;3rd highest of 36"><span class="rg"></span></div><div class="mh mini h16 l4 s-2025-03" tabindex="0" data-tip="March 2025&#10;₹76,600&#10;93% above usual (₹40k)&#10;4th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-04" tabindex="0" data-tip="April 2025&#10;₹35,600&#10;10% below usual (₹40k)&#10;17th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-05" tabindex="0" data-tip="May 2025&#10;₹24,500&#10;38% below usual (₹40k)&#10;24th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-06" tabindex="0" data-tip="June 2025&#10;₹43,700&#10;10% above usual (₹40k)&#10;14th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2025-07" tabindex="0" data-tip="July 2025&#10;₹52,500&#10;32% above usual (₹40k)&#10;9th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-08" tabindex="0" data-tip="August 2025&#10;₹33,200&#10;16% below usual (₹40k)&#10;18th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-09" tabindex="0" data-tip="September 2025&#10;₹39,000&#10;2% below usual (₹40k)&#10;16th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-10" tabindex="0" data-tip="October 2025&#10;₹31,000&#10;22% below usual (₹40k)&#10;19th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-11" tabindex="0" data-tip="November 2025&#10;₹25,000&#10;37% below usual (₹40k)&#10;23rd highest of 36"><span class="rg"></span></div><div class="mh mini h16 l1 s-2025-12" tabindex="0" data-tip="December 2025&#10;₹20,000&#10;50% below usual (₹40k)&#10;28th highest of 36"><span class="rg"></span></div></div></div><div class="yrow"><span>’26</span><div class="strip"><div class="mh mini h16 l2 s-2026-01" tabindex="0" data-tip="January 2026&#10;₹30,000&#10;24% below usual (₹40k)&#10;20th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l5 s-2026-02" tabindex="0" data-tip="February 2026&#10;₹1,20,000&#10;202% above usual (₹40k)&#10;1st highest of 36"><span class="rg"></span></div><div class="mh mini h16 l5 s-2026-03" tabindex="0" data-tip="March 2026&#10;₹1,15,000&#10;189% above usual (₹40k)&#10;2nd highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2026-04" tabindex="0" data-tip="April 2026&#10;₹45,000&#10;13% above usual (₹40k)&#10;12th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 s-2026-05" tabindex="0" data-tip="May 2026&#10;₹40,000&#10;1% above usual (₹40k)&#10;15th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2026-06" tabindex="0" data-tip="June 2026&#10;₹60,000&#10;51% above usual (₹40k)&#10;6th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2026-07" tabindex="0" data-tip="July 2026&#10;₹70,000&#10;76% above usual (₹40k)&#10;5th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2026-08" tabindex="0" data-tip="August 2026&#10;₹55,000&#10;38% above usual (₹40k)&#10;8th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l3 s-2026-09" tabindex="0" data-tip="September 2026&#10;₹50,000&#10;26% above usual (₹40k)&#10;10th highest of 36"><span class="rg"></span></div><div class="mh mini h16 l2 now s-2026-10" tabindex="0" data-tip="October 2026&#10;₹45,000&#10;13% above usual (₹40k)&#10;13th highest of 36"><span class="rg"></span></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div></div></div></div><div class="strip-m" style="grid-template-columns:22px repeat(12,minmax(0,1fr));gap:2px;margin-top:-2px"><span></span><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span></div>
+      <div class="mfoot">A month, on average: <b>’24</b> ₹25k · <b>’25</b> ₹40k · <b>’26</b> ₹63k</div></div></div><div class="m-emi "><div class="mc b-tile"><div class="top"><span class="icn sm"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span><div class="nm">EMIs</div><span class="go ar"></span></div>
+      <div class="fig"><div class="mon">October</div><div class="big">₹22k</div><div><span class="delta flat">= in line with usual</span></div></div>
+      <div class="yrows"><div class="yrow"><span>’23</span><div class="strip"><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 none" data-tip="November 2023&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="December 2023&#10;Nothing recorded"><span>–</span></div></div></div><div class="yrow"><span>’24</span><div class="strip"><div class="mh mini h16 none" data-tip="January 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="February 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="March 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="April 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="May 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="June 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="July 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="August 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="September 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="October 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="November 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="December 2024&#10;Nothing recorded"><span>–</span></div></div></div><div class="yrow"><span>’25</span><div class="strip"><div class="mh mini h16 none" data-tip="January 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="February 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="March 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="April 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="May 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="June 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="July 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="August 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="September 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="October 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="November 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="December 2025&#10;Nothing recorded"><span>–</span></div></div></div><div class="yrow"><span>’26</span><div class="strip"><div class="mh mini h16 none" data-tip="January 2026&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="February 2026&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="March 2026&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="April 2026&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="May 2026&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="June 2026&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="July 2026&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 l5 s-2026-08" tabindex="0" data-tip="August 2026&#10;₹22,450&#10;in line with usual (₹22k)&#10;1st highest of 3"><span class="rg"></span></div><div class="mh mini h16 l5 s-2026-09" tabindex="0" data-tip="September 2026&#10;₹22,450&#10;in line with usual (₹22k)&#10;2nd highest of 3"><span class="rg"></span></div><div class="mh mini h16 l5 now s-2026-10" tabindex="0" data-tip="October 2026&#10;₹22,450&#10;in line with usual (₹22k)&#10;3rd highest of 3"><span class="rg"></span></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div></div></div></div><div class="strip-m" style="grid-template-columns:22px repeat(12,minmax(0,1fr));gap:2px;margin-top:-2px"><span></span><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span></div>
+      <div class="mfoot">A month, on average: <b>’26</b> ₹22k</div></div></div><div class="m-card "><div class="mc b-tile"><div class="top"><span class="icn sm"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg></span><div class="nm">Credit card bills</div><span class="go ar"></span></div>
+      <div class="fig"><div class="mon">October</div><div class="big">₹76k</div><div><span class="delta bad">▲ 3% above usual</span></div></div>
+      <div class="yrows"><div class="yrow"><span>’23</span><div class="strip"><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 none" data-tip="November 2023&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="December 2023&#10;Nothing recorded"><span>–</span></div></div></div><div class="yrow"><span>’24</span><div class="strip"><div class="mh mini h16 none" data-tip="January 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="February 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="March 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="April 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="May 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="June 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="July 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="August 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="September 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="October 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="November 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="December 2024&#10;Nothing recorded"><span>–</span></div></div></div><div class="yrow"><span>’25</span><div class="strip"><div class="mh mini h16 none" data-tip="January 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="February 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="March 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="April 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="May 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="June 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="July 2025&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 l3 s-2025-08" tabindex="0" data-tip="August 2025&#10;₹70,200&#10;4% below usual (₹73k)&#10;8th highest of 15"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-09" tabindex="0" data-tip="September 2025&#10;₹45,900&#10;37% below usual (₹73k)&#10;12th highest of 15"><span class="rg"></span></div><div class="mh mini h16 l3 s-2025-10" tabindex="0" data-tip="October 2025&#10;₹61,900&#10;15% below usual (₹73k)&#10;9th highest of 15"><span class="rg"></span></div><div class="mh mini h16 l4 s-2025-11" tabindex="0" data-tip="November 2025&#10;₹97,940&#10;34% above usual (₹73k)&#10;4th highest of 15"><span class="rg"></span></div><div class="mh mini h16 l2 s-2025-12" tabindex="0" data-tip="December 2025&#10;₹43,280&#10;41% below usual (₹73k)&#10;13th highest of 15"><span class="rg"></span></div></div></div><div class="yrow"><span>’26</span><div class="strip"><div class="mh mini h16 l1 s-2026-01" tabindex="0" data-tip="January 2026&#10;₹5,353&#10;93% below usual (₹73k)&#10;15th highest of 15"><span class="rg"></span></div><div class="mh mini h16 l5 s-2026-02" tabindex="0" data-tip="February 2026&#10;₹1,22,228&#10;67% above usual (₹73k)&#10;3rd highest of 15"><span class="rg"></span></div><div class="mh mini h16 l2 s-2026-03" tabindex="0" data-tip="March 2026&#10;₹46,923&#10;36% below usual (₹73k)&#10;11th highest of 15"><span class="rg"></span></div><div class="mh mini h16 l5 s-2026-04" tabindex="0" data-tip="April 2026&#10;₹1,38,196&#10;89% above usual (₹73k)&#10;1st highest of 15"><span class="rg"></span></div><div class="mh mini h16 l4 s-2026-05" tabindex="0" data-tip="May 2026&#10;₹95,757&#10;31% above usual (₹73k)&#10;5th highest of 15"><span class="rg"></span></div><div class="mh mini h16 l2 s-2026-06" tabindex="0" data-tip="June 2026&#10;₹39,471&#10;46% below usual (₹73k)&#10;14th highest of 15"><span class="rg"></span></div><div class="mh mini h16 l5 s-2026-07" tabindex="0" data-tip="July 2026&#10;₹1,23,105&#10;68% above usual (₹73k)&#10;2nd highest of 15"><span class="rg"></span></div><div class="mh mini h16 l3 s-2026-08" tabindex="0" data-tip="August 2026&#10;₹72,565&#10;1% below usual (₹73k)&#10;7th highest of 15"><span class="rg"></span></div><div class="mh mini h16 l3 s-2026-09" tabindex="0" data-tip="September 2026&#10;₹58,300&#10;20% below usual (₹73k)&#10;10th highest of 15"><span class="rg"></span></div><div class="mh mini h16 l3 now s-2026-10" tabindex="0" data-tip="October 2026&#10;₹75,655&#10;3% above usual (₹73k)&#10;6th highest of 15"><span class="rg"></span></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div></div></div></div><div class="strip-m" style="grid-template-columns:22px repeat(12,minmax(0,1fr));gap:2px;margin-top:-2px"><span></span><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span></div>
+      <div class="mfoot">A month, on average: <b>’25</b> ₹64k · <b>’26</b> ₹78k</div></div></div><div class="m-cash "><div class="mc b-tile"><div class="top"><span class="icn sm"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/></svg></span><div class="nm">Cash expenses</div><span class="go ar"></span></div>
+      <div class="fig"><div class="mon">October</div><div class="big">₹30k</div><div><span class="delta good">▼ 37% below usual</span></div></div>
+      <div class="yrows"><div class="yrow"><span>’23</span><div class="strip"><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div><div class="mh mini h16 none" data-tip="November 2023&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="December 2023&#10;Nothing recorded"><span>–</span></div></div></div><div class="yrow"><span>’24</span><div class="strip"><div class="mh mini h16 none" data-tip="January 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="February 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="March 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="April 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="May 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="June 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="July 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="August 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="September 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="October 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="November 2024&#10;Nothing recorded"><span>–</span></div><div class="mh mini h16 none" data-tip="December 2024&#10;Nothing recorded"><span>–</span></div></div></div><div class="yrow"><span>’25</span><div class="strip"><div class="mh mini h16 l1 s-2025-01" tabindex="0" data-tip="January 2025&#10;₹16,500&#10;65% below usual (₹47k)&#10;22nd highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2025-02" tabindex="0" data-tip="February 2025&#10;₹38,000&#10;19% below usual (₹47k)&#10;6th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2025-03" tabindex="0" data-tip="March 2025&#10;₹18,000&#10;62% below usual (₹47k)&#10;20th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2025-04" tabindex="0" data-tip="April 2025&#10;₹20,200&#10;57% below usual (₹47k)&#10;17th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2025-05" tabindex="0" data-tip="May 2025&#10;₹44,100&#10;6% below usual (₹47k)&#10;4th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2025-06" tabindex="0" data-tip="June 2025&#10;₹20,200&#10;57% below usual (₹47k)&#10;18th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l5 s-2025-07" tabindex="0" data-tip="July 2025&#10;₹2,40,400&#10;411% above usual (₹47k)&#10;1st highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2025-08" tabindex="0" data-tip="August 2025&#10;₹24,500&#10;48% below usual (₹47k)&#10;13th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2025-09" tabindex="0" data-tip="September 2025&#10;₹26,100&#10;45% below usual (₹47k)&#10;12th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2025-10" tabindex="0" data-tip="October 2025&#10;₹28,800&#10;39% below usual (₹47k)&#10;10th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2025-11" tabindex="0" data-tip="November 2025&#10;₹21,400&#10;55% below usual (₹47k)&#10;16th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2025-12" tabindex="0" data-tip="December 2025&#10;₹34,800&#10;26% below usual (₹47k)&#10;7th highest of 22"><span class="rg"></span></div></div></div><div class="yrow"><span>’26</span><div class="strip"><div class="mh mini h16 l1 s-2026-01" tabindex="0" data-tip="January 2026&#10;₹16,900&#10;64% below usual (₹47k)&#10;21st highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2026-02" tabindex="0" data-tip="February 2026&#10;₹41,200&#10;12% below usual (₹47k)&#10;5th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2026-03" tabindex="0" data-tip="March 2026&#10;₹22,700&#10;52% below usual (₹47k)&#10;15th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2026-04" tabindex="0" data-tip="April 2026&#10;₹19,800&#10;58% below usual (₹47k)&#10;19th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l2 s-2026-05" tabindex="0" data-tip="May 2026&#10;₹52,300&#10;11% above usual (₹47k)&#10;3rd highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2026-06" tabindex="0" data-tip="June 2026&#10;₹23,600&#10;50% below usual (₹47k)&#10;14th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l5 s-2026-07" tabindex="0" data-tip="July 2026&#10;₹2,36,400&#10;403% above usual (₹47k)&#10;2nd highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2026-08" tabindex="0" data-tip="August 2026&#10;₹31,200&#10;34% below usual (₹47k)&#10;8th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 s-2026-09" tabindex="0" data-tip="September 2026&#10;₹27,900&#10;41% below usual (₹47k)&#10;11th highest of 22"><span class="rg"></span></div><div class="mh mini h16 l1 now s-2026-10" tabindex="0" data-tip="October 2026&#10;₹29,800&#10;37% below usual (₹47k)&#10;9th highest of 22"><span class="rg"></span></div><div class="mh mini h16 out"></div><div class="mh mini h16 out"></div></div></div></div><div class="strip-m" style="grid-template-columns:22px repeat(12,minmax(0,1fr));gap:2px;margin-top:-2px"><span></span><span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span><span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span></div>
+      <div class="mfoot">A month, on average: <b>’25</b> ₹44k · <b>’26</b> ₹50k</div></div></div></div>
+</div>
+</x-dc>
+</body>
+</html>
