@@ -49,7 +49,17 @@ describe("the greeting", () => {
 
 describe("the attention strip", () => {
   it("names each source that's late, how much, and where it should have landed", () => {
-    expect(attentionView(data, TODAY)).toEqual([{ sourceId: "demo-div", name: "Dividends", amount: "₹6,200", text: "was expected Oct 10 (14 days ago) and hasn't landed in ICICI Invest." }]);
+    expect(attentionView(data, TODAY)).toEqual([{ id: "late:demo-div", kind: "late", sourceId: "demo-div", name: "Dividends", amount: "₹6,200", text: "was expected Oct 10 (14 days ago) and hasn't landed in ICICI Invest." }]);
+  });
+
+  it("puts entries that don't add up to the bank's credit first, saying by how much", () => {
+    const source = data.sources[0];
+    const salary = { ...data, entries: [...data.entries, { id: "m", incomeSourceId: source.id, expectedDate: "2026-10-01", receivedDate: "2026-10-01", amount: 150_000, status: "Received" as const, tag: "Regular" as const, origin: "Manual" as const }, { id: "s", incomeSourceId: source.id, expectedDate: "2026-10-01", receivedDate: "2026-10-01", amount: 149_000, status: "Received" as const, tag: "Regular" as const, origin: "Statement" as const, statementRef: "a:2026-10-01:14900000:1" }] };
+    const [first] = attentionView(salary, TODAY);
+    expect(first).toMatchObject({ kind: "mismatch", id: `mismatch:${source.id}:2026-10-01` });
+    expect(first.text).toContain("but the bank credited ₹1,49,000");
+    expect(first.text).toContain("counted twice");
+    expect(attentionView(data, TODAY).every((i) => i.kind === "late")).toBe(true);
   });
 });
 

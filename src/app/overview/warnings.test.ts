@@ -30,6 +30,7 @@ describe("the page adapters", () => {
     expect(fromGoals([{ id: "g", tone: "negative", label: "Trip · overdue", detail: "x" }, { id: "h", tone: "warning", label: "Car", detail: "y" }]).map((x) => x.tone)).toEqual(["red", "amber"]);
     expect(fromAccounts([{ id: "r", accountId: "a", accountName: "HDFC", dateText: "1 Nov", recordedText: "₹1", statementText: "₹2", differenceText: "+₹1" }])[0]).toMatchObject({ page: "accounts", tone: "amber" });
     expect(fromIncome([{ sourceId: "s", name: "Salary", text: "was expected", amount: "₹1" }])[0]).toMatchObject({ page: "income", id: "income:s" });
+    expect(fromIncome([{ sourceId: "s", id: "mismatch:s:2026-10-30", kind: "mismatch", name: "NetApp Salary", text: "The entries add up wrongly.", amount: "₹1,77,526" }])[0]).toMatchObject({ page: "income", id: "income:mismatch:s:2026-10-30", tone: "red", text: "NetApp Salary entries don't match the bank", href: "/income/entries" });
   });
 });
 

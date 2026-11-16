@@ -79,3 +79,11 @@ This section is the source of truth for building `/income` and `/income/entries`
 - **Numbers**: PRD §8, "F-IN-01 and F-IN-02". RSU and ESPP are not income.
 - **Not drawn:** phone layouts and the empty / one-source / quiet-month states. Prathik asked to start building on 2026-10-24; they follow the Accounts page's phone and state patterns and are built with each page task.
 
+
+## Entries that don't match the bank (2026-11-14)
+
+Found when a hand-typed Oct 30 salary of ₹1,77,526.26 (the balance after the salary, not the salary) sat beside the importer's correct ₹1,75,677: the importer only treats an entry as the same payment when the amount matches to the paisa, so it added a second one, and October's spending read ₹1.75L too high with no warning. Balances had a review for this (a statement that disagrees with a recorded balance opens one); income had none.
+
+**The check (`lib/aggregate/incomeMismatch.ts`, stateless):** a statement-imported entry's `statementRef` carries the credit's own amount, so the received entries of that source within 3 days of the credit must add up to it. A credit split into several entries (a salary and a bonus, July's ₹3,59,304) passes; two credits within 3 days are one pay day. When they don't add up, the Income page's attention strip (first, before late money) says "The entries around 30 Oct add up to ₹3,53,203, but the bank credited ₹1,75,677" with *Open the entries*, and the Overview's Keep in mind lists it as "Needs a look now" (red, *Fix the entry*), since it reads the same `attentionView`. Fixing or deleting the entry is the whole resolution: nothing to dismiss.
+
+**Not done, on purpose:** the importer still adds the statement's entry beside a hand-typed one of a different amount, so the pay is counted twice until the entry is fixed (the page says so). Making "recorded wins" like balances, where the importer would adopt the typed entry and not add its own, needs the importer to update an entry, not only create one. An entry typed with no statement line to compare (nothing imported yet) can't be checked.

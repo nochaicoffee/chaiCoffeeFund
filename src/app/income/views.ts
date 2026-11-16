@@ -1,6 +1,7 @@
 import type { SentencePart } from "@/app/cards/summarySentence";
 import { daysBetween } from "@/lib/aggregate/cardSpend";
 import { monthlyEquivalentIncome, sourceColor, totalMonthlyEquivalentIncome } from "@/lib/aggregate/income";
+import { incomeMismatches } from "@/lib/aggregate/incomeMismatch";
 import { nextPayment, onTimeSummary, pendingPayments, sumAmounts, upcomingPayments, type PendingPayment } from "@/lib/aggregate/incomeSchedule";
 import { againstLastYear, incomeByMonth, receivedBetween, receivedMonthlyAverage, sameDayLastYear, totalReceivedBetween } from "@/lib/aggregate/incomeYear";
 import { addDays } from "@/lib/aggregate/subscriptionRenewals";
@@ -251,22 +252,45 @@ export function coverView(data: IncomeData, today: string, year: number): CoverV
 // ---------- The attention strip ----------
 
 export interface AttentionItem {
+  /** Stable across renders: what it is about, so two items for one source don't share a key. */
+  id: string;
   sourceId: string;
   name: string;
   text: string;
   amount: string;
+  /** Money past its expected date (the default), or entries that don't add up to what the bank credited. */
+  kind: "late" | "mismatch";
 }
 
-/** A line per source with money past its expected date: what, since when, and where it should have landed. */
+/**
+ * What needs a look on Income: first the pay days whose entries don't add up to what the bank credited (a hand-typed entry
+ * beside the statement's, counted twice), then a line per source with money past its expected date.
+ */
 export function attentionView(data: IncomeData, today: string): AttentionItem[] {
+  const names = new Map(data.sources.map((s) => [s.id, s]));
+  const mismatches = incomeMismatches(data.entries).map((m): AttentionItem => {
+    const diff = m.entered - m.credited;
+    return {
+      id: `mismatch:${m.sourceId}:${m.date}`,
+      sourceId: m.sourceId,
+      name: sourceName(names.get(m.sourceId)),
+      amount: formatInr(Math.abs(diff)),
+      kind: "mismatch",
+      text: `The entries around ${formatShortDate(m.date)} add up to ${formatInr(m.entered)}, but the bank credited ${formatInr(m.credited)}: ${diff > 0 ? "one is wrong or the payment is counted twice" : "an entry is short"}. Open the entries and correct or delete it.`,
+    };
+  });
   const pending = pendingPayments(data.sources, data.entries, today);
+  return [...mismatches, ...late(data, pending)];
+}
+
+function late(data: IncomeData, pending: PendingPayment[]): AttentionItem[] {
   return data.sources.flatMap((s) => {
     const mine = pending.filter((p) => p.sourceId === s.id);
     if (mine.length === 0) return [];
     const account = data.accounts.find((a) => a.id === s.accountId);
     const first = mine[0];
     const when = mine.length === 1 ? `was expected ${formatShortDate(first.expectedDate)} (${plural(first.daysLate, "day")} ago)` : `${plural(mine.length, "payment")} haven't landed, the first expected ${formatShortDate(first.expectedDate)}`;
-    return [{ sourceId: s.id, name: sourceName(s), amount: formatInr(sumAmounts(mine)), text: mine.length === 1 ? `${when} and hasn't landed${account ? ` in ${account.name}` : ""}.` : `${when}.` }];
+    return [{ id: `late:${s.id}`, kind: "late" as const, sourceId: s.id, name: sourceName(s), amount: formatInr(sumAmounts(mine)), text: mine.length === 1 ? `${when} and hasn't landed${account ? ` in ${account.name}` : ""}.` : `${when}.` }];
   });
 }
 
