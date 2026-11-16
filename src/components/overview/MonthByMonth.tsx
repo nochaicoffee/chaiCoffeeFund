@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import { GLYPHS, type GlyphKey } from "@/app/overview/glyphs";
 import { columnLabel, type MeasureView, type MonthlyView, type MonthTipView } from "@/app/overview/monthlyView";
 import { FLOW_KEYS, type FlowKey } from "@/lib/aggregate/monthlyFlows";
 import { colorGradient } from "@/lib/format/colors";
@@ -69,10 +70,27 @@ function TipCard({ tip }: { tip: MonthTipView }) {
   );
 }
 
-const BUTTON_BASE = "flex min-h-[52px] min-w-0 flex-1 basis-[210px] cursor-pointer items-center gap-2.5 rounded-[20px] border border-surface-line px-4 py-2.5 text-left shadow-soft transition-[translate,background,color] duration-200 motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+/** One button of the row. Always one row of six: an icon over the figure on a phone, the name and the note too from a laptop up (the name is the button's label either way). */
+const BUTTON_BASE = "flex min-h-[64px] min-w-0 cursor-pointer flex-col items-center justify-between gap-1.5 rounded-[16px] border border-surface-line px-1 py-2.5 text-center shadow-soft transition-[translate,background,color] duration-200 motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:rounded-[20px] sm:px-2 lg:min-h-[88px] lg:items-stretch lg:px-3.5 lg:py-3 lg:text-left";
 
-function FlowBadge({ m }: { m: MeasureView }) {
-  return <span aria-hidden="true" className="size-8 shrink-0 rounded-[10px]" style={{ background: colorGradient(m.meta.colorKey) }} />;
+/** The Overview's own glyph for each measure, drawn as a plain line so it holds at badge size. */
+const FLOW_GLYPH: Record<FlowKey, GlyphKey> = { income: "income", invested: "invest", emis: "loans", cards: "cards", cash: "spent" };
+
+function Icon({ d }: { d: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" className="size-[18px]" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+      <path d={d} />
+    </svg>
+  );
+}
+
+/** The badge: a measure's colour (or, on the selected button, the light fill on its colour) holding its glyph. */
+function FlowBadge({ m, on }: { m: MeasureView; on?: boolean }) {
+  return (
+    <span aria-hidden="true" className={`grid size-9 shrink-0 place-items-center rounded-[11px] text-white ${on ? "bg-on-card-fill" : ""}`} style={on ? undefined : { background: colorGradient(m.meta.colorKey) }}>
+      <Icon d={GLYPHS[FLOW_GLYPH[m.meta.key]].line} />
+    </span>
+  );
 }
 
 /**
@@ -98,21 +116,31 @@ export function MonthByMonth({ view }: { view: MonthlyView }) {
         </div>
       </div>
 
-      <div role="group" aria-label="Show" className="flex flex-wrap gap-2.5">
+      <div role="group" aria-label="Show" className="grid grid-cols-[repeat(6,minmax(0,1fr))] gap-1.5 sm:gap-2.5">
         <button
           type="button"
           aria-pressed={focus === "all"}
+          aria-label="All five"
           disabled={!view.together}
-          title={view.together ? undefined : "Over a year, five at once is too much. Pick a shorter period to see them together."}
+          title={view.together ? "All five side by side" : "Over a year, five at once is too much. Pick a shorter period to see them together."}
           onClick={() => setPicked("all")}
-          className={`${BUTTON_BASE} basis-[140px] flex-[0.7] disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0 ${focus === "all" ? "bg-ink text-on-ink" : "bg-surface"}`}
+          className={`${BUTTON_BASE} disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:translate-y-0 ${focus === "all" ? "bg-ink text-on-ink" : "bg-surface"}`}
         >
-          <span aria-hidden="true" className="grid size-8 shrink-0 grid-cols-2 gap-[3px] rounded-[10px] bg-fill p-[7px]">
-            {FLOW_KEYS.slice(0, 4).map((k) => (
-              <i key={k} className="rounded-[2px] bg-current opacity-70" />
-            ))}
+          <span className="flex items-center gap-2.5">
+            <span aria-hidden="true" className="grid size-9 shrink-0 grid-cols-2 gap-[3px] rounded-[11px] bg-fill p-[8px]">
+              {FLOW_KEYS.slice(0, 4).map((k) => (
+                <i key={k} className="rounded-[2px] bg-current opacity-70" />
+              ))}
+            </span>
+            <span className="hidden min-w-0 text-[13px] leading-tight font-bold lg:block">All five</span>
           </span>
-          <span className="min-w-0 text-[13px] font-bold">All five</span>
+          <span className="block leading-tight">
+            <b className="block text-[12px] font-extrabold sm:text-sm lg:text-lg">
+              <span className="sm:hidden">All</span>
+              <span className="hidden sm:inline">Together</span>
+            </b>
+            <small className={`hidden text-[10.5px] font-bold lg:block ${focus === "all" ? "opacity-70" : "text-muted"}`}>{view.together ? "side by side" : "a year or less"}</small>
+          </span>
         </button>
         {view.measures.map((m) => {
           const on = focus === m.meta.key;
@@ -121,15 +149,19 @@ export function MonthByMonth({ view }: { view: MonthlyView }) {
               key={m.meta.key}
               type="button"
               aria-pressed={on}
+              aria-label={`${m.meta.name}: ${m.headline}${m.headlineNote ? `, ${m.headlineNote}` : ""}`}
+              title={`${m.meta.name}${m.headlineNote ? ` · ${m.headlineNote}` : ""}`}
               onClick={() => setPicked(m.meta.key)}
               className={`${BUTTON_BASE} ${on ? "border-transparent text-on-card shadow-card" : "bg-surface"}`}
               style={on ? { background: colorGradient(m.meta.colorKey) } : undefined}
             >
-              {on ? <span aria-hidden="true" className="size-8 shrink-0 rounded-[10px] bg-on-card-fill" /> : <FlowBadge m={m} />}
-              <span className="min-w-0 flex-1 truncate text-[13px] font-bold">{m.meta.name}</span>
-              <span className="shrink-0 text-right leading-tight">
-                <b className="block text-[15px] font-extrabold tabular-nums">{m.headline}</b>
-                <small className={`block text-[10px] font-bold ${on ? "text-on-card-muted" : "text-muted"}`}>{m.headlineNote}</small>
+              <span className="flex items-center gap-2.5">
+                <FlowBadge m={m} on={on} />
+                <span className="hidden min-w-0 text-[13px] leading-tight font-bold lg:block">{m.meta.name}</span>
+              </span>
+              <span className="block max-w-full leading-tight">
+                <b className="block truncate text-[12px] font-extrabold tabular-nums sm:text-sm lg:text-lg">{m.headline}</b>
+                <small className={`hidden text-[10.5px] font-bold lg:block ${on ? "text-on-card-muted" : "text-muted"}`}>{m.headlineNote || "nothing yet"}</small>
               </span>
             </button>
           );
@@ -144,7 +176,7 @@ export function MonthByMonth({ view }: { view: MonthlyView }) {
           </span>
         ) : view.together ? (
           <span>
-            <b className="text-fg">One measure.</b> Click <b className="text-fg">All five</b> to put them back together.
+            <b className="text-fg">{one?.meta.name}</b>, {one?.meta.word}. Click <b className="text-fg">All five</b> to put them back together.
           </span>
         ) : (
           <span>
