@@ -37,6 +37,63 @@ Prathik picked the **Watermark** icon style and the **Timeline** ending, with a 
 
 Left to design after this pick, as on every other page: the phone layout, the states (nothing entered yet, a dollar rate that can't be fetched, EPF unreadable, no warnings), and the real build's reading of the data (a monthly net worth snapshot; one warnings collector across the ten pages; the editable rate). The doc's earlier rounds stay as the record.
 
+## Month by month widget (2026-11-16): five measures, five layouts, then picked: the mix of A and C (`MzA`, `MzB`)
+
+Prathik asked for a widget like Cards' spending heatmap that shows **monthly income, investments, EMIs, credit card bills and cash expenses**, each **separate** rather than clubbed together. Mockups: [`design/overview-monthly/`](../../design/overview-monthly/), built by [`design/overview-monthly/generator/`](../../design/overview-monthly/generator/). The figures are the Expenses canvas's made-up year (Nov 2025 to Oct 2026), so the widget would agree with `/expenses`.
+
+| Board | Idea |
+|---|---|
+| `MoA` Five heatmaps | A heatmap row per measure in Cards' own look (shade, peak, last month, a 12-month total and average). Closest to what he described. |
+| `MoB` Five tiles | Last month's figure against a usual month, and the year as twelve small squares. Compact; opens each page. |
+| `MoC` One heatmap, five tabs | One slot: pick a measure and the Cards heatmap redraws, years as rows. |
+| `MoD` Five bar cards | Bars with a dashed usual-month line, so size is easier to compare than shade. |
+| `MoE` Pick a month | Month chips drive five cards: the figure, against usual, its rank, where it sits in the year. |
+| `MoX` Where it sits | Variation A placed after the twelve tiles and before the Eight things. |
+
+Each measure keeps one colour (the Overview tile colours: Income emerald, Investments sapphire, EMIs teal, Card bills ruby, Cash copper) and is shaded on its own scale, using the app's `heatLevel`.
+
+**What each would read from (nothing built):** income is `IncomeEntries` by month; investments is Expenses' Invested (transfers to brokers less taken back, plus new deposits); EMIs are paid installments (recorded from Aug 2026 only, so earlier months show nothing); card bills are statements paid that month; cash expenses is Expenses' worked-out cash and UPI. All five already exist in `lib/aggregate/expenses.ts` and `income.ts`, so a build adds a view, not new money math.
+
+### Over several years (round 2, `MyA` to `MyD`)
+
+The same widgets over a range of years, as the Cards heatmap does it: a row per calendar year the range touches, months outside the range blank, shades and totals for the range only. The made-up history runs Nov 2023 to Oct 2026 (the last 12 months are the Expenses canvas's; the earlier two years are invented). Records start late for some measures, as the real ones do (cash expenses from Jan 2025, card bills from Aug 2025, EMIs from Aug 2026), so a long range has honest blanks at the start.
+
+| Board | At 3 years |
+|---|---|
+| `MyA` Five heatmaps | A working range picker (12 months, 2 years, 3 years; custom is shown, not built). It grows a row per year: about 1,365px at 3 years against 675px at 12 months, so it is the tallest. |
+| `MyB` Five tiles | A small row of squares per year, and the average month per year in the footer (averages, so a part-year isn't compared with a full one). Stays tile-sized. |
+| `MyC` One heatmap, five tabs | Four year rows plus a year-on-year line (the average month per year, with its change). One slot at any range. |
+| `MyD` Five bar cards | 36 thin bars with each year's usual month as a dashed step. Fixed height; gets hard to read past about three years. |
+
+My lean: the Overview shows a fixed last-12-months window (or the range picker on C) and links to Expenses and Income for longer ranges. A at 3 years is too tall for a page that already has twelve tiles.
+
+### Picked direction (2026-11-16): C, mixed with A (`MzA`)
+
+Prathik picked **C** and asked for a mix: with the range short, **everything together** so it's easy to compare; once the range grows, the **buttons become active** and the five no longer appear together (past two years). The range is the **dashboard's own selector**, as on Cards and the other dashboards, not a picker inside the widget. The Overview defaults to the last 12 months.
+
+**Answered 2026-11-16:** (1) all five together **up to 12 months only**; (2) the buttons **click to focus one measure at any range**; (3) the range drives the **whole page**, not only this widget.
+
+| Range | What shows |
+|---|---|
+| Last 12 months (default) | A leading **All five** button (selected) shows five heatmaps side by side, one row of twelve months each (A). Click a measure to focus it (C's panel); click All five to go back |
+| This year | The same, January to December, months still to come dashed |
+| Last 2 years, Last 3 years | One measure at a time (C: year rows, totals, the year-on-year line); **All five** goes dim, and a range change that lands here while All five was selected shows Income |
+
+`MzA` is the widget; `MzB` is the page around it, proposing which parts follow the range (green) and which stay as they are. Built and checked in every range and button state; both are radios and `:has()` (no script).
+
+**Everything follows the range (Prathik, 2026-11-16: "other dashboards already do it").** `MzB` shows it for Last 12 months. The greeting's figures read over the range ("you took in ₹24.77L and spent ₹15.9L, worth ₹25,57,193, up ₹10.09L since November 2025"); net worth shows the end of the range with the trend line over it and "since Nov 2025"; each tile keeps its headline (a balance is what it is at the end of the range) and gains a line for what happened inside the range (Accounts up ₹1.9L; Investments up ₹9.5L, ₹6.75L put in, ₹2.8L growth; Fixed income interest earned; Lent out earned; Cards paid in bills; Loans paid in EMIs; Income and Spent become the range's totals; Subscriptions, Goals and Insurance what was paid or added). The tile lines are made up but agree with the widget's totals (income ₹24,77,355, investments ₹6,75,000, card bills ₹9,18,773, EMIs ₹67,350). The presets should be Cards' own (this year, past years, all time, last 3, 6 or 12 months, custom: `design/cards-dropdowns/`), the mock-up's four are stand-ins.
+
+**Two parts can't follow a range because they look forward (Prathik confirmed 2026-11-16: keep them on now):** Due this month (what is owed now) and the foot of the page (Eight things, Future you, Coming up). They are tagged "always now" in `MzB`. The tile lines above are a proposal for what each tile says over a range; the real ones need their own math in `lib/aggregate`, each with a test.
+
+### Questions
+
+1. **Which layout?** A is the heatmap feel; C saves the most space; B sits best beside the tiles.
+1b. **Several years on the Overview itself**, or only the last 12 months with a link to the detail pages?
+2. **Shading:** one outlier flattens a map (July's ₹2.4L of cash makes every other month the palest shade, as the app's rule does). Keep the rule, or cap the scale at, say, the 90th percentile?
+3. **Investments:** "moved to brokers and new FDs", or only transfers to brokers?
+4. **This month:** show November so far (card bills and salary still to come), or only whole months?
+5. **Cash expenses** is the worked-out leftover, so it can't be shown for a month in progress.
+
 ## Round 8 (2026-11-08): the refined Bento, again
 
 Prathik's notes on round 7: the soft illustrations don't fit our design (explore five more modern icon styles); move Coming up and Keep in mind to the very end and explore a few ways of expressing them; everything else is good; Future you should have a setter for any percentage. The page is now: greeting, net worth (number, change, trend line, ring), twelve tiles, the eight things, Future you, then Coming up and Keep in mind. The cup and the soft illustrations are gone; the cards tile keeps its card faces.
