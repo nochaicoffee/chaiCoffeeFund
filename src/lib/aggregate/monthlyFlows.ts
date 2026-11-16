@@ -163,3 +163,11 @@ export function latestFigure(amounts: Map<MonthKey, number>, period: SpendPeriod
   if (!month) return null;
   return { month, amount: amounts.get(month) ?? null, inProgress: month === monthOf(today) };
 }
+
+/** A month's place among the months that had a figure, 1 being the highest, for "4th highest of 12". Null for a month with none. */
+export function rankOf(amounts: Map<MonthKey, number>, month: MonthKey, within: MonthKey[]): { rank: number; of: number } | null {
+  const have = within.filter((m) => amounts.has(m));
+  const amount = amounts.get(month);
+  if (amount === undefined || !have.includes(month)) return null;
+  return { rank: have.filter((m) => (amounts.get(m) as number) > amount).length + 1, of: have.length };
+}

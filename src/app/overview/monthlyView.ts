@@ -1,11 +1,11 @@
 import { addMonths, monthOf, monthRange, type HeatCell, type MonthAmount, type MonthKey, type SpendPeriod } from "@/lib/aggregate/cardSpend";
-import { expenseMonths, totalsOf, type ExpenseData, type PartKey } from "@/lib/aggregate/expenses";
-import { FLOW_KEYS, flowAmounts, flowHeat, flowRow, latestFigure, shownColumns, showsTogether, spanToLoad, type FlowHeat, type FlowKey } from "@/lib/aggregate/monthlyFlows";
+import { expenseMonths, totalsOf, type ExpenseData, type MonthExpenses, type PartKey } from "@/lib/aggregate/expenses";
+import { FLOW_KEYS, flowAmounts, flowHeat, flowRow, latestFigure, monthsSoFarIn, rankOf, shownColumns, showsTogether, spanToLoad, type FlowHeat, type FlowKey } from "@/lib/aggregate/monthlyFlows";
 import { buildPeriodMenu, periodYears } from "@/app/cards/params";
 import { periodLabel, periodName } from "@/lib/aggregate/period";
 import type { SelectOption } from "@/components/Select";
 import { formatMonthShort } from "@/lib/format/date";
-import { formatInrCompact } from "@/lib/format/money";
+import { formatInr, formatInrCompact } from "@/lib/format/money";
 import type { ColorKey } from "@/lib/format/colors";
 
 /**
@@ -44,8 +44,23 @@ export interface MeasureView {
   row: HeatCell[];
   /** The Cards heatmap's own rows and totals, for one measure on its own. */
   focus: FlowHeat;
+  /** What hovering a month says, for each month that has a figure. */
+  tips: Record<MonthKey, MonthTipView>;
   /** A short line under the row: the total and a usual month. */
   summary: { total: number; average: number; months: number; peak: MonthAmount | null };
+}
+
+/** The card a month's cell opens: its figure, how it sits against a usual month and the others, and what it is made of. */
+export interface MonthTipView {
+  month: MonthKey;
+  total: string;
+  tag: "Peak" | "This month" | null;
+  /** Against a usual month, with whether that is good news (income up, spending down), bad, or neither. */
+  versus: { text: string; tone: "good" | "bad" | "flat" } | null;
+  /** "4th highest of 10". */
+  rank: string | null;
+  rows: { name: string; amount: string }[];
+  foot: string | null;
 }
 
 export interface MonthlyView {
@@ -81,6 +96,49 @@ export function earliestFlowMonth(data: ExpenseData, today: string): MonthKey {
   return first < monthOf(today) ? first : monthOf(today);
 }
 
+/** Which way is good news for a measure: income and investments up, card bills and cash down; EMIs are a fixed bill, so neither. */
+const GOOD_WHEN: Record<FlowKey, "up" | "down" | null> = { income: "up", invested: "up", emis: null, cards: "down", cash: "down" };
+export const ordinal = (n: number) => `${n}${["th", "st", "nd", "rd"][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10 < 4 ? n % 10 : 0]}`;
+const payments = (m: MonthExpenses, part: PartKey) => m.payments.filter((p) => p.part === part).map((p) => ({ name: p.label, amount: formatInr(p.amount) }));
+
+/**
+ * What the card over a month says. A month in progress has no comparison or rank (it is only part of a month); the others read against a
+ * usual month of the period and against each other. What it is made of comes from the Expenses month: income by source, what went to and
+ * came back from brokers, the EMI and card payments, or what the month spent in all for cash and UPI.
+ */
+export function monthTip(key: FlowKey, m: MonthExpenses, ctx: { amounts: Map<MonthKey, number>; usual: number; peak: MonthKey | null; current: MonthKey; within: MonthKey[]; data: ExpenseData }): MonthTipView {
+  const amount = ctx.amounts.get(m.month) ?? 0;
+  const inProgress = m.month === ctx.current;
+  const f = !inProgress && ctx.usual > 0 ? (amount - ctx.usual) / ctx.usual : null;
+  const good = GOOD_WHEN[key];
+  const versus =
+    f === null
+      ? null
+      : Math.abs(f) < 0.005
+        ? { text: `In line with a usual month of ${formatInr(ctx.usual)}`, tone: "flat" as const }
+        : { text: `${f > 0 ? "▲" : "▼"} ${Math.round(Math.abs(f) * 100)}% ${f > 0 ? "above" : "below"} a usual month of ${formatInr(ctx.usual)}`, tone: good === null ? ("flat" as const) : (f > 0) === (good === "up") ? ("good" as const) : ("bad" as const) };
+  const rank = inProgress ? null : rankOf(ctx.amounts, m.month, ctx.within.filter((x) => x !== ctx.current));
+  let rows: MonthTipView["rows"] = [];
+  let foot: string | null = null;
+  if (key === "income") {
+    const bySource = new Map<string, number>();
+    for (const e of ctx.data.incomeEntries) if (e.status === "Received" && e.receivedDate?.slice(0, 7) === m.month) bySource.set(e.incomeSourceId, (bySource.get(e.incomeSourceId) ?? 0) + e.amount);
+    const names = new Map(ctx.data.incomeSources.map((s) => [s.id, s.alias || s.name]));
+    rows = [...bySource].sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, v]) => ({ name: names.get(id) ?? "Income", amount: formatInr(v) }));
+  } else if (key === "invested") {
+    rows = [{ name: "Sent to brokers and new deposits", amount: formatInr(m.bought) }, ...(m.sold > 0 ? [{ name: "Taken back", amount: `−${formatInr(m.sold)}` }] : [])];
+  } else if (key === "emis") {
+    rows = payments(m, "emi").slice(0, 5);
+  } else if (key === "cards") {
+    rows = payments(m, "card").slice(0, 5);
+  } else if (m.spent !== null) {
+    rows = [{ name: "Spent in all", amount: formatInr(m.spent) }, { name: "Explained by records", amount: formatInr(m.explained) }];
+    foot = "Cash and UPI is what no record explains.";
+  }
+  if (inProgress) foot = "So far: the month isn't over.";
+  return { month: m.month, total: formatInr(amount), tag: inProgress ? "This month" : m.month === ctx.peak ? "Peak" : null, versus, rank: rank ? `${ordinal(rank.rank)} highest of ${rank.of}` : null, rows, foot };
+}
+
 export function monthlyView(data: ExpenseData, period: SpendPeriod, today: string): MonthlyView {
   const first = earliestFlowMonth(data, today);
   const span = spanToLoad(period, today, first);
@@ -94,6 +152,7 @@ export function monthlyView(data: ExpenseData, period: SpendPeriod, today: strin
     const own = [...amounts[key].keys()].sort()[0] ?? first;
     const focus = flowHeat(amounts[key], period, today, own);
     const latest = latestFigure(amounts[key], period, today, own);
+    const within = monthsSoFarIn(period, today, own);
     const name = latest ? MONTH_NAMES[Number(latest.month.slice(5, 7)) - 1] : "";
     return {
       meta: FLOW_META[key],
@@ -101,6 +160,7 @@ export function monthlyView(data: ExpenseData, period: SpendPeriod, today: strin
       headlineNote: !latest ? "" : latest.inProgress ? `${name} so far` : name,
       row: together ? flowRow(amounts[key], columns, today) : [],
       focus,
+      tips: Object.fromEntries(months.filter((m) => amounts[key].has(m.month)).map((m) => [m.month, monthTip(key, m, { amounts: amounts[key], usual: focus.average, peak: focus.peak?.month ?? null, current: monthOf(today), within, data })])),
       summary: { total: focus.total, average: focus.average, months: focus.averagedOver, peak: focus.peak },
     };
   });
