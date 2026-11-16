@@ -11,11 +11,14 @@ import { totalMonthlySubscriptionSpend } from "@/lib/aggregate/subscriptions";
 import type { WorthSeriesPoint } from "@/lib/aggregate/netWorthOn";
 import { cardName } from "@/lib/format/labels";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
-import { formatMonthShort, formatShortDate } from "@/lib/format/date";
+import { formatMonthShort, formatMonthYear, formatShortDate } from "@/lib/format/date";
 import type { ColorKey } from "@/lib/format/colors";
 import { loanColor } from "@/lib/aggregate/loans";
 import { cardColorKey } from "@/lib/format/colors";
 import type { OverviewModel } from "./model";
+import { PART_KEYS } from "@/lib/aggregate/expenses";
+import { PART_NAMES } from "@/app/expenses/views";
+import { incomeBySource, tileRanges, type RangeFigures } from "./rangeView";
 import { PAGE_HREF, PAGE_NAME, warningCounts, type OverviewWarning, type WarningPage, type WarningTone } from "./warnings";
 import { GLYPH_FOR, type GlyphKey } from "./glyphs";
 
@@ -31,7 +34,7 @@ const pct = (fraction: number) => `${(fraction * 100).toFixed(1)}%`;
 
 // ---------- The greeting ----------
 
-export type OverviewPoint = "net" | "month" | "year" | "left" | "look";
+export type OverviewPoint = "net" | "month" | "year" | "left" | "look" | "change" | "in" | "out";
 export interface GreetingCard {
   title: string;
   total: string;
@@ -49,18 +52,11 @@ export function monthFigures(m: OverviewModel): { stillToPay: number; paid: numb
   return { stillToPay, paid, due: stillToPay + paid };
 }
 
-export function summarySentence(m: OverviewModel, warnings: OverviewWarning[]): SentencePart[] {
-  const { worth, change } = m;
+/** The second sentence: what is still to pay this month and what to keep in mind. Both are about now, so they read the same over any period. */
+function tailParts(m: OverviewModel, warnings: OverviewWarning[]): SentencePart[] {
   const { stillToPay } = monthFigures(m);
   const counts = warningCounts(warnings);
-  const parts: SentencePart[] = [{ text: "You're worth " }, { text: formatInr(worth.netWorth), strong: true, point: "net" }];
-  if (change.month) {
-    parts.push({ text: change.month.amount >= 0 ? ", up " : ", down " }, { text: formatInrCompact(Math.abs(change.month.amount)), strong: true, point: "month" }, { text: " on last month" });
-  }
-  if (change.year) {
-    parts.push({ text: change.month ? " and " : ", " }, { text: formatInrCompact(Math.abs(change.year.amount)), strong: true, point: "year" }, { text: change.year.fullYear ? ` ${change.year.amount >= 0 ? "up" : "down"} on a year ago` : ` ${change.year.amount >= 0 ? "up" : "down"} since ${formatMonthShort(change.year.from)}` });
-  }
-  parts.push({ text: ". " });
+  const parts: SentencePart[] = [];
   if (stillToPay > 0) parts.push({ text: formatInr(stillToPay), strong: true, point: "left" }, { text: " is still to pay this month" });
   else parts.push({ text: "Nothing is left to pay this month" });
   if (counts.total > 0) {
@@ -71,7 +67,45 @@ export function summarySentence(m: OverviewModel, warnings: OverviewWarning[]): 
   return parts;
 }
 
-export function greetingView(m: OverviewModel, warnings: OverviewWarning[]): OverviewGreetingCards {
+/**
+ * With a period (docs/design/overview.md, MzB) the first sentence reads over it: what came in and was spent, what you're worth at its end and how
+ * that moved since it began. Without one, as before: what you're worth and how it moved on last month and a year ago.
+ */
+export function summarySentence(m: OverviewModel, warnings: OverviewWarning[], range?: RangeFigures): SentencePart[] {
+  if (range && m.range) return [...rangeParts(m, range), { text: ". " }, ...tailParts(m, warnings)];
+  const { worth, change } = m;
+  const parts: SentencePart[] = [{ text: "You're worth " }, { text: formatInr(worth.netWorth), strong: true, point: "net" }];
+  if (change.month) {
+    parts.push({ text: change.month.amount >= 0 ? ", up " : ", down " }, { text: formatInrCompact(Math.abs(change.month.amount)), strong: true, point: "month" }, { text: " on last month" });
+  }
+  if (change.year) {
+    parts.push({ text: change.month ? " and " : ", " }, { text: formatInrCompact(Math.abs(change.year.amount)), strong: true, point: "year" }, { text: change.year.fullYear ? ` ${change.year.amount >= 0 ? "up" : "down"} on a year ago` : ` ${change.year.amount >= 0 ? "up" : "down"} since ${formatMonthShort(change.year.from)}` });
+  }
+  parts.push({ text: ". " }, ...tailParts(m, warnings));
+  return parts;
+}
+
+/** "So far in 2026 you took in ₹24.8L and spent ₹15.9L, and you're worth ₹57.8L, up ₹31L since December 2025": the sentence's period half. */
+function rangeParts(m: OverviewModel, r: RangeFigures): SentencePart[] {
+  const end = m.series[m.series.length - 1];
+  const net = r.includesToday || !end ? m.worth.netWorth : end.net;
+  const parts: SentencePart[] = [];
+  const phrase = r.phrase.charAt(0).toUpperCase() + r.phrase.slice(1);
+  if (r.cameIn > 0 || r.spent !== null) {
+    parts.push({ text: `${phrase} you took in ` }, { text: formatInrCompact(r.cameIn), strong: true, point: "in" });
+    // Spent can't be worked out for the month in progress, so over a period that includes it say where spent stops: the two must not read as one window.
+    if (r.spent !== null) parts.push({ text: r.spentThrough ? ` and, by the end of ${formatMonthYear(r.spentThrough)}, spent ` : " and spent " }, { text: formatInrCompact(r.spent), strong: true, point: "out" });
+    parts.push({ text: r.includesToday ? ", and you're worth " : ", and you ended worth " });
+  } else {
+    parts.push({ text: r.includesToday ? "You're worth " : "You ended worth " });
+  }
+  parts.push({ text: formatInr(net), strong: true, point: "net" });
+  const change = m.range?.change;
+  if (change) parts.push({ text: change.amount >= 0 ? ", up " : ", down " }, { text: formatInrCompact(Math.abs(change.amount)), strong: true, point: "change" }, { text: ` since the end of ${formatMonthYear(change.from)}` });
+  return parts;
+}
+
+export function greetingView(m: OverviewModel, warnings: OverviewWarning[], range?: RangeFigures): OverviewGreetingCards {
   const { worth, change, series, data, today } = m;
   const cards: OverviewGreetingCards = {};
   cards.net = {
@@ -91,13 +125,24 @@ export function greetingView(m: OverviewModel, warnings: OverviewWarning[]): Ove
       { key: "owe", name: "What you owe moved by", colorKey: "ruby", amount: signed(now.owed - from.owed) },
     ];
   };
-  if (change.month) {
+  if (!range && change.month) {
     const from = series.find((p) => p.month === change.month!.from);
     cards.month = { title: `Since the end of ${formatMonthShort(change.month.from)}`, total: `${change.month.amount >= 0 ? "+" : "−"}${formatInr(Math.abs(change.month.amount))}`, rows: moveRows(from), note: change.month.fraction === null ? undefined : `${pct(Math.abs(change.month.fraction))} on ${formatMonthShort(change.month.from)}'s month-end figure.` };
   }
-  if (change.year) {
+  if (!range && change.year) {
     const from = series.find((p) => p.month === change.year!.from);
     cards.year = { title: change.year.fullYear ? "Against a year ago" : `Since ${formatMonthShort(change.year.from)}`, total: `${change.year.amount >= 0 ? "+" : "−"}${formatInr(Math.abs(change.year.amount))}`, rows: moveRows(from), note: change.year.fullYear ? undefined : "The trend is rebuilt from your records, so it goes back as far as they do." };
+  }
+  if (range && m.range) {
+    const end = series[series.length - 1];
+    if (!range.includesToday && end) {
+      cards.net = { title: `Net worth at the end of ${formatMonthYear(end.month)}`, total: formatInr(end.net), rows: [{ key: "owned", name: "What you owned", colorKey: "emerald", amount: formatInr(end.owned) }, { key: "owed", name: "What you owed", colorKey: "ruby", amount: `−${formatInr(end.owed)}` }], note: cards.net?.note };
+    }
+    const change = m.range.change;
+    const base = change ? series.find((p) => p.month === change.from) : undefined;
+    if (change) cards.change = { title: `Since the end of ${formatMonthYear(change.from)}`, total: `${change.amount >= 0 ? "+" : "−"}${formatInr(Math.abs(change.amount))}`, rows: moveRows(base), note: change.fraction === null ? undefined : `${pct(Math.abs(change.fraction))} on ${formatMonthShort(change.from)}'s month-end figure.` };
+    if (range.cameIn > 0) cards.in = { title: "Came in", total: formatInr(range.cameIn), rows: incomeBySource(m, range).slice(0, 6).map((x) => ({ key: x.id, name: x.name, colorKey: "emerald", amount: formatInr(x.amount) })), note: `Income received ${range.when}.` };
+    if (range.spent !== null) cards.out = { title: "Spent", total: formatInr(range.spent), rows: PART_KEYS.filter((k) => range.spentParts[k] !== 0).map((k) => ({ key: k, name: PART_NAMES[k], colorKey: "copper", amount: formatInr(range.spentParts[k]) })), note: `Over the ${plural(range.spentMonths, "month")} that ${range.spentMonths === 1 ? "has" : "have"} ended. Cash and UPI is worked out once a month ends.` };
   }
   const { stillToPay, paid } = monthFigures(m);
   if (stillToPay > 0) {
@@ -168,7 +213,7 @@ export function netWorthView(m: OverviewModel): NetWorthView | null {
   const first = series[0];
   const months = series.map((p, i): MonthView => {
     const prev = series[i - 1];
-    const isToday = i === series.length - 1;
+    const isToday = i === series.length - 1 && (m.range?.includesToday ?? true);
     const month = Number(p.month.slice(5, 7)) - 1;
     const move = (from: WorthSeriesPoint) => ({ amount: p.net - from.net, text: `${p.net - from.net >= 0 ? "+" : "−"}${formatInrCompact(Math.abs(p.net - from.net))}`, from: `${MONTH_NAMES[Number(from.month.slice(5, 7)) - 1]} ${from.month.slice(0, 4)}` });
     // Today's point is net worth as the page counts it today (the same figure as the sentence), not a month-end.
@@ -229,7 +274,7 @@ export interface SpentTileInput {
   card: TileCard;
 }
 
-export function tilesView(m: OverviewModel, warnings: OverviewWarning[], spent: SpentTileInput | null = null): TileView[] {
+export function tilesView(m: OverviewModel, warnings: OverviewWarning[], spent: SpentTileInput | null = null, range?: RangeFigures): TileView[] {
   const { data, worth, today, investments } = m;
   const byPage = warningCounts(warnings).byPage;
   const flags = (page: WarningPage) => (byPage[page] ?? []).map((w) => w.tone);
@@ -277,7 +322,9 @@ export function tilesView(m: OverviewModel, warnings: OverviewWarning[], spent: 
       ...(spent ?? { value: "—", tag: "spent", sub: "couldn't be read", card: { title: "Spent", total: "—", rows: [], foot: "The Expenses figures couldn't be read. Refresh to try again." } }) }),
   ];
   void daysBetween;
-  return tiles.map((t) => ({ ...t, flags: t.flags }));
+  // Over a period, each tile keeps its place and card and says what the period did (rangeView.ts); Due this month looks forward and stays.
+  const over = range ? tileRanges(m, range) : {};
+  return tiles.map((t) => ({ ...t, ...over[t.key], flags: t.flags }));
 }
 
 export const TILE_NAME = PAGE_NAME;

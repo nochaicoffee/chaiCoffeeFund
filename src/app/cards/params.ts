@@ -115,23 +115,24 @@ export const CUSTOM_PERIOD = "custom";
 const isCustom = (period: SpendPeriod) => period.kind === "range" && !period.last;
 
 /**
- * The period menu (#113, option C with A from design/cards-dropdowns): the last
- * 3, 6 and 12 months, then this year, every other year with statements and all
- * time, each with what was spent in it (on the selected card, as the page
- * shows), then "Custom range…". Each option's value is its `?period=`, blank for
- * this year. While a custom range is shown, its option is the chosen one and
- * names the range.
+ * The period menu's options (#113, option C with A from design/cards-dropdowns): the last 3, 6 and 12 months, then this year, the given
+ * years and all time, each with `meta` beside it when `spent` gives one, then "Custom range…". Each option's value is its `?period=`, blank for
+ * this year. While a custom range is shown, its option is the chosen one and names the range. Cards and the Overview share it.
  */
-export function periodMenu(data: CardData, period: SpendPeriod, today: string, cardId?: string): SelectOption[] {
-  const spent = (p: SpendPeriod) => formatInrCompact(spendSummary(data, p, today, cardId).total);
-  const option = (p: SpendPeriod): SelectOption => ({ value: periodParam(p, today) ?? "", label: periodName(p, today), meta: spent(p) });
+export function buildPeriodMenu(period: SpendPeriod, today: string, years: number[], meta?: (p: SpendPeriod) => string): SelectOption[] {
+  const option = (p: SpendPeriod): SelectOption => ({ value: periodParam(p, today) ?? "", label: periodName(p, today), ...(meta ? { meta: meta(p) } : {}) });
   const quick = QUICK_RANGES.map((n, i) => ({ ...option(lastMonths(n, today)), group: i === 0 ? "Quick ranges" : undefined }));
-  const years = periodYears(statementYears(data, today), period).map((year, i) => ({ ...option({ kind: "year", year }), divider: i === 0 }));
+  const yearOptions = years.map((year, i) => ({ ...option({ kind: "year", year }), divider: i === 0 }));
   const custom: SelectOption =
     period.kind === "range" && !period.last
       ? { value: CUSTOM_PERIOD, label: "Custom range", meta: monthSpanName(period.from, period.to), display: periodName(period, today), action: true, divider: true }
       : { value: CUSTOM_PERIOD, label: "Custom range…", action: true, divider: true };
-  return [...quick, ...years, option({ kind: "all" }), custom];
+  return [...quick, ...yearOptions, option({ kind: "all" }), custom];
+}
+
+/** Cards' period menu: every year with statements, each option with what was spent in it (on the selected card, as the page shows). */
+export function periodMenu(data: CardData, period: SpendPeriod, today: string, cardId?: string): SelectOption[] {
+  return buildPeriodMenu(period, today, periodYears(statementYears(data, today), period), (p) => formatInrCompact(spendSummary(data, p, today, cardId).total));
 }
 
 /** The period menu's chosen value: the period's `?period=` (blank for this year), or the custom option for a custom range. */

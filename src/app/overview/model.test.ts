@@ -47,6 +47,26 @@ describe("overviewModel", () => {
     expect(m.series[0].month >= "2026-08").toBe(true);
     expect(m.change.month?.from).toBe("2026-10");
   });
+  it("has no range on the default series", () => {
+    expect(overviewModel(data(), "2026-11-07").range).toBeNull();
+  });
+  it("runs the series over a range to today, with the month-end before it as the base, and ends on today's figure", () => {
+    const m = overviewModel(data(), "2026-11-07", ["2026-09", "2026-10", "2026-11"]);
+    expect(m.range?.includesToday).toBe(true);
+    expect(m.series.at(-1)?.net).toBe(m.worth.netWorth);
+    expect(m.series.length).toBeLessThanOrEqual(4);
+    expect(m.range?.change?.amount).toBe(m.series.at(-1)!.net - m.series[0].net);
+  });
+  it("ends a range that is over on its last month-end, not on today", () => {
+    const m = overviewModel(data(), "2026-11-07", ["2026-09", "2026-10"]);
+    expect(m.range?.includesToday).toBe(false);
+    expect(m.series.at(-1)?.month).toBe("2026-10");
+    expect(m.series.at(-1)?.date).toBe("2026-10-31");
+  });
+  it("has no change over a range with a single point", () => {
+    const m = overviewModel(data(), "2026-11-07", ["2020-01"]);
+    expect(m.range?.change).toBeNull();
+  });
   it("counts investments at cost when no price could be read", () => {
     const m = overviewModel(data({ closes: new Map(), pricesFailed: true }), "2026-11-07");
     expect(m.worth.investmentValueInr).toBe(10000);
