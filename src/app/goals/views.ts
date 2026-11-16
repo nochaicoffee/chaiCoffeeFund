@@ -26,6 +26,7 @@ import {
   type GoalStanding,
   type GoalsData,
   type GoalsTotals,
+  closeFigures,
 } from "@/lib/aggregate/goals";
 import { MAX_RING_MONTHS, OVERDUE_RING, SOMEDAY_RING, placePlanets, planetRadius, ringOf, skyPieces, type SkyPiece } from "@/lib/aggregate/goalsOrbit";
 import { formatDate, formatShortDate } from "@/lib/format/date";
@@ -424,6 +425,8 @@ export interface GoalSideView {
   settled: SettledPart[];
   pot: { free: string; note: string } | null;
   entries: EntryRow[];
+  /** Every part is bought or dropped and one was bought: the goal's menu offers Close goal. */
+  closable: boolean;
   hasKids: boolean;
 }
 
@@ -478,7 +481,6 @@ export function goalSideView(data: GoalsPageData, goal: Goal, today: string, d: 
   const entries = data.contributions
     .filter((c) => entryIds.has(c.goalId) && !isPotMove(c))
     .sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : 0))
-    .slice(0, 4)
     .map((c): EntryRow => ({ id: c.id, kind: c.kind, amount: `${c.kind === "Take-back" ? "−" : "+"}${formatInr(c.amount)}`, date: formatShortDate(c.date), note: c.accountId ? `from ${data.accounts.find((a) => a.id === c.accountId)?.name ?? "an account"}${c.note ? ` · ${c.note}` : ""}` : c.note || "no account named" }));
   const free = freePot(data, goal);
   return {
@@ -504,6 +506,7 @@ export function goalSideView(data: GoalsPageData, goal: Goal, today: string, d: 
     parts,
     pot: parts.length ? { free: formatInr(free), note: free <= 0 ? "Everything set aside is given to a part." : free > goal.amount ? "More than its own part needs: give some to a part in Edit, or take it back." : "Covers its own part, the last one." } : null,
     entries,
+    closable: closeFigures(data, goal) !== null,
   };
 }
 

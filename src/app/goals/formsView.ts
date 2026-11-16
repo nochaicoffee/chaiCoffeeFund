@@ -1,4 +1,4 @@
-import { dueOf, freePot, kidsOf, leftOf, liveKids, ownCovered, savedOf, savedOwn, targetOf, topGoals } from "@/lib/aggregate/goals";
+import { closeFigures, dueOf, freePot, isPotMove, kidsOf, leftOf, liveKids, ownCovered, savedOf, savedOwn, targetOf, topGoals, type CloseFigures } from "@/lib/aggregate/goals";
 import type { ColorKey } from "@/lib/format/colors";
 import { goalColorKey } from "@/lib/format/goalLabels";
 import type { Goal, GoalCategory, GoalColor, GoalNecessity, GoalScale, GoalStatus } from "@/lib/sheets/types";
@@ -45,6 +45,19 @@ export interface FormGoal {
   pot: number;
   /** What the free pot covers of its own part. */
   ownCovered: number;
+  /** What closing it would record (every part is bought or dropped, and one was bought), or null when it can't be closed. */
+  close: CloseFigures | null;
+}
+
+/** A set-aside or take-back as the Edit and Delete entry forms start from it (the moves between a goal and its parts aren't entries to change). */
+export interface FormEntry {
+  id: string;
+  goalId: string;
+  kind: "Set-aside" | "Take-back";
+  amount: number;
+  date: string;
+  accountId: string | null;
+  note: string | null;
 }
 
 /** A part as the Parts section starts from it. */
@@ -66,6 +79,7 @@ export interface GoalsFormsData {
   /** Sample data: every form is disabled, because nothing may reach the Sheet. */
   demo: boolean;
   goals: FormGoal[];
+  entries: FormEntry[];
   accounts: { id: string; name: string }[];
   cards: { id: string; name: string; color: ColorKey }[];
 }
@@ -105,7 +119,8 @@ export function goalsFormsData(data: GoalsPageData, today: string, demo: boolean
       free: freePot(data, goal),
       pot: savedOf(data, goal),
       ownCovered: ownCovered(data, goal),
+      close: closeFigures(data, goal),
     };
   };
-  return { today, demo, goals: [...tops.flatMap((t) => [t, ...data.goals.filter((g) => g.parentId === t.id)])].map(formGoal), accounts: data.accounts, cards: data.cards };
+  return { today, demo, goals: [...tops.flatMap((t) => [t, ...data.goals.filter((g) => g.parentId === t.id)])].map(formGoal), entries: data.contributions.filter((c) => !isPotMove(c)).map((c) => ({ id: c.id, goalId: c.goalId, kind: c.kind, amount: c.amount, date: c.date, accountId: c.accountId ?? null, note: c.note ?? null })), accounts: data.accounts, cards: data.cards };
 }

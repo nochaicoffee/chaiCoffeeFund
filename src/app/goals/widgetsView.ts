@@ -1,5 +1,5 @@
 import { daysBetween } from "@/lib/aggregate/cardSpend";
-import { effectiveDue, expectedProgress, isPotMove, fundingPlan, fundingUnits, monthsLeft, necessitySplit, plannedOf, requiredMonthly, savedOf, standing, targetOf, topGoals, wholeMonthsTo, type GoalStanding } from "@/lib/aggregate/goals";
+import { effectiveDue, estimateOf, kidsOf, expectedProgress, isClosedGoal, isPotMove, fundingPlan, fundingUnits, monthsLeft, necessitySplit, plannedOf, requiredMonthly, savedOf, standing, targetOf, topGoals, wholeMonthsTo, type GoalStanding } from "@/lib/aggregate/goals";
 import { addMonthsUTC } from "@/lib/aggregate/recurring";
 import { formatDate, formatShortDate } from "@/lib/format/date";
 import { goalColorKey } from "@/lib/format/goalLabels";
@@ -54,7 +54,8 @@ export function tableRows(data: GoalsPageData, today: string, d: GoalsDerived = 
     const planned = plannedOf(data, goal);
     const needs = requiredMonthly(data, goal, today);
     const active = goal.status === "Active";
-    const settled = goal.status === "Done" ? `paid ${formatShortDate(goal.doneOn as string)}${goal.actualCost !== undefined ? ` · ${goal.actualCost <= goal.amount ? `${formatInr(goal.amount - goal.actualCost)} under` : `${formatInr(goal.actualCost - goal.amount)} over`}` : ""}` : goal.status === "Dropped" ? "released" : null;
+    const estimate = estimateOf(data, goal);
+    const settled = goal.status === "Done" ? `${isClosedGoal(data, goal) ? "closed" : "paid"} ${formatShortDate(goal.doneOn as string)}${goal.actualCost !== undefined ? ` · ${goal.actualCost <= estimate ? `${formatInr(estimate - goal.actualCost)} under` : `${formatInr(goal.actualCost - estimate)} over`}` : ""}` : goal.status === "Dropped" ? "released" : null;
     return {
       id: goal.id,
       topId: goal.id,
@@ -69,7 +70,7 @@ export function tableRows(data: GoalsPageData, today: string, d: GoalsDerived = 
       progress: target ? Math.min(1, saved / target) : 0,
       expected: active ? expectedProgress(data, goal, today) : null,
       savedText: goal.status === "Done" && goal.actualCost !== undefined ? formatInr(goal.actualCost) : `${formatInrCompact(saved)} · ${Math.round((target ? Math.min(1, saved / target) : 0) * 100)}%`,
-      target: formatInr(goal.status === "Done" ? goal.amount : target),
+      target: formatInr(goal.status === "Done" ? estimate : target),
       due: goal.status === "Done" ? formatShortDate(goal.doneOn as string) : due ? formatDate(due) : "Someday",
       dueNote: !active || !due ? "" : due < today ? "overdue" : `${monthsLeft(due, today) || 1} month${(monthsLeft(due, today) || 1) === 1 ? "" : "s"} left`,
       fixed: goal.dateType === "Fixed" && active,
@@ -325,9 +326,10 @@ export function finishedView(data: GoalsPageData): FinishedRow[] {
     .filter((g) => g.status === "Done" && g.actualCost !== undefined)
     .sort((a, b) => ((b.doneOn as string) < (a.doneOn as string) ? -1 : 1))
     .map((g) => {
-      const diff = g.amount - (g.actualCost as number);
+      const estimate = estimateOf(data, g);
+      const diff = estimate - (g.actualCost as number);
       const paid = g.paidFromAccountId ? data.accounts.find((a) => a.id === g.paidFromAccountId)?.name : undefined;
-      return { id: g.id, name: g.name, colorKey: colorOf(g), category: g.category, note: `${g.parentId ? `part of ${goalOf(data, g.parentId)?.name ?? "a goal"} · ` : ""}bought ${formatShortDate(g.doneOn as string)}${paid ? ` · paid from ${paid}` : g.paidFromCardId ? " · paid on a card" : ""}`, cost: formatInr(g.actualCost as number), estimate: `of ${formatInr(g.amount)}`, verdict: diff === 0 ? "Came in on the estimate" : diff > 0 ? `Came in ${formatInr(diff)} under the estimate` : `Came in ${formatInr(-diff)} over the estimate`, under: diff >= 0 };
+      return { id: g.id, name: g.name, colorKey: colorOf(g), category: g.category, note: `${g.parentId ? `part of ${goalOf(data, g.parentId)?.name ?? "a goal"} · ` : ""}${isClosedGoal(data, g) ? `all ${kidsOf(data, g.id).filter((k) => k.status === "Done").length} parts bought, closed` : "bought"} ${formatShortDate(g.doneOn as string)}${paid ? ` · paid from ${paid}` : g.paidFromCardId ? " · paid on a card" : ""}`, cost: formatInr(g.actualCost as number), estimate: `of ${formatInr(estimate)}`, verdict: diff === 0 ? "Came in on the estimate" : diff > 0 ? `Came in ${formatInr(diff)} under the estimate` : `Came in ${formatInr(-diff)} over the estimate`, under: diff >= 0 };
     });
 }
 

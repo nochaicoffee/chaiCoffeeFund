@@ -170,6 +170,51 @@ export function necessitySplit(data: GoalsData, goal: Goal): { need: number; wan
 /** What's in a goal's pot and not given to a part: the money its own part is covered by. */
 export const freePot = (data: GoalsData, goal: Goal): number => savedOwn(data, goal.id);
 
+// --- Closing a goal whose parts are all bought ---
+
+/** What closing a goal records: how many parts were bought, what they cost and were estimated at in all, and the day the last one was bought. */
+export interface CloseFigures {
+  count: number;
+  cost: number;
+  estimate: number;
+  doneOn: string;
+}
+
+/**
+ * A main goal whose every part is settled (bought or dropped) with at least one bought can be closed: it's Done, its cost is the parts' and its day is
+ * the last part's. Null for a goal that can't: a part, a goal already bought or dropped, one with an open part, or one with nothing bought. The goal's own
+ * part (the rest that wasn't itemised) isn't spent, so it isn't in the estimate. Closing records no account: each part already carries where it was paid
+ * from, and Accounts and Expenses count a purchase by that, so a closed goal never counts the same money twice.
+ */
+export function closeFigures(data: GoalsData, goal: Goal): CloseFigures | null {
+  if (goal.parentId || !open(goal)) return null;
+  if (kidsOf(data, goal.id).some(open)) return null;
+  const bought = boughtParts(data, goal);
+  if (bought.length === 0) return null;
+  return { count: bought.length, cost: sum(bought.map((kid) => kid.actualCost as number)), estimate: sum(bought.map((kid) => kid.amount)), doneOn: bought.map((kid) => kid.doneOn as string).sort().at(-1)! };
+}
+
+const open = (goal: Goal): boolean => goal.status === "Active" || goal.status === "Paused";
+
+/** A goal's parts that were bought and say what they cost and when: the ones closing a goal adds up. */
+const boughtParts = (data: GoalsData, goal: Goal): Goal[] => kidsOf(data, goal.id).filter((kid) => kid.status === "Done" && kid.actualCost !== undefined && kid.doneOn);
+
+/**
+ * A bought goal that was closed over its parts rather than bought as one purchase. Closing leaves no account or card and records exactly the parts'
+ * total cost, so that's what is looked for: a goal bought for its own part with Paid from left empty (the form allows it) costs something else and
+ * stays a purchase, estimated at its own amount.
+ */
+export function isClosedGoal(data: GoalsData, goal: Goal): boolean {
+  if (goal.status !== "Done" || goal.paidFromAccountId || goal.paidFromCardId || goal.actualCost === undefined) return false;
+  const bought = boughtParts(data, goal);
+  return bought.length > 0 && sum(bought.map((kid) => kid.actualCost as number)) === goal.actualCost;
+}
+
+/** What a bought goal was estimated at: its amount, or for a closed goal the parts it was closed over (its own part wasn't spent). */
+export function estimateOf(data: GoalsData, goal: Goal): number {
+  return isClosedGoal(data, goal) ? sum(boughtParts(data, goal).map((kid) => kid.amount)) : goal.amount;
+}
+
 /** What a move between a goal's pot and a part writes in the entries' notes, so the lists of entries can leave the moves out (the money didn't come or go, it only changed hands). */
 export const moveNotes = {
   given: (part: string) => `Given to ${part}`,
@@ -179,6 +224,8 @@ export const moveNotes = {
 };
 const MOVE_NOTE = /^(Given to |From the pot of |Back to the pot of |Back from |Moved from |Moved back )/;
 export const isPotMove = (entry: GoalContribution): boolean => MOVE_NOTE.test(entry.note ?? "");
+/** Whether a note would read as one of those moves: a typed note may not, or its entry would vanish from the lists. */
+export const looksLikeMove = (note: string): boolean => MOVE_NOTE.test(note);
 
 /** What the free pot covers of a goal's own part. */
 export const ownCovered = (data: GoalsData, goal: Goal): number => Math.min(freePot(data, goal), goal.amount);

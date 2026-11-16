@@ -44,7 +44,7 @@ export interface IncomeItem { sourceId: string; name: string; text: string; amou
 export interface LentItem { id: string; kind: "payout" | "long-out" | "unlinked"; tone: "warn" | "late"; title: string; text: string; href?: string; action?: string }
 export interface FixedItem { id: string; kind: string; tone: "warn" | "late" | "ok"; title: string; text: string; depositId?: string }
 export interface InsuranceItem { policyId: string; name: string; text: string; tone: "lapsed" | "soon"; renewsOn?: string }
-export interface GoalsItem { id: string; tone: "warning" | "negative"; label: string; detail: string }
+export interface GoalsItem { id: string; tone: "warning" | "negative"; label: string; detail: string; /** A goal ready to close: housekeeping on the Goals page, not a warning. */ close?: boolean }
 export interface AccountsItem { id: string; accountId: string; accountName: string; dateText: string; recordedText: string; statementText: string; differenceText: string }
 
 const clause = (s: string) => s.trim();
@@ -86,7 +86,7 @@ export function fromInsurance(items: InsuranceItem[]): OverviewWarning[] {
   return items.map((i) => ({ id: `ins:${i.policyId}`, tone: i.tone === "lapsed" ? "red" : "amber", page: "ins", text: i.name, detail: i.text, act: i.tone === "lapsed" ? "Renew" : "See renewal", href: PAGE_HREF.ins, date: i.renewsOn ?? null, ref: `policy:${i.policyId}` }));
 }
 export function fromGoals(items: GoalsItem[]): OverviewWarning[] {
-  return items.map((i) => ({ id: `goals:${i.id}:${i.label}`, tone: i.tone === "negative" ? "red" : "amber", page: "goals", text: i.label, detail: i.detail, act: "See goal", href: PAGE_HREF.goals, date: null }));
+  return items.filter((i) => !i.close).map((i) => ({ id: `goals:${i.id}:${i.label}`, tone: i.tone === "negative" ? "red" : "amber", page: "goals", text: i.label, detail: i.detail, act: "See goal", href: PAGE_HREF.goals, date: null }));
 }
 export function fromAccounts(items: AccountsItem[]): OverviewWarning[] {
   return items.map((i) => ({

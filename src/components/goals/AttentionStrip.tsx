@@ -3,7 +3,7 @@
 import type { AttentionItem } from "@/lib/goals/attention";
 import { ActionButton, useGoalsForms } from "./forms/GoalsForms";
 
-/** The strip under the greeting while a Fixed date is at risk, a date has passed, or an account can't cover its earmarks: red first, then amber, one line each. */
+/** The strip under the greeting while a Fixed date is at risk, a date has passed, an account can't cover its earmarks, or every part of a goal is bought: red first, then amber, one line each. */
 export function AttentionStrip({ items, onSee }: { items: AttentionItem[]; onSee: (goalId: string) => void }) {
   const { open } = useGoalsForms();
   if (items.length === 0) return null;
@@ -22,6 +22,7 @@ export function AttentionStrip({ items, onSee }: { items: AttentionItem[]; onSee
               <b className="font-extrabold">{item.label}</b>: {item.detail}
             </span>
           </p>
+          {item.close && <ActionButton label="Close goal" onClick={() => open({ kind: "close", goalId: item.id })} />}
           {item.left > 0 && <ActionButton label="Set aside" onClick={() => open({ kind: "set-aside", goalId: item.id, amount: item.left })} />}
           {item.id !== "all" && <ActionButton label="See goal" tone="ghost" onClick={() => onSee(item.id)} />}
         </div>

@@ -1,5 +1,5 @@
 import { daysBetween } from "../aggregate/cardSpend";
-import { earmarkProblems, earmarksByAccount, type GoalsData } from "../aggregate/goals";
+import { closeFigures, earmarkProblems, earmarksByAccount, topGoals, type GoalsData } from "../aggregate/goals";
 import { skyPieces } from "../aggregate/goalsOrbit";
 import { formatDate, formatShortDate } from "../format/date";
 import { formatInr } from "../format/money";
@@ -7,7 +7,7 @@ import { formatInr } from "../format/money";
 /**
  * What needs attention (F-GO-05), for the Goals page's strip and Overview's list: a piece with a Fixed date close and short of its plan, a piece whose
  * date has passed, and an account that holds less than goals have earmarked in it. Read from the sky's pieces, so a Fixed sub-goal counts as much as a
- * Fixed goal. A label and a detail, so neither page has to take a sentence apart.
+ * Fixed goal, and a goal whose parts are all bought, which is ready to close. A label and a detail, so neither page has to take a sentence apart.
  */
 export interface AttentionInput extends GoalsData {
   accounts: { id: string; name: string }[];
@@ -23,6 +23,8 @@ export interface AttentionItem {
   detail: string;
   /** What's still to set aside, for the Set aside button (0 for an account). */
   left: number;
+  /** A goal whose parts are all bought: the strip offers Close goal. */
+  close?: boolean;
 }
 
 /** How near a Fixed date has to be before a short plan is worth a strip. */
@@ -48,6 +50,10 @@ export function attentionItems(data: AttentionInput, today: string): AttentionIt
   for (const problem of earmarkProblems(earmarksByAccount(data), data.balances)) {
     const name = data.accounts.find((a) => a.id === problem.accountId)?.name ?? "An account";
     items.push({ id: "all", tone: "warning", left: 0, label: `${name} earmarks`, detail: `goals hold ${formatInr(problem.earmarked)} of the ${formatInr(problem.balance)} in the account (${formatInr(problem.over)} more than it has).` });
+  }
+  for (const goal of topGoals(data)) {
+    const figures = closeFigures(data, goal);
+    if (figures) items.push({ id: goal.id, tone: "warning", left: 0, close: true, label: `${goal.name} · ${figures.count === 1 ? "its part is" : `all ${figures.count} parts are`} bought`, detail: `${formatInr(figures.cost)} spent in all. Close the goal to finish it: what's still set aside in it is released.` });
   }
   return items.sort((a, b) => (a.tone === b.tone ? 0 : a.tone === "negative" ? -1 : 1));
 }

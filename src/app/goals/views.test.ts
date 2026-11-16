@@ -124,6 +124,14 @@ describe("the side of the sky", () => {
     expect(sides.fridge.entries.map((e) => e.amount)).toEqual(["+₹15,000", "+₹15,000", "+₹15,000"]);
     expect(sides.camera).toMatchObject({ status: "Paused", bigNote: "set aside · paused", facts: [] });
   });
+  it("a goal's panel lists every entry, newest first, so an old one can still be corrected", () => {
+    const data = sample();
+    const fridge = data.contributions.filter((c) => c.goalId === "fridge");
+    for (let i = 0; i < 4; i++) data.contributions.push({ id: `old-${i}`, goalId: "fridge", date: `2026-0${i + 1}-01`, amount: 1000 + i, kind: "Set-aside" });
+    const entries = goalSides(data, TODAY).fridge.entries;
+    expect(entries).toHaveLength(fridge.length + 4);
+    expect(entries.at(-1)!.amount).toBe("+₹1,000");
+  });
   it("an over-funded goal says how much more than it needs", () => {
     const sides = goalSides(sample("over"), TODAY);
     expect(sides.fridge.facts[0]).toEqual({ name: "More than it needs", value: "₹3,100" });

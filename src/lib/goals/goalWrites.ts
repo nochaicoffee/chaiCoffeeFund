@@ -1,4 +1,4 @@
-import { savedOwn } from "../aggregate/goals";
+import { closeFigures, savedOwn } from "../aggregate/goals";
 import { createGoalContributionSchema, updateGoalContributionSchema } from "../sheets/goalContributions";
 import { createGoalSchema, updateGoalSchema } from "../sheets/goals";
 import { InvalidRowError, NotFoundError, type WriteRepo } from "../sheets/repository";
@@ -217,6 +217,23 @@ export async function markBought(repos: GoalRepos, id: string, input: BoughtInpu
     await journal.rollBack();
     throw error;
   }
+}
+
+/**
+ * Close a main goal whose parts are all settled (see `closeFigures`): it becomes Done with the parts' cost and the day the last one was bought, and no
+ * account or card, since each part already says where it was paid from. Its money is released by its status, like any bought goal's, and a Reopen
+ * brings it back as it was. Returns what changed so Undo can put it back.
+ */
+export async function closeGoal(repos: GoalRepos, id: string): Promise<StatusChange[]> {
+  const goal = await mustGet(repos, id);
+  if (goal.parentId) throw new InvalidRowError(`${goal.name} is a part of another goal: close that goal instead`);
+  if (!open(goal)) throw new InvalidRowError(`${goal.name} is ${STATUS_WORD[goal.status]}, so it can't be closed`);
+  const kids = (await repos.goals.list()).filter((g) => g.parentId === id);
+  if (kids.some(open)) throw new InvalidRowError("Buy or drop its open parts before closing it");
+  const figures = closeFigures({ goals: [goal, ...kids], contributions: [] }, goal);
+  if (!figures) throw new InvalidRowError(`None of ${goal.name}'s parts was bought, so there's nothing to close it over: drop it instead`);
+  const patch = updateGoalSchema.parse({ status: "Done", doneOn: figures.doneOn, actualCost: figures.cost, paidFromAccountId: "", paidFromCardId: "" });
+  return setStatus(repos, id, "Done", [], ["Active", "Paused"], "closed", patch);
 }
 
 /** Reopen a bought goal: it's active again and its money is earmarked again. A sub-goal can't reopen under a parent that's still bought. */

@@ -27,6 +27,7 @@ describe("the page adapters", () => {
   it("insurance, goals, accounts and income each map to their page", () => {
     expect(fromInsurance([{ policyId: "p", name: "Health", text: "renews 28 Nov", tone: "soon", renewsOn: "2026-11-28" }])[0]).toMatchObject({ page: "ins", tone: "amber", date: "2026-11-28", ref: "policy:p" });
     expect(fromInsurance([{ policyId: "p", name: "Car", text: "lapsed", tone: "lapsed", renewsOn: "2026-10-01" }])[0].tone).toBe("red");
+    expect(fromGoals([{ id: "c", tone: "warning", label: "Car · all 2 parts are bought", detail: "z", close: true }])).toEqual([]);
     expect(fromGoals([{ id: "g", tone: "negative", label: "Trip · overdue", detail: "x" }, { id: "h", tone: "warning", label: "Car", detail: "y" }]).map((x) => x.tone)).toEqual(["red", "amber"]);
     expect(fromAccounts([{ id: "r", accountId: "a", accountName: "HDFC", dateText: "1 Nov", recordedText: "₹1", statementText: "₹2", differenceText: "+₹1" }])[0]).toMatchObject({ page: "accounts", tone: "amber" });
     expect(fromIncome([{ sourceId: "s", name: "Salary", text: "was expected", amount: "₹1" }])[0]).toMatchObject({ page: "income", id: "income:s" });

@@ -1,8 +1,9 @@
 "use client";
 
 import { createContext, useContext, useRef, useState, type ReactNode } from "react";
-import { deleteGoalAction, dropGoalAction, pauseGoalAction, reopenGoalAction, restoreGoalAction, resumeGoalAction, undoAction } from "@/app/goals/actions";
+import { closeGoalAction, deleteEntryAction, deleteGoalAction, dropGoalAction, pauseGoalAction, reopenGoalAction, restoreGoalAction, resumeGoalAction, undoAction } from "@/app/goals/actions";
 import type { GoalsFormsData } from "@/app/goals/formsView";
+import { formatShortDate } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import type { GoalCategory } from "@/lib/sheets/types";
 import { AlertIcon, CheckIcon } from "../../cards/forms/icons";
@@ -30,6 +31,9 @@ export type GoalsFormAction =
   | { kind: "restore"; goalId: string }
   | { kind: "bought"; goalId: string }
   | { kind: "reopen"; goalId: string }
+  | { kind: "close"; goalId: string }
+  | { kind: "edit-entry"; entryId: string }
+  | { kind: "delete-entry"; entryId: string }
   | { kind: "delete"; goalId: string };
 
 interface Controls {
@@ -58,6 +62,8 @@ export function GoalsFormsProvider({ forms, children }: { forms: GoalsFormsData;
     setTimeout(() => back?.isConnected && back.focus(), 0);
   };
   const target = open && "goalId" in open && open.goalId ? forms.goals.find((g) => g.id === open.goalId) : undefined;
+  const entry = open && "entryId" in open ? forms.entries.find((e) => e.id === open.entryId) : undefined;
+  const entryGoal = entry ? forms.goals.find((g) => g.id === entry.goalId) : undefined;
   const confirmProps = { today: forms.today, onClose: close, hidden: { goalId: target?.id ?? "" } };
 
   return (
@@ -67,6 +73,7 @@ export function GoalsFormsProvider({ forms, children }: { forms: GoalsFormsData;
       {open?.kind === "edit" && target && <GoalFormDialog forms={forms} editing={target} onClose={close} onSaved={saved} />}
       {open?.kind === "set-aside" && <EntryDialog forms={forms} kind="Set-aside" goalId={open.goalId} amount={open.amount} onClose={close} onSaved={saved} />}
       {open?.kind === "take-back" && <EntryDialog forms={forms} kind="Take-back" goalId={open.goalId} onClose={close} onSaved={saved} />}
+      {open?.kind === "edit-entry" && entry && <EntryDialog forms={forms} kind={entry.kind} editing={entry} onClose={close} onSaved={saved} />}
       {open?.kind === "bought" && target && <BoughtDialog forms={forms} goal={target} onClose={close} onSaved={saved} />}
       {open?.kind === "pause" && target && <ConfirmDialog {...confirmProps} tone="neutral" icon={<CheckIcon />} title={`Pause ${target.name}?`} body="It leaves the plan and the sky's rings and keeps what's set aside. Resume it any time and it picks up where it was." keepLabel="Keep it going" confirmLabel="Pause" action={pauseGoalAction} onSaved={(undo) => saved(undo, `${target.name} paused`)} />}
       {open?.kind === "resume" && target && <ConfirmDialog {...confirmProps} tone="neutral" icon={<CheckIcon />} title={`Resume ${target.name}?`} body="It counts again, with its date and its plan." keepLabel="Leave it paused" confirmLabel="Resume" action={resumeGoalAction} onSaved={(undo) => saved(undo, `${target.name} resumed`)} />}
@@ -81,6 +88,33 @@ export function GoalsFormsProvider({ forms, children }: { forms: GoalsFormsData;
           confirmLabel="Drop goal"
           action={dropGoalAction}
           onSaved={(undo) => saved(undo, `${target.name} dropped`)}
+        />
+      )}
+      {open?.kind === "close" && target?.close && (
+        <ConfirmDialog
+          {...confirmProps}
+          tone="neutral"
+          icon={<CheckIcon />}
+          title={`Close ${target.name}?`}
+          body={`${target.close.count === 1 ? "Its one part is" : `All ${target.close.count} parts are`} bought: ${formatInr(target.close.cost)} against ${formatInr(target.close.estimate)} estimated, the last on ${formatShortDate(target.close.doneOn)}. The goal is marked bought for that, and ${target.amount > 0 ? `its own ${formatInr(target.amount)} part${target.totalSaved > 0 ? ` and the ${formatInr(target.totalSaved)} set aside are` : " is"} released` : target.totalSaved > 0 ? `the ${formatInr(target.totalSaved)} set aside is released` : "nothing is left to release"}. Your accounts don't change: each part already says where it was paid from. Reopen it any time.`}
+          keepLabel="Keep it open"
+          confirmLabel="Close goal"
+          action={closeGoalAction}
+          onSaved={(undo) => saved(undo, `${target.name} closed`)}
+        />
+      )}
+      {open?.kind === "delete-entry" && entry && (
+        <ConfirmDialog
+          {...confirmProps}
+          hidden={{ entryId: entry.id }}
+          tone="danger"
+          icon={<AlertIcon />}
+          title={`Delete this ${entry.kind === "Take-back" ? "take-back" : "set-aside"}?`}
+          body={`${formatInr(entry.amount)} on ${formatShortDate(entry.date)}${entryGoal ? ` for ${entryGoal.name}` : ""} is removed from the list.${entry.kind === "Take-back" ? ` ${entryGoal?.name ?? "The goal"} counts that money as set aside again.` : ` ${entryGoal?.name ?? "The goal"} no longer counts that money as set aside.`} Nothing moves in your accounts. There's an Undo for six seconds.`}
+          keepLabel="Keep it"
+          confirmLabel="Delete entry"
+          action={deleteEntryAction}
+          onSaved={(undo) => saved(undo, "Entry deleted")}
         />
       )}
       {open?.kind === "restore" && target && <ConfirmDialog {...confirmProps} tone="neutral" icon={<CheckIcon />} title={`Restore ${target.name}?`} body="It counts again, and what was set aside in it is earmarked again." keepLabel="Leave it dropped" confirmLabel="Restore" action={restoreGoalAction} onSaved={(undo) => saved(undo, `${target.name} restored`)} />}
