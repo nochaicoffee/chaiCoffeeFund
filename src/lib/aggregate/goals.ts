@@ -66,6 +66,34 @@ export function progressOf(data: GoalsData, goal: Goal): number {
   return target > 0 ? Math.min(1, savedOf(data, goal) / target) : 0;
 }
 
+/** What a goal's bought parts cost: money already spent on it. Zero for a goal that is itself bought or dropped (it is settled, not underway). */
+export function spentOn(data: GoalsData, goal: Goal): number {
+  return open(goal) ? sum(boughtParts(data, goal).map((kid) => kid.actualCost as number)) : 0;
+}
+
+/**
+ * A goal's whole journey: what its bought parts cost (spent), plus what is still to set aside (its target), is its total; the spent part and what is set
+ * aside, up to the target, are done. So a car upgrade with ₹1,12,399 of parts bought and ₹1,00,000 to go is 53% of ₹2,12,399, not 0% of ₹1,00,000.
+ * A goal with nothing bought reads exactly as `progressOf` does.
+ */
+export function journeyOf(data: GoalsData, goal: Goal): { spent: number; total: number; progress: number } {
+  const spent = spentOn(data, goal);
+  const target = targetOf(data, goal);
+  const total = spent + target;
+  return { spent, total, progress: total > 0 ? Math.min(1, (spent + Math.min(savedOf(data, goal), target)) / total) : 0 };
+}
+
+/**
+ * Where saving should be by now on the journey's scale: what was spent counts as already done, and the straight line from the start date to the target
+ * date runs over what is still to set aside. Null with no date. Without anything spent it is `expectedProgress`.
+ */
+export function expectedJourney(data: GoalsData, goal: Goal, today: string): number | null {
+  const line = expectedProgress(data, goal, today);
+  if (line === null) return null;
+  const { spent, total } = journeyOf(data, goal);
+  return total > 0 ? (spent + line * targetOf(data, goal)) / total : line;
+}
+
 /**
  * Funded: saved at or above the target, exactly at target counting. A goal with parts is funded only when every piece is covered (each part holds
  * its cost and what isn't given to a part covers the goal's own part): money that is set aside on the goal but not given to a part covers nothing yet.

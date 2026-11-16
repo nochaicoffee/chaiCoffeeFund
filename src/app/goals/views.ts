@@ -15,6 +15,8 @@ import {
   ownCovered,
   partsInOrder,
   plannedOf,
+  expectedJourney,
+  journeyOf,
   progressOf,
   requiredMonthly,
   savedOf,
@@ -337,7 +339,7 @@ export function skyView(data: GoalsPageData, today: string, d: GoalsDerived = de
     const due = dueOf(data, goal);
     const paused = goal.status === "Paused";
     const ring = rings[index];
-    const progress = total > 0 ? Math.min(1, held / total) : 0;
+    const progress = journeyOf(data, goal).progress;
     const over = held - total;
     const late = ring === OVERDUE_RING && left > 0;
     const moons = partLines(data, goal, today, d);
@@ -484,11 +486,12 @@ export function goalSideView(data: GoalsPageData, goal: Goal, today: string, d: 
   const due = dueOf(data, goal);
   const paused = goal.status === "Paused";
   const settled = goal.status === "Done" || goal.status === "Dropped";
+  const journey = journeyOf(data, goal);
   const planned = plannedOf(data, goal);
   const needs = requiredMonthly(data, goal, today);
   const left = leftOf(data, goal);
   const stand = standing(data, goal, today);
-  const facts = paused || settled ? [] : [{ name: "You plan a month", value: planned ? formatInr(planned) : "nothing" }, { name: "It needs a month", value: needs ? formatInr(needs) : "–" }, ...(planned && needs && planned < needs ? [{ name: "Short of what it needs", value: `${formatInr(needs - planned)} a month` }] : [])];
+  const facts = paused || settled ? [] : [...(journey.spent > 0 ? [{ name: "Already spent", value: formatInr(journey.spent) }] : []), { name: "You plan a month", value: planned ? formatInr(planned) : "nothing" }, { name: "It needs a month", value: needs ? formatInr(needs) : "–" }, ...(planned && needs && planned < needs ? [{ name: "Short of what it needs", value: `${formatInr(needs - planned)} a month` }] : [])];
   const parts = partLines(data, goal, today, d);
   const entryIds = new Set([goal.id]);
   // What moved between the pot and a part only changed hands, so it isn't listed as money set aside or taken back.
@@ -510,10 +513,10 @@ export function goalSideView(data: GoalsPageData, goal: Goal, today: string, d: 
     big: paused ? formatInr(saved) : settled ? formatInr(target) : formatInr(left),
     bigNote: paused ? "set aside · paused" : settled ? (goal.status === "Done" ? "bought" : "dropped") : isFunded(data, goal) ? "funded" : left === 0 ? "set aside, not all given to parts" : "to set aside",
     dueLine: paused ? "No date. Resume it to bring it back into the plan." : goal.status === "Done" ? `bought${goal.doneOn ? ` ${dateIn(today, goal.doneOn)}` : ""}` : goal.status === "Dropped" ? "Its money was released. Restore it to bring it back into the plan." : due ? `by ${dateIn(today, due)} · ${due < today ? "overdue" : `${(monthsLeft(due, today) || 1)} month${(monthsLeft(due, today) || 1) === 1 ? "" : "s"} left`}` : "someday",
-    progress: progressOf(data, goal),
-    expected: paused ? null : expectedProgress(data, goal, today),
-    savedText: `${formatInr(saved)} of ${formatInr(target)}`,
-    pctText: pct(progressOf(data, goal)),
+    progress: journey.progress,
+    expected: paused ? null : expectedJourney(data, goal, today),
+    savedText: journey.spent > 0 ? `${formatInr(journey.spent)} spent · ${formatInr(saved)} set aside of ${formatInr(journey.total)}` : `${formatInr(saved)} of ${formatInr(target)}`,
+    pctText: pct(journey.progress),
     facts: excessOf(data, goal) > 0 ? [{ name: "More than it needs", value: formatInr(excessOf(data, goal)) }, ...facts] : facts,
     hasKids: parts.length > 0,
     settled: settledParts(data, goal),

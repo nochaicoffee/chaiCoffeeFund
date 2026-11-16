@@ -1,5 +1,5 @@
 import { daysBetween } from "@/lib/aggregate/cardSpend";
-import { effectiveDue, estimateOf, kidsOf, expectedProgress, isClosedGoal, isPotMove, fundingPlan, fundingUnits, monthsLeft, necessitySplit, plannedOf, requiredMonthly, savedOf, standing, targetOf, topGoals, wholeMonthsTo, type GoalStanding } from "@/lib/aggregate/goals";
+import { effectiveDue, estimateOf, expectedJourney, journeyOf, kidsOf, isClosedGoal, isPotMove, fundingPlan, fundingUnits, monthsLeft, necessitySplit, plannedOf, requiredMonthly, savedOf, standing, targetOf, topGoals, wholeMonthsTo, type GoalStanding } from "@/lib/aggregate/goals";
 import { addMonthsUTC } from "@/lib/aggregate/recurring";
 import { formatDate, formatShortDate } from "@/lib/format/date";
 import { goalColorKey } from "@/lib/format/goalLabels";
@@ -49,12 +49,12 @@ export function tableRows(data: GoalsPageData, today: string, d: GoalsDerived = 
   const row = (goal: Goal): TableRow => {
     const stand = standing(data, goal, today);
     const saved = savedOf(data, goal);
-    const target = targetOf(data, goal);
     const due = effectiveDue(data, goal);
     const planned = plannedOf(data, goal);
     const needs = requiredMonthly(data, goal, today);
     const active = goal.status === "Active";
     const estimate = estimateOf(data, goal);
+    const journey = journeyOf(data, goal);
     const settled = goal.status === "Done" ? `${isClosedGoal(data, goal) ? "closed" : "paid"} ${formatShortDate(goal.doneOn as string)}${goal.actualCost !== undefined ? ` · ${goal.actualCost <= estimate ? `${formatInr(estimate - goal.actualCost)} under` : `${formatInr(goal.actualCost - estimate)} over`}` : ""}` : goal.status === "Dropped" ? "released" : null;
     return {
       id: goal.id,
@@ -67,10 +67,10 @@ export function tableRows(data: GoalsPageData, today: string, d: GoalsDerived = 
       boughtParts: settledParts(data, goal),
       need: goal.necessity === "Need",
       scale: goal.scale,
-      progress: target ? Math.min(1, saved / target) : 0,
-      expected: active ? expectedProgress(data, goal, today) : null,
-      savedText: goal.status === "Done" && goal.actualCost !== undefined ? formatInr(goal.actualCost) : `${formatInrCompact(saved)} · ${Math.round((target ? Math.min(1, saved / target) : 0) * 100)}%`,
-      target: formatInr(goal.status === "Done" ? estimate : target),
+      progress: journey.progress,
+      expected: active ? expectedJourney(data, goal, today) : null,
+      savedText: goal.status === "Done" && goal.actualCost !== undefined ? formatInr(goal.actualCost) : journey.spent > 0 ? `${formatInrCompact(journey.spent)} spent${savedOf(data, goal) > 0 ? ` + ${formatInrCompact(savedOf(data, goal))}` : ""} · ${Math.round(journey.progress * 100)}%` : `${formatInrCompact(saved)} · ${Math.round(journey.progress * 100)}%`,
+      target: formatInr(goal.status === "Done" ? estimate : journey.total),
       due: goal.status === "Done" ? formatShortDate(goal.doneOn as string) : due ? formatDate(due) : "Someday",
       dueNote: !active || !due ? "" : due < today ? "overdue" : `${monthsLeft(due, today) || 1} month${(monthsLeft(due, today) || 1) === 1 ? "" : "s"} left`,
       fixed: goal.dateType === "Fixed" && active,

@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   closeFigures,
+  expectedJourney,
+  journeyOf,
+  spentOn,
   estimateOf,
   isClosedGoal,
   fillInOrder,
@@ -490,5 +493,45 @@ describe("closing a goal whose parts are all bought", () => {
   it("a reopened goal is no longer closed", () => {
     const d = data(part("tyres", 35000));
     expect(isClosedGoal(d, { ...car, status: "Active" })).toBe(false);
+  });
+});
+
+describe("a goal's journey counts what its bought parts cost", () => {
+  const honda = goal({ id: "honda", name: "Honda", amount: 100000 });
+  const bought = (id: string, cost: number, over: Partial<Parameters<typeof goal>[0]> = {}) => goal({ id, name: id, amount: cost, parentId: "honda", status: "Done", doneOn: "2026-10-26", actualCost: cost, paidFromAccountId: "hdfc", ...over });
+  const data = (kids: ReturnType<typeof goal>[], contributions: GoalsData["contributions"] = []) => ({ goals: [honda, ...kids], contributions });
+
+  it("adds the parts' real cost to the total and counts it as done: 1,12,399 spent and 1,00,000 to go is 53%", () => {
+    const d = data([bought("tyres", 31000, { amount: 35000 }), bought("wheels", 37000), bought("rest", 44399)]);
+    expect(spentOn(d, honda)).toBe(112399);
+    const j = journeyOf(d, honda);
+    expect(j).toMatchObject({ spent: 112399, total: 212399 });
+    expect(j.progress).toBeCloseTo(112399 / 212399, 6);
+  });
+  it("adds what is set aside on top, up to the target", () => {
+    const d = data([bought("tyres", 100000)], [{ id: "e", goalId: "honda", date: TODAY, amount: 50000, kind: "Set-aside" }]);
+    expect(journeyOf(d, honda).progress).toBeCloseTo(150000 / 200000, 6);
+    const over = data([bought("tyres", 100000)], [{ id: "e", goalId: "honda", date: TODAY, amount: 500000, kind: "Set-aside" }]);
+    expect(journeyOf(over, honda).progress).toBe(1);
+  });
+  it("a goal with nothing bought reads as progressOf does, and a dropped or open part is not spent money", () => {
+    const d = data([bought("spare", 9000, { status: "Dropped", doneOn: undefined, actualCost: undefined }), bought("wheels", 37000, { status: "Active", doneOn: undefined, actualCost: undefined })]);
+    expect(spentOn(d, honda)).toBe(0);
+    expect(journeyOf(d, honda).progress).toBe(progressOf(d, honda));
+  });
+  it("a goal that is itself bought or dropped has no spent figure: it is settled, not underway", () => {
+    const d = data([bought("tyres", 31000)]);
+    expect(spentOn(d, { ...honda, status: "Done" })).toBe(0);
+    expect(spentOn(d, { ...honda, status: "Dropped" })).toBe(0);
+  });
+  it("the pace line runs over what is still to set aside, on top of what is spent", () => {
+    const dated = { ...honda, startDate: "2026-01-01", targetDate: "2027-06-01" };
+    const d = { goals: [dated, bought("tyres", 100000)], contributions: [] };
+    const line = expectedProgress(d, dated, TODAY);
+    expect(line).not.toBeNull();
+    expect(expectedJourney(d, dated, TODAY)).toBeCloseTo((100000 + line! * 100000) / 200000, 6);
+    // Nothing spent: the line is the plain one.
+    const plain = { goals: [dated], contributions: [] };
+    expect(expectedJourney(plain, dated, TODAY)).toBe(expectedProgress(plain, dated, TODAY));
   });
 });
