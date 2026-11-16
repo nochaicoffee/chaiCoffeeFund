@@ -15,8 +15,15 @@ import { AffordCard, ComingUpCard, FinishedCard, GoalsTableCard, MonthCard, Need
  */
 export function GoalsDashboard({ sky, side, goalSides, widgets, attention, pickIds, initialPick }: { sky: SkyView; side: SideView; goalSides: Record<string, GoalSideView>; widgets: GoalsWidgets; attention: AttentionItem[]; pickIds: string[]; initialPick: string }) {
   const [pick, pickAny] = usePickInAddress("goal", initialPick, pickIds, (id) => id === ALL);
-  // A goal with no planet (bought or dropped) has nothing to open: a row for one doesn't change the pick, which would dim the whole sky for nothing.
+  // A bought or dropped goal has no planet but its panel opens (that's where Reopen and Restore are); the sky only dims when the pick is a planet.
   const choose = (id: string) => pickIds.includes(id) && pickAny(id);
+  const onSky = (id: string) => sky.planets.some((planet) => planet.topId === id);
+  // The panel sits above the table, so a pick from a row of the page brings it into view when the sky doesn't show that goal (a bought or dropped one).
+  const open = (id: string) => {
+    choose(id);
+    if (!onSky(id)) document.getElementById("orbit")?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+  const lit = onSky(pick) ? pick : ALL;
   const row = "grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-12";
   return (
     <div className="flex flex-col gap-5">
@@ -24,11 +31,11 @@ export function GoalsDashboard({ sky, side, goalSides, widgets, attention, pickI
       <div id="orbit">
         <OrbitCard sky={sky} side={side} goalSides={goalSides} pick={pick} onPick={choose} />
       </div>
-      <GoalsTableCard rows={widgets.table} pick={pick} onPick={choose} />
+      <GoalsTableCard rows={widgets.table} pick={pick} onPick={open} />
       <MonthCard view={widgets.month} />
       <div className={row}>
         <div className="xl:col-span-6">
-          <ComingUpCard rows={widgets.comingUp} pick={pick} onPick={choose} />
+          <ComingUpCard rows={widgets.comingUp} pick={lit} onPick={open} />
         </div>
         <div className="xl:col-span-6">
           <AffordCard view={widgets.afford} />
@@ -40,7 +47,7 @@ export function GoalsDashboard({ sky, side, goalSides, widgets, attention, pickI
           <NeedsWantsCard view={widgets.needsWants} />
         </div>
         <div className="xl:col-span-6">
-          <SetAsidesCard rows={widgets.setAsides} onPick={choose} />
+          <SetAsidesCard rows={widgets.setAsides} onPick={open} />
         </div>
       </div>
       <FinishedCard rows={widgets.finished} />

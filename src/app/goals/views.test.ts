@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { sentenceText } from "@/app/cards/summarySentence";
 import { demoGoalsData } from "@/lib/demo/goalsDemo";
-import { ALL, deriveGoals, goalSides, greetingView, pickIds, sideView, skyView, summarySentence, type GoalsPageData } from "./views";
+import { ALL, deriveGoals, goalSides, greetingView, openableIds, pickIds, settledIds, sideView, skyView, summarySentence, type GoalsPageData } from "./views";
 
 const TODAY = "2026-10-29";
 const sample = (variant = "") => demoGoalsData(TODAY, variant);
@@ -40,6 +40,19 @@ describe("the picks and the sky", () => {
     const ids = pickIds(data, TODAY);
     expect(ids[0]).toBe(ALL);
     expect(ids).toEqual([ALL, "fridge", "car", "ipad", "goa", "masters", "camera"]);
+  });
+  it("a bought or dropped main goal can be opened from the table, with no planet, so Reopen and Restore can be reached", () => {
+    const data = sample();
+    data.goals.push({ ...data.goals.find((g) => g.id === "phones")!, id: "gone", name: "Dropped one", status: "Dropped", doneOn: undefined, actualCost: undefined, paidFromCardId: undefined });
+    expect(settledIds(data)).toEqual(["phones", "gone"]);
+    expect(openableIds(data, TODAY)).toEqual([...pickIds(data, TODAY), "phones", "gone"]);
+    const sides = goalSides(data, TODAY);
+    expect(sides.phones.status).toBe("Done");
+    expect(sides.gone.status).toBe("Dropped");
+    // Nothing is "to set aside" or "needed a month" for a goal that is over.
+    expect(sides.phones).toMatchObject({ bigNote: "bought", facts: [], dueLine: "bought Sep 12" });
+    expect(sides.gone).toMatchObject({ bigNote: "dropped", facts: [] });
+    expect(skyView(data, TODAY).planets.map((p) => p.key)).not.toContain("phones");
   });
   it("draws a planet per main goal, each with its own ring and angle and its name, and the sun reads what's saved", () => {
     const sky = skyView(data, TODAY);
@@ -115,9 +128,9 @@ describe("the side of the sky", () => {
     expect(side.closest?.name).toBe("New fridge");
     expect(side.furthest?.name).toBe("Masters course");
   });
-  it("each picked goal's side: the car's five parts, the fridge's set-asides, and the paused camera", () => {
+  it("each picked goal's side: the car's five parts, the fridge's set-asides, and the paused camera, then the bought headphones", () => {
     const sides = goalSides(data, TODAY);
-    expect(Object.keys(sides)).toEqual(["fridge", "car", "ipad", "goa", "masters", "camera"]);
+    expect(Object.keys(sides)).toEqual(["fridge", "car", "ipad", "goa", "masters", "camera", "phones"]);
     expect(sides.car).toMatchObject({ hasKids: true, big: "₹2,68,500", standing: "Behind" });
     expect(sides.car.parts).toHaveLength(5);
     expect(sides.fridge).toMatchObject({ hasKids: false, fixed: true, need: true, big: "₹17,000" });

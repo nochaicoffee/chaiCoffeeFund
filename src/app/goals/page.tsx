@@ -11,7 +11,7 @@ import { goalsFormsData } from "./formsView";
 import { loadGoalsData } from "./loadGoalsData";
 import { attentionItems } from "@/lib/goals/attention";
 import { orphanGoals } from "@/lib/aggregate/goals";
-import { ALL, deriveGoals, goalSides, greetingView, pickIds, sideView, skyView, summarySentence } from "./views";
+import { ALL, deriveGoals, goalSides, greetingView, openableIds, sideView, skyView, summarySentence } from "./views";
 import { goalsWidgets } from "./widgetsView";
 
 export const metadata: Metadata = { title: "Goals" };
@@ -26,7 +26,7 @@ export default async function GoalsPage({ searchParams }: PageProps<"/goals">) {
   const today = todayIso();
   const { demo, data, skipped } = await loadGoalsData(params, today);
   const derived = deriveGoals(data, today);
-  const ids = pickIds(data, today, derived);
+  const ids = openableIds(data, today, derived);
   const requested = typeof params.goal === "string" ? params.goal : ALL;
   const initialPick = ids.includes(requested) ? requested : ALL;
 
