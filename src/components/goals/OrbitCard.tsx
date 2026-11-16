@@ -68,11 +68,11 @@ function Moon({ moon, index, count }: { moon: PartLine; index: number; count: nu
   );
 }
 
-function Planet({ planet, pick, onPick }: { planet: PlanetView; pick: string; onPick: (id: string) => void }) {
+function Planet({ planet, pick, dimOthers, onPick }: { planet: PlanetView; pick: string; dimOthers: boolean; onPick: (id: string) => void }) {
   const r = ringRadius(planet.ring);
   const { x, y } = pos(r, planet.angle);
   const d = planet.radius * 2 + 12;
-  const dim = pick !== ALL && pick !== planet.topId;
+  const dim = dimOthers && pick !== planet.topId;
   const picked = pick === planet.topId;
   return (
     <span className={`group/p absolute ${picked ? "z-20" : "z-[2]"} hover:z-30 focus-within:z-30 motion-safe:transition-opacity ${dim ? "opacity-20" : ""} ${picked ? "drop-shadow-[0_0_14px_oklch(1_0_0/0.55)]" : ""}`} style={{ left: pc(x), top: pc(y), width: pc(d), minWidth: 26, aspectRatio: "1", transform: "translate(-50%, -50%)" }}>
@@ -117,6 +117,8 @@ function Planet({ planet, pick, onPick }: { planet: PlanetView; pick: string; on
 
 function Sky({ sky, pick, onPick }: { sky: SkyView; pick: string; onPick: (id: string) => void }) {
   const rings = sky.rings;
+  // Picking a bought or dropped goal (no planet here) leaves the sky as it is.
+  const dimOthers = sky.planets.some((planet) => planet.topId === pick);
   const label = (months: number) => (months < 12 ? `${months} mo` : months === MAX_RING_MONTHS ? "3 yr+" : `${months / 12} yr`);
   return (
     <div className="relative aspect-square w-full overflow-visible rounded-[30px] text-white" style={{ background: "radial-gradient(circle at 50% 50%, oklch(0.27 0.07 262), oklch(0.12 0.035 268) 75%)", boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.14)" }}>
@@ -153,7 +155,7 @@ function Sky({ sky, pick, onPick }: { sky: SkyView; pick: string; onPick: (id: s
         <small className="text-[11.5px] font-bold opacity-85 max-md:text-[9px]">{sky.sun.of}</small>
       </div>
       {sky.planets.map((planet) => (
-        <Planet key={planet.key} planet={planet} pick={pick} onPick={onPick} />
+        <Planet key={planet.key} planet={planet} pick={pick} dimOthers={dimOthers} onPick={onPick} />
       ))}
       <div className="absolute top-4 left-5 hidden items-center gap-4 text-[11px] font-bold text-white/60 md:flex">
         <span className="flex items-center gap-1.5">
@@ -229,6 +231,8 @@ function SideGoal({ view }: { view: GoalSideView }) {
   const paused = view.status === "Paused";
   const done = view.status === "Done";
   const dropped = view.status === "Dropped";
+  // A bought goal is reopened and a dropped one restored before anything else can be done to it.
+  const settledReason = done || dropped ? "Reopen or restore it first" : undefined;
   return (
     <>
       <ColorCard colorKey={view.colorKey}>
@@ -274,12 +278,12 @@ function SideGoal({ view }: { view: GoalSideView }) {
           {!done && !dropped && <ActionButton label={view.hasKids ? "Edit parts" : "+ Add parts"} tone="ghost" onClick={() => open({ kind: "edit", goalId: view.id })} />}
           <span className="text-fg">
             <RowMenu triggerLabel={`More for ${view.name}`} menuLabel={`${view.name} actions`}>
-              <MenuAction icon={<PlusIcon />} label="Set aside" onSelect={() => open({ kind: "set-aside", goalId: view.id })} disabledReason={done || dropped ? "Reopen or restore it first" : undefined} />
-              <MenuAction icon={<UndoIcon />} label="Take back" onSelect={() => open({ kind: "take-back", goalId: view.id })} />
-              <MenuAction icon={<PencilIcon />} label="Edit goal and parts" onSelect={() => open({ kind: "edit", goalId: view.id })} />
-              <MenuAction icon={<PauseIcon />} label={paused ? "Resume" : "Pause"} onSelect={() => open({ kind: paused ? "resume" : "pause", goalId: view.id })} />
+              <MenuAction icon={<PlusIcon />} label="Set aside" onSelect={() => open({ kind: "set-aside", goalId: view.id })} disabledReason={settledReason} />
+              <MenuAction icon={<UndoIcon />} label="Take back" onSelect={() => open({ kind: "take-back", goalId: view.id })} disabledReason={settledReason} />
+              <MenuAction icon={<PencilIcon />} label="Edit goal and parts" onSelect={() => open({ kind: "edit", goalId: view.id })} disabledReason={settledReason} />
+              <MenuAction icon={<PauseIcon />} label={paused ? "Resume" : "Pause"} onSelect={() => open({ kind: paused ? "resume" : "pause", goalId: view.id })} disabledReason={settledReason} />
               {view.closable && <MenuAction icon={<CheckIcon />} label="Close goal" onSelect={() => open({ kind: "close", goalId: view.id })} />}
-              <MenuAction icon={<CheckIcon />} label={done ? "Reopen" : "Mark bought"} onSelect={() => open({ kind: done ? "reopen" : "bought", goalId: view.id })} />
+              <MenuAction icon={<CheckIcon />} label={done ? "Reopen" : "Mark bought"} onSelect={() => open({ kind: done ? "reopen" : "bought", goalId: view.id })} disabledReason={dropped ? settledReason : undefined} />
               <MenuAction icon={<CloseIcon />} label={dropped ? "Restore" : "Drop"} onSelect={() => open({ kind: dropped ? "restore" : "drop", goalId: view.id })} />
               <MenuAction icon={<CloseIcon />} label="Delete" danger onSelect={() => open({ kind: "delete", goalId: view.id })} />
             </RowMenu>
@@ -463,7 +467,7 @@ export function OrbitCard({ sky, side, goalSides, pick, onPick: choose }: { sky:
       <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-6 xl:grid-cols-[minmax(0,780px)_minmax(0,1fr)]">
         <div className="flex min-w-0 flex-col gap-3">
           <Sky sky={sky} pick={pick} onPick={onPick} />
-          <PlanetList planets={sky.planets} pick={pick} onPick={onPick} />
+          <PlanetList planets={sky.planets} pick={sky.planets.some((planet) => planet.topId === pick) ? pick : ALL} onPick={onPick} />
         </div>
         <div id="orbit-side" className="flex min-w-0 scroll-mt-4 flex-col gap-3.5">{empty ? <EmptySide /> : goalView ? <SideGoal view={goalView} /> : <SideAll side={side} onPick={onPick} />}</div>
       </div>
