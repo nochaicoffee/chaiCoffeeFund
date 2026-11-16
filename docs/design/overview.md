@@ -37,7 +37,7 @@ Prathik picked the **Watermark** icon style and the **Timeline** ending, with a 
 
 Left to design after this pick, as on every other page: the phone layout, the states (nothing entered yet, a dollar rate that can't be fetched, EPF unreadable, no warnings), and the real build's reading of the data (a monthly net worth snapshot; one warnings collector across the ten pages; the editable rate). The doc's earlier rounds stay as the record.
 
-## Month by month widget (2026-11-16): five measures, five layouts, then picked: the mix of A and C (`MzA`, `MzB`)
+## Month by month widget (2026-11-16): five measures, five layouts, picked (the mix of A and C, `MzA` and `MzB`) and **built 2026-11-16** (#427, #429)
 
 Prathik asked for a widget like Cards' spending heatmap that shows **monthly income, investments, EMIs, credit card bills and cash expenses**, each **separate** rather than clubbed together. Mockups: [`design/overview-monthly/`](../../design/overview-monthly/), built by [`design/overview-monthly/generator/`](../../design/overview-monthly/generator/). The figures are the Expenses canvas's made-up year (Nov 2025 to Oct 2026), so the widget would agree with `/expenses`.
 
@@ -79,7 +79,7 @@ Prathik picked **C** and asked for a mix: with the range short, **everything tog
 | This year | The same, January to December, months still to come dashed |
 | Last 2 years, Last 3 years | One measure at a time (C: year rows, totals, the year-on-year line); **All five** goes dim, and a range change that lands here while All five was selected shows Income |
 
-`MzA` is the widget; `MzB` is the page around it, proposing which parts follow the range (green) and which stay as they are. Built and checked in every range and button state; both are radios and `:has()` (no script).
+`MzA` is the widget; `MzB` is the page around it, proposing which parts follow the range (green) and which stay as they are. Built and checked in every range and button state; the mock-up's range and buttons are radios and `:has()` (no script). **The build** (#429) follows this: `?period=` with the selector in the page header, the greeting, net worth and tiles reading the same period figures as the widget (`app/overview/rangeView.ts`), and "All five" dim past 12 months. Not built: a hover card on the widget's months.
 
 **Everything follows the range (Prathik, 2026-11-16: "other dashboards already do it").** `MzB` shows it for Last 12 months. The greeting's figures read over the range ("you took in ₹24.77L and spent ₹15.9L, worth ₹25,57,193, up ₹10.09L since November 2025"); net worth shows the end of the range with the trend line over it and "since Nov 2025"; each tile keeps its headline (a balance is what it is at the end of the range) and gains a line for what happened inside the range (Accounts up ₹1.9L; Investments up ₹9.5L, ₹6.75L put in, ₹2.8L growth; Fixed income interest earned; Lent out earned; Cards paid in bills; Loans paid in EMIs; Income and Spent become the range's totals; Subscriptions, Goals and Insurance what was paid or added). The tile lines are made up but agree with the widget's totals (income ₹24,77,355, investments ₹6,75,000, card bills ₹9,18,773, EMIs ₹67,350). The presets should be Cards' own (this year, past years, all time, last 3, 6 or 12 months, custom: `design/cards-dropdowns/`), the mock-up's four are stand-ins.
 
