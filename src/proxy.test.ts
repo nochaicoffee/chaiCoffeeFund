@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { sessionKey } from "@/lib/auth/config";
 import { createSessionToken, SESSION_COOKIE } from "@/lib/auth/session";
-import { stubHostedEnv, TOKEN } from "@/lib/auth/google.testutil";
+import { CRON, stubHostedEnv, TOKEN } from "@/lib/auth/google.testutil";
 import { proxy } from "./proxy";
 
 beforeEach(() => stubHostedEnv((name, value) => vi.stubEnv(name, value)));
@@ -55,6 +55,15 @@ describe("proxy", () => {
     expect((await proxy(request("/api/mcp"))).status).toBe(401);
     expect((await proxy(request("/api/accounts", { authorization }))).status).toBe(401);
     expect((await proxy(request("/accounts", { authorization }))).status).toBe(307);
+  });
+
+  it("takes the cron secret for /api/cron/* only, and turns it off with a 503 when none is set", async () => {
+    const authorization = `Bearer ${CRON}`;
+    expect(passedThrough(await proxy(request("/api/cron/sync", { authorization })))).toBe(true);
+    expect((await proxy(request("/api/cron/sync"))).status).toBe(401);
+    expect((await proxy(request("/api/mcp", { authorization }))).status).toBe(401);
+    vi.stubEnv("CRON_SECRET", "");
+    expect((await proxy(request("/api/cron/sync", { authorization }))).status).toBe(503);
   });
 
   it("turns /api/mcp off with a 503 when no token is set", async () => {
