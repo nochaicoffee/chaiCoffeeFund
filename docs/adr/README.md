@@ -24,6 +24,7 @@ ADRs 0001–0006 were backfilled on 2026-10-16 from decisions made between 2026-
 | [0014](0014-lent-out-payouts-are-income.md) | A lent loan's payouts arrive as Income, and the loan keeps its income source's id | Accepted |
 | [0015](0015-login-and-mcp-endpoint.md) | A login for the pages (passphrase, since replaced), and a bearer-token MCP endpoint for Claude | Accepted |
 | [0016](0016-google-sign-in.md) | Sign in with Google, for one allowed address, instead of a passphrase | Accepted |
+| [0017](0017-host-on-vercel-hobby.md) | Host on Vercel's free Hobby plan, with a daily cron for the statement syncs | Accepted |
 
 ## Template
 

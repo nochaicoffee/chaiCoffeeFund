@@ -4,6 +4,7 @@ import { textToBase64Url } from "./signing";
 export const CLIENT_ID = "client-123.apps.googleusercontent.com";
 export const SECRET = "s".repeat(40);
 export const TOKEN = "t".repeat(40);
+export const CRON = "c".repeat(40);
 /** Upper case on purpose: the comparison with Google's lower-case address must not care. */
 export const ALLOWED = "Owner@Example.com";
 
@@ -15,6 +16,7 @@ export const hosted: AuthEnv = {
   ALLOWED_EMAIL: ALLOWED,
   SESSION_SECRET: SECRET,
   MCP_ACCESS_TOKEN: TOKEN,
+  CRON_SECRET: CRON,
 };
 
 /** Puts `hosted` into process.env (call inside beforeEach; pair with vi.unstubAllEnvs). */

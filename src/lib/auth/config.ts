@@ -11,6 +11,8 @@ export interface AuthEnv {
   SESSION_SECRET?: string;
   /** The bearer token Claude's connector sends to /api/mcp. Long and random. */
   MCP_ACCESS_TOKEN?: string;
+  /** The bearer token Vercel Cron sends to /api/cron/*, which it does by itself once this setting exists. Long and random. */
+  CRON_SECRET?: string;
 }
 
 /** A secret shorter than this is as good as none. */
@@ -43,6 +45,11 @@ export function loginConfigured(env: AuthEnv): boolean {
 /** Whether the MCP endpoint has a token to check against. Without one it's off, in every environment. */
 export function mcpConfigured(env: AuthEnv): boolean {
   return (env.MCP_ACCESS_TOKEN?.length ?? 0) >= MIN_SECRET_LENGTH;
+}
+
+/** Whether the cron routes have a secret to check against. Without one they're off, in every environment. */
+export function cronConfigured(env: AuthEnv): boolean {
+  return (env.CRON_SECRET?.length ?? 0) >= MIN_SECRET_LENGTH;
 }
 
 /**

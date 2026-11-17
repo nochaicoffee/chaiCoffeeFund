@@ -1,5 +1,6 @@
 import "server-only";
 import { google, sheets_v4 } from "googleapis";
+import { serviceAccountAuth } from "./credentials";
 
 /** How long one Sheets request may take before it counts as failed. */
 export const SHEETS_REQUEST_TIMEOUT_MS = 20_000;
@@ -22,7 +23,7 @@ export function getSheetsClient(): sheets_v4.Sheets {
   if (cachedClient) return cachedClient;
 
   const auth = new google.auth.GoogleAuth({
-    keyFile: requireEnv("GOOGLE_SERVICE_ACCOUNT_KEY_FILE"),
+    ...serviceAccountAuth(process.env),
     scopes: ["https://www.googleapis.com/auth/spreadsheets"],
   });
 

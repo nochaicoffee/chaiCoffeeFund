@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { AuthEnv } from "./config";
-import { allowedEmail, loginConfigured, loginRequired, mcpConfigured, sessionKey } from "./config";
-import { bearerToken, decideAccess, hasValidMcpToken, isLoginPath, safeNextPath } from "./gate";
+import { allowedEmail, cronConfigured, loginConfigured, loginRequired, mcpConfigured, sessionKey } from "./config";
+import { bearerToken, decideAccess, hasValidCronSecret, hasValidMcpToken, isCronPath, isLoginPath, safeNextPath } from "./gate";
 import { createSessionToken } from "./session";
 
-import { hosted, SECRET, TOKEN } from "./google.testutil";
+import { CRON, hosted, SECRET, TOKEN } from "./google.testutil";
 
 const local: AuthEnv = { NODE_ENV: "development" };
 const KEY = sessionKey(hosted)!;
@@ -34,6 +34,9 @@ describe("config", () => {
     expect(mcpConfigured(hosted)).toBe(true);
     expect(mcpConfigured({ MCP_ACCESS_TOKEN: "short" })).toBe(false);
     expect(mcpConfigured({})).toBe(false);
+    expect(cronConfigured(hosted)).toBe(true);
+    expect(cronConfigured({ CRON_SECRET: "short" })).toBe(false);
+    expect(cronConfigured({})).toBe(false);
   });
 
   it("reads the allowed address in lower case, trimmed", () => {
@@ -143,6 +146,35 @@ describe("decideAccess for /api/mcp", () => {
 
   it("works in local development when a token is set", async () => {
     expect(await ask("/api/mcp", { ...local, MCP_ACCESS_TOKEN: TOKEN }, { authorization: `Bearer ${TOKEN}` })).toEqual({ action: "allow" });
+  });
+});
+
+describe("decideAccess for /api/cron", () => {
+  it("allows the cron secret, and refuses a missing or wrong one", async () => {
+    expect(await ask("/api/cron/sync", hosted, { authorization: `Bearer ${CRON}` })).toEqual({ action: "allow" });
+    expect(await ask("/api/cron/sync", hosted)).toEqual({ action: "unauthorized" });
+    expect(await ask("/api/cron/sync", hosted, { authorization: "Bearer wrong" })).toEqual({ action: "unauthorized" });
+  });
+
+  it("takes neither a session cookie nor the MCP token, and the secret opens nothing else", async () => {
+    expect(await ask("/api/cron/sync", hosted, { cookie: await createSessionToken(KEY) })).toEqual({ action: "unauthorized" });
+    expect(await ask("/api/cron/sync", hosted, { authorization: `Bearer ${TOKEN}` })).toEqual({ action: "unauthorized" });
+    expect(await ask("/api/mcp", hosted, { authorization: `Bearer ${CRON}` })).toEqual({ action: "unauthorized" });
+    expect(await ask("/api/accounts", hosted, { authorization: `Bearer ${CRON}` })).toEqual({ action: "unauthorized" });
+    expect(await ask("/api/statements/sync", hosted, { authorization: `Bearer ${CRON}` })).toEqual({ action: "unauthorized" });
+  });
+
+  it("covers sub-paths, and not a path that only starts with the same letters", async () => {
+    expect(isCronPath("/api/cron")).toBe(true);
+    expect(isCronPath("/api/cron/sync")).toBe(true);
+    expect(isCronPath("/api/cronx")).toBe(false);
+  });
+
+  it("is off when no secret is set, in every environment", async () => {
+    expect(await ask("/api/cron/sync", { ...hosted, CRON_SECRET: undefined }, { authorization: `Bearer ${CRON}` })).toEqual({ action: "cron-disabled" });
+    expect(await ask("/api/cron/sync", local, { authorization: "Bearer anything" })).toEqual({ action: "cron-disabled" });
+    expect(await hasValidCronSecret("Bearer x", {})).toBe(false);
+    expect(await hasValidCronSecret("Bearer ", { CRON_SECRET: "" })).toBe(false);
   });
 });
 

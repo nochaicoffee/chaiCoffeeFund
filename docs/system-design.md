@@ -680,7 +680,7 @@ Secrets are covered by [CLAUDE.md](../CLAUDE.md)'s Secrets Handling rule and [.g
 - **Production fails closed.** `loginRequired` is true for every production build. If `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_EMAIL` (one address) or `SESSION_SECRET` (32 characters or more) is missing, every page and API route answers 503 instead of serving. Locally (`next dev`) the gate is off until `ALLOWED_EMAIL` is set, so `npm run dev` and `npm run check-sheet` work as before.
 - **`/api/mcp`** takes only `Authorization: Bearer <MCP_ACCESS_TOKEN>` (32 characters or more), checked in the proxy and again in the route. A cookie doesn't open it and the token opens nothing else. With no token set it answers 503, in every environment.
 - Comparisons of the token, the state and the signatures go through `safeEqual` (both sides hashed, then compared over 32 bytes). There is no password to guess, so no lockout is needed; Google does the authenticating, and `ALLOWED_EMAIL` decides who may have a session.
-- **Not covered yet:** the sync routes' Vercel Cron call has no credential (see Deployment).
+- **Cron:** `/api/cron/*` takes only `CRON_SECRET` as a bearer token, the same way `/api/mcp` takes its token (see Deployment).
 
 **Claude's MCP endpoint (`/api/mcp`).** `lib/mcp/` holds it; `app/api/mcp/route.ts` is thin.
 - `server.ts` builds an `McpServer` per request (stateless Streamable HTTP, plain JSON replies, `WebStandardStreamableHTTPServerTransport`), with four tools: `list_entities`, `list_records`, `add_record`, `update_record`, and instructions for Claude (look ids up, never invent one, say what you'll write first, nothing can be deleted).
@@ -692,19 +692,25 @@ Secrets are covered by [CLAUDE.md](../CLAUDE.md)'s Secrets Handling rule and [.g
 
 ## Deployment
 
-Hosting is M2 (#4, #17, #18, #19, and [ADR 0007](adr/0007-hosted-with-login.md)). The login and the MCP endpoint are built; two things still assume this laptop:
-- The Sheets service account key is read from a file path (`GOOGLE_SERVICE_ACCOUNT_KEY_FILE`). A host needs it from a secret setting holding the key itself.
-- The scheduled sync is `scripts/ingestStatements.ts`, run by launchd against a running dev server. On Vercel it would be a Vercel Cron request to `/api/statements/sync` and `/api/account-statements/sync`, which the proxy now refuses without a session cookie: they need a `CRON_SECRET` check (Vercel Cron sends it as a bearer token) added to the proxy's rules for those two paths.
+Hosting is M2 (#4, #17, #18, #19), on Vercel's free Hobby plan ([ADR 0017](adr/0017-host-on-vercel-hobby.md), [ADR 0007](adr/0007-hosted-with-login.md)). `vercel.json` holds one cron, and everything else is the default for a Next.js app.
+- **The Sheets key** is `GOOGLE_SERVICE_ACCOUNT_KEY` (the key file's JSON, or base64 of it), read by `lib/sheets/credentials.ts`; `GOOGLE_SERVICE_ACCOUNT_KEY_FILE` still works on the laptop, and the setting wins when both are there. A bad value is refused without quoting any of it.
+- **The scheduled sync** is `GET /api/cron/sync`, called daily by Vercel Cron (`30 1 * * *` UTC; Hobby allows once a day, any time in that hour) with `Authorization: Bearer $CRON_SECRET`. The proxy and the route both check it (`hasValidCronSecret`, `lib/auth/gate.ts`); no other credential opens it and it opens nothing else, and with no `CRON_SECRET` it answers 503. It calls the card sync route and then the account sync route in-process, in rounds (`lib/statementIngestion/rounds.ts`: stop when nothing is left, on a failure, on "already running", after 10 rounds, or when 200 s have passed; the function's limit is 300 s), so the SyncRuns rows, the duplicate checks and the cache invalidation are exactly the buttons'. Its answer is counts only and a 500 if either sync failed. `scripts/ingestStatements.ts` and the launchd job remain for syncing from the laptop; switch the launchd job off once the cron has run (`launchctl list | grep chaicoffeefund` shows whether it is loaded; `launchctl unload <its plist>` stops it).
+- **Nothing in the app writes to disk.** What a sync has done is kept in the Sheet (#82). The PDF reader reads its worker file from `node_modules/pdfjs-dist/legacy/build/` by path; a production build was checked to include it in the traced files of the sync, upload, cron and EPF routes.
 
-**Environment variables on the host** (Vercel → Settings → Environment Variables; never in the repo):
+**Environment variables on the host** (Vercel → Settings → Environment Variables, for the Production environment; never in the repo):
 
 | Variable | What it is |
 |---|---|
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | The OAuth client from Google Cloud (Credentials → OAuth client ID → Web application). Authorized redirect URI: `https://<the app>/login/google/callback`, and `http://localhost:3000/login/google/callback` to try it locally. |
+| `GOOGLE_SERVICE_ACCOUNT_KEY` | The Sheets service account key: paste the whole JSON file (`pbcopy < secrets/<key file>.json` copies it without showing it). |
+| `GOOGLE_SHEETS_SPREADSHEET_ID` | The spreadsheet's ID, as in `.env.local`. |
+| `GMAIL_OAUTH_CLIENT_ID`, `GMAIL_OAUTH_CLIENT_SECRET`, `GMAIL_OAUTH_REFRESH_TOKEN`, `GMAIL_STATEMENT_LABEL`, `GMAIL_ACCOUNT_STATEMENT_LABEL` | The statement import's Gmail access, as in `.env.local`. The refresh token lasts only if the Gmail OAuth consent screen is not in "Testing" status. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | The OAuth client for the sign-in (Credentials → OAuth client ID → Web application). Authorized redirect URI: `https://<the app>/login/google/callback`, and `http://localhost:3000/login/google/callback` to try it locally. |
 | `ALLOWED_EMAIL` | The one Google address that may sign in (not a list). Changing it signs every device out. |
 | `SESSION_SECRET` | Signs the session and sign-in cookies. `openssl rand -base64 48`. Changing it signs everyone out. |
 | `MCP_ACCESS_TOKEN` | The bearer token Claude sends. `openssl rand -base64 48`. Leave it out and `/api/mcp` is off. |
-| `GOOGLE_SHEETS_SPREADSHEET_ID`, the service account key, Gmail credentials | As in CLAUDE.md, once the key can come from a setting. |
+| `CRON_SECRET` | The bearer token Vercel Cron sends to `/api/cron/sync`; Vercel adds the header itself once the setting exists. `openssl rand -base64 48`. Leave it out and the cron route is off. |
+
+**Going live, in order:** (0) leave Fluid Compute on for the project (Settings, Functions): the cron route asks for a 300-second function, which Hobby allows only with it; (1) the Google sign-in client, with the redirect URI for the app's final address (Vercel shows it after the first deploy, so add it then); (2) a Vercel account signed in with GitHub, Add New → Project → this repository; (3) the settings above, before the first deploy (a production build with the sign-in settings missing serves only 503s); (4) Settings → Functions → Function Region, Mumbai if offered; (5) deploy, open the address, sign in; (6) connect Claude (below); (7) next day, Vercel → the project → Cron Jobs / Logs to see the run, then switch off launchd. Use only the production address: previews can't sign in and share the same Sheet.
 
 **Connecting Claude once it's deployed** (`https://<the app>/api/mcp`):
 - **Claude (web, desktop, phone):** Settings → Connectors → Add custom connector. URL as above. Under advanced settings add a request header `Authorization` with the value `Bearer <MCP_ACCESS_TOKEN>` (the word Bearer, a space, then the token).

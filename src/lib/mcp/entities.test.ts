@@ -9,7 +9,7 @@ const { MCP_ENTITIES } = await import("./entities");
 const { describeEntities, SECRET_FIELDS } = await import("./tools");
 
 /** The routes that must never be reachable by Claude's writes: only the syncs write them. */
-const NOT_EXPOSED = ["account-statements", "dev", "prices"];
+const NOT_EXPOSED = ["account-statements", "cron", "dev", "prices"];
 
 describe("the MCP record types", () => {
   it("have unique names and say what they are", () => {
@@ -49,6 +49,6 @@ describe("the MCP record types", () => {
     const missing = routes.filter((name) => !covered.has(name) && name !== "mcp");
     // A new /api/<entity> route has to be added to MCP_ENTITIES, or named here with a reason.
     expect(missing).toEqual([]);
-    for (const hidden of ["account-statements", "dev", "prices"]) expect(covered.has(hidden)).toBe(false);
+    for (const hidden of ["account-statements", "cron", "dev", "prices"]) expect(covered.has(hidden)).toBe(false);
   });
 });

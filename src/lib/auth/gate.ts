@@ -1,4 +1,4 @@
-import { loginConfigured, loginRequired, mcpConfigured, sessionKey, type AuthEnv } from "./config";
+import { cronConfigured, loginConfigured, loginRequired, mcpConfigured, sessionKey, type AuthEnv } from "./config";
 import { safeEqual } from "./safeEqual";
 import { verifySessionToken } from "./session";
 
@@ -12,9 +12,12 @@ export type Access =
   /** The host has no login set up, so nothing is served. */
   | { action: "misconfigured" }
   /** /api/mcp has no token set, so it's off. */
-  | { action: "mcp-disabled" };
+  | { action: "mcp-disabled" }
+  /** /api/cron/* has no CRON_SECRET set, so it's off. */
+  | { action: "cron-disabled" };
 
 export const MCP_PATH = "/api/mcp";
+export const CRON_PATH = "/api/cron";
 export const LOGIN_PATH = "/login";
 export const LOGOUT_PATH = "/logout";
 
@@ -27,17 +30,31 @@ export function isMcpPath(pathname: string): boolean {
   return pathname === MCP_PATH || pathname.startsWith(`${MCP_PATH}/`);
 }
 
+export function isCronPath(pathname: string): boolean {
+  return pathname === CRON_PATH || pathname.startsWith(`${CRON_PATH}/`);
+}
+
 /** The token from an `Authorization: Bearer …` header, if it has that shape. */
 export function bearerToken(header: string | null | undefined): string | null {
   const match = /^bearer\s+(\S+)$/i.exec(header?.trim() ?? "");
   return match ? match[1] : null;
 }
 
-/** Whether the header carries the MCP token. False when none is set, so an empty token never matches an empty header. */
-export async function hasValidMcpToken(header: string | null | undefined, env: AuthEnv): Promise<boolean> {
+/** Whether the header carries this secret. False when none is set, so an empty secret never matches an empty header. */
+async function carriesSecret(header: string | null | undefined, secret: string | undefined, configured: boolean): Promise<boolean> {
   const token = bearerToken(header);
-  if (!token || !mcpConfigured(env) || !env.MCP_ACCESS_TOKEN) return false;
-  return safeEqual(token, env.MCP_ACCESS_TOKEN);
+  if (!token || !configured || !secret) return false;
+  return safeEqual(token, secret);
+}
+
+/** Whether the header carries the MCP token. */
+export function hasValidMcpToken(header: string | null | undefined, env: AuthEnv): Promise<boolean> {
+  return carriesSecret(header, env.MCP_ACCESS_TOKEN, mcpConfigured(env));
+}
+
+/** Whether the header carries CRON_SECRET, which is what Vercel Cron sends as `Authorization: Bearer …`. */
+export function hasValidCronSecret(header: string | null | undefined, env: AuthEnv): Promise<boolean> {
+  return carriesSecret(header, env.CRON_SECRET, cronConfigured(env));
 }
 
 export interface AccessRequest {
@@ -51,9 +68,9 @@ export interface AccessRequest {
 
 /**
  * Who may see what. The pages and every other API route take the session cookie from the
- * login; /api/mcp takes only the bearer token, because Claude's connector can't sign in
- * through a page. Pure, so it's tested without a server (proxy.ts only turns the answer
- * into a response).
+ * login; /api/mcp takes only its bearer token, because Claude's connector can't sign in
+ * through a page, and /api/cron/* takes only CRON_SECRET, because Vercel Cron can't either.
+ * Pure, so it's tested without a server (proxy.ts only turns the answer into a response).
  */
 export async function decideAccess({ pathname, cookie, authorization, env, now }: AccessRequest): Promise<Access> {
   if (isMcpPath(pathname)) {
@@ -61,6 +78,10 @@ export async function decideAccess({ pathname, cookie, authorization, env, now }
     return (await hasValidMcpToken(authorization, env)) ? { action: "allow" } : { action: "unauthorized" };
   }
   // Signing out needs no session: clearing a cookie gives nothing away, and an expired session must still be able to press Sign out.
+  if (isCronPath(pathname)) {
+    if (!cronConfigured(env)) return { action: "cron-disabled" };
+    return (await hasValidCronSecret(authorization, env)) ? { action: "allow" } : { action: "unauthorized" };
+  }
   if (isLoginPath(pathname) || pathname === LOGOUT_PATH) return { action: "allow" };
   if (!loginRequired(env)) return { action: "allow" };
   if (!loginConfigured(env)) return { action: "misconfigured" };

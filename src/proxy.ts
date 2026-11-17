@@ -4,7 +4,7 @@ import { SESSION_COOKIE } from "@/lib/auth/session";
 
 /**
  * The login gate (ADR 0007): every page and API route needs the session cookie from
- * /login (Google sign-in), and /api/mcp needs the bearer token instead. The rules are in lib/auth/gate.ts.
+ * /login (Google sign-in); /api/mcp and /api/cron/* need their bearer tokens instead. The rules are in lib/auth/gate.ts.
  * The proxy runs before the route, so a refused request never reaches the Sheets code.
  */
 export async function proxy(request: NextRequest) {
@@ -29,6 +29,8 @@ export async function proxy(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: { "WWW-Authenticate": "Bearer" } });
     case "mcp-disabled":
       return NextResponse.json({ error: "The MCP endpoint is off: MCP_ACCESS_TOKEN isn't set" }, { status: 503 });
+    case "cron-disabled":
+      return NextResponse.json({ error: "The cron routes are off: CRON_SECRET isn't set" }, { status: 503 });
     case "misconfigured":
       return new NextResponse("Login isn't set up on this server (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, ALLOWED_EMAIL and SESSION_SECRET).", { status: 503 });
   }
