@@ -115,7 +115,8 @@ async function runRefresh(options: { today: string; dryRun?: boolean }): Promise
       for (let i = 0; i < allRows.length; i += WRITE_CHUNK) await priceSnapshotsRepository.createMany(allRows.slice(i, i + WRITE_CHUNK));
     } finally {
       // Even when a later chunk fails (the quota, say): the earlier chunks are saved, and the page that redraws next must show them.
-      revalidateTag(CACHE_TAGS.priceSnapshots, "max");
+      // Expire at once, not stale-while-revalidate ("max"): the series is read through this tag now, and a stale answer would be kept in memory for five minutes.
+      revalidateTag(CACHE_TAGS.priceSnapshots, { expire: 0 });
       invalidatePriceSeries();
     }
   }

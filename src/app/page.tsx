@@ -19,7 +19,7 @@ import { overviewEvents, WINDOW_DAYS } from "./overview/events";
 import { insights } from "./overview/insights";
 import { futureView } from "./overview/futureView";
 import { loadOverviewData } from "./overview/loadOverviewData";
-import { loadWarnings } from "./overview/loadWarnings";
+import { loadWarnings, startWarningReads } from "./overview/loadWarnings";
 import { earliestFlowMonth, monthlyView, periodMenu, periodMenuValue, rangePickerStart } from "./overview/monthlyView";
 import { overviewModel } from "./overview/model";
 import { rangeFigures } from "./overview/rangeView";
@@ -38,6 +38,7 @@ export default async function OverviewPage({ searchParams }: PageProps<"/">) {
   const periodParam = Array.isArray(params.period) ? params.period[0] : params.period;
   const period = parsePeriodParam(periodParam, today);
   // The Expenses figures feed the Spent tile and the Month by month widget: read once, beside the rest, and the page still shows if they can't be.
+  startWarningReads();
   const expenseRead = loadExpenseData().then(
     (read) => read,
     (error) => {

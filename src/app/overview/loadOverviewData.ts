@@ -44,6 +44,17 @@ async function optional<T>(name: string, read: () => Promise<T>, empty: T): Prom
  * Dollar accounts are counted in rupees at today's rate once (ADR 0012); with no rate they are left out and flagged.
  */
 export async function loadOverviewData(): Promise<OverviewData> {
+  // Everything the page needs is asked for at once: the sources that can fail and the price series don't wait for the core tabs or for the
+  // rupee conversion, which used to put three Sheets reads of about a second each one after another on a cold load. `optional` never rejects,
+  // so starting these before the core tabs are in can't leave a rejection nobody handles.
+  const optionalReads = Promise.all([
+    optional("EPF", async () => ({ accounts: await getCachedEpfAccounts(), entries: await getCachedEpfEntries(), rates: await getCachedEpfRates() }), { accounts: [], entries: [], rates: [] }),
+    optional("lent out", async () => ({ loans: await getCachedLentLoans(), repayments: await getCachedLentRepayments() }), { loans: [], repayments: [] }),
+    optional("goals", async () => ({ goals: await getCachedGoals(), contributions: await getCachedGoalContributions() }), { goals: [], contributions: [] }),
+    optional("loan prepayments", () => getCachedLoanPrepayments(), []),
+    optional("insurance", async () => ({ policies: await getCachedPolicies(), payments: await getCachedPolicyPayments() }), { policies: [], payments: [] }),
+    optional("prices", () => getPriceSeries(), new Map<string, PricePoint[]>()),
+  ]);
   const [allAccounts, allSnapshots, cards, statements, subscriptions, subscriptionPayments, loans, loanInstallments, trades, instruments, fixedDeposits, incomeEntries, incomeSources] = await Promise.all([
     getCachedAccounts(),
     getCachedBalanceSnapshots(),
@@ -60,15 +71,7 @@ export async function loadOverviewData(): Promise<OverviewData> {
     getCachedIncomeSources(),
   ]);
   const rupee = await rupeeBalances(allAccounts, allSnapshots);
-
-  const [epf, lent, goals, prepayments, insurance, prices] = await Promise.all([
-    optional("EPF", async () => ({ accounts: await getCachedEpfAccounts(), entries: await getCachedEpfEntries(), rates: await getCachedEpfRates() }), { accounts: [], entries: [], rates: [] }),
-    optional("lent out", async () => ({ loans: await getCachedLentLoans(), repayments: await getCachedLentRepayments() }), { loans: [], repayments: [] }),
-    optional("goals", async () => ({ goals: await getCachedGoals(), contributions: await getCachedGoalContributions() }), { goals: [], contributions: [] }),
-    optional("loan prepayments", () => getCachedLoanPrepayments(), []),
-    optional("insurance", async () => ({ policies: await getCachedPolicies(), payments: await getCachedPolicyPayments() }), { policies: [], payments: [] }),
-    optional("prices", () => getPriceSeries(), new Map<string, PricePoint[]>()),
-  ]);
+  const [epf, lent, goals, prepayments, insurance, prices] = await optionalReads;
 
   return {
     accounts: rupee.accounts,
