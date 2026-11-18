@@ -56,8 +56,12 @@ const dropdownRule = (options: string[]): sheets_v4.Schema$TableColumnDataValida
 
 const sameOptions = (a: string[], b: string[]) => a.length === b.length && a.every((v, i) => v === b[i]);
 
-/** The updateTable request that adds the missing columns and sets the dropdowns, or why it can't. */
-export function planTableColumns(specs: ColumnSpec[], table: sheets_v4.Schema$Table): TablePlan {
+/**
+ * The updateTable request that adds the missing columns and sets the dropdowns, or why it can't. `resetToText` names columns the code now keeps as
+ * plain text that the Sheet still has as a dropdown (a list that grew past what a dropdown can hold, like the Daily categories): their dropdown
+ * is taken off and the column typed as text. Nothing else ever turns a dropdown back, and the values in the cells are never touched.
+ */
+export function planTableColumns(specs: ColumnSpec[], table: sheets_v4.Schema$Table, resetToText: string[] = []): TablePlan {
   const existing = table.columnProperties ?? [];
   const range = table.range ?? {};
   // A table that doesn't start at A1 would put the new columns somewhere the reads don't look.
@@ -81,6 +85,12 @@ export function planTableColumns(specs: ColumnSpec[], table: sheets_v4.Schema$Ta
     if (untyped && spec.type !== "DROPDOWN") {
       changes.push(`set ${spec.name}'s type to ${spec.type.toLowerCase()}`);
       return { ...current, columnType: spec.type };
+    }
+    if (spec.type === "TEXT" && resetToText.includes(spec.name) && current.columnType === "DROPDOWN") {
+      changes.push(`turn ${spec.name}'s dropdown into plain text`);
+      const { dataValidationRule: _removed, ...rest } = current;
+      void _removed;
+      return { ...rest, columnType: "TEXT" };
     }
     if (spec.type !== "DROPDOWN" || !spec.options) return current;
     const sheetOptions = (current.dataValidationRule?.condition?.values ?? []).map((v) => v.userEnteredValue ?? "");

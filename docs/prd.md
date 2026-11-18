@@ -146,6 +146,12 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 |---|---|---|---|
 | F-EX-01 | An Expenses page: what was spent each month, worked out from the pool (savings accounts and broker cash), split into card bills, EMIs, subscriptions, insurance and cash and UPI; big spends entered by hand; two Statements pages; a Spent tile on Overview | P1 | Built 2026-11-09 (epic #396, #390 to #395; `docs/design/expenses.md`): the pool math, the BigSpends tab, `/expenses` (E1 Split), `/expenses/statements` (every month, and one month), and a Spent tile on Overview in Still to pay's place. Spending works out from November 2026 |
 
+### Daily spending (`F-DY`)
+
+| ID | Feature | Pri | Status |
+|---|---|---|---|
+| F-DY-01 | A Daily page: spending he writes down by hand each day (amount, UPI or credit card, a category, a note) on a calendar he clicks, with a monthly limit and what is left of it, today's allowance, a year or a month of widgets, and categories he can add. No automation; not read by Expenses, Cards or Accounts | P1 | Built 2026-11-18 (`docs/design/daily.md`, round 3): the DailySpends, DailyCategories and DailyBudgets tabs, `/daily` (a pinned budget strip, the hero calendar with quick add, Right now, a period of widgets, Where it went, Month by month), a pinned quick-add bar on a phone, and `daily_spends`, `daily_categories` and `daily_budgets` over MCP. The limit shows on Daily only |
+
 ### Loans (`F-LO`)
 
 | ID | Feature | Pri | Status |
@@ -448,3 +454,4 @@ Each open question is also a GitHub issue labelled `question`, in the milestone 
 | 1.43 | 2026-11-13 | The login method is Google sign-in for his one address, replacing the passphrase (ADR 0016), and the sidebar has a Sign out button. He sets up the Google client once; hosting and the scheduled sync are still to do. |
 | 1.44 | 2026-11-17 | Hosting on Vercel Hobby started (ADR 0017): the Sheets key can come from a setting, and a daily `/api/cron/sync` runs both statement syncs behind `CRON_SECRET`. The deploy itself waits on his Vercel project and settings. |
 | 1.45 | 2026-11-18 | F-PL-10 added: a redesigned sign-in page (Kulhad, every state, signed-in visitors sent on, "signed out" confirmed) and a wait screen with an optional game for pages that wait on Google Sheets (epic #436). |
+| 1.46 | 2026-11-18 | Daily (F-DY-01) added and built after three design rounds: a hand-kept diary of everyday spending split into UPI and credit card, on a calendar he clicks, with a monthly limit and what is left of it, today's allowance, a year or month of widgets, categories he can add, and a quick-add bar pinned on a phone. The limit shows on Daily only; Overview and Expenses are not touched. |

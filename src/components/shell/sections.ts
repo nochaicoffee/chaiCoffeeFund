@@ -19,6 +19,7 @@ export const SECTIONS: Section[] = [
   { href: "/subscriptions", label: "Subscriptions", icon: "subscriptions", comingIn: "M3 · Everyday money" },
   { href: "/income", label: "Income", icon: "income", comingIn: "M3 · Everyday money" },
   { href: "/expenses", label: "Expenses", icon: "expenses" },
+  { href: "/daily", label: "Daily", icon: "daily" },
   { href: "/loans", label: "Loans", icon: "loans", comingIn: "M3 · Everyday money" },
   { href: "/lent", label: "Lent out", icon: "lent" },
   { href: "/insurance", label: "Insurance", icon: "insurance" },

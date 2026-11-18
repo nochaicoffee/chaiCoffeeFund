@@ -32,6 +32,9 @@ import { SYNC_RUN_COLUMNS, syncRunRowSchema } from "@/lib/sheets/syncRuns";
 import { SUBSCRIPTION_PAYMENT_COLUMNS, subscriptionPaymentRowSchema } from "@/lib/sheets/subscriptionPayments";
 import { SUBSCRIPTION_COLUMNS, subscriptionRowSchema } from "@/lib/sheets/subscriptions";
 import { BIG_SPEND_COLUMNS, bigSpendRowSchema } from "@/lib/sheets/bigSpends";
+import { DAILY_SPEND_COLUMNS, dailySpendRowSchema } from "@/lib/sheets/dailySpends";
+import { DAILY_CATEGORY_COLUMNS, dailyCategoryRowSchema } from "@/lib/sheets/dailyCategories";
+import { DAILY_BUDGET_COLUMNS, dailyBudgetRowSchema } from "@/lib/sheets/dailyBudgets";
 import { columnSpecs, planNewTable, planTableColumns } from "@/lib/sheets/tableColumns";
 
 /** The tabs this can bring in line with their repository. Add one here when its columns change. */
@@ -66,10 +69,16 @@ const TABS = {
   Goals: () => columnSpecs(GOAL_COLUMNS as string[], goalRowSchema),
   GoalContributions: () => columnSpecs(GOAL_CONTRIBUTION_COLUMNS as string[], goalContributionRowSchema),
   BigSpends: () => columnSpecs(BIG_SPEND_COLUMNS as string[], bigSpendRowSchema),
+  DailySpends: () => columnSpecs(DAILY_SPEND_COLUMNS as string[], dailySpendRowSchema),
+  DailyCategories: () => columnSpecs(DAILY_CATEGORY_COLUMNS as string[], dailyCategoryRowSchema),
+  DailyBudgets: () => columnSpecs(DAILY_BUDGET_COLUMNS as string[], dailyBudgetRowSchema),
 };
 
+/** Columns the code keeps as plain text that the Sheet may still have as a dropdown: the dropdown is taken off (planTableColumns). DailySpends.category was a fixed list until categories could be added. */
+const RESET_TO_TEXT: Record<string, string[]> = { DailySpends: ["category"] };
+
 /** Tabs the code needs that may not exist yet: the route creates them, with their Table, when they're missing. Existing tabs are never created over. */
-const CREATABLE = new Set(["HeldMoney", "LentLoans", "LentRepayments", "AccountStatementEmails", "BalanceReviews", "LoanPrepayments", "Policies", "PolicyPayments", "Goals", "GoalContributions", "EpfAccounts", "EpfEntries", "EpfRates", "Instruments", "PriceSnapshots", "InvestmentTargets", "BigSpends", "Transfers"]);
+const CREATABLE = new Set(["HeldMoney", "LentLoans", "LentRepayments", "AccountStatementEmails", "BalanceReviews", "LoanPrepayments", "Policies", "PolicyPayments", "Goals", "GoalContributions", "EpfAccounts", "EpfEntries", "EpfRates", "Instruments", "PriceSnapshots", "InvestmentTargets", "BigSpends", "DailySpends", "DailyCategories", "DailyBudgets", "Transfers"]);
 
 type Plan =
   | { error: string }
@@ -92,7 +101,7 @@ async function plan(request: Request): Promise<Plan> {
   if (!table) return { error: `The ${tab} tab has no Table` };
   const range = table.range ?? {};
   const columns = (table.columnProperties ?? []).map((c) => c.columnName ?? "");
-  return { tab, spreadsheetId, table: { rows: (range.endRowIndex ?? 0) - (range.startRowIndex ?? 0), columns }, ...planTableColumns(TABS[tab as keyof typeof TABS](), table) };
+  return { tab, spreadsheetId, table: { rows: (range.endRowIndex ?? 0) - (range.startRowIndex ?? 0), columns }, ...planTableColumns(TABS[tab as keyof typeof TABS](), table, RESET_TO_TEXT[tab] ?? []) };
 }
 
 /**

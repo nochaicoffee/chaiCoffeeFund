@@ -1,0 +1,186 @@
+import { describe, expect, it } from "vitest";
+import type { DailyBudget, DailyCategory, DailySpend } from "@/lib/sheets/types";
+import { dailyModel, greetingView, heroView, monthsView, nowWidgets, periodOptions, periodWidgets, stripView, summarySentence, whereView } from "./views";
+
+const today = "2026-11-18";
+let n = 0;
+const spend = (date: string, amount: number, method: DailySpend["method"], category?: string, note?: string): DailySpend => ({ id: `s${++n}`, date, amount, method, ...(category && { category }), ...(note && { note }) });
+const nov = (d: number, ...rows: [number, DailySpend["method"], string?, string?][]) => rows.map(([a, m, c, note]) => spend(`2026-11-${String(d).padStart(2, "0")}`, a, m, c, note));
+
+/** The same November the mockups draw: ₹20,982, ₹6,335 on UPI and ₹14,647 on cards. */
+const NOV = [
+  ...nov(1, [2400, "Card", "groceries", "BigBasket"], [180, "UPI", "food"]),
+  ...nov(2, [120, "UPI", "transport"], [340, "UPI", "food"]),
+  ...nov(3, [90, "UPI", "transport"], [260, "UPI", "food"]),
+  ...nov(4, [4999, "Card", "shopping", "Running shoes"], [150, "UPI", "food"]),
+  ...nov(5, [410, "UPI", "food"]),
+  ...nov(6, [620, "UPI", "fun"], [280, "UPI", "food"]),
+  ...nov(7, [1850, "Card", "bills"], [720, "UPI", "food"]),
+  ...nov(8, [3200, "Card", "groceries"]),
+  ...nov(9, [100, "UPI", "transport"]),
+  ...nov(10, [310, "UPI", "food"]),
+  ...nov(12, [899, "Card", "health"], [95, "UPI", "transport"]),
+  ...nov(13, [540, "UPI", "food"]),
+  ...nov(14, [1299, "Card", "shopping"], [480, "UPI", "fun"]),
+  ...nov(15, [760, "UPI", "food"]),
+  ...nov(16, [110, "UPI", "transport"]),
+  ...nov(17, [420, "UPI", "food"], [200, "UPI", "other"]),
+  ...nov(18, [150, "UPI", "food", "Tea"]),
+];
+const budgets: DailyBudget[] = [{ id: "b1", month: "2026-11", limit: 30000 }];
+const base = { spends: NOV, budgets, categoryRows: [] as DailyCategory[], today };
+
+describe("the greeting", () => {
+  const model = dailyModel(base);
+  it("says what was spent so far, by UPI and by card, a day, what's left and today's allowance", () => {
+    const text = summarySentence(model).map((p) => p.text).join("");
+    expect(text).toBe("You've spent ₹20,982 in November 2026 so far: ₹6,335 on UPI and ₹14,647 on credit cards, about ₹1,165.67 a day. ₹9,018 of your ₹30,000 limit is left, and today's allowance is ₹705.");
+  });
+  it("gives every figure in the sentence a card whose total is that figure", () => {
+    const cards = greetingView(model);
+    for (const part of summarySentence(model).filter((p) => p.strong)) {
+      expect(part.point, part.text).toBeDefined();
+      expect(cards[part.point as keyof typeof cards]?.total, part.text).toBe(part.text);
+    }
+  });
+  it("says it when the limit's passed, and leaves the allowance out", () => {
+    const over = dailyModel({ ...base, spends: [...NOV, spend("2026-11-18", 9400, "Card", "shopping")] });
+    const text = summarySentence(over).map((p) => p.text).join("");
+    expect(text).toMatch(/You're ₹382 over your ₹30,000 limit\.$/);
+    expect(greetingView(over).allowance).toBeDefined();
+  });
+  it("says nothing about a limit when none is set, and has no cards for the limit", () => {
+    const none = dailyModel({ ...base, budgets: [] });
+    expect(summarySentence(none).map((p) => p.text).join("")).not.toMatch(/limit/);
+    expect(greetingView(none).left).toBeUndefined();
+  });
+  it("asks for the first spend when the month is empty", () => {
+    const empty = dailyModel({ ...base, spends: [] });
+    expect(summarySentence(empty).map((p) => p.text).join("")).toMatch(/^Nothing written down for November 2026 yet/);
+    expect(greetingView(empty)).toEqual({});
+  });
+});
+
+describe("the strip", () => {
+  it("is what's left, the pace, and what's left today", () => {
+    const s = stripView(dailyModel(base));
+    expect(s).toMatchObject({ hasLimit: true, label: "Left to spend", value: "₹9,018", ofLimit: "of ₹30,000", tone: "warn", pill: { tone: "warn", text: "₹2,982 over pace" }, todayLabel: "Left today", todayValue: "₹555", daysLeft: "12 days to go" });
+    expect(s.paceFraction).toBeCloseTo(0.6, 6);
+    expect(s.fraction).toBeCloseTo(0.6994, 4);
+  });
+  it("turns red and says over the limit, and over today, when it is", () => {
+    const s = stripView(dailyModel({ ...base, spends: [...NOV, spend("2026-11-18", 9400, "Card", "shopping")] }));
+    expect(s).toMatchObject({ label: "Over the limit", value: "₹382", tone: "neg", pill: { tone: "due", text: "₹382 over the limit" }, todayLabel: "Over today by", todayValue: "₹8,845", todayNegative: true });
+  });
+  it("asks for a limit when there isn't one", () => {
+    expect(stripView(dailyModel({ ...base, budgets: [] })).hasLimit).toBe(false);
+  });
+});
+
+describe("the hero", () => {
+  const hero = heroView(dailyModel(base));
+  it("has today's details across the top: the date, spent today, spent this month and its share of the limit", () => {
+    expect(hero).toMatchObject({ isCurrent: true, dateLabel: "Wed, Nov 18, 2026", dayOf: "day 18 of 30", spentToday: "₹150", spentMonth: "₹20,982", spentMonthLabel: "Spent this month", ofLimit: "70% of ₹30,000" });
+  });
+  it("lays the calendar out Monday first, with the day's total, dots and shade", () => {
+    expect(hero.weeks).toHaveLength(6);
+    expect(hero.weeks[0].map((c) => c?.day ?? null)).toEqual([null, null, null, null, null, null, 1]);
+    const nov4 = hero.weeks[1][2];
+    expect(nov4).toMatchObject({ date: "2026-11-04", total: "₹5,149", compact: "₹5.1k", upi: true, card: true, count: 2, level: 4 });
+    const today18 = hero.weeks[3][2];
+    expect(today18).toMatchObject({ date: "2026-11-18", today: true, total: "₹150", upi: true, card: false, level: 1 });
+    expect(hero.weeks[3][3]).toMatchObject({ date: "2026-11-19", future: true, total: "" });
+    expect(hero.weeks[2][2]).toMatchObject({ date: "2026-11-11", quiet: true, total: "", level: 0 });
+  });
+  it("has each day's spends for the panel, newest first, and won't let a day to come take one", () => {
+    expect(hero.details["2026-11-14"]).toMatchObject({ label: "Sat, Nov 14", rel: "4 days ago", total: "₹1,779", upi: "₹480", card: "₹1,299", canAdd: true });
+    expect(hero.details["2026-11-14"].rows.map((r) => [r.title, r.amount, r.method])).toEqual([["Fun", "₹480", "UPI"], ["Shopping", "₹1,299", "Card"]]);
+    expect(hero.details["2026-11-18"].rows[0]).toMatchObject({ title: "Tea", sub: "Food · UPI" });
+    expect(hero.details["2026-11-20"]).toMatchObject({ canAdd: false, rel: "In 2 days" });
+  });
+  it("opens on today, and steps back a month but not forward past this one", () => {
+    expect(hero.defaultSelected).toBe("2026-11-18");
+    expect(hero.nextHref).toBeNull();
+    expect(hero.prevHref).toBe("/daily?month=2026-10");
+    expect(hero.backHref).toBeNull();
+  });
+  it("shows a past month by its biggest day, with a way back to this one and no 'spent today'", () => {
+    const oct = heroView(dailyModel({ ...base, month: "2026-10", spends: [...NOV, spend("2026-10-12", 2200, "Card", "shopping")] }));
+    expect(oct).toMatchObject({ isCurrent: false, spentToday: null, spentMonthLabel: "Spent in October", defaultSelected: "2026-10-12", backHref: "/daily", nextHref: "/daily" });
+  });
+});
+
+describe("the widgets", () => {
+  const model = dailyModel(base);
+  it("Right now: left today, the week so far, and where the month is heading", () => {
+    const [today1, week, track] = nowWidgets(model)!;
+    expect(today1).toMatchObject({ title: "Left today", tag: "Now", value: "₹555", sub: "of ₹705 for today" });
+    expect(week).toMatchObject({ title: "Week so far", value: "₹880", sub: "₹6,120 left of ₹7,000 · 16–22 Nov" });
+    expect(week.visual.kind === "week" && week.visual.days.map((d) => d.label).join("")).toBe("MTWTFSS");
+    expect(track).toMatchObject({ title: "On track to end at", value: "₹34,970", sub: "₹4,970 over your ₹30,000", valueTone: "warn" });
+  });
+  it("Right now is left out without a limit, since all three are about it", () => {
+    expect(nowWidgets(dailyModel({ ...base, budgets: [] }))).toBeNull();
+  });
+  it("shows today as past its allowance, in red, when it is", () => {
+    const over = nowWidgets(dailyModel({ ...base, spends: [...NOV, spend("2026-11-18", 9400, "Card", "shopping")] }))!;
+    expect(over[0]).toMatchObject({ value: "−₹8,845", valueTone: "neg", sub: "past today's ₹705" });
+  });
+  it("the period widgets for a year: six, tagged with the year, in a fixed order", () => {
+    const ws = periodWidgets(model);
+    expect(ws.map((w) => w.key)).toEqual(["spent", "top", "biggest", "split", "quiet", "inside"]);
+    expect(ws.every((w) => w.tag === "2026" && !w.isNow)).toBe(true);
+    expect(ws[0]).toMatchObject({ title: "Spent in 2026", value: "₹20,982" });
+    expect(ws[1]).toMatchObject({ title: "Top category", value: "Shopping", sub: "₹6,298 · 30% of the year", valueColor: "raspberry" });
+    expect(ws[2]).toMatchObject({ title: "Biggest spend", value: "₹4,999", sub: "Running shoes · Nov 4 · Credit card" });
+    expect(ws[3]).toMatchObject({ value: "70% card", sub: "₹6,335 UPI · ₹14,647 card" });
+    expect(ws[4]).toMatchObject({ title: "Quiet days", value: "1 day" });
+  });
+  it("the same six over a month: November's own, with days under the allowance in place of months inside the limit", () => {
+    const ws = periodWidgets(dailyModel({ ...base, period: "month" }));
+    expect(ws[0]).toMatchObject({ title: "Spent in November", tag: "November 2026", sub: "₹1,165.67 a day · 18 days" });
+    expect(ws[5]).toMatchObject({ title: "Days under the allowance", value: "13 of 18" });
+  });
+  it("safe with an empty diary", () => {
+    const ws = periodWidgets(dailyModel({ ...base, spends: [] }));
+    expect(ws.map((w) => w.value)).toEqual(["₹0", "—", "—", "—", "0 days", "—"]);
+  });
+});
+
+describe("where it went, and month by month", () => {
+  it("where: the period's categories biggest first, with the colour each has, by name", () => {
+    const w = whereView(dailyModel(base));
+    expect(w).toMatchObject({ title: "Where 2026 went", total: "₹20,982" });
+    expect(w.rows.slice(0, 3).map((r) => [r.name, r.amount, r.share])).toEqual([["Shopping", "₹6,298", "30%"], ["Groceries", "₹5,600", "27%"], ["Food", "₹4,520", "22%"]]);
+    expect(w.rows[0].fraction).toBe(1);
+  });
+  it("a renamed or added category shows by its new name; a hidden one still shows on the spends it has", () => {
+    const rows: DailyCategory[] = [{ id: "r1", builtIn: "food", name: "Eating out", color: "Ruby", status: "Hidden" }, { id: "c-9", name: "Pets", color: "Violet", status: "Active" }];
+    const m = dailyModel({ ...base, categoryRows: rows, spends: [...NOV, spend("2026-11-10", 850, "Card", "c-9")] });
+    expect(m.nameOf("food")).toBe("Eating out");
+    expect(m.nameOf("c-9")).toBe("Pets");
+    expect(m.nameOf(undefined)).toBe("No category");
+    expect(whereView(m).rows.map((r) => r.name)).toContain("Eating out");
+  });
+  it("months for a year are twelve rows against the limit; a month's are the last six", () => {
+    const year = monthsView(dailyModel(base));
+    expect(year.rows).toHaveLength(12);
+    expect(year.rows[10]).toMatchObject({ label: "Nov", total: "₹20,982", on: true, diff: "₹9,018 under" });
+    expect(year.rows[11]).toMatchObject({ label: "Dec", total: "—", empty: true });
+    expect(year.limitLabel).toBe("₹30,000 limit");
+    const month = monthsView(dailyModel({ ...base, period: "month" }));
+    expect(month.rows).toHaveLength(6);
+    expect(month.rows[0].label).toBe("Nov 2026");
+  });
+});
+
+describe("the period picker", () => {
+  it("offers This month and each year from the diary's start, marking the one on", () => {
+    const m = dailyModel({ ...base, spends: [...NOV, spend("2025-12-30", 100, "UPI")] });
+    const { options, value } = periodOptions(m);
+    expect(options.map((o) => [o.value, o.label])).toEqual([["month", "This month"], ["2026", "2026"], ["2025", "2025"]]);
+    expect(value).toBe("2026");
+    expect(periodOptions(dailyModel({ ...base, period: "month" })).value).toBe("month");
+    expect(dailyModel({ ...base, period: "2025" }).periodLabel).toBe("2025");
+  });
+});
