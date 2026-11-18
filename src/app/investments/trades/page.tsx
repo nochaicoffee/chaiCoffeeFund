@@ -27,8 +27,12 @@ export default async function TradesPage({ searchParams }: PageProps<"/investmen
   const params = await searchParams;
   const today = todayIso();
   const cashRead = readCash(today);
-  const [tradesTab, instrumentsTab] = await Promise.all([getCachedInvestmentTransactionsTab(), getCachedInstrumentsTab()]);
-  const closes = await getPriceSeries().catch(() => new Map<string, PricePoint[]>());
+  // The three reads are asked for together, so a cold page doesn't read the prices only after the trades.
+  const [tradesTab, instrumentsTab, closes] = await Promise.all([
+    getCachedInvestmentTransactionsTab(),
+    getCachedInstrumentsTab(),
+    getPriceSeries().catch(() => new Map<string, PricePoint[]>()),
+  ]);
   const cash = await cashRead;
   // A trade's broker is its brokerage account, named as the account is now.
   const trades = withAccountNames(tradesTab.records, cash?.accounts ?? []);
