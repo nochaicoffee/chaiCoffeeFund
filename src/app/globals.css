@@ -424,3 +424,70 @@ body {
   color: var(--fg);
   font-family: var(--font-sans);
 }
+
+/*
+ * The wait screen (components/wait/WaitScreen): the page skeleton first, then the Kulhad fades in and the
+ * skeleton fades out at SHOW_AFTER_MS (lib/wait/phase.ts, set as the animation delay on the elements), all
+ * by CSS so it also works before any script has run. With reduced motion the swap happens at the same moment
+ * without the fade.
+ */
+@keyframes wait-in {
+  from {
+    opacity: 0;
+  }
+}
+.wait-in {
+  animation: wait-in 0.25s ease-out both;
+}
+.wait-skeleton-out {
+  animation: wait-out 0.25s ease-out forwards;
+}
+@keyframes wait-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+.wait-in-quick {
+  animation: wait-in 0.3s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wait-in,
+  .wait-skeleton-out {
+    animation-duration: 0s;
+  }
+  .wait-in-quick {
+    animation: none;
+  }
+}
+
+/*
+ * The wait screen's timeline is animation delays (set per element from lib/wait/phase.ts), not timers:
+ * a hard load runs no script until the page is done. A line is visible only during its own window;
+ * a "late" element (still on it, Try again) becomes visible at its delay and stays. visibility, not
+ * opacity, so hidden text is also hidden from screen readers and the tab order.
+ */
+.wait-line,
+.wait-late {
+  visibility: hidden;
+}
+.wait-line {
+  animation: wait-line linear forwards;
+}
+@keyframes wait-line {
+  0%,
+  99.99% {
+    visibility: visible;
+  }
+  100% {
+    visibility: hidden;
+  }
+}
+.wait-late {
+  animation: wait-late 0s forwards;
+}
+@keyframes wait-late {
+  to {
+    visibility: visible;
+  }
+}
