@@ -3,6 +3,7 @@ import { randomUUID } from "crypto";
 import type { z } from "zod";
 import { toUserEnteredCell } from "./cellValues";
 import { getSheetsClient, getSpreadsheetId } from "./client";
+import { readRangeAlone, readRangeBatched } from "./readBatcher";
 import { assertColumnsMatchSchema, columnExpectations, columnKinds, readRow, reportInvalidRow, type RowProblem, type SkippedRow } from "./rowReading";
 import { columnLetter } from "./tableStructure";
 
@@ -35,6 +36,11 @@ export interface RepositoryConfig<T extends { id: string }> {
    * each new row). A broken rule writes nothing and throws InvalidRowError.
    */
   check?: (record: T) => string | null;
+  /**
+   * Whether this tab's reads may be joined with other tabs' into one batchGet (the default). A batch answers only when its slowest range has,
+   * so a tab of many thousands of rows (PriceSnapshots) opts out instead of holding every small tab back.
+   */
+  batchReads?: boolean;
 }
 
 /** A row that failed its schema: left out of list() and get(), but still visible to readAll(). */
@@ -101,15 +107,18 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
     return sheetId;
   }
 
+  /** The rows for a read that only reads: joined with other tabs' reads into one batchGet (readBatcher.ts) unless the tab opts out. */
   async function fetchRows(): Promise<unknown[][]> {
-    const sheets = getSheetsClient();
-    const res = await sheets.spreadsheets.values.get({
-      spreadsheetId: getSpreadsheetId(),
-      range: dataRange,
-      valueRenderOption: "UNFORMATTED_VALUE",
-      dateTimeRenderOption: "SERIAL_NUMBER",
-    });
-    return res.data.values ?? [];
+    return config.batchReads === false ? readRangeAlone(dataRange) : readRangeBatched(dataRange);
+  }
+
+  /**
+   * The rows for a read that a write goes on to act on by row number (findRow, updateMany, removeWhere): always its own read, never shared
+   * with another caller's. Two writes to one tab begun together must each see the tab as it is when they read it, not one snapshot, and
+   * the writes should not wait for a batch window.
+   */
+  async function fetchRowsForWrite(): Promise<unknown[][]> {
+    return readRangeAlone(dataRange);
   }
 
   /**
@@ -143,7 +152,7 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
    * Finds invalid rows too, so update() can repair one and remove() can delete one.
    */
   async function findRow(id: string) {
-    return locateRow(await fetchRows(), id);
+    return locateRow(await fetchRowsForWrite(), id);
   }
 
   function locateRow(rows: unknown[][], id: string): { rowNumber: number; values: Partial<Record<keyof T, unknown>>; record: T | null; problems: RowProblem[] } | null {
@@ -215,7 +224,7 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
    */
   async function updateMany(changes: { id: string; patch: Partial<Omit<T, "id">> }[]): Promise<T[]> {
     if (changes.length === 0) return [];
-    const rows = await fetchRows();
+    const rows = await fetchRowsForWrite();
     const found = changes.map(({ id, patch }) => {
       const row = locateRow(rows, id);
       if (!row) throw new NotFoundError(`${sheetName}: no record found for id ${id}`);
@@ -268,7 +277,7 @@ export function createRepository<T extends { id: string }>(config: RepositoryCon
    * bottom first, so deleting one doesn't move the next. Returns how many were deleted.
    */
   async function removeWhere(match: (values: Partial<Record<keyof T, unknown>>) => boolean): Promise<number> {
-    const rows = await fetchRows();
+    const rows = await fetchRowsForWrite();
     const rowNumbers: number[] = [];
     rows.forEach((row, index) => {
       const result = readRow(row, columns, dateColumns, schema, kinds);

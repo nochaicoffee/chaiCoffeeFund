@@ -48,11 +48,23 @@ export async function loadOverviewData(): Promise<OverviewData> {
   // rupee conversion, which used to put three Sheets reads of about a second each one after another on a cold load. `optional` never rejects,
   // so starting these before the core tabs are in can't leave a rejection nobody handles.
   const optionalReads = Promise.all([
-    optional("EPF", async () => ({ accounts: await getCachedEpfAccounts(), entries: await getCachedEpfEntries(), rates: await getCachedEpfRates() }), { accounts: [], entries: [], rates: [] }),
-    optional("lent out", async () => ({ loans: await getCachedLentLoans(), repayments: await getCachedLentRepayments() }), { loans: [], repayments: [] }),
-    optional("goals", async () => ({ goals: await getCachedGoals(), contributions: await getCachedGoalContributions() }), { goals: [], contributions: [] }),
+    optional("EPF", async () => {
+      const [accounts, entries, rates] = await Promise.all([getCachedEpfAccounts(), getCachedEpfEntries(), getCachedEpfRates()]);
+      return { accounts, entries, rates };
+    }, { accounts: [], entries: [], rates: [] }),
+    optional("lent out", async () => {
+      const [loans, repayments] = await Promise.all([getCachedLentLoans(), getCachedLentRepayments()]);
+      return { loans, repayments };
+    }, { loans: [], repayments: [] }),
+    optional("goals", async () => {
+      const [goals, contributions] = await Promise.all([getCachedGoals(), getCachedGoalContributions()]);
+      return { goals, contributions };
+    }, { goals: [], contributions: [] }),
     optional("loan prepayments", () => getCachedLoanPrepayments(), []),
-    optional("insurance", async () => ({ policies: await getCachedPolicies(), payments: await getCachedPolicyPayments() }), { policies: [], payments: [] }),
+    optional("insurance", async () => {
+      const [policies, payments] = await Promise.all([getCachedPolicies(), getCachedPolicyPayments()]);
+      return { policies, payments };
+    }, { policies: [], payments: [] }),
     optional("prices", () => getPriceSeries(), new Map<string, PricePoint[]>()),
   ]);
   const [allAccounts, allSnapshots, cards, statements, subscriptions, subscriptionPayments, loans, loanInstallments, trades, instruments, fixedDeposits, incomeEntries, incomeSources] = await Promise.all([

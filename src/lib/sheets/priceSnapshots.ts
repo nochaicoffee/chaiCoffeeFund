@@ -26,6 +26,8 @@ export const PRICE_SNAPSHOT_COLUMNS: (keyof PriceSnapshot)[] = ["id", "date", "t
 
 export const priceSnapshotsRepository = createRepository<PriceSnapshot>({
   sheetName: "PriceSnapshots",
+  // Ten thousand rows: read on its own so the small tabs read beside it are not kept waiting for it.
+  batchReads: false,
   columns: PRICE_SNAPSHOT_COLUMNS,
   dateColumns: ["date"],
   schema: priceSnapshotRowSchema,
