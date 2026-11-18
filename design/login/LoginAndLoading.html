@@ -1,0 +1,638 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login and loading · chaiCoffeeFund design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+/* Tokens: the app's own (src/app/globals.css), plus the three colours the cup needs. */
+:root {
+  color-scheme: light;
+  --page: oklch(0.965 0.004 90); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+  --accent: oklch(0.72 0.19 145); --accent-tint: oklch(0.93 0.06 145); --accent-text: oklch(0.42 0.14 145); --on-accent: oklch(0.16 0.008 260);
+  --ink: oklch(0.16 0.008 260); --on-ink: oklch(0.99 0 0);
+  --warning: oklch(0.72 0.14 75); --warning-tint: oklch(0.95 0.05 85); --warning-text: oklch(0.47 0.1 70);
+  --negative: oklch(0.55 0.16 25); --negative-tint: oklch(0.95 0.035 40);
+  --chai: oklch(0.7 0.1 62); --chai-dark: oklch(0.42 0.07 52); --coin: oklch(0.85 0.15 88); --coin-edge: oklch(0.68 0.14 80);
+  --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1240px; margin: 0 auto; padding: 32px 24px 96px; }
+h1 { font-size: 32px; letter-spacing: -0.02em; margin: 0 0 6px; }
+h2 { font-size: 22px; letter-spacing: -0.01em; margin: 56px 0 4px; }
+h3 { margin: 0; font-size: 15px; }
+.lead { color: var(--muted); max-width: 70ch; margin: 0 0 16px; }
+.eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-text); margin-bottom: 8px; }
+.nav { display: flex; flex-wrap: wrap; gap: 8px; margin: 18px 0 0; }
+.nav a, .pill { font: inherit; font-size: 13px; font-weight: 700; color: var(--fg); background: var(--surface); border: 1px solid var(--surface-line); border-radius: 999px; padding: 6px 14px; text-decoration: none; cursor: pointer; }
+.pill[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.pill:focus-visible, .nav a:focus-visible, .gbtn:focus-visible, .chip:focus-visible, canvas:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.board { background: var(--surface); border: 1px solid var(--surface-line); border-radius: 32px; box-shadow: var(--card-shadow); padding: 24px; margin-top: 16px; }
+.pick { display: inline-block; font-size: 12px; font-weight: 800; background: var(--accent-tint); color: var(--accent-text); border-radius: 999px; padding: 2px 10px; margin-left: 8px; vertical-align: middle; }
+.toggles { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 14px; font-size: 13px; font-weight: 600; }
+.toggles label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
+
+/* ---------- the sign-in page ---------- */
+.scene { position: relative; display: grid; place-items: center; padding: 28px 18px; background: var(--page); overflow: hidden; border-radius: 24px; border: 1px solid var(--surface-line); }
+.scene::before { content: ""; position: absolute; inset: -30%; background:
+  radial-gradient(circle at 50% 40%, oklch(0.93 0.06 145 / 0.7), transparent 38%),
+  repeating-radial-gradient(circle at 50% 40%, transparent 0 46px, oklch(0.42 0.1 152 / 0.05) 46px 47px); pointer-events: none; }
+.login-card { position: relative; width: 100%; max-width: 380px; background: var(--surface); border: 1px solid var(--surface-line); border-radius: 28px; padding: 26px 26px 22px; box-shadow: var(--card-shadow); text-align: center; }
+.brand { display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 800; font-size: 14px; letter-spacing: -0.01em; }
+.brand .mark { width: 26px; height: 26px; border-radius: 9px; background: var(--accent); display: grid; place-items: center; }
+.login-card .cup { width: 150px; height: auto; margin: 28px auto 0; display: block; }
+.login-card h3 { font-size: 22px; letter-spacing: -0.015em; margin-top: 2px; }
+.login-card .sub { color: var(--muted); margin: 4px 0 18px; font-size: 14px; }
+.notice { display: flex; gap: 10px; text-align: left; border-radius: 14px; padding: 11px 13px; font-size: 13.5px; margin: 0 0 12px; line-height: 1.4; }
+.notice .ic { flex: none; width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 11px; margin-top: 1px; }
+.notice.err { background: var(--negative-tint); color: oklch(0.4 0.14 25); } .notice.err .ic { background: var(--negative); color: #fff; }
+.notice.warn { background: var(--warning-tint); color: var(--warning-text); } .notice.warn .ic { background: var(--warning); color: var(--ink); }
+.notice.info { background: var(--fill); color: var(--fg); } .notice.info .ic { background: var(--fg); color: #fff; }
+.notice.ok { background: var(--accent-tint); color: var(--accent-text); } .notice.ok .ic { background: var(--accent); color: var(--ink); }
+.notice small { display: block; opacity: 0.8; margin-top: 3px; font-size: 12.5px; }
+.notice code { font: 600 12px ui-monospace, Menlo, monospace; background: oklch(0 0 0 / 0.07); padding: 1px 5px; border-radius: 5px; }
+.devtag { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; background: var(--ink); color: var(--on-ink); border-radius: 5px; padding: 1px 5px; margin-left: 4px; }
+.gbtn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 48px; border-radius: 14px; background: var(--accent); color: var(--on-accent); font: inherit; font-size: 15px; font-weight: 800; border: 0; cursor: pointer; text-decoration: none; transition: transform .12s, filter .12s; }
+.gbtn:hover { filter: brightness(1.04); } .gbtn:active { transform: scale(.985); }
+.gbtn .g { flex: none; width: 20px; height: 20px; background: #fff; border-radius: 50%; display: grid; place-items: center; }
+.gbtn > span:last-child { text-align: center; line-height: 1.25; padding: 6px 0; }
+.fine svg { flex: none; } .fine { line-height: 1.4; text-align: left; }
+.sizes { max-width: 100%; overflow-x: auto; padding-bottom: 8px; } .sizes figure { max-width: 100%; } .sizes .scene { max-width: 100%; overflow: hidden; }
+.wrap, .board { min-width: 0; } .board { overflow-x: auto; }
+.gbtn[disabled], .gbtn[aria-disabled="true"] { opacity: .45; pointer-events: none; }
+.gbtn.busy { filter: saturate(.6); pointer-events: none; }
+.spin { flex: none; width: 18px; height: 18px; border-radius: 50%; border: 2.5px solid oklch(0.16 0.008 260 / .25); border-top-color: var(--ink); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.alt { margin-top: 10px; display: flex; gap: 8px; justify-content: center; }
+.alt button { font: inherit; font-size: 13px; font-weight: 700; background: var(--fill); border: 0; border-radius: 10px; padding: 7px 12px; cursor: pointer; color: var(--fg); }
+.fine { margin: 16px 0 0; font-size: 12px; color: var(--muted); display: flex; gap: 6px; justify-content: center; align-items: center; }
+.compact .cup, .compact .sub { display: none; } .compact .login-card { padding: 18px 20px 16px; max-width: 420px; } .compact .scene, .scene.compact { padding: 12px; }
+
+/* ---------- the cup (also the wait screen's picture) ----------
+   overflow: visible is the clipping fix: the coins start above the picture's own box and fade in, instead of being cut by its top edge. */
+.cup { display: block; overflow: visible; --end: 70px; transform: perspective(700px) rotateY(calc(var(--tx, 0) * 9deg)) rotateX(calc(var(--ty, 0) * -7deg)); transition: transform .18s ease-out; animation: bob 4.2s ease-in-out infinite; }
+@keyframes bob { 50% { translate: 0 -3px; } }
+.cup .body { fill: var(--chai-dark); } .cup .liquid { fill: var(--chai); }
+.cup .saucer { fill: var(--fill-strong); } .cup .handle { fill: none; stroke: var(--chai-dark); stroke-width: 7; stroke-linecap: round; }
+.cup .coin { opacity: 0; animation: drop 2.6s infinite; }
+.cup .coin .fl { animation: flip .7s linear infinite; transform-box: fill-box; transform-origin: center; }
+.cup .coin .face { fill: url(#coinG); stroke: var(--coin-edge); stroke-width: 1.4; } .cup .coin .ring { fill: none; stroke: oklch(0.7 0.13 80); stroke-width: .8; opacity: .7; }
+.cup .coin text { font: 800 10px var(--font); text-anchor: middle; dominant-baseline: central; fill: oklch(0.45 0.1 75); }
+.cup .ripple { fill: none; stroke: #fff; stroke-width: 1.4; opacity: 0; transform-box: fill-box; transform-origin: center; animation: ripple 2.6s infinite; }
+.cup .steam path { fill: none; stroke: var(--muted); stroke-opacity: .4; stroke-width: 3; stroke-linecap: round; animation: steam 3.2s ease-in-out infinite; opacity: 0; }
+/* the coin appears small and faint well above the cup, grows into view, falls with gravity, and is hidden by the cup itself before it vanishes */
+@keyframes drop {
+  0% { transform: translate(var(--x), -30px) scale(.4); opacity: 0; animation-timing-function: ease-out; }
+  12% { transform: translate(var(--x), -16px) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.5, 0, .9, .55); }
+  50% { transform: translate(var(--x), var(--end)) scale(1); opacity: 1; }
+  50.1%, 100% { transform: translate(var(--x), var(--end)) scale(1); opacity: 0; }
+}
+@keyframes flip { 50% { transform: scaleX(.2); } }
+@keyframes ripple { 0%, 50% { opacity: 0; transform: scale(.3); } 52% { opacity: .9; transform: scale(.4); } 78%, 100% { opacity: 0; transform: scale(1.7); } }
+@keyframes steam { 0% { transform: translateY(8px); opacity: 0; } 35% { opacity: .55; } 100% { transform: translateY(-10px); opacity: 0; } }
+.rm .cup, .rm .cup * , .rm .spin { animation: none !important; } .rm .cup { transform: none; } .rm .cup .steam path { opacity: .35; }
+@media (prefers-reduced-motion: reduce) { .cup, .cup *, .spin { animation: none !important; } .cup { transform: none; } .cup .steam path { opacity: .35; } }
+.cupgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 14px; }
+.cuptile { background: var(--page); border: 2px solid transparent; border-radius: 24px; padding: 22px 14px 16px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.cuptile[aria-current="true"] { border-color: var(--accent); background: var(--accent-tint); }
+.cuptile .cup { width: 150px; height: auto; margin-top: 26px; } .cuptile h4 { margin: 4px 0 0; font-size: 15px; } .cuptile p { margin: 0; font-size: 12.5px; color: var(--muted); min-height: 54px; }
+
+/* ---------- board layouts ---------- */
+.stateboard { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
+.stateboard .picker { display: flex; flex-direction: column; gap: 6px; }
+.stateboard .picker .pill { text-align: left; border-radius: 12px; }
+.caption { margin-top: 12px; font-size: 13.5px; color: var(--muted); display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.caption b { color: var(--fg); display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 2px; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 14px; margin-top: 14px; }
+.gallery figure { margin: 0; } .gallery figcaption { font-size: 12.5px; font-weight: 700; margin: 0 0 6px 6px; } .gallery figcaption span { font-weight: 500; color: var(--muted); }
+.gallery .scene { padding: 14px; } .gallery .login-card { box-shadow: none; padding: 20px 20px 16px; } .gallery .cup { width: 110px; }
+.sizes { display: flex; gap: 18px; flex-wrap: wrap; align-items: flex-start; margin-top: 14px; }
+.sizes figure { margin: 0; } .sizes figcaption { font-size: 12.5px; font-weight: 700; margin: 0 0 6px 6px; }
+.sizes .scene { padding: 14px 12px; }
+
+/* ---------- the wait screen ---------- */
+.wf { border: 1px solid var(--surface-line); border-radius: 24px; background: var(--page); overflow: hidden; }
+.wf-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 10px 12px; background: var(--surface); border-bottom: 1px solid var(--surface-line); font-size: 12px; font-weight: 700; }
+.wf-bar .pill { padding: 4px 10px; font-size: 12px; }
+.wf-bar .lbl { color: var(--muted); margin-right: 4px; }
+.wf-stage { display: flex; min-height: 430px; } .wf.phone .wf-stage { flex-direction: column; min-height: 520px; }
+.rail { width: 64px; flex: none; background: var(--surface); border-right: 1px solid var(--surface-line); display: flex; flex-direction: column; gap: 10px; align-items: center; padding: 16px 0; }
+.wf.phone .rail { width: auto; flex-direction: row; justify-content: space-between; padding: 10px 16px; border-right: 0; border-bottom: 1px solid var(--surface-line); }
+.rail i { width: 28px; height: 28px; border-radius: 10px; background: var(--fill); display: block; } .rail i.on { background: var(--accent); }
+.wf-main { position: relative; flex: 1; min-width: 0; background: var(--surface); margin: 10px; border-radius: 22px; border: 1px solid var(--surface-line); overflow: hidden; }
+.page { position: absolute; inset: 0; padding: 22px; opacity: 0; transition: opacity .35s; overflow: hidden; } .page.on { opacity: 1; }
+.page .eb { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-text); } .page h4 { margin: 4px 0 2px; font-size: 22px; letter-spacing: -.015em; } .page p { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; } .tiles div { background: var(--fill); border-radius: 18px; padding: 14px; font-size: 12px; color: var(--muted); font-weight: 600; } .tiles b { display: block; color: var(--fg); font-size: 19px; margin-top: 4px; }
+.loader { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 18px; text-align: center; background: var(--surface); animation: fadein .25s; }
+@keyframes fadein { from { opacity: 0; } }
+.loader[hidden] { display: none; }
+.loader .cup { width: 168px; } .wf.phone .loader .cup { width: 140px; }
+.status { font-weight: 800; font-size: 17px; letter-spacing: -.01em; min-height: 26px; }
+.status-sub { color: var(--muted); font-size: 13.5px; min-height: 20px; max-width: 34ch; }
+.chip { font: inherit; font-size: 13px; font-weight: 800; background: var(--ink); color: var(--on-ink); border: 0; border-radius: 999px; padding: 9px 16px; cursor: pointer; margin-top: 10px; animation: fadein .4s; }
+.chip.ghost { background: var(--fill); color: var(--fg); }
+.chip[hidden] { display: none; }
+.arena { width: min(100%, 460px); margin-top: 4px; } .arena[hidden] { display: none; }
+.arena canvas { display: block; width: 100%; height: 200px; background: var(--page); border-radius: 18px; border: 1px solid var(--surface-line); touch-action: pan-y; cursor: grab; }
+.arena .row { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.arena .row .pill { padding: 3px 10px; font-size: 12px; }
+.errrow { display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap; background: var(--warning-tint); color: var(--warning-text); border-radius: 14px; padding: 9px 12px; font-size: 13px; font-weight: 600; margin-top: 10px; animation: fadein .3s; } .errrow[hidden] { display: none; }
+.errrow button, .errcard button { font: inherit; font-size: 13px; font-weight: 800; background: var(--ink); color: var(--on-ink); border: 0; border-radius: 10px; padding: 6px 12px; cursor: pointer; } .errrow button[disabled], .errcard button[disabled] { opacity: .4; cursor: default; }
+.timeline { padding: 10px 14px 12px; background: var(--surface); border-top: 1px solid var(--surface-line); font-size: 11.5px; color: var(--muted); font-weight: 600; }
+.track { position: relative; height: 6px; background: var(--fill); border-radius: 99px; margin: 6px 0 16px; } .track .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--accent); border-radius: 99px; }
+.track { margin-top: 24px; } .track .mk.up { top: -22px; } .track .mk.up::before { top: 15px; }
+.track .mk { position: absolute; top: 10px; transform: translateX(-50%); white-space: nowrap; font-size: 10.5px; } .track .mk::before { content: ""; position: absolute; left: 50%; top: -8px; width: 2px; height: 8px; background: var(--muted); opacity: .5; }
+.dual { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 18px; align-items: start; margin-top: 14px; }
+.dual.two { grid-template-columns: 1fr 1fr; }
+.errgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); gap: 14px; margin-top: 14px; }
+.errcard { background: var(--page); border: 1px solid var(--surface-line); border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.errcard .ico { width: 38px; height: 38px; border-radius: 13px; display: grid; place-items: center; font-weight: 800; background: var(--negative-tint); color: var(--negative); } .errcard.w .ico { background: var(--warning-tint); color: var(--warning-text); } .errcard.i .ico { background: var(--fill); color: var(--fg); }
+.errcard h4 { margin: 0; font-size: 16px; } .errcard p { margin: 0; font-size: 13.5px; color: var(--muted); } .errcard small { font-size: 11.5px; color: var(--muted); font-family: ui-monospace, Menlo, monospace; }
+.cases { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 14px; margin-top: 14px; }
+.case { background: var(--surface); border: 1px solid var(--surface-line); border-radius: 24px; padding: 18px 20px; }
+.case h3 { font-size: 14px; margin-bottom: 8px; } .case ol { margin: 0; padding-left: 20px; font-size: 13px; color: var(--muted); } .case li { margin-bottom: 6px; } .case li b { color: var(--fg); }
+table { width: 100%; border-collapse: collapse; font-size: 13px; } th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--divider); vertical-align: top; } th { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.q li { margin-bottom: 8px; }
+@media (max-width: 860px) { .stateboard, .dual, .dual.two { grid-template-columns: 1fr; } .stateboard .picker { flex-direction: row; flex-wrap: wrap; } .caption { grid-template-columns: 1fr; } }
+@media print { .loader { display: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="eyebrow">Design round 1 · login and loading</div>
+<h1>A calmer sign-in, and something to watch while the numbers load</h1>
+<p class="lead">Everything below is live: pick a state, press the button, run a slow load, play the game. Nothing here is wired to the app yet. All figures are made up, and the wait screen never shows real data. My picks are marked <span class="pick" style="margin:0">pick</span>; the open choices are at the bottom, each with a default.</p>
+<div class="nav"><a href="#login">1 · Sign-in page</a><a href="#cups">1b · Cup looks</a><a href="#states">2 · Every state</a><a href="#sizes">3 · Phone and short screens</a><a href="#wait">4 · The wait screen</a><a href="#games">5 · The games</a><a href="#errors">6 · When loading fails</a><a href="#cases">7 · Corner cases</a><a href="#build">8 · Build and questions</a></div>
+<div class="toggles">
+  <label><input type="checkbox" id="rm"> Pretend “reduce motion” is on</label>
+</div>
+
+<!-- 1 -->
+<h2 id="login">1 · The sign-in page <span class="pick">pick: The Cup</span></h2>
+<p class="lead">Same app colours and rings as the dashboards. One job: one button. The cup drops a coin in every 2.6 s (a CSS-only loop, so it also plays before any script, and the page is still a plain link without script). Use the list to see every state the page can be in.</p>
+<div class="board">
+  <div class="stateboard">
+    <div class="picker" id="picker" role="group" aria-label="Sign-in state"></div>
+    <div>
+      <div class="scene" id="live" style="min-height:560px"></div>
+      <div class="caption"><div><b>How you get here</b><span id="why"></span></div><div><b>What the page does</b><span id="rule"></span></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- 1b -->
+<h2 id="cups">1b · The cup, in five looks <span class="pick">pick: Ceramic 3D</span></h2>
+<p class="lead"><b>Fixed:</b> the coins used to be cut by the top edge of the picture. They now start above it, small and faint, grow into view, fall with gravity, spin as they go, and slip behind the cup's own front lip before they disappear, with a ripple on the chai when they land. Move your pointer around the page: the cups tilt toward it (off with reduced motion, and on touch). Pick a look and it changes the sign-in page, the wait screen and the game's cup everywhere on this board.</p>
+<div class="board"><div class="cupgrid" id="cupgrid"></div></div>
+
+<!-- 2 -->
+<h2 id="states">2 · Every state at a glance</h2>
+<p class="lead">Thirteen states. The page is one HTML response built on the server, so each is a few lines of text and one class, never a different page.</p>
+<div class="gallery" id="gallery"></div>
+
+<!-- 3 -->
+<h2 id="sizes">3 · Phone, small phone, short screens</h2>
+<p class="lead">No text box means no on-screen keyboard to fight with, so the page only needs to survive narrow and short. Under 480 px tall (a phone on its side) the cup and the subtitle step aside so the button never scrolls off.</p>
+<div class="sizes" id="sizes"></div>
+
+<!-- 4 -->
+<h2 id="wait">4 · The wait screen <span class="pick">pick: Cup first, a game after 3 s</span></h2>
+<p class="lead">Today every page waits on Google Sheets and nothing is drawn while it does: a blank page for as long as the read takes. This is the screen for that wait, in the content area only, so the sidebar stays put and works. The timing rules matter more than the picture: run the buttons to see them.</p>
+<div class="board">
+  <div class="dual">
+    <div id="wait-desktop"></div>
+    <div id="wait-phone"></div>
+  </div>
+  <table style="margin-top:20px">
+    <tr><th style="width:90px">Time</th><th>What the screen does</th><th>Why</th></tr>
+    <tr><td>0 – 250 ms</td><td>Nothing. The old page stays.</td><td>Most loads are quick; a loader that flashes for a blink is worse than none.</td></tr>
+    <tr><td>250 ms</td><td>The cup fades in, “Counting the coins…”, lines change every 2.4 s.</td><td>Tells him it's working. No percentage: there is nothing true to count.</td></tr>
+    <tr><td>on screen</td><td>Stays at least 600 ms once shown.</td><td>No flicker when the data lands just after it appears.</td></tr>
+    <tr><td>3 s</td><td>A quiet “Play while you wait” button appears under the cup.</td><td>Never auto-plays, never takes focus. Short waits never see a game.</td></tr>
+    <tr><td>8 s</td><td>Lines stop; “Still on it — Google Sheets is slow today.”</td><td>Honest, no cheerful loop pretending it's fine.</td></tr>
+    <tr><td>20 s</td><td>A bar: “Taking too long” with Try again. The game, if open, keeps going.</td><td>Don't rip the game away; don't leave him guessing either.</td></tr>
+    <tr><td>Fails</td><td>The cup and game stop; an error card (section 6).</td><td>A failure is a different screen, not a long wait.</td></tr>
+    <tr><td>Data arrives</td><td>Instant swap to the page; the game's best score is saved.</td><td>A page can't be told to wait for a game to finish. Nothing is lost.</td></tr>
+  </table>
+</div>
+
+<!-- 5 -->
+<h2 id="games">5 · The two games</h2>
+<p class="lead">Both are one-thumb, endless, and have no game-over screen to dismiss, because the page can arrive any second. Best score is kept in this browser only (<code>localStorage</code>, wrapped in a try so private windows still play). Click or tap the board, then use the arrow keys, A/D, space or touch. Esc, or Tab, leaves it.</p>
+<div class="board">
+  <div class="dual two">
+    <div>
+      <h3>Coin catch <span class="pick">pick</span></h3>
+      <p class="status-sub" style="max-width:none;margin:2px 0 8px">Slide the cup under the falling ₹. The red EMI slips cost you 3. Never ends; the score is “coins in the fund”.</p>
+      <canvas id="g-catch" class="gcanvas" tabindex="0" aria-label="Mini game: catch coins. Optional." style="width:100%;height:240px;border-radius:20px;border:1px solid var(--surface-line);background:var(--page);touch-action:pan-y;display:block"></canvas>
+    </div>
+    <div>
+      <h3>Coin hop</h3>
+      <p class="status-sub" style="max-width:none;margin:2px 0 8px">One tap to jump the cardamom pods. Speeds up. A hit just restarts after a tap.</p>
+      <canvas id="g-hop" class="gcanvas" tabindex="0" aria-label="Mini game: hop over pods. Optional." style="width:100%;height:240px;border-radius:20px;border:1px solid var(--surface-line);background:var(--page);touch-action:manipulation;display:block"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- 6 -->
+<h2 id="errors">6 · When loading fails</h2>
+<p class="lead">Each failure says what happened in plain words, what he can do, and that his data is untouched. No stack traces, only a short reference for the logs.</p>
+<div class="errgrid">
+  <div class="errcard"><div class="ico">!</div><h4>Can't reach Google Sheets</h4><p>Check your connection. It tries again by itself when you're back online.</p><button>Try again</button><small>ref: net-reset</small></div>
+  <div class="errcard w"><div class="ico">⏱</div><h4>Sheets needs a breather</h4><p>Google is limiting how fast we read. Nothing is lost.</p><button id="cd" disabled>Try again in 0:30</button><small>ref: quota-429</small></div>
+  <div class="errcard i"><div class="ico">↪</div><h4>You were signed out</h4><p>Taking you to sign-in, then straight back to Cards. (Shows the “session ended” state from section 1.)</p><button>Sign in</button><small>ref: session-expired</small></div>
+  <div class="errcard"><div class="ico">✕</div><h4>Something broke on our side</h4><p>It's not your data. Try again, or head to Overview.</p><div style="display:flex;gap:8px"><button>Try again</button><button style="background:var(--fill);color:var(--fg)">Overview</button></div><small>ref: 7f3a91c2</small></div>
+</div>
+
+<!-- 7 -->
+<h2 id="cases">7 · The corner cases, and what each one does</h2>
+<div class="cases">
+  <div class="case"><h3>Sign-in page</h3><ol>
+    <li><b>Already signed in</b> opens /login → straight on to the page. <i>Today it shows the sign-in again.</i></li>
+    <li><b>Double tap</b> → the first tap locks the button (“Opening Google…”); one request only.</li>
+    <li><b>Back button from Google</b> → the browser may restore the frozen “Opening…” page; on <code>pageshow</code> it resets to idle.</li>
+    <li><b>Google never answers</b> (8 s) → “Try again”, button unlocked.</li>
+    <li><b>Offline</b> → button off with the reason; unlocks on its own when back online.</li>
+    <li><b>Wrong Google account</b> → “isn't allowed here”, and the button becomes “Choose another account” (asks Google to show the picker, or it silently reuses the same account). Never says which address would work.</li>
+    <li><b>Cancel on Google</b> → a calm line, nothing changed.</li>
+    <li><b>Failed</b> (second tab, 10-minute cookie ran out, cookies blocked) → one message plus a cookie hint; the page he was going to is kept when known.</li>
+    <li><b>Session ended</b> → “carry on to Cards”, the name taken from a fixed list of our pages, never the raw address (so a crafted link can't put words on the page).</li>
+    <li><b>Just signed out</b> → “You're signed out on this device. Other devices stay in.” Needs <code>?signedout=1</code> from /logout.</li>
+  </ol></div>
+  <div class="case"><h3>Sign-in page, continued</h3><ol>
+    <li><b>Not set up</b> → button off, a plain line. The names of the missing settings show only when running locally (a stranger shouldn't be told how it's built).</li>
+    <li><b>Instagram, Facebook, LINE or any in-app browser</b> → Google refuses sign-in there (“disallowed_useragent”). Spot it from the user agent and show “Open in Safari or Chrome” and Copy link, instead of a button that dead-ends.</li>
+    <li><b>No JavaScript</b> → still a normal link; the cup is CSS only. Only the lock, offline and in-app checks need script, and they degrade to the plain button.</li>
+    <li><b>Odd addresses</b> → <code>?error=</code> shows only our three codes; <code>next</code> still goes through <code>safeNextPath</code>.</li>
+    <li><b>Keyboard and screen readers</b> → one button, visible focus ring, notices are <code>role="alert"</code>, “Opening…” sets <code>aria-busy</code>.</li>
+    <li><b>Phone</b> → 320 px wide fits; 100dvh and safe-area insets; short landscape hides the cup.</li>
+    <li><b>Dark mode</b> → the app is light-only until #57, so the page declares <code>color-scheme: light</code> rather than half-turn.</li>
+    <li><b>Reduced motion</b> → no coin drops or steam, a still cup.</li>
+    <li><b>Slow fonts or network</b> → system font first, the cup is inline SVG, nothing blocks the first paint.</li>
+    <li><b>Back after signing in</b> → the page is <code>no-store</code> and lands on rule 1 (already signed in), so no stale form.</li>
+  </ol></div>
+  <div class="case"><h3>Wait screen and games</h3><ol>
+    <li><b>Fast load</b> (&lt; 250 ms) → no loader at all. <b>Once shown</b>, it stays 600 ms.</li>
+    <li><b>No true progress</b> exists, so no percentage and no fake bar. A loop and honest lines.</li>
+    <li><b>The game is offered, never forced</b> (3 s); it never auto-plays or takes focus; Tab and Esc leave it.</li>
+    <li><b>Data lands mid-game</b> → instant swap, best score saved, nothing blocks.</li>
+    <li><b>Fails mid-game</b> → game stops, error card. <b>Times out</b> → game keeps going, the retry bar appears.</li>
+    <li><b>Tab in the background</b> → game and animation pause; nothing runs while hidden.</li>
+    <li><b>Keys only on the game</b> → arrow keys and space steer it only while it has focus, so page scroll and the sidebar's shortcuts are untouched.</li>
+    <li><b>Touch</b> → vertical swipes still scroll the page (<code>touch-action: pan-y</code>); Hop is a tap.</li>
+    <li><b>Reduced motion</b> → the cup stops and the lines still change; the game is still there but only if he taps Play.</li>
+    <li><b>Screen readers</b> → one polite “Loading your money”, then “Ready” or the error. The canvas is labelled optional.</li>
+    <li><b>Private windows</b> → <code>localStorage</code> can throw; the game works, the best score just isn't kept. Nothing is sent anywhere.</li>
+    <li><b>No data in it</b> → no figures, account names or card names on the wait screen.</li>
+    <li><b>Before script loads</b> → the cup is plain server HTML and CSS. The game's code is fetched only when he taps Play, so normal loads pay nothing.</li>
+    <li><b>Back and forward</b> → same wait screen, content area only; the sidebar links answer instantly.</li>
+    <li><b>Battery</b> → ≤ 60 fps, pixel ratio capped at 2, loop stops on leaving. <b>Print</b> → hidden.</li>
+    <li><b>Offline mid-load</b> → the “can't reach Sheets” card, which retries when online returns.</li>
+  </ol></div>
+</div>
+
+<!-- 8 -->
+<h2 id="build">8 · If you pick this: what gets built, and what I need from you</h2>
+<div class="board">
+  <table>
+    <tr><th style="width:250px">File</th><th>Change</th></tr>
+    <tr><td><code>src/app/login/loginPage.ts</code></td><td>The new page: cup, states, small inline script for lock, offline, pageshow and in-app detection. Still a server-built string; no React on /login.</td></tr>
+    <tr><td><code>src/app/login/route.ts</code></td><td>A valid session → redirect to <code>next</code>. Read <code>?signedout=1</code> and <code>?session=ended</code>.</td></tr>
+    <tr><td><code>src/app/logout/route.ts</code></td><td>Redirect to <code>/login?signedout=1</code>.</td></tr>
+    <tr><td><code>src/proxy.ts</code> + gate</td><td>When the redirect to /login was caused by a bad cookie, add <code>session=ended</code>.</td></tr>
+    <tr><td><code>src/app/login/google/route.ts</code></td><td>Optional <code>prompt=select_account</code> for “Choose another account”.</td></tr>
+    <tr><td><code>src/app/loading.tsx</code>, <code>src/components/shell/WaitCup.tsx</code></td><td>The server-rendered cup and the timing rules (client wrapper only for the timers).</td></tr>
+    <tr><td><code>src/components/shell/WaitGame.tsx</code> (lazy)</td><td>Both games on one canvas loop; best score in <code>localStorage</code>.</td></tr>
+    <tr><td><code>src/app/error.tsx</code>, <code>global-error.tsx</code></td><td>The four error cards; the 429 countdown is a pure function with a test.</td></tr>
+    <tr><td>tests</td><td>The state → copy map, the next-page name list, in-app user-agent detection, the loader timing as a pure function of elapsed time.</td></tr>
+  </table>
+  <h3 style="margin:22px 0 8px">What I need from you (defaults in bold; say “defaults” and I'll build them)</h3>
+  <ol class="q">
+    <li><b>Look:</b> The Cup (centered card, rings behind). Or want a split layout with a bigger picture on desktop?</li>
+    <li><b>Wait screen:</b> <b>cup first, game offered after 3 s</b>. Or cup only, no game at all?</li>
+    <li><b>Game:</b> <b>Coin catch</b> (Hop as an option inside it, or dropped).</li>
+    <li><b>Also on the login page itself?</b> <b>No game there</b>: it's a server-built page and the wait is a redirect, so just the “Opening Google…” lock.</li>
+    <li><b>Cup look:</b> <b>Ceramic 3D</b>, or any of the other four (section 1b). Same coin drop in all of them, so it is only taste.</li>
+    <li><b>Greeting on the login page:</b> <b>“Good evening, Prathik”</b> (as on the dashboards, no script needed for “Welcome back” fallback) or no name, in case someone else sees the page?</li>
+    <li><b>Slow Sheets:</b> I'd also like a <code>loading.tsx</code> for the sub-pages so each shows the same cup. Default: <b>yes, one shared screen</b>.</li>
+  </ol>
+</div>
+</div>
+
+<script>
+/* ============ shared bits ============ */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const store = { get(k) { try { return Number(localStorage.getItem(k)) || 0; } catch { return 0; } }, set(k, v) { try { localStorage.setItem(k, String(v)); } catch { /* private window */ } } };
+const reduced = () => document.documentElement.classList.contains("rm") || matchMedia("(prefers-reduced-motion: reduce)").matches;
+$("#rm").addEventListener("change", (e) => document.documentElement.classList.toggle("rm", e.target.checked));
+
+/* ---- the cup: five looks, one generator. Every look has the same coin, ripple and steam timing; only the drawing differs. ---- */
+document.documentElement.dataset.cup = "ceramic";
+const LOOKS = {
+  flat: { name: "Flat", vibe: "The first round's cup, with the clipping fixed. Quiet and cheap to draw.", end: 70, liq: 58, steam: 0 },
+  ceramic: { name: "Ceramic 3D", vibe: "Cream porcelain with a green band, a lit rim and a soft shadow. Tilts with your pointer.", end: 78, liq: 60, steam: 0 },
+  clay: { name: "Clay", vibe: "Chunky matte, the app's green. Friendly and toy-like, no outlines.", end: 80, liq: 60, steam: 0 },
+  glass: { name: "Cutting-chai glass", vibe: "The tumbler chai is really served in: see-through, a creamy head, glints.", end: 80, liq: 64, steam: -6 },
+  kulhad: { name: "Kulhad", vibe: "Terracotta clay cup with grooves, no handle. The most 'chai' of the five.", end: 74, liq: 57, steam: -4 },
+};
+const COINX = [66, 78, 90]; // inside every cup's opening
+const coinsSVG = () => COINX.map((v, i) => `<g class="coin" style="--x:${v}px;animation-delay:${(i * 0.87).toFixed(2)}s"><g class="fl" style="animation-delay:${(-i * 0.23).toFixed(2)}s"><circle class="face" r="9"/><circle class="ring" r="6.2"/><text>₹</text></g></g>`).join("");
+const ripplesSVG = (y) => COINX.map((v, i) => `<ellipse class="ripple" cx="${v}" cy="${y}" rx="12" ry="3" style="animation-delay:${(i * 0.87).toFixed(2)}s"/>`).join("");
+const steamSVG = (dy) => `<g class="steam" transform="translate(0 ${dy})"><path d="M50 40c-6-8 6-14 0-24" style="animation-delay:.2s"/><path d="M78 36c-6-8 6-14 0-24" style="animation-delay:1.1s"/><path d="M106 40c-6-8 6-14 0-24" style="animation-delay:2s"/></g>`;
+const DRAW = {
+  flat: () => `${coinsSVG()}${steamSVG(0)}
+    <ellipse class="saucer" cx="78" cy="116" rx="54" ry="8"/><path class="handle" d="M121 68q26-2 22 18-4 16-30 14"/>
+    <path class="body" d="M34 58H122V76C122 100 104 112 78 112 52 112 34 100 34 76Z"/><ellipse class="liquid" cx="78" cy="58" rx="44" ry="7"/>${ripplesSVG(58)}`,
+  ceramic: () => `<ellipse cx="78" cy="120" rx="62" ry="7" fill="#000" opacity=".2" filter="url(#blur3)"/>
+    <ellipse cx="78" cy="114" rx="58" ry="9" fill="url(#cerSaucer)"/><ellipse cx="78" cy="112" rx="40" ry="5" fill="oklch(0.82 0.025 78)"/>
+    <path d="M121 68C148 64 150 96 113 100" fill="none" stroke="oklch(0.7 0.035 75)" stroke-width="10" stroke-linecap="round"/><path d="M121 68C148 64 150 96 113 100" fill="none" stroke="oklch(0.97 0.01 85)" stroke-width="6" stroke-linecap="round"/>
+    <ellipse cx="78" cy="58" rx="44" ry="9" fill="oklch(0.8 0.025 78)"/><ellipse cx="78" cy="60" rx="40" ry="7" fill="url(#liqG)"/>
+    ${coinsSVG()}${ripplesSVG(60)}${steamSVG(0)}
+    <path d="M34 58C34 96 54 112 78 112C102 112 122 96 122 58A44 9 0 0 1 34 58Z" fill="url(#cerBody)"/>
+    <g clip-path="url(#clipCer)"><rect x="30" y="84" width="100" height="7" fill="oklch(0.72 0.19 145)"/><rect x="30" y="84" width="100" height="7" fill="url(#cerBody)" opacity=".45"/></g>
+    <path d="M41 66C41 86 49 99 60 105L63 102C54 95 47 83 47 68Z" fill="#fff" opacity=".6"/><path d="M34 58A44 9 0 0 0 122 58" fill="none" stroke="#fff" stroke-width="1.8" opacity=".95"/>
+    <ellipse cx="78" cy="58" rx="44" ry="9" fill="none" stroke="oklch(0.72 0.03 75)" stroke-width="1"/>`,
+  clay: () => `<ellipse cx="78" cy="121" rx="64" ry="8" fill="oklch(0.42 0.1 150)" opacity=".28" filter="url(#blur3)"/>
+    <path d="M124 68C158 62 156 104 118 104" fill="none" stroke="oklch(0.6 0.17 146)" stroke-width="12" stroke-linecap="round"/><path d="M124 68C158 62 156 104 118 104" fill="none" stroke="oklch(0.78 0.18 145)" stroke-width="6" stroke-linecap="round" opacity=".7"/>
+    <ellipse cx="78" cy="58" rx="48" ry="10" fill="oklch(0.5 0.12 150)"/><ellipse cx="78" cy="60" rx="43" ry="7.5" fill="url(#liqG)"/>
+    ${coinsSVG()}${ripplesSVG(60)}${steamSVG(0)}
+    <path d="M30 58C30 100 52 114 78 114C104 114 126 100 126 58A48 10 0 0 1 30 58Z" fill="url(#clayBody)"/>
+    <path d="M38 72C38 86 44 95 52 100C47 91 45 81 47 72Z" fill="#fff" opacity=".32"/><path d="M30 58A48 10 0 0 0 126 58" fill="none" stroke="oklch(0.88 0.12 145)" stroke-width="3" opacity=".9"/>`,
+  glass: () => `<ellipse cx="78" cy="118" rx="50" ry="6" fill="#000" opacity=".18" filter="url(#blur3)"/>
+    <ellipse cx="78" cy="46" rx="40" ry="8" fill="oklch(0.92 0.02 210 / .55)"/>
+    ${coinsSVG()}
+    <path d="M42 64L52 108A26 5 0 0 0 104 108L114 64A36 6 0 0 1 42 64Z" fill="url(#liqGlass)"/><ellipse cx="78" cy="64" rx="36" ry="6" fill="url(#foam)"/>${ripplesSVG(64)}${steamSVG(-6)}
+    <path d="M38 46L52 108A26 5 0 0 0 104 108L118 46A40 8 0 0 1 38 46Z" fill="url(#glassG)" stroke="oklch(0.62 0.03 220)" stroke-width="1.4" stroke-opacity=".7"/>
+    <ellipse cx="78" cy="108" rx="26" ry="5" fill="#fff" opacity=".4"/><path d="M45 54L55 100L58.500 100L48.500 54Z" fill="#fff" opacity=".75"/><path d="M111 56L103 96L105.500 96L113.500 56Z" fill="#fff" opacity=".45"/>
+    <ellipse cx="78" cy="46" rx="40" ry="8" fill="none" stroke="oklch(0.62 0.03 220)" stroke-width="1.4" stroke-opacity=".7"/><path d="M38 46A40 8 0 0 0 118 46" fill="none" stroke="#fff" stroke-width="1.6" opacity=".9"/>`,
+  kulhad: () => `<ellipse cx="78" cy="118" rx="48" ry="6" fill="#000" opacity=".2" filter="url(#blur3)"/><ellipse cx="78" cy="113" rx="28" ry="4.500" fill="oklch(0.4 0.1 42)"/>
+    <ellipse cx="78" cy="50" rx="40" ry="8" fill="oklch(0.3 0.06 40)"/><ellipse cx="78" cy="57" rx="34" ry="6" fill="url(#liqG)"/>
+    ${coinsSVG()}${ripplesSVG(57)}${steamSVG(-4)}
+    <path d="M38 50L50 108Q52 114 60 114L96 114Q104 114 106 108L118 50A40 8 0 0 1 38 50Z" fill="url(#kulG)"/>
+    <path d="M42 70A37 7 0 0 0 114 70M45 84A34 6.500 0 0 0 111 84M47.500 98A31 6 0 0 0 108.500 98" fill="none" stroke="oklch(0.33 0.09 40)" stroke-width="1.2" opacity=".4"/>
+    <path d="M44 58L53 102L57 101L48 58Z" fill="#fff" opacity=".2"/><g fill="oklch(0.3 0.08 40)" opacity=".35"><circle cx="70" cy="76" r="1"/><circle cx="92" cy="90" r="1.100"/><circle cx="62" cy="96" r=".9"/><circle cx="100" cy="68" r=".9"/><circle cx="84" cy="102" r="1"/></g>
+    <path d="M38 50A40 8 0 0 0 118 50" fill="none" stroke="oklch(0.72 0.12 55)" stroke-width="3"/>`,
+};
+const CUP = (look = document.documentElement.dataset.cup, fixed = false) => `<svg class="cup${fixed ? " fixed" : ""}" data-look="${look}" viewBox="0 0 160 130" style="--end:${LOOKS[look].end}px" aria-hidden="true" focusable="false">${DRAW[look]()}</svg>`;
+/* shared gradients, once for the page (a zero-size svg, never display:none, or some browsers lose them) */
+document.body.insertAdjacentHTML("afterbegin", `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <radialGradient id="coinG" cx=".35" cy=".3" r=".85"><stop offset="0" style="stop-color:oklch(0.95 0.1 98)"/><stop offset=".6" style="stop-color:oklch(0.85 0.15 88)"/><stop offset="1" style="stop-color:oklch(0.74 0.15 82)"/></radialGradient>
+  <filter id="blur3" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="3"/></filter>
+  <linearGradient id="cerBody" x1="0" x2="1"><stop offset="0" style="stop-color:oklch(0.8 0.025 78)"/><stop offset=".22" style="stop-color:oklch(0.97 0.01 85)"/><stop offset=".6" style="stop-color:oklch(0.99 0.005 90)"/><stop offset="1" style="stop-color:oklch(0.76 0.035 72)"/></linearGradient>
+  <linearGradient id="cerSaucer" x1="0" x2="1"><stop offset="0" style="stop-color:oklch(0.8 0.025 78)"/><stop offset=".5" style="stop-color:oklch(0.97 0.01 85)"/><stop offset="1" style="stop-color:oklch(0.76 0.035 72)"/></linearGradient>
+  <radialGradient id="clayBody" cx=".34" cy=".28" r=".95"><stop offset="0" style="stop-color:oklch(0.84 0.18 145)"/><stop offset=".55" style="stop-color:oklch(0.72 0.19 145)"/><stop offset="1" style="stop-color:oklch(0.52 0.15 148)"/></radialGradient>
+  <linearGradient id="glassG" x1="0" x2="1"><stop offset="0" style="stop-color:#fff;stop-opacity:.55"/><stop offset=".3" style="stop-color:#fff;stop-opacity:.06"/><stop offset=".75" style="stop-color:#fff;stop-opacity:.1"/><stop offset="1" style="stop-color:#fff;stop-opacity:.5"/></linearGradient>
+  <linearGradient id="kulG" x1="0" x2="1"><stop offset="0" style="stop-color:oklch(0.4 0.09 40)"/><stop offset=".35" style="stop-color:oklch(0.62 0.13 48)"/><stop offset=".7" style="stop-color:oklch(0.56 0.12 45)"/><stop offset="1" style="stop-color:oklch(0.36 0.08 38)"/></linearGradient>
+  <linearGradient id="liqG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:oklch(0.74 0.1 64)"/><stop offset="1" style="stop-color:oklch(0.52 0.09 55)"/></linearGradient>
+  <linearGradient id="liqGlass" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:oklch(0.66 0.11 58)"/><stop offset="1" style="stop-color:oklch(0.36 0.07 48)"/></linearGradient>
+  <linearGradient id="foam" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:oklch(0.9 0.05 78)"/><stop offset="1" style="stop-color:oklch(0.78 0.08 68)"/></linearGradient>
+  <clipPath id="clipCer"><path d="M34 58C34 96 54 112 78 112C102 112 122 96 122 58A44 9 0 0 1 34 58Z"/></clipPath>
+</defs></svg>`);
+const MARK = `<svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 10h12v3c0 3-2.5 5-6 5s-6-2-6-5z" fill="#1c2a20"/><path d="M17 11h1.5a2 2 0 0 1 0 4H17" fill="none" stroke="#1c2a20" stroke-width="2"/><path d="M8 7c-1-1.5 1-2 0-3.5M12 7c-1-1.5 1-2 0-3.5" fill="none" stroke="#1c2a20" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+const G = `<span class="g"><svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M22.5 12.2c0-.8-.1-1.5-.2-2.2H12v4.2h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2.1-1.9 3.2-4.800 3.200-8z"/><path fill="#34A853" d="M12 23c3 0 5.500-1 7.300-2.700l-3.600-2.700c-1 .7-2.300 1.100-3.700 1.100-2.800 0-5.200-1.900-6.100-4.500H2.200v2.800A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.900 14.200a6.600 6.600 0 0 1 0-4.200V7.200H2.200a11 11 0 0 0 0 9.800z"/><path fill="#EA4335" d="M12 5.400c1.600 0 3 .6 4.100 1.600l3.100-3.100A11 11 0 0 0 2.200 7.200L5.900 10c.9-2.600 3.300-4.600 6.100-4.600z"/></svg></span>`;
+
+/* ============ 1–3 · the sign-in page ============ */
+const hour = new Date().getHours();
+const GREET = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+const ICON = { err: "!", warn: "!", info: "i", ok: "✓" };
+const STATES = {
+  idle: { name: "Idle", label: "Continue with Google", why: "Opens /login signed out.", rule: "Focus rings the button; Enter works (it is a link, so Space scrolls). It is a plain link to /login/google, so it works with no script." },
+  redirecting: { name: "Opening Google…", busy: true, label: "Opening Google…", why: "Pressed the button.", rule: "Locks at once (second taps do nothing), label changes, aria-busy on. Unlocks if the page comes back from the back/forward cache." },
+  slow: { name: "Google is slow", label: "Try again", note: ["warn", "Google is taking a while.", "Check your connection, then try again."], why: "Still on the page 8 s after pressing the button.", rule: "Unlocks the button as “Try again”. Never auto-retries (it would start a second sign-in and break the first)." },
+  offline: { name: "Offline", disabled: true, label: "Continue with Google", note: ["warn", "You're offline.", "Sign-in needs the internet. This unlocks when you're back."], why: "The browser says it has no network.", rule: "Button off with the reason. Listens for the online event and unlocks itself, nothing to reload." },
+  denied: { name: "Wrong account", label: "Choose another account", note: ["err", "That Google account isn't allowed here."], why: "Signed in to Google with an address that isn't the allowed one. (/login?error=denied)", rule: "Says nothing about which address works. The button asks Google to show the account picker, so it doesn't silently reuse the same account." },
+  cancelled: { name: "Cancelled", label: "Try again", note: ["info", "Sign-in was cancelled.", "Nothing was changed."], why: "Pressed Cancel or Back on Google's page. (/login?error=cancelled)", rule: "A calm line, not red: he chose it. Keeps the page he was going to." },
+  failed: { name: "Didn't work", label: "Try again", note: ["err", "Sign-in didn't work. Try again.", "If it keeps happening, check that cookies are on for this site and that only one sign-in tab is open."], why: "State didn't match, the 10-minute window ran out, a second tab, cookies blocked, Google replied badly. (/login?error=failed)", rule: "One message for all of them (the server deliberately says nothing more) plus the two things he can actually check." },
+  expired: { name: "Session ended", label: "Continue with Google", note: ["info", "Your session ended. Sign in to carry on to <b>Cards</b>."], why: "Opened a page with a missing or expired cookie; the proxy sent him here with the page in the address.", rule: "The page name comes from a fixed list of our own pages. An unknown path just says “carry on”, never echoes the address." },
+  signedout: { name: "Signed out", label: "Sign in again", note: ["ok", "You're signed out on this device.", "Other devices stay signed in."], why: "Pressed Sign out in the sidebar. (/login?signedout=1)", rule: "Confirms it worked. Says the honest thing about other devices (the cookie is stateless)." },
+  already: { name: "Already in", busy: true, label: "Opening Cards…", note: ["ok", "You're already signed in."], why: "Opens /login with a valid session (a bookmark, the Back button after signing in).", rule: "Redirects at once on the server; this screen is only what a slow redirect looks like. Today the sign-in page shows again instead." },
+  unconfigured: { name: "Not set up", disabled: true, label: "Continue with Google", note: ["err", "Sign-in isn't set up on this server yet.", "<span class='devtag'>local only</span> Set <code>GOOGLE_CLIENT_ID</code>, <code>GOOGLE_CLIENT_SECRET</code>, <code>ALLOWED_EMAIL</code>, <code>SESSION_SECRET</code>."], why: "A server missing one of its four settings (503).", rule: "In production the names are left out: a stranger shouldn't learn how it's built. Locally they're shown, as today." },
+  inapp: { name: "In-app browser", disabled: true, label: "Continue with Google", note: ["warn", "Google doesn't allow sign-in inside this app's browser.", "Open this page in Safari or Chrome."], alt: ["Copy link", "Open in browser"], why: "Opened from Instagram, Facebook, LINE or any embedded web view.", rule: "Spotted from the user agent. Offers a way out instead of a button that ends on Google's “disallowed_useragent” error." },
+  nojs: { name: "No JavaScript", label: "Continue with Google", note: ["info", "Works without script.", "Only the cup's drops and steam are CSS. The lock, offline and in-app checks quietly sit out."], why: "Script blocked or failed to load.", rule: "The button is a normal link, so signing in still works." },
+};
+const ORDER = Object.keys(STATES);
+
+function card(key) {
+  const s = STATES[key];
+  const note = s.note ? `<div class="notice ${s.note[0]}" role="${s.note[0] === "err" ? "alert" : "status"}"><span class="ic">${ICON[s.note[0]]}</span><div>${s.note[1]}${s.note[2] ? `<small>${s.note[2]}</small>` : ""}</div></div>` : "";
+  const btn = `<a class="gbtn${s.busy ? " busy" : ""}" href="#" data-act="go"${s.disabled ? ' aria-disabled="true" tabindex="-1"' : ""}${s.busy ? ' aria-busy="true"' : ""}>${s.busy ? '<span class="spin"></span>' : G}<span>${s.label}</span></a>`;
+  const alt = s.alt ? `<div class="alt"><button type="button">${s.alt[0]}</button><button type="button">${s.alt[1]}</button></div>` : "";
+  return `<section class="login-card" aria-label="Sign in">
+    <div class="brand"><span class="mark">${MARK}</span>chaiCoffeeFund</div>
+    ${CUP()}
+    <h3>${GREET}, Prathik</h3>
+    <p class="sub">Sign in with Google to open your money.</p>
+    ${note}${btn}${alt}
+    <p class="fine"><svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3M6 11h12v9H6z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>Only Prathik's Google account can sign in · stays signed in 30 days</p>
+  </section>`;
+}
+
+/* live board */
+let liveKey = "idle", slowTimer = 0;
+const live = $("#live");
+function showLive(key) {
+  clearTimeout(slowTimer);
+  liveKey = key;
+  live.innerHTML = card(key);
+  $("#why").textContent = STATES[key].why; $("#rule").textContent = STATES[key].rule;
+  document.querySelectorAll("#picker .pill").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.k === key)));
+  if (key === "redirecting") slowTimer = setTimeout(() => showLive("slow"), 3000); // 8 s on the real page; shortened here
+}
+$("#picker").innerHTML = ORDER.map((k) => `<button class="pill" data-k="${k}" aria-pressed="false">${STATES[k].name}</button>`).join("");
+$("#picker").addEventListener("click", (e) => { const b = e.target.closest("[data-k]"); if (b) showLive(b.dataset.k); });
+live.addEventListener("click", (e) => { if (e.target.closest('[data-act="go"]')) { e.preventDefault(); if (!["offline", "unconfigured", "inapp", "redirecting", "already"].includes(liveKey)) showLive("redirecting"); } });
+addEventListener("offline", () => showLive("offline")); addEventListener("online", () => liveKey === "offline" && showLive("idle"));
+showLive("idle");
+
+/* gallery */
+$("#gallery").innerHTML = ORDER.map((k) => `<figure><figcaption>${STATES[k].name} <span>· ${k}</span></figcaption><div class="scene">${card(k)}</div></figure>`).join("");
+
+/* sizes */
+$("#sizes").innerHTML = [
+  ["Phone · 390 × 780", "width:390px;height:780px", ""],
+  ["Small phone · 320 × 640", "width:320px;height:640px", ""],
+  ["Phone on its side · 700 × 320", "width:700px;height:320px", "compact"],
+].map(([t, st, c]) => `<figure><figcaption>${t}</figcaption><div class="scene ${c}" style="${st};align-content:center">${card(c ? "failed" : "idle")}</div></figure>`).join("");
+
+/* ============ 4 · the wait screen ============ */
+const LINES = ["Heating the pan…", "Counting the coins…", "Steeping your numbers…", "Stirring in the sugar…", "Almost poured…"];
+function mountWait(root, { phone, label }) {
+  root.innerHTML = `<div class="wf${phone ? " phone" : ""}">
+    <div class="wf-bar"><span class="lbl">${label}</span>
+      <button class="pill" data-run="200">Fast 0.2 s</button><button class="pill" data-run="4000">Normal 4 s</button><button class="pill" data-run="12000">Slow 12 s</button><button class="pill" data-run="never">Never (timeout)</button><button class="pill" data-run="fail">Fails at 2 s</button></div>
+    <div class="wf-stage">
+      <div class="rail"><i class="on"></i><i></i><i></i><i></i><i></i></div>
+      <div class="wf-main">
+        <div class="page on" data-page><div class="eb">Overview</div><h4>${GREET}, Prathik</h4><p>Press a button above to start a load.</p><div class="tiles"><div>Net worth<b>₹25.6L</b></div><div>This month<b>₹1.2L</b></div><div>Due soon<b>₹14.2k</b></div></div></div>
+        <div class="loader" data-loader hidden role="status" aria-live="polite">
+          <div data-cupwrap>${CUP()}</div>
+          <div class="arena" data-arena hidden><canvas tabindex="0" aria-label="Mini game: optional."></canvas><div class="row"><span data-score></span><span><button class="pill" data-g="catch" aria-pressed="true">Catch</button> <button class="pill" data-g="hop" aria-pressed="false">Hop</button> · Esc to leave</span></div></div>
+          <div class="status" data-status></div><div class="status-sub" data-sub></div>
+          <button class="chip" data-play hidden>🎮 Play while you wait</button>
+          <div class="errrow" data-slowbar hidden><span>Taking too long.</span><button data-retry>Try again</button></div>
+          <div class="errrow" data-fail hidden style="background:var(--negative-tint);color:oklch(.4 .14 25)"><span><b>Can't reach Google Sheets.</b> Your data is safe.</span><button data-retry>Try again</button></div>
+        </div>
+      </div>
+    </div>
+    <div class="timeline"><div class="track"><div class="fill" data-fill></div>
+      <span class="mk up" style="left:1.25%;transform:none">250 ms · cup</span><span class="mk" style="left:15%">3 s · game</span><span class="mk" style="left:40%">8 s · slow</span><span class="mk" style="left:100%;transform:translateX(-100%)">20 s · retry</span></div>
+      <span data-clock>0.0 s</span> · <span data-phase>idle</span></div>
+  </div>`;
+  const q = (s) => root.querySelector(s);
+  const page = q("[data-page]"), loader = q("[data-loader]"), status = q("[data-status]"), sub = q("[data-sub]"), play = q("[data-play]"), arena = q("[data-arena]"), cupwrap = q("[data-cupwrap]"), canvas = q("canvas");
+  let timers = [], t0 = 0, shownAt = 0, ticker = 0, lineI = 0, lineT = 0, done = true, game = null, kind = "catch", lastMs = 4000;
+  const at = (ms, fn) => timers.push(setTimeout(fn, ms));
+  const phase = (t) => (q("[data-phase]").textContent = t);
+  const stopGame = () => { if (game) { game.stop(); game = null; } arena.hidden = true; cupwrap.hidden = false; };
+  const startGame = () => { stopGame(); cupwrap.hidden = true; arena.hidden = false; game = makeGame(canvas, kind, (s, b) => (q("[data-score]").textContent = `₹ ${s} · best ${b}`)); game.start(); canvas.focus({ preventScroll: true }); };
+  function reset() { timers.forEach(clearTimeout); clearInterval(ticker); clearInterval(lineT); timers = []; stopGame(); loader.hidden = true; ["[data-slowbar]", "[data-fail]", "[data-play]"].forEach((s) => (q(s).hidden = true)); q("[data-fill]").style.width = "0"; sub.textContent = ""; }
+  function lines() { clearInterval(lineT); if (reduced()) { status.textContent = "Loading your money…"; return; } lineI = 0; status.textContent = LINES[1]; lineT = setInterval(() => { lineI = (lineI + 1) % LINES.length; status.textContent = LINES[lineI]; }, 2400); }
+  function finish(ok) {
+    done = true; clearInterval(ticker); clearInterval(lineT); timers.forEach(clearTimeout);
+    const wait = loader.hidden ? 0 : Math.max(0, 600 - (performance.now() - shownAt));
+    const shown = !loader.hidden;
+    setTimeout(() => { stopGame(); loader.hidden = true; page.classList.add("on"); if (shown) phase("ready · page swapped in, best score saved"); }, wait);
+    phase(!shown ? "ready · loader never showed" : wait ? "data arrived · holding the cup to 600 ms" : "data arrived");
+  }
+  function run(ms) {
+    reset(); done = false; lastMs = ms; t0 = performance.now(); page.classList.remove("on"); page.style.opacity = "";
+    page.classList.add("on"); // the old page stays until the loader shows
+    phase("waiting (old page still visible)");
+    ticker = setInterval(() => { const e = (performance.now() - t0) / 1000; q("[data-clock]").textContent = e.toFixed(1) + " s"; q("[data-fill]").style.width = Math.min(100, (e / 20) * 100) + "%"; }, 100);
+    at(250, () => { if (done) return; page.classList.remove("on"); loader.hidden = false; shownAt = performance.now(); lines(); phase("cup showing"); });
+    at(3000, () => { if (done || arena.hidden === false) return; play.hidden = false; phase("game offered"); });
+    at(8000, () => { if (done) return; clearInterval(lineT); status.textContent = "Still on it."; sub.textContent = "Google Sheets is slow today. Nothing is lost."; phase("slow message"); });
+    at(20000, () => { if (done) return; q("[data-slowbar]").hidden = false; phase("timeout bar · game keeps going"); });
+    if (ms === "fail") at(2000, () => { if (done) return; done = true; clearInterval(ticker); clearInterval(lineT); stopGame(); play.hidden = true; status.textContent = ""; sub.textContent = ""; q("[data-fail]").hidden = false; phase("failed · cup and game stopped"); });
+    else if (typeof ms === "number") at(ms, () => finish(true));
+  }
+  root.addEventListener("click", (e) => {
+    const r = e.target.closest("[data-run]"); if (r) { const v = r.dataset.run; run(v === "never" || v === "fail" ? v : Number(v)); return; }
+    if (e.target.closest("[data-play]")) { play.hidden = true; startGame(); return; }
+    if (e.target.closest("[data-retry]")) { run(4000); return; }
+    const g = e.target.closest("[data-g]"); if (g) { kind = g.dataset.g; root.querySelectorAll("[data-g]").forEach((b) => b.setAttribute("aria-pressed", String(b === g))); startGame(); }
+  });
+  canvas.addEventListener("keydown", (e) => { if (e.key === "Escape") { stopGame(); play.hidden = false; (play.focus && play.focus()); } });
+  return { run };
+}
+mountWait($("#wait-desktop"), { phone: false, label: "Desktop · content area only, sidebar stays" });
+const wp = mountWait($("#wait-phone"), { phone: true, label: "Phone" });
+
+/* ============ 5 · the games ============ */
+function makeGame(canvas, kind, onScore) {
+  const ctx = canvas.getContext("2d");
+  const cs = getComputedStyle(document.documentElement);
+  const col = (n) => cs.getPropertyValue(n).trim();
+  const C = { fg: col("--fg"), muted: col("--muted"), coin: col("--coin"), edge: col("--coin-edge"), chai: col("--chai"), dark: col("--chai-dark"), bad: col("--negative"), ok: col("--accent"), page: col("--page"), fill: col("--fill-strong") };
+  const cupColor = () => ({ flat: C.dark, ceramic: "oklch(0.96 0.012 85)", clay: "oklch(0.72 0.19 145)", glass: "oklch(0.9 0.03 210 / .7)", kulhad: "oklch(0.58 0.12 45)" })[document.documentElement.dataset.cup] || C.dark;
+  const handleColor = () => ({ ceramic: "oklch(0.8 0.03 78)", glass: "oklch(0.7 0.03 220)" })[document.documentElement.dataset.cup] || cupColor();
+  const key = "chai-best-" + kind;
+  let W = 0, H = 0, raf = 0, last = 0, running = false, best = store.get(key), score = 0, t = 0, hint = 4;
+  const keys = new Set();
+  const fit = () => { const r = canvas.getBoundingClientRect(); const d = Math.min(devicePixelRatio || 1, 2); W = r.width; H = r.height; canvas.width = Math.round(W * d); canvas.height = Math.round(H * d); ctx.setTransform(d, 0, 0, d, 0, 0); };
+  const bump = (n) => { score = Math.max(0, score + n); if (score > best) { best = score; store.set(key, best); } onScore && onScore(score, best); };
+  const text = (s, x, y, size = 13, color = C.fg, align = "center", w = 700) => { ctx.font = `${w} ${size}px Manrope, system-ui, sans-serif`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = "middle"; ctx.fillText(s, x, y); };
+  const coin = (x, y, r, big) => { ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fillStyle = C.coin; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = C.edge; ctx.stroke(); text(big ? "₹10" : "₹", x, y + 1, big ? 10 : 12, "oklch(0.45 0.1 75)", "center", 800); };
+  const rr = (x, y, w, h, r) => { ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, r) : ctx.rect(x, y, w, h); };
+
+  /* --- catch --- */
+  const cup = { x: 0, tx: 0, w: 64 }; let coins = [], spawn = 0, flash = [];
+  const catchGame = {
+    init() { cup.x = cup.tx = W / 2; coins = []; spawn = 0.4; flash = []; },
+    update(dt) {
+      if (keys.has("ArrowLeft") || keys.has("a")) cup.tx -= 560 * dt; if (keys.has("ArrowRight") || keys.has("d")) cup.tx += 560 * dt;
+      cup.tx = Math.max(cup.w / 2, Math.min(W - cup.w / 2, cup.tx)); cup.x += (cup.tx - cup.x) * Math.min(1, dt * 16);
+      spawn -= dt; if (spawn <= 0) { spawn = Math.max(0.36, 0.95 - score * 0.012) * (0.8 + Math.random() * 0.5); const r = Math.random(); coins.push({ x: 20 + Math.random() * (W - 40), y: -16, v: (110 + Math.min(score, 60) * 2.4) * (H / 240), k: r < 0.14 ? "emi" : r < 0.22 ? "big" : "coin" }); }
+      for (const c of coins) { c.y += c.v * dt; if (!c.hit && c.y > H - 52 && c.y < H - 26 && Math.abs(c.x - cup.x) < cup.w / 2 + 4) { c.hit = true; const d = c.k === "emi" ? -3 : c.k === "big" ? 10 : 1; bump(d); flash.push({ x: c.x, y: H - 60, t: 0, s: (d > 0 ? "+" : "") + d, bad: d < 0 }); } }
+      coins = coins.filter((c) => !c.hit && c.y < H + 20); flash.forEach((f) => { f.t += dt; f.y -= 40 * dt; }); flash = flash.filter((f) => f.t < 0.7);
+    },
+    draw() {
+      for (const c of coins) { if (c.k === "emi") { rr(c.x - 17, c.y - 10, 34, 20, 6); ctx.fillStyle = C.bad; ctx.fill(); text("EMI", c.x, c.y + 1, 10, "#fff", "center", 800); } else coin(c.x, c.y, c.k === "big" ? 13 : 10, c.k === "big"); }
+      const y = H - 46; ctx.fillStyle = C.fill; ctx.beginPath(); ctx.ellipse(cup.x, H - 8, cup.w / 2 + 12, 5, 0, 0, 7); ctx.fill();
+      ctx.strokeStyle = handleColor(); ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(cup.x + cup.w / 2 - 4, y + 16, 11, -1.2, 1.4); ctx.stroke();
+      ctx.fillStyle = cupColor(); ctx.beginPath(); ctx.moveTo(cup.x - cup.w / 2, y); ctx.lineTo(cup.x + cup.w / 2, y); ctx.quadraticCurveTo(cup.x + cup.w / 2 - 4, y + 38, cup.x, y + 38); ctx.quadraticCurveTo(cup.x - cup.w / 2 + 4, y + 38, cup.x - cup.w / 2, y); ctx.fill();
+      if (document.documentElement.dataset.cup !== "flat") { ctx.strokeStyle = "oklch(0.6 0.04 70 / .55)"; ctx.lineWidth = 1.2; ctx.stroke(); ctx.fillStyle = "rgba(255,255,255,.35)"; ctx.beginPath(); ctx.moveTo(cup.x - cup.w / 2 + 7, y + 6); ctx.quadraticCurveTo(cup.x - cup.w / 2 + 9, y + 26, cup.x - 8, y + 33); ctx.lineTo(cup.x - 13, y + 29); ctx.quadraticCurveTo(cup.x - cup.w / 2 + 14, y + 22, cup.x - cup.w / 2 + 13, y + 6); ctx.fill(); }
+      ctx.fillStyle = C.chai; ctx.beginPath(); ctx.ellipse(cup.x, y, cup.w / 2, 6, 0, 0, 7); ctx.fill();
+      for (const f of flash) text(f.s, f.x, f.y, 14, f.bad ? C.bad : "oklch(0.42 0.14 145)", "center", 800);
+      if (hint > 0) text("Slide to catch ₹ · dodge EMI", W / 2, 24, 12, C.muted, "center", 600);
+    },
+    onPointer(x) { cup.tx = x; },
+  };
+
+  /* --- hop --- */
+  const p = { y: 0, vy: 0, r: 13 }; let pods = [], dist = 0, speed = 0, dead = false, nextPod = 0, rot = 0;
+  const hopGame = {
+    init() { p.y = 0; p.vy = 0; pods = []; dist = 0; speed = 200 * (W / 460 + 0.5); dead = false; nextPod = 0.9; score = 0; onScore && onScore(0, best); },
+    jump() { if (dead) { this.init(); return; } if (p.y === 0) p.vy = 560; },
+    update(dt) {
+      if (dead) return; speed = Math.min(420 * (W / 460 + 0.5), speed + 6 * dt); dist += speed * dt; rot += (speed * dt) / p.r;
+      p.vy -= 1500 * dt; p.y = Math.max(0, p.y + p.vy * dt); if (p.y === 0) p.vy = 0;
+      nextPod -= dt; if (nextPod <= 0) { nextPod = 0.8 + Math.random() * 0.9 - speed / 1400; pods.push({ x: W + 20, w: 14 + Math.random() * 10, h: 20 + Math.random() * 16 }); }
+      for (const o of pods) o.x -= speed * dt; pods = pods.filter((o) => o.x > -40);
+      const px = 60, gy = H - 40; for (const o of pods) { if (px + p.r - 4 > o.x && px - p.r + 4 < o.x + o.w && p.y < o.h - 4) { dead = true; } }
+      const s = Math.floor(dist / 12); if (s !== score) bump(s - score);
+    },
+    draw() {
+      const gy = H - 40; ctx.fillStyle = C.fill; ctx.fillRect(0, gy, W, 2);
+      for (const o of pods) { ctx.fillStyle = C.ok; ctx.beginPath(); ctx.ellipse(o.x + o.w / 2, gy - o.h / 2, o.w / 2, o.h / 2, 0, 0, 7); ctx.fill(); ctx.strokeStyle = "oklch(0.42 0.14 145)"; ctx.lineWidth = 1.5; ctx.stroke(); }
+      ctx.save(); ctx.translate(60, gy - p.r - p.y); ctx.rotate(rot); ctx.beginPath(); ctx.arc(0, 0, p.r, 0, 7); ctx.fillStyle = C.coin; ctx.fill(); ctx.lineWidth = 2.5; ctx.strokeStyle = C.edge; ctx.stroke(); ctx.restore(); text("₹", 60, gy - p.r - p.y + 1, 13, "oklch(0.45 0.1 75)", "center", 800);
+      if (dead) { text("Oops · tap to go again", W / 2, H / 2 - 6, 15, C.fg, "center", 800); }
+      else if (hint > 0) text("Tap, click or press space to hop the pods", W / 2, 24, 12, C.muted, "center", 600);
+    },
+    onPointer() { this.jump(); },
+  };
+  const g = kind === "hop" ? hopGame : catchGame;
+
+  /* --- loop: pauses when hidden or scrolled off, one rAF, stops cleanly --- */
+  function frame(now) {
+    raf = requestAnimationFrame(frame); const dt = Math.min(0.05, (now - (last || now)) / 1000); last = now; t += dt; hint -= dt;
+    g.update(dt); ctx.clearRect(0, 0, W, H); g.draw();
+  }
+  const vis = () => { if (document.hidden || !onscreen) { cancelAnimationFrame(raf); raf = 0; last = 0; } else if (running && !raf) raf = requestAnimationFrame(frame); };
+  let onscreen = true; const io = new IntersectionObserver(([e]) => { onscreen = e.isIntersecting; vis(); }); io.observe(canvas);
+  const ro = new ResizeObserver(() => { fit(); }); ro.observe(canvas);
+  const pos = (e) => e.clientX - canvas.getBoundingClientRect().left;
+  const onDown = (e) => { canvas.focus({ preventScroll: true }); g.onPointer(pos(e)); };
+  const onMove = (e) => { if (kind === "catch" && (e.pointerType === "mouse" || e.buttons)) g.onPointer(pos(e)); };
+  const onKey = (e) => { const k = e.key.length === 1 ? e.key.toLowerCase() : e.key; if (["ArrowLeft", "ArrowRight", "ArrowUp", " ", "a", "d"].includes(k)) { e.preventDefault(); if (e.type === "keydown") { keys.add(k); if (kind === "hop" && (k === " " || k === "ArrowUp")) g.jump(); } else keys.delete(k); } };
+  const onBlur = () => keys.clear();
+  const on = [["pointerdown", onDown], ["pointermove", onMove], ["keydown", onKey], ["keyup", onKey], ["blur", onBlur]];
+  on.forEach(([n, f]) => canvas.addEventListener(n, f));
+  document.addEventListener("visibilitychange", vis);
+  return {
+    start() { fit(); score = 0; g.init(); onScore && onScore(0, best); running = true; hint = 4; if (!raf) raf = requestAnimationFrame(frame); },
+    stop() { running = false; cancelAnimationFrame(raf); raf = 0; io.disconnect(); ro.disconnect(); document.removeEventListener("visibilitychange", vis); on.forEach(([n, f]) => canvas.removeEventListener(n, f)); keys.clear(); },
+  };
+}
+/* the two demo boards in section 5 run on their own, from the first frame */
+document.querySelectorAll(".gcanvas").forEach((c) => { const k = c.id === "g-hop" ? "hop" : "catch"; const gm = makeGame(c, k); gm.start(); });
+
+/* look picker */
+const TILES = $("#cupgrid");
+TILES.innerHTML = Object.keys(LOOKS).map((k) => `<div class="cuptile" data-k="${k}" aria-current="false">${CUP(k, true)}<h4>${LOOKS[k].name}${k === "ceramic" ? ' <span class="pick">pick</span>' : ""}</h4><p>${LOOKS[k].vibe}</p><button class="pill" data-use="${k}" aria-pressed="false">Use everywhere</button></div>`).join("");
+function setCup(k) {
+  document.documentElement.dataset.cup = k;
+  document.querySelectorAll("svg.cup:not(.fixed)").forEach((e) => { e.outerHTML = CUP(k); });
+  document.querySelectorAll(".cuptile").forEach((t) => t.setAttribute("aria-current", String(t.dataset.k === k)));
+  document.querySelectorAll("[data-use]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.use === k)));
+}
+TILES.addEventListener("click", (e) => { const b = e.target.closest("[data-use]"); if (b) setCup(b.dataset.use); });
+setCup("ceramic");
+/* pointer tilt: one variable pair on the page, read by every cup's CSS */
+let tiltRaf = 0;
+const tilt = (x, y) => { const st = document.documentElement.style; st.setProperty("--tx", x); st.setProperty("--ty", y); };
+addEventListener("pointermove", (e) => { if (reduced() || e.pointerType === "touch") return; cancelAnimationFrame(tiltRaf); tiltRaf = requestAnimationFrame(() => tilt(((e.clientX / innerWidth - 0.5) * 2).toFixed(2), ((e.clientY / innerHeight - 0.5) * 2).toFixed(2))); });
+document.documentElement.addEventListener("mouseleave", () => tilt(0, 0));
+
+/* 429 countdown, a pure function of seconds left */
+(() => { let s = 30; const b = $("#cd"); const tick = () => { const m = Math.floor(s / 60), ss = String(s % 60).padStart(2, "0"); b.textContent = s > 0 ? `Try again in ${m}:${ss}` : "Try again"; b.disabled = s > 0; if (s > 0) { s--; setTimeout(tick, 1000); } else setTimeout(() => { s = 30; tick(); }, 4000); }; tick(); })();
+</script>
+</body>
+</html>
