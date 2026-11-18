@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 
 type Toast = { kind: "saved"; undoId: string; message: string; key: number } | { kind: "done" | "error"; message: string; key: number };
 
@@ -16,7 +16,9 @@ export function useUndoToast(undoAction: (token: string) => Promise<{ ok: boolea
   const [toast, setToast] = useState<Toast | null>(null);
   const [, startTransition] = useTransition();
 
-  const saved = (undo: { id: string; message: string } | undefined, message: string) => setToast(undo ? { kind: "saved", undoId: undo.id, message: undo.message, key: Date.now() } : { kind: "done", message, key: Date.now() });
+  const saved = useCallback((undo: { id: string; message: string } | undefined, message: string) => setToast(undo ? { kind: "saved", undoId: undo.id, message: undo.message, key: Date.now() } : { kind: "done", message, key: Date.now() }), []);
+  /** A toast for a save that didn't go through. */
+  const fail = useCallback((message: string) => setToast({ kind: "error", message, key: Date.now() }), []);
 
   function undo() {
     if (toast?.kind !== "saved") return;
@@ -44,5 +46,5 @@ export function useUndoToast(undoAction: (token: string) => Promise<{ ok: boolea
       )}
     </div>
   );
-  return { saved, view };
+  return { saved, fail, view };
 }

@@ -184,3 +184,28 @@ describe("the period picker", () => {
     expect(dailyModel({ ...base, period: "2025" }).periodLabel).toBe("2025");
   });
 });
+
+describe("a spend still being saved", () => {
+  const pending = { id: "pending-1", date: "2026-11-18", amount: 349, method: "UPI" as const, category: "food", note: "Evening snacks" };
+  const before = dailyModel(base);
+  const after = dailyModel({ ...base, spends: [...NOV, pending] });
+
+  it("is in the sentence, the strip, the hero, the calendar and the widgets at once", () => {
+    expect(summarySentence(after).map((p) => p.text).join("")).toMatch(/^You've spent ₹21,331 in November 2026 so far: ₹6,684 on UPI and ₹14,647 on credit cards/);
+    expect(stripView(after)).toMatchObject({ value: "₹8,669", todayValue: "₹206" });
+    const hero = heroView(after);
+    expect(hero).toMatchObject({ spentToday: "₹499", spentMonth: "₹21,331" });
+    expect(hero.weeks[3][2]).toMatchObject({ date: "2026-11-18", total: "₹499", count: 2 });
+    expect(nowWidgets(after)![0]).toMatchObject({ value: "₹206" });
+    expect(periodWidgets(after)[0]).toMatchObject({ value: "₹21,331" });
+    expect(whereView(after).rows.find((r) => r.name === "Food")?.amount).toBe("₹4,869");
+  });
+  it("is marked as saving in its day's list, so it can't be edited before the Sheet has it", () => {
+    const rows = heroView(after).details["2026-11-18"].rows;
+    expect(rows.map((r) => [r.title, r.saving])).toEqual([["Evening snacks", true], ["Tea", false]]);
+    expect(heroView(before).details["2026-11-18"].rows.every((r) => !r.saving)).toBe(true);
+  });
+  it("takes nothing from the figures once it's gone (a save that failed)", () => {
+    expect(stripView(before).value).toBe("₹9,018");
+  });
+});
