@@ -424,3 +424,59 @@ body {
   color: var(--fg);
   font-family: var(--font-sans);
 }
+
+/*
+ * The wait screen (components/wait/WaitScreen): nothing for the first 250 ms (most loads are quick), then
+ * a fade-in, all by CSS so it also works before any script has run. With reduced motion it appears
+ * after the same delay without the fade.
+ */
+@keyframes wait-in {
+  from {
+    opacity: 0;
+  }
+}
+.wait-in {
+  animation: wait-in 0.25s ease-out 0.25s both;
+}
+.wait-in-quick {
+  animation: wait-in 0.3s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wait-in {
+    animation-duration: 0s;
+  }
+  .wait-in-quick {
+    animation: none;
+  }
+}
+
+/*
+ * The wait screen's timeline is animation delays (set per element from lib/wait/phase.ts), not timers:
+ * a hard load runs no script until the page is done. A line is visible only during its own window;
+ * a "late" element (still on it, Try again) becomes visible at its delay and stays. visibility, not
+ * opacity, so hidden text is also hidden from screen readers and the tab order.
+ */
+.wait-line,
+.wait-late {
+  visibility: hidden;
+}
+.wait-line {
+  animation: wait-line linear forwards;
+}
+@keyframes wait-line {
+  0%,
+  99.99% {
+    visibility: visible;
+  }
+  100% {
+    visibility: hidden;
+  }
+}
+.wait-late {
+  animation: wait-late 0s forwards;
+}
+@keyframes wait-late {
+  to {
+    visibility: visible;
+  }
+}
