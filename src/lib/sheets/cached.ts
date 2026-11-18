@@ -31,6 +31,9 @@ import { balanceReviewsRepository } from "./balanceReviews";
 import { lentLoansRepository } from "./lentLoans";
 import { lentRepaymentsRepository } from "./lentRepayments";
 import { bigSpendsRepository } from "./bigSpends";
+import { dailySpendsRepository } from "./dailySpends";
+import { dailyCategoriesRepository } from "./dailyCategories";
+import { dailyBudgetsRepository } from "./dailyBudgets";
 
 /**
  * Cached reads for every entity, one tag each — used by pages (Server
@@ -79,6 +82,9 @@ export const CACHE_TAGS = {
   lentLoans: "lentLoans",
   lentRepayments: "lentRepayments",
   bigSpends: "bigSpends",
+  dailySpends: "dailySpends",
+  dailyCategories: "dailyCategories",
+  dailyBudgets: "dailyBudgets",
   /** Today's USD to INR, for dollar accounts (lib/prices/usdInr.ts). */
   usdInr: "usdInr",
 } as const;
@@ -233,3 +239,9 @@ export const getCachedLentRepaymentById = cachedGetById(getCachedLentRepayments)
 export const getCachedBigSpendsTab = cachedTab(bigSpendsRepository, CACHE_TAGS.bigSpends);
 export const getCachedBigSpends = cachedList(getCachedBigSpendsTab);
 export const getCachedBigSpendById = cachedGetById(getCachedBigSpends);
+
+export const getCachedDailySpendsTab = cachedTab(dailySpendsRepository, CACHE_TAGS.dailySpends);
+export const getCachedDailySpends = cachedList(getCachedDailySpendsTab);
+
+export const getCachedDailyCategoriesTab = cachedTab(dailyCategoriesRepository, CACHE_TAGS.dailyCategories);
+export const getCachedDailyBudgetsTab = cachedTab(dailyBudgetsRepository, CACHE_TAGS.dailyBudgets);

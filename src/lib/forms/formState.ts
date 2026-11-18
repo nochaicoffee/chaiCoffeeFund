@@ -11,7 +11,7 @@ export type FormState =
   /** The Sheet write failed; nothing was written. The dialog offers Try again, with the reason when there is one (lib/sheets/errors.ts). */
   | { status: "failed"; message?: string }
   /** Saved; `at` makes every save a new state, so the dialog can close on it. `undo` is what a toast can take back (Record income, #190). */
-  | { status: "saved"; at: number; undo?: { id: string; message: string } };
+  | { status: "saved"; at: number; undo?: { id: string; message: string }; /** What was just made, for a form that goes on from it (a new category, picked for the spend being added). */ id?: string };
 
 /** An existing statement for the same card and statement date (the duplicate check warns, it doesn't block). */
 export interface DuplicateStatement {

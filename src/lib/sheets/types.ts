@@ -886,3 +886,51 @@ export interface BigSpend {
   paidFromCardId?: string;
   note?: string;
 }
+
+// --- Daily spends (docs/design/daily.md) ---
+
+/** How an everyday spend was paid, as the DailySpends tab's method dropdown lists it. "Card" is a credit card. */
+export const DAILY_SPEND_METHODS = ["UPI", "Card"] as const;
+export type DailySpendMethod = (typeof DAILY_SPEND_METHODS)[number];
+
+/**
+ * One everyday spend he writes down by hand, a rough diary of where the day's money went. It feeds only the Daily page: it is
+ * not read by Expenses, Cards or Accounts, whose figures come from statements and balances, so it never double counts.
+ */
+export interface DailySpend {
+  id: string;
+  date: string;
+  amount: number;
+  method: DailySpendMethod;
+  /** A category's id: a built-in one's ("food", lib/daily/categories.ts) or a DailyCategories row's. Free text in the Sheet, since the list grows. */
+  category?: string;
+  /** What it was: "Lunch", "Auto to office". */
+  note?: string;
+}
+
+/** Whether a category is offered when adding a spend. Hidden ones stay on the spends that have them. Never deleted. */
+export const DAILY_CATEGORY_STATUSES = ["Active", "Hidden"] as const;
+export type DailyCategoryStatus = (typeof DAILY_CATEGORY_STATUSES)[number];
+
+/**
+ * A category he added, or a change to a built-in one (a rename, a colour, hiding it). The eight built-in categories live in code
+ * (lib/daily/categories.ts); `builtIn` names the one a row changes, and is blank on one he added.
+ */
+export interface DailyCategory {
+  id: string;
+  name: string;
+  color: Color;
+  status: DailyCategoryStatus;
+  builtIn?: string;
+}
+
+/**
+ * The monthly limit on the Daily page. One row per change, not per month: a month uses the latest row at or before it,
+ * so a row is added only when the limit changes (lib/aggregate/dailySpends.ts, limitFor).
+ */
+export interface DailyBudget {
+  id: string;
+  /** "2026-11": the first month the limit applies to. */
+  month: string;
+  limit: number;
+}

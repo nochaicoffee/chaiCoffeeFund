@@ -101,6 +101,16 @@ describe("planTableColumns", () => {
     expect(planTableColumns(specs, table(asText)).changes[0]).toBe("set status's dropdown to Active, Paused, Cancelled");
   });
 
+  it("turns a dropdown into plain text only for a column named to be reset, leaving its cells alone", () => {
+    const textSpecs = columnSpecs(["id", "name", "amount", "status"], schema.extend({ status: nonEmptyString }));
+    expect(planTableColumns(textSpecs, table(current)).changes).toEqual([]);
+    const plan = planTableColumns(textSpecs, table(current), ["status"]);
+    expect(plan.changes).toEqual(["turn status's dropdown into plain text"]);
+    expect(plan.request?.updateTable?.table?.columnProperties?.[3]).toEqual({ columnIndex: 3, columnName: "status", columnType: "TEXT" });
+    expect(plan.request?.updateTable?.fields).toBe("columnProperties");
+    expect(planTableColumns(textSpecs, table([...current.slice(0, 3), { columnIndex: 3, columnName: "status", columnType: "TEXT" }]), ["status"]).changes).toEqual([]);
+  });
+
   it("types a column that has no type, and leaves a typed one alone (the Accounts tab's startDate, #160)", () => {
     const untyped = [...current.slice(0, 3), current[3], { columnIndex: 4, columnName: "endDate" }, { columnIndex: 5, columnName: "note", columnType: "DROPDOWN" }];
     const plan = planTableColumns(specs.map((s) => (s.name === "status" ? { ...s, options: ["Active", "Paused"] } : s)), table(untyped));

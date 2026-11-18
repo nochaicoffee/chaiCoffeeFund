@@ -28,6 +28,9 @@ import { balanceReviewsRepository } from "./balanceReviews";
 import { lentLoansRepository } from "./lentLoans";
 import { lentRepaymentsRepository } from "./lentRepayments";
 import { bigSpendsRepository } from "./bigSpends";
+import { dailySpendsRepository } from "./dailySpends";
+import { dailyCategoriesRepository } from "./dailyCategories";
+import { dailyBudgetsRepository } from "./dailyBudgets";
 import { instrumentsRepository } from "./instruments";
 import { investmentTargetsRepository } from "./investmentTargets";
 import { transfersRepository } from "./transfers";
@@ -63,6 +66,9 @@ export const checkedRepositories = [
   lentLoansRepository,
   lentRepaymentsRepository,
   bigSpendsRepository,
+  dailySpendsRepository,
+  dailyCategoriesRepository,
+  dailyBudgetsRepository,
   instrumentsRepository,
   investmentTargetsRepository,
   priceSnapshotsRepository,
