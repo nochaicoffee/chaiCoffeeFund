@@ -22,6 +22,8 @@ export async function proxy(request: NextRequest) {
     case "login": {
       const url = new URL(LOGIN_PATH, request.url);
       if (pathname !== "/") url.searchParams.set("next", pathname + search);
+      // A cookie that is there but no good any more (it ran out, or the secret changed): the sign-in says so, rather than greeting him as new.
+      if (request.cookies.get(SESSION_COOKIE)?.value) url.searchParams.set("session", "ended");
       // A POST (Sign out, a Server Action) that arrives without a session must not be repeated against /login, which only answers GET: 303 turns it into a GET.
       return NextResponse.redirect(url, request.method === "GET" || request.method === "HEAD" ? 307 : 303);
     }

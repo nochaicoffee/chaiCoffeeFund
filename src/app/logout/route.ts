@@ -7,7 +7,8 @@ import { SESSION_COOKIE } from "@/lib/auth/session";
  * SESSION_SECRET changes (the cookie is signed with both).
  */
 export async function POST(request: Request) {
-  const response = NextResponse.redirect(new URL("/login", request.url), 303);
+  // ?signedout=1 lets the sign-in page say it worked; it carries nothing else.
+  const response = NextResponse.redirect(new URL("/login?signedout=1", request.url), 303);
   response.cookies.set({ name: SESSION_COOKIE, value: "", path: "/", maxAge: 0 });
   response.headers.set("Cache-Control", "no-store");
   return response;

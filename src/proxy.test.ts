@@ -33,6 +33,13 @@ describe("proxy", () => {
     expect((await proxy(request("/"))).headers.get("location")).toBe("https://app.example/login");
   });
 
+  it("says the session ended when he has a cookie that no longer works, and not when he has none", async () => {
+    const stale = `${SESSION_COOKIE}=${await createSessionToken(sessionKey(process.env)!, Date.now() - 40 * 24 * 3600 * 1000)}`;
+    expect((await proxy(request("/cards", { cookie: stale }))).headers.get("location")).toBe("https://app.example/login?next=%2Fcards&session=ended");
+    expect((await proxy(request("/cards", { cookie: `${SESSION_COOKIE}=garbage` }))).headers.get("location")).toContain("session=ended");
+    expect((await proxy(request("/cards"))).headers.get("location")).not.toContain("session=ended");
+  });
+
   it("answers a signed-out API request with 401 JSON and sends no data", async () => {
     const res = await proxy(request("/api/accounts"));
     expect(res.status).toBe(401);
