@@ -180,13 +180,7 @@ export function Hero({ view, strip }: { view: HeroView; strip: ReactNode }) {
                   category: "",
                   note: "",
                 }}
-                onSaved={(s) => {
-                  daily.saved(
-                    s.status === "saved" ? s.undo : undefined,
-                    "Spend added.",
-                  );
-                  setAdded((n) => n + 1);
-                }}
+                onAdded={() => setAdded((n) => n + 1)}
               />
             ) : (
               <p className="dp-empty">
@@ -231,9 +225,10 @@ export function Hero({ view, strip }: { view: HeroView; strip: ReactNode }) {
                   <button
                     key={r.id}
                     type="button"
-                    className="dp-r"
+                    className={`dp-r${r.saving ? " saving" : ""}`}
+                    disabled={r.saving}
                     onClick={() => daily.openEdit(r.id)}
-                    aria-label={`Edit ${r.title}, ${r.amount}`}
+                    aria-label={r.saving ? `${r.title}, ${r.amount}, saving` : `Edit ${r.title}, ${r.amount}`}
                   >
                     <CategoryTile
                       category={{ name: r.tile, colorKey: r.colorKey }}
@@ -245,6 +240,7 @@ export function Hero({ view, strip }: { view: HeroView; strip: ReactNode }) {
                           className={`md ${r.method === "UPI" ? "md-u" : "md-c"}`}
                         />{" "}
                         {r.sub}
+                        {r.saving && <em className="sv">saving…</em>}
                       </small>
                     </span>
                     <span className="dp-a">{r.amount}</span>

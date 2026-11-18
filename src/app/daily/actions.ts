@@ -12,7 +12,7 @@ import { CACHE_TAGS, getCachedDailyCategoriesTab } from "@/lib/sheets/cached";
 import { dailyBudgetsRepository } from "@/lib/sheets/dailyBudgets";
 import { createDailyCategorySchema, dailyCategoriesRepository, updateDailyCategorySchema } from "@/lib/sheets/dailyCategories";
 import { createDailySpendSchema, dailySpendsRepository, updateDailySpendSchema } from "@/lib/sheets/dailySpends";
-import { isQuotaError, sheetsFailureMessage } from "@/lib/sheets/errors";
+import { isQuotaError, isTimeoutError, sheetsFailureMessage } from "@/lib/sheets/errors";
 import { InvalidRowError, NotFoundError } from "@/lib/sheets/repository";
 import { formatInrExact } from "@/lib/format/money";
 
@@ -30,7 +30,8 @@ const gone: FormState = { status: "invalid", errors: { form: "This isn't in the 
 
 function failed(action: string, error: unknown): FormState {
   console.error(`[daily] ${action} failed:`, error instanceof Error ? error.message : String(error));
-  return isQuotaError(error) ? { status: "failed", message: sheetsFailureMessage(error) } : { status: "failed" };
+  // A quota or a timeout has its own words (a timeout may have written the row, so it says to check before trying again).
+  return isQuotaError(error) || isTimeoutError(error) ? { status: "failed", message: sheetsFailureMessage(error) } : { status: "failed" };
 }
 
 /** Add a spend, or edit one when the form carries an id. Adding hands back a token the toast's Undo takes the new row away with. */

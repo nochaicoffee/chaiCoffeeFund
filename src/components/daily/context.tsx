@@ -1,25 +1,26 @@
 "use client";
 
 import { createContext, useContext } from "react";
-import type { CategoryView } from "@/app/daily/views";
+import type { CategoryView, DailyModel } from "@/app/daily/views";
+import type { DailySpendInput } from "@/lib/forms/dailySpendForms";
+import type { FailedAdd } from "@/lib/daily/pendingAdds";
 import type { DailySpendMethod } from "@/lib/sheets/types";
-
-/** What a spend needs to be edited: the month's spends as the Sheet has them. */
-export interface EditableSpend {
-  id: string;
-  date: string;
-  amount: number;
-  method: DailySpendMethod;
-  category?: string;
-  note?: string;
-}
 
 export interface DailyContext {
   today: string;
+  /** Everything the page shows, worked out here from the Sheet's rows plus any spend still being saved, so an add is in every figure at once. */
+  model: DailyModel;
+  /** The `?period=` the page was asked for, kept on the links that change the month. */
+  periodParam?: string;
   categories: CategoryView[];
   /** The day the hero's panel and quick add are on. */
   selected: string;
   setSelected: (date: string) => void;
+  /** Add a spend: it shows at once and the Sheet save finishes in the background. */
+  addSpend: (input: DailySpendInput) => void;
+  failed: FailedAdd[];
+  retry: (id: string) => void;
+  dismiss: (id: string) => void;
   openAdd: (draft?: { date?: string; amount?: string; method?: DailySpendMethod }) => void;
   openEdit: (id: string) => void;
   openManage: () => void;

@@ -2,6 +2,7 @@ import type { SentencePart } from "@/app/cards/summarySentence";
 import type { GreetingRowData } from "@/components/shell/GreetingParts";
 import { budgetView, diaryStart, limitFor, methodShare, monthOf, monthRows, monthView, periodView, readMonth, shiftMonth, usualMonth, type BudgetView, type CategoryRow, type MonthView, type PeriodView } from "@/lib/aggregate/dailySpends";
 import { resolveCategories, type CategoryDef } from "@/lib/daily/categories";
+import { PENDING_PREFIX } from "@/lib/daily/pendingAdds";
 import { cardColorKey, type ColorKey } from "@/lib/format/colors";
 import { formatDayDate, formatMonthShort, formatMonthYear, formatShortDate, MONTH_NAMES } from "@/lib/format/date";
 import { formatInrCompact, formatInrExact } from "@/lib/format/money";
@@ -218,7 +219,7 @@ export interface DayDetail {
   total: string;
   upi: string;
   card: string;
-  rows: { id: string; title: string; /** The category's name, for its tile. */ tile: string; sub: string; amount: string; method: DailySpendMethod; colorKey: ColorKey }[];
+  rows: { id: string; title: string; /** The category's name, for its tile. */ tile: string; sub: string; amount: string; method: DailySpendMethod; colorKey: ColorKey; /** Added a moment ago and still being saved to the Sheet. */ saving: boolean }[];
   isToday: boolean;
   /** A day to come can't have a spend added to it. */
   canAdd: boolean;
@@ -239,7 +240,7 @@ export interface HeroView {
   /** Monday first; null is a blank square. */
   weeks: (CalendarCell | null)[][];
   details: Record<string, DayDetail>;
-  /** The day the panel opens on: today in the current month, else the month's biggest day, else its 1st. */
+  /** The day the panel opens on (defaultSelectedDay). */
   defaultSelected: string;
 }
 
@@ -258,6 +259,12 @@ const monthHref = (month: string, today: string, period?: string) => {
   return s ? `/daily?${s}` : "/daily";
 };
 
+/** The day the calendar opens on: today in the current month, else the month's biggest day, else its 1st. */
+export function defaultSelectedDay(model: DailyModel): string {
+  const m = model.picked;
+  return m.isCurrent ? model.today : (m.biggestDay?.date ?? `${m.month}-01`);
+}
+
 export function heroView(model: DailyModel, periodParam?: string): HeroView {
   const m = model.picked;
   const today = model.today;
@@ -270,13 +277,13 @@ export function heroView(model: DailyModel, periodParam?: string): HeroView {
       total: money(d.total),
       upi: money(d.upi),
       card: money(d.card),
-      rows: d.spends.map((s) => ({ id: s.id, title: s.note ?? model.nameOf(s.category), tile: model.nameOf(s.category), sub: [s.note ? model.nameOf(s.category) : undefined, METHOD_NAMES[s.method]].filter(Boolean).join(" · "), amount: money(s.amount), method: s.method, colorKey: model.colorOf(s.category) })).reverse(),
+      rows: d.spends.map((s) => ({ id: s.id, title: s.note ?? model.nameOf(s.category), tile: model.nameOf(s.category), sub: [s.note ? model.nameOf(s.category) : undefined, METHOD_NAMES[s.method]].filter(Boolean).join(" · "), amount: money(s.amount), method: s.method, colorKey: model.colorOf(s.category), saving: s.id.startsWith(PENDING_PREFIX) })).reverse(),
       isToday: d.date === today,
       canAdd: d.date <= today,
     };
   }
   const weeks = m.weeks.map((w) => w.cells.map((c): CalendarCell | null => (c ? { date: c.date, day: c.day, total: c.total > 0 ? money(c.total) : "", compact: c.total > 0 ? formatInrCompact(c.total) : "", upi: c.upi > 0, card: c.card > 0, count: c.spends.length, level: level(c.total), today: c.date === today, future: !c.elapsed, quiet: c.kept && c.spends.length === 0 && c.date !== today } : null)));
-  const defaultSelected = m.isCurrent ? today : (m.biggestDay?.date ?? `${m.month}-01`);
+  const defaultSelected = defaultSelectedDay(model);
   const next = shiftMonth(m.month, 1);
   const limit = model.limitOf(m.month);
   return {

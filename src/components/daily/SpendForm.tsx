@@ -7,12 +7,12 @@ import { addDays } from "@/lib/forms/dates";
 import { formatInrExact, parseAmountText } from "@/lib/format/money";
 import { readDailySpendForm } from "@/lib/forms/dailySpendForms";
 import { IDLE, type FormState } from "@/lib/forms/formState";
-import { DAILY_SPEND_METHODS, type DailySpendMethod } from "@/lib/sheets/types";
+import { DAILY_SPEND_METHODS, type DailySpend, type DailySpendMethod } from "@/lib/sheets/types";
 import { DateInput, Field, TextInput, describedBy } from "../cards/forms/fields";
 import { useFieldErrors } from "../cards/forms/useFieldErrors";
 import { CheckIcon } from "../cards/forms/icons";
 import { CategoryPicker } from "./CategoryPicker";
-import { useDaily, type EditableSpend } from "./context";
+import { useDaily } from "./context";
 import { formatDayDate } from "@/lib/format/date";
 
 export interface SpendDraft {
@@ -27,7 +27,7 @@ export interface SpendDraft {
  * The fields of a spend (docs/design/daily.md): the amount first (it has focus), UPI or card, the category chips, a note, and in a sheet the day. `card` is
  * quick add beside the calendar (dark, for the selected day: it empties after each add so the next one can go in); `sheet` is the add and edit screens.
  */
-export function SpendForm({ variant, draft, editing, onSaved, footer }: { variant: "card" | "sheet"; draft: SpendDraft; editing?: EditableSpend; onSaved: (state: FormState) => void; footer?: React.ReactNode }) {
+export function SpendForm({ variant, draft, editing, onSaved, onAdded, footer }: { variant: "card" | "sheet"; draft: SpendDraft; editing?: DailySpend; /** An edit was saved. */ onSaved?: (state: FormState) => void; /** An add was handed over: it's already on the page, and the save finishes in the background. */ onAdded?: () => void; footer?: React.ReactNode }) {
   const daily = useDaily();
   const [state, formAction, pending] = useActionState(saveDailySpend, IDLE);
   const [amount, setAmount] = useState(draft.amount);
@@ -43,13 +43,16 @@ export function SpendForm({ variant, draft, editing, onSaved, footer }: { varian
   const read = readDailySpendForm(values, { categoryIds: ids }, daily.today);
   const { errors, reveal, revealAll, count, markSubmitted } = useFieldErrors(read, state, values);
   function onSubmit(event: FormEvent<HTMLFormElement>) {
-    if (read.ok) return markSubmitted();
+    // An edit goes to the Sheet through the form's action and waits for it. An add doesn't wait: it's in every figure at once, and the shell finishes the save.
+    if (read.ok && editing) return markSubmitted();
     event.preventDefault();
-    revealAll();
+    if (!read.ok) return revealAll();
+    daily.addSpend(read.input);
+    onAdded?.();
   }
   useEffect(() => {
     if (state.status !== "saved") return;
-    onSaved(state);
+    onSaved?.(state);
     // Only when a save comes back.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
@@ -57,7 +60,7 @@ export function SpendForm({ variant, draft, editing, onSaved, footer }: { varian
   const cost = parseAmountText(amount);
   const label = date === daily.today ? "today" : formatDayDate(date);
   return (
-    <form action={formAction} onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
+    <form action={editing ? formAction : undefined} onSubmit={onSubmit} noValidate className="flex flex-col gap-4">
       {editing && <input type="hidden" name="id" value={editing.id} />}
       <input type="hidden" name="category" value={category} />
       {variant === "card" && <input type="hidden" name="date" value={date} />}
