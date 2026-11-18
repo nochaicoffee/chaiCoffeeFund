@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1"><stop offset="0" stop-color="#25A35A"/><stop offset="1" stop-color="#0B4328"/></linearGradient>
+    <linearGradient id="steam" gradientUnits="userSpaceOnUse" x1="0" y1="480" x2="0" y2="140"><stop offset="0" stop-color="#FFF6E5" stop-opacity="1"/><stop offset="1" stop-color="#FFF6E5" stop-opacity="0.5"/></linearGradient>
+    <linearGradient id="chai" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E3A04A"/><stop offset="1" stop-color="#B9702A"/></linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <g fill="none" stroke="#fff" stroke-opacity="0.07" stroke-width="6">
+    <circle cx="880" cy="150" r="150"/><circle cx="880" cy="150" r="270"/><circle cx="880" cy="150" r="390"/><circle cx="880" cy="150" r="510"/><circle cx="880" cy="150" r="630"/><circle cx="880" cy="150" r="750"/>
+  </g>
+  <g fill="none" stroke="url(#steam)" stroke-width="44" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M395 150H640"/><path d="M395 238H640"/>
+    <path d="M425 150H500C610 150 610 322 500 322H425"/>
+    <path d="M425 322L585 470"/>
+  </g>
+  <g transform="translate(-36 0)"><rect x="300" y="850" width="424" height="34" rx="17" fill="#FFF6E5" fill-opacity="0.5"/>
+  <path d="M770 600C890 590 900 745 745 748" fill="none" stroke="#FFF6E5" stroke-width="46" stroke-linecap="round"/>
+  <path d="M250 540H774V580C774 740 660 830 512 830C364 830 250 740 250 580Z" fill="#FFF6E5"/>
+  <ellipse cx="512" cy="540" rx="262" ry="46" fill="#FFF6E5"/>
+  <ellipse cx="512" cy="546" rx="232" ry="32" fill="url(#chai)"/></g>
+</svg>
