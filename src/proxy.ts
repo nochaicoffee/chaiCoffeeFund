@@ -37,6 +37,7 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Everything except Next's own static files and the icon, which carry no data.
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  // Everything except Next's own static files, the icons and the manifest, which carry no data
+  // (and must load on the sign-in page too). The icon names are whole paths: escaped dots, anchored at the end.
+  matcher: ["/((?!_next/static|_next/image|(?:favicon\\.ico|icon\\.svg|apple-icon\\.png|icon-192\\.png|icon-512\\.png|icon-maskable-512\\.png|manifest\\.webmanifest)$).*)"],
 };

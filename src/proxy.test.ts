@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { sessionKey } from "@/lib/auth/config";
 import { createSessionToken, SESSION_COOKIE } from "@/lib/auth/session";
 import { CRON, stubHostedEnv, TOKEN } from "@/lib/auth/google.testutil";
-import { proxy } from "./proxy";
+import { config, proxy } from "./proxy";
 
 beforeEach(() => stubHostedEnv((name, value) => vi.stubEnv(name, value)));
 afterEach(() => vi.unstubAllEnvs());
@@ -75,5 +75,22 @@ describe("proxy", () => {
     vi.stubEnv("GOOGLE_CLIENT_ID", "");
     expect((await proxy(request("/accounts"))).status).toBe(503);
     expect((await proxy(request("/api/accounts"))).status).toBe(503);
+  });
+});
+
+describe("proxy matcher", () => {
+  // Next anchors a matcher as ^<pattern>$ against the path.
+  const gated = (path: string) => new RegExp(`^${config.matcher[0]}$`).test(path);
+
+  it("lets the icons and the manifest through without the login", () => {
+    for (const path of ["/favicon.ico", "/icon.svg", "/apple-icon.png", "/icon-192.png", "/icon-512.png", "/icon-maskable-512.png", "/manifest.webmanifest", "/_next/static/x.js"]) {
+      expect(gated(path), path).toBe(false);
+    }
+  });
+
+  it("gates pages and APIs, including paths that only start like an icon", () => {
+    for (const path of ["/", "/cards", "/api/cards", "/api/mcp", "/login", "/icon.svg/extra", "/icon-svg", "/icon.svgx", "/favicon.icoo", "/icon-512.png.json"]) {
+      expect(gated(path), path).toBe(true);
+    }
   });
 });

@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1B9A52"/><stop offset="1" stop-color="#0A3F26"/></linearGradient>
+    <radialGradient id="chai" cx="0.42" cy="0.38" r="0.75"><stop offset="0" stop-color="#EDB45F"/><stop offset="0.6" stop-color="#C98233"/><stop offset="1" stop-color="#9A5A1F"/></radialGradient>
+    <radialGradient id="coin" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="#FFF0A8"/><stop offset="0.5" stop-color="#FFC93C"/><stop offset="1" stop-color="#D9941A"/></radialGradient>
+    <filter id="sh" x="-20%" y="-20%" width="140%" height="150%"><feDropShadow dx="0" dy="22" stdDeviation="22" flood-color="#021a0e" flood-opacity="0.45"/></filter>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <g filter="url(#sh)">
+    <circle cx="470" cy="512" r="380" fill="#FFF6E5"/>
+    <rect x="780" y="462" width="190" height="100" rx="50" fill="#FFF6E5"/>
+    <circle cx="470" cy="512" r="310" fill="#EFE2C8"/>
+    <circle cx="470" cy="512" r="262" fill="#FFF8EC"/>
+    <circle cx="470" cy="512" r="236" fill="url(#chai)"/>
+  </g>
+  <g fill="none" stroke="#FFF6E5" stroke-width="7">
+    <circle cx="470" cy="512" r="90" stroke-opacity="0.55"/>
+    <circle cx="470" cy="512" r="150" stroke-opacity="0.32"/>
+    <circle cx="470" cy="512" r="210" stroke-opacity="0.16"/>
+  </g>
+  <circle cx="470" cy="520" r="132" fill="#5A2E0A" fill-opacity="0.35"/>
+  <circle cx="470" cy="512" r="128" fill="#FFF3B5"/>
+  <circle cx="470" cy="512" r="116" fill="url(#coin)"/>
+  <circle cx="470" cy="512" r="90" fill="none" stroke="#B87A12" stroke-opacity="0.55" stroke-width="7"/>
+  <g fill="none" stroke="#8A5206" stroke-width="22" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M428 468H512"/><path d="M428 502H512"/><path d="M436 468H470C514 468 514 538 470 538H436"/><path d="M436 538L508 590"/>
+  </g>
+  <path d="M398 480 A 84 84 0 0 1 456 428" fill="none" stroke="#fff" stroke-opacity="0.75" stroke-width="9" stroke-linecap="round"/>
+</svg>
