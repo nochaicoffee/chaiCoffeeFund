@@ -11,6 +11,7 @@ import { attentionView as loansAttention } from "@/app/loans/views";
 import { latestBalances } from "@/lib/aggregate/accounts";
 import { fixedIncome } from "@/lib/aggregate/fixedIncome";
 import { attentionItems as goalsAttention } from "@/lib/goals/attention";
+import { getCachedBalanceReviewsTab } from "@/lib/sheets/cached";
 import type { OverviewModel } from "./model";
 import { collectWarnings, PAGE_HREF, fromAccounts, fromCards, fromFixed, fromGoals, fromIncome, fromInsurance, fromLent, fromLoans, fromProblems, type OverviewWarning, type WarningPage } from "./warnings";
 
@@ -23,6 +24,15 @@ async function page<T>(name: WarningPage, read: () => T | Promise<T>, empty: T, 
     failed.push(name);
     return empty;
   }
+}
+
+/**
+ * Starts the one read the warnings need that nothing else on the Overview asks for (the Accounts page's balance reviews), so it runs beside
+ * the page's other reads instead of after them. By the time `loadWarnings` asks for it, the read has finished and is in the data cache.
+ * A failure is left for `loadWarnings` to report, as before.
+ */
+export function startWarningReads(): void {
+  getCachedBalanceReviewsTab().catch(() => undefined);
 }
 
 /**
