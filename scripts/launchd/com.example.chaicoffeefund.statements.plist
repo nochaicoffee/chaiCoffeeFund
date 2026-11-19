@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Runs the statement sync every 5 days on a Mac. Optional: on Vercel use the daily cron instead.
+  Replace /path/to/chaiCoffeeFund with where you cloned the repo (three places), then:
+    cp this file ~/Library/LaunchAgents/ && launchctl load ~/Library/LaunchAgents/com.example.chaicoffeefund.statements.plist
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.example.chaicoffeefund.statements</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/path/to/chaiCoffeeFund/scripts/launchd/run-ingest.sh</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>432000</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/path/to/chaiCoffeeFund/logs/launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/path/to/chaiCoffeeFund/logs/launchd.log</string>
+</dict>
+</plist>
