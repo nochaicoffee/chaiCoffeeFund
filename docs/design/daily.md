@@ -9,6 +9,7 @@ A diary of everyday spending that he writes down by hand, once a day or whenever
 `/daily` is the round 3 design. What differs from the boards, and what was decided in the build:
 
 - **Layout:** the strip stays at the top (it shrinks to a line when scrolled), the hero is the calendar with today's details across its top, quick add and the day's panel beside it. Right now (left today, week so far, on track) sits under the hero; the period widgets follow it with the period picker; then Where it went (a third of the width) and Month by month. On a phone the day's panel sits under the calendar and quick add is a bar pinned at the foot (amount, UPI or Card, a chevron for the full sheet, the add button).
+- **Changed 2026-11-19 (rounds 4 and 5, picked H4 and S2):** the hero's top is this month as one big figure with its sentence ("70% of your ₹30,000 limit, about ₹1,166 a day."), Today as a lime pill and the date as a quiet one, the month arrows beside them. The budget strip left the hero: it's one slim row under it in the hero's colour (what's left, the bar with the pace tick and "Pace for the 18th", the pill, left today and days to go), and it scrolls with the page rather than staying at the top. A past month's header reads "Spent in October 2026" with "Month over" for the date pill. The Layout line above is the earlier build.
 - **Period:** `?period=` is a year (the default, this year), or `month`; `?month=` is the calendar's month. A month period reads the calendar's month. The picker offers This month and each year from the diary's first spend; "Range" will come later.
 - **Left today** is what's left of the limit before today, shared over the days to go counting today, less what's gone today (the boards' default; it moves as he spends). **On track** carries the month so far to its end at the same daily rate. **A week's share** is limit × 7 ÷ the month's days. All are `budgetView` in `lib/aggregate/dailySpends.ts`, tested against the boards' numbers.
 - **The diary starts on its first spend.** A day before it isn't a quiet day and counts toward no average or run, so a diary begun in November doesn't show three hundred quiet days for the year.
@@ -16,6 +17,28 @@ A diary of everyday spending that he writes down by hand, once a day or whenever
 - **Categories.** The eight built-in categories are in code with stable ids (`lib/daily/categories.ts`); a **DailyCategories** tab (`name`, `color`, `status` Active or Hidden, `builtIn`) holds the ones he adds, and a row naming a built-in one in `builtIn` holds a rename, a colour, or Hidden for it, made the first time it changes. (The boards said the built-in ones would be written to the tab first; keeping them in code needs nothing written before the first spend.) A spend keeps its category's **id**, so a rename or a recolour touches no spend and no old month. `+ New` in the chips saves a name and one of twelve colours at once and chooses it for the spend being added; Manage renames, recolours and hides; nothing is deleted; a name already there is refused whatever the capitals. The colours are the app's shared list, so a fuller picker needs no data change. Spends' category column is plain text in the Sheet now (its dropdown was taken off through `/api/dev/sheet-columns`, which only does that for a column it's told to).
 - **An add shows at once.** Adding a spend (quick add, the phone bar or the add sheet) puts it on the calendar, in the day's list and in every figure on the page the moment it's tapped, marked "saving…"; the save to the Sheet finishes in the background (about 2.5 s on the day it was timed, against 30 ms to the screen). A save that fails takes the entry out of every total and puts it in a notice at the top of the page, whichever day he is looking at (what was typed, the day, why it failed, Retry and Dismiss), with a toast as well. A reason that says it may have been saved (a Sheets timeout, or a dropped connection) asks him to check the day first, so a retry doesn't add it twice. Moving to another month keeps anything still being saved. An edit or a delete still waits for the Sheet. To do this the page's figures are worked out in the browser (`DailyShell` holds the Sheet's rows plus any spend still being saved and runs `dailyModel` over them), not on the server.
 - **Not built:** the Overview tile and the Expenses diary check (the limit shows on Daily only, as decided); a limit per method or category; the Range period; opening Manage from the Where it went card. Opening Manage from the add sheet closes the sheet, so a half-typed spend there is lost.
+
+## Round 5 (2026-11-19): the budget strip moves under the hero
+
+He asked for the strip (Left to spend, the pace bar, Left today, days to go) out of the hero and below it, since the hero's header already carries what he has spent. Boards `DyU1`-`DyU3` and `DyU1Phone`-`DyU3Phone` ("Round 5" page): the hero with round 4's H2 header and no strip, the strip under it, then the Right now widgets. The header pick is separate from this.
+
+- **S1:** the strip as it was, light and full width, nothing dropped.
+- **S2:** one slim row with only what the hero doesn't say: what's left, the bar with the pace tick, the pill, Left today and days to go.
+- **S3:** a card: what's left with its bar and pill on one side; Left today, the pace and days to go as three figures beside it.
+- It no longer pins to the top of a phone (it scrolls with the page; the quick-add bar still pins at the bottom). Left today is now in both the strip and the Right now widgets, so one of them could go.
+
+Not decided yet; nothing built from this round.
+
+## Round 4 (2026-11-19): the top of the hero, four options
+
+He asked to redesign the hero's top section (the date, Spent today, Spent this month on the dark card): it looks plain and flat, the spacing is uneven and it takes too much room. He asked to see all four directions; boards are `DyH1`-`DyH4` (desktop) and `DyH1Phone`-`DyH4Phone`, on the "Round 4" page of the canvas. Each sits in the hero as built (budget strip, this header, calendar, quick add and the day's panel), made-up figures.
+
+- **H1 Compact stat chips:** a date badge with "Wed, Nov 18 / day 18 of 30" and the month nav on one line, then two chips side by side: Spent today with its UPI/card split, Spent this month with a small meter against the limit.
+- **H2 Date tile, today and a month ring:** a calendar tile (WED 18 NOV), Spent today with its split, a thin rule, then a small ring (70%) beside Spent this month. The shortest of the four.
+- **H3 Two tiles side by side:** a slim date line with the month nav, then Today and This month as equal tiles, each with a bar (UPI/card split; spent against the limit and a daily rate).
+- **H4 One big figure with its sentence:** Spent this month as the headline (48px) with "70% of your limit, about a day", Today as a lime pill and the date as a quiet pill.
+
+Not decided yet; nothing built from this round.
 
 ## Round 3 (2026-11-18): the widgets leave the hero, a year period, adding categories
 

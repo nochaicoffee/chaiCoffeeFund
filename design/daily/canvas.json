@@ -1,6 +1,14 @@
 {
   "pages": [
     {
+      "id": "r5",
+      "name": "Round 5 · the budget strip under the hero: three options"
+    },
+    {
+      "id": "r4",
+      "name": "Round 4 · the hero's top section: four options, desktop and phone"
+    },
+    {
       "id": "r3d",
       "name": "Round 3 · desktop: details on top of the hero, quick add beside the calendar, widgets outside it, a year period, adding categories"
     },
@@ -38,6 +46,118 @@
     }
   ],
   "artboards": [
+    {
+      "file": "DyU1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1342,
+      "page": "r5"
+    },
+    {
+      "file": "DyU2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 1319,
+      "page": "r5"
+    },
+    {
+      "file": "DyU3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 1374,
+      "page": "r5"
+    },
+    {
+      "file": "DyU1Phone.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 390,
+      "h": 1668,
+      "page": "r5"
+    },
+    {
+      "file": "DyU2Phone.dc.html",
+      "x": 5670,
+      "y": 0,
+      "w": 390,
+      "h": 1649,
+      "page": "r5"
+    },
+    {
+      "file": "DyU3Phone.dc.html",
+      "x": 6180,
+      "y": 0,
+      "w": 390,
+      "h": 1738,
+      "page": "r5"
+    },
+    {
+      "file": "DyH1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1178,
+      "page": "r4"
+    },
+    {
+      "file": "DyH2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 1124,
+      "page": "r4"
+    },
+    {
+      "file": "DyH3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 1222,
+      "page": "r4"
+    },
+    {
+      "file": "DyH4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 1144,
+      "page": "r4"
+    },
+    {
+      "file": "DyH1Phone.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 390,
+      "h": 1329,
+      "page": "r4"
+    },
+    {
+      "file": "DyH2Phone.dc.html",
+      "x": 7390,
+      "y": 0,
+      "w": 390,
+      "h": 1283,
+      "page": "r4"
+    },
+    {
+      "file": "DyH3Phone.dc.html",
+      "x": 7900,
+      "y": 0,
+      "w": 390,
+      "h": 1299,
+      "page": "r4"
+    },
+    {
+      "file": "DyH4Phone.dc.html",
+      "x": 8410,
+      "y": 0,
+      "w": 390,
+      "h": 1292,
+      "page": "r4"
+    },
     {
       "file": "DyE1.dc.html",
       "x": 0,
@@ -325,11 +445,27 @@
       "x": 0,
       "y": -90,
       "w": 1100,
+      "text": "Daily, round 5 (2026-11-19): the budget strip leaves the hero and sits under it (Prathik: the hero already has these details). The hero here has H2's header (the shortest of round 4; the header pick is separate) and no strip; under it come the strip and then the Right now widgets. S1: the strip as it was, light and full width. S2: one slim row with only what the hero doesn't say (what's left, the bar with the pace tick, the pill, left today). S3: a card with what's left and its bar, and left today, the pace and days to go beside it. The strip no longer pins to the top of a phone: it scrolls with the page (the quick-add bar still pins at the bottom). Left today shows both here and in the Right now widgets, so one of them could go. Every figure is made up.",
+      "page": "r5"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Daily, round 4 (2026-11-19): the top of the hero, redrawn. It was three bare figures on the dark card, spaced unevenly and tall. Prathik asked to redesign it (it looks plain and flat, the spacing is uneven, it takes too much room) and to see four directions. H1: one slim row, the date then two stat chips. H2: a calendar tile for the date, today with its UPI and card split, the month as a ring against the limit. H3: a slim date line, then Today and This month as equal tiles with a bar each. H4: this month as one big figure with its sentence, today and the date as pills. Each is shown in the hero as built: the budget strip first, then this, then the calendar with quick add and the day's panel. Phone versions are the second row. Every figure is made up.",
+      "page": "r4"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
       "text": "Daily, round 3 (2026-11-18), desktop. The hero now has today's details across its top (the date, what's been spent today, what's been spent this month) and quick add beside the calendar, with the day's panel under it. The four widgets left the hero: the ones about right now (left today, week so far, on track to end at) sit in a Right now row that stays put; the rest follow a period (a year by default, a month, later a range): spent, top category, biggest spend, UPI vs credit card, quiet days, months inside the limit, then Where it went and Month by month. Widgets sit on one 12-column grid, four to a row, and every card in a row is the same height with its picture at the same level; Where it went and Month by month line up on the same columns. E2 shows the period set to This month with the picker open. E3 is a proposal for adding categories (a + New chip with a name and a colour, Manage to rename, recolour and hide, never delete) with questions. Every figure is made up.",
       "page": "r3d"
     },
     {
-      "id": "note-2",
+      "id": "note-4",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -337,7 +473,7 @@
       "page": "r3p"
     },
     {
-      "id": "note-3",
+      "id": "note-5",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -345,7 +481,7 @@
       "page": "r2p"
     },
     {
-      "id": "note-4",
+      "id": "note-6",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -353,7 +489,7 @@
       "page": "r2d"
     },
     {
-      "id": "note-5",
+      "id": "note-7",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -361,7 +497,7 @@
       "page": "cal"
     },
     {
-      "id": "note-6",
+      "id": "note-8",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -369,7 +505,7 @@
       "page": "alt"
     },
     {
-      "id": "note-7",
+      "id": "note-9",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -377,7 +513,7 @@
       "page": "budget"
     },
     {
-      "id": "note-8",
+      "id": "note-10",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -385,7 +521,7 @@
       "page": "phones"
     },
     {
-      "id": "note-9",
+      "id": "note-11",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -395,6 +531,6 @@
   ],
   "launch": {
     "view": "canvas",
-    "page": "r3d"
+    "page": "r5"
   }
 }

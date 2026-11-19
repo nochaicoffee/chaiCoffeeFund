@@ -64,7 +64,7 @@ describe("the greeting", () => {
 describe("the strip", () => {
   it("is what's left, the pace, and what's left today", () => {
     const s = stripView(dailyModel(base));
-    expect(s).toMatchObject({ hasLimit: true, label: "Left to spend", value: "₹9,018", ofLimit: "of ₹30,000", tone: "warn", pill: { tone: "warn", text: "₹2,982 over pace" }, todayLabel: "Left today", todayValue: "₹555", daysLeft: "12 days to go" });
+    expect(s).toMatchObject({ hasLimit: true, label: "Left to spend", value: "₹9,018", paceLabel: "Pace for the 18th", paceValue: "₹18,000", tone: "warn", pill: { tone: "warn", text: "₹2,982 over pace" }, todayLabel: "Left today", todayValue: "₹555", daysLeft: "12 days to go" });
     expect(s.paceFraction).toBeCloseTo(0.6, 6);
     expect(s.fraction).toBeCloseTo(0.6994, 4);
   });
@@ -79,8 +79,13 @@ describe("the strip", () => {
 
 describe("the hero", () => {
   const hero = heroView(dailyModel(base));
-  it("has today's details across the top: the date, spent today, spent this month and its share of the limit", () => {
-    expect(hero).toMatchObject({ isCurrent: true, dateLabel: "Wed, Nov 18, 2026", dayOf: "day 18 of 30", spentToday: "₹150", spentMonth: "₹20,982", spentMonthLabel: "Spent this month", ofLimit: "70% of ₹30,000" });
+  it("has today's details across the top: which day of the month, spent today and spent this month", () => {
+    expect(hero).toMatchObject({ isCurrent: true, dayOf: "day 18 of 30", spentToday: "₹150", spentMonth: "₹20,982" });
+  });
+  it("heads with this month as one figure and a sentence under it, today and the date as pills", () => {
+    expect(hero).toMatchObject({ kicker: "Spent this month · November 2026", story: "70% of your ₹30,000 limit, about ₹1,166 a day.", dateShort: "Wed, Nov 18" });
+    expect(heroView(dailyModel({ ...base, budgets: [] })).story).toBe("About ₹1,166 a day.");
+    expect(heroView(dailyModel({ ...base, spends: [] })).story).toBe("Nothing written down yet.");
   });
   it("lays the calendar out Monday first, with the day's total, dots and shade", () => {
     expect(hero.weeks).toHaveLength(6);
@@ -106,7 +111,7 @@ describe("the hero", () => {
   });
   it("shows a past month by its biggest day, with a way back to this one and no 'spent today'", () => {
     const oct = heroView(dailyModel({ ...base, month: "2026-10", spends: [...NOV, spend("2026-10-12", 2200, "Card", "shopping")] }));
-    expect(oct).toMatchObject({ isCurrent: false, spentToday: null, spentMonthLabel: "Spent in October", defaultSelected: "2026-10-12", backHref: "/daily", nextHref: "/daily" });
+    expect(oct).toMatchObject({ isCurrent: false, spentToday: null, kicker: "Spent in October 2026", defaultSelected: "2026-10-12", backHref: "/daily", nextHref: "/daily" });
   });
 });
 

@@ -4,7 +4,7 @@ import type { StripView } from "@/app/daily/views";
 import { useDaily } from "./context";
 
 /**
- * The budget strip (docs/design/daily.md, round 3), the top of the hero: what's left of the monthly limit, a bar with the pace marked, and what's left today.
+ * The budget strip (docs/design/daily.md, round 5, S2), one slim row under the hero in its colour: what's left of the monthly limit, a bar with the pace marked, the pill, and what's left today.
  * With no limit set it asks for one instead.
  */
 export function BudgetStrip({ view }: { view: StripView }) {
@@ -32,20 +32,23 @@ export function BudgetStrip({ view }: { view: StripView }) {
           </button>
         </small>
         <b className={view.tone === "neg" ? "neg" : ""}>{view.value}</b>
-        <em>{view.ofLimit}</em>
       </div>
-      <span className={`bs-pill pill ${view.pill.tone}`}>{view.pill.text}</span>
       <div className="bs-mid">
         <span className={`bs-bar ${view.tone}`} role="progressbar" aria-label="Spent so far against the limit" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(view.fraction * 100)}>
           <i style={{ width: `${view.fraction * 100}%` }} />
           <u style={{ left: `${view.paceFraction * 100}%` }} title="Where you'd be on a straight line to the limit" />
         </span>
-        <div className="bs-foot">
-          <span>
-            {view.todayLabel} <b className={view.todayNegative ? "neg" : ""}>{view.todayValue}</b>
-          </span>
-          <span>{view.daysLeft}</span>
-        </div>
+        <small className="bs-pace">
+          <i className="bs-t" />
+          {view.paceLabel}: <b>{view.paceValue}</b>
+        </small>
+      </div>
+      <span className={`bs-pill pill ${view.pill.tone}`}>{view.pill.text}</span>
+      <div className="bs-rt">
+        <span>
+          {view.todayLabel} <b className={view.todayNegative ? "neg" : ""}>{view.todayValue}</b>
+        </span>
+        <span>{view.daysLeft}</span>
       </div>
     </section>
   );
