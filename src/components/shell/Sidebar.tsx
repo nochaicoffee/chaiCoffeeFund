@@ -117,7 +117,7 @@ export function Sidebar({
   }
 
   const closeMenu = () => setMenuOpen(false);
-  const initial = ownerName.charAt(0).toUpperCase();
+  const initial = (ownerName || appName).charAt(0).toUpperCase();
 
   return (
     <>
@@ -162,7 +162,7 @@ export function Sidebar({
           )}
           <div
             className="flex size-[30px] items-center justify-center rounded-full bg-ink text-xs font-extrabold text-on-ink"
-            title={ownerName}
+            title={ownerName || appName}
             aria-hidden="true"
           >
             {initial}

@@ -6,8 +6,7 @@ import { LoansDashboard } from "@/components/loans/LoansDashboard";
 import { AddFirstLoan } from "@/components/loans/forms/AddFirstLoan";
 import { HeaderFormButtons, LoanFormsProvider } from "@/components/loans/forms/LoanForms";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { appConfig } from "@/lib/appConfig";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { greetingTitle, todayIso } from "@/lib/format/date";
 import { loadLoansData } from "./loadLoansData";
 import { ALL, attentionView, coverView, greetingView, loanFormsData, loansHref, pickIds, summarySentence } from "./views";
 import { loanWidgets } from "./widgetsView";
@@ -34,7 +33,7 @@ export default async function LoansPage({ searchParams }: PageProps<"/loans">) {
       <div className="flex flex-col gap-6">
         <PageHeader
           section="Loans"
-          title={`${greetingFor()}, ${appConfig.ownerName}`}
+          title={greetingTitle()}
           actions={
             <>
               <RefreshButton iconOnly />

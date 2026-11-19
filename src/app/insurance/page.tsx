@@ -6,8 +6,7 @@ import { InsuranceDashboard } from "@/components/insurance/InsuranceDashboard";
 import { AddFirstPolicy, EmptyKinds } from "@/components/insurance/forms/AddFirstPolicy";
 import { HeaderFormButtons, InsuranceFormsProvider } from "@/components/insurance/forms/InsuranceForms";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { appConfig } from "@/lib/appConfig";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { greetingTitle, todayIso } from "@/lib/format/date";
 import { loadInsuranceData } from "./loadInsuranceData";
 import { insuranceFormsData } from "./formsView";
 import { ALL, attentionView, coverView, greetingView, pickIds, summarySentence } from "./views";
@@ -33,7 +32,7 @@ export default async function InsurancePage({ searchParams }: PageProps<"/insura
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Insurance"
-        title={`${greetingFor()}, ${appConfig.ownerName}`}
+        title={greetingTitle()}
         actions={
           <>
             <RefreshButton iconOnly />

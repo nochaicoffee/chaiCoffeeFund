@@ -1,7 +1,7 @@
 import { appConfig } from "@/lib/appConfig";
 import { SESSION_DAYS } from "@/lib/auth/session";
 import { KULHAD_CSS, kulhadSvg } from "@/lib/brand/kulhad";
-import { greetingFor } from "@/lib/format/date";
+import { greetingTitle } from "@/lib/format/date";
 import { signInView, type Notice, type SignInError, type SignInInput } from "./loginView";
 
 function escapeHtml(value: string): string {
@@ -131,13 +131,13 @@ export function loginPage(props: LoginPageProps): string {
 <main>
   <div class="brand"><span class="mark">${MARK}</span>${escapeHtml(appConfig.appName)}</div>
   ${kulhadSvg()}
-  <h1>${escapeHtml(greetingFor(props.now))}, ${owner}</h1>
+  <h1>${escapeHtml(greetingTitle(props.now))}</h1>
   <p class="sub">Sign in with Google to open your money.</p>
   ${view.notice ? `<div id="notice">${noticeHtml(view.notice)}</div>` : ""}
   <div id="live" role="status" aria-live="polite"></div>
   ${button}
   ${view.inApp ? '<button type="button" class="copy" id="copy" hidden>Copy link</button>' : ""}
-  <p class="fine">${LOCK}<span>Only ${owner}'s Google account can sign in · stays signed in ${SESSION_DAYS} days</span></p>
+  <p class="fine">${LOCK}<span>${owner ? `Only ${owner}'s Google account` : "Only the owner's Google account"} can sign in · stays signed in ${SESSION_DAYS} days</span></p>
 </main>
 <script>${SCRIPT}</script>
 </body>

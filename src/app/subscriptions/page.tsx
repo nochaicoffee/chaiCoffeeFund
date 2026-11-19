@@ -7,8 +7,7 @@ import { GreetingSentence } from "@/components/subscriptions/GreetingSentence";
 import { SubscriptionsDashboard } from "@/components/subscriptions/SubscriptionsDashboard";
 import { HeaderFormButtons, SubscriptionFormsProvider } from "@/components/subscriptions/forms/SubscriptionForms";
 import { usableSubscriptionData } from "@/lib/aggregate/subscriptionPage";
-import { appConfig } from "@/lib/appConfig";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { greetingTitle, todayIso } from "@/lib/format/date";
 import { parsePeriod } from "../cards/params";
 import { formsView } from "./formsView";
 import { loadSubscriptionData } from "./loadSubscriptionData";
@@ -41,7 +40,7 @@ export default async function SubscriptionsPage({ searchParams }: PageProps<"/su
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Subscriptions"
-        title={`${greetingFor()}, ${appConfig.ownerName}`}
+        title={greetingTitle()}
         actions={
           <>
             <PeriodSelect options={renewalsPeriodMenu(usable, period, today)} value={renewalsPeriodValue(period, today)} start={renewalsRangeStart(usable, period, today)} currentMonth={today.slice(0, 7)} />

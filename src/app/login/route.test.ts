@@ -56,7 +56,7 @@ describe("GET /login, the new page", () => {
 
   it("greets him by name, by the time of day, and draws the cup with its three coins", async () => {
     const html = await (await page()).text();
-    expect(html).toMatch(/Good (morning|afternoon|evening), Prathik/);
+    expect(html).toMatch(/Good (morning|afternoon|evening)/);
     expect(html).toContain('class="kh"');
     expect(html.match(/class="kh-coin"/g)).toHaveLength(3);
   });

@@ -59,7 +59,7 @@ If a step feels like it needs new boilerplate instead of just using the existing
 
 ## Every dashboard's greeting points
 
-Every dashboard page opens with the same header: eyebrow, "Good afternoon, Prathik", then one summary sentence. **That sentence's figures are always pointable** (Prathik's pick, Subscriptions 7A and Cards A): hovering, focusing or tapping a bold figure opens a light card under it with what it means. A new dashboard doesn't get a plain `<p>` sentence. Building one means:
+Every dashboard page opens with the same header: eyebrow, the greeting (`greetingTitle()`, "Good afternoon, <OWNER_NAME>"), then one summary sentence. **That sentence's figures are always pointable** (Prathik's pick, Subscriptions 7A and Cards A): hovering, focusing or tapping a bold figure opens a light card under it with what it means. A new dashboard doesn't get a plain `<p>` sentence. Building one means:
 1. The sentence is a `SentencePart[]` (`src/app/cards/summarySentence.ts` has the type). Each bold figure that has something to explain carries a `point` key; two figures can share one.
 2. A `greetingView` in the page's folder (`src/app/<page>/greetingView.ts`, or in `views.ts`) builds the cards' content as plain, already-formatted data, keyed by those `point`s, from the same summary the sentence reads, so the two always agree. It uses existing `lib/aggregate` functions; new math goes there with a test.
 3. A client `GreetingSentence` in `src/components/<page>/` is a thin wrapper around `PointingSentence` (`src/components/shell/PointingSentence.tsx`): `has(point)` says whether a figure has a card, `card(point)` draws it. Use `CardHead` for the top of a card. Don't copy the hover, glide, focus, tap and Esc behaviour: it's all in the shared component.

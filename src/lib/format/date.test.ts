@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDate, formatHeaderDate, formatMonthShort, formatMonthYear, formatShortDate, formatSpokenDate, greetingFor, todayIso } from "./date";
+import { formatDate, formatHeaderDate, formatMonthShort, formatMonthYear, formatShortDate, formatSpokenDate, greetingFor, greetingTitle, todayIso } from "./date";
 
 describe("todayIso", () => {
   it("uses the given time zone, not UTC", () => {
@@ -54,5 +54,18 @@ describe("formatSpokenDate", () => {
   it("writes the weekday, month and year out in full", () => {
     expect(formatSpokenDate("2026-10-18")).toBe("Sunday, October 18, 2026");
     expect(formatSpokenDate("2026-08-05")).toBe("Wednesday, August 5, 2026");
+  });
+});
+
+describe("greetingTitle", () => {
+  const morning = new Date("2026-10-17T03:00:00Z");
+  it("adds the owner's name", () => {
+    expect(greetingTitle(morning, "Asha", "Asia/Kolkata")).toBe("Good morning, Asha");
+  });
+  it("is just the greeting when no name is set", () => {
+    expect(greetingTitle(morning, "", "Asia/Kolkata")).toBe("Good morning");
+  });
+  it("goes by the clock in the given zone", () => {
+    expect(greetingTitle(morning, "Asha", "America/New_York")).toBe("Good evening, Asha");
   });
 });

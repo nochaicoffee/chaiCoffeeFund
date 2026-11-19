@@ -8,8 +8,7 @@ import { GreetingSentence } from "@/components/expenses/GreetingSentence";
 import { SplitHero } from "@/components/expenses/SplitHero";
 import { HEADER_GHOST_CLASS } from "@/components/shell/FormTriggerButton";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { appConfig } from "@/lib/appConfig";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { greetingTitle, todayIso } from "@/lib/format/date";
 import { expenseFormsData } from "./formsData";
 import { loadExpenseData } from "./loadExpenseData";
 import { bigSpendsView, expenseModel, greetingView, heroView, monthsView, summarySentence, whereView } from "./views";
@@ -30,7 +29,7 @@ export default async function ExpensesPage({ searchParams }: PageProps<"/expense
   return (
     <ExpenseFormsProvider forms={forms}>
       <div className="flex flex-col gap-6">
-        <PageHeader section="Expenses" title={`${greetingFor()}, ${appConfig.ownerName}`} actions={<><RefreshButton iconOnly /><Link href="/expenses/statements" className={HEADER_GHOST_CLASS}>Statements</Link><AddBigSpendButton /></>}>
+        <PageHeader section="Expenses" title={greetingTitle()} actions={<><RefreshButton iconOnly /><Link href="/expenses/statements" className={HEADER_GHOST_CLASS}>Statements</Link><AddBigSpendButton /></>}>
           <GreetingSentence parts={summarySentence(model)} cards={greetingView(model)} />
           <SkippedRowsNotice tabs={skipped} />
         </PageHeader>
