@@ -150,7 +150,7 @@ The finances live in a Google Sheet that has stopped being trustworthy:
 
 | ID | Feature | Pri | Status |
 |---|---|---|---|
-| F-DY-01 | A Daily page: spending he writes down by hand each day (amount, UPI or credit card, a category, a note) on a calendar he clicks, with a monthly limit and what is left of it, today's allowance, a year or a month of widgets, and categories he can add. No automation; not read by Expenses, Cards or Accounts | P1 | Built 2026-11-18 (`docs/design/daily.md`, round 3): the DailySpends, DailyCategories and DailyBudgets tabs, `/daily` (a pinned budget strip, the hero calendar with quick add, Right now, a period of widgets, Where it went, Month by month), a pinned quick-add bar on a phone, and `daily_spends`, `daily_categories` and `daily_budgets` over MCP. The limit shows on Daily only |
+| F-DY-01 | A Daily page: spending he writes down by hand each day (amount, UPI or credit card, a category, a note) on a calendar he clicks, with a monthly limit and what is left of it, today's allowance, a year or a month of widgets, and categories he can add. No automation; not read by Expenses, Cards or Accounts | P1 | Built 2026-11-18 (`docs/design/daily.md`, round 3): the DailySpends, DailyCategories and DailyBudgets tabs, `/daily` (the hero calendar with this month as its headline and quick add, a slim budget strip under it, Right now, a period of widgets, Where it went, Month by month), a pinned quick-add bar on a phone, and `daily_spends`, `daily_categories` and `daily_budgets` over MCP. The limit shows on Daily only |
 
 ### Loans (`F-LO`)
 

@@ -5,6 +5,7 @@ import { resolveCategories, type CategoryDef } from "@/lib/daily/categories";
 import { PENDING_PREFIX } from "@/lib/daily/pendingAdds";
 import { cardColorKey, type ColorKey } from "@/lib/format/colors";
 import { formatDayDate, formatMonthShort, formatMonthYear, formatShortDate, MONTH_NAMES } from "@/lib/format/date";
+import { ordinal } from "@/lib/format/labels";
 import { formatInrCompact, formatInrExact } from "@/lib/format/money";
 import type { DailyBudget, DailyCategory, DailySpend, DailySpendMethod } from "@/lib/sheets/types";
 
@@ -157,7 +158,6 @@ export interface StripView {
   month: string;
   label: string;
   value: string;
-  ofLimit: string;
   /** Spent over the limit, 0 to 1 (capped), and where the pace is. */
   fraction: number;
   paceFraction: number;
@@ -167,12 +167,15 @@ export interface StripView {
   todayValue: string;
   todayNegative: boolean;
   daysLeft: string;
+  /** The pace marker in words: "Pace for the 18th" and what the straight line to the limit says by today. */
+  paceLabel: string;
+  paceValue: string;
 }
 
 export function stripView(model: DailyModel): StripView {
   const b = model.budget;
   const month = model.current.month;
-  if (!b) return { hasLimit: false, month, label: "", value: "", ofLimit: "", fraction: 0, paceFraction: 0, tone: "ok", pill: { tone: "warn", text: "" }, todayLabel: "", todayValue: "", todayNegative: false, daysLeft: "" };
+  if (!b) return { hasLimit: false, month, label: "", value: "", fraction: 0, paceFraction: 0, tone: "ok", pill: { tone: "warn", text: "" }, todayLabel: "", todayValue: "", todayNegative: false, daysLeft: "", paceLabel: "", paceValue: "" };
   const t = b.today;
   const pill = b.over ? ({ tone: "due", text: `${money(-b.left)} over the limit` } as const) : b.overPace > 0 ? ({ tone: "warn", text: `${money(b.overPace)} over pace` } as const) : ({ tone: "on", text: `${money(-b.overPace)} under pace` } as const);
   return {
@@ -180,7 +183,6 @@ export function stripView(model: DailyModel): StripView {
     month,
     label: b.over ? "Over the limit" : "Left to spend",
     value: money(Math.abs(b.left)),
-    ofLimit: `of ${money(b.limit)}`,
     fraction: Math.min(1, b.used),
     paceFraction: Math.min(1, b.expected / b.limit),
     tone: b.over ? "neg" : b.overPace > 0 ? "warn" : "ok",
@@ -189,6 +191,8 @@ export function stripView(model: DailyModel): StripView {
     todayValue: t ? money(Math.abs(t.left)) : "",
     todayNegative: !!t && t.left < 0,
     daysLeft: `${plural(b.daysLeft, "day")} to go`,
+    paceLabel: `Pace for the ${ordinal(Number(model.today.slice(8)))}`,
+    paceValue: money(b.expected),
   };
 }
 
@@ -228,12 +232,14 @@ export interface DayDetail {
 export interface HeroView {
   isCurrent: boolean;
   monthLabel: string;
-  dateLabel: string;
   dayOf: string;
   spentToday: string | null;
   spentMonth: string;
-  spentMonthLabel: string;
-  ofLimit: string | null;
+  /** The headline's small line ("Spent this month · November 2026"), and the sentence under the figure ("70% of your ₹30,000 limit, about ₹1,166 a day."). */
+  kicker: string;
+  story: string;
+  /** "Wed, Nov 18", for the date pill. */
+  dateShort: string;
   prevHref: string;
   nextHref: string | null;
   backHref: string | null;
@@ -289,12 +295,12 @@ export function heroView(model: DailyModel, periodParam?: string): HeroView {
   return {
     isCurrent: m.isCurrent,
     monthLabel: formatMonthYear(m.month),
-    dateLabel: `${formatDayDate(today)}, ${today.slice(0, 4)}`,
     dayOf: `day ${Number(today.slice(8))} of ${m.length}`,
     spentToday: m.isCurrent ? money(m.days.find((d) => d.date === today)?.total ?? 0) : null,
     spentMonth: money(m.total),
-    spentMonthLabel: m.isCurrent ? "Spent this month" : `Spent in ${MONTH_NAMES[Number(m.month.slice(5, 7)) - 1]}`,
-    ofLimit: limit === null ? null : `${percent(m.total / limit)} of ${money(limit)}`,
+    kicker: m.isCurrent ? `Spent this month · ${formatMonthYear(m.month)}` : `Spent in ${formatMonthYear(m.month)}`,
+    story: m.count === 0 ? "Nothing written down yet." : limit === null ? `About ${money(Math.round(m.perDay))} a day.` : `${percent(m.total / limit)} of your ${money(limit)} limit, about ${money(Math.round(m.perDay))} a day.`,
+    dateShort: formatDayDate(today),
     prevHref: monthHref(shiftMonth(m.month, -1), today, periodParam),
     nextHref: next > monthOf(today) ? null : monthHref(next, today, periodParam),
     backHref: m.isCurrent ? null : monthHref(monthOf(today), today, periodParam),

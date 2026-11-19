@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useState } from "react";
 import type { HeroView } from "@/app/daily/views";
 import { PlusIcon } from "../cards/forms/icons";
 import { CategoryTile } from "./CategoryPicker";
@@ -25,10 +25,10 @@ const Chevron = ({ left }: { left?: boolean }) => (
 );
 
 /**
- * The hero (docs/design/daily.md, round 3): today's date, what's been spent today and this month across the top; the calendar, one day a click; beside it
- * quick add (on a desktop; a phone has the pinned bar) and the selected day's spends. A day to come can be looked at but not added to.
+ * The hero (docs/design/daily.md, rounds 3 and 4): this month's spending as the headline with its sentence, today and the date as pills, the month's
+ * arrows; the calendar, one day a click; beside it quick add (on a desktop; a phone has the pinned bar) and the selected day's spends. A day to come can be looked at but not added to.
  */
-export function Hero({ view, strip }: { view: HeroView; strip: ReactNode }) {
+export function Hero({ view }: { view: HeroView }) {
   const daily = useDaily();
   // Quick add starts empty again after each add: a new key remounts it.
   const [added, setAdded] = useState(0);
@@ -36,27 +36,26 @@ export function Hero({ view, strip }: { view: HeroView; strip: ReactNode }) {
     view.details[daily.selected] ?? view.details[view.defaultSelected];
   return (
     <section className="hero" aria-label="Calendar">
-      {strip}
       <div className="hero-main">
         <div className="hero-l">
           <div className="hero-hd">
-            <div className="hh">
-              <div className="hh-d">
-                <small>
-                  {view.isCurrent ? `Today · ${view.dayOf}` : view.monthLabel}
-                </small>
-                <b>{view.isCurrent ? view.dateLabel : "Month over"}</b>
-              </div>
-              {view.spentToday !== null && (
-                <div>
-                  <small>Spent today</small>
-                  <b>{view.spentToday}</b>
-                </div>
-              )}
-              <div>
-                <small>{view.spentMonthLabel}</small>
+            <div className="hh4">
+              <div className="h4-main">
+                <small>{view.kicker}</small>
                 <b>{view.spentMonth}</b>
-                {view.ofLimit && <em>{view.ofLimit}</em>}
+                <p>{view.story}</p>
+              </div>
+              <div className="h4-side">
+                {view.spentToday !== null && (
+                  <span className="h4-pill">
+                    <small>Today</small>
+                    <b>{view.spentToday}</b>
+                  </span>
+                )}
+                <span className="h4-pill soft">
+                  <small>{view.isCurrent ? view.dateShort : view.monthLabel}</small>
+                  <b>{view.isCurrent ? view.dayOf : "Month over"}</b>
+                </span>
               </div>
             </div>
             <nav className="mnav" aria-label="Month">

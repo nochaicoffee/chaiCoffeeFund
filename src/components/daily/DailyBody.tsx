@@ -10,7 +10,7 @@ import { PeriodPicker } from "./PeriodPicker";
 import { MonthsCard, Widgets, WhereCard } from "./Widgets";
 
 /**
- * The page under the greeting (docs/design/daily.md, round 3): any add that couldn't be saved, the hero (the budget strip, the calendar with quick add), Right
+ * The page under the greeting (docs/design/daily.md, round 3): any add that couldn't be saved, the hero (the month as the headline, the calendar with quick add), the budget strip under it, Right
  * now, then a period of widgets, Where it went and Month by month. Every figure comes from the shell's model, so an add is in all of them the moment it's
  * made; they're worked out once per model, not on every click.
  */
@@ -23,7 +23,8 @@ export function DailyBody() {
   return (
     <>
       <FailedAdds />
-      <Hero view={v.hero} strip={<BudgetStrip view={v.strip} />} />
+      <Hero view={v.hero} />
+      <BudgetStrip view={v.strip} />
       {v.now && (
         <>
           <div className="sec">

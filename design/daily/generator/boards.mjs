@@ -3,10 +3,14 @@ import { c1, c2, c3, s1, s2, s3 } from "./designs-cal.mjs";
 import { a1, a2, a3, a4 } from "./designs-alt.mjs";
 import { b1 } from "./designs-budget.mjs";
 import { e1, e2, e3, n1, n1c, n2, n3 } from "./designs-r3.mjs";
+import { desktop as hd, phone as hp } from "./designs-r4.mjs";
+import { desktop as ud, phone as up } from "./designs-r5.mjs";
 import { m1, m1b, m1c, m2, m3, m4, m5, d1 } from "./designs-r2.mjs";
 import { pC1, pC2, pC3, pA1, pA2, pA3, pA4, pS1, pB1 } from "./designs-phone.mjs";
 
 export const PAGES = [
+  { id: "r5", name: "Round 5 \u00b7 the budget strip under the hero: three options" },
+  { id: "r4", name: "Round 4 · the hero's top section: four options, desktop and phone" },
   { id: "r3d", name: "Round 3 · desktop: details on top of the hero, quick add beside the calendar, widgets outside it, a year period, adding categories" },
   { id: "r3p", name: "Round 3 · phone" },
   { id: "r2p", name: "Round 2 · phone first: the hero calendar with quick add, a pinned budget strip and four at-a-glance widgets" },
@@ -18,6 +22,8 @@ export const PAGES = [
   { id: "states", name: "Round 1 · states (on C1): adding a spend, an empty month, a busy month" },
 ];
 export const NOTES = [
+  { page: "r5", text: "Daily, round 5 (2026-11-19): the budget strip leaves the hero and sits under it (Prathik: the hero already has these details). The hero here has H2's header (the shortest of round 4; the header pick is separate) and no strip; under it come the strip and then the Right now widgets. S1: the strip as it was, light and full width. S2: one slim row with only what the hero doesn't say (what's left, the bar with the pace tick, the pill, left today). S3: a card with what's left and its bar, and left today, the pace and days to go beside it. The strip no longer pins to the top of a phone: it scrolls with the page (the quick-add bar still pins at the bottom). Left today shows both here and in the Right now widgets, so one of them could go. Every figure is made up." },
+  { page: "r4", text: "Daily, round 4 (2026-11-19): the top of the hero, redrawn. It was three bare figures on the dark card, spaced unevenly and tall. Prathik asked to redesign it (it looks plain and flat, the spacing is uneven, it takes too much room) and to see four directions. H1: one slim row, the date then two stat chips. H2: a calendar tile for the date, today with its UPI and card split, the month as a ring against the limit. H3: a slim date line, then Today and This month as equal tiles with a bar each. H4: this month as one big figure with its sentence, today and the date as pills. Each is shown in the hero as built: the budget strip first, then this, then the calendar with quick add and the day's panel. Phone versions are the second row. Every figure is made up." },
   { page: "r3d", text: "Daily, round 3 (2026-11-18), desktop. The hero now has today's details across its top (the date, what's been spent today, what's been spent this month) and quick add beside the calendar, with the day's panel under it. The four widgets left the hero: the ones about right now (left today, week so far, on track to end at) sit in a Right now row that stays put; the rest follow a period (a year by default, a month, later a range): spent, top category, biggest spend, UPI vs credit card, quiet days, months inside the limit, then Where it went and Month by month. Widgets sit on one 12-column grid, four to a row, and every card in a row is the same height with its picture at the same level; Where it went and Month by month line up on the same columns. E2 shows the period set to This month with the picker open. E3 is a proposal for adding categories (a + New chip with a name and a colour, Manage to rename, recolour and hide, never delete) with questions. Every figure is made up." },
   { page: "r3p", text: "Daily round 3, phone: the same page: details on top of the hero, Right now widgets, the period section with its picker, Where it went and Month by month for the year; quick add stays the pinned bar. N3: the add sheet with a new category being made; N4: Manage categories. Every figure is made up." },
   { page: "r2p", text: "Daily, round 2 (2026-11-18), phone first. Prathik picked the hero calendar (C2) and asked for quick add, how much is left of the budget, and a design that works on a phone, where he'll mostly enter spends. M1: the top of the page: the budget strip is pinned under the app bar (left to spend, the bar with the pace marked, left today), then four widgets (spent so far, left today, week so far, on track to end at), then the hero calendar; the quick-add bar is pinned at the bottom (amount, UPI or card, a chevron for more, the add button). M1b: scrolled to the calendar: the strip shrinks to one line, the bar stays. M1c: the whole page unrolled. M2: the chevron opened (day, category, note). M3: just added: toast with Undo, every figure already moved. M4: the limit sheet, from tapping the strip. M5: over the limit. Left today is what's left of the limit before today, shared over the days to go counting today, less what's gone today: it moves as you spend (open question). Every figure is made up." },
@@ -29,6 +35,20 @@ export const NOTES = [
   { page: "states", text: "Daily states, drawn on C1. Adding a spend: the panel turns into the form for the day you clicked, and a toast confirms the last one. An empty month: every figure is zero and the panel says so. A busy month (October): every day has spends, so a day can have many and the panel scrolls. Every figure is made up." },
 ];
 export const BOARDS = [
+  { file: "DyU1.dc.html", w: 1600, page: "r5", render: ud("s1") },
+  { file: "DyU2.dc.html", w: 1600, page: "r5", render: ud("s2") },
+  { file: "DyU3.dc.html", w: 1600, page: "r5", render: ud("s3") },
+  { file: "DyU1Phone.dc.html", w: 390, page: "r5", render: up("s1") },
+  { file: "DyU2Phone.dc.html", w: 390, page: "r5", render: up("s2") },
+  { file: "DyU3Phone.dc.html", w: 390, page: "r5", render: up("s3") },
+  { file: "DyH1.dc.html", w: 1600, page: "r4", render: hd("h1") },
+  { file: "DyH2.dc.html", w: 1600, page: "r4", render: hd("h2") },
+  { file: "DyH3.dc.html", w: 1600, page: "r4", render: hd("h3") },
+  { file: "DyH4.dc.html", w: 1600, page: "r4", render: hd("h4") },
+  { file: "DyH1Phone.dc.html", w: 390, page: "r4", render: hp("h1") },
+  { file: "DyH2Phone.dc.html", w: 390, page: "r4", render: hp("h2") },
+  { file: "DyH3Phone.dc.html", w: 390, page: "r4", render: hp("h3") },
+  { file: "DyH4Phone.dc.html", w: 390, page: "r4", render: hp("h4") },
   { file: "DyE1.dc.html", w: 1600, page: "r3d", render: e1 },
   { file: "DyE2.dc.html", w: 1600, page: "r3d", render: e2 },
   { file: "DyE3.dc.html", w: 1600, page: "r3d", render: e3 },
