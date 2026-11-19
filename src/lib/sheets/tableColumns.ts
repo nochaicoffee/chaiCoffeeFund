@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { sheets_v4 } from "googleapis";
+import type { ColumnExpectation } from "./rowReading";
 import { isoDate } from "./validation";
 
 /**
@@ -140,4 +141,50 @@ export function planNewTable(title: string, specs: ColumnSpec[], sheetId: number
       { addTable: { table: { name: title, range: { sheetId, startRowIndex: 0, endRowIndex: 2, startColumnIndex: 0, endColumnIndex: specs.length }, columnProperties } } },
     ],
   };
+}
+
+/** A repository's expected columns as the specs a Table is built from (a number is a DOUBLE, a text a TEXT). */
+export function specsFromExpectations(columns: ColumnExpectation[]): ColumnSpec[] {
+  return columns.map((column): ColumnSpec => {
+    switch (column.kind) {
+      case "dropdown":
+        return { name: column.name, type: "DROPDOWN", options: [...column.options] };
+      case "date":
+        return { name: column.name, type: "DATE" };
+      case "number":
+        return { name: column.name, type: "DOUBLE" };
+      case "text":
+        return { name: column.name, type: "TEXT" };
+    }
+  });
+}
+
+/** What the planner needs of a repository. */
+export interface TabSource {
+  sheetName: string;
+  expectedColumns: ColumnExpectation[];
+}
+
+export interface SheetPlan {
+  /** Tabs that will be created, in order. */
+  creating: string[];
+  /** Tabs already in the Sheet. They are never touched, whatever they hold. */
+  existing: string[];
+  /** One batch that creates every missing tab with its header and Table. Empty when nothing is missing. */
+  requests: sheets_v4.Schema$Request[];
+}
+
+/**
+ * Everything it takes to bring a new Sheet up to what the app reads: each repository's tab that
+ * isn't there yet, with its Table, typed columns and dropdowns (planNewTable). A tab that exists
+ * is left exactly as it is, so running this against a Sheet that's partly or fully built is safe;
+ * `npm run check-sheet` then says whether the existing tabs match. `firstSheetId` numbers the new
+ * tabs one after another, so the caller chooses ids that can't meet the Sheet's own.
+ */
+export function planMissingTabs(sources: TabSource[], existingTitles: string[], firstSheetId: number): SheetPlan {
+  const have = new Set(existingTitles);
+  const existing = sources.filter((source) => have.has(source.sheetName)).map((source) => source.sheetName);
+  const missing = sources.filter((source) => !have.has(source.sheetName));
+  const requests = missing.flatMap((source, index) => planNewTable(source.sheetName, specsFromExpectations(source.expectedColumns), firstSheetId + index).requests);
+  return { creating: missing.map((source) => source.sheetName), existing, requests };
 }

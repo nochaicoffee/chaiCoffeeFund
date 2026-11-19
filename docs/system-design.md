@@ -524,6 +524,15 @@ The real Sheet's tab names and columns are ground truth, and `createRepository`'
   - IncomeSources' `frequency` dropdown has `Quaterly` and `OneTime` for `Quarterly` and `One-Time`. Fixed 2026-10-24 (#185).
   - Loans, LoanInstallments, InvestmentTransactions and FixedDeposits had the placeholder dropdown values `Option 1` and `Option 2`. Loans and LoanInstallments were fixed through `/api/dev/sheet-columns` on 2026-10-25 (when Loans also gained `firstEmiDate`, `stampDuty` and `preEmiInterest`); InvestmentTransactions and FixedDeposits on 2026-10-31 (#234), with `assetType` now a fixed list in the code too. After the change `npm run check-sheet` passes on every tab, and a real create, update (including the cross-field rules and clearing an FD's payout frequency), read and delete round trip was run on both and cleaned up.
 
+### Creating the Sheet (`npm run create-sheet`, 2026-11-19)
+
+A new person can't be asked to hand-build 35 Tables, so the Sheet is built from the code. `planMissingTabs` (`lib/sheets/tableColumns.ts`, pure and tested) turns every repository's `expectedColumns` into one batch of `addSheet` + header + `addTable` requests, using the same `planNewTable` the dev route used for single tabs. `createMissingTabs` (`lib/sheets/createSheet.ts`) sends it. Rules:
+- **It only adds.** A tab that's already in the Sheet is not touched, whatever it holds, so it is safe to run on a part-built or fully built Sheet (run against the real Sheet it creates nothing and lists every tab as existing). `check-sheet` then says whether the existing tabs match.
+- **One batch**, so a refusal leaves the Sheet as it was.
+- **The empty first tab** of a new spreadsheet (`Sheet1`, or its name in the account's language) is removed, only when it is the single tab and holds no cells.
+- **`/api/setup/sheet`** (GET = the check, POST = create) is behind the login like every `/api` route, not offered through MCP (it changes structure, never rows), and works in production, so the setup page can use it. `scripts/createSheet.ts` calls it from `npm run create-sheet` (with `npm run dev` running).
+- Not yet run against a brand-new empty spreadsheet (a service account can't create one in this project); the request shapes are the ones `CREATABLE` tabs have used since #124.
+
 ## Backend architecture
 
 Next.js (App Router), TypeScript:

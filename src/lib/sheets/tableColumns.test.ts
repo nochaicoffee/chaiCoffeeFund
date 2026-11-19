@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import type { sheets_v4 } from "googleapis";
 import { isoDate, nonEmptyString } from "./validation";
-import { columnSpecs, planNewTable, planTableColumns } from "./tableColumns";
+import { columnSpecs, planMissingTabs, planNewTable, planTableColumns, specsFromExpectations } from "./tableColumns";
+import { columnExpectations } from "./rowReading";
 
 const schema = z.object({
   id: nonEmptyString,
@@ -146,5 +147,45 @@ describe("planNewTable", () => {
 
   it("says what it will do, in words", () => {
     expect(plan.changes).toEqual(["create the Things tab with id, name, amount, status, endDate, note"]);
+  });
+});
+
+describe("specsFromExpectations", () => {
+  it("gives the same specs as reading the schema directly", () => {
+    const columns = ["id", "name", "amount", "status", "endDate", "note"];
+    expect(specsFromExpectations(columnExpectations("Test", columns, schema))).toEqual(columnSpecs(columns, schema));
+  });
+});
+
+describe("planMissingTabs", () => {
+  const source = (sheetName: string) => ({ sheetName, expectedColumns: columnExpectations(sheetName, ["id", "name", "amount", "status", "endDate", "note"], schema) });
+
+  it("creates every tab a new Sheet lacks, each with its own id", () => {
+    const plan = planMissingTabs([source("Accounts"), source("Cards")], [], 500);
+    expect(plan.creating).toEqual(["Accounts", "Cards"]);
+    expect(plan.existing).toEqual([]);
+    expect(plan.requests).toHaveLength(6);
+    const created = plan.requests.flatMap((r) => (r.addSheet ? [r.addSheet.properties] : []));
+    expect(created).toEqual([
+      { sheetId: 500, title: "Accounts" },
+      { sheetId: 501, title: "Cards" },
+    ]);
+    const tables = plan.requests.flatMap((r) => (r.addTable ? [r.addTable.table] : []));
+    expect(tables.map((t) => [t?.name, t?.range?.sheetId])).toEqual([
+      ["Accounts", 500],
+      ["Cards", 501],
+    ]);
+  });
+
+  it("leaves a tab that's already there alone, whatever it holds", () => {
+    const plan = planMissingTabs([source("Accounts"), source("Cards")], ["Accounts", "Sheet1"], 500);
+    expect(plan.creating).toEqual(["Cards"]);
+    expect(plan.existing).toEqual(["Accounts"]);
+    expect(plan.requests.some((r) => r.addSheet?.properties?.title === "Accounts")).toBe(false);
+  });
+
+  it("sends nothing when every tab is there", () => {
+    const plan = planMissingTabs([source("Accounts")], ["Accounts"], 500);
+    expect(plan).toEqual({ creating: [], existing: ["Accounts"], requests: [] });
   });
 });
