@@ -5,8 +5,7 @@ import { GoalsDashboard } from "@/components/goals/GoalsDashboard";
 import { GoalsFormsProvider, HeaderFormButtons } from "@/components/goals/forms/GoalsForms";
 import { GreetingSentence } from "@/components/goals/GreetingSentence";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { appConfig } from "@/lib/appConfig";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { greetingTitle, todayIso } from "@/lib/format/date";
 import { goalsFormsData } from "./formsView";
 import { loadGoalsData } from "./loadGoalsData";
 import { attentionItems } from "@/lib/goals/attention";
@@ -33,7 +32,7 @@ export default async function GoalsPage({ searchParams }: PageProps<"/goals">) {
   return (
     <GoalsFormsProvider forms={goalsFormsData(data, today, demo !== null)}>
       <div className="flex flex-col gap-6">
-        <PageHeader section="Goals" title={`${greetingFor()}, ${appConfig.ownerName}`} actions={
+        <PageHeader section="Goals" title={greetingTitle()} actions={
             <>
               <RefreshButton iconOnly />
               <HeaderFormButtons />

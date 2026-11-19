@@ -45,6 +45,15 @@ export function ErrorScreen({ digest, retry, home }: { digest?: string; retry: (
           ? "Google Sheets can be slow or busy, and nothing here changes your data. Try again in a moment."
           : "This page reads your Google Sheet, so it needs the internet. It tries again by itself when you're back."}
       </p>
+      {online ? (
+        // A plain link: the root layout may be what failed, so the router may not be there. /setup says which part of the connection to the Sheet is wrong.
+        <p className="text-[12.5px] text-muted">
+          Keeps happening?{" "}
+          <a href="/setup" className="font-bold text-fg underline underline-offset-2">
+            Check the setup
+          </a>
+        </p>
+      ) : null}
       <div className="mt-2 flex gap-2">
         <button type="button" className={PRIMARY} onClick={retry}>
           Try again

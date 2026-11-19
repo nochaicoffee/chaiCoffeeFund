@@ -8,8 +8,7 @@ import { AddFirstSource } from "@/components/income/forms/AddFirstSource";
 import { HeaderFormButtons, IncomeFormsProvider } from "@/components/income/forms/IncomeForms";
 import { YearSelect } from "@/components/income/YearSelect";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { appConfig } from "@/lib/appConfig";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { greetingTitle, todayIso } from "@/lib/format/date";
 import { formatInrCompact } from "@/lib/format/money";
 import { totalReceivedBetween } from "@/lib/aggregate/incomeYear";
 import { loadIncomeData } from "./loadIncomeData";
@@ -43,7 +42,7 @@ export default async function IncomePage({ searchParams }: PageProps<"/income">)
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Income"
-        title={`${greetingFor()}, ${appConfig.ownerName}`}
+        title={greetingTitle()}
         actions={
           <>
             <YearSelect options={yearOptions} value={year === years[0] ? "" : String(year)} />

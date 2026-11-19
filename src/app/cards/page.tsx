@@ -19,7 +19,6 @@ import { SpendHeatmap } from "@/components/cards/SpendHeatmap";
 import { TrendChart } from "@/components/cards/TrendChart";
 import { PeriodSelect } from "@/components/cards/PeriodSelect";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { appConfig } from "@/lib/appConfig";
 import {
   allCardsUtilization,
   cardDetails,
@@ -38,7 +37,7 @@ import {
   type CardTileData,
 } from "@/lib/aggregate/cardSpend";
 import { trendPoints } from "@/lib/aggregate/cardTrend";
-import { formatShortDate, greetingFor, todayIso } from "@/lib/format/date";
+import { formatShortDate, greetingTitle, todayIso } from "@/lib/format/date";
 import { cardName, optionLabel } from "@/lib/format/labels";
 import { toClientCard } from "@/lib/forms/clientCard";
 import { formatInr } from "@/lib/format/money";
@@ -130,7 +129,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
       <SyncProvider cardNames={syncCardNames}>
         <PageHeader
           section="Cards"
-          title={`${greetingFor()}, ${appConfig.ownerName}`}
+          title={greetingTitle()}
           actions={
             <>
               <PeriodSelect options={periodMenu(data, period, today, cardId)} value={periodMenuValue(period, today)} start={rangePickerStart(data, period, today, cardId)} currentMonth={monthOf(today)} />

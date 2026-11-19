@@ -28,6 +28,12 @@ export function greetingFor(now: Date = new Date(), timeZone: string = appConfig
   return "Good evening";
 }
 
+/** A page's greeting: "Good afternoon, Asha", or just "Good afternoon" when no OWNER_NAME is set. */
+export function greetingTitle(now: Date = new Date(), ownerName: string = appConfig.ownerName, timeZone: string = appConfig.timeZone): string {
+  const greeting = greetingFor(now, timeZone);
+  return ownerName ? `${greeting}, ${ownerName}` : greeting;
+}
+
 export const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 export const WEEKDAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 

@@ -12,8 +12,7 @@ import { PeriodSelect } from "@/components/cards/PeriodSelect";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { AccountSyncProvider } from "@/components/sync/AccountSyncContext";
 import { AccountSyncReportPanel } from "@/components/sync/AccountSyncReportPanel";
-import { appConfig } from "@/lib/appConfig";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { greetingTitle, todayIso } from "@/lib/format/date";
 import { parsePeriod } from "../cards/params";
 import { loadAccountsData } from "./loadAccountsData";
 import { accountsPeriodMenu, accountsPeriodValue, accountsRangeStart } from "./params";
@@ -43,7 +42,7 @@ export default async function AccountsPage({ searchParams }: PageProps<"/account
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Bank accounts"
-        title={`${greetingFor()}, ${appConfig.ownerName}`}
+        title={greetingTitle()}
         actions={
           <>
             <PeriodSelect options={accountsPeriodMenu(data, period, today)} value={accountsPeriodValue(period, today)} start={accountsRangeStart(data, period, today)} currentMonth={today.slice(0, 7)} />

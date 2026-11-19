@@ -6,12 +6,14 @@ import { appConfig } from "@/lib/appConfig";
 import { MCP_ENTITIES, type McpEntity } from "./entities";
 import { addRecord, listEntities, listRecords, MAX_LIMIT, updateRecord, type ToolOutcome } from "./tools";
 
-const INSTRUCTIONS = `This is ${appConfig.ownerName}'s personal finance app. Its data lives in a Google Sheet, and these tools read and write it through the app's own checks.
+// Whose app it is, as the setting has it; "the owner" when OWNER_NAME is unset.
+const possessive = appConfig.ownerName ? `${appConfig.ownerName}'s` : "the owner's";
+const INSTRUCTIONS = `This is ${possessive} personal finance app. Its data lives in a Google Sheet, and these tools read and write it through the app's own checks.
 - Call list_entities first for the names of the record types, then again with one entity for the fields to add or change it with.
 - Amounts are plain numbers in rupees (an account in dollars says so). Dates are ISO, "2026-11-13".
 - Records point at each other by id (a payment's subscriptionId). Look the id up with list_records. Never invent one.
-- Before adding or changing a record, say what you are about to write and get ${appConfig.ownerName}'s go-ahead, unless he has just asked for exactly that.
-- Nothing can be deleted from here. If a mistake needs a row removed, tell him to remove it in the app.
+- Before adding or changing a record, say what you are about to write and get ${possessive} go-ahead, unless they have just asked for exactly that.
+- Nothing can be deleted from here. If a mistake needs a row removed, tell them to remove it in the app.
 - Write one record at a time: wait for each add_record or update_record to answer before sending the next. The Sheet can't take two writes to the same tab at once.
 - If a write is refused, read the reason and fix the data. Don't retry the same call.`;
 

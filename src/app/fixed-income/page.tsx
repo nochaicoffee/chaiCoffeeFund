@@ -14,10 +14,9 @@ import { EpfCard } from "@/components/fixed-income/widgets/EpfCard";
 import { GrowthCard } from "@/components/fixed-income/widgets/GrowthCard";
 import { MoneyInCard } from "@/components/fixed-income/widgets/MoneyInCard";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { appConfig } from "@/lib/appConfig";
 import { fixedIncome } from "@/lib/aggregate/fixedIncome";
 import { creditTiming } from "@/lib/aggregate/fixedIncomeWidgets";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { greetingTitle, todayIso } from "@/lib/format/date";
 import { getCachedAccounts, getCachedEpfAccountsTab, getCachedEpfEntriesTab, getCachedEpfRatesTab, getCachedFixedDepositsTab } from "@/lib/sheets/cached";
 import { depositFormsData } from "./depositFormsData";
 import { epfFormsData } from "./epfFormsData";
@@ -60,7 +59,7 @@ export default async function FixedIncomePage({ searchParams }: PageProps<"/fixe
         <div className="flex flex-col gap-6">
           <PageHeader
             section="Fixed Income"
-            title={`${greetingFor()}, ${appConfig.ownerName}`}
+            title={greetingTitle()}
             actions={
               <>
                 <RefreshButton iconOnly />

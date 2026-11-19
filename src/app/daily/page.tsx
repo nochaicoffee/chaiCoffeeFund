@@ -5,8 +5,7 @@ import { DailyBody } from "@/components/daily/DailyBody";
 import { DailyShell } from "@/components/daily/DailyShell";
 import { GreetingConnected } from "@/components/daily/GreetingConnected";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { appConfig } from "@/lib/appConfig";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { greetingTitle, todayIso } from "@/lib/format/date";
 import { getCachedDailyBudgetsTab, getCachedDailyCategoriesTab, getCachedDailySpendsTab } from "@/lib/sheets/cached";
 
 export const metadata: Metadata = { title: "Daily" };
@@ -27,7 +26,7 @@ export default async function DailyPage({ searchParams }: PageProps<"/daily">) {
 
   return (
     <DailyShell raw={{ spends: spends.records, budgets: budgets.records, categoryRows: categoryRows.records, today, month, period: one(params.period) }}>
-      <PageHeader section="Daily" title={`${greetingFor()}, ${appConfig.ownerName}`} actions={<RefreshButton iconOnly />}>
+      <PageHeader section="Daily" title={greetingTitle()} actions={<RefreshButton iconOnly />}>
         <GreetingConnected />
         <SkippedRowsNotice tabs={skipped} />
       </PageHeader>

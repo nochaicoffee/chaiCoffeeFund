@@ -8,8 +8,7 @@ import { ComingUpCard, LoansTable, MoneyBackCard } from "@/components/lent/LentW
 import { WhoOwesWhat } from "@/components/lent/WhoOwesWhat";
 import { AddFirstLoanButton, HeaderButtons, LentFormsProvider } from "@/components/lent/forms/LentForms";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { appConfig } from "@/lib/appConfig";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { greetingTitle, todayIso } from "@/lib/format/date";
 import { getCachedAccounts, getCachedIncomeEntriesTab, getCachedIncomeSourcesTab, getCachedLentLoansTab, getCachedLentRepaymentsTab } from "@/lib/sheets/cached";
 import { clockView, PERIODS, type ClockPeriod } from "./clockView";
 import { lentFormsData } from "./formsData";
@@ -42,7 +41,7 @@ export default async function LentPage({ searchParams }: PageProps<"/lent">) {
   return (
     <LentFormsProvider forms={forms}>
     <div className="flex flex-col gap-6">
-      <PageHeader section="Lent out" title={`${greetingFor()}, ${appConfig.ownerName}`} actions={<><RefreshButton iconOnly /><HeaderButtons /></>}>
+      <PageHeader section="Lent out" title={greetingTitle()} actions={<><RefreshButton iconOnly /><HeaderButtons /></>}>
         <GreetingSentence parts={summarySentence(model)} cards={greetingView(model)} />
         <SkippedRowsNotice tabs={skipped} />
       </PageHeader>

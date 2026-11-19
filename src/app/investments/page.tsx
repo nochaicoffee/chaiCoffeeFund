@@ -22,8 +22,7 @@ import { WhatIfCard } from "@/components/investments/WhatIfCard";
 import { ReturnsRow } from "@/components/investments/ReturnsRow";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { investmentOverview } from "@/lib/aggregate/investmentOverview";
-import { appConfig } from "@/lib/appConfig";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { greetingTitle, todayIso } from "@/lib/format/date";
 import type { PricePoint } from "@/lib/prices/history";
 import { getPriceSeries } from "@/lib/prices/series";
 import { getCachedInstrumentsTab, getCachedInvestmentTargetsTab, getCachedInvestmentTransactionsTab, getCachedTransfersTab } from "@/lib/sheets/cached";
@@ -92,7 +91,7 @@ export default async function InvestmentsPage() {
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Investments"
-        title={`${greetingFor()}, ${appConfig.ownerName}`}
+        title={greetingTitle()}
         actions={
           <>
             <RefreshButton iconOnly />

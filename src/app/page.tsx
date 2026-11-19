@@ -8,12 +8,11 @@ import { MonthByMonth } from "@/components/overview/MonthByMonth";
 import { Tiles } from "@/components/overview/Tiles";
 import { PeriodSelect } from "@/components/cards/PeriodSelect";
 import { PageHeader } from "@/components/shell/PageHeader";
-import { appConfig } from "@/lib/appConfig";
 import { monthOf } from "@/lib/aggregate/cardSpend";
 import { monthsSoFarIn } from "@/lib/aggregate/monthlyFlows";
 import { parsePeriodParam } from "@/lib/aggregate/period";
 import { addDays } from "@/lib/aggregate/subscriptionRenewals";
-import { greetingFor, todayIso } from "@/lib/format/date";
+import { greetingTitle, todayIso } from "@/lib/format/date";
 import { endingView } from "./overview/endingView";
 import { overviewEvents, WINDOW_DAYS } from "./overview/events";
 import { insights } from "./overview/insights";
@@ -63,7 +62,7 @@ export default async function OverviewPage({ searchParams }: PageProps<"/">) {
     <div className="flex flex-col gap-6">
       <PageHeader
         section="Overview"
-        title={`${greetingFor()}, ${appConfig.ownerName}`}
+        title={greetingTitle()}
         actions={
           <>
             {expense && <PeriodSelect options={periodMenu(period, today, first)} value={periodMenuValue(period, today)} start={rangePickerStart(period, today, first)} currentMonth={monthOf(today)} />}
