@@ -30,6 +30,10 @@ const SHEET_COLUMN_TYPES: Record<ColumnExpectation["kind"], string[]> = {
   dropdown: ["DROPDOWN"],
 };
 
+/** The problem `compareTab` reports for a tab the Sheet doesn't have; the setup page finds missing tabs by `isMissingTabProblem`, so the wording lives only here. */
+export const missingTabProblem = (sheetName: string) => `there's no ${sheetName} tab in the Sheet`;
+export const isMissingTabProblem = (problem: string) => /^there's no .+ tab in the Sheet$/.test(problem);
+
 /** A 0-based column index as its letter: 0 → A, 26 → AA. */
 export function columnLetter(index: number): string {
   let letters = "";
@@ -72,7 +76,7 @@ function columnProblems(expected: ColumnExpectation, actual: sheets_v4.Schema$Ta
  */
 export function compareTab(expected: TabExpectation, sheet: sheets_v4.Schema$Sheet | undefined): string[] {
   const { sheetName, expectedColumns } = expected;
-  if (!sheet) return [`there's no ${sheetName} tab in the Sheet`];
+  if (!sheet) return [missingTabProblem(sheetName)];
   const tables = sheet.tables ?? [];
   if (tables.length === 0) return [`the ${sheetName} tab has no Table`];
   if (tables.length > 1) return [`the ${sheetName} tab has ${tables.length} Tables, but the app reads it as one`];

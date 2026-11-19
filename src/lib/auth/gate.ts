@@ -20,10 +20,17 @@ export const MCP_PATH = "/api/mcp";
 export const CRON_PATH = "/api/cron";
 export const LOGIN_PATH = "/login";
 export const LOGOUT_PATH = "/logout";
+/** The setup guide: open to anyone, because on a fresh deploy nobody can sign in yet (its live checklist is for the signed-in only). */
+export const SETUP_PATH = "/setup";
 
 /** The sign-in page and the Google steps under it (/login/google, /login/google/callback): open to someone signed out. */
 export function isLoginPath(pathname: string): boolean {
   return pathname === LOGIN_PATH || pathname.startsWith(`${LOGIN_PATH}/`);
+}
+
+/** The guide page only. /api/setup/* changes the Sheet's structure, so it needs the session like every other API route. */
+export function isSetupPath(pathname: string): boolean {
+  return pathname === SETUP_PATH || pathname === `${SETUP_PATH}/`;
 }
 
 export function isMcpPath(pathname: string): boolean {
@@ -82,7 +89,7 @@ export async function decideAccess({ pathname, cookie, authorization, env, now }
     if (!cronConfigured(env)) return { action: "cron-disabled" };
     return (await hasValidCronSecret(authorization, env)) ? { action: "allow" } : { action: "unauthorized" };
   }
-  if (isLoginPath(pathname) || pathname === LOGOUT_PATH) return { action: "allow" };
+  if (isLoginPath(pathname) || pathname === LOGOUT_PATH || isSetupPath(pathname)) return { action: "allow" };
   if (!loginRequired(env)) return { action: "allow" };
   if (!loginConfigured(env)) return { action: "misconfigured" };
   if (await verifySessionToken(cookie, sessionKey(env), now)) return { action: "allow" };

@@ -760,6 +760,16 @@ Hosting is M2 (#4, #17, #18, #19), on Vercel's free Hobby plan ([ADR 0017](adr/0
 - To try it on this laptop first, set `MCP_ACCESS_TOKEN` in `.env.local` and point the client at `http://localhost:3000/api/mcp` (Claude Code only; the web connector needs a public URL).
 - If the token leaks, change it in Vercel and in the connector. Nothing else uses it.
 
+### The setup page (`/setup`, 2026-11-19)
+
+A guide for someone running their own copy, with a live checklist. Nothing about it is a dashboard, so it has no greeting sentence or design round; it uses the app's tokens.
+- **Public on purpose.** `isSetupPath` (`lib/auth/gate.ts`) lets exactly `/setup` through for a signed-out visitor, even on a production host whose sign-in isn't set up, because that is the first state anyone is in and the 503s say nothing in production. `/api/setup/*` stays behind the session.
+- **What it shows depends on who looks** (`app/setup/page.tsx`): signed in, or running locally with no login: the full checklist, which includes one read of the Sheet's structure; signed out on a host whose sign-in isn't configured: only the four sign-in settings; signed out on a host that works: the guide alone.
+- **The checklist never carries a value.** `envChecks` (`lib/setup/envChecks.ts`, pure, tested) returns set or not, with a hint; a test asserts no setting's value appears in its output. The service account's email (not a secret, it is in the Share box) is shown so people know who to share the Sheet with. A failed read goes through `sheetProblem` (pure, tested), which maps Google's wording to a cause and a fix (not shared, wrong ID, API off, bad key, an uploaded Excel file, quota) and never repeats the raw message.
+- **No sidebar when signed out.** The root layout draws the shell only for a session (or locally), so a signed-out visitor to `/setup` doesn't get links that all bounce to the sign-in.
+- **The button** ("Create the missing tabs") posts to `/api/setup/sheet`, the same code as `npm run create-sheet`. It is the only client code besides Copy.
+- The guide text is in `components/setup/SetupGuide.tsx`, with the same steps in `docs/setup.md`: change one, change the other.
+
 ## Phased implementation roadmap
 
 1. **Foundation**: create the new Google Sheet with the tabs above as native Tables (except `Prices`, a plain range) including `InvestmentTransactions` and `Prices`; set up the Next.js project; wire the service account + `lib/sheets/client.ts`; implement one repository (`Accounts`) end-to-end as a proof of concept — this is also where we verify the Table-append-via-API risk noted above, early, before building on top of it.

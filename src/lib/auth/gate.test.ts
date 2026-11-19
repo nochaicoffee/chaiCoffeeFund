@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { AuthEnv } from "./config";
 import { allowedEmail, cronConfigured, loginConfigured, loginRequired, mcpConfigured, sessionKey } from "./config";
-import { bearerToken, decideAccess, hasValidCronSecret, hasValidMcpToken, isCronPath, isLoginPath, safeNextPath } from "./gate";
+import { bearerToken, decideAccess, hasValidCronSecret, hasValidMcpToken, isCronPath, isLoginPath, isSetupPath, safeNextPath } from "./gate";
 import { createSessionToken } from "./session";
 
 import { CRON, hosted, SECRET, TOKEN } from "./google.testutil";
@@ -192,5 +192,20 @@ describe("safeNextPath", () => {
     ]) {
       expect(safeNextPath(next)).toBe("/");
     }
+  });
+});
+
+describe("the setup guide", () => {
+  it("is open to someone signed out, and even on a host with no sign-in set up", async () => {
+    expect(await ask("/setup", hosted)).toEqual({ action: "allow" });
+    expect(await ask("/setup/", hosted)).toEqual({ action: "allow" });
+    expect(await ask("/setup", { NODE_ENV: "production" })).toEqual({ action: "allow" });
+  });
+  it("opens nothing else: the setup API and look-alike paths still need the session", async () => {
+    expect(isSetupPath("/setup")).toBe(true);
+    for (const path of ["/api/setup/sheet", "/setup/sheet", "/setupx", "/setup/../accounts", "/accounts"]) expect(isSetupPath(path)).toBe(false);
+    expect(await ask("/api/setup/sheet", hosted)).toEqual({ action: "unauthorized" });
+    expect(await ask("/api/setup/sheet", { NODE_ENV: "production" })).toEqual({ action: "misconfigured" });
+    expect(await ask("/setupx", hosted)).toEqual({ action: "login" });
   });
 });

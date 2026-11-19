@@ -9,7 +9,7 @@ export type CredentialEnv = Record<string, string | undefined>;
  * box, which can mangle the key's line breaks). Throws without ever quoting the value, so a
  * bad paste can't put the private key into a log.
  */
-function parseKey(value: string): { client_email: string; private_key: string } {
+export function parseServiceAccountKey(value: string): { client_email: string; private_key: string } {
   const text = value.trim();
   let json: unknown;
   try {
@@ -30,7 +30,7 @@ function parseKey(value: string): { client_email: string; private_key: string } 
  * names the file under `secrets/`. The setting wins when both are there.
  */
 export function serviceAccountAuth(env: CredentialEnv): ServiceAccountAuth {
-  if (env.GOOGLE_SERVICE_ACCOUNT_KEY?.trim()) return { credentials: parseKey(env.GOOGLE_SERVICE_ACCOUNT_KEY) };
+  if (env.GOOGLE_SERVICE_ACCOUNT_KEY?.trim()) return { credentials: parseServiceAccountKey(env.GOOGLE_SERVICE_ACCOUNT_KEY) };
   if (env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE) return { keyFile: env.GOOGLE_SERVICE_ACCOUNT_KEY_FILE };
   throw new Error("Missing required environment variable: GOOGLE_SERVICE_ACCOUNT_KEY (the key's JSON, on a host) or GOOGLE_SERVICE_ACCOUNT_KEY_FILE (a path, locally)");
 }
