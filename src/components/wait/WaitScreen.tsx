@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { KULHAD_CSS, kulhadSvg } from "@/lib/brand/kulhad";
 import { lineWindows, OFFER_GAME_MS, RETRY_MS, SHOW_AFTER_MS, SLOW_DETAIL, SLOW_HEADLINE, SLOW_MS } from "@/lib/wait/phase";
 
@@ -15,7 +15,23 @@ const CoinCatch = dynamic(() => import("./CoinCatch").then((m) => m.CoinCatch), 
 const CUP_HTML = kulhadSvg();
 const WINDOWS = lineWindows();
 
-const CHIP = "rounded-full bg-ink px-4 py-2 text-[13px] font-extrabold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+// On the phone's teal splash the button is white (the light pill is the design's; ink on teal read dull).
+const CHIP =
+  "rounded-full bg-ink px-4 py-2 text-[13px] font-extrabold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent max-md:bg-splash-fg max-md:text-ink";
+
+/**
+ * True when this screen came in the page's own HTML (a hard load: the first open of the app, a reload, a
+ * new tab) and false when it was drawn in the browser (a click on a link). The server snapshot is what
+ * hydration starts from too, but a hard load only hydrates once the whole page has streamed, which is
+ * after the wait is over, so it never flips on screen.
+ */
+const noSubscription = () => () => {};
+const useHardLoad = () =>
+  useSyncExternalStore(
+    noSubscription,
+    () => false,
+    () => true,
+  );
 
 /**
  * What a page shows while it waits for Google Sheets (the fallback of app/loading.tsx). The timeline
@@ -35,6 +51,7 @@ function Wait({ skeleton }: { skeleton: ReactNode }) {
   const [playing, setPlaying] = useState(false);
   const playButton = useRef<HTMLButtonElement>(null);
   const returnFocus = useRef(false);
+  const hardLoad = useHardLoad();
 
   useEffect(() => {
     // A screen reader hears each change to the status region; the text it starts with is just there to be read.
@@ -59,7 +76,11 @@ function Wait({ skeleton }: { skeleton: ReactNode }) {
       <div className="wait-skeleton-out" style={{ animationDelay: `${SHOW_AFTER_MS}ms` }}>
         {skeleton}
       </div>
-      <div className="wait-in absolute inset-0 flex flex-col items-center justify-center gap-1.5 px-2 py-8 text-center" style={{ animationDelay: `${SHOW_AFTER_MS}ms` }}>
+      {/* On a phone this is the teal splash over the whole screen (globals.css, .wait-splash); on desktop it is the cup over the skeleton. */}
+      <div
+        className={`wait-in wait-splash ${hardLoad ? "wait-hard " : ""}absolute inset-0 flex flex-col items-center justify-center gap-1.5 px-2 py-8 text-center`}
+        style={{ animationDelay: `${SHOW_AFTER_MS}ms` }}
+      >
         <style href="kulhad-cup" precedence="default">
           {KULHAD_CSS}
         </style>
@@ -71,7 +92,7 @@ function Wait({ skeleton }: { skeleton: ReactNode }) {
             }}
           />
         ) : (
-          <div className="w-[168px]" aria-hidden="true" dangerouslySetInnerHTML={{ __html: CUP_HTML }} />
+          <div className="w-[168px] max-md:w-[230px]" aria-hidden="true" dangerouslySetInnerHTML={{ __html: CUP_HTML }} />
         )}
         <p role="status" className="sr-only">
           {announcement}
