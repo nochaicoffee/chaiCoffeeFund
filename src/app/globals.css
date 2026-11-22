@@ -34,6 +34,17 @@
   --ink: oklch(0.16 0.008 260);
   --on-ink: oklch(0.99 0 0);
 
+  /*
+   * The phone splash (components/wait/WaitScreen): the home-screen icon's teal. --splash is the manifest's
+   * background_color / theme_color (src/app/manifest.webmanifest), so Android's own splash hands over to it
+   * without a seam; --splash-top is the lighter glow of the icon's gradient.
+   */
+  --splash: #0a6b66;
+  --splash-top: #1ab8a6;
+  --splash-fg: oklch(0.99 0 0);
+  --splash-muted: oklch(1 0 0 / 0.78);
+  --splash-shadow: oklch(0.2 0.06 190 / 0.45);
+
   /* Semantic states: good / attention / bad. Separate from the accent. */
   --positive: oklch(0.42 0.14 145);
   --warning: oklch(0.72 0.14 75);
@@ -254,6 +265,7 @@
   --color-on-accent: var(--on-accent);
   --color-ink: var(--ink);
   --color-on-ink: var(--on-ink);
+  --color-splash-fg: var(--splash-fg);
   --color-positive: var(--positive);
   --color-warning: var(--warning);
   --color-warning-tint: var(--warning-tint);
@@ -431,9 +443,11 @@ body {
  * by CSS so it also works before any script has run. With reduced motion the swap happens at the same moment
  * without the fade.
  */
+/* visibility too, so before its delay the faded-out screen (a fixed overlay on a phone) also lets taps through. */
 @keyframes wait-in {
   from {
     opacity: 0;
+    visibility: hidden;
   }
 }
 .wait-in {
@@ -451,6 +465,61 @@ body {
 .wait-in-quick {
   animation: wait-in 0.3s ease-out both;
 }
+/*
+ * On a phone the wait screen is a full-bleed teal splash over everything, the top bar included (the cup
+ * at the size of the icon's, on the app's ring texture). A hard load (.wait-hard: the first open, a reload)
+ * has it from the very first paint, with no fade, so the OS splash hands over to it; a click on a link
+ * (no .wait-hard) fades it in at SHOW_AFTER_MS like the desktop cup, so a quick click never flashes teal.
+ * Under it, the flat --splash colour is there at once and the lighter glow comes up over 0.9 s. It
+ * redefines the text tokens for what is inside it (lines, the game's footer), so those stay readable.
+ * Desktop is untouched: these rules are phone-only.
+ */
+@media (max-width: 767px) {
+  .wait-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    isolation: isolate;
+    overflow: hidden;
+    background: var(--splash);
+    --fg: var(--splash-fg);
+    --muted: var(--splash-muted);
+    --fill: oklch(1 0 0 / 0.16);
+    --fill-strong: oklch(1 0 0 / 0.26);
+    padding: env(safe-area-inset-top) 20px max(40px, env(safe-area-inset-bottom));
+  }
+  .wait-splash::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background:
+      repeating-radial-gradient(circle at 50% 36%, transparent 0 46px, oklch(1 0 0 / 0.07) 46px 47px),
+      radial-gradient(120% 70% at 50% 30%, var(--splash-top), transparent 70%);
+    animation: splash-glow 0.9s ease-out both;
+  }
+  .wait-splash .kh {
+    filter: drop-shadow(0 18px 26px var(--splash-shadow));
+  }
+  .wait-splash .kh-steam path {
+    stroke: var(--splash-fg);
+    stroke-opacity: 0.5;
+  }
+  .wait-hard {
+    animation: none;
+  }
+}
+@keyframes splash-glow {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wait-splash::before {
+    animation: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .wait-in,
   .wait-skeleton-out {

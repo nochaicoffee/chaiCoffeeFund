@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phone loading · chaiCoffeeFund design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --page: oklch(0.965 0.004 90); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+  --accent: oklch(0.72 0.19 145); --accent-tint: oklch(0.93 0.06 145); --accent-text: oklch(0.42 0.14 145);
+  --ink: oklch(0.16 0.008 260); --on-ink: oklch(0.99 0 0);
+  --warning-tint: oklch(0.95 0.05 85); --warning-text: oklch(0.47 0.1 70);
+  --teal-top: #1ab8a6; --teal: #0a6b66;
+  --coin: oklch(0.85 0.15 88); --coin-edge: oklch(0.68 0.14 80);
+  --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1280px; margin: 0 auto; padding: 32px 24px 120px; }
+h1 { font-size: 32px; letter-spacing: -0.02em; margin: 0 0 6px; }
+h3 { margin: 0; font-size: 17px; letter-spacing: -0.01em; }
+.eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-text); margin-bottom: 8px; }
+.lead { color: var(--muted); max-width: 72ch; margin: 0 0 12px; }
+
+/* ---------- the player: one clock for every phone, so they can be compared at the same second ---------- */
+.player { position: sticky; top: 0; z-index: 10; margin: 18px -8px 0; padding: 12px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  background: oklch(0.995 0 0 / 0.92); backdrop-filter: blur(10px); border: 1px solid var(--surface-line); border-radius: 22px; box-shadow: var(--card-shadow); }
+.player button { font: inherit; font-size: 13px; font-weight: 800; border: 1px solid var(--surface-line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 14px; cursor: pointer; }
+.player button[aria-pressed="true"], .player button.on { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.player button:focus-visible, .player input:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+.player .t { font-variant-numeric: tabular-nums; font-weight: 800; min-width: 5ch; }
+.player input[type=range] { flex: 1 1 220px; accent-color: var(--ink); min-width: 160px; }
+.marks { display: flex; gap: 6px; flex-wrap: wrap; }
+.legend { font-size: 12.5px; color: var(--muted); width: 100%; }
+.legend b { color: var(--fg); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 44px 28px; margin-top: 30px; justify-items: center; }
+.fr { width: 380px; max-width: 100%; }
+.fr.today { opacity: .96; }
+.phone { width: 380px; max-width: 100%; border-radius: 52px; padding: 10px; background: oklch(0.2 0.01 260); box-shadow: 0 24px 50px oklch(0 0 0 / 0.18), inset 0 0 0 2px oklch(0.35 0.01 260); }
+.screen { position: relative; height: 740px; border-radius: 42px; overflow: hidden; background: var(--surface); isolation: isolate; }
+.screen::after { content: ""; position: absolute; top: 9px; left: 50%; width: 96px; height: 26px; margin-left: -48px; border-radius: 99px; background: oklch(0.12 0.01 260); z-index: 50; }
+.cap { margin-top: 18px; padding: 0 6px; }
+.cap p { margin: 4px 0 8px; color: var(--muted); font-size: 14px; }
+.cap ul { margin: 0; padding-left: 18px; font-size: 13.5px; color: var(--fg); }
+.cap li { margin: 2px 0; } .cap li.neg { color: var(--muted); }
+.tag { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; border-radius: 999px; padding: 2px 9px; margin-left: 6px; vertical-align: middle; background: var(--fill); color: var(--muted); }
+.tag.lean { background: var(--accent-tint); color: var(--accent-text); }
+
+/* ---------- the app's own phone shell ---------- */
+.shell { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.bar { display: flex; align-items: center; justify-content: space-between; padding: 44px 16px 8px; border-bottom: 1px solid var(--divider); background: var(--page); font-weight: 800; font-size: 16px; flex: none; }
+.bar .burger { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; margin-right: -10px; }
+.bar .burger i { display: block; width: 18px; height: 2px; background: var(--fg); box-shadow: 0 -6px 0 var(--fg), 0 6px 0 var(--fg); border-radius: 2px; }
+.main { position: relative; flex: 1; padding: 20px 16px; overflow: hidden; background: var(--surface); }
+
+/* skeleton blocks, as in components/wait/PageSkeleton */
+.sk { border-radius: 16px; background: var(--fill); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .5; } }
+.sk.shim { position: relative; overflow: hidden; animation: none; }
+.sk.shim::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(100deg, transparent 20%, oklch(1 0 0 / .7) 50%, transparent 80%); animation: shim 1.6s ease-in-out infinite; }
+.dark .sk.shim::after, .sk.shim.onDark::after { background: linear-gradient(100deg, transparent 20%, oklch(1 0 0 / .16) 50%, transparent 80%); }
+@keyframes shim { to { transform: translateX(100%); } }
+
+/* ---------- the timeline, as animation delays (the build does the same, see docs/design/login.md) ---------- */
+.late, .line, .gone { visibility: hidden; }
+.late { animation: late 0s var(--d, 0s) forwards; }
+.late.until { animation: late 0s var(--d) forwards, gone 0s var(--u) forwards; }
+.gone { visibility: visible; animation: gone 0s var(--d) forwards; }
+@keyframes late { to { visibility: visible; } }
+@keyframes gone { to { visibility: hidden; } }
+.line { animation: line linear forwards; }
+@keyframes line { 0%, 99.99% { visibility: visible; } 100% { visibility: hidden; } }
+.fade-in { opacity: 0; animation: fadein .35s ease-out var(--d) forwards; }
+.fade-out { animation: fadeout .35s ease-out var(--d) forwards; }
+@keyframes fadein { to { opacity: 1; } }
+@keyframes fadeout { to { opacity: 0; visibility: hidden; } }
+
+/* the shared status block: lines, the slow note, the game offer, Try again */
+.status { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
+.lines { display: grid; font-size: 17px; font-weight: 800; letter-spacing: -0.01em; min-height: 26px; }
+.lines > * { grid-area: 1 / 1; }
+.detail { font-size: 13.5px; color: var(--muted); max-width: 30ch; min-height: 20px; margin: 0; }
+.act { display: grid; margin-top: 6px; min-height: 40px; place-items: center; }
+.act > * { grid-area: 1 / 1; }
+.chip { font: inherit; font-size: 13px; font-weight: 800; border: 0; border-radius: 999px; padding: 9px 16px; background: var(--ink); color: var(--on-ink); }
+.retry { display: flex; align-items: center; gap: 10px; border-radius: 16px; padding: 8px 8px 8px 14px; background: var(--warning-tint); color: var(--warning-text); font-size: 13px; font-weight: 700; }
+.retry a { background: var(--ink); color: var(--on-ink); font-weight: 800; border-radius: 10px; padding: 6px 12px; text-decoration: none; }
+
+/* ---------- the cup ---------- */
+.cup { display: block; margin: 0 auto; }
+.cup svg { width: 100%; height: auto; }
+
+.kh { display: block; overflow: visible; --end: 74px; transform: perspective(700px) rotateY(calc(var(--tx, 0) * 9deg)) rotateX(calc(var(--ty, 0) * -7deg)); transition: transform .18s ease-out; animation: kh-bob 4.2s ease-in-out infinite; }
+@keyframes kh-bob { 50% { translate: 0 -3px; } }
+.kh-coin { opacity: 0; animation: kh-drop 2.6s infinite; }
+.kh-fl { animation: kh-flip .7s linear infinite; transform-box: fill-box; transform-origin: center; }
+.kh-face { fill: url(#kh-coinG); stroke: oklch(0.68 0.14 80); stroke-width: 1.4; }
+.kh-ring { fill: none; stroke: oklch(0.7 0.13 80); stroke-width: .8; opacity: .7; }
+.kh-coin text { font: 800 10px ui-sans-serif, system-ui, sans-serif; text-anchor: middle; dominant-baseline: central; fill: oklch(0.45 0.1 75); }
+.kh-ripple { fill: none; stroke: #fff; stroke-width: 1.4; opacity: 0; transform-box: fill-box; transform-origin: center; animation: kh-ripple 2.6s infinite; }
+.kh-steam path { fill: none; stroke: oklch(0.52 0.012 260); stroke-opacity: .4; stroke-width: 3; stroke-linecap: round; animation: kh-steam 3.2s ease-in-out infinite; opacity: 0; }
+@keyframes kh-drop {
+  0% { transform: translate(var(--x), -30px) scale(.4); opacity: 0; animation-timing-function: ease-out; }
+  12% { transform: translate(var(--x), -16px) scale(1); opacity: 1; animation-timing-function: cubic-bezier(.5, 0, .9, .55); }
+  50% { transform: translate(var(--x), var(--end)) scale(1); opacity: 1; }
+  50.1%, 100% { transform: translate(var(--x), var(--end)) scale(1); opacity: 0; }
+}
+@keyframes kh-flip { 50% { transform: scaleX(.2); } }
+@keyframes kh-ripple { 0%, 50% { opacity: 0; transform: scale(.3); } 52% { opacity: .9; transform: scale(.4); } 78%, 100% { opacity: 0; transform: scale(1.7); } }
+@keyframes kh-steam { 0% { transform: translateY(8px); opacity: 0; } 35% { opacity: .55; } 100% { transform: translateY(-10px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .kh, .kh * { animation: none !important; } .kh { transform: none; } .kh-steam path { opacity: .35; } }
+
+
+/* ---------- 0 · Today ---------- */
+.today-over { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 0 12px 60px; }
+
+/* ---------- A · Teal splash ---------- */
+.A { position: absolute; inset: 0; background: linear-gradient(180deg, var(--teal-top), var(--teal) 78%); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 0 20px 36px; overflow: hidden; }
+.A::before { content: ""; position: absolute; left: 50%; top: 38%; width: 900px; height: 900px; margin: -450px; border-radius: 50%; background: repeating-radial-gradient(circle, transparent 0 46px, oklch(1 0 0 / .07) 46px 47px); }
+.A .name { position: absolute; top: 74px; font-weight: 800; letter-spacing: -0.01em; font-size: 15px; opacity: .92; }
+.A .cup { width: 230px; position: relative; filter: drop-shadow(0 18px 26px oklch(0.2 0.06 190 / .45)); }
+.A .kh-steam path { stroke: #fff; stroke-opacity: .5; }
+.A .status { position: relative; }
+.A .detail { color: oklch(1 0 0 / .8); }
+.A .chip { background: #fff; color: var(--ink); }
+.A .retry { background: oklch(1 0 0 / .94); }
+.A .foot { position: absolute; bottom: 30px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; opacity: .6; }
+
+/* ---------- B · Page, alive ---------- */
+.B .main { padding-top: 18px; }
+.B .eyebrow2 { font-size: 11.5px; font-weight: 800; letter-spacing: .08em; color: var(--muted); text-transform: uppercase; }
+.B h2 { margin: 4px 0 12px; font-size: 27px; line-height: 1.1; letter-spacing: -0.025em; }
+.B .hero { margin-top: 18px; border-radius: 28px; padding: 18px; background: linear-gradient(160deg, oklch(0.27 0.1 275), oklch(0.2 0.08 280)); color: #fff; height: 270px; position: relative; overflow: hidden; }
+.B .hero .lab { font-size: 11.5px; font-weight: 800; letter-spacing: .08em; opacity: .65; }
+.B .hero svg { position: absolute; left: 0; bottom: 14px; width: 100%; }
+.B .hero path.l { fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-dasharray: 520; stroke-dashoffset: 520; animation: draw 3.2s ease-in-out infinite; }
+@keyframes draw { 0% { stroke-dashoffset: 520; opacity: 1; } 70% { stroke-dashoffset: 0; opacity: 1; } 92% { stroke-dashoffset: 0; opacity: 0; } 100% { stroke-dashoffset: 520; opacity: 0; } }
+.B .hero circle.d { fill: var(--coin); stroke: var(--coin-edge); stroke-width: 2; offset-path: path("M0 70 C40 66 60 30 100 44 S160 80 200 40 S270 10 330 30"); animation: ride 3.2s ease-in-out infinite; }
+@keyframes ride { 0% { offset-distance: 0%; opacity: 1; } 70% { offset-distance: 100%; opacity: 1; } 92% { offset-distance: 100%; opacity: 0; } 100% { offset-distance: 0%; opacity: 0; } }
+.B .toast { position: absolute; left: 14px; right: 14px; bottom: 20px; border-radius: 26px; background: var(--surface); box-shadow: 0 2px 4px oklch(0 0 0 / .05), 0 16px 36px oklch(0 0 0 / .18); border: 1px solid var(--surface-line); padding: 12px 14px 12px 8px; display: grid; grid-template-columns: 70px 1fr auto; align-items: center; gap: 4px 6px; }
+.B .toast .cup { width: 70px; }
+.B .toast .lines { font-size: 15.5px; }
+.B .toast .txt { min-width: 0; }
+.B .toast .detail { font-size: 12.5px; min-height: 0; max-width: none; }
+.B .toast .act { margin: 0; min-height: 0; }
+.B .toast .chip { padding: 8px 13px; }
+.B .toast .retry { padding: 6px 6px 6px 10px; }
+
+/* ---------- C · Ripple coin ---------- */
+.C { position: absolute; inset: 0; background: var(--page); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 0 20px 30px; overflow: hidden; }
+.C .name { position: absolute; top: 74px; font-weight: 800; font-size: 15px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 8px; }
+.C .name i { width: 24px; height: 24px; border-radius: 8px; background: var(--accent); display: block; }
+.C .stage { position: relative; width: 300px; height: 300px; display: grid; place-items: center; margin-bottom: 8px; }
+.C .ring { position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid oklch(0.42 0.1 152 / .5); opacity: 0; animation: ripple 3.6s cubic-bezier(.2,.6,.3,1) infinite; background: radial-gradient(circle, transparent 55%, oklch(0.93 0.06 145 / .55)); }
+@keyframes ripple { 0% { transform: scale(.2); opacity: 0; } 12% { opacity: .9; } 100% { transform: scale(1); opacity: 0; } }
+.C .coin { position: relative; width: 104px; height: 104px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 52px; color: oklch(0.45 0.1 75);
+  background: radial-gradient(circle at 35% 30%, oklch(0.95 0.1 98), oklch(0.85 0.15 88) 60%, oklch(0.74 0.15 82)); box-shadow: inset 0 0 0 4px var(--coin-edge), inset 0 0 0 8px oklch(0.9 0.12 92 / .8), 0 14px 26px oklch(0.5 0.1 70 / .3); animation: spin 2.6s ease-in-out infinite; }
+@keyframes spin { 0% { transform: perspective(500px) rotateY(0); } 50% { transform: perspective(500px) rotateY(180deg); } 100% { transform: perspective(500px) rotateY(360deg); } }
+.C .coin span { animation: unflip 2.6s ease-in-out infinite; }
+@keyframes unflip { 0%, 24% { transform: scaleX(1); } 50% { transform: scaleX(-1); } 76%, 100% { transform: scaleX(1); } }
+
+/* ---------- D · Bar wave ---------- */
+.D { position: absolute; inset: 0; background: var(--surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 0 20px 36px; }
+.D .name { position: absolute; top: 74px; font-weight: 800; font-size: 15px; }
+.D .wave { position: relative; width: 316px; height: 230px; margin-bottom: 14px; }
+.D .bars { position: absolute; left: 0; right: 0; bottom: 0; height: 170px; display: flex; align-items: flex-end; gap: 8px; }
+.D .b { flex: 1; height: 100%; border-radius: 10px 10px 6px 6px; transform-origin: bottom; transform: scaleY(.3); animation: bar 3.6s ease-in-out infinite; background: linear-gradient(180deg, var(--heat-c, oklch(0.76 0.11 151)), oklch(0.6 0.12 153)); position: relative; overflow: hidden; }
+.D .b::after { content: ""; position: absolute; inset: 0; background: repeating-radial-gradient(circle at 100% 0, transparent 0 9px, oklch(1 0 0 / .12) 9px 10px); }
+@keyframes bar { 0% { transform: scaleY(.3); } 5.5% { transform: scaleY(1); } 11% { transform: scaleY(1); } 30% { transform: scaleY(.3); } 100% { transform: scaleY(.3); } }
+.D .runner { position: absolute; left: 0; top: 0; width: 28px; height: 60px; animation: run 3.6s linear infinite; }
+@keyframes run { 0% { transform: translateX(0); opacity: 1; } 96% { opacity: 1; } 100% { transform: translateX(288px); opacity: 0; } }
+.D .hop { position: absolute; left: 0; top: 0; width: 28px; height: 28px; animation: hop .4s infinite; }
+@keyframes hop { 0%, 100% { transform: translateY(30px); animation-timing-function: cubic-bezier(.2,.6,.4,1); } 50% { transform: translateY(-4px); animation-timing-function: cubic-bezier(.6,0,.8,.4); } }
+.D .c { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 14px; color: oklch(0.45 0.1 75); background: radial-gradient(circle at 35% 30%, oklch(0.95 0.1 98), oklch(0.85 0.15 88) 60%, oklch(0.74 0.15 82)); box-shadow: inset 0 0 0 2px var(--coin-edge); animation: coinflip .4s linear infinite; }
+@keyframes coinflip { 50% { transform: scaleX(.35); } }
+
+/* ---------- E · Passbook slip ---------- */
+.E { position: absolute; inset: 0; background: var(--page); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 0 20px 36px; overflow: hidden; }
+.E .name { position: absolute; top: 74px; font-weight: 800; font-size: 15px; }
+.E .slot { position: relative; width: 290px; height: 280px; overflow: hidden; margin-bottom: 14px; -webkit-mask: linear-gradient(180deg, transparent 0, #000 14%, #000 100%); mask: linear-gradient(180deg, transparent 0, #000 14%, #000 100%); }
+.E .slot::before { content: ""; position: absolute; left: -6px; right: -6px; top: 0; height: 10px; border-radius: 99px; background: oklch(0.3 0.01 260); z-index: 2; }
+.E .slip { position: absolute; left: 14px; right: 14px; top: 0; padding: 0 16px; background: var(--surface); border: 1px solid var(--surface-line); border-top: 0; box-shadow: var(--card-shadow); animation: feed 2.4s linear infinite; }
+@keyframes feed { 0% { transform: translateY(-60px); } 100% { transform: translateY(0px); } }
+.E .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; height: 30px; border-bottom: 1.5px dashed var(--divider); }
+.E .row .sk { height: 11px; border-radius: 6px; }
+.E .stamp { position: absolute; right: 24px; top: 150px; width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 28px; color: oklch(0.45 0.14 145); border: 3px solid oklch(0.55 0.14 145); transform: rotate(-14deg); opacity: 0; animation: stamp 2.6s ease-in infinite; z-index: 3; background: oklch(0.99 0.02 145 / .5); }
+@keyframes stamp { 0% { opacity: 0; transform: rotate(-14deg) scale(2); } 14% { opacity: .95; transform: rotate(-14deg) scale(1); } 70% { opacity: .85; transform: rotate(-14deg) scale(1); } 100% { opacity: 0; transform: rotate(-14deg) scale(1); } }
+
+@media (prefers-reduced-motion: reduce) { .sk.shim::after { display: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">chaiCoffeeFund · design</div>
+  <h1>Phone loading, five alternates <span class="tag lean">A picked 2026-11-22</span></h1>
+  <p class="lead">The first open on a phone is the longest wait the app has, so it matters most. Today it is a grey page-shaped skeleton under a plain top bar, then a cup that fades in over it at 1.5 s, in the middle of a lot of white. Below are five other ways to spend those seconds. All five keep the rules already built: nothing to count so no percentage or fake bar, lines every 2.4 s, the game offered at 3 s, "Still on it." at 8 s, Try again at 20 s. Everything on screen is made up; a loading screen never shows real data.</p>
+  <p class="lead">Use the player to play all six phones on one clock, scrub to any second, or jump to the slow states.</p>
+
+  <div class="player" role="group" aria-label="Timeline player">
+    <button id="play" aria-pressed="true">Pause</button>
+    <button id="replay">Replay</button>
+    <span class="t" id="clock">0.0 s</span>
+    <input id="scrub" type="range" min="0" max="24000" step="50" value="0" aria-label="Time on the clock">
+    <div class="marks" id="marks"></div>
+    <button id="speed" aria-pressed="false">1×</button>
+    <div class="legend"><b>0</b> first paint · <b>1.5 s</b> today's cup arrives · <b>3 s</b> game offered · <b>8 s</b> "Still on it." · <b>20 s</b> Try again · the clock loops at 24 s</div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+
+
+
+const COIN_X = [66, 78, 90];
+
+const CYCLE_S = 2.6;
+const STAGGER_S = 0.87;
+
+const coin = (x, i) =>
+  `<g class="kh-coin" style="--x:${x}px;animation-delay:${(i * STAGGER_S).toFixed(2)}s"><g class="kh-fl" style="animation-delay:${(-i * 0.23).toFixed(2)}s"><circle class="kh-face" r="9"/><circle class="kh-ring" r="6.2"/><text>₹</text></g></g>`;
+const ripple = (x, i) => `<ellipse class="kh-ripple" cx="${x}" cy="57" rx="12" ry="3" style="animation-delay:${(i * STAGGER_S).toFixed(2)}s"/>`;
+
+
+function kulhadSvg() {
+  return `<svg class="kh" viewBox="0 0 160 130" aria-hidden="true" focusable="false"><defs>
+<radialGradient id="kh-coinG" cx=".35" cy=".3" r=".85"><stop offset="0" style="stop-color:oklch(0.95 0.1 98)"/><stop offset=".6" style="stop-color:oklch(0.85 0.15 88)"/><stop offset="1" style="stop-color:oklch(0.74 0.15 82)"/></radialGradient>
+<linearGradient id="kh-clay" x1="0" x2="1"><stop offset="0" style="stop-color:oklch(0.4 0.09 40)"/><stop offset=".35" style="stop-color:oklch(0.62 0.13 48)"/><stop offset=".7" style="stop-color:oklch(0.56 0.12 45)"/><stop offset="1" style="stop-color:oklch(0.36 0.08 38)"/></linearGradient>
+<linearGradient id="kh-chai" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:oklch(0.74 0.1 64)"/><stop offset="1" style="stop-color:oklch(0.52 0.09 55)"/></linearGradient>
+<filter id="kh-blur" x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur stdDeviation="3"/></filter>
+</defs>
+<ellipse cx="78" cy="118" rx="48" ry="6" fill="#000" opacity=".2" filter="url(#kh-blur)"/><ellipse cx="78" cy="113" rx="28" ry="4.5" fill="oklch(0.4 0.1 42)"/>
+<ellipse cx="78" cy="50" rx="40" ry="8" fill="oklch(0.3 0.06 40)"/><ellipse cx="78" cy="57" rx="34" ry="6" fill="url(#kh-chai)"/>
+${COIN_X.map(coin).join("")}${COIN_X.map(ripple).join("")}
+<g class="kh-steam" transform="translate(0 -4)"><path d="M50 40c-6-8 6-14 0-24" style="animation-delay:.2s"/><path d="M78 36c-6-8 6-14 0-24" style="animation-delay:1.1s"/><path d="M106 40c-6-8 6-14 0-24" style="animation-delay:2s"/></g>
+<path d="M38 50L50 108Q52 114 60 114L96 114Q104 114 106 108L118 50A40 8 0 0 1 38 50Z" fill="url(#kh-clay)"/>
+<path d="M42 70A37 7 0 0 0 114 70M45 84A34 6.5 0 0 0 111 84M47.5 98A31 6 0 0 0 108.5 98" fill="none" stroke="oklch(0.33 0.09 40)" stroke-width="1.2" opacity=".4"/>
+<path d="M44 58L53 102L57 101L48 58Z" fill="#fff" opacity=".2"/><g fill="oklch(0.3 0.08 40)" opacity=".35"><circle cx="70" cy="76" r="1"/><circle cx="92" cy="90" r="1.1"/><circle cx="62" cy="96" r=".9"/><circle cx="100" cy="68" r=".9"/><circle cx="84" cy="102" r="1"/></g>
+<path d="M38 50A40 8 0 0 0 118 50" fill="none" stroke="oklch(0.72 0.12 55)" stroke-width="3"/>
+</svg>`;
+}
+
+
+
+
+const KULHAD_SVG = kulhadSvg();
+
+
+const LINES = ["Heating the pan…", "Counting the coins…", "Steeping your numbers…", "Stirring in the sugar…", "Almost poured…"];
+const EVERY = 2400, SLOW = 8000, OFFER = 3000, RETRY = 20000;
+
+// lib/wait/phase.ts lineWindows(), in the board
+function lineWindows(showAt) {
+  const w = [];
+  for (let s = showAt, i = 1; s + EVERY < SLOW; s += EVERY, i++) w.push({ text: LINES[i % LINES.length], s, e: s + EVERY });
+  if (!w.length) return showAt < SLOW ? [{ text: LINES[1], s: showAt, e: SLOW }] : [];
+  w[w.length - 1].e = SLOW;
+  return w;
+}
+// The same text, the same moments, for every design. `act` is the slot the game chip and then Try again share.
+function status(showAt, opts = {}) {
+  const lines = lineWindows(showAt).map(w => `<p class="line" style="animation-delay:${w.s}ms;animation-duration:${w.e - w.s}ms">${w.text}</p>`).join("");
+  return `<div class="status ${opts.cls || ""}">
+    <div class="lines" aria-hidden="true">${lines}<p class="late" style="--d:${SLOW}ms">Still on it.</p></div>
+    <p class="detail late" style="--d:${SLOW}ms">Google Sheets is slow today. Nothing is lost.</p>
+    <div class="act"><button class="chip late until" style="--d:${OFFER}ms;--u:${RETRY}ms">Play while you wait</button>
+    <div class="retry late" style="--d:${RETRY}ms"><span>Taking too long.</span><a href="#">Try again</a></div></div>
+  </div>`;
+}
+const cup = () => `<div class="cup" aria-hidden="true">${KULHAD_SVG}</div>`;
+const bar = `<header class="bar"><span>chaiCoffeeFund</span><span class="burger"><i></i></span></header>`;
+
+const skeleton = `<div style="display:flex;flex-direction:column;gap:24px">
+  <div style="display:flex;flex-direction:column;gap:12px"><div class="sk" style="height:12px;width:128px"></div><div class="sk" style="height:36px;width:230px"></div><div class="sk" style="height:16px;width:100%"></div></div>
+  <div class="sk" style="height:150px"></div><div class="sk" style="height:150px"></div><div class="sk" style="height:200px"></div></div>`;
+
+const barsHtml = Array.from({ length: 9 }, (_, i) => {
+  const shade = ["oklch(0.87 0.07 150)","oklch(0.8 0.1 150)","oklch(0.76 0.11 151)","oklch(0.7 0.12 152)","oklch(0.76 0.11 151)","oklch(0.8 0.1 150)","oklch(0.7 0.12 152)","oklch(0.76 0.11 151)","oklch(0.87 0.07 150)"][i];
+  return `<div class="b" style="animation-delay:${i * 400 - 200}ms;--heat-c:${shade}"></div>`;
+}).join("");
+const rows = Array.from({ length: 14 }, (_, i) => `<div class="row"><div class="sk" style="width:${[96,70][i % 2] + (i % 2 ? 0 : 20)}px"></div><div class="sk" style="width:${[52,60][i % 2]}px"></div></div>`).join("");
+
+const FRAMES = [
+  { cls: "today", id: "Today", tag: "Reference", title: "Today", blurb: "What is built now: skeleton at once, the Kulhad fades in over it at 1.5 s.",
+    pros: ["Page-shaped, so it never flashes on a quick click"], cons: ["The cup floats in a big white gap under a bare bar", "Grey blocks say nothing about this app", "Home-screen teal, then a white flash, then grey"],
+    html: `<div class="shell">${bar}<div class="main"><div class="fade-out" style="--d:1500ms">${skeleton}</div>
+      <div class="today-over fade-in" style="--d:1500ms">${cup().replace('class="cup"','class="cup" style="width:168px"')}${status(1500)}</div></div></div>` },
+  { cls: "A", id: "A", tag: "Picked", title: "A · Teal splash", blurb: "Continues the home-screen icon: same teal, a big cup, no web page in sight until it is ready.",
+    pros: ["No white flash: icon, splash and loader are one colour", "Feels like an app, not a website", "The cup is the whole picture, so it can be big"], cons: ["Hides the page shape, so the swap is a bigger jump", "Teal is new to the in-app pages"],
+    html: `<div class="A"><div class="name">chaiCoffeeFund</div>${cup()}${status(0)}</div>` },
+  { cls: "B", id: "B", tag: "Lowest risk", title: "B · The page, alive", blurb: "The real bar, greeting and net-worth card are there from the first frame; only the figures are missing. A small cup toast carries the lines.",
+    pros: ["No swap at all: the real page fills in where the grey was", "Words and layout are the page's own, so it feels already there", "Toast works the same on a 1 s click and a 15 s cold start"], cons: ["Needs a per-page header (greeting) in each loading.tsx", "Smaller cup, less charm"],
+    html: `<div class="shell B">${bar}<div class="main"><div class="eyebrow2">Overview</div><h2>Good afternoon, Prathik</h2>
+      <div class="sk shim" style="height:13px;width:100%;margin-bottom:8px"></div><div class="sk shim" style="height:13px;width:92%;margin-bottom:8px"></div><div class="sk shim" style="height:13px;width:64%"></div>
+      <div class="hero"><div class="lab">NET WORTH TODAY</div><div class="sk shim onDark" style="height:40px;width:190px;margin-top:14px;background:oklch(1 0 0 / .14)"></div>
+        <svg viewBox="-14 -10 358 120" height="120" preserveAspectRatio="none"><path class="l" d="M0 70 C40 66 60 30 100 44 S160 80 200 40 S270 10 330 30"/><circle class="d" r="7"/></svg></div>
+      <div class="sk shim" style="height:96px;margin-top:16px"></div>
+      <div class="toast"><div>${cup()}</div><div class="txt">${status(0, { cls: "left" }).replace('class="status left"', 'class="status" style="align-items:flex-start;text-align:left;gap:2px"')}</div></div></div></div>` },
+  { cls: "C", id: "C", tag: "Calm", title: "C · Ripple coin", blurb: "One gold coin turning on the app's ring texture, rings spreading out from it. Quiet, light, and on-brand with the chart textures.",
+    pros: ["Calm: nothing jumps, even when the wait is long", "Uses the ring motif the whole app already wears", "Cheapest to build: pure CSS, no SVG cup"], cons: ["Less personality than the cup", "Replaces the Kulhad everywhere, or sits beside it"],
+    html: `<div class="C"><div class="name"><i></i>chaiCoffeeFund</div><div class="stage"><div class="ring"></div><div class="ring" style="animation-delay:1.2s"></div><div class="ring" style="animation-delay:2.4s"></div><div class="coin"><span>₹</span></div></div>${status(0)}</div>` },
+  { cls: "D", id: "D", tag: "Playful", title: "D · Bar hop", blurb: "A coin hops along a row of bars and each bar pops up to meet it: a chart that is waiting to be filled.",
+    pros: ["Says 'your numbers' without showing any", "Nice rhythm, easy to read at a glance", "Wave loops forever, so it never looks stuck or finished"], cons: ["The most motion of the five", "Needs reduced-motion care (a still row of bars)"],
+    html: `<div class="D"><div class="name">chaiCoffeeFund</div><div class="wave"><div class="bars">${barsHtml}</div><div class="runner"><div class="hop"><div class="c">₹</div></div></div></div>${status(0)}</div>` },
+  { cls: "E", id: "E", tag: "Charming", title: "E · Passbook slip", blurb: "A bank-passbook slip feeds in through a slot, a ₹ stamp thumps down every 2.6 s.",
+    pros: ["A story that fits a money app", "The slip rolling is slow and soothing", "Static rows, so little to repaint"], cons: ["Cute, but the 'stamp' can read as 'done'", "More drawing than the others"],
+    html: `<div class="E"><div class="name">chaiCoffeeFund</div><div class="slot"><div class="slip">${rows}</div><div class="stamp">₹</div></div>${status(0)}</div>` },
+];
+
+const grid = document.getElementById("grid");
+grid.innerHTML = FRAMES.map(f => `<section class="fr ${f.cls === "today" ? "today" : ""}" aria-label="${f.title}">
+  <div class="phone"><div class="screen">${f.html}</div></div>
+  <div class="cap"><h3>${f.title}<span class="tag ${f.tag === "Picked" ? "lean" : ""}">${f.tag}</span></h3><p>${f.blurb}</p>
+  <ul>${f.pros.map(p => `<li>${p}</li>`).join("")}${f.cons.map(c => `<li class="neg">− ${c}</li>`).join("")}</ul></div></section>`).join("");
+document.querySelectorAll(".cup").forEach(c => { const s = c.firstElementChild; });
+
+// ---- one clock for every animation on the page ----
+const LOOP = 24000;
+let t = 0, playing = true, speed = 1, last = performance.now();
+const scrub = document.getElementById("scrub"), clock = document.getElementById("clock"), playBtn = document.getElementById("play"), speedBtn = document.getElementById("speed");
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function apply() {
+  clock.textContent = (t / 1000).toFixed(1) + " s"; scrub.value = t;
+  for (const a of document.getAnimations()) { if (a.effect && a.effect.target && a.effect.target.closest && a.effect.target.closest(".grid")) { a.pause(); a.currentTime = t; } }
+}
+function tick(now) {
+  const dt = now - last; last = now;
+  if (playing) { t += dt * speed; if (t >= LOOP) t -= LOOP; apply(); }
+  requestAnimationFrame(tick);
+}
+playBtn.onclick = () => { playing = !playing; playBtn.textContent = playing ? "Pause" : "Play"; playBtn.setAttribute("aria-pressed", playing); last = performance.now(); };
+document.getElementById("replay").onclick = () => { t = 0; apply(); };
+speedBtn.onclick = () => { speed = speed === 1 ? 4 : 1; speedBtn.textContent = speed + "×"; speedBtn.setAttribute("aria-pressed", speed !== 1); };
+scrub.oninput = () => { t = +scrub.value; playing = false; playBtn.textContent = "Play"; playBtn.setAttribute("aria-pressed", false); apply(); };
+document.getElementById("marks").innerHTML = [[0,"0"],[1500,"1.5 s"],[3000,"3 s"],[8000,"8 s"],[20000,"20 s"]].map(([ms, l]) => `<button data-t="${ms}">${l}</button>`).join("");
+document.getElementById("marks").onclick = e => { const b = e.target.closest("button"); if (!b) return; t = +b.dataset.t + 40; playing = false; playBtn.textContent = "Play"; playBtn.setAttribute("aria-pressed", false); apply(); };
+apply(); requestAnimationFrame(tick);
+</script>
+</body>
+</html>

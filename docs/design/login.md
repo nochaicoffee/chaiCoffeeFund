@@ -61,3 +61,11 @@ Files: `loginPage.ts` (new page and a small inline script for the lock, offline,
 - **Hop** is dropped; Coin catch only.
 - **In-app browsers:** the button is not disabled, as the board draws it. Detection is a guess from the user agent, and a wrong guess must never lock him out, so the page warns, offers Copy link and labels the button "Try anyway". (Found in review.)
 - **Space** does not activate the sign-in link (it is an `<a>`); Enter does.
+
+## Phone loading, round 2 (2026-11-20, picked and built 2026-11-22)
+He said the loading screen on first open on a phone "isn't nice" (grey skeleton under a bare top bar, then the cup fading in over white; Android's own splash, the teal icon on `background_color`, faded out over it). Board: [`design/phone-loading/PhoneLoading.html`](../../design/phone-loading/PhoneLoading.html), one clock for all phones with a scrubber and jumps to 3 s / 8 s / 20 s: Today plus **A** teal splash, **B** the page alive, **C** ripple coin, **D** bar hop, **E** passbook slip. **He picked A** (issue #453).
+
+Built: on a phone (under 768 px, CSS only; desktop is unchanged) the wait screen is a full-bleed teal splash over everything, top bar included, with a bigger Kulhad (230 px), the ring texture, a white game button and white text. The colours are tokens (`--splash` is the manifest's `background_color`, so Android's splash hands over without a seam; `--splash-top` is the glow). Same lines, game offer, "Still on it." and Try again as before.
+- **Hard load vs click.** The first open, a reload or a new tab gets the splash from the first paint with no fade (`.wait-hard`), so it follows the OS splash directly. A click on a link fades it in at the usual 1.5 s, so a quick navigation never flashes teal. The two are told apart by `useSyncExternalStore` (the server snapshot is true, the client one false): a screen that came in the page's own HTML is a hard load. A hard load only hydrates after the whole page has streamed, so the flag never flips on screen. This is the CSS-first answer to the earlier worry that script cannot run during a hard load.
+- The splash cannot fade out (Next removes a `loading.tsx` fallback the moment the page is ready), so teal to page is a cut.
+- The game's own card stays light on the teal; its footer text takes the splash text tokens.
