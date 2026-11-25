@@ -889,8 +889,8 @@ export interface BigSpend {
 
 // --- Daily spends (docs/design/daily.md) ---
 
-/** How an everyday spend was paid, as the DailySpends tab's method dropdown lists it. "Card" is a credit card. */
-export const DAILY_SPEND_METHODS = ["UPI", "Card"] as const;
+/** How an everyday spend was paid, as the DailySpends tab's method dropdown lists it. "Card" is a credit card; "Cash" is cash he kept note of (a bank withdrawal is not a spend). */
+export const DAILY_SPEND_METHODS = ["UPI", "Card", "Cash"] as const;
 export type DailySpendMethod = (typeof DAILY_SPEND_METHODS)[number];
 
 /**

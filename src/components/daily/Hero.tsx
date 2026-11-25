@@ -6,6 +6,7 @@ import type { HeroView } from "@/app/daily/views";
 import { PlusIcon } from "../cards/forms/icons";
 import { CategoryTile } from "./CategoryPicker";
 import { useDaily } from "./context";
+import { OftenRow } from "./OftenRow";
 import { SpendForm } from "./SpendForm";
 
 const Chevron = ({ left }: { left?: boolean }) => (
@@ -113,10 +114,11 @@ export function Hero({ view }: { view: HeroView }) {
                       className={`cd lv${c.level}${c.today ? " today" : ""}${c.date === daily.selected ? " sel" : ""}${c.future ? " future" : ""}${c.quiet ? " quiet" : ""}`}
                     >
                       <span className="cd-n">{c.day}</span>
-                      {(c.upi || c.card) && (
+                      {(c.upi || c.card || c.cash) && (
                         <span className="cd-dots">
                           {c.upi && <i className="md md-u" />}
                           {c.card && <i className="md md-c" />}
+                          {c.cash && <i className="md md-k" />}
                         </span>
                       )}
                       <span>
@@ -151,6 +153,10 @@ export function Hero({ view }: { view: HeroView }) {
               <i className="md md-c" />
               Credit card
             </span>
+            <span>
+              <i className="md md-k" />
+              Cash
+            </span>
             <span className="n">The shade is the day&apos;s total</span>
           </div>
         </div>
@@ -168,6 +174,7 @@ export function Hero({ view }: { view: HeroView }) {
                 </h3>
               </div>
             </div>
+            {detail.canAdd && <OftenRow variant="card" date={detail.date} />}
             {detail.canAdd || !view.isCurrent ? (
               <SpendForm
                 key={`${detail.date}-${added}`}
@@ -205,6 +212,13 @@ export function Hero({ view }: { view: HeroView }) {
                     <i className="md md-u" />
                     {detail.upi} <i className="md md-c" />
                     {detail.card}
+                    {detail.cash && (
+                      <>
+                        {" "}
+                        <i className="md md-k" />
+                        {detail.cash}
+                      </>
+                    )}
                   </small>
                 )}
               </div>
@@ -236,7 +250,7 @@ export function Hero({ view }: { view: HeroView }) {
                       <b>{r.title}</b>
                       <small>
                         <i
-                          className={`md ${r.method === "UPI" ? "md-u" : "md-c"}`}
+                          className={`md ${r.method === "UPI" ? "md-u" : r.method === "Cash" ? "md-k" : "md-c"}`}
                         />{" "}
                         {r.sub}
                         {r.saving && <em className="sv">saving…</em>}

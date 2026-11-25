@@ -30,21 +30,24 @@ export function daysInMonth(month: string): number {
 const paise = (rupees: number) => Math.round(rupees * 100);
 const rupees = (p: number) => p / 100;
 
-/** What was spent over some spends, in rupees, split by how it was paid. */
+/** What was spent over some spends, in rupees, split by how it was paid. Cash is 0 until a spend is written down as cash. */
 export interface MethodTotals {
   total: number;
   upi: number;
   card: number;
+  cash: number;
 }
 
 function totalsOf(spends: readonly DailySpend[]): MethodTotals {
   let upi = 0;
   let card = 0;
+  let cash = 0;
   for (const s of spends) {
     if (s.method === "UPI") upi += paise(s.amount);
+    else if (s.method === "Cash") cash += paise(s.amount);
     else card += paise(s.amount);
   }
-  return { total: rupees(upi + card), upi: rupees(upi), card: rupees(card) };
+  return { total: rupees(upi + card + cash), upi: rupees(upi), card: rupees(card), cash: rupees(cash) };
 }
 
 /** The day of the first spend written down, or null for an empty diary. */
@@ -237,13 +240,16 @@ export function usualMonth(spends: readonly DailySpend[], today: string): Method
   if (months.length === 0) return null;
   const sums = months.map((m) => totalsOf(spends.filter((s) => monthOf(s.date) === m)));
   const mean = (pick: (t: MethodTotals) => number) => Math.round(sums.reduce((a, t) => a + pick(t), 0) / sums.length);
-  return { total: mean((t) => t.total), upi: mean((t) => t.upi), card: mean((t) => t.card) };
+  return { total: mean((t) => t.total), upi: mean((t) => t.upi), card: mean((t) => t.card), cash: mean((t) => t.cash) };
 }
+
+/** What went on one method. */
+export const methodAmount = (totals: MethodTotals, method: DailySpendMethod): number => (method === "UPI" ? totals.upi : method === "Cash" ? totals.cash : totals.card);
 
 /** The share of a month that went on one method, 0 to 1 (0 when nothing was spent). */
 export function methodShare(totals: MethodTotals, method: DailySpendMethod): number {
   if (totals.total <= 0) return 0;
-  return (method === "UPI" ? totals.upi : totals.card) / totals.total;
+  return methodAmount(totals, method) / totals.total;
 }
 
 export interface BigSpend {
@@ -315,7 +321,7 @@ export function periodView(spends: readonly DailySpend[], kind: "year" | "month"
   const months = views.map((v): PeriodMonth => {
     const limit = limitOf(v.month);
     const allowance = limit === null ? null : limit / v.length;
-    return { month: v.month, total: v.total, upi: v.upi, card: v.card, count: v.count, quiet: v.quietDays, run: allowance === null ? null : longestRunOf(v, allowance), limit, empty: v.isFuture || v.daysCounted === 0, isFuture: v.isFuture };
+    return { month: v.month, total: v.total, upi: v.upi, card: v.card, cash: v.cash, count: v.count, quiet: v.quietDays, run: allowance === null ? null : longestRunOf(v, allowance), limit, empty: v.isFuture || v.daysCounted === 0, isFuture: v.isFuture };
   });
   const all = spends.filter((s) => keys.includes(monthOf(s.date)));
   const totals = totalsOf(all);

@@ -17,6 +17,7 @@ import { ConfirmDialog } from "../subscriptions/forms/ConfirmDialog";
 import { DailyProvider, useDaily } from "./context";
 import { LimitForm } from "./LimitSheet";
 import { ManageCategories } from "./ManageCategories";
+import { OftenRow } from "./OftenRow";
 import { Sheet } from "./Sheet";
 import { SpendForm } from "./SpendForm";
 
@@ -202,6 +203,7 @@ function QuickBar({ onAdded }: { onAdded: () => void }) {
   }
   return (
     <form onSubmit={onSubmit} noValidate className="dy-qbar" aria-label="Quick add">
+      <OftenRow variant="bar" date={daily.today} />
       <p className="qb-hint">
         Adds to <b>today</b> · {formatDate(daily.today)}
       </p>
@@ -220,7 +222,7 @@ function QuickBar({ onAdded }: { onAdded: () => void }) {
           {DAILY_SPEND_METHODS.map((m) => (
             <label key={m}>
               <input type="radio" name="method" value={m} checked={method === m} onChange={() => setMethod(m)} />
-              <span>{m === "UPI" ? "UPI" : "Card"}</span>
+              <span>{m}</span>
             </label>
           ))}
         </div>
