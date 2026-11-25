@@ -45,6 +45,19 @@
   --splash-muted: oklch(1 0 0 / 0.78);
   --splash-shadow: oklch(0.2 0.06 190 / 0.45);
 
+  /*
+   * The logo (components/shell/Logo): the home-screen icon's dark clay kulhad and its rim, and the teal of the
+   * word's last part. A dark palette would swap the clay for terracotta, which stays visible on a dark page.
+   */
+  --logo-clay-0: #1e2b33;
+  --logo-clay-1: #141e25;
+  --logo-clay-2: #0a1015;
+  --logo-rim: #2e4350;
+  --logo-accent: #0a8a80;
+
+  /* The phone's bottom bar (components/shell/Sidebar): what a page and anything pinned to the foot must clear. */
+  --phone-nav-h: calc(55px + max(8px, env(safe-area-inset-bottom, 0px)));
+
   /* Semantic states: good / attention / bad. Separate from the accent. */
   --positive: oklch(0.42 0.14 145);
   --warning: oklch(0.72 0.14 75);

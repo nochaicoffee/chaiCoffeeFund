@@ -4,11 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { icons } from "./icons";
-import { isActiveSection, SECTIONS, SIDEBAR_COOKIE, type Section } from "./sections";
+import { trapTarget } from "./focusTrap";
+import { LogoLockup, LogoMark } from "./Logo";
+import { isActiveSection, SECTIONS, SIDEBAR_COOKIE, splitForPhone, type Section } from "./sections";
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 /** Matches Tailwind's `md` breakpoint, where the rail replaces the phone menu. */
 const DESKTOP_QUERY = "(min-width: 48rem)";
+
+const { tabs: PHONE_TABS, more: PHONE_MORE } = splitForPhone(SECTIONS);
+
+/** A bar button's shape: an icon pill over a 13 px label, 46 px tall (--phone-nav-h in globals.css adds up from this). */
+const PHONE_BUTTON = "flex min-h-[46px] flex-1 flex-col items-center gap-[3px] text-[10.5px] leading-[13px] font-extrabold";
 
 const FOCUS_RING = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
@@ -20,16 +27,15 @@ function SectionLink({
 }: {
   section: Section;
   pathname: string;
-  variant: "rail" | "rail-expanded" | "menu";
+  variant: "rail" | "rail-expanded";
   onNavigate?: () => void;
 }) {
   const active = isActiveSection(section.href, pathname);
   const shape = {
     rail: "h-[38px] w-[38px] justify-center",
     "rail-expanded": "h-[38px] gap-3 px-[11px] text-sm font-semibold",
-    menu: "min-h-11 gap-3 px-4 text-[15px] font-semibold",
   }[variant];
-  const idle = variant === "menu" ? "text-fg hover:bg-fill" : "text-muted hover:bg-fill hover:text-fg";
+  const idle = "text-muted hover:bg-fill hover:text-fg";
   const iconOnly = variant === "rail";
   return (
     <Link
@@ -46,10 +52,31 @@ function SectionLink({
   );
 }
 
+/** One of the phone bar's tabs: an icon in a pill (inked when it is the page you are on) over its name. */
+/** `inSheetTrap`: the sheet is open, so Tab skips the tabs (they stay tappable) and cycles through the sheet and More. */
+function PhoneTab({ section, active, inSheetTrap }: { section: Section; active: boolean; inSheetTrap: boolean }) {
+  return (
+    <Link
+      href={section.href}
+      aria-current={active ? "page" : undefined}
+      tabIndex={inSheetTrap ? -1 : undefined}
+      className={`${PHONE_BUTTON} ${active ? "text-fg" : "text-muted"} ${FOCUS_RING}`}
+    >
+      <PhonePill active={active}>{icons[section.icon]}</PhonePill>
+      {section.label}
+    </Link>
+  );
+}
+
+function PhonePill({ active, children }: { active: boolean; children: React.ReactNode }) {
+  return <span className={`flex h-[30px] w-[52px] items-center justify-center rounded-full [&_svg]:size-5 ${active ? "bg-ink text-on-ink" : ""}`}>{children}</span>;
+}
+
 /**
  * Desktop: the design's pill-shaped icon rail, which expands to show labels.
  * The choice is kept in a cookie so the server renders it the same way next time.
- * Phone: a top bar whose menu button opens the sections as a modal sheet.
+ * Phone: a slim top bar with the logo, and a bottom bar with four tabs (PHONE_TAB_HREFS) and a More button
+ * that lifts a sheet with every other section (docs/design/phone-nav-logo.md, option 1).
  */
 export function Sidebar({
   initiallyExpanded,
@@ -65,7 +92,9 @@ export function Sidebar({
 }) {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(initiallyExpanded);
-  const [menuOpen, setMenuOpen] = useState(false);
+  // The sheet is open for the page it was opened on, so going to another page (a tab, a tile) closes it.
+  const [openAt, setOpenAt] = useState<string | null>(null);
+  const menuOpen = openAt === pathname;
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -73,30 +102,27 @@ export function Sidebar({
     if (!menuOpen) return;
     const menu = menuRef.current;
     const trigger = menuButtonRef.current;
-    const focusables = () => [...(menu?.querySelectorAll<HTMLElement>("a[href], button") ?? [])];
+    // The bar stays visible under the sheet and its More button is how you close it, so the trap includes it.
+    const focusables = () => [...(menu?.querySelectorAll<HTMLElement>("a[href], button") ?? []), ...(trigger ? [trigger] : [])];
     focusables()[0]?.focus();
 
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
-        setMenuOpen(false);
+        setOpenAt(null);
         return;
       }
       if (e.key !== "Tab") return;
       // Keep Tab inside the sheet while it's open.
       const items = focusables();
-      const first = items[0];
-      const last = items[items.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
+      const target = trapTarget(items.indexOf(document.activeElement as HTMLElement), items.length, e.shiftKey);
+      if (target !== null) {
         e.preventDefault();
-        last?.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first?.focus();
+        items[target]?.focus();
       }
     };
     // The sheet only exists on phone; close it if the window grows to desktop width.
     const desktop = window.matchMedia(DESKTOP_QUERY);
-    const onWiden = () => desktop.matches && setMenuOpen(false);
+    const onWiden = () => desktop.matches && setOpenAt(null);
     const previousOverflow = document.body.style.overflow;
 
     document.body.style.overflow = "hidden";
@@ -116,8 +142,10 @@ export function Sidebar({
     document.cookie = `${SIDEBAR_COOKIE}=${next ? "expanded" : "collapsed"}; path=/; max-age=${ONE_YEAR_SECONDS}; samesite=lax`;
   }
 
-  const closeMenu = () => setMenuOpen(false);
+  const closeMenu = () => setOpenAt(null);
   const initial = (ownerName || appName).charAt(0).toUpperCase();
+  // The More button wears the ink pill while its sheet is open, and when the page you are on is behind it.
+  const moreActive = menuOpen || PHONE_MORE.some((section) => isActiveSection(section.href, pathname));
 
   return (
     <>
@@ -127,7 +155,14 @@ export function Sidebar({
           expanded ? "w-[212px] rounded-[28px] px-3" : "w-16 items-center rounded-full"
         }`}
       >
-        {expanded && <div className="mb-1 px-[11px] text-base font-extrabold text-fg">{appName}</div>}
+        <Link
+          href="/"
+          aria-label={expanded ? undefined : appName}
+          title={expanded ? undefined : appName}
+          className={`mb-1 flex shrink-0 items-center rounded-full ${FOCUS_RING} ${expanded ? "px-[11px]" : "justify-center"}`}
+        >
+          {expanded ? <LogoLockup appName={appName} size={26} /> : <LogoMark size={30} />}
+        </Link>
         {SECTIONS.map((section) => (
           <SectionLink
             key={section.href}
@@ -170,59 +205,50 @@ export function Sidebar({
         </div>
       </nav>
 
-      <header className="sticky top-[env(safe-area-inset-top,0px)] z-20 flex items-center justify-between border-b border-divider bg-page py-2 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] md:hidden">
-        <span className="text-base font-extrabold">{appName}</span>
-        <button
-          ref={menuButtonRef}
-          type="button"
-          onClick={() => setMenuOpen(true)}
-          aria-label="Open menu"
-          aria-expanded={menuOpen}
-          aria-controls="phone-menu"
-          className={`flex size-11 items-center justify-center rounded-full text-fg hover:bg-fill ${FOCUS_RING}`}
-        >
-          {icons.menu}
-        </button>
+      <header className="sticky top-[env(safe-area-inset-top,0px)] z-20 flex min-h-14 items-center justify-between border-b border-divider bg-page py-1.5 pr-[max(0.75rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] md:hidden">
+        <Link href="/" className={`rounded-full ${FOCUS_RING}`}>
+          <LogoLockup appName={appName} size={26} />
+        </Link>
+        <div className="flex size-[34px] items-center justify-center rounded-full bg-ink text-[13px] font-extrabold text-on-ink" aria-hidden="true">
+          {initial}
+        </div>
       </header>
 
       {menuOpen && (
-        <div className="fixed inset-0 z-30 md:hidden">
+        <div className="fixed inset-0 z-[29] md:hidden">
           <div aria-hidden="true" onClick={closeMenu} className="absolute inset-0 bg-ink/40" />
           <div
             ref={menuRef}
             id="phone-menu"
             role="dialog"
             aria-modal="true"
-            aria-label="Menu"
-            className="absolute inset-y-0 left-0 flex w-[min(20rem,85vw)] flex-col gap-1 overflow-y-auto bg-surface pt-[max(1rem,env(safe-area-inset-top))] pr-4 pb-[max(1rem,env(safe-area-inset-bottom))] pl-[max(1rem,env(safe-area-inset-left))] shadow-card"
+            aria-label="More sections"
+            className="absolute inset-x-0 bottom-0 max-h-[85dvh] overflow-y-auto rounded-t-[28px] bg-surface pt-2.5 pr-[max(1rem,env(safe-area-inset-right))] pb-[calc(var(--phone-nav-h)+0.75rem)] pl-[max(1rem,env(safe-area-inset-left))] shadow-card"
           >
-            <div className="mb-3 flex items-center justify-between">
-              <span className="text-base font-extrabold">{appName}</span>
-              <button
-                type="button"
-                onClick={closeMenu}
-                aria-label="Close menu"
-                className={`flex size-11 items-center justify-center rounded-full text-fg hover:bg-fill ${FOCUS_RING}`}
-              >
-                {icons.close}
-              </button>
-            </div>
-            <nav aria-label={`${appName} sections`} className="flex flex-col gap-1">
-              {SECTIONS.map((section) => (
-                <SectionLink
-                  key={section.href}
-                  section={section}
-                  pathname={pathname}
-                  variant="menu"
-                  onNavigate={closeMenu}
-                />
-              ))}
+            <div aria-hidden="true" className="mx-auto mb-3 h-[5px] w-[38px] rounded-full bg-fill-strong" />
+            <h2 className="mb-3 text-[17px] font-extrabold">More</h2>
+            <nav aria-label={`More ${appName} sections`} className="grid grid-cols-3 gap-2.5">
+              {PHONE_MORE.map((section) => {
+                const active = isActiveSection(section.href, pathname);
+                return (
+                  <Link
+                    key={section.href}
+                    href={section.href}
+                    onClick={closeMenu}
+                    aria-current={active ? "page" : undefined}
+                    className={`flex min-w-0 flex-col items-center gap-[7px] rounded-[20px] px-1 pt-3 pb-2.5 text-center text-xs leading-tight font-extrabold [overflow-wrap:anywhere] ${active ? "bg-ink text-on-ink" : "bg-page text-fg"} ${FOCUS_RING}`}
+                  >
+                    <span className={`flex size-[38px] items-center justify-center rounded-full ${active ? "bg-on-ink/15" : "bg-surface shadow-soft"}`}>{icons[section.icon]}</span>
+                    {section.label}
+                  </Link>
+                );
+              })}
             </nav>
             {showSignOut && (
-              <form method="post" action="/logout" className="mt-auto pt-3">
+              <form method="post" action="/logout" className="mt-3">
                 <button
                   type="submit"
-                  className={`flex min-h-11 w-full items-center gap-3 rounded-full px-4 text-[15px] font-semibold text-muted hover:bg-fill hover:text-fg ${FOCUS_RING}`}
+                  className={`flex min-h-11 w-full items-center gap-3 rounded-full px-3 text-[13.5px] font-bold text-muted hover:bg-fill hover:text-fg ${FOCUS_RING}`}
                 >
                   {icons.signOut}
                   Sign out
@@ -232,6 +258,26 @@ export function Sidebar({
           </div>
         </div>
       )}
+
+      <nav
+        aria-label={`${appName} sections`}
+        className="fixed inset-x-0 bottom-0 z-30 flex border-t border-divider bg-surface pt-2 pr-[max(0.5rem,env(safe-area-inset-right))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pl-[max(0.5rem,env(safe-area-inset-left))] md:hidden"
+      >
+        {PHONE_TABS.map((section) => (
+          <PhoneTab key={section.href} section={section} active={isActiveSection(section.href, pathname)} inSheetTrap={menuOpen} />
+        ))}
+        <button
+          ref={menuButtonRef}
+          type="button"
+          onClick={() => setOpenAt(menuOpen ? null : pathname)}
+          aria-expanded={menuOpen}
+          aria-controls="phone-menu"
+          className={`${PHONE_BUTTON} ${moreActive ? "text-fg" : "text-muted"} ${FOCUS_RING}`}
+        >
+          <PhonePill active={moreActive}>{menuOpen ? icons.close : icons.more}</PhonePill>
+          {menuOpen ? "Close" : "More"}
+        </button>
+      </nav>
     </>
   );
 }

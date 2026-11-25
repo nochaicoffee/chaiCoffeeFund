@@ -140,6 +140,13 @@ export const icons = {
       <line x1="4" y1="17" x2="20" y2="17" />
     </Icon>
   ),
+  more: (
+    <Icon size={20}>
+      <circle cx="5" cy="12" r="1.5" fill="currentColor" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+      <circle cx="19" cy="12" r="1.5" fill="currentColor" />
+    </Icon>
+  ),
   close: (
     <Icon size={20}>
       <line x1="6" y1="6" x2="18" y2="18" />

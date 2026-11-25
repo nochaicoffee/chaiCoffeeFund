@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phone navigation and logo · chaiCoffeeFund design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --page: oklch(0.965 0.004 90); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
+  --accent: oklch(0.72 0.19 145); --accent-tint: oklch(0.93 0.06 145); --accent-text: oklch(0.42 0.14 145);
+  --ink: oklch(0.16 0.008 260); --on-ink: oklch(0.99 0 0);
+  --feature: oklch(0.935 0.052 148);
+  --warning-tint: oklch(0.95 0.05 85); --warning-text: oklch(0.47 0.1 70);
+  --teal-top: #1ab8a6; --teal: #0a6b66;
+  --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* logo colours; .lg-dark and .lg-tile redefine them */
+  --l-text: #1c2229; --l-fund: #0a8a80; --l-cup: #0a6b66; --l-bg: #0f8f84; --l-steam: #0a6b66;
+  --l-clay-0: #1e2b33; --l-clay-1: #141e25; --l-clay-2: #0a1015; --l-rim: #2e4350;
+  --l-gold: #ffc93c; --l-gold-edge: #e09a1b; --l-gold-ink: #8a5a00;
+}
+.lg-dark { --l-text: #fff; --l-fund: #3fe0cb; --l-cup: #2ed3bf; --l-bg: #139e91; --l-steam: #fff;
+  --l-clay-0: #e27b45; --l-clay-1: #c9602f; --l-clay-2: #9a4222; --l-rim: #f0975f; }
+.lg-tile { --l-text: #fff; --l-fund: #fff; --l-cup: #fff4e0; --l-bg: #fff4e0; --l-steam: #fff;
+  --l-clay-0: #1e2b33; --l-clay-1: #141e25; --l-clay-2: #0a1015; --l-rim: #2e4350; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1320px; margin: 0 auto; padding: 32px 24px 140px; }
+h1 { font-size: 34px; letter-spacing: -0.02em; margin: 0 0 6px; }
+h2 { font-size: 24px; letter-spacing: -0.015em; margin: 0 0 4px; }
+h3 { margin: 0; font-size: 17px; letter-spacing: -0.01em; }
+.eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-text); margin-bottom: 8px; }
+.lead { color: var(--muted); max-width: 74ch; margin: 0 0 12px; }
+section.block { margin-top: 64px; }
+.pill { display: inline-block; font-size: 12px; font-weight: 800; border-radius: 999px; padding: 2px 10px; background: var(--fill); color: var(--muted); }
+.pill.pick { background: var(--accent-tint); color: var(--accent-text); }
+
+/* ---------- the picker: which logo the phone mockups wear ---------- */
+.picker { position: sticky; top: 0; z-index: 20; margin: 22px -8px 0; padding: 10px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  background: oklch(0.995 0 0 / 0.92); backdrop-filter: blur(10px); border: 1px solid var(--surface-line); border-radius: 22px; box-shadow: var(--card-shadow); }
+.picker b { font-size: 13px; }
+.picker button { font: inherit; font-size: 13px; font-weight: 800; border: 1px solid var(--surface-line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 6px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; }
+.picker button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.picker button:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; }
+
+/* ---------- phone frames ---------- */
+.row { display: flex; flex-wrap: wrap; gap: 28px 32px; margin-top: 22px; align-items: flex-start; }
+.note { flex: 1 1 280px; max-width: 340px; padding-top: 6px; }
+.note ul { margin: 8px 0 0; padding-left: 18px; color: var(--muted); font-size: 13.5px; }
+.note li { margin: 3px 0; }
+.note .why { font-size: 13.5px; color: var(--muted); }
+.fr { width: 340px; }
+.cap { font-size: 12.5px; font-weight: 800; color: var(--muted); text-align: center; margin-top: 10px; text-transform: uppercase; letter-spacing: .06em; }
+.phone { width: 340px; border-radius: 50px; padding: 9px; background: oklch(0.2 0.01 260); box-shadow: 0 24px 50px oklch(0 0 0 / 0.18), inset 0 0 0 2px oklch(0.35 0.01 260); }
+.screen { position: relative; height: 700px; border-radius: 41px; overflow: hidden; background: var(--page); isolation: isolate; display: flex; flex-direction: column; }
+.sb { height: 44px; flex: none; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 26px 6px; font-size: 14px; font-weight: 800; background: var(--page); }
+.sb i { display: inline-flex; gap: 5px; align-items: center; }
+.sb .bat { width: 22px; height: 11px; border-radius: 3px; border: 1.5px solid var(--fg); position: relative; }
+.sb .bat::after { content: ""; position: absolute; inset: 1.5px; right: 5px; background: var(--fg); border-radius: 1px; }
+.sb .sig { display: inline-flex; gap: 2px; align-items: flex-end; }
+.sb .sig s { width: 3px; background: var(--fg); border-radius: 1px; display: block; }
+.hi { position: absolute; left: 50%; bottom: 7px; width: 118px; height: 5px; margin-left: -59px; border-radius: 3px; background: var(--fg); opacity: .85; z-index: 9; }
+
+/* the shared fake page */
+.pg { flex: 1; overflow: hidden; padding: 14px 16px 0; }
+.pg .eb { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-text); }
+.pg h4 { font-size: 24px; line-height: 1.15; letter-spacing: -.02em; margin: 3px 0 6px; font-weight: 800; }
+.pg p { margin: 0 0 14px; font-size: 14px; color: var(--muted); }
+.pg p b { color: var(--fg); }
+.hero { border-radius: 24px; padding: 16px; color: #fff; background: linear-gradient(155deg, #12332f, #07181a); position: relative; overflow: hidden; }
+.hero small { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .7; }
+.hero strong { display: block; font-size: 30px; letter-spacing: -.02em; margin: 2px 0 6px; }
+.hero svg { display: block; width: 100%; height: 46px; }
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
+.tile { background: var(--surface); border: 1px solid var(--surface-line); border-radius: 20px; padding: 12px 14px; box-shadow: var(--card-shadow); }
+.tile.f { background: var(--feature); }
+.tile small { font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.tile strong { display: block; font-size: 19px; letter-spacing: -.01em; }
+.list { margin-top: 10px; background: var(--surface); border: 1px solid var(--surface-line); border-radius: 20px; padding: 4px 14px; box-shadow: var(--card-shadow); }
+.list div { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--divider); font-size: 13.5px; font-weight: 700; }
+.list div:last-child { border: 0; }
+.list i { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+.list span { margin-left: auto; color: var(--muted); font-weight: 600; }
+
+/* shared header pieces */
+.hdr { flex: none; display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 16px; background: var(--page); border-bottom: 1px solid var(--divider); min-height: 56px; z-index: 5; position: relative; }
+.hdr .sp { flex: 1; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--ink); color: var(--on-ink); font-weight: 800; font-size: 13px; display: grid; place-items: center; flex: none; }
+.ib { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; background: none; border: 0; color: var(--fg); }
+.scrim { position: absolute; inset: 0; background: oklch(0.16 0.008 260 / .42); z-index: 6; }
+.lock { display: inline-flex; align-items: center; gap: .42em; font-weight: 800; letter-spacing: -.02em; line-height: 1; color: var(--l-text); white-space: nowrap; }
+.lock .fund { color: var(--l-fund); }
+.lock svg { flex: none; display: block; }
+.lock svg.coin-o { display: inline-block; }
+.coin-o { display: inline-block; vertical-align: -.1em; margin: 0 .01em; }
+
+/* ---------- N0 today: top bar + hamburger + left drawer ---------- */
+.drawer { position: absolute; top: 0; bottom: 0; left: 0; width: 85%; background: var(--surface); z-index: 7; padding: 52px 14px 16px; box-shadow: 0 10px 40px oklch(0 0 0 / .25); display: flex; flex-direction: column; gap: 2px; }
+.drawer .dh { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; padding-left: 4px; font-weight: 800; font-size: 16px; }
+.drawer a { display: flex; align-items: center; gap: 12px; min-height: 36px; padding: 0 14px; border-radius: 999px; font-size: 14px; font-weight: 700; color: var(--fg); }
+.drawer a.on { background: var(--ink); color: var(--on-ink); }
+
+/* ---------- N1 dock + More ---------- */
+.dock1 { flex: none; display: flex; background: var(--surface); border-top: 1px solid var(--divider); padding: 8px 8px 24px; z-index: 8; position: relative; }
+.dock1 a { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10.5px; font-weight: 800; color: var(--muted); }
+.dock1 a .ic { width: 52px; height: 30px; border-radius: 999px; display: grid; place-items: center; }
+.dock1 a.on { color: var(--fg); }
+.dock1 a.on .ic { background: var(--ink); color: var(--on-ink); }
+.sheet1 { position: absolute; left: 0; right: 0; bottom: 0; background: var(--surface); border-radius: 28px 28px 0 0; padding: 10px 16px 92px; z-index: 6; box-shadow: 0 -10px 40px oklch(0 0 0 / .2); }
+.grab { width: 38px; height: 5px; border-radius: 3px; background: var(--fill-strong); margin: 0 auto 12px; }
+.sheet1 h5 { margin: 0 0 12px; font-size: 17px; }
+.g3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.g3 a { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 12px 4px 10px; border-radius: 20px; background: var(--page); font-size: 12px; font-weight: 800; text-align: center; }
+.g3 a .ic { width: 38px; height: 38px; border-radius: 50%; background: var(--surface); box-shadow: 0 1px 2px oklch(0 0 0 / .08); display: grid; place-items: center; }
+.out { margin-top: 12px; display: flex; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 700; color: var(--muted); padding: 6px 4px; }
+
+/* ---------- N2 floating pill dock ---------- */
+.dock2 { position: absolute; left: 14px; right: 14px; bottom: 26px; height: 62px; border-radius: 999px; background: var(--ink); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; z-index: 8; box-shadow: 0 14px 30px oklch(0 0 0 / .3); }
+.dock2 a { height: 46px; min-width: 46px; border-radius: 999px; display: flex; align-items: center; justify-content: center; gap: 7px; color: oklch(1 0 0 / .62); font-size: 13px; font-weight: 800; padding: 0 12px; }
+.dock2 a.on { background: linear-gradient(135deg, var(--teal-top), var(--teal)); color: #fff; padding: 0 16px; }
+.dock2 a.more { background: var(--l-gold); color: #3a2700; padding: 0; width: 46px; box-shadow: inset 0 -3px 0 oklch(0 0 0 / .12); }
+.sheet2 { position: absolute; left: 14px; right: 14px; bottom: 98px; border-radius: 30px; background: var(--ink); padding: 18px 14px 14px; z-index: 7; color: #fff; box-shadow: 0 20px 50px oklch(0 0 0 / .35); }
+.sheet2 .sh { display: flex; align-items: center; justify-content: space-between; padding: 0 6px 12px; font-weight: 800; font-size: 15px; }
+.sheet2 .sh span { font-size: 12px; color: oklch(1 0 0 / .55); font-weight: 700; }
+.sheet2 .g3 a { background: oklch(1 0 0 / .07); color: #fff; }
+.sheet2 .g3 a .ic { background: oklch(1 0 0 / .1); box-shadow: none; }
+.sheet2 .g3 a.off { opacity: .55; }
+.sheet2 .out { color: oklch(1 0 0 / .6); }
+
+/* ---------- N3 section switcher ---------- */
+.chip3 { display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px 0 8px; border-radius: 999px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); font-weight: 800; font-size: 15px; }
+.chip3 .ic { width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: var(--on-ink); display: grid; place-items: center; }
+.panel3 { position: absolute; left: 10px; right: 10px; top: 100px; background: var(--surface); border-radius: 26px; padding: 14px 12px 12px; z-index: 7; box-shadow: 0 20px 50px oklch(0 0 0 / .28); }
+.panel3 h6 { margin: 8px 6px 6px; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.panel3 h6:first-child { margin-top: 0; }
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.g2 a { display: flex; align-items: center; gap: 9px; height: 42px; padding: 0 10px; border-radius: 16px; background: var(--page); font-size: 13.5px; font-weight: 800; }
+.g2 a.on { background: var(--ink); color: var(--on-ink); }
+
+/* ---------- N4 chip strip ---------- */
+.strip { flex: none; display: flex; gap: 8px; padding: 10px 16px; overflow-x: auto; scrollbar-width: none; background: var(--page); position: relative; z-index: 4; border-bottom: 1px solid var(--divider); }
+.strip a { flex: none; display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px; border-radius: 999px; background: var(--surface); border: 1px solid var(--surface-line); font-size: 13.5px; font-weight: 800; color: var(--muted); }
+.strip a.on { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+.fades { position: relative; height: 0; z-index: 5; }
+.fadeR, .fadeL { position: absolute; top: -56px; height: 55px; width: 34px; pointer-events: none; }
+.fadeR { right: 0; background: linear-gradient(90deg, transparent, var(--page)); }
+.fadeL { left: 0; background: linear-gradient(270deg, transparent, var(--page)); }
+.all4 { position: absolute; right: 8px; top: 7px; width: 40px; height: 40px; border-radius: 50%; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); display: grid; place-items: center; z-index: 5; }
+
+/* ---------- N5 thumb button ---------- */
+.fab5 { position: absolute; right: 16px; bottom: 28px; width: 58px; height: 58px; border-radius: 50%; z-index: 9; display: grid; place-items: center; color: #fff; background: linear-gradient(160deg, var(--teal-top), var(--teal)); box-shadow: 0 12px 26px oklch(0.3 0.07 190 / .45), inset 0 1px 0 oklch(1 0 0 / .3); }
+.fab5.open { background: var(--ink); }
+.dial { position: absolute; right: 16px; bottom: 100px; z-index: 8; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+.dial a { display: flex; align-items: center; gap: 10px; }
+.dial a span { background: var(--surface); border-radius: 999px; padding: 6px 13px; font-size: 13.5px; font-weight: 800; box-shadow: var(--card-shadow); }
+.dial a i { width: 36px; height: 36px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; box-shadow: var(--card-shadow); }
+.dial a.on span, .dial a.on i { background: var(--ink); color: var(--on-ink); }
+
+/* ---------- logo cards ---------- */
+.lgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 24px; margin-top: 22px; }
+.lcard { background: var(--surface); border: 1px solid var(--surface-line); border-radius: 28px; box-shadow: var(--card-shadow); padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.lcard header { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.lcard p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.lhero { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stage { border-radius: 22px; min-height: 150px; display: grid; place-items: center; padding: 16px; position: relative; }
+.stage.light { background: var(--page); }
+.stage.dark { background: oklch(0.2 0.012 260); }
+.stage.teal { background: linear-gradient(180deg, #19b8a6, #0a6b66); }
+.stage small { position: absolute; left: 12px; top: 9px; font-size: 10.5px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .55; }
+.stage.dark small, .stage.teal small { color: #fff; }
+.sizes { display: flex; align-items: flex-end; justify-content: space-around; gap: 12px; padding: 14px 16px; border-radius: 22px; }
+.sizes.light { background: var(--page); } .sizes.dark { background: oklch(0.2 0.012 260); }
+.tabstrip { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: 12px 12px 0 0; background: var(--fill); font-size: 12px; font-weight: 600; color: var(--muted); }
+.tabstrip .t { display: flex; align-items: center; gap: 7px; background: var(--surface); padding: 5px 12px; border-radius: 8px; color: var(--fg); }
+.inapp { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; margin-top: 22px; }
+.rail { background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--card-shadow); padding: 18px 0; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.rail.c { width: 64px; border-radius: 999px; }
+.rail.e { width: 212px; border-radius: 28px; padding: 18px 12px; align-items: stretch; }
+.rail .ri { width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; color: var(--muted); flex: none; }
+.rail .ri.on { background: var(--ink); color: var(--on-ink); }
+.rail.e .ri { width: auto; border-radius: 999px; justify-content: start; padding: 0 11px; gap: 12px; font-size: 13.5px; font-weight: 700; height: 36px; display: flex; align-items: center; }
+.phonehdr { width: 340px; border-radius: 18px; overflow: hidden; border: 1px solid var(--surface-line); background: var(--page); }
+.rec { background: var(--surface); border: 1px solid var(--surface-line); border-radius: 24px; padding: 20px 22px; box-shadow: var(--card-shadow); margin-top: 22px; max-width: 880px; }
+.rec ol, .rec ul { margin: 8px 0 0; padding-left: 20px; }
+.rec li { margin: 5px 0; }
+code { background: var(--fill); padding: 1px 6px; border-radius: 6px; font-size: 13px; }
+@media (max-width: 760px) { .lgrid { grid-template-columns: 1fr; } .lhero { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Design round 1 · 2026-11-25</div>
+  <h1>Phone navigation and a logo</h1>
+  <p class="lead">He doesn't like the phone's navigation bar and says the app looks plain without a logo. Every figure and name on this board is made up. Part 1 has five new ways to get around on a phone, each closed and open, next to today's. Part 2 has five logos, all built from the kulhad and coin of the home-screen icon so the app and its icon agree. The picker below makes every phone on the page wear the logo you like.</p>
+
+  <div class="picker" id="picker"><b>Logo on the phones:</b></div>
+
+  <!-- ===================== PART 1 ===================== -->
+  <section class="block" id="nav">
+    <div class="eyebrow">Part 1</div>
+    <h2>Phone navigation</h2>
+    <p class="lead">Today a phone gets a plain top bar and a menu button in the far corner, which opens a drawer from the left with thirteen sections. Everything is two taps away, up at the top, and the bar says nothing but the app's name. All five alternatives bring the sections closer to a thumb or show where you are. In 1 and 2, four favourites are one tap away and the other nine are behind "More". The four are Overview, Accounts, Cards and Daily; Daily is the hand-kept diary he'll open most. That choice is an open question.</p>
+    <div id="navrows"></div>
+  </section>
+
+  <!-- ===================== PART 2 ===================== -->
+  <section class="block" id="logo">
+    <div class="eyebrow">Part 2</div>
+    <h2>The logo</h2>
+    <p class="lead">What exists today: the home-screen icon (a dark kulhad with a gold coin on teal, picked 2026-11-19) and a plain bold word "chaiCoffeeFund" inside the app. The icon never appears in the app itself: not in the sidebar, not in the phone's top bar. Each card shows the mark, the wordmark beside it on light, dark and teal, how it holds up from 56 px down to 16 px, and as a home-screen tile and a browser-tab icon.</p>
+    <div class="lgrid" id="lcards"></div>
+
+    <h3 style="margin-top:40px">In the app</h3>
+    <p class="lead" style="margin-top:4px">The same logo (the one picked above) in the desktop rail, collapsed and expanded, and in the phone's top bar.</p>
+    <div class="inapp" id="inapp"></div>
+  </section>
+
+  <section class="block">
+    <div class="eyebrow">What I'd pick</div>
+    <div class="rec">
+      <h3>Navigation: 1 (Dock + More). Logo: A (Kulhad) with its tile.</h3>
+      <p class="why" style="margin:6px 0 0">A bottom tab bar is the one thing every phone user already knows, and four favourites become one tap. Anything else sits two taps away, in reach of the thumb. 2 is the same idea with more character. 3 gives the page the most room, with no bar at the bottom. 4 shows every section by name. 5 puts all thirteen under the thumb.</p>
+      <ul>
+        <li><b>Logo A</b> is already the home-screen icon, so one picture runs from the phone's home screen to the app's header. B and E read best at 16 px, D is the cleverest, C is the quietest.</li>
+        <li>Any of these goes in three places: the phone's top bar, the desktop rail (a mark when collapsed, the lockup when expanded) and the sign-in page.</li>
+      </ul>
+      <h3 style="margin-top:18px">Open questions (defaults in bold)</h3>
+      <ol>
+        <li>Phone navigation: <b>1</b>, or one of 2 to 5.</li>
+        <li>Which four go on the bar: <b>Overview, Accounts, Cards, Daily</b>, or swap Daily for Expenses.</li>
+        <li>Logo: <b>A</b>, or B to E; one more round for the one he picks.</li>
+        <li>Sections that are not built yet ("coming in M3/M4" in <code>sections.ts</code>): <b>shown, with their milestone</b>, as today.</li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ============ icons: the app's own line icons (src/components/shell/icons.tsx) ============ */
+const IC = {
+  overview: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  accounts: '<path d="M3 21h18"/><path d="M5 21V10"/><path d="M19 21V10"/><path d="M3 10l9-6 9 6"/><path d="M9 21v-6"/><path d="M15 21v-6"/>',
+  cards: '<rect x="2" y="6" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>',
+  subscriptions: '<path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>',
+  income: '<polyline points="3 17 9 11 13 15 21 7"/><polyline points="14 7 21 7 21 14"/>',
+  loans: '<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
+  expenses: '<path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2Z"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="9" y1="12" x2="15" y2="12"/>',
+  daily: '<rect x="4" y="5" width="16" height="15" rx="2"/><line x1="4" y1="10" x2="20" y2="10"/><line x1="8" y1="3" x2="8" y2="7"/><line x1="16" y1="3" x2="16" y2="7"/><line x1="9" y1="15" x2="15" y2="15"/>',
+  lent: '<circle cx="9" cy="9" r="5"/><line x1="13" y1="13" x2="20" y2="20"/><polyline points="20 14 20 20 14 20"/>',
+  insurance: '<path d="M12 3l8 3v6c0 4.5-3.2 7.6-8 9-4.8-1.4-8-4.5-8-9V6l8-3z"/><polyline points="9 12 11 14 15 10"/>',
+  fixedIncome: '<rect x="4" y="10" width="16" height="10" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/>',
+  investments: '<line x1="4" y1="20" x2="4" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="20" y1="20" x2="20" y2="14"/>',
+  goals: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
+  menu: '<line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/>',
+  close: '<line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>',
+  grid: '<circle cx="6" cy="6" r="1.6"/><circle cx="12" cy="6" r="1.6"/><circle cx="18" cy="6" r="1.6"/><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/><circle cx="6" cy="18" r="1.6"/><circle cx="12" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/>',
+  more: '<circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/>',
+  chevron: '<polyline points="6 9 12 15 18 9"/>',
+  signOut: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/>',
+};
+const ico = (n, s = 20, sw = 2) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${IC[n]}</svg>`;
+const SECTIONS = [
+  ['overview', 'Overview'], ['accounts', 'Accounts'], ['cards', 'Cards'], ['subscriptions', 'Subscriptions'], ['income', 'Income'],
+  ['expenses', 'Expenses'], ['daily', 'Daily'], ['loans', 'Loans'], ['lent', 'Lent out'], ['insurance', 'Insurance'],
+  ['fixedIncome', 'Fixed Income'], ['investments', 'Investments'], ['goals', 'Goals'],
+];
+const label = (k) => SECTIONS.find((s) => s[0] === k)[1];
+const FAVS = ['overview', 'accounts', 'cards', 'daily'];
+const REST = SECTIONS.map((s) => s[0]).filter((k) => !FAVS.includes(k));
+
+/* ============ the five logos ============ */
+let uid = 0;
+const RUPEE = (sw, tx = 0, ty = 0, sc = 1) =>
+  `<path transform="translate(${tx} ${ty}) scale(${sc})" d="M20 6H42M20 12.5H42M22 6H31C41 6 41 19 31 19H22L37 33" fill="none" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+/* the home-screen icon's artwork (design/app-icon/kulhad.mjs, palette "Teal & ink"), tile or bare */
+function kulhad({ tile, size, steam = true }) {
+  const id = 'k' + ++uid;
+  const defs = `<defs>
+    <linearGradient id="${id}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#19B8A6"/><stop offset="1" stop-color="#0A6B66"/></linearGradient>
+    <linearGradient id="${id}c" x1="0" y1="0" x2="1" y2="0"><stop offset="0" style="stop-color:var(--l-clay-0)"/><stop offset=".55" style="stop-color:var(--l-clay-1)"/><stop offset="1" style="stop-color:var(--l-clay-2)"/></linearGradient>
+    <radialGradient id="${id}g" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#FFF3B5"/><stop offset=".5" stop-color="#FFCB3D"/><stop offset="1" stop-color="#E09A1B"/></radialGradient>
+    <clipPath id="${id}r"><rect width="1024" height="1024" rx="224"/></clipPath></defs>`;
+  const art = `
+    ${tile ? '' : '<ellipse cx="512" cy="878" rx="250" ry="30" fill="#000" fill-opacity=".14"/>'}
+    <path d="M258 430H766C760 520 720 600 716 720C714 810 690 862 630 862H394C334 862 310 810 308 720C304 600 264 520 258 430Z" fill="url(#${id}c)"/>
+    <path d="M296 585H728M308 680H716" stroke="#000" stroke-opacity=".2" stroke-width="14" stroke-linecap="round"/>
+    <path d="M322 480C340 600 340 720 366 800" fill="none" stroke="#fff" stroke-opacity=".22" stroke-width="22" stroke-linecap="round"/>
+    <ellipse cx="512" cy="430" rx="254" ry="60" style="fill:var(--l-rim)"/>
+    <ellipse cx="512" cy="438" rx="222" ry="42" fill="#C98233"/><ellipse cx="512" cy="436" rx="150" ry="24" fill="#E3A04A" fill-opacity=".7"/>
+    ${tile && steam ? '<g stroke="#fff" stroke-opacity=".55" stroke-width="12" stroke-linecap="round"><path d="M512 70V120"/><path d="M420 90V132"/><path d="M604 90V132"/></g>' : ''}
+    <circle cx="512" cy="282" r="104" fill="url(#${id}g)"/>
+    <circle cx="512" cy="282" r="86" fill="none" stroke="#B87A12" stroke-opacity=".45" stroke-width="7" stroke-dasharray="5 9"/>
+    <circle cx="512" cy="282" r="68" fill="none" stroke="#B87A12" stroke-opacity=".55" stroke-width="8"/><circle cx="512" cy="282" r="68" fill="#FFF3B5" fill-opacity=".35"/>
+    <path d="M440 250A78 78 0 0 1 492 208" fill="none" stroke="#fff" stroke-opacity=".7" stroke-width="9" stroke-linecap="round"/>`;
+  if (tile) return `<svg width="${size}" height="${size}" viewBox="0 0 1024 1024" aria-hidden="true">${defs}<g clip-path="url(#${id}r)"><rect width="1024" height="1024" fill="url(#${id}b)"/><ellipse cx="512" cy="880" rx="260" ry="34" fill="#032E2C" fill-opacity=".35"/>${art}</g></svg>`;
+  const w = size * 0.78;
+  return `<svg width="${w}" height="${size}" viewBox="236 160 552 724" aria-hidden="true">${defs}${art}</svg>`;
+}
+const coin = (size) => {
+  const id = 'c' + ++uid;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 64 64" aria-hidden="true"><defs><radialGradient id="${id}" cx=".35" cy=".3" r=".85"><stop offset="0" stop-color="#FFF3B5"/><stop offset=".5" stop-color="#FFCB3D"/><stop offset="1" stop-color="#E09A1B"/></radialGradient></defs>
+    <circle cx="32" cy="32" r="31" fill="url(#${id})"/><circle cx="32" cy="32" r="23.5" fill="none" stroke="#B87A12" stroke-opacity=".55" stroke-width="2.6"/>
+    <g stroke="#8A5A00" fill="none">${RUPEE(4.6, 20.4, 13.4, .82).replace('fill="none"', '')}</g></svg>`;
+};
+const MARKS = {
+  /* A: the home-screen icon itself */
+  A: (s, o = {}) => kulhad({ tile: !!o.tile, size: s }),
+  /* B: a ₹ rising from a cup like steam, line drawing */
+  B: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 64 64" aria-hidden="true">
+    <g style="stroke:var(--l-gold)">${RUPEE(4.2, 1, 0)}</g>
+    <path d="M9 38H45V41C45 50 38.5 56 27 56C15.5 56 9 50 9 41Z" style="fill:var(--l-cup)"/>
+    <path d="M45 40H47.5A5.5 5.5 0 0 1 47.5 51H42" fill="none" stroke-width="3.6" stroke-linecap="round" style="stroke:var(--l-cup)"/>
+    <path d="M14 61H40" stroke-width="3" stroke-linecap="round" style="stroke:var(--l-cup)" opacity=".4"/></svg>`,
+  /* C: the coin is the o of "Coffee"; alone it is the coin */
+  C: (s) => coin(s),
+  /* D: two c's, a coin and a cup, with a coin falling into the cup's mouth */
+  D: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 64 64" aria-hidden="true">
+    <path d="M52.2 39.7A12 12 0 1 1 52.2 24.3" fill="none" stroke-width="7" stroke-linecap="round" style="stroke:var(--l-cup)"/>
+    <circle cx="55.6" cy="32" r="3.3" style="fill:var(--l-gold)"/>
+    <path d="M29.2 39.7A12 12 0 1 1 29.2 24.3" fill="none" stroke-width="7" stroke-linecap="round" style="stroke:var(--l-gold)"/></svg>`,
+  /* E: sunrise cup, flat geometric, a coin rising over a kulhad inside a round badge */
+  E: (s) => `<svg width="${s}" height="${s}" viewBox="0 0 64 64" aria-hidden="true">
+    <circle cx="32" cy="32" r="31" style="fill:var(--l-bg)"/>
+    <g stroke-width="2.8" stroke-linecap="round" style="stroke:var(--l-gold)" opacity=".85"><path d="M32 8.5V13"/><path d="M19 12.6L21.6 16.3"/><path d="M45 12.6L42.4 16.3"/></g>
+    <circle cx="32" cy="29" r="10.5" style="fill:var(--l-gold)"/><circle cx="32" cy="29" r="6.4" fill="none" stroke="#B87A12" stroke-opacity=".55" stroke-width="2"/>
+    <path d="M15 35H49L45.2 52.4Q44.7 54.5 42.6 54.5H21.4Q19.3 54.5 18.8 52.4Z" fill="#C45A2B"/>
+    <path d="M15 35H49L48.2 38.6H15.8Z" fill="#E58A4D"/>
+    <path d="M17.2 45.5H46.8" stroke="#000" stroke-opacity=".2" stroke-width="2" stroke-linecap="round"/></svg>`,
+};
+
+const NAMES = {
+  A: ['A', 'Kulhad', 'The home-screen icon as the logo: a dark clay kulhad with a gold coin dropping in. Illustrated, warm, instantly the same thing as the icon on his phone.'],
+  B: ['B', 'Steam ₹', 'A rupee that rises from a cup like steam. A line drawing in two colours; it works as one colour too (stamps, print, a favicon).'],
+  C: ['C', 'Coin o', 'Type-led: the o of "Coffee" is a gold coin with a ₹. The quietest option; the mark alone is the coin.'],
+  D: ['D', 'cC', 'Two c\'s, gold and teal: chai and Coffee. A coin sits in the mouth of the second c. Geometric, a monogram that stays sharp tiny.'],
+  E: ['E', 'Sunrise cup', 'A flat, geometric badge: a gold coin rising over a kulhad, with its rays as steam. Plain shapes, so it holds up smallest.'],
+};
+let selected = 'A';
+
+function word(fs, id) {
+  if (id === 'C') return `<span>chaiC${coin(fs * 0.8).replace('<svg', '<svg class="coin-o"')}ffee<span class="fund">Fund</span></span>`;
+  return `<span>chaiCoffee<span class="fund">Fund</span></span>`;
+}
+/** mark (when the logo has one apart from the word) + wordmark; h = the mark's px height */
+function lockup(id, h = 24) {
+  const fs = Math.round(h * 0.68);
+  const mark = id === 'C' ? '' : MARKS[id](h);
+  return `<span class="lock" style="font-size:${fs}px">${mark}${word(fs, id)}</span>`;
+}
+function mark(id, s, o) { return MARKS[id](s, o); }
+/** the mark alone for tight places (a rail, a favicon); C's is the coin */
+function tile(id, s) { return id === 'A' ? MARKS.A(s, { tile: true }) : `<span class="lg-tile" style="display:block;width:${s}px;height:${s}px;border-radius:${s * .225}px;background:linear-gradient(180deg,#19b8a6,#0a6b66);display:grid;place-items:center">${MARKS[id](s * .66)}</span>`; }
+
+/* ============ phone building blocks ============ */
+const sb = () => `<div class="sb"><span>9:41</span><i><span class="sig"><s style="height:4px"></s><s style="height:6px"></s><s style="height:8px"></s><s style="height:10px"></s></span><span class="bat"></span></i></div>`;
+function page(key = 'overview') {
+  const eb = label(key);
+  return `<div class="pg"><div class="eb">${eb}</div><h4>Good evening,<br>Prathik</h4>
+  <p>You're worth <b>₹48.2L</b>, up <b>₹1.1L</b> this month, and <b>₹82,400</b> falls due in 9 days.</p>
+  <div class="hero"><small>Net worth</small><strong>₹48,21,300</strong>
+    <svg viewBox="0 0 280 46" preserveAspectRatio="none"><polyline fill="none" stroke="#5BE3A1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" points="0,36 30,33 60,38 90,28 120,30 150,20 180,24 210,12 245,15 280,5"/></svg></div>
+  <div class="tiles"><div class="tile"><small>Spent</small><strong>₹62,140</strong></div><div class="tile f"><small>Due soon</small><strong>₹82,400</strong></div></div>
+  <div class="list"><div><i style="background:#0a8a80"></i>HDFC Regalia<span>₹21,300</span></div><div><i style="background:#c45a2b"></i>Home loan EMI<span>₹38,100</span></div><div><i style="background:#e0a21b"></i>Netflix<span>₹649</span></div></div></div>`;
+}
+const avatar = '<div class="avatar">P</div>';
+const headerBasic = () => `<div class="hdr">${lockup(selected, 26)}<span class="sp"></span>${avatar}</div>`;
+const tabsHtml = (act, moreOn) => `<div class="dock1">${FAVS.map((k) => `<a class="${k === act ? 'on' : ''}"><span class="ic">${ico(k, 20)}</span>${label(k)}</a>`).join('')}<a class="${moreOn ? 'on' : ''}"><span class="ic">${ico(moreOn ? 'close' : 'more', 20)}</span>${moreOn ? 'Close' : 'More'}</a></div>`;
+const gridTile = (k, extra = '') => `<a class="${extra}"><span class="ic">${ico(k, 18)}</span>${label(k)}</a>`;
+const signout = '<div class="out">' + ico('signOut', 16) + 'Sign out</div>';
+const phone = (inner, cap) => `<div class="fr"><div class="phone"><div class="screen">${sb()}${inner}<div class="hi"></div></div></div><div class="cap">${cap}</div></div>`;
+
+const NAV = [
+  {
+    id: 'N0', title: 'Today', pill: 'what he has now',
+    why: 'A top bar with the plain name and a hamburger that opens a left drawer.',
+    pros: ['Nothing to learn, and nothing on screen to get in the way.'],
+    cons: ['The menu button is in the far top corner, as far from the thumb as it can be.', 'Every section is two taps away, and you can\'t tell where you are until you open it.', 'The bar says only the name: no logo, no section.'],
+    frames: () => [
+      phone(`<div class="hdr"><span style="font-weight:800;font-size:16px">chaiCoffeeFund</span><span class="sp"></span><button class="ib">${ico('menu', 20)}</button></div>${page()}`, 'Closed'),
+      phone(`<div class="hdr"><span style="font-weight:800;font-size:16px">chaiCoffeeFund</span><span class="sp"></span><button class="ib">${ico('menu', 20)}</button></div>${page()}<div class="scrim"></div>
+        <div class="drawer"><div class="dh">chaiCoffeeFund<button class="ib" style="margin-right:-8px">${ico('close', 20)}</button></div>${SECTIONS.map(([k, l]) => `<a class="${k === 'overview' ? 'on' : ''}">${ico(k, 17)}${l}</a>`).join('')}</div>`, 'Open'),
+    ],
+  },
+  {
+    id: 'N1', title: '1 · Dock + More', pill: 'my pick',
+    why: 'The classic bottom tab bar, with the logo in a slim top bar. Four favourites live on the bar; "More" lifts a sheet with the other nine.',
+    pros: ['The four pages he opens most are one tap, at the thumb.', 'The active page is an ink pill, the same shape as the desktop rail\'s.', 'Familiar: nothing to explain.'],
+    cons: ['The bar costs about 80 px of height.', 'Nine sections are two taps away.', 'Needs bottom padding on every page and the phone\'s safe area.'],
+    frames: () => [
+      phone(`${headerBasic()}${page()}${tabsHtml('overview', false)}`, 'Closed'),
+      phone(`${headerBasic()}${page()}<div class="scrim"></div><div class="sheet1"><div class="grab"></div><h5>More</h5><div class="g3">${REST.map((k) => gridTile(k)).join('')}</div>${signout}</div>${tabsHtml('', true)}`, 'More open'),
+    ],
+  },
+  {
+    id: 'N2', title: '2 · Floating pill dock', pill: '',
+    why: 'A dark pill floats over the page, and only the active page shows its name. The gold coin button opens a dark card of the other sections.',
+    pros: ['Nothing covers the page except the pill, so the numbers get the room.', 'The gold coin ties to the logo.', 'The dark pill is a bold shape the other pages don\'t have.'],
+    cons: ['It floats over content, so the page needs about 100 px of padding below the last row.', 'Four sections plus a button is a tight fit on a small phone.'],
+    frames: () => [
+      phone(`${headerBasic()}${page()}<div class="dock2">${FAVS.map((k) => `<a class="${k === 'overview' ? 'on' : ''}">${ico(k, 20)}${k === 'overview' ? label(k) : ''}</a>`).join('')}<a class="more">${ico('grid', 20)}</a></div>`, 'Closed'),
+      phone(`${headerBasic()}${page()}<div class="scrim"></div><div class="sheet2"><div class="sh">More sections<span>${REST.length}</span></div><div class="g3">${REST.map((k) => gridTile(k)).join('')}</div>${signout}</div>
+        <div class="dock2">${FAVS.map((k) => `<a>${ico(k, 20)}</a>`).join('')}<a class="more">${ico('close', 20)}</a></div>`, 'Open'),
+    ],
+  },
+  {
+    id: 'N3', title: '3 · Section switcher', pill: '',
+    why: 'No bottom bar at all. The top bar names the page you are on, in a chip with a chevron; tap it and a panel drops down with every section, grouped.',
+    pros: ['The page gets the whole height.', 'The top bar says where you are, always.', 'All thirteen sections are one tap into the panel: one tap to open, one to pick.'],
+    cons: ['The chip is at the top, away from the thumb.', 'Unusual: it has to be discovered once.'],
+    frames: () => {
+      const bar = (k, open) => `<div class="hdr">${selected === 'C' ? coin(30) : mark(selected, 30)}<span class="chip3"><span class="ic">${ico(k, 14)}</span>${label(k)}<span style="transform:${open ? 'rotate(180deg)' : 'none'};display:inline-flex">${ico('chevron', 16)}</span></span><span class="sp"></span>${avatar}</div>`;
+      const grp = (t, ks) => `<h6>${t}</h6><div class="g2">${ks.map((k) => `<a class="${k === 'overview' ? 'on' : ''}">${ico(k, 17)}${label(k)}</a>`).join('')}</div>`;
+      return [
+        phone(`${bar('overview', false)}${page()}`, 'Closed'),
+        phone(`${bar('overview', true)}${page()}<div class="scrim" style="top:100px"></div><div class="panel3" style="top:106px">${grp('Everyday money', ['overview', 'accounts', 'cards', 'daily', 'expenses', 'income', 'subscriptions'])}${grp('Borrowing and lending', ['loans', 'lent'])}${grp('Wealth and safety', ['fixedIncome', 'investments', 'goals', 'insurance'])}</div>`, 'Open'),
+      ];
+    },
+  },
+  {
+    id: 'N4', title: '4 · Chip strip', pill: '',
+    why: 'A row of pills under the logo bar that scrolls sideways: every section is a swipe away, and the active one is inked. ',
+    pros: ['Every section is visible by name and one tap, no menu.', 'Swipe-friendly and quick to build: the strip is a row of links.', 'The page is a clear place: you see what is next to you.'],
+    cons: ['Thirteen pills do not fit: the later ones are off-screen until you swipe.', 'The strip stays at the top, costing 56 px.'],
+    frames: () => {
+      const strip = (act, scrolled) => `<div class="strip" data-active="${scrolled ? act : ''}">${SECTIONS.map(([k, l]) => `<a class="${k === act ? 'on' : ''}">${ico(k, 15)}${l}</a>`).join('')}</div><div class="fades">${scrolled ? '<span class="fadeL"></span>' : ''}<span class="fadeR"></span></div>`;
+      return [
+        phone(`${headerBasic()}${strip('overview', false)}${page()}`, 'At Overview'),
+        phone(`${headerBasic()}${strip('loans', true)}${page('loans')}`, 'Scrolled to Loans'),
+      ];
+    },
+  },
+  {
+    id: 'N5', title: '5 · Thumb button', pill: '',
+    why: 'One round button floats at the bottom right, where the thumb rests. It opens a stack of every section, right-aligned, with the active one inked.',
+    pros: ['Everything, all thirteen, is one tap from the thumb, and nothing is hidden behind "More".', 'The page loses almost nothing: only a button.', 'The speed-dial list reads at a glance.'],
+    cons: ['The button covers the last row at the bottom right of every page.', 'You can\'t see the current section while it is closed (the top bar names it).', 'A one-handed right-thumb layout: left-handers reach it less easily.'],
+    frames: () => [
+      phone(`${headerBasic()}${page()}<div class="fab5">${ico('grid', 24)}</div>`, 'Closed'),
+      phone(`${headerBasic()}${page()}<div class="scrim"></div><div class="dial">${SECTIONS.map(([k, l]) => `<a class="${k === 'overview' ? 'on' : ''}"><span>${l}</span><i>${ico(k, 17)}</i></a>`).join('')}</div><div class="fab5 open">${ico('close', 24)}</div>`, 'Open'),
+    ],
+  },
+];
+
+function renderNav() {
+  const navEl = document.getElementById('navrows');
+  navEl.innerHTML = NAV.map((n) => `
+    <div style="margin-top:48px">
+      <h3>${n.title} ${n.pill ? `<span class="pill ${n.id === 'N1' ? 'pick' : ''}">${n.pill}</span>` : ''}</h3>
+      <div class="row">
+        <div class="note"><p class="why" style="margin:0">${n.why}</p>
+          <ul>${n.pros.map((p) => `<li><b style="color:var(--accent-text)">+</b> ${p}</li>`).join('')}${n.cons.map((c) => `<li><b style="color:oklch(0.55 0.16 25)">−</b> ${c}</li>`).join('')}</ul></div>
+        ${n.frames().join('')}
+      </div>
+    </div>`).join('');
+  navEl.querySelectorAll('.strip[data-active]').forEach((el) => {
+    const on = el.querySelector('.on');
+    if (el.dataset.active && on) el.scrollLeft = on.offsetLeft - 16;
+  });
+}
+
+/* ============ logo cards ============ */
+function sizeRow(id, theme) {
+  return `<div class="sizes ${theme} lg-${theme === 'dark' ? 'dark' : 'light'}">${[56, 40, 28, 20, 16].map((s) => `<div style="text-align:center;font-size:10px;font-weight:800;opacity:.9;color:${theme === 'dark' ? '#fff' : 'var(--muted)'}">${mark(id, s)}<div style="margin-top:4px">${s}</div></div>`).join('')}</div>`;
+}
+function renderLogos() {
+  document.getElementById('lcards').innerHTML = Object.keys(NAMES).map((id) => {
+    const [l, name, blurb] = NAMES[id];
+    return `<article class="lcard">
+      <header><h3>${l} · ${name}</h3>${id === 'A' ? '<span class="pill pick">my pick</span>' : ''}</header>
+      <p>${blurb}</p>
+      <div class="lhero">
+        <div class="stage light"><small>Light</small>${mark(id, 96)}</div>
+        <div class="stage dark lg-dark"><small>Dark</small>${mark(id, 96)}</div>
+      </div>
+      <div class="lhero" style="grid-template-columns:1fr">
+        <div class="stage light" style="min-height:92px"><small>With the word</small>${lockup(id, 44)}</div>
+        <div class="stage dark lg-dark" style="min-height:92px"><small>Dark</small>${lockup(id, 44)}</div>
+        <div class="stage teal lg-tile" style="min-height:92px"><small>On teal</small>${lockup(id, 44)}</div>
+      </div>
+      <div class="lhero" style="grid-template-columns:1fr">${sizeRow(id, 'light')}${sizeRow(id, 'dark')}</div>
+      <div style="display:flex;gap:16px;align-items:flex-end;flex-wrap:wrap">
+        <div><div class="cap" style="margin:0 0 6px;text-align:left">Home screen</div><div style="filter:drop-shadow(0 8px 14px rgba(0,0,0,.2))">${tile(id, 76)}</div></div>
+        <div style="flex:1;min-width:200px"><div class="cap" style="margin:0 0 6px;text-align:left">Browser tab</div>
+          <div class="tabstrip"><span class="t">${tile(id, 16).replace('width:16px', 'width:16px')}Overview · chaiCoffeeFund</span></div></div>
+      </div></article>`;
+  }).join('');
+}
+
+/* ============ in the app: the desktop rail and the phone bar wearing the picked logo ============ */
+function renderInApp() {
+  const items = SECTIONS.slice(0, 6);
+  const railIcon = selected === 'C' ? coin(30) : mark(selected, 30);
+  document.getElementById('inapp').innerHTML = `
+    <div><div class="rail c">${railIcon}${items.map(([k], i) => `<div class="ri ${i === 0 ? 'on' : ''}">${ico(k, 17)}</div>`).join('')}</div><div class="cap">Rail, collapsed</div></div>
+    <div><div class="rail e"><div style="padding:0 11px 6px">${lockup(selected, 26)}</div>${items.map(([k, l], i) => `<div class="ri ${i === 0 ? 'on' : ''}">${ico(k, 17)}${l}</div>`).join('')}</div><div class="cap">Rail, expanded</div></div>
+    <div><div class="phonehdr"><div class="hdr" style="background:var(--page)">${lockup(selected, 26)}<span class="sp"></span>${avatar}</div></div><div class="cap">Phone top bar</div>
+      <div style="margin-top:18px;display:flex;gap:16px;align-items:center"><div style="filter:drop-shadow(0 8px 14px rgba(0,0,0,.2))">${tile(selected, 76)}</div><div class="cap" style="margin:0;text-align:left">This logo as the home-screen icon</div></div></div>`;
+}
+
+/* ============ picker ============ */
+function renderPicker() {
+  const p = document.getElementById('picker');
+  p.innerHTML = '<b>Logo on the phones:</b>' + Object.keys(NAMES).map((id) =>
+    `<button type="button" data-id="${id}" aria-pressed="${id === selected}">${id === 'C' ? coin(18) : mark(id, 18)}${NAMES[id][0]} · ${NAMES[id][1]}</button>`).join('');
+  p.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { selected = b.dataset.id; renderAll(); }));
+}
+function renderAll() { renderPicker(); renderNav(); renderInApp(); }
+renderLogos();
+renderAll();
+</script>
+</body>
+</html>
