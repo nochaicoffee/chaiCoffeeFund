@@ -28,6 +28,16 @@ export const SECTIONS: Section[] = [
   { href: "/goals", label: "Goals", icon: "goals" },
 ];
 
+/** The sections on a phone's bottom bar, in order; every other section sits behind its More button. */
+export const PHONE_TAB_HREFS = ["/", "/accounts", "/cards", "/daily"] as const;
+
+/** The phone bar's tabs, and the sections behind More (everything else, in sidebar order). */
+export function splitForPhone(sections: readonly Section[]): { tabs: Section[]; more: Section[] } {
+  const tabs = PHONE_TAB_HREFS.flatMap((href) => sections.find((s) => s.href === href) ?? []);
+  const more = sections.filter((s) => !PHONE_TAB_HREFS.some((href) => href === s.href));
+  return { tabs, more };
+}
+
 /** True when `pathname` is this section's page or one of its sub-pages (/cards/statements is Cards). */
 export function isActiveSection(href: string, pathname: string): boolean {
   if (href === "/") return pathname === "/";

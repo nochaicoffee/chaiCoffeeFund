@@ -190,7 +190,7 @@ export function SubscriptionFormsProvider({ forms, children }: { forms: FormsDat
           onClose={close}
         />
       )}
-      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[max(16px,env(safe-area-inset-bottom))] z-50 flex justify-center px-4">
+      <div aria-live="polite" className="pointer-events-none fixed inset-x-0 bottom-[max(16px,env(safe-area-inset-bottom))] max-md:bottom-[calc(var(--phone-nav-h)+0.5rem)] z-50 flex justify-center px-4">
         {toast && (
           <div key={toast.key} role="status" className="pointer-events-auto relative flex max-w-full items-center gap-3 overflow-hidden rounded-[14px] bg-ink py-2.5 pr-2.5 pl-4 text-[13px] font-semibold text-on-ink shadow-card motion-safe:animate-toast-in">
             <span className="min-w-0">{toast.message}</span>

@@ -146,7 +146,7 @@ export function IncomeFormsProvider({ forms, children }: { forms: IncomeFormsDat
         />
       )}
       {toast && (
-        <div role="status" className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3.5 rounded-full bg-ink py-2.5 pr-2.5 pl-5 text-[13px] font-bold text-on-ink shadow-card max-md:bottom-20" key={toast.key}>
+        <div role="status" className="fixed bottom-5 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3.5 rounded-full bg-ink py-2.5 pr-2.5 pl-5 text-[13px] font-bold text-on-ink shadow-card max-md:bottom-[calc(var(--phone-nav-h)+0.5rem)]" key={toast.key}>
           <span className={toast.kind === "error" ? "text-[oklch(0.8_0.12_40)]" : ""}>{toast.kind === "recorded" ? `Recorded · ${toast.message}` : toast.message}</span>
           {toast.kind === "recorded" && (
             <button type="button" onClick={undo} className="min-h-9 rounded-full bg-[oklch(1_0_0/0.14)] px-4 text-xs font-extrabold hover:bg-[oklch(1_0_0/0.22)] focus-visible:outline-2 focus-visible:outline-white">
