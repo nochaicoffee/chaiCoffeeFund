@@ -20,6 +20,7 @@ import { ManageCategories } from "./ManageCategories";
 import { OftenRow } from "./OftenRow";
 import { Sheet } from "./Sheet";
 import { SpendForm } from "./SpendForm";
+import { TipEdge } from "./TipEdge";
 
 type Open = { kind: "add"; draft: { date: string; amount: string; method: DailySpendMethod }; fromBar: boolean } | { kind: "edit"; id: string } | { kind: "delete"; id: string } | { kind: "limit" };
 
@@ -136,6 +137,7 @@ export function DailyShell({ raw, children }: { raw: DailyRaw; children: ReactNo
   return (
     <DailyProvider value={value}>
       <div className="dy">{children}</div>
+      <TipEdge />
       <QuickBar key={barKey} onAdded={emptyBar} />
       {open?.kind === "add" && (
         <Sheet title="Add a spend" subtitle="What you spent, and how you paid. A rough diary, nothing more." onClose={close}>
