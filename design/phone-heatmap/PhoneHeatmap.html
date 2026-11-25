@@ -1,0 +1,556 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Phone heatmaps · chaiCoffeeFund design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --pw: 390px;
+  --page: oklch(0.965 0.004 90); --surface: oklch(0.995 0 0); --surface-line: oklch(0 0 0 / 0.07);
+  --fg: oklch(0.19 0.008 260); --muted: oklch(0.52 0.012 260); --fill: oklch(0 0 0 / 0.055); --fill-strong: oklch(0 0 0 / 0.09); --divider: oklch(0 0 0 / 0.08);
+  --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06); --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+  --accent: oklch(0.72 0.19 145); --accent-tint: oklch(0.93 0.06 145); --accent-text: oklch(0.42 0.14 145);
+  --ink: oklch(0.16 0.008 260); --on-ink: oklch(0.99 0 0);
+  --positive: oklch(0.42 0.14 145); --negative: oklch(0.55 0.16 25);
+  --heat-1: oklch(0.95 0.03 150); --heat-2: oklch(0.87 0.07 150); --heat-3: oklch(0.76 0.11 151); --heat-4: oklch(0.6 0.12 153); --heat-5: oklch(0.42 0.1 156);
+  --heat-ink: oklch(0.24 0.05 152); --rings-ink: oklch(0.42 0.1 152); --heat-no-data: oklch(0 0 0 / 0.04); --heat-upcoming: oklch(0 0 0 / 0.16); --heat-glow: oklch(1 0 0 / 0.26);
+  --font: "Manrope", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--page); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1340px; margin: 0 auto; padding: 32px 24px 120px; }
+h1 { font-size: 32px; letter-spacing: -0.02em; margin: 0 0 6px; }
+h2 { font-size: 24px; letter-spacing: -0.015em; margin: 0; }
+.eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent-text); margin-bottom: 8px; }
+.lead { color: var(--muted); max-width: 76ch; margin: 0 0 12px; }
+
+.player { position: sticky; top: 0; z-index: 10; margin: 18px -8px 0; padding: 10px 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  background: oklch(0.995 0 0 / 0.92); backdrop-filter: blur(10px); border: 1px solid var(--surface-line); border-radius: 22px; box-shadow: var(--card-shadow); font-size: 13px; font-weight: 700; }
+.player button { font: inherit; font-size: 13px; font-weight: 800; border: 1px solid var(--surface-line); background: var(--surface); color: var(--fg); border-radius: 999px; padding: 5px 14px; cursor: pointer; }
+.player button[aria-pressed="true"] { background: var(--ink); color: var(--on-ink); }
+.player .note { color: var(--muted); font-weight: 600; }
+
+/* ---------- the comparison and the notes ---------- */
+.panel { background: var(--surface); border: 1px solid var(--surface-line); border-radius: 24px; box-shadow: var(--soft-shadow); padding: 22px 24px; margin-top: 22px; }
+.panel h3 { margin: 0 0 10px; font-size: 16px; }
+table.cmp { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.cmp th, table.cmp td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--divider); vertical-align: top; }
+table.cmp th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border-top: 0; }
+table.cmp td:first-child { font-weight: 800; white-space: nowrap; }
+.pick { display: inline-block; background: var(--accent-tint); color: var(--accent-text); border-radius: 999px; padding: 1px 9px; font-size: 11px; font-weight: 800; }
+ul.tight { margin: 6px 0 0; padding-left: 18px; color: var(--muted); font-size: 13.5px; }
+ul.tight li { margin: 3px 0; }
+ul.tight b { color: var(--fg); }
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+
+.board { margin-top: 56px; }
+.board > header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+.board .tag { color: var(--muted); font-weight: 600; max-width: 80ch; margin: 4px 0 0; }
+.letter { display: inline-grid; place-items: center; width: 36px; height: 36px; border-radius: 12px; background: var(--ink); color: var(--on-ink); font-size: 18px; font-weight: 800; margin-right: 10px; vertical-align: 2px; }
+.how { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px 28px; margin: 14px 0 6px; font-size: 13.5px; }
+.how h4 { margin: 0 0 2px; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: var(--muted); }
+.how ul { margin: 0; padding-left: 17px; }
+.how li { margin: 3px 0; }
+.figs { display: flex; flex-wrap: wrap; gap: 30px 28px; margin-top: 18px; align-items: flex-start; }
+figure.fig { margin: 0; }
+figcaption { margin: 10px 4px 0; font-size: 12.5px; color: var(--muted); font-weight: 600; max-width: var(--pw); }
+figcaption b { display: block; color: var(--fg); font-size: 13.5px; }
+
+/* ---------- the phone ---------- */
+.phone { width: var(--pw); background: var(--page); border: 1px solid oklch(0 0 0 / .14); border-radius: 30px; overflow: hidden; box-shadow: 0 2px 6px oklch(0 0 0 / 0.08), 0 18px 40px oklch(0 0 0 / 0.12); }
+.phone .bar { height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 18px; background: oklch(0.975 0.003 90); border-bottom: 1px solid var(--surface-line); font-weight: 800; font-size: 15px; }
+.screen { padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.eyebrow-s { font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 2px 0 0 2px; }
+.h-s { font-size: 18px; font-weight: 800; letter-spacing: -.01em; margin: 1px 0 0 2px; line-height: 1.2; }
+
+.card { background: var(--surface); border: 1px solid var(--surface-line); border-radius: 22px; box-shadow: var(--soft-shadow); padding: 16px 16px 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.card h4 { margin: 0; font-size: 13.5px; font-weight: 800; }
+.card h4 span { color: var(--muted); font-weight: 700; }
+.foot { font-size: 11px; font-weight: 600; color: var(--muted); margin: 0; }
+
+.legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 10.5px; color: var(--muted); font-weight: 600; }
+.legend .sw { display: inline-block; width: 11px; height: 11px; border-radius: 4px; vertical-align: -2px; margin-right: 4px; }
+.legend .grad { display: inline-flex; align-items: center; gap: 3px; }
+.legend .grad i { width: 11px; height: 11px; border-radius: 4px; display: inline-block; }
+.sw.nd { background: repeating-linear-gradient(135deg, var(--fill-strong) 0 2px, transparent 2px 4px); }
+.sw.up { border: 1.5px dashed var(--heat-upcoming); }
+
+/* ---------- a month's cell: the app's own ---------- */
+.cell { position: relative; isolate: isolate; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 12px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.15; min-width: 0; }
+.cell > * { position: relative; }
+.cell::before { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(circle at 90% 8%, var(--heat-glow), transparent 58%), repeating-radial-gradient(circle at 100% 100%, transparent 0 9px, color-mix(in oklch, var(--rings-ink) 12%, transparent) 9px 10.5px); }
+.lv1 { background: var(--heat-1); color: var(--heat-ink); } .lv2 { background: var(--heat-2); color: var(--heat-ink); } .lv3 { background: var(--heat-3); color: var(--heat-ink); }
+.lv4 { background: var(--heat-4); color: #fff; } .lv5 { background: var(--heat-5); color: #fff; }
+.lv4::before, .lv5::before { background: radial-gradient(circle at 90% 8%, var(--heat-glow), transparent 58%), repeating-radial-gradient(circle at 100% 100%, transparent 0 9px, oklch(1 0 0 / 0.11) 9px 10.5px); }
+.cell.nd { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 5px, transparent 5px 11px); color: var(--muted); }
+.cell.up { border: 1.5px dashed var(--heat-upcoming); color: var(--muted); }
+.cell.nd::before, .cell.up::before { display: none; }
+.cell.cur { box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px var(--accent); }
+.cell small { font-size: 9px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; opacity: .72; }
+.cell em { font-style: normal; font-size: 8.5px; font-weight: 700; opacity: .85; }
+
+/* ---------- A · tiles ---------- */
+.yh { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-top: 2px; }
+.yh b { font-size: 15px; font-weight: 800; }
+.yh span { font-size: 10.5px; font-weight: 700; color: var(--muted); text-align: right; }
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 4px 3px 5px; }
+.tile { height: 62px; padding: 5px 2px; font-size: 13px; gap: 1px; border-radius: 13px; }
+.acc { display: grid; grid-template-columns: 40px 1fr auto; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: var(--fill); font-size: 12px; font-weight: 800; }
+.acc .t { font-size: 11px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+.strip { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; min-width: 0; }
+.strip i { height: 14px; border-radius: 3px; display: block; }
+.strip i.nd { background: repeating-linear-gradient(135deg, var(--fill-strong) 0 2px, transparent 2px 4px); } .strip i.up { border: 1px dashed var(--heat-upcoming); }
+.strip i.lv1 { background: var(--heat-1); } .strip i.lv2 { background: var(--heat-2); } .strip i.lv3 { background: var(--heat-3); } .strip i.lv4 { background: var(--heat-4); } .strip i.lv5 { background: var(--heat-5); }
+
+/* ---------- the measure chips (Overview) ---------- */
+.chips { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.chip { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 9px 2px 8px; border-radius: 16px; background: var(--surface); border: 1px solid var(--surface-line); box-shadow: var(--soft-shadow); min-width: 0; }
+.chip .bd { width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; color: #fff; }
+.chip svg, .bdg svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.chip b { font-size: 11px; font-weight: 800; font-variant-numeric: tabular-nums; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chip.on { color: #fff; border-color: transparent; box-shadow: 0 2px 6px oklch(0 0 0 / .1), 0 10px 20px oklch(0 0 0 / .14); }
+.chip.on .bd { background: oklch(1 0 0 / .18) !important; }
+.say { display: flex; gap: 7px; align-items: baseline; font-size: 11.5px; font-weight: 600; color: var(--muted); margin: -2px 2px 0; }
+.say i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); flex: none; transform: translateY(-1px); }
+.say b { color: var(--fg); }
+
+/* ---------- B · turned on its side ---------- */
+.rot { display: grid; gap: 4px; align-items: center; }
+.rot .hd { text-align: center; font-size: 10px; font-weight: 800; color: var(--muted); letter-spacing: .02em; text-transform: uppercase; line-height: 1.1; min-width: 0; }
+.rot .hd b { display: block; font-size: 13px; color: var(--fg); text-transform: none; letter-spacing: 0; }
+.rot .hd .bdg { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 9px; color: #fff; margin: 0 auto 3px; }
+.rot .mo { font-size: 10px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.rot .mo.now { color: var(--fg); } .rot .mo.now::after { content: ""; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-left: 3px; vertical-align: 1px; }
+.rot .c { height: 40px; font-size: 12px; border-radius: 10px; }
+.rot .c em { margin-top: 1px; }
+.rot.dense .c { height: 33px; font-size: 10.5px; border-radius: 9px; }
+.rot .pkd { position: absolute; top: 3px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: .85; }
+.rot .sum { font-size: 11px; font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; padding-top: 5px; border-top: 1px solid var(--divider); white-space: nowrap; }
+.rot .sum.l { text-align: left; font-size: 9.5px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+.rot .sum.s { color: var(--muted); font-weight: 700; border-top: 0; padding-top: 0; }
+
+/* ---------- C · small cells and a readout ---------- */
+.ro { background: var(--fill); border-radius: 16px; padding: 11px 12px 12px; min-height: 92px; }
+.ro .top { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.ro .step { display: flex; gap: 4px; }
+.ro .step button { all: unset; cursor: pointer; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 9px; background: var(--surface); font-size: 14px; font-weight: 800; color: var(--fg); box-shadow: 0 1px 2px oklch(0 0 0 / .08); }
+.ro .big { font-size: 25px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.ro .vs { font-size: 11.5px; font-weight: 700; color: var(--muted); } .ro .vs.bad { color: var(--negative); } .ro .vs.good { color: var(--positive); }
+.ro .pill { font-size: 9.5px; font-weight: 800; border-radius: 999px; padding: 1px 8px; background: var(--accent-tint); color: var(--accent-text); margin-left: 6px; }
+.ro .pill.p2 { background: var(--surface); color: var(--fg); }
+.ro ul { list-style: none; margin: 8px 0 0; padding: 8px 0 0; border-top: 1px solid var(--divider); display: flex; flex-direction: column; gap: 5px; }
+.ro li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; }
+.ro li i { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+.ro li span { flex: 1; color: var(--muted); } .ro li b { font-variant-numeric: tabular-nums; }
+.mgrid { display: grid; gap: 5px 3px; align-items: center; touch-action: pan-y; user-select: none; }
+.mgrid .lt { text-align: center; font-size: 10px; font-weight: 800; color: var(--muted); }
+.mgrid .lt.on { color: var(--fg); }
+.mgrid .rl { font-size: 11px; font-weight: 800; }
+.mgrid .bdg { width: 24px; height: 24px; border-radius: 8px; display: grid; place-items: center; color: #fff; }
+.mgrid .m { aspect-ratio: 1; border-radius: 6px; cursor: pointer; }
+.mgrid .m.cur { box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 3px var(--accent); }
+.mgrid .m.sel { outline: 2px solid var(--ink); outline-offset: 1px; z-index: 2; }
+.mgrid .m::before { background: radial-gradient(circle at 90% 8%, var(--heat-glow), transparent 58%); }
+.mgrid .m .pk { position: absolute; inset: 0; margin: auto; width: 5px; height: 5px; border-radius: 50%; background: currentColor; opacity: .8; }
+.mgrid .ys { grid-column: 2 / -1; font-size: 10px; font-weight: 700; color: var(--muted); text-align: right; margin-top: -1px; }
+.mgrid .gap { height: 6px; grid-column: 1 / -1; }
+
+/* ---------- D · a ledger ---------- */
+.yrs { display: flex; gap: 6px; }
+.yrs div { flex: 1; text-align: center; border-radius: 14px; padding: 7px 4px; background: var(--fill); font-size: 13px; font-weight: 800; line-height: 1.2; }
+.yrs div small { display: block; font-size: 10px; font-weight: 700; color: var(--muted); }
+.yrs div.on { background: var(--ink); color: var(--on-ink); } .yrs div.on small { color: oklch(1 0 0 / .65); }
+.led { display: flex; flex-direction: column; gap: 5px; }
+.lr { display: grid; grid-template-columns: 36px 1fr 58px; gap: 8px; align-items: center; }
+.lr .mo { font-size: 10px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.lr .mo.now { color: var(--fg); } .lr .mo.now::after { content: ""; display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); margin-left: 3px; vertical-align: 1px; }
+.lr .trk { height: 24px; border-radius: 9px; background: var(--fill); position: relative; overflow: hidden; display: flex; }
+.lr .trk .bar2 { height: 100%; border-radius: 9px; position: relative; overflow: hidden; display: flex; align-items: center; padding-left: 8px; font-size: 9.5px; font-weight: 800; }
+.lr .trk .bar2::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 96% 0%, var(--heat-glow), transparent 60%), repeating-radial-gradient(circle at 100% 100%, transparent 0 9px, oklch(1 0 0 / .1) 9px 10.5px); }
+.lr .trk .bar2 span { position: relative; }
+.lr .trk.nd { background: repeating-linear-gradient(135deg, var(--heat-no-data) 0 5px, transparent 5px 11px); align-items: center; padding-left: 9px; font-size: 10px; font-weight: 700; color: var(--muted); }
+.lr .trk.up { background: none; border: 1.5px dashed var(--heat-upcoming); align-items: center; padding-left: 8px; font-size: 10px; font-weight: 700; color: var(--muted); }
+.lr .amt { text-align: right; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.lr .amt.dim { color: var(--muted); font-weight: 600; }
+.lr.cur .trk { box-shadow: 0 0 0 1.5px var(--surface), 0 0 0 3px var(--accent); }
+.lt2 { display: grid; grid-template-columns: 36px 1fr 20px; gap: 8px; align-items: start; padding: 5px 0; border-top: 1px solid var(--divider); }
+.lt2:first-child { border-top: 0; }
+.lt2 .mo { font-size: 10px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); padding-top: 1px; }
+.lt2 .mo.now { color: var(--fg); }
+.lt2 .five { display: flex; flex-direction: column; gap: 2px; }
+.lt2 .five .b { height: 6px; border-radius: 3px; position: relative; overflow: hidden; min-width: 3px; }
+.lt2 .five .b.nb { height: 6px; background: repeating-linear-gradient(135deg, var(--fill-strong) 0 2px, transparent 2px 4px); }
+.lt2 .chev { font-size: 11px; color: var(--muted); font-weight: 800; text-align: center; }
+.lt2.open { background: var(--fill); border-radius: 14px; border-top: 0; padding: 9px 10px; margin: 2px -4px; }
+.lt2.open .mo { color: var(--fg); }
+.lt2 .list { margin: 6px 0 0; display: flex; flex-direction: column; gap: 4px; }
+.lt2 .list div { display: flex; gap: 7px; align-items: center; font-size: 11.5px; font-weight: 700; }
+.lt2 .list i { width: 9px; height: 9px; border-radius: 3px; flex: none; }
+.lt2 .list span { flex: 1; color: var(--muted); } .lt2 .list b { font-variant-numeric: tabular-nums; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="eyebrow">Design · phone heatmaps · round 1</p>
+  <h1>Heatmaps that fit a phone</h1>
+  <p class="lead">Today the heatmap is a table 700 px wide (a year label, twelve months at 46 px minimum, a total column), so on a 390 px phone it sits inside its card and scrolls sideways, and the Overview's five stacked rows do the same. Four ways to make it fit without scrolling. Each is shown on the three cases that matter: <b>Cards and Income</b> (one measure, years down), the <b>Overview</b> with all five measures for a year, and the Overview <b>past a year</b>, one measure over three years. All are drawn at real phone size, with the app's own colours, five shades, no-data stripes, dashed upcoming, ring on this month and the peak. The numbers are made up, except the first months you can see in your screenshots.</p>
+
+  <div class="player" role="group" aria-label="Phone width">
+    <span>Phone width</span>
+    <button type="button" data-w="390" aria-pressed="true">390</button>
+    <button type="button" data-w="360" aria-pressed="false">360</button>
+    <button type="button" data-w="340" aria-pressed="false">340</button>
+    <span class="note">Every phone below re-flows to the width, so you can see the narrowest still fits. C is live: tap a month, step with ‹ ›, or slide a finger across the cells.</span>
+  </div>
+
+  <section class="panel">
+    <h3>The four, side by side</h3>
+    <table class="cmp">
+      <thead><tr><th></th><th>A · Tiles</th><th>B · On its side</th><th>C · Small cells + readout</th><th>D · Ledger</th></tr></thead>
+      <tbody>
+        <tr><td>The idea</td><td>A year is a 4 × 3 block of big month tiles</td><td>Months run down, years or measures run across</td><td>Twelve small squares per row, the figure shows when touched</td><td>A row per month with a bar, the heat shade on the bar</td></tr>
+        <tr><td>Amounts visible</td><td>All, inside the tile</td><td>All, inside the cell</td><td>One at a time (tap), the colour carries the rest</td><td>All, beside the bar</td></tr>
+        <tr><td>Overview, all five at once</td><td>No: one measure at a time, chips switch</td><td>Yes: five columns, months down</td><td>Yes: five rows of twelve, one screen</td><td>Yes as five thin bars per month; amounts on tap</td></tr>
+        <tr><td>Scrolls</td><td>Down only</td><td>Down only</td><td>Not at all (a screen high)</td><td>Down only</td></tr>
+        <tr><td>Past a year</td><td>Older years fold into a one-line strip</td><td>Years are columns (up to four)</td><td>A row per year, same as today</td><td>Year chips, one year at a time</td></tr>
+        <tr><td>What changes for you</td><td>The layout, and one measure at a time</td><td>Only the direction. Nothing else to relearn</td><td>The way you read it: colour first, number on tap</td><td>It becomes a bar list, less a heatmap</td></tr>
+      </tbody>
+    </table>
+    <p class="foot" style="margin-top:10px"><b style="color:var(--fg)">My lean:</b> <span class="pick">B</span> as the default on every dashboard (it is the same heatmap turned, nothing is lost, and it is the only one that keeps all five Overview measures and all the figures at once), with <span class="pick">C</span> as the bolder pick if you would rather see a whole year at a glance. Your call, they are mock-ups.</p>
+  </section>
+
+  <div id="boards"></div>
+
+  <section class="panel two" style="margin-top:56px">
+    <div>
+      <h3>Where this applies</h3>
+      <ul class="tight">
+        <li><b>Cards</b> and <b>Income</b> share one heatmap (<code>SpendHeatmap</code>), so one pick covers both. Income's months still to come keep showing what is <i>expected</i> (the upcoming cell can hold a figure; A and B show it, C shows it in the readout).</li>
+        <li><b>Overview</b> "Month by month" uses the same cell and the same table; it is the one with five rows.</li>
+        <li><b>Subscriptions</b> day by day already has its own phone layout under 640 px, so it is left alone.</li>
+        <li>On a laptop nothing changes: this is only below the phone breakpoint.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Questions for you</h3>
+      <ul class="tight">
+        <li>On a phone, newest year first (as drawn) or oldest first like the laptop?</li>
+        <li>Is it fine that on a phone the Overview's range past a year stays one measure at a time, as it is today?</li>
+        <li>Year totals: under the row (C), in the year header (A), or the bottom row (B), as drawn. Any you want kept in the same place everywhere?</li>
+        <li>The month card on tap (today's hover card) stays as the tap result in every option; C just puts it in the readout above.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ============ data (made up, except the first months in the screenshots) ============ */
+const MN = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const NOW = '2026-11';
+const key = (y, i) => y + '-' + String(i + 1).padStart(2, '0');
+const compact = n => n >= 1e7 ? '₹' + (n / 1e7).toFixed(1) + 'Cr' : n >= 1e5 ? '₹' + (n / 1e5).toFixed(1) + 'L' : n >= 1e3 ? '₹' + (n / 1e3).toFixed(1) + 'k' : '₹' + Math.round(n);
+const inr = n => '₹' + Math.round(n).toLocaleString('en-IN');
+const heatLevel = (a, max) => (max <= 0 || a <= 0) ? 1 : Math.min(5, Math.max(1, Math.ceil(a / max * 5)));
+function heat(hue) {
+  const sh = [[.95,.03],[.87,.07],[.76,.11],[.6,.12],[.42,.1]];
+  return sh.map(([l, c], i) => `--heat-${i + 1}:oklch(${l} ${c} ${hue});`).join('') + `--heat-ink:oklch(.24 .05 ${hue});--rings-ink:oklch(.42 .1 ${hue});`;
+}
+const N = null;
+const CARDS = { name: 'Spending', hue: 150, good: 'down', data: {
+  2025: [N,N,N,N,N,N,N,41200,52300,63800,47100,58900],
+  2026: [57500,50400,46900,58200,95800,39500,62100,48300,71000,54600,N,N] } };
+const MEAS = {
+  inc:  { name: 'Income', short: 'Income', hue: 150, good: 'up', from: 'oklch(0.42 0.11 155)', to: 'oklch(0.24 0.07 162)', icon: '<path d="M12 4v12m0 0-5-5m5 5 5-5M5 20h14"/>',
+          data: { 2026: [172329,320000,290000,265000,310000,288000,301000,295000,312000,298000,N,N] }, exp: { '2026-12': 300000 } },
+  inv:  { name: 'Investments', short: 'Invest', hue: 258, good: 'up', from: 'oklch(0.32 0.09 258)', to: 'oklch(0.16 0.05 258)', icon: '<path d="m3 17 6-6 4 4 8-8M15 7h6v6"/>',
+          data: { 2026: [N,N,65000,120000,N,90000,150000,N,110000,80000,N,N] } },
+  emi:  { name: 'EMIs', short: 'EMIs', hue: 200, good: 'flat', from: 'oklch(0.32 0.07 200)', to: 'oklch(0.16 0.04 200)', icon: '<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+          data: { 2026: [N,N,N,N,N,N,28400,28400,28400,28400,N,N] } },
+  card: { name: 'Credit card bills', short: 'Cards', hue: 22, good: 'down', from: 'oklch(0.3 0.11 20)', to: 'oklch(0.15 0.07 20)', icon: '<rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/>',
+          data: { 2024: [32000,41000,38500,44200,36800,52000,47300,40100,43900,58300,61200,49800],
+                  2025: [51200,47800,55100,43600,49900,57300,45200,53400,64100,59800,52700,68900],
+                  2026: [60600,50900,46900,58200,95800,39500,62100,48300,71000,54600,N,N] } },
+  cash: { name: 'Cash expenses', short: 'Cash', hue: 50, good: 'down', from: 'oklch(0.33 0.09 50)', to: 'oklch(0.16 0.05 50)', icon: '<rect x="2" y="6" width="20" height="12" rx="3"/><circle cx="12" cy="12" r="2.6"/><path d="M6 12h.01M18 12h.01"/>',
+          data: { 2026: [120000,N,30700,41200,38800,52000,33000,47900,36200,44100,N,N] } },
+};
+const ORDER = ['inc', 'inv', 'emi', 'card', 'cash'];
+const grad = m => `linear-gradient(145deg, ${m.from}, ${m.to})`;
+const svg = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+
+/* one measure over some years: every month with its state, shade and marks, as the app's HeatCell */
+function build(ser, years) {
+  const rows = years.map(y => ser.data[y].map((a, i) => ({ y, i, m: key(y, i), a, exp: (ser.exp || {})[key(y, i)] })));
+  const flat = rows.flat();
+  const vals = flat.filter(c => c.a != null && c.m <= NOW).map(c => c.a);
+  const max = Math.max(...vals);
+  flat.forEach(c => {
+    c.state = c.a != null && c.m <= NOW ? 'data' : c.m > NOW ? 'up' : 'nd';
+    c.level = c.state === 'data' ? heatLevel(c.a, max) : 0;
+    c.pk = c.state === 'data' && c.a === max;
+    c.cur = c.m === NOW;
+  });
+  const avgAll = vals.reduce((s, v) => s + v, 0) / vals.length;
+  const yrs = years.map((y, k) => {
+    const v = rows[k].filter(c => c.state === 'data').map(c => c.a);
+    const total = v.reduce((s, x) => s + x, 0);
+    return { y, cells: rows[k], total, months: v.length, avg: v.length ? total / v.length : 0 };
+  });
+  return { ser, years: yrs, max, avgAll, cells: flat };
+}
+const cls = c => (c.state === 'data' ? 'lv' + c.level : c.state) + (c.cur ? ' cur' : '');
+
+/* ============ shared pieces ============ */
+const legend = () => `<div class="legend" aria-hidden="true"><span><i class="sw nd"></i>No data</span><span><i class="sw up"></i>Upcoming</span><span class="grad">Low ${[1,2,3,4,5].map(n => `<i style="background:var(--heat-${n})"></i>`).join('')} High</span></div>`;
+const card = (title, sub, body, foot) => `<section class="card"><h4>${title} <span>· ${sub}</span></h4>${legend()}${body}${foot ? `<p class="foot">${foot}</p>` : ''}</section>`;
+const strip = cells => `<span class="strip">${cells.map(c => `<i class="${c.state === 'data' ? 'lv' + c.level : c.state}"></i>`).join('')}</span>`;
+const heading = (eyebrow, h) => `<div><p class="eyebrow-s">${eyebrow}</p><div class="h-s">${h}</div></div>`;
+
+function chips(on, years) {
+  return `<div class="chips">${ORDER.map(k => {
+    const m = MEAS[k], total = (years || [2026]).filter(y => m.data[y]).reduce((s, y) => s + m.data[y].filter((a, i) => a != null && key(y, i) <= NOW).reduce((a, b) => a + b, 0), 0);
+    const isOn = k === on;
+    return `<div class="chip ${isOn ? 'on' : ''}" style="${isOn ? 'background:' + grad(m) : ''}"><span class="bd" style="background:${grad(m)}">${svg(m.icon)}</span><b>${compact(total)}</b></div>`;
+  }).join('')}</div>`;
+}
+const say = (k, extra) => `<p class="say"><i></i><span><b>${MEAS[k].name}</b>, ${extra}</span></p>`;
+const WORD = { inc: 'came in.', inv: 'moved to brokers and new deposits.', emi: 'loan installments paid.', card: 'statements paid that month.', cash: 'cash and UPI, worked out.' };
+
+function phone(label, sub, html) {
+  const f = document.createElement('figure');
+  f.className = 'fig';
+  f.innerHTML = `<div class="phone"><div class="bar"><b>chaiCoffeeFund</b><span aria-hidden="true">☰</span></div><div class="screen">${html}</div></div><figcaption><b>${label}</b>${sub}</figcaption>`;
+  return f;
+}
+
+/* ============ A · tiles ============ */
+function tileInner(c) {
+  const mon = `<small>${MN[c.i]}</small>`;
+  if (c.state === 'data') return mon + `<b>${compact(c.a)}</b>` + (c.cur ? '<em>This month</em>' : c.pk ? '<em>Peak</em>' : '');
+  if (c.state === 'up') return mon + (c.exp ? `<b>${compact(c.exp)}</b><em>expected</em>` : '');
+  return mon + '<b>–</b>' + (c.cur ? '<em>This month</em>' : '');
+}
+const yearHead = y => `<div class="yh"><b>${y.y}</b><span>${inr(y.total)} · ${y.months} months · avg ${compact(y.avg)}</span></div>`;
+const tilesGrid = y => `<div class="tiles">${y.cells.map(c => `<div class="cell tile ${cls(c)}">${tileInner(c)}</div>`).join('')}</div>`;
+const accRow = y => `<div class="acc"><span>${y.y}</span>${strip(y.cells)}<span class="t">${compact(y.total)} ▸</span></div>`;
+const tilesBlocks = (b, openFirst = 1) => {
+  const ys = [...b.years].reverse();
+  return ys.map((y, i) => i < openFirst ? yearHead(y) + tilesGrid(y) : accRow(y)).join('');
+};
+const A = {
+  cards: () => card('Spending heatmap', 'All Cards', tilesBlocks(build(CARDS, [2025, 2026])), 'Tap a tile for its month card. Tap a folded year to open it.'),
+  together: () => {
+    const b = build(MEAS.card, [2026]);
+    return heading('Month by month · 2026', 'Where each month&apos;s money went') + chips('card') + say('card', WORD.card + ' Swipe sideways, or tap another, to change measure.')
+      + `<div style="${heat(22)}">` + card('Credit card bills heatmap', '2026', tilesBlocks(b), 'A usual month is taken over the months that have ended.') + '</div>';
+  },
+  long: () => {
+    const b = build(MEAS.card, [2024, 2025, 2026]);
+    return heading('Month by month · Last 3 years', 'Where each month&apos;s money went') + chips('card', [2024, 2025, 2026]) + say('card', WORD.card + ' Over a year, one at a time.')
+      + `<div style="${heat(22)}">` + card('Credit card bills heatmap', 'Last 3 years', tilesBlocks(b)) + '</div>';
+  },
+};
+
+/* ============ B · turned on its side ============ */
+function rotated(cols, dense, withCaps) {
+  // cols: [{head, b, years index}] each a series of 12 cells; rows are months
+  const tpl = `grid-template-columns: 34px repeat(${cols.length}, minmax(0, 1fr))`;
+  const head = `<div></div>` + cols.map(c => `<div class="hd">${c.head}</div>`).join('');
+  const rows = MN.map((mon, i) => {
+    const now = cols[0].cells[i].m.slice(5) === NOW.slice(5);
+    return `<div class="mo ${now ? 'now' : ''}">${mon}</div>` + cols.map(col => {
+      const c = col.cells[i];
+      let inner;
+      if (c.state === 'data') inner = `<span>${compact(c.a)}</span>` + (withCaps && c.cur ? '<em>This month</em>' : withCaps && c.pk ? '<em>Peak</em>' : '') + (!withCaps && c.pk ? '<i class="pkd"></i>' : '');
+      else if (c.state === 'up') inner = c.exp ? `<span>${compact(c.exp)}</span>` + (withCaps ? '<em>expected</em>' : '') : '';
+      else inner = '<span>–</span>' + (withCaps && c.cur ? '<em>This month</em>' : '');
+      return `<div class="cell c ${cls(c)}" style="${col.style || ''}">${inner}</div>`;
+    }).join('');
+  }).join('');
+  const sum = `<div class="sum l">Total</div>` + cols.map(c => `<div class="sum">${compact(c.total)}</div>`).join('')
+    + `<div class="sum l s">Avg</div>` + cols.map(c => `<div class="sum s">${compact(c.avg)}</div>`).join('');
+  return `<div class="rot ${dense ? 'dense' : ''}" style="${tpl}">${head}${rows}${sum}</div>`;
+}
+const yearCols = b => b.years.map(y => ({ head: `<b>${y.y}</b>`, cells: y.cells, total: y.total, avg: y.avg }));
+const B = {
+  cards: () => card('Spending heatmap', 'All Cards', rotated(yearCols(build(CARDS, [2025, 2026])), false, true)),
+  together: () => {
+    const cols = ORDER.map(k => { const m = MEAS[k], b = build(m, [2026]), y = b.years[0];
+      return { head: `<span class="bdg" style="background:${grad(m)}">${svg(m.icon)}</span>${m.short}`, cells: y.cells, total: y.total, avg: y.avg, style: heat(m.hue) }; });
+    return heading('Month by month · 2026', 'Where each month&apos;s money went')
+      + card('Five measures', '2026', rotated(cols, true, false), 'Each column is on its own scale and in its own colour. A dot marks the peak.');
+  },
+  long: () => {
+    const b = build(MEAS.card, [2024, 2025, 2026]);
+    return heading('Month by month · Last 3 years', 'Where each month&apos;s money went') + chips('card', [2024, 2025, 2026]) + say('card', WORD.card)
+      + `<div style="${heat(22)}">` + card('Credit card bills heatmap', 'Last 3 years', rotated(yearCols(b), false, true)) + '</div>';
+  },
+};
+
+/* ============ C · small cells and a readout ============ */
+function vsLine(ser, c, avg) {
+  if (c.state !== 'data' || !avg) return '';
+  const p = Math.round((c.a / avg - 1) * 100);
+  if (Math.abs(p) < 1) return '<div class="vs">about a usual month</div>';
+  const up = p > 0, good = ser.good === 'up' ? up : ser.good === 'down' ? !up : null;
+  return `<div class="vs ${good === null ? '' : good ? 'good' : 'bad'}">${up ? '▲' : '▼'} ${Math.abs(p)}% ${up ? 'above' : 'below'} a usual month of ${inr(avg)}</div>`;
+}
+function monthTitle(m) { return MN[+m.slice(5, 7) - 1] + ' ' + m.slice(0, 4); }
+function roHTML(ctx, m) {
+  const head = (tag) => `<div class="top"><span>${monthTitle(m)}${tag}</span><span class="step"><button type="button" data-step="-1" aria-label="Previous month">‹</button><button type="button" data-step="1" aria-label="Next month">›</button></span></div>`;
+  if (ctx.multi) {
+    const rows = ctx.series.map(s => { const c = s.b.cells.find(x => x.m === m); return { s, c }; });
+    const tag = rows.some(r => r.c && r.c.cur) ? '<span class="pill p2">This month</span>' : '';
+    return head(tag) + `<ul>${rows.map(({ s, c }) => `<li style="${heat(s.ser.hue)}"><i style="background:var(--heat-4)"></i><span>${s.ser.name}</span><b>${c.state === 'data' ? inr(c.a) : c.state === 'up' ? (c.exp ? inr(c.exp) + ' expected' : 'upcoming') : '–'}</b></li>`).join('')}</ul>`;
+  }
+  const b = ctx.series[0].b, c = b.cells.find(x => x.m === m);
+  const tag = c.pk ? '<span class="pill">Peak</span>' : c.cur ? '<span class="pill p2">This month</span>' : '';
+  if (c.state === 'data') return head(tag) + `<div class="big">${inr(c.a)}</div>` + vsLine(b.ser, c, b.avgAll);
+  if (c.state === 'up') return head(tag) + `<div class="big">${c.exp ? inr(c.exp) : 'Upcoming'}</div><div class="vs">${c.exp ? 'expected, from what is scheduled' : 'nothing scheduled yet'}</div>`;
+  return head(tag) + `<div class="big" style="color:var(--muted)">–</div><div class="vs">${ctx.noData}${c.cur ? ' yet, this month' : ''}</div>`;
+}
+function gridC(ctx) {
+  const lead = ctx.multi ? '28px' : '30px';
+  const tpl = `grid-template-columns: ${lead} repeat(12, minmax(0, 1fr))`;
+  const letters = `<div></div>` + MN.map((m, i) => `<div class="lt" data-i="${i}">${m[0]}</div>`).join('');
+  let body = '';
+  if (ctx.multi) {
+    body = ctx.series.map(s => { const y = s.b.years[0];
+      return `<div class="rl" style="${heat(s.ser.hue)}"><span class="bdg" style="background:${grad(s.ser)}">${svg(s.ser.icon)}</span></div>` + y.cells.map(c => `<div class="cell m ${cls(c)}" style="${heat(s.ser.hue)}" data-m="${c.m}" data-s="${s.ser.name}">${c.pk ? '<i class="pk"></i>' : ''}</div>`).join(''); }).join('');
+  } else {
+    const b = ctx.series[0].b;
+    body = [...b.years].reverse().map(y => `<div class="rl">${y.y}</div>` + y.cells.map(c => `<div class="cell m ${cls(c)}" data-m="${c.m}">${c.pk ? '<i class="pk"></i>' : ''}</div>`).join('')
+      + `<div class="ys">${inr(y.total)} · avg ${compact(y.avg)}</div>`).join('<div class="gap"></div>');
+  }
+  return `<div class="mgrid" style="${tpl}">${letters}${body}</div>`;
+}
+function mountC(f, ctx) {
+  const ro = f.querySelector('.ro'), cells = [...f.querySelectorAll('.m')];
+  const months = [...new Set(cells.map(c => c.dataset.m))].sort();
+  let cur = ctx.start;
+  const show = m => {
+    cur = m;
+    cells.forEach(c => c.classList.toggle('sel', c.dataset.m === m));
+    const mi = String(+m.slice(5, 7) - 1);
+    f.querySelectorAll('.lt').forEach(l => l.classList.toggle('on', l.dataset.i === mi));
+    ro.innerHTML = roHTML(ctx, m);
+  };
+  ro.addEventListener('click', e => { const b = e.target.closest('[data-step]'); if (b) { const k = months.indexOf(cur) + (+b.dataset.step); if (months[k]) show(months[k]); } });
+  const grid = f.querySelector('.mgrid');
+  const pick = e => { const el = document.elementFromPoint(e.clientX, e.clientY)?.closest('.m'); if (el && f.contains(el)) show(el.dataset.m); };
+  let down = false;
+  grid.addEventListener('pointerdown', e => { down = true; pick(e); });
+  grid.addEventListener('pointermove', e => { if (down) pick(e); });
+  addEventListener('pointerup', () => { down = false; });
+  show(ctx.start);
+}
+function cFig(label, sub, pre, mk, ctx) {
+  const f = phone(label, sub, pre + mk());
+  mountC(f, ctx);
+  return f;
+}
+const C = {
+  cards: () => {
+    const b = build(CARDS, [2025, 2026]), ctx = { series: [{ ser: CARDS, b }], multi: false, start: b.cells.find(c => c.pk).m, noData: 'No statements' };
+    return [ctx, () => card('Spending heatmap', 'All Cards', `<div class="ro" aria-live="polite"></div>${gridC(ctx)}`, 'Touch a cell, step with ‹ ›, or slide across. The dot marks the peak.')];
+  },
+  together: () => {
+    const series = ORDER.map(k => ({ ser: MEAS[k], b: build(MEAS[k], [2026]) }));
+    const ctx = { series, multi: true, start: '2026-05', noData: 'Nothing' };
+    return [ctx, () => card('Five measures', '2026', `<div class="ro" aria-live="polite"></div>${gridC(ctx)}`, 'Touch a month and all five show in the readout. Each row is on its own scale and in its own colour.')];
+  },
+  long: () => {
+    const b = build(MEAS.card, [2024, 2025, 2026]), ctx = { series: [{ ser: MEAS.card, b }], multi: false, start: b.cells.find(c => c.pk).m, noData: 'Nothing' };
+    return [ctx, () => `<div style="${heat(22)}">` + card('Credit card bills heatmap', 'Last 3 years', `<div class="ro" aria-live="polite"></div>${gridC(ctx)}`) + '</div>'];
+  },
+};
+
+/* ============ D · a ledger ============ */
+function ledgerRows(y, max) {
+  return y.cells.map(c => {
+    const mo = `<span class="mo ${c.cur ? 'now' : ''}">${MN[c.i]}</span>`;
+    let trk, amt;
+    if (c.state === 'data') {
+      trk = `<div class="trk"><div class="bar2 lv${c.level}" style="width:${Math.max(8, c.a / max * 100)}%"><span>${c.pk ? 'Peak' : ''}</span></div></div>`; amt = `<span class="amt">${compact(c.a)}</span>`;
+    } else if (c.state === 'up') { trk = `<div class="trk up">${c.exp ? 'expected' : ''}</div>`; amt = `<span class="amt dim">${c.exp ? compact(c.exp) : ''}</span>`; }
+    else { trk = `<div class="trk nd">${c.cur ? 'This month' : ''}</div>`; amt = `<span class="amt dim">–</span>`; }
+    return `<div class="lr ${c.cur ? 'cur' : ''}">${mo}${trk}${amt}</div>`;
+  }).join('');
+}
+const yearChips = (b, openY) => `<div class="yrs">${[...b.years].reverse().map(y => `<div class="${y.y === openY ? 'on' : ''}">${y.y}<small>${compact(y.total)}</small></div>`).join('')}</div>`;
+const D = {
+  cards: () => {
+    const b = build(CARDS, [2025, 2026]), y = b.years[1];
+    return card('Spending heatmap', 'All Cards', yearChips(b, 2026) + `<div class="led">${ledgerRows(y, b.max)}</div>`, `${y.months} months · ${inr(y.total)} · avg ${compact(y.avg)}`);
+  },
+  together: () => {
+    const bs = ORDER.map(k => ({ ser: MEAS[k], b: build(MEAS[k], [2026]) }));
+    const open = '2026-05';
+    const rows = MN.map((mon, i) => {
+      const m = key(2026, i), now = m === NOW;
+      const bars = bs.map(({ ser, b }) => { const c = b.cells[i];
+        return c.state === 'data' ? `<div class="b lv${c.level}" style="${heat(ser.hue)};width:${Math.max(4, c.a / b.max * 100)}%"></div>` : `<div class="b nb" style="width:${c.state === 'nd' ? 18 : 12}%"></div>`; }).join('');
+      if (m === open) {
+        const list = bs.map(({ ser, b }) => { const c = b.cells[i]; return `<div style="${heat(ser.hue)}"><i style="background:var(--heat-4)"></i><span>${ser.name}</span><b>${c.state === 'data' ? inr(c.a) : '–'}</b></div>`; }).join('');
+        return `<div class="lt2 open"><span class="mo">${mon}</span><div><div class="five">${bars}</div><div class="list">${list}</div></div><span class="chev">▾</span></div>`;
+      }
+      return `<div class="lt2"><span class="mo ${now ? 'now' : ''}">${mon}${now ? '' : ''}</span><div class="five">${bars}</div><span class="chev">▸</span></div>`;
+    }).join('');
+    const key5 = `<div class="legend">${bs.map(({ ser }) => `<span style="${heat(ser.hue)}"><i class="sw" style="background:var(--heat-4)"></i>${ser.short}</span>`).join('')}</div>`;
+    return heading('Month by month · 2026', 'Where each month&apos;s money went')
+      + `<section class="card"><h4>Five measures <span>· 2026</span></h4>${key5}<div>${rows}</div><p class="foot">Five thin bars a month, each on its own scale. Tap a month to open its figures.</p></section>`;
+  },
+  long: () => {
+    const b = build(MEAS.card, [2024, 2025, 2026]), y = b.years[2];
+    return heading('Month by month · Last 3 years', 'Where each month&apos;s money went') + chips('card', [2024, 2025, 2026]) + say('card', WORD.card)
+      + `<div style="${heat(22)}">` + card('Credit card bills heatmap', 'Last 3 years', yearChips(b, 2026) + `<div class="led">${ledgerRows(y, b.max)}</div>`, `${y.months} months · ${inr(y.total)} · avg ${compact(y.avg)}`) + '</div>';
+  },
+};
+
+/* ============ the boards ============ */
+const BOARDS = [
+  { id: 'A', name: 'Tiles', tag: 'A year becomes a 4 × 3 block of big month tiles, so every figure is readable at a glance and nothing is squeezed.',
+    why: ['Tiles are 70 px wide, nearly the size they are on a laptop.', 'Older years fold into a one-line strip with a total, so a long history is short.', 'Newest year first on a phone.'],
+    cost: ['The Overview cannot show all five at once (it is already one-at-a-time past a year): chips pick the measure.', 'Reading a whole year across means reading three rows of four.'],
+    figs: A, kind: 'plain' },
+  { id: 'B', name: 'On its side', tag: 'The same heatmap, turned: months run down the screen, years (or the five measures) run across. A phone is tall, so scrolling down is natural and sideways is gone.',
+    why: ['Nothing is lost: every figure, shade, stripe, ring and mark stays, in the same colours.', 'The Overview keeps all five measures side by side for a year, the thing the Overview widget is for.', 'Totals and the average sit at the foot of each column.'],
+    cost: ['A year is 12 rows tall (about 530 px on Cards).', 'Past three or four years the columns get narrow, so it stays one measure at a time there too.'],
+    figs: B, kind: 'plain' },
+  { id: 'C', name: 'Small cells + readout', tag: 'Twelve small squares per year, shaded as today; the figure shows in a readout above when you touch a month. A year at a glance, no scrolling at all.',
+    why: ['The Overview is five rows of twelve: one screen, and the months line up exactly.', 'The readout is the month card, so a tap gives the full month including all five measures at once.', 'Slide a finger across to scrub month by month, or step with ‹ ›.'],
+    cost: ['Cells are about 21 px: colour says how big, the number needs a touch.', 'The most different from today: it reads like a heat strip, not a table of figures.'],
+    figs: C, kind: 'live' },
+  { id: 'D', name: 'Ledger', tag: 'A row per month with a bar the length of the amount and the heat shade on it. The most readable for numbers, the least like a heatmap.',
+    why: ['Easiest to compare by length; the figure is right there.', 'Year chips switch years; the Overview shows five thin bars per month and opens one to list the five figures.'],
+    cost: ['One year at a time (or a measure at a time).', 'The shade is now a second signal beside the length, so it adds less.'],
+    figs: D, kind: 'plain' },
+];
+const boardsEl = document.getElementById('boards');
+BOARDS.forEach(bd => {
+  const sec = document.createElement('section');
+  sec.className = 'board';
+  sec.innerHTML = `<header><h2><span class="letter">${bd.id}</span>${bd.name}</h2></header><p class="tag">${bd.tag}</p>
+    <div class="how"><div><h4>How it works</h4><ul>${bd.why.map(t => `<li>${t}</li>`).join('')}</ul></div><div><h4>What it costs</h4><ul>${bd.cost.map(t => `<li>${t}</li>`).join('')}</ul></div></div>
+    <div class="figs"></div>`;
+  const figs = sec.querySelector('.figs');
+  const specs = [['cards', 'Cards and Income', 'Spending by month, two years. Income is the same with its own words and an expected figure for months to come.'], ['together', 'Overview, all five', 'Month by month for 2026: income, investments, EMIs, credit card bills, cash.'], ['long', 'Overview, past a year', 'One measure over three years, as it works today past a year.']];
+  specs.forEach(([k, label, sub]) => {
+    if (bd.kind === 'live') { const [ctx, mk] = bd.figs[k](); figs.append(cFig(label, sub, k === 'together' ? heading('Month by month · 2026', 'Where each month&apos;s money went') : k === 'long' ? heading('Month by month · Last 3 years', 'Where each month&apos;s money went') + chips('card', [2024, 2025, 2026]) + say('card', WORD.card) : '', mk, ctx)); }
+    else figs.append(phone(label, sub, bd.figs[k]()));
+  });
+  boardsEl.append(sec);
+});
+
+/* phone width */
+document.querySelectorAll('.player button').forEach(b => b.addEventListener('click', () => {
+  document.documentElement.style.setProperty('--pw', b.dataset.w + 'px');
+  document.querySelectorAll('.player button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+}));
+</script>
+</body>
+</html>
