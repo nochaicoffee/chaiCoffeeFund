@@ -299,8 +299,8 @@
 
   /* the hover card: one for every bar that has a data-tip */
   [data-tip] { --tl: 50%; --tx: -50%; }
-  [data-tip]::after { content: attr(data-tip); position: absolute; z-index: 40; left: var(--tl); bottom: calc(var(--h, 100%) + 9px); transform: translate(var(--tx), 5px); padding: 6px 11px; border-radius: 10px; background: var(--ink); color: var(--on-ink); font-size: 11.5px; font-weight: 700; font-style: normal; line-height: 1.35; letter-spacing: 0; text-transform: none; white-space: nowrap; box-shadow: var(--pop-shadow); opacity: 0; pointer-events: none; transition: opacity 0.14s, transform 0.14s; }
-  [data-tip]:hover::after, [data-tip]:focus::after { opacity: 1; transform: translate(var(--tx), 0); }
+  [data-tip]::after { content: attr(data-tip); position: absolute; z-index: 40; left: var(--tl); bottom: calc(var(--h, 100%) + 9px); transform: translate(calc(var(--tx) + var(--dx, 0px)), 5px); padding: 6px 11px; border-radius: 10px; background: var(--ink); color: var(--on-ink); font-size: 11.5px; font-weight: 700; font-style: normal; line-height: 1.35; letter-spacing: 0; text-transform: none; box-sizing: border-box; width: max-content; max-width: 260px; box-shadow: var(--pop-shadow); opacity: 0; pointer-events: none; transition: opacity 0.14s, transform 0.14s; }
+  [data-tip]:hover::after, [data-tip]:focus::after { opacity: 1; transform: translate(calc(var(--tx) + var(--dx, 0px)), 0); }
   .mb-c:first-child, .wd:first-child .wd-b, .pl:first-child, .sp2-b i:first-child { --tl: 0%; --tx: 0%; }
   .mb-c:last-child, .wd:last-child .wd-b, .pl:last-child, .sp2-b i:last-child:not(:only-child) { --tl: 100%; --tx: -100%; }
   /* the month rows' parts and the category bars open the card where the pointer is, not above the whole row */
