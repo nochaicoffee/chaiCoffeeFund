@@ -166,6 +166,30 @@ describe("the widgets", () => {
   });
 });
 
+describe("the bars' hover cards", () => {
+  const model = dailyModel(base);
+  it("each day of the week says its date and what was spent, and a day to come says so", () => {
+    const week = nowWidgets(model)![1].visual;
+    if (week.kind !== "week") throw new Error("the week draws days");
+    expect(week.days.map((d) => d.tip)).toEqual(["Mon, Nov 16 · ₹110", "Tue, Nov 17 · ₹620", "Wed, Nov 18 · ₹150", "Thu, Nov 19 · to come", "Fri, Nov 20 · to come", "Sat, Nov 21 · to come", "Sun, Nov 22 · to come"]);
+  });
+  it("a part of the stacked bars says what it is, and agrees with its legend entry", () => {
+    const top = periodWidgets(model).find((x) => x.key === "top")!.visual;
+    if (top.kind !== "stack") throw new Error("Top category draws a stack");
+    for (const l of top.legend) expect(top.segments.find((s) => s.name === l.name)!.tip).toContain(l.percent);
+    expect(top.segments[0].tip).toMatch(/^Shopping · ₹6,298 · 30%$/);
+  });
+  it("the columns, the pills and the month rows carry their figures too", () => {
+    const ws = periodWidgets(model);
+    const spent = ws[0].visual;
+    if (spent.kind !== "columns") throw new Error("a year draws columns");
+    expect(spent.bars[10].tip).toBe("November · ₹20,982");
+    expect(spent.bars[11].tip).toBe("December · to come");
+    expect(monthsView(model).rows[10].tips).toEqual({ upi: "UPI · ₹6,335", card: "Credit card · ₹14,647", cash: "Cash · ₹0" });
+    expect(whereView(model).rows[0].tip).toBe("Shopping · ₹6,298 · 30% of the year");
+  });
+});
+
 describe("where it went, and month by month", () => {
   it("where: the period's categories biggest first, with the colour each has, by name", () => {
     const w = whereView(dailyModel(base));

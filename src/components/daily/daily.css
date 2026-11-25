@@ -7,6 +7,11 @@
   /* the hero's colour; the budget strip under it wears the same */
   --dy-hero-bg: linear-gradient(155deg, oklch(0.32 0.07 205), oklch(0.17 0.04 218));
   --dy-edge: var(--accent-edge, oklch(0.72 0.19 145 / 0.45));
+  /* the bars' texture (round 7, at the foot of this file) */
+  --tx-sheen: radial-gradient(circle at 90% 6%, oklch(1 0 0 / 0.32), transparent 55%);
+  --tx-rings: repeating-radial-gradient(circle at calc(100% + 10px) calc(100% + 12px), transparent 0 9px, oklch(1 0 0 / 0.24) 9px 10px);
+  --tx-hatch: repeating-linear-gradient(135deg, var(--fill-strong) 0 4px, transparent 4px 9px);
+  --gl-ring: color-mix(in oklch, var(--accent) 15%, transparent);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -250,3 +255,78 @@
   .dy .srch { min-width: 0; flex: 1 1 100%; } .dy .tb-sp { display: none; }
 }
 .dy a.lm-r { color: inherit; text-decoration: none; border-radius: 14px; } .dy a.lm-r:hover { background: var(--fill); } .dy a.lm-r:focus-visible { outline: 2px solid var(--accent); }
+
+@keyframes dy-up { from { transform: scaleY(0); } }
+@keyframes dy-right { from { transform: scaleX(0); } }
+@keyframes dy-pop { from { opacity: 0; transform: translateY(6px) scale(0.9); } }
+/*
+ * Round 7: texture, hover cards and motion on the widgets. The bars wear the app's ring texture (a sheen at the top right and faint rings running off the
+ * bottom right, as the Cards trend and the Subscriptions bars do); every bar says what it is when pointed at, tapped or tabbed to; the cards lift; the bars
+ * grow in once, staggered (and again when the period changes, since that redraws the picture).
+ */
+.dy {
+
+  /* the texture, on every filled bar */
+  .gl-bar i:is(*, .warn, .neg), .mb-plot i:not(.fut), .wd:not(.fut) i, .sp2-b i, .ww-bar span, .mo-bar > span, .lm-bar i, .bs-bar:is(*, .warn, .neg) i { background-image: var(--tx-sheen), var(--tx-rings); }
+  /* a day or month still to come is hatched, not filled */
+  .mb-plot i.fut, .wd.fut i { background-color: transparent; background-image: var(--tx-hatch); box-shadow: inset 0 0 0 1px var(--fill-strong); }
+  /* the calendar's darker days carry it too */
+  .cd.lv2, .cd.lv3, .cd.lv4 { background-image: repeating-radial-gradient(circle at calc(100% + 8px) calc(100% + 10px), transparent 0 11px, oklch(1 0 0 / 0.13) 11px 12px); }
+
+  /* a bar made of parts: no clipping, so the hover cards can open past it */
+  .sp2-b { overflow: visible; } .sp2-b i { position: relative; transform-origin: left center; transition: opacity 0.18s, height 0.18s, margin 0.18s, filter 0.18s, box-shadow 0.18s; outline: 0; } .sp2-b i:first-child { border-radius: 999px 0 0 999px; } .sp2-b i:last-child { border-radius: 0 999px 999px 0; } .sp2-b i:only-child { border-radius: 999px; }
+  /* the lifted part grows taller by its height, not a transform: its hover card is inside it and would be stretched with it */
+  .sp2-b i.act { height: calc(100% + 8px); margin-block: -4px; filter: brightness(1.1); z-index: 2; box-shadow: 0 3px 10px oklch(0 0 0 / 0.22); }
+  .sp2.has-active .sp2-b i:not(.act) { opacity: 0.42; }
+  .sp2-l span { cursor: default; padding: 3px 9px; margin: -3px -9px -3px 0; border-radius: 999px; transition: background-color 0.15s, opacity 0.15s; outline: 0; } .sp2-l span.act { background: var(--fill); color: var(--fg); } .sp2.has-active .sp2-l span:not(.act) { opacity: 0.5; }
+  .sp2-l span:focus-visible { box-shadow: 0 0 0 2px var(--accent); }
+  .ww-bar { overflow: visible; }
+
+  /* columns: a full-height slot per bar, so a short bar is as easy to point at as a tall one */
+  .mb-plot { align-items: stretch; } .mb-plot u { pointer-events: none; }
+  .mb-c { position: relative; flex: 1; min-width: 2px; display: flex; align-items: flex-end; outline: 0; } .mb-c i { flex: none; width: 100%; transform-origin: bottom; transition: opacity 0.15s, filter 0.15s; }
+  .wd-b { position: relative; display: flex; align-items: flex-end; outline: 0; } .wd i { width: 100%; transform-origin: bottom; transition: opacity 0.15s, filter 0.15s; }
+  .mb-plot:hover .mb-c:not(:hover) i, .wdays:hover .wd-b:not(:hover) i { opacity: 0.55; }
+  .mb-c:hover i, .mb-c:focus-visible i, .wd-b:hover i, .wd-b:focus-visible i { filter: brightness(1.12) saturate(1.15); }
+  .mb-c:focus-visible, .wd-b:focus-visible, .pl:focus-visible, .gl-bar:focus-visible, .sp2-b i:focus-visible { box-shadow: 0 0 0 2px var(--accent); border-radius: 4px; }
+  .pl { position: relative; cursor: default; transition: transform 0.15s, filter 0.15s; outline: 0; } .pl:hover { transform: translateY(-2px); filter: brightness(1.05); }
+  .gl-bar { transition: height 0.18s; outline: 0; } .gl-bar:hover, .gl-bar:focus-visible { height: 12px; }
+  .gl-bar i { transform-origin: left center; }
+
+  /* the hover card: one for every bar that has a data-tip */
+  [data-tip] { --tl: 50%; --tx: -50%; }
+  [data-tip]::after { content: attr(data-tip); position: absolute; z-index: 40; left: var(--tl); bottom: calc(var(--h, 100%) + 9px); transform: translate(var(--tx), 5px); padding: 6px 11px; border-radius: 10px; background: var(--ink); color: var(--on-ink); font-size: 11.5px; font-weight: 700; font-style: normal; line-height: 1.35; letter-spacing: 0; text-transform: none; white-space: nowrap; box-shadow: var(--pop-shadow); opacity: 0; pointer-events: none; transition: opacity 0.14s, transform 0.14s; }
+  [data-tip]:hover::after, [data-tip]:focus::after { opacity: 1; transform: translate(var(--tx), 0); }
+  .mb-c:first-child, .wd:first-child .wd-b, .pl:first-child, .sp2-b i:first-child { --tl: 0%; --tx: 0%; }
+  .mb-c:last-child, .wd:last-child .wd-b, .pl:last-child, .sp2-b i:last-child:not(:only-child) { --tl: 100%; --tx: -100%; }
+  /* the month rows' parts and the category bars open the card where the pointer is, not above the whole row */
+  .mo-bar > span, .ww-bar span { position: relative; }
+
+  /* the cards: lift on pointing, rings in the corner that spread */
+  .gl { isolation: isolate; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; }
+  .gl::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; transform-origin: 100% 0; transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); background: repeating-radial-gradient(circle at 108% -8%, transparent 0 17px, var(--gl-ring) 17px 18px); -webkit-mask-image: radial-gradient(circle at 100% 0, #000, transparent 62%); mask-image: radial-gradient(circle at 100% 0, #000, transparent 62%); }
+  .gl:hover, .gl:focus-within { z-index: 6; transform: translateY(-3px); border-color: color-mix(in oklch, var(--accent) 38%, var(--surface-line)); box-shadow: 0 1px 2px oklch(0 0 0 / 0.05), 0 18px 34px oklch(0 0 0 / 0.11); }
+  .gl:hover::before, .gl:focus-within::before { transform: scale(1.14); }
+  .bl-r { padding: 3px 6px; margin: 0 -6px; border-radius: 10px; transition: background-color 0.15s; } .bl-r:hover { background: var(--fill); }
+  .h4-pill { transition: transform 0.15s; } .h4-pill:hover { transform: translateY(-2px); }
+  .cd { transition: transform 0.15s, filter 0.15s, box-shadow 0.15s; } .cd:not(.blank):not(.future):hover { transform: translateY(-3px); filter: brightness(1.18); }
+
+  /* Where it went and Month by month */
+  .ww-r { padding: 5px 10px; margin: -5px -10px; border-radius: 14px; transition: background-color 0.15s, opacity 0.18s; } .ww-r:hover { background: var(--fill); }
+  .ww:has(.ww-r:hover) .ww-r:not(:hover) { opacity: 0.55; }
+  .ww-bar { transition: height 0.18s; } .ww-r:hover .ww-bar { height: 15px; } .ww-r:hover .ww-bar span { filter: brightness(1.1) saturate(1.1); }
+  .mo-bar { transition: height 0.18s; } .my-r:hover .mo-bar { height: 15px; } .my-r:hover .mo-bar > span { filter: brightness(1.1) saturate(1.1); }
+  .my-r { transition: background-color 0.15s; }
+  .lm-r { transition: background-color 0.15s; } .lm-r:hover { background: var(--fill); border-radius: 12px; }
+  .lm-bar { transition: height 0.18s; } .lm-r:hover .lm-bar { height: 14px; }
+
+  /* the grow-in: columns up from the floor, everything else out from the left */
+  .mb-c i, .wd-b i { animation: dy-up 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; animation-delay: calc(var(--i, 0) * 22ms); }
+  .gl-bar i, .sp2-b i, .ww-bar span, .lm-bar i, .bs-bar i { animation: dy-right 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; animation-delay: calc(var(--i, 0) * 60ms); }
+  .mo-bar > span { transform-origin: left center; animation: dy-right 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
+  .mo-bar > span:nth-child(2) { animation-delay: 0.08s; } .mo-bar > span:nth-child(3) { animation-delay: 0.16s; }
+  .pl { animation: dy-pop 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; animation-delay: calc(var(--i, 0) * 30ms); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dy *, .dy *::before, .dy *::after { animation: none !important; transition: none !important; }
+}
