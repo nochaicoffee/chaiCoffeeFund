@@ -33,7 +33,7 @@ export function DailyBody() {
               <small>this month, and it stays put when you change the period</small>
             </div>
           </div>
-          <Widgets widgets={v.now} />
+          <Widgets widgets={v.now} four />
         </>
       )}
       <NeedsLook view={v.limits} />

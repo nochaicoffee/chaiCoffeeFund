@@ -124,7 +124,28 @@ describe("the widgets", () => {
     expect(week.visual.kind === "week" && week.visual.days.map((d) => d.label).join("")).toBe("MTWTFSS");
     expect(track).toMatchObject({ title: "On track to end at", value: "₹34,970", sub: "₹4,970 over your ₹30,000", valueTone: "warn" });
   });
-  it("Right now is left out without a limit, since all three are about it", () => {
+  it("Right now has a fourth, the average a day against the limit spread over the month, so a phone's two columns end level", () => {
+    const ws = nowWidgets(model)!;
+    expect(ws).toHaveLength(4);
+    // 18 days counted, ₹20,982 spent: ₹1,165.67 a day against ₹30,000 ÷ 30 = ₹1,000.
+    expect(ws[3]).toMatchObject({ key: "per-day", title: "A day, on average", tag: "Now", value: "₹1,166", valueTone: "warn", sub: "₹1,000 a day if the limit is spread over the month" });
+    const v = ws[3].visual;
+    expect(v.kind === "track" && v.tone).toBe("warn");
+    expect(v.kind === "track" && v.tick).toBeCloseTo(1000 / (1165.67 * 1.4), 3);
+    expect(v.kind === "track" && v.fraction).toBeCloseTo(1 / 1.4, 3);
+  });
+  it("the average a day is calm under the allowance, and amber over it even when both round alike", () => {
+    const under = nowWidgets(dailyModel({ ...base, spends: [spend("2026-11-18", 500, "UPI", "food")] }))![3];
+    expect(under).toMatchObject({ value: "₹500" });
+    expect(under.valueTone).toBeUndefined();
+    const edge = nowWidgets(dailyModel({ ...base, spends: [spend("2026-11-18", 1000.4, "UPI", "food")] }))![3];
+    expect(edge).toMatchObject({ value: "₹1,000", valueTone: "warn" });
+  });
+  it("the average a day waits for a counted day", () => {
+    const none = nowWidgets(dailyModel({ ...base, spends: [] }));
+    expect(none === null || (none[3].value === "—" && none[3].sub === "Nothing written down yet")).toBe(true);
+  });
+  it("Right now is left out without a limit, since all four are about it", () => {
     expect(nowWidgets(dailyModel({ ...base, budgets: [] }))).toBeNull();
   });
   it("shows today as past its allowance, in red, when it is", () => {

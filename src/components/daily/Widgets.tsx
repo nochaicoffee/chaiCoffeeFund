@@ -108,8 +108,9 @@ export function Widget({ w }: { w: WidgetView }) {
   );
 }
 
-export const Widgets = ({ widgets }: { widgets: WidgetView[] }) => (
-  <div className="glance">
+/** `four` lays the row out four across on a desktop (Right now); the others take three. */
+export const Widgets = ({ widgets, four = false }: { widgets: WidgetView[]; four?: boolean }) => (
+  <div className={`glance${four ? " four" : ""}`}>
     {widgets.map((w) => (
       <Widget key={w.key} w={w} />
     ))}
