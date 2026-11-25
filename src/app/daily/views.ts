@@ -345,7 +345,7 @@ export interface WidgetView {
   visual: WidgetVisual;
 }
 
-/** The three about right now (this month): they stay put when the period changes. Null without a limit, since all three are about it. */
+/** The four about right now (this month): they stay put when the period changes. Four, so a phone's two columns end level. Null without a limit, since all four are about it. */
 export function nowWidgets(model: DailyModel): WidgetView[] | null {
   const b = model.budget;
   const t = b?.today;
@@ -355,10 +355,17 @@ export function nowWidgets(model: DailyModel): WidgetView[] | null {
   const week = m.weeks.find((x) => x.inProgress);
   const maxDay = Math.max(b.limit / m.length, ...(week?.cells.map((c) => c?.total ?? 0) ?? [0]));
   const scale = b.limit * 1.4;
+  const allowedDay = b.limit / m.length;
+  const allowedShown = Math.round(allowedDay);
+  const perDay = m.daysCounted > 0 ? m.perDay : null;
+  const perDayShown = perDay === null ? null : Math.round(perDay);
+  const dayScale = Math.max(perDay ?? 0, allowedDay) * 1.4;
+  const overDay = perDay !== null && perDay > allowedDay;
   return [
     { key: "left-today", title: "Left today", tag: "Now", isNow: true, value: t.left < 0 ? `−${money(-t.left)}` : money(t.left), valueTone: t.left < 0 ? "neg" : undefined, sub: t.left < 0 ? `past today's ${money(t.allowance)}` : `of ${money(t.allowance)} for today`, visual: { kind: "bar", fraction: t.allowance ? t.spent / t.allowance : 1, tone: t.left < 0 ? "neg" : "ok", tip: `${money(t.spent)} spent of ${money(t.allowance)}` } },
     { key: "week", title: "Week so far", tag: "Now", isNow: true, value: money(w.spent), sub: `${money(Math.max(0, w.share - w.spent))} left of ${money(w.share)} · ${dayRange(w.from, w.to)} ${formatMonthShort(w.to.slice(0, 7))}`, visual: { kind: "week", days: (week?.cells ?? []).map((c, i) => ({ label: "MTWTFSS"[i], height: c && c.elapsed ? Math.max(6, (c.total / maxDay) * 100) : 6, today: c?.date === model.today, future: !c || !c.elapsed, tip: c ? `${formatDayDate(c.date)} · ${c.elapsed ? (c.total ? money(c.total) : "nothing written") : "to come"}` : "" })) } },
     { key: "track", title: "On track to end at", tag: "Now", isNow: true, value: m.pace === null ? "—" : money(m.pace), valueTone: m.pace !== null && m.pace > b.limit ? "warn" : undefined, sub: m.pace === null ? "Nothing written down yet" : m.pace > b.limit ? `${money(m.pace - b.limit)} over your ${money(b.limit)}` : `${money(b.limit - m.pace)} under your ${money(b.limit)}`, visual: { kind: "track", fraction: Math.min(1, (m.pace ?? 0) / scale), tick: b.limit / scale, tone: m.pace !== null && m.pace > b.limit ? "warn" : "ok", tip: m.pace === null ? "Nothing written down yet" : `Heading for ${money(m.pace)} · limit ${money(b.limit)}` } },
+    { key: "per-day", title: "A day, on average", tag: "Now", isNow: true, value: perDayShown === null ? "—" : money(perDayShown), valueTone: overDay ? "warn" : undefined, sub: perDay === null ? "Nothing written down yet" : `${money(allowedShown)} a day if the limit is spread over the month`, visual: { kind: "track", fraction: Math.min(1, (perDay ?? 0) / dayScale), tick: allowedDay / dayScale, tone: overDay ? "warn" : "ok", tip: perDay === null ? "Nothing written down yet" : `${money(perDayShown ?? 0)} a day over ${plural(m.daysCounted, "day")} · ${money(allowedShown)} a day spreads the limit over the month` } },
   ];
 }
 

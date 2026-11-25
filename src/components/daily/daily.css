@@ -193,7 +193,8 @@
   .dy .bstrip { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "lv pill" "mid mid" "rt rt"; padding: 14px 16px; } .dy .bs-rt { flex-direction: row; justify-content: space-between; text-align: left; }
 }
 .dy .glance { display: grid; gap: 16px; grid-template-columns: repeat(3, minmax(0, 1fr)); } .dy .glance.six { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-@media (max-width: 1023px) { .dy .glance, .dy .glance.six { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.dy .glance.four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1023px) { .dy .glance, .dy .glance.six, .dy .glance.four { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
 /* the Often row (one tap adds a regular spend) and the type-ahead under "What it was"; outside .dy so the phone's bar and the sheets get them too */
 .often { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
