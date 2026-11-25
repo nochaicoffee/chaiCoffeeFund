@@ -35,6 +35,7 @@ import { BIG_SPEND_COLUMNS, bigSpendRowSchema } from "@/lib/sheets/bigSpends";
 import { DAILY_SPEND_COLUMNS, dailySpendRowSchema } from "@/lib/sheets/dailySpends";
 import { DAILY_CATEGORY_COLUMNS, dailyCategoryRowSchema } from "@/lib/sheets/dailyCategories";
 import { DAILY_BUDGET_COLUMNS, dailyBudgetRowSchema } from "@/lib/sheets/dailyBudgets";
+import { DAILY_CATEGORY_LIMIT_COLUMNS, dailyCategoryLimitRowSchema } from "@/lib/sheets/dailyCategoryLimits";
 import { columnSpecs, planNewTable, planTableColumns } from "@/lib/sheets/tableColumns";
 
 /** The tabs this can bring in line with their repository. Add one here when its columns change. */
@@ -72,13 +73,14 @@ const TABS = {
   DailySpends: () => columnSpecs(DAILY_SPEND_COLUMNS as string[], dailySpendRowSchema),
   DailyCategories: () => columnSpecs(DAILY_CATEGORY_COLUMNS as string[], dailyCategoryRowSchema),
   DailyBudgets: () => columnSpecs(DAILY_BUDGET_COLUMNS as string[], dailyBudgetRowSchema),
+  DailyCategoryLimits: () => columnSpecs(DAILY_CATEGORY_LIMIT_COLUMNS as string[], dailyCategoryLimitRowSchema),
 };
 
 /** Columns the code keeps as plain text that the Sheet may still have as a dropdown: the dropdown is taken off (planTableColumns). DailySpends.category was a fixed list until categories could be added. */
 const RESET_TO_TEXT: Record<string, string[]> = { DailySpends: ["category"] };
 
 /** Tabs the code needs that may not exist yet: the route creates them, with their Table, when they're missing. Existing tabs are never created over. */
-const CREATABLE = new Set(["HeldMoney", "LentLoans", "LentRepayments", "AccountStatementEmails", "BalanceReviews", "LoanPrepayments", "Policies", "PolicyPayments", "Goals", "GoalContributions", "EpfAccounts", "EpfEntries", "EpfRates", "Instruments", "PriceSnapshots", "InvestmentTargets", "BigSpends", "DailySpends", "DailyCategories", "DailyBudgets", "Transfers"]);
+const CREATABLE = new Set(["HeldMoney", "LentLoans", "LentRepayments", "AccountStatementEmails", "BalanceReviews", "LoanPrepayments", "Policies", "PolicyPayments", "Goals", "GoalContributions", "EpfAccounts", "EpfEntries", "EpfRates", "Instruments", "PriceSnapshots", "InvestmentTargets", "BigSpends", "DailySpends", "DailyCategories", "DailyBudgets", "DailyCategoryLimits", "Transfers"]);
 
 type Plan =
   | { error: string }

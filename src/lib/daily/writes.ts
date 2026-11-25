@@ -1,4 +1,5 @@
-import type { Color, DailyBudget, DailyCategory, DailyCategoryStatus } from "../sheets/types";
+import { categoryLimitFor } from "../aggregate/dailyCategoryLimits";
+import type { Color, DailyBudget, DailyCategory, DailyCategoryLimit, DailyCategoryStatus } from "../sheets/types";
 import { resolveCategories } from "./categories";
 
 /**
@@ -34,4 +35,23 @@ export type LimitWrite = { kind: "update"; id: string; limit: number } | { kind:
 export function planLimit(rows: readonly DailyBudget[], month: string, limit: number): LimitWrite {
   const own = rows.find((r) => r.month === month);
   return own ? { kind: "update", id: own.id, limit } : { kind: "create", month, limit };
+}
+
+export type CategoryLimitWrite = { kind: "update"; id: string; limit: number } | { kind: "create"; category: string; month: string; limit: number };
+
+/**
+ * What saving the category limits for a month should write. `wanted` has a figure per category (a positive limit, or null for no limit); a category not in
+ * it is left alone. A category already at what's wanted writes nothing. Otherwise the category's own row for the month is updated, else one is added:
+ * with the wanted limit, or 0 to take a limit off (no row is ever deleted, so a month before keeps what it had).
+ */
+export function planCategoryLimits(rows: readonly DailyCategoryLimit[], month: string, wanted: Readonly<Record<string, number | null>>): CategoryLimitWrite[] {
+  const writes: CategoryLimitWrite[] = [];
+  for (const [category, want] of Object.entries(wanted)) {
+    const now = categoryLimitFor(rows, category, month);
+    if (want === now) continue;
+    const limit = want ?? 0;
+    const own = rows.find((r) => r.category === category && r.month === month);
+    writes.push(own ? { kind: "update", id: own.id, limit } : { kind: "create", category, month, limit });
+  }
+  return writes;
 }

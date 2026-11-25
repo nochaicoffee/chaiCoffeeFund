@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { readCategoryForm } from "./dailyCategoryForms";
 import { readLimitForm } from "./dailyLimitForms";
 import { readDailySpendForm } from "./dailySpendForms";
+import { readLimitsForm } from "./dailyLimitForms";
 import { resolveCategories } from "../daily/categories";
 
 const today = "2026-11-18";
@@ -58,5 +59,29 @@ describe("readLimitForm", () => {
     expect(readLimitForm({ month: "2026-11", limit: "-5" })).toMatchObject({ ok: false });
     expect(readLimitForm({ month: "2026-11", limit: "99,999,999" })).toMatchObject({ ok: false });
     expect(readLimitForm({ month: "November", limit: "30000" })).toMatchObject({ ok: false, errors: { month: "That isn't a month" } });
+  });
+});
+
+describe("readLimitsForm", () => {
+  const known = ["food", "shopping", "c-1"];
+  const base = { month: "2026-11", limit: "30,000" };
+  it("reads the monthly limit and a figure per category, a blank or 0 meaning none", () => {
+    expect(readLimitsForm({ ...base, "category-limit:food": "6,000", "category-limit:shopping": "", "category-limit:c-1": "0" }, known)).toEqual({ ok: true, input: { month: "2026-11", limit: 30000, categories: { food: 6000, shopping: null, "c-1": null } } });
+  });
+  it("is fine with no category fields at all", () => {
+    expect(readLimitsForm(base, known)).toEqual({ ok: true, input: { month: "2026-11", limit: 30000, categories: {} } });
+  });
+  it("refuses a category limit that isn't an amount, is negative or absurd, or names a category that isn't there, field by field", () => {
+    const r = readLimitsForm({ ...base, "category-limit:food": "lots", "category-limit:shopping": "-5", "category-limit:c-1": "99999999", "category-limit:gone": "100" }, known);
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(Object.keys(r.errors).sort()).toEqual(["category-limit:c-1", "category-limit:food", "category-limit:gone", "category-limit:shopping"]);
+  });
+  it("leaves the monthly limit alone when its box is blank, so category limits can be set without one", () => {
+    expect(readLimitsForm({ month: "2026-11", limit: "", "category-limit:food": "6000" }, known)).toEqual({ ok: true, input: { month: "2026-11", limit: null, categories: { food: 6000 } } });
+  });
+  it("still refuses a monthly limit that isn't an amount or more than ₹0, and a month that isn't one", () => {
+    expect(readLimitsForm({ month: "2026-11", limit: "0" }, known)).toMatchObject({ ok: false, errors: { limit: expect.any(String) } });
+    expect(readLimitsForm({ month: "2026-11", limit: "lots" }, known)).toMatchObject({ ok: false, errors: { limit: expect.any(String) } });
+    expect(readLimitsForm({ month: "Nov", limit: "" }, known)).toMatchObject({ ok: false, errors: { month: expect.any(String) } });
   });
 });

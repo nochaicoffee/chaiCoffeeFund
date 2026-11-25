@@ -934,3 +934,16 @@ export interface DailyBudget {
   month: string;
   limit: number;
 }
+
+/**
+ * A limit for one category (docs/design/daily.md, round 6, L1): the first month it applies to and how much. One row per change, like DailyBudget, per
+ * category; a month uses the latest row at or before it. A limit of 0 means "no limit from this month on", so a limit can be taken off without deleting rows.
+ */
+export interface DailyCategoryLimit {
+  id: string;
+  /** A category's id (lib/daily/categories.ts). */
+  category: string;
+  /** "YYYY-MM": the first month it applies to. */
+  month: string;
+  limit: number;
+}

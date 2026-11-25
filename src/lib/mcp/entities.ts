@@ -12,6 +12,8 @@ import * as dailyCategoriesList from "@/app/api/daily-categories/route";
 import * as dailyCategoriesItem from "@/app/api/daily-categories/[id]/route";
 import * as dailyBudgetsList from "@/app/api/daily-budgets/route";
 import * as dailyBudgetsItem from "@/app/api/daily-budgets/[id]/route";
+import * as dailyCategoryLimitsList from "@/app/api/daily-category-limits/route";
+import * as dailyCategoryLimitsItem from "@/app/api/daily-category-limits/[id]/route";
 import * as cardsList from "@/app/api/cards/route";
 import * as cardsItem from "@/app/api/cards/[id]/route";
 import * as epfAccountsList from "@/app/api/epf-accounts/route";
@@ -66,6 +68,7 @@ import { createBigSpendSchema, updateBigSpendSchema } from "@/lib/sheets/bigSpen
 import { createDailySpendSchema, updateDailySpendSchema } from "@/lib/sheets/dailySpends";
 import { createDailyCategorySchema, updateDailyCategorySchema } from "@/lib/sheets/dailyCategories";
 import { createDailyBudgetSchema, updateDailyBudgetSchema } from "@/lib/sheets/dailyBudgets";
+import { createDailyCategoryLimitSchema, updateDailyCategoryLimitSchema } from "@/lib/sheets/dailyCategoryLimits";
 import { createCardSchema, updateCardSchema } from "@/lib/sheets/cards";
 import { createEpfAccountSchema, updateEpfAccountSchema } from "@/lib/sheets/epfAccounts";
 import { createEpfEntrySchema, updateEpfEntrySchema } from "@/lib/sheets/epfEntries";
@@ -158,6 +161,7 @@ export const MCP_ENTITIES: McpEntity[] = [
   entity("daily_spends", "Daily spends", "An everyday spend written down by hand: the day, the amount, UPI or credit card, and optionally a category (its id, from daily_categories or one of the built-in ids: food, groceries, transport, shopping, bills, health, fun, other) and what it was. A rough diary shown on the Daily page.", dailySpendsList, dailySpendsItem, createDailySpendSchema, updateDailySpendSchema),
   entity("daily_categories", "Daily categories", "A category for the Daily page that was added by hand, or a change to a built-in one (rename, colour, Hidden): builtIn names the built-in id it changes. Nothing is deleted.", dailyCategoriesList, dailyCategoriesItem, createDailyCategorySchema, updateDailyCategorySchema),
   entity("daily_budgets", "Daily limits", "The monthly limit on the Daily page: the first month it applies to and the amount. One row per change; a month uses the latest row at or before it.", dailyBudgetsList, dailyBudgetsItem, createDailyBudgetSchema, updateDailyBudgetSchema),
+  entity("daily_category_limits", "Daily category limits", "A limit for one category on the Daily page: the category's id, the first month it applies to, and the amount (0 means no limit from that month on). One row per change; a month uses the latest row at or before it.", dailyCategoryLimitsList, dailyCategoryLimitsItem, createDailyCategoryLimitSchema, updateDailyCategoryLimitSchema),
   entity("subscriptions", "Subscriptions", "A recurring service (name, cost, billing cycle, renewal date).", subscriptionsList, subscriptionsItem, createSubscriptionSchema, updateSubscriptionSchema),
   entity("subscription_payments", "Subscription payments", "One renewal of a subscription: its date, amount and whether it was paid, skipped or is pending.", subscriptionPaymentsList, subscriptionPaymentsItem, createSubscriptionPaymentSchema, updateSubscriptionPaymentSchema),
   entity("income_sources", "Income sources", "Where money comes from (salary, dividends, rent): its schedule and where it usually lands.", incomeSourcesList, incomeSourcesItem, createIncomeSourceSchema, updateIncomeSourceSchema),

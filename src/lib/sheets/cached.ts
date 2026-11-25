@@ -34,6 +34,7 @@ import { bigSpendsRepository } from "./bigSpends";
 import { dailySpendsRepository } from "./dailySpends";
 import { dailyCategoriesRepository } from "./dailyCategories";
 import { dailyBudgetsRepository } from "./dailyBudgets";
+import { dailyCategoryLimitsRepository } from "./dailyCategoryLimits";
 
 /**
  * Cached reads for every entity, one tag each — used by pages (Server
@@ -85,6 +86,7 @@ export const CACHE_TAGS = {
   dailySpends: "dailySpends",
   dailyCategories: "dailyCategories",
   dailyBudgets: "dailyBudgets",
+  dailyCategoryLimits: "dailyCategoryLimits",
   /** Today's USD to INR, for dollar accounts (lib/prices/usdInr.ts). */
   usdInr: "usdInr",
 } as const;
@@ -245,3 +247,4 @@ export const getCachedDailySpends = cachedList(getCachedDailySpendsTab);
 
 export const getCachedDailyCategoriesTab = cachedTab(dailyCategoriesRepository, CACHE_TAGS.dailyCategories);
 export const getCachedDailyBudgetsTab = cachedTab(dailyBudgetsRepository, CACHE_TAGS.dailyBudgets);
+export const getCachedDailyCategoryLimitsTab = cachedTab(dailyCategoryLimitsRepository, CACHE_TAGS.dailyCategoryLimits);

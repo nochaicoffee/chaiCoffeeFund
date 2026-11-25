@@ -4,7 +4,7 @@
 
 A diary of everyday spending that he writes down by hand, once a day or whenever. He wants a rough picture of a month, split into **UPI** and **credit card**, so he knows where the money is going. No automation, no import, nothing to reconcile.
 
-## Round 6 (2026-11-25): quick entry, cash, category limits, an all-spends page (boards drawn, nothing built, his picks pending)
+## Round 6 (2026-11-25): quick entry, cash, category limits, an all-spends page (he picked Q1+Q2, L1 and G1, all built: PRs #458, #459, #460)
 
 Asked for after a gap review against other daily trackers (Wallet, Spendee, Monefy, Walnut, Fold): build the first three gaps, mock any design change first, and add a separate page of all entries like the other dashboards have. Boards `DyQ*`, `DyL*`, `DyG*` on the three "Round 6" pages of the canvas; generator files `data-r6.mjs`, `parts-r6.mjs`, `designs-r6.mjs`, `css-r6.mjs`. Every figure is made up (the Often list, repeats and category limits are invented; the rest is the existing sample November).
 
@@ -22,6 +22,8 @@ Asked for after a gap review against other daily trackers (Wallet, Spendee, Mone
 | `DyG3` A category's page | Opened from Where it went: this month against the same point last month and the whole month, its limit, the weekday it goes on, a usual spend, then its spends. |
 | `DyG4` No results | A search with nothing found and the filters in force. |
 | `*Phone` | Phone versions: the pinned bar with the Often row, the suggestion sheet, the repeat sheet, limits, the ledger and a category page. |
+
+**Picked 2026-11-25: Q1+Q2, L1, G1.** Built: Cash and the Often row and type-ahead (#458; no "Recent" tab and no hold-to-change, and a spend has to be written the same way twice before it becomes a chip), the limits inside Where it went with Edit limits (#459), and the Ledger at `/daily/entries` (#460; its rows are reached from the limits card and an All spends button). Not built: Q3 Repeats, G2 Table, G3 a category's own page. The questions below were answered by those picks and the defaults drawn.
 
 **Questions for him (defaults drawn):** (1) Q1, Q2 and Q3 aren't exclusive: which to build (default Q1 with Q2's type-ahead, Q3 later)? (2) Should repeats only offer, never write (drawn: offer only)? (3) Category limits can add up to more than the monthly limit; the monthly one still decides the strip and pace (drawn: yes). (4) A category limit carries on to later months until changed, like the monthly one (drawn: yes). (5) L1 or L2 for the limits? (6) G1 Ledger or G2 Table (default G1, as every other page does)? (7) "vs Oct" compares the same days of last month, not a whole month.
 
