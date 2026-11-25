@@ -21,7 +21,8 @@ export interface DailyContext {
   failed: FailedAdd[];
   retry: (id: string) => void;
   dismiss: (id: string) => void;
-  openAdd: (draft?: { date?: string; amount?: string; method?: DailySpendMethod }) => void;
+  /** Open the add sheet. `fromBar` says the draft was carried over from the phone's quick-add bar, which then empties once the spend is added. */
+  openAdd: (draft?: { date?: string; amount?: string; method?: DailySpendMethod; fromBar?: boolean }) => void;
   openEdit: (id: string) => void;
   openManage: () => void;
   openLimit: () => void;
