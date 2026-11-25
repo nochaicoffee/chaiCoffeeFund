@@ -122,3 +122,14 @@ export function futureAt(points: FuturePoint[], start: FutureStart, a: FutureAss
   const still = projectFuture(start, { ...a, returnPct: 0 }, month).at(-1)!;
   return { point, change: point.net - points[0].net, fromGrowth: point.net - still.net, fromEverythingElse: still.net - points[0].net };
 }
+
+/** The month (0 to `months`) under a horizontal position on a chart whose line runs from `left` to `right`: the nearest month, and the end's month beyond either end. */
+export function monthAtX(x: number, left: number, right: number, months = 240): number {
+  if (!(right > left)) return 0;
+  return Math.min(months, Math.max(0, Math.round(((x - left) / (right - left)) * months)));
+}
+
+/** Whichever of the horizons (in years) is nearest a month; the shorter one when a month is halfway between two. */
+export function nearestHorizon(month: number, horizons: number[]): number {
+  return horizons.reduce((best, h) => (Math.abs(h * 12 - month) < Math.abs(best * 12 - month) ? h : best));
+}

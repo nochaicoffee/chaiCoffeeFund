@@ -67,6 +67,15 @@ describe("netWorthView", () => {
     const names = netWorthView(model)!.months.at(-1)!.chips.map((c) => c.name);
     expect(names).toEqual(["Bank and brokers", "Investments", "Home Loan", "Card bills"]);
   });
+  it("gives each chip its part of what is owned, or of what is owed, so its arc in the ring and its readout agree", () => {
+    const month = netWorthView(model)!.months.at(-1)!;
+    for (const owe of [false, true]) {
+      const chips = month.chips.filter((c) => c.owe === owe);
+      expect(chips.every((c) => c.share > 0 && c.share <= 1)).toBe(true);
+      expect(chips.reduce((t, c) => t + c.share, 0)).toBeCloseTo(1, 6);
+      for (const c of chips) expect(c.share).toBeCloseTo(c.amount / (owe ? month.owed : month.owned), 9);
+    }
+  });
   it("is nothing when there is no month with anything owned, and says when prices were missing", () => {
     expect(netWorthView(overviewModel({ ...data, accounts: [], balanceSnapshots: [], trades: [] }, TODAY))).toBeNull();
     expect(netWorthView(overviewModel({ ...data, closes: new Map(), pricesFailed: true }, TODAY))!.note).toContain("cost");

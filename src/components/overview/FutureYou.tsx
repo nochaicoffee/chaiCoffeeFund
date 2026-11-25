@@ -1,13 +1,17 @@
 "use client";
 
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useMemo, useState, useSyncExternalStore, type PointerEvent } from "react";
 import type { FutureView } from "@/app/overview/futureView";
 import { RollingNumber } from "@/components/motion/RollingNumber";
-import { futureAt, futureMilestones, projectFuture, type FutureAssumptions } from "@/lib/aggregate/futureYou";
+import { futureAt, futureMilestones, monthAtX, nearestHorizon, projectFuture, type FutureAssumptions } from "@/lib/aggregate/futureYou";
 import { formatMonthYear } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
+import { RingTexture, RIPPLE_BASE, whiteSheen } from "../RingTexture";
 
 const HORIZONS = [1, 3, 5, 10, 20];
+const SHEEN = whiteSheen("92% 0%");
+/** The rings ripple outward while the chart is scrubbed, as on the Cards heatmap (#104). */
+const RIPPLE = `${RIPPLE_BASE} group-data-scrubbing/future:scale-[1.15]`;
 const STORE = "overview.futureYou.v1";
 const W = 900;
 const H = 300;
@@ -25,7 +29,8 @@ const cr = (v: number) => (v === 0 ? "₹0" : `₹${v / 10_000_000} Cr`);
 /**
  * Future you (docs/design/overview.md, OvT1): what net worth could be in 1 to 20 years if investments earn a rate you set (any rate, by slider or
  * typed) and the amounts you add stay as set. Arithmetic on your records and on numbers you can change; the ones that came from your records say
- * where from, and what you change is remembered on this device.
+ * where from, and what you change is remembered on this device. Move over the chart and a guide follows you with the month, what you'd be
+ * worth then and what you'd still owe (the milestones below move it to their month); click a horizon's dot to jump the answer to it.
  */
 const listeners = new Set<() => void>();
 const subscribe = (cb: () => void) => { listeners.add(cb); window.addEventListener("storage", cb); return () => { listeners.delete(cb); window.removeEventListener("storage", cb); }; };
@@ -44,6 +49,8 @@ export function FutureYou({ view }: { view: FutureView }) {
   }, [saved, view.defaults]);
   // The return's text while it is being typed, so a half-typed "1." isn't snapped back.
   const [draft, setDraft] = useState<string | null>(null);
+  // The month the guide is on while the pointer, or a milestone, is over the chart.
+  const [scrub, setScrub] = useState<number | null>(null);
   const typed = draft ?? String(a.returnPct);
   const change = (patch: Partial<FutureAssumptions>) => writeSaved(JSON.stringify({ ...a, ...patch }));
   const setRate = (value: number) => { setDraft(null); change({ returnPct: Math.min(30, Math.max(0, value)) }); };
@@ -60,9 +67,15 @@ export function FutureYou({ view }: { view: FutureView }) {
   const line = sampled.map((p, i) => `${i ? "L" : "M"}${x(p.month).toFixed(1)},${y(p.net).toFixed(1)}`).join("");
   const owedArea = `M${x(0)},${base}${sampled.map((p) => `L${x(p.month).toFixed(1)},${y(p.owed).toFixed(1)}`).join("")}L${x(240)},${base}Z`;
   const p = at.point;
+  const monthAt = (e: Pick<PointerEvent<SVGSVGElement>, "currentTarget" | "clientX">) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    return monthAtX(((e.clientX - box.left) / box.width) * W, PAD.l, W - PAD.r);
+  };
+  const guide = scrub === null ? null : points[scrub];
 
   return (
-    <section aria-label="Future you" className="grid gap-6 rounded-[26px] p-5 text-on-card md:p-8 xl:grid-cols-[300px_minmax(0,1fr)]" style={{ background: "linear-gradient(140deg, var(--card-teal-from), var(--card-teal-to))" }}>
+    <section aria-label="Future you" data-scrubbing={guide ? "" : undefined} className="group/future relative isolate grid gap-6 overflow-clip rounded-[26px] p-5 text-on-card md:p-8 xl:grid-cols-[300px_minmax(0,1fr)]" style={{ background: "linear-gradient(140deg, var(--card-teal-from), var(--card-teal-to))" }}>
+      <RingTexture width={1300} height={640} dx={40} dy={40} first={60} step={30} stroke="var(--rings-light)" opacity={0.08} sheen={SHEEN} ringsClassName={RIPPLE} />
       <div className="flex flex-col gap-3">
         <div className="text-xs font-extrabold tracking-[0.06em] uppercase opacity-80">Future you</div>
         <h2 className="text-[22px] leading-tight font-extrabold">What you&apos;ll be worth, and when</h2>
@@ -118,7 +131,7 @@ export function FutureYou({ view }: { view: FutureView }) {
           <Tile k="Still owed then" v={p.owed > 0 ? formatInrCompact(p.owed) : "₹0"} s={p.loans > 0 ? "loans and cards" : view.start.cards > 0 ? "loans are gone; cards remain" : "nothing"} />
         </div>
         <div className="rounded-[22px] bg-on-card-fill p-3">
-          <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="img" aria-label={`Net worth over twenty years at ${a.returnPct}% a year`}>
+          <svg viewBox={`0 0 ${W} ${H}`} className="block w-full cursor-crosshair" style={{ touchAction: "pan-y" }} role="img" aria-label={`Net worth over twenty years at ${a.returnPct}% a year`} onPointerMove={(e) => setScrub(monthAt(e))} onPointerDown={(e) => setScrub(monthAt(e))} onPointerLeave={() => setScrub(null)}>
             {Array.from({ length: Math.round(ymax / step) + 1 }, (_, i) => i * step).map((v) => (
               <g key={v}><line x1={PAD.l} x2={W - PAD.r} y1={y(v)} y2={y(v)} stroke="#fff" strokeOpacity={v ? 0.13 : 0.3} strokeDasharray={v ? "3 5" : undefined} /><text x={PAD.l - 8} y={y(v) + 4} textAnchor="end" fontSize={11} fill="#fff" fillOpacity={0.65}>{cr(v)}</text></g>
             ))}
@@ -133,6 +146,21 @@ export function FutureYou({ view }: { view: FutureView }) {
                 {(sel || h === 20) && <text x={x(pt.month) - (h === 20 ? 12 : 0)} y={y(pt.net) - 14} textAnchor={h === 20 ? "end" : "middle"} fontSize={13} fontWeight={800} fill="#fff">{formatInrCompact(pt.net)}</text>}
               </g>
             ); })}
+            {guide && scrub !== null && (() => {
+              const gx = x(guide.month);
+              const left = gx > W * 0.6;
+              const bx = left ? gx - 12 - 150 : gx + 12;
+              return (
+                <g pointerEvents="none" className="motion-safe:animate-tip-in">
+                  <line x1={gx} x2={gx} y1={PAD.t} y2={base} stroke="#fff" strokeOpacity={0.7} />
+                  <circle cx={gx} cy={y(guide.net)} r={6} fill="#fff" stroke="var(--card-teal)" strokeWidth={3.5} />
+                  <rect x={bx} y={PAD.t - 4} width={150} height={58} rx={11} fill="#fff" />
+                  <text x={bx + 12} y={PAD.t + 14} fontSize={11} fontWeight={700} fill="var(--muted)">{monthLabel(view.startMonth, scrub)}</text>
+                  <text x={bx + 12} y={PAD.t + 33} fontSize={16} fontWeight={800} fill="var(--ink)">{formatInrCompact(guide.net)}</text>
+                  <text x={bx + 12} y={PAD.t + 47} fontSize={10.5} fontWeight={600} fill="var(--muted)">{guide.owed > 0 ? `still owed ${formatInrCompact(guide.owed)}` : "nothing owed"}</text>
+                </g>
+              );
+            })()}
           </svg>
           <div className="mt-1 flex flex-wrap gap-x-5 gap-y-1 px-1 text-[11.5px] font-bold opacity-85">
             <span className="inline-flex items-center gap-1.5"><i className="h-2 w-3.5 rounded-[3px] bg-[oklch(0.7_0.18_25_/_0.7)]" />What you owe, shrinking as the loans clear</span>
@@ -141,7 +169,11 @@ export function FutureYou({ view }: { view: FutureView }) {
         </div>
         {marks.length > 0 && (
           <ul className="flex flex-wrap gap-2" aria-label="Milestones">
-            {marks.map((mk) => <li key={`${mk.month}${mk.label}`} className="rounded-full bg-on-card-fill px-3 py-1 text-xs font-bold">{mk.label} · {monthLabel(view.startMonth, mk.month)}</li>)}
+            {marks.map((mk) => (
+              <li key={`${mk.month}${mk.label}`}>
+                <button type="button" onMouseEnter={() => setScrub(mk.month)} onMouseLeave={() => setScrub(null)} onFocus={() => setScrub(mk.month)} onBlur={() => setScrub(null)} onClick={() => setYears(nearestHorizon(mk.month, HORIZONS))} className="cursor-pointer rounded-full bg-on-card-fill px-3 py-1 text-xs font-bold motion-safe:transition-[background,translate] motion-safe:duration-200 hover:-translate-y-0.5 hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-on-card">{mk.label} · {monthLabel(view.startMonth, mk.month)}</button>
+              </li>
+            ))}
           </ul>
         )}
         <span className="sr-only">{formatInr(Math.round(p.net))}</span>

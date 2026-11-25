@@ -1,5 +1,11 @@
 import { ringRadii, type RingSpacing } from "./rings";
 
+/** The rings' ripple: they swell outward from the bottom-right corner. Add the trigger yourself, such as `group-hover/tile:scale-[1.18]`. */
+export const RIPPLE_BASE = "origin-bottom-right motion-safe:transition-transform motion-safe:duration-700 motion-safe:ease-out";
+
+/** A white sheen glowing from a corner of a dark block, for RingTexture's `sheen`. `at` is a CSS position such as "88% 0%". */
+export const whiteSheen = (at: string, alpha = 0.2) => `radial-gradient(circle at ${at}, oklch(1 0 0 / ${alpha}), transparent 55%)`;
+
 /** The design's ring circles alone, for drawing inside an SVG of your own, such as a chart's bars. */
 export function RingCircles({ cx, cy, radii, stroke, opacity = 1 }: { cx: number; cy: number; radii: number[]; stroke: string; opacity?: number }) {
   return (

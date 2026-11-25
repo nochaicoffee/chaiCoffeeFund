@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { DayGroup, EndingView, EventItem, WarningItem } from "@/app/overview/endingView";
 import { formatDayDate } from "@/lib/format/date";
+import { RingTexture } from "../RingTexture";
 
 const DOT = { red: "bg-negative", amber: "bg-warning", info: "bg-muted" } as const;
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -20,7 +21,8 @@ export function Ending({ view }: { view: EndingView }) {
   const [mode, setMode] = useState<"timeline" | "calendar">("timeline");
   const empty = view.now.length === 0 && view.days.length === 0;
   return (
-    <section aria-label="Coming up and keep in mind" className="flex flex-col gap-4 rounded-[26px] bg-fill p-5 md:p-7">
+    <section aria-label="Coming up and keep in mind" className="relative isolate flex flex-col gap-4 overflow-clip rounded-[26px] bg-fill p-5 md:p-7">
+      <RingTexture width={1300} height={640} dx={40} dy={40} first={60} step={30} stroke="var(--rings-ink)" opacity={0.06} />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <div className="text-xs font-bold tracking-[0.04em] text-muted uppercase">At the end</div>
@@ -42,7 +44,7 @@ export function Ending({ view }: { view: EndingView }) {
 
 function Warning({ w }: { w: WarningItem }) {
   return (
-    <div className="flex items-center gap-3 rounded-[16px] border border-surface-line bg-surface px-3.5 py-2.5 shadow-[var(--soft-shadow)]" style={w.tone === "red" ? { boxShadow: "inset 3px 0 0 var(--negative)" } : undefined}>
+    <div className="flex items-center gap-3 rounded-[16px] border border-surface-line bg-surface px-3.5 py-2.5 shadow-[var(--soft-shadow)] motion-safe:transition-[translate,box-shadow] motion-safe:duration-200 hover:-translate-y-px hover:shadow-[var(--card-shadow)]" style={w.tone === "red" ? { boxShadow: "inset 3px 0 0 var(--negative)" } : undefined}>
       <i aria-hidden="true" className={`size-2.5 shrink-0 rounded-full ${DOT[w.tone]}`} />
       <div className="min-w-0 flex-1">
         <b className="block text-[13.5px] font-extrabold">{w.text}</b>
@@ -58,7 +60,7 @@ function Event({ e }: { e: EventItem }) {
   const day = Number(e.date.slice(8, 10));
   const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][Number(e.date.slice(5, 7)) - 1];
   return (
-    <div className={`flex items-center gap-3 rounded-[16px] border border-surface-line bg-surface px-3.5 py-2.5 shadow-[var(--soft-shadow)] ${e.cash ? "" : "opacity-75"}`} style={e.warning?.tone === "red" ? { boxShadow: "inset 3px 0 0 var(--negative)" } : undefined}>
+    <div className={`flex items-center gap-3 rounded-[16px] border border-surface-line bg-surface px-3.5 py-2.5 shadow-[var(--soft-shadow)] motion-safe:transition-[translate,box-shadow] motion-safe:duration-200 hover:-translate-y-px hover:shadow-[var(--card-shadow)] ${e.cash ? "" : "opacity-75"}`} style={e.warning?.tone === "red" ? { boxShadow: "inset 3px 0 0 var(--negative)" } : undefined}>
       <span className="grid w-11 shrink-0 justify-items-center rounded-[12px] bg-fill py-1.5 leading-none"><b className="text-[17px] font-extrabold">{day}</b><small className="text-[10px] font-extrabold tracking-[0.04em] text-muted uppercase">{month}</small></span>
       <div className="min-w-0 flex-1">
         <b className="block text-[13.5px] font-extrabold">{e.label}</b>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { futureAt, futureMilestones, loanBalances, monthlyRate, projectFuture, type FutureAssumptions, type FutureStart } from "./futureYou";
+import { futureAt, futureMilestones, loanBalances, monthAtX, monthlyRate, nearestHorizon, projectFuture, type FutureAssumptions, type FutureStart } from "./futureYou";
 import { generateInstallments } from "../schedule/generateInstallments";
 import type { Loan } from "../sheets/types";
 
@@ -82,5 +82,33 @@ describe("futureAt and milestones", () => {
   it("leaves out a mark already passed today", () => {
     const rich = projectFuture({ ...start, investments: 80_000_000 }, a);
     expect(futureMilestones(rich, start, ["Car loan"]).some((x) => x.label.includes("₹50L"))).toBe(false);
+  });
+});
+
+describe("monthAtX", () => {
+  it("is the nearest month under the position, and the ends beyond them", () => {
+    expect(monthAtX(60, 60, 860)).toBe(0);
+    expect(monthAtX(860, 60, 860)).toBe(240);
+    expect(monthAtX(460, 60, 860)).toBe(120);
+    expect(monthAtX(-50, 60, 860)).toBe(0);
+    expect(monthAtX(5000, 60, 860)).toBe(240);
+    expect(monthAtX(60 + 800 / 240 * 7.4, 60, 860)).toBe(7);
+  });
+  it("is month 0 for a chart with no width", () => {
+    expect(monthAtX(10, 50, 50)).toBe(0);
+  });
+});
+
+describe("nearestHorizon", () => {
+  const horizons = [1, 3, 5, 10, 20];
+  it("picks the horizon nearest the month", () => {
+    expect(nearestHorizon(0, horizons)).toBe(1);
+    expect(nearestHorizon(40, horizons)).toBe(3);
+    expect(nearestHorizon(100, horizons)).toBe(10);
+    expect(nearestHorizon(240, horizons)).toBe(20);
+  });
+  it("takes the shorter horizon when a month is halfway between two", () => {
+    expect(nearestHorizon(24, horizons)).toBe(1);
+    expect(nearestHorizon(90, horizons)).toBe(5);
   });
 });

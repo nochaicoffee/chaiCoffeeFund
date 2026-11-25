@@ -169,7 +169,16 @@ export function greetingView(m: OverviewModel, warnings: OverviewWarning[], rang
 
 // ---------- Net worth ----------
 
-export interface TypeChip { key: string; name: string; amount: number; amountText: string; colorKey: ColorKey; owe: boolean }
+export interface TypeChip {
+  key: string;
+  name: string;
+  amount: number;
+  amountText: string;
+  colorKey: ColorKey;
+  owe: boolean;
+  /** Its part of what is owned (or, for a debt, of what is owed), 0 to 1: the width of its arc in the ring. */
+  share: number;
+}
 export interface MonthView {
   /** "2026-11". */
   key: string;
@@ -194,17 +203,21 @@ export interface NetWorthView {
 const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 
 function chipsFor(p: WorthSeriesPoint): TypeChip[] {
-  const own: TypeChip[] = [
+  const own: Omit<TypeChip, "share">[] = [
     { key: "bank", name: "Bank and brokers", amount: p.bank, amountText: formatInrCompact(p.bank), colorKey: "sapphire", owe: false },
     { key: "invest", name: "Investments", amount: p.investments ?? 0, amountText: formatInrCompact(p.investments ?? 0), colorKey: "indigo", owe: false },
     { key: "fixed", name: "Fixed income", amount: p.fixedIncome, amountText: formatInrCompact(p.fixedIncome), colorKey: "forest", owe: false },
     { key: "lent", name: "Lent out", amount: p.lentOut, amountText: formatInrCompact(p.lentOut), colorKey: "copper", owe: false },
   ];
-  const owe: TypeChip[] = [
+  const owe: Omit<TypeChip, "share">[] = [
     ...p.loans.map((l) => ({ key: `loan-${l.id}`, name: l.name, amount: l.amount, amountText: `−${formatInrCompact(l.amount)}`, colorKey: loanColor({ category: l.category }).toLowerCase() as ColorKey, owe: true })),
     { key: "cards", name: "Card bills", amount: p.cards, amountText: `−${formatInrCompact(p.cards)}`, colorKey: "ruby" as ColorKey, owe: true },
   ];
-  return [...own.filter((c) => c.amount > 0), ...owe.filter((c) => c.amount > 0)];
+  const share = (c: Omit<TypeChip, "share">): TypeChip => {
+    const total = c.owe ? p.owed : p.owned;
+    return { ...c, share: total > 0 ? c.amount / total : 0 };
+  };
+  return [...own.filter((c) => c.amount > 0), ...owe.filter((c) => c.amount > 0)].map(share);
 }
 
 export function netWorthView(m: OverviewModel): NetWorthView | null {
