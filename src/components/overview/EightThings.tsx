@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { INSIGHT_TAGS, type Insight, type InsightTag, type InsightVis } from "@/app/overview/insights";
+import { RingTexture, RIPPLE_BASE, whiteSheen } from "../RingTexture";
 
 const WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight"];
 const TAG_STYLE: Record<InsightTag, string> = {
@@ -12,11 +13,15 @@ const TAG_STYLE: Record<InsightTag, string> = {
   growth: "bg-[oklch(0.94_0.05_150)] text-[oklch(0.4_0.11_150)]",
   habits: "bg-[oklch(0.94_0.04_310)] text-[oklch(0.44_0.13_310)]",
 };
+/** The rings ripple outward under the pointer, as on the Cards heatmap (#104). */
+const RIPPLE = `${RIPPLE_BASE} group-hover/thing:scale-[1.18] group-focus-within/thing:scale-[1.18]`;
+const SHEEN = whiteSheen("90% 0%", 0.18);
 const cap = (s: string) => s[0].toUpperCase() + s.slice(1);
 
 /**
  * Eight things worth knowing about your money (docs/design/overview.md, OvT1): a card for each thing noticed, filterable by area, each with a
- * picture of the measure and a flip to how it is worked out. Measures from your own records, never advice.
+ * picture of the measure and a flip to how it is worked out. Measures from your own records, never advice. The count at the left lists the areas:
+ * click one to filter to it. A card lifts under the pointer, its rings ripple, and it fades to its working-out and back.
  */
 export function EightThings({ items }: { items: Insight[] }) {
   const [tag, setTag] = useState<InsightTag | "all">("all");
@@ -29,7 +34,8 @@ export function EightThings({ items }: { items: Insight[] }) {
   const flip = (key: string) => setFlipped((s) => { const next = new Set(s); if (!next.delete(key)) next.add(key); return next; });
 
   return (
-    <section aria-label="Things noticed" className="flex flex-col gap-5 rounded-[26px] p-5 text-on-card md:p-8" style={{ background: "linear-gradient(140deg, var(--card-violet-from), var(--card-violet-to))" }}>
+    <section aria-label="Things noticed" className="relative isolate flex flex-col gap-5 overflow-clip rounded-[26px] p-5 text-on-card md:p-8" style={{ background: "linear-gradient(140deg, var(--card-violet-from), var(--card-violet-to))" }}>
+      <RingTexture width={1200} height={700} dx={40} dy={40} first={60} step={30} stroke="var(--rings-light)" opacity={0.08} sheen={SHEEN} />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <div className="text-xs font-extrabold tracking-[0.06em] uppercase opacity-80">Things I noticed</div>
@@ -45,35 +51,41 @@ export function EightThings({ items }: { items: Insight[] }) {
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <div className="flex flex-col gap-3 rounded-[22px] bg-on-card-fill p-5">
+        <div className="relative isolate flex flex-col gap-3 overflow-clip rounded-[22px] bg-on-card-fill p-5">
+          <RingTexture width={380} height={420} dx={10} dy={19} first={45} step={26} stroke="var(--rings-light)" opacity={0.1} />
           <div className="text-xs font-extrabold tracking-[0.06em] uppercase opacity-80">What I noticed</div>
           <div className="text-[64px] leading-none font-extrabold">{items.length}<small className="ml-2 text-xl font-bold opacity-80">{items.length === 1 ? "thing" : "things"}</small></div>
           <p className="text-sm font-semibold opacity-90">in your numbers today.{starred > 0 ? ` ${WORDS[starred] ?? starred} ${starred === 1 ? "is" : "are"} worth acting on, the rest are worth knowing.` : " All are worth knowing."}</p>
           <ul className="mt-auto flex flex-col gap-1.5 text-[11px] font-extrabold tracking-[0.05em] uppercase">
             {INSIGHT_TAGS.filter((t) => count(t) > 0).map((t) => (
-              <li key={t} className="flex items-center justify-between rounded-full bg-on-card-fill px-3 py-1"><span>{t}</span><span>{count(t)}</span></li>
+              <li key={t}>
+                <button type="button" aria-pressed={tag === t} aria-label={`${cap(t)}: ${count(t)}`} onClick={() => setTag(tag === t ? "all" : t)} className={`flex w-full cursor-pointer items-center justify-between rounded-full px-3 py-1 text-[11px] font-extrabold tracking-[0.05em] uppercase motion-safe:transition-[background,color,translate] motion-safe:duration-200 hover:translate-x-0.5 focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-on-card text-ink" : "bg-on-card-fill hover:bg-white/25"}`}><span>{t}</span><span>{count(t)}</span></button>
+              </li>
             ))}
           </ul>
           <p className="border-t border-on-card-fill pt-2 text-[11.5px] font-semibold opacity-80">Each one is worked out from your own figures, and says how. They&apos;re measures, never advice.</p>
         </div>
         {shown.map((i) => (
-          <article key={i.key} className={`flex min-h-[290px] flex-col gap-3 rounded-[22px] bg-surface p-5 text-fg shadow-[var(--card-shadow)] ${i.star ? "ring-2 ring-[oklch(0.8_0.15_85)]" : ""}`}>
+          <article key={i.key} className={`group/thing relative isolate flex min-h-[290px] flex-col gap-3 overflow-clip rounded-[22px] bg-surface p-5 text-fg shadow-[var(--card-shadow)] motion-safe:transition-[translate,box-shadow] motion-safe:duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_oklch(0_0_0/0.22)] ${i.star ? "ring-2 ring-[oklch(0.8_0.15_85)]" : ""}`}>
+            <RingTexture width={380} height={290} dx={10} dy={19} first={45} step={26} stroke="var(--rings-ink)" opacity={0.07} ringsClassName={RIPPLE} />
             <div className="flex flex-wrap items-center gap-2">
               <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold tracking-[0.04em] uppercase ${TAG_STYLE[i.tag]}`}>{i.tag}</span>
               {i.star && <span className="rounded-full bg-[oklch(0.94_0.06_150)] px-2.5 py-0.5 text-[11px] font-extrabold text-[oklch(0.4_0.11_150)]">worth acting on</span>}
             </div>
-            {flipped.has(i.key) ? (
-              <>
-                <h3 className="text-[15px] font-extrabold">How it&apos;s worked out</h3>
-                <ol className="list-decimal space-y-1.5 pl-5 text-[13px] font-semibold text-muted">{i.how.map((line, k) => <li key={k}>{line}</li>)}</ol>
-              </>
-            ) : (
-              <>
-                <h3 className="text-[17px] leading-snug font-extrabold text-balance">{i.title}</h3>
-                <p className="text-[13px] font-semibold text-muted">{i.body}</p>
-                <div className="mt-auto"><Vis vis={i.vis} /></div>
-              </>
-            )}
+            <div key={String(flipped.has(i.key))} className="flex flex-1 flex-col gap-3 motion-safe:animate-tip-in">
+              {flipped.has(i.key) ? (
+                <>
+                  <h3 className="text-[15px] font-extrabold">How it&apos;s worked out</h3>
+                  <ol className="list-decimal space-y-1.5 pl-5 text-[13px] font-semibold text-muted">{i.how.map((line, k) => <li key={k}>{line}</li>)}</ol>
+                </>
+              ) : (
+                <>
+                  <h3 className="text-[17px] leading-snug font-extrabold text-balance">{i.title}</h3>
+                  <p className="text-[13px] font-semibold text-muted">{i.body}</p>
+                  <div className="mt-auto"><Vis vis={i.vis} /></div>
+                </>
+              )}
+            </div>
             <div className="mt-auto flex items-center justify-between gap-2 pt-1">
               <button type="button" aria-pressed={flipped.has(i.key)} onClick={() => flip(i.key)} className="text-[13px] font-extrabold text-accent-text underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent">{flipped.has(i.key) ? "Back" : "How it's worked out"}</button>
               <Link href={i.href} className="rounded-full bg-fill px-3.5 py-1.5 text-xs font-extrabold focus-visible:outline-2 focus-visible:outline-accent">{i.act}</Link>

@@ -255,3 +255,15 @@ The phone layout, the states (nothing entered yet, a dollar rate that can't be f
 - **Future you:** the amount added to investments is his buys and ESPP less his sales over twelve months (an RSU vest costs him nothing), and the assumptions are editable and remembered. The slider is whole 2 to 14 and a typed field takes any 0 to 30.
 - **Calendar on a phone** is the list of the days that have something.
 - **Left for later:** the design aids (icon-style and ending switches) are not on the page; real net worth snapshots (F-OV-07) would make the trend exact.
+
+## Texture and widget interactions (2026-11-26)
+
+Prathik said the Overview felt flat beside the other dashboards: no ring texture and fewer interactions on its widgets. Built straight from the other pages' own pieces, with no new board (the defaults, so any of it can be tuned):
+
+- **Texture.** The same faint concentric rings (`RingTexture`) sit behind every block: light rings on the twelve tiles (opacity 0.1), the net worth block, Eight things (and on its count card) and Future you, each with a soft white sheen at the top right; ink rings on Eight things' cards and the Coming up section, which are light. They ripple outward (scale 1.15 to 1.18 from the bottom-right corner, 700 ms) while something in the widget is pointed at.
+- **Tiles.** Pointing at a tile ripples its rings, lifts it and steps the other eleven back (a quarter faded, greyer), as the cost maps do; pressing one sinks it a little.
+- **Net worth.** Each chip is a button linked to its arc in the ring: hover (a mouse) or focus (the keyboard) a chip and its arc swells, the others fade and the ring's middle says its share, its name and amount ("50% Investments ₹30.5L, of the ₹61.3L you own"); point at an arc and its chip lights. A click keeps one (the way to it on a phone). A guide line follows the month under the pointer on the trend.
+- **Eight things.** The area rows in the count card filter the cards (click again to clear). A card lifts under the pointer, and fades to its working-out and back.
+- **Future you.** Moving over the chart (or touching and dragging along it) puts a guide on that month with a small card: the month, what you'd be worth and what you'd still owe. Clicking a horizon's dot (as before) sets the answer to it, so scrubbing never changes it by accident. The milestone chips are buttons: pointing at one moves the guide to its month, clicking jumps the answer there.
+- **Coming up.** The event and warning rows lift a little under the pointer.
+- Sections use `overflow-clip`, not `overflow-hidden`: the animated number's digit stacks overflow the block, and a hidden-overflow box can be scrolled by a hover (it scrolled the net worth block's content out of view).
