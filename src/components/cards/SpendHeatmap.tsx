@@ -4,11 +4,12 @@ import { formatMonthShort, formatMonthYear } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
 import { RingTexture } from "../RingTexture";
 import { HeatmapHover, type HeatmapCardInfo } from "./HeatmapHover";
+import { HeatmapLedger } from "./HeatmapLedger";
+import { NO_DATA_STRIPES } from "./heatStripes";
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => `2000-${String(i + 1).padStart(2, "0")}`);
-// Month columns never shrink below 46px, so every amount fits; the table scrolls inside its card instead.
+// Month columns never shrink below 46px, so every amount fits; the table scrolls inside its card instead. On a phone it is a ledger (HeatmapLedger).
 const GRID = "grid grid-cols-[44px_repeat(12,minmax(46px,1fr))_104px] items-center gap-1.5";
-const NO_DATA_STRIPES = "repeating-linear-gradient(135deg, var(--heat-no-data) 0 5px, transparent 5px 11px)";
 
 function Swatch({ style, className = "" }: { style?: CSSProperties; className?: string }) {
   return <span aria-hidden="true" className={`inline-block size-3 rounded-[4px] ${className}`} style={style} />;
@@ -153,7 +154,7 @@ export function SpendHeatmap({
         <p className="py-6 text-center text-sm text-muted">{empty}</p>
       ) : (
         <MaybeHover hover={details && cards ? { details, cards, averages: Object.fromEntries(yearTotals.map((t) => [t.year, t.average])), peak: peak?.month ?? null, current: currentMonth } : undefined}>
-          <div className="-mx-[22px] overflow-x-auto px-[22px] pt-1 pb-1">
+          <div className="hidden sm:block sm:-mx-[22px] sm:overflow-x-auto sm:px-[22px] sm:pt-1 sm:pb-1">
             <div role="table" aria-label={`${tableLabel}, ${title}`} className="flex w-max min-w-full flex-col gap-2">
               <div role="row" className={GRID}>
                 {/* A real grid cell, so the month labels line up; the text is for screen readers only. */}
@@ -202,6 +203,8 @@ export function SpendHeatmap({
               })}
             </div>
           </div>
+          {/* On a phone the twelve months and a total are too wide, so the heatmap is a ledger there. */}
+          <HeatmapLedger className="sm:hidden" rows={rows} yearTotals={yearTotals} peak={peak} currentMonth={currentMonth} noData={noData} tableLabel={tableLabel} title={title} />
         </MaybeHover>
       )}
       {footnote && <p className="text-[11.5px] font-semibold text-muted">{footnote}</p>}

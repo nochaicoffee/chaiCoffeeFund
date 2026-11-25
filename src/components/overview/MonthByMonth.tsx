@@ -4,10 +4,13 @@ import Link from "next/link";
 import { useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import { GLYPHS, type GlyphKey } from "@/app/overview/glyphs";
 import { columnLabel, type MeasureView, type MonthlyView, type MonthTipView } from "@/app/overview/monthlyView";
+import type { MonthKey } from "@/lib/aggregate/cardSpend";
+import { barWidth, latestDataColumn, maxAmount } from "@/lib/aggregate/heatLedger";
 import { FLOW_KEYS, type FlowKey } from "@/lib/aggregate/monthlyFlows";
 import { colorGradient } from "@/lib/format/colors";
 import { formatMonthYear } from "@/lib/format/date";
 import { formatInr, formatInrCompact } from "@/lib/format/money";
+import { NO_DATA_STRIPES_FINE } from "../cards/heatStripes";
 import { Cell, SpendHeatmap } from "../cards/SpendHeatmap";
 import { MonthCardHover } from "../shell/MonthCardHover";
 
@@ -212,7 +215,10 @@ export function MonthByMonth({ view }: { view: MonthlyView }) {
         </MeasureHover>
       ) : (
         <MeasureHover view={view}>
-          <Together view={view} />
+          <div className="hidden sm:block">
+            <Together view={view} />
+          </div>
+          <TogetherLedger view={view} />
         </MeasureHover>
       )}
     </section>
@@ -266,4 +272,107 @@ function Together({ view }: { view: MonthlyView }) {
       </div>
     </div>
   );
+}
+
+const SHORT_NAME: Record<FlowKey, string> = { income: "Income", invested: "Invest", emis: "EMIs", cards: "Cards", cash: "Cash" };
+
+/**
+ * The five together on a phone (docs/design/phone-heatmap.md, option D): five thin bars a month, one per measure in its own colour and on
+ * its own scale, so the months read down the screen instead of across a table that scrolls. A month opens to list its five figures; the
+ * latest month with a figure is open to start with.
+ */
+function TogetherLedger({ view }: { view: MonthlyView }) {
+  const scales = useMemo(() => view.measures.map((m) => maxAmount(m.row)), [view]);
+  const latest = useMemo(() => {
+    const i = latestDataColumn(view.measures.map((m) => m.row));
+    return i === null ? null : (view.columns[i] ?? null);
+  }, [view]);
+  // null is "the latest month, open"; "none" is a month closed again by hand.
+  const [picked, setPicked] = useState<MonthKey | "none" | null>(null);
+  // A month picked under a period that no longer has it falls back to the latest, as on first load.
+  const open = picked === "none" ? null : picked !== null && view.columns.includes(picked) ? picked : latest;
+
+  return (
+    <section aria-label={`Five measures by month, ${view.periodName}`} className="flex flex-col gap-3 rounded-[24px] border border-surface-line bg-surface p-[18px] shadow-soft sm:hidden">
+      <h3 className="text-sm font-bold">
+        Five measures <span className="text-muted">· {view.periodName}</span>
+      </h3>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] font-semibold text-muted" aria-hidden="true">
+        {view.measures.map((m) => (
+          <span key={m.meta.key} style={heatStyle(m.meta.hue)} className="flex items-center gap-1">
+            <i className="size-[11px] rounded-[4px] bg-heat-4" />
+            {SHORT_NAME[m.meta.key]}
+          </span>
+        ))}
+      </div>
+      <div>
+        {view.columns.map((month, i) => {
+          const isOpen = open === month;
+          const [name, year] = columnLabel(month, i).split(" ");
+          const now = month === view.currentMonth;
+          return (
+            <div key={month} className={isOpen ? "-mx-1 my-0.5 rounded-[14px] bg-fill px-2.5 py-1" : "border-t border-divider first:border-t-0"}>
+              <button
+                type="button"
+                aria-expanded={isOpen}
+                aria-label={`${formatMonthYear(month)}${now ? ", this month" : ""}: ${figures(view, i)}`}
+                onClick={() => setPicked(isOpen ? "none" : month)}
+                className="grid w-full cursor-pointer grid-cols-[40px_minmax(0,1fr)_14px] items-start gap-2 py-1.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                <span className={`text-[10px] leading-tight font-extrabold tracking-[0.03em] uppercase ${now || isOpen ? "text-fg" : "text-muted"}`}>
+                  {name}
+                  {now && <span aria-hidden="true" className="ml-[3px] inline-block size-[5px] rounded-full bg-accent align-[1px]" />}
+                  {year && <span className="block text-[9px] font-bold tracking-normal opacity-80">{year}</span>}
+                </span>
+                <span className="flex flex-col gap-0.5" aria-hidden="true">
+                  {view.measures.map((m, k) => {
+                    const cell = m.row[i];
+                    const w = cell?.state === "data" && cell.amount !== null ? barWidth(cell.amount, scales[k]) : 0;
+                    return (
+                      <span key={m.meta.key} className="block h-1.5" style={heatStyle(m.meta.hue)}>
+                        {w > 0 ? (
+                          <i className="block h-full rounded-[3px]" style={{ width: `${w}%`, background: `var(--heat-${cell.level})` }} />
+                        ) : cell?.state === "upcoming" ? (
+                          <i className="block h-full w-[12%] rounded-[3px] border border-dashed border-heat-upcoming" />
+                        ) : (
+                          <i className="block h-full w-[18%] rounded-[3px]" style={{ background: NO_DATA_STRIPES_FINE }} />
+                        )}
+                      </span>
+                    );
+                  })}
+                </span>
+                <span aria-hidden="true" className="pt-px text-center text-[11px] font-extrabold text-muted">
+                  {isOpen ? "▾" : "▸"}
+                </span>
+              </button>
+              {isOpen && (
+                <ul className="mt-0.5 mb-1.5 ml-[48px] flex flex-col gap-1">
+                  {view.measures.map((m) => {
+                    const cell = m.row[i];
+                    return (
+                      <li key={m.meta.key} style={heatStyle(m.meta.hue)} className="flex items-center gap-2 text-xs font-bold">
+                        <i aria-hidden="true" className="size-[9px] shrink-0 rounded-[3px] bg-heat-4" />
+                        <span className="min-w-0 flex-1 truncate text-muted">{m.meta.name}</span>
+                        <span className="tabular-nums">{cell?.state === "data" && cell.amount !== null ? formatInr(cell.amount) : cell?.state === "upcoming" && cell.amount ? `${formatInr(cell.amount)} expected` : "–"}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      <p className="text-[11px] font-semibold text-muted">Five thin bars a month, each on its own scale. Tap a month to open its figures.</p>
+    </section>
+  );
+}
+
+/** What a month's row says to a screen reader, since its bars are only for the eye: each measure that has a figure, with it. */
+function figures(view: MonthlyView, i: number): string {
+  const parts = view.measures.flatMap((m) => {
+    const cell = m.row[i];
+    return cell?.state === "data" && cell.amount !== null ? [`${m.meta.name} ${formatInr(cell.amount)}`] : [];
+  });
+  return parts.length ? parts.join(", ") : "nothing recorded";
 }
