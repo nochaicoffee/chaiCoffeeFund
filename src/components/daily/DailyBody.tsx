@@ -1,13 +1,12 @@
 "use client";
 
 import { useMemo } from "react";
-import { heroView, limitsView, monthsView, nowWidgets, periodOptions, periodWidgets, stripView, whereView } from "@/app/daily/views";
+import { heroView, limitsView, monthsView, nowWidgets, periodWidgets, stripView, whereView } from "@/app/daily/views";
 import { BudgetStrip } from "./BudgetStrip";
 import { CategoryLimitsCard, NeedsLook } from "./CategoryLimits";
 import { useDaily } from "./context";
 import { FailedAdds } from "./FailedAdds";
 import { Hero } from "./Hero";
-import { PeriodPicker } from "./PeriodPicker";
 import { MonthsCard, Widgets, WhereCard } from "./Widgets";
 
 /**
@@ -16,9 +15,9 @@ import { MonthsCard, Widgets, WhereCard } from "./Widgets";
  * made; they're worked out once per model, not on every click.
  */
 export function DailyBody() {
-  const { model, periodParam, today } = useDaily();
+  const { model, periodParam } = useDaily();
   const v = useMemo(
-    () => ({ hero: heroView(model, periodParam), strip: stripView(model), picker: periodOptions(model), now: nowWidgets(model), period: periodWidgets(model), where: whereView(model), limits: limitsView(model), months: monthsView(model, periodParam) }),
+    () => ({ hero: heroView(model, periodParam), strip: stripView(model), now: nowWidgets(model), period: periodWidgets(model), where: whereView(model), limits: limitsView(model), months: monthsView(model, periodParam) }),
     [model, periodParam],
   );
   return (
@@ -44,7 +43,6 @@ export function DailyBody() {
           <h2>In {model.periodLabel}</h2>
           <small>{model.period.kind === "year" ? "January to today" : "so far"}</small>
         </div>
-        <PeriodPicker options={v.picker.options} value={v.picker.value} defaultValue={today.slice(0, 4)} />
       </div>
       <Widgets widgets={v.period} />
       <div className="row2">

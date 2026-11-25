@@ -5,6 +5,7 @@ import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { DailyBody } from "@/components/daily/DailyBody";
 import { DailyShell } from "@/components/daily/DailyShell";
 import { GreetingConnected } from "@/components/daily/GreetingConnected";
+import { HeaderPeriodPicker } from "@/components/daily/PeriodPicker";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { greetingTitle, todayIso } from "@/lib/format/date";
 import { getCachedDailyBudgetsTab, getCachedDailyCategoriesTab, getCachedDailyCategoryLimitsTab, getCachedDailySpendsTab } from "@/lib/sheets/cached";
@@ -32,6 +33,7 @@ export default async function DailyPage({ searchParams }: PageProps<"/daily">) {
         title={greetingTitle()}
         actions={
           <>
+            <HeaderPeriodPicker />
             <Link href="/daily/entries" className="inline-flex min-h-11 items-center rounded-full border border-surface-line bg-surface px-4 text-[13px] font-bold shadow-soft hover:bg-fill focus-visible:outline-2 focus-visible:outline-accent md:min-h-10">
               All spends
             </Link>
