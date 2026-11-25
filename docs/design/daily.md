@@ -4,6 +4,29 @@
 
 A diary of everyday spending that he writes down by hand, once a day or whenever. He wants a rough picture of a month, split into **UPI** and **credit card**, so he knows where the money is going. No automation, no import, nothing to reconcile.
 
+## Round 6 (2026-11-25): quick entry, cash, category limits, an all-spends page (boards drawn, nothing built, his picks pending)
+
+Asked for after a gap review against other daily trackers (Wallet, Spendee, Monefy, Walnut, Fold): build the first three gaps, mock any design change first, and add a separate page of all entries like the other dashboards have. Boards `DyQ*`, `DyL*`, `DyG*` on the three "Round 6" pages of the canvas; generator files `data-r6.mjs`, `parts-r6.mjs`, `designs-r6.mjs`, `css-r6.mjs`. Every figure is made up (the Often list, repeats and category limits are invented; the rest is the existing sample November).
+
+| Board | What it is |
+|---|---|
+| `DyQ1` Often row | An Often row on quick add: one tap adds a regular spend (Chai ₹40, Auto ₹120...) to today as it was. Cash is the third method. |
+| `DyQ2` Type-ahead | Typing in What it was offers his own notes with their usual amount, method and category. |
+| `DyQ3` Repeats | A Due today strip (chai on weekdays, the gym monthly, the maid monthly): offered, never written until he taps Add, so the diary stays hand-kept. Plus a Repeat choice in the form. |
+| `DyQ4` Cash | Cash across the page: a third dot on the calendar, a third tile, How you paid in place of UPI vs credit card. |
+| `DyL1` Limits in Where it went | Each category's bar is its limit (80% ticked, red when over), a nudge row above when one is near or over, Latest spends with See all spends beside it. |
+| `DyL2` Envelopes | A tile per category with a ring, what's left and last month's figure; no-limit categories invite Set a limit. |
+| `DyL3` Setting limits | The monthly limit, then a box and a switch per category, and how much of the monthly limit is not given out. |
+| `DyG1` Ledger | `/daily/entries` in Income's Entries layout: back link, period pill, Refresh, Add a spend, four tiles, search, category, how paid, amount, sort, month groups with a day under each. |
+| `DyG2` Table | One dense sortable table with a pager. |
+| `DyG3` A category's page | Opened from Where it went: this month against the same point last month and the whole month, its limit, the weekday it goes on, a usual spend, then its spends. |
+| `DyG4` No results | A search with nothing found and the filters in force. |
+| `*Phone` | Phone versions: the pinned bar with the Often row, the suggestion sheet, the repeat sheet, limits, the ledger and a category page. |
+
+**Questions for him (defaults drawn):** (1) Q1, Q2 and Q3 aren't exclusive: which to build (default Q1 with Q2's type-ahead, Q3 later)? (2) Should repeats only offer, never write (drawn: offer only)? (3) Category limits can add up to more than the monthly limit; the monthly one still decides the strip and pace (drawn: yes). (4) A category limit carries on to later months until changed, like the monthly one (drawn: yes). (5) L1 or L2 for the limits? (6) G1 Ledger or G2 Table (default G1, as every other page does)? (7) "vs Oct" compares the same days of last month, not a whole month.
+
+**Data it would need (not built):** `method` gains `Cash` (the `DailySpends.method` dropdown in the Sheet and `DAILY_SPEND_METHODS`); a `DailyCategoryLimits` tab (`id, category, month, limit`, latest row at or before the month, like `DailyBudgets`); optionally a `DailyRepeats` tab. Often and type-ahead need no new data: they read the diary. New math (often spends, category limit rows and states, same-point comparison, weekday split) goes in `lib/aggregate/dailySpends.ts` with tests.
+
 ## Built (2026-11-18): round 3, as drawn
 
 `/daily` is the round 3 design. What differs from the boards, and what was decided in the build:

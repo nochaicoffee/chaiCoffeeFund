@@ -6,9 +6,13 @@ import { e1, e2, e3, n1, n1c, n2, n3 } from "./designs-r3.mjs";
 import { desktop as hd, phone as hp } from "./designs-r4.mjs";
 import { desktop as ud, phone as up } from "./designs-r5.mjs";
 import { m1, m1b, m1c, m2, m3, m4, m5, d1 } from "./designs-r2.mjs";
+import * as R6 from "./designs-r6.mjs";
 import { pC1, pC2, pC3, pA1, pA2, pA3, pA4, pS1, pB1 } from "./designs-phone.mjs";
 
 export const PAGES = [
+  { id: "r6q", name: "Round 6 \u00b7 quick entry: Often row, type-ahead, repeats, and cash (desktop and phone)" },
+  { id: "r6l", name: "Round 6 \u00b7 category limits: inside Where it went, envelopes, and setting them (desktop and phone)" },
+  { id: "r6g", name: "Round 6 \u00b7 the all-spends page: ledger, table, a category's page, no results (desktop and phone)" },
   { id: "r5", name: "Round 5 \u00b7 the budget strip under the hero: three options" },
   { id: "r4", name: "Round 4 · the hero's top section: four options, desktop and phone" },
   { id: "r3d", name: "Round 3 · desktop: details on top of the hero, quick add beside the calendar, widgets outside it, a year period, adding categories" },
@@ -22,6 +26,9 @@ export const PAGES = [
   { id: "states", name: "Round 1 · states (on C1): adding a spend, an empty month, a busy month" },
 ];
 export const NOTES = [
+  { page: "r6q", text: "Daily, round 6 (2026-11-25), quick entry. Prathik asked to build the gaps found against other trackers, starting with: recent and frequent entries, cash as a third way to pay, per-category limits, and a separate page of all spends like the other dashboards have. Q1: an Often row on quick add, one tap adds a regular spend to today as it was (tap a chip, done); Cash joins UPI and credit card. Q2: type-ahead, typing in What it was offers your own notes with their usual amount, method and category. Q3: repeats, a Due today strip for things like chai, the gym or the maid: they are offered, never written until you tap Add, so the diary stays hand-kept. Q4: cash across the page (a third dot on the calendar, a third tile, How you paid in place of UPI vs credit card). The three entry styles are not exclusive: Q1 and Q2 together work, and Q3 can sit on top of either. Phone versions are the pinned bar and the add sheet. Every figure is made up." },
+  { page: "r6l", text: "Daily, round 6, category limits. The monthly limit stays the one the strip and the pace use. A limit per category is extra and optional, with 80% ticked and a nudge row above when one is near or over. L1: the limit sits inside Where it went (each bar is the category's limit), with Latest spends and a way to the full list beside it. L2: an envelope per category with a ring, what's left and last month's figure; a category with no limit invites you to set one. L3: setting them, the monthly limit first, then a box and a switch per category and how much of the monthly limit is not given out. Questions: should category limits be allowed to add up to more than the monthly limit (drawn: yes, the monthly one still decides the strip), and should a category's limit carry over to later months (drawn: yes, like the monthly one, until changed). Every figure is made up." },
+  { page: "r6g", text: "Daily, round 6, the all-spends page (/daily/entries), the way Income's Entries and Cards' Statements are laid out: a back link, the period pill, Refresh, Add a spend, four tiles, then the records. G1 Ledger: month groups, a day under each with its total, a row per spend, search and filters on top (category, how paid, amount, sort). G2 Table: one dense sortable table with a pager. G3: a category's own page, opened from Where it went: this month against last month (the same point and the whole month), its limit, which weekday it goes on, its usual spend, then its spends. G4: a search with nothing found. Edit and delete show on hover, as on the day panel. Every figure is made up." },
   { page: "r5", text: "Daily, round 5 (2026-11-19): the budget strip leaves the hero and sits under it (Prathik: the hero already has these details). The hero here has H2's header (the shortest of round 4; the header pick is separate) and no strip; under it come the strip and then the Right now widgets. S1: the strip as it was, light and full width. S2: one slim row with only what the hero doesn't say (what's left, the bar with the pace tick, the pill, left today). S3: a card with what's left and its bar, and left today, the pace and days to go beside it. The strip no longer pins to the top of a phone: it scrolls with the page (the quick-add bar still pins at the bottom). Left today shows both here and in the Right now widgets, so one of them could go. Every figure is made up." },
   { page: "r4", text: "Daily, round 4 (2026-11-19): the top of the hero, redrawn. It was three bare figures on the dark card, spaced unevenly and tall. Prathik asked to redesign it (it looks plain and flat, the spacing is uneven, it takes too much room) and to see four directions. H1: one slim row, the date then two stat chips. H2: a calendar tile for the date, today with its UPI and card split, the month as a ring against the limit. H3: a slim date line, then Today and This month as equal tiles with a bar each. H4: this month as one big figure with its sentence, today and the date as pills. Each is shown in the hero as built: the budget strip first, then this, then the calendar with quick add and the day's panel. Phone versions are the second row. Every figure is made up." },
   { page: "r3d", text: "Daily, round 3 (2026-11-18), desktop. The hero now has today's details across its top (the date, what's been spent today, what's been spent this month) and quick add beside the calendar, with the day's panel under it. The four widgets left the hero: the ones about right now (left today, week so far, on track to end at) sit in a Right now row that stays put; the rest follow a period (a year by default, a month, later a range): spent, top category, biggest spend, UPI vs credit card, quiet days, months inside the limit, then Where it went and Month by month. Widgets sit on one 12-column grid, four to a row, and every card in a row is the same height with its picture at the same level; Where it went and Month by month line up on the same columns. E2 shows the period set to This month with the picker open. E3 is a proposal for adding categories (a + New chip with a name and a colour, Manage to rename, recolour and hide, never delete) with questions. Every figure is made up." },
@@ -35,6 +42,26 @@ export const NOTES = [
   { page: "states", text: "Daily states, drawn on C1. Adding a spend: the panel turns into the form for the day you clicked, and a toast confirms the last one. An empty month: every figure is zero and the panel says so. A busy month (October): every day has spends, so a day can have many and the panel scrolls. Every figure is made up." },
 ];
 export const BOARDS = [
+  { file: "DyQ1.dc.html", w: 1600, page: "r6q", render: R6.quick("q1") },
+  { file: "DyQ2.dc.html", w: 1600, page: "r6q", render: R6.quick("q2") },
+  { file: "DyQ3.dc.html", w: 1600, page: "r6q", render: R6.quick("q3") },
+  { file: "DyQ4.dc.html", w: 1600, page: "r6q", render: R6.q4 },
+  { file: "DyQ1Phone.dc.html", w: 390, page: "r6q", render: R6.quickPhone("q1") },
+  { file: "DyQ2Phone.dc.html", w: 390, page: "r6q", render: R6.quickPhone("q2") },
+  { file: "DyQ3Phone.dc.html", w: 390, page: "r6q", render: R6.quickPhone("q3") },
+  { file: "DyQ3bPhone.dc.html", w: 390, page: "r6q", render: R6.q3sheetPhone },
+  { file: "DyL1.dc.html", w: 1600, page: "r6l", render: R6.limits("l1") },
+  { file: "DyL2.dc.html", w: 1600, page: "r6l", render: R6.limits("l2") },
+  { file: "DyL3.dc.html", w: 1600, page: "r6l", render: R6.l3 },
+  { file: "DyL1Phone.dc.html", w: 390, page: "r6l", render: R6.limitsPhone("l1") },
+  { file: "DyL2Phone.dc.html", w: 390, page: "r6l", render: R6.limitsPhone("l2") },
+  { file: "DyL3Phone.dc.html", w: 390, page: "r6l", render: R6.limitsPhone("l3") },
+  { file: "DyG1.dc.html", w: 1600, page: "r6g", render: R6.g1 },
+  { file: "DyG2.dc.html", w: 1600, page: "r6g", render: R6.g2 },
+  { file: "DyG3.dc.html", w: 1600, page: "r6g", render: R6.g3 },
+  { file: "DyG4.dc.html", w: 1600, page: "r6g", render: R6.g4 },
+  { file: "DyG1Phone.dc.html", w: 390, page: "r6g", render: R6.entriesPhone("g1") },
+  { file: "DyG3Phone.dc.html", w: 390, page: "r6g", render: R6.entriesPhone("g3") },
   { file: "DyU1.dc.html", w: 1600, page: "r5", render: ud("s1") },
   { file: "DyU2.dc.html", w: 1600, page: "r5", render: ud("s2") },
   { file: "DyU3.dc.html", w: 1600, page: "r5", render: ud("s3") },

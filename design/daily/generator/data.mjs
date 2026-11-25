@@ -21,7 +21,7 @@ export const CATS = {
 export const CAT_KEYS = Object.keys(CATS);
 /** A category he adds himself (round 3): not in the built-in list the chips start with, but known to every month. */
 CATS.Pets = { color: "violet", icon: "paw" };
-export const METHODS = { UPI: { name: "UPI", color: "teal" }, Card: { name: "Credit card", color: "ruby" } };
+export const METHODS = { UPI: { name: "UPI", color: "teal" }, Card: { name: "Credit card", color: "ruby" }, Cash: { name: "Cash", color: "emerald" } };
 
 let n = 0;
 const s = (date, amount, method, category, note) => ({ id: `s${++n}`, date, amount, method, category, note });

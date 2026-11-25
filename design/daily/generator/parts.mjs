@@ -40,7 +40,7 @@ const ICONS = {
   dot: '<circle cx="12" cy="12" r="3"/>',
 };
 export const catIcon = (cat, s = 15, cls = "") => `<span class="ci ${cls}" style="--cc:${col(D.CATS[cat].color)}">${sv(ICONS[D.CATS[cat].icon], s)}</span>`;
-export const dot = (method) => `<i class="md md-${method === "UPI" ? "u" : "c"}"></i>`;
+export const dot = (method) => `<i class="md md-${method === "UPI" ? "u" : method === "Cash" ? "k" : "c"}"></i>`;
 export const methodName = (m) => D.METHODS[m].name;
 
 // ---------- Greeting that points (CSS hover cards) ----------

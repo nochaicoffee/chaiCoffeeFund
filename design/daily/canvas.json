@@ -1,6 +1,18 @@
 {
   "pages": [
     {
+      "id": "r6q",
+      "name": "Round 6 · quick entry: Often row, type-ahead, repeats, and cash (desktop and phone)"
+    },
+    {
+      "id": "r6l",
+      "name": "Round 6 · category limits: inside Where it went, envelopes, and setting them (desktop and phone)"
+    },
+    {
+      "id": "r6g",
+      "name": "Round 6 · the all-spends page: ledger, table, a category's page, no results (desktop and phone)"
+    },
+    {
       "id": "r5",
       "name": "Round 5 · the budget strip under the hero: three options"
     },
@@ -46,6 +58,166 @@
     }
   ],
   "artboards": [
+    {
+      "file": "DyQ1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1205,
+      "page": "r6q"
+    },
+    {
+      "file": "DyQ2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 1032,
+      "page": "r6q"
+    },
+    {
+      "file": "DyQ3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 1255,
+      "page": "r6q"
+    },
+    {
+      "file": "DyQ4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 1123,
+      "page": "r6q"
+    },
+    {
+      "file": "DyQ1Phone.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "r6q"
+    },
+    {
+      "file": "DyQ2Phone.dc.html",
+      "x": 7390,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "r6q"
+    },
+    {
+      "file": "DyQ3Phone.dc.html",
+      "x": 7900,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "r6q"
+    },
+    {
+      "file": "DyQ3bPhone.dc.html",
+      "x": 8410,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "r6q"
+    },
+    {
+      "file": "DyL1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 994,
+      "page": "r6l"
+    },
+    {
+      "file": "DyL2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 1372,
+      "page": "r6l"
+    },
+    {
+      "file": "DyL3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 802,
+      "page": "r6l"
+    },
+    {
+      "file": "DyL1Phone.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "r6l"
+    },
+    {
+      "file": "DyL2Phone.dc.html",
+      "x": 5670,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "r6l"
+    },
+    {
+      "file": "DyL3Phone.dc.html",
+      "x": 6180,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "page": "r6l"
+    },
+    {
+      "file": "DyG1.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1789,
+      "page": "r6g"
+    },
+    {
+      "file": "DyG2.dc.html",
+      "x": 1720,
+      "y": 0,
+      "w": 1600,
+      "h": 1416,
+      "page": "r6g"
+    },
+    {
+      "file": "DyG3.dc.html",
+      "x": 3440,
+      "y": 0,
+      "w": 1600,
+      "h": 1663,
+      "page": "r6g"
+    },
+    {
+      "file": "DyG4.dc.html",
+      "x": 5160,
+      "y": 0,
+      "w": 1600,
+      "h": 692,
+      "page": "r6g"
+    },
+    {
+      "file": "DyG1Phone.dc.html",
+      "x": 6880,
+      "y": 0,
+      "w": 390,
+      "h": 1225,
+      "page": "r6g"
+    },
+    {
+      "file": "DyG3Phone.dc.html",
+      "x": 7390,
+      "y": 0,
+      "w": 390,
+      "h": 1758,
+      "page": "r6g"
+    },
     {
       "file": "DyU1.dc.html",
       "x": 0,
@@ -445,11 +617,35 @@
       "x": 0,
       "y": -90,
       "w": 1100,
+      "text": "Daily, round 6 (2026-11-25), quick entry. Prathik asked to build the gaps found against other trackers, starting with: recent and frequent entries, cash as a third way to pay, per-category limits, and a separate page of all spends like the other dashboards have. Q1: an Often row on quick add, one tap adds a regular spend to today as it was (tap a chip, done); Cash joins UPI and credit card. Q2: type-ahead, typing in What it was offers your own notes with their usual amount, method and category. Q3: repeats, a Due today strip for things like chai, the gym or the maid: they are offered, never written until you tap Add, so the diary stays hand-kept. Q4: cash across the page (a third dot on the calendar, a third tile, How you paid in place of UPI vs credit card). The three entry styles are not exclusive: Q1 and Q2 together work, and Q3 can sit on top of either. Phone versions are the pinned bar and the add sheet. Every figure is made up.",
+      "page": "r6q"
+    },
+    {
+      "id": "note-2",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Daily, round 6, category limits. The monthly limit stays the one the strip and the pace use. A limit per category is extra and optional, with 80% ticked and a nudge row above when one is near or over. L1: the limit sits inside Where it went (each bar is the category's limit), with Latest spends and a way to the full list beside it. L2: an envelope per category with a ring, what's left and last month's figure; a category with no limit invites you to set one. L3: setting them, the monthly limit first, then a box and a switch per category and how much of the monthly limit is not given out. Questions: should category limits be allowed to add up to more than the monthly limit (drawn: yes, the monthly one still decides the strip), and should a category's limit carry over to later months (drawn: yes, like the monthly one, until changed). Every figure is made up.",
+      "page": "r6l"
+    },
+    {
+      "id": "note-3",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
+      "text": "Daily, round 6, the all-spends page (/daily/entries), the way Income's Entries and Cards' Statements are laid out: a back link, the period pill, Refresh, Add a spend, four tiles, then the records. G1 Ledger: month groups, a day under each with its total, a row per spend, search and filters on top (category, how paid, amount, sort). G2 Table: one dense sortable table with a pager. G3: a category's own page, opened from Where it went: this month against last month (the same point and the whole month), its limit, which weekday it goes on, its usual spend, then its spends. G4: a search with nothing found. Edit and delete show on hover, as on the day panel. Every figure is made up.",
+      "page": "r6g"
+    },
+    {
+      "id": "note-4",
+      "x": 0,
+      "y": -90,
+      "w": 1100,
       "text": "Daily, round 5 (2026-11-19): the budget strip leaves the hero and sits under it (Prathik: the hero already has these details). The hero here has H2's header (the shortest of round 4; the header pick is separate) and no strip; under it come the strip and then the Right now widgets. S1: the strip as it was, light and full width. S2: one slim row with only what the hero doesn't say (what's left, the bar with the pace tick, the pill, left today). S3: a card with what's left and its bar, and left today, the pace and days to go beside it. The strip no longer pins to the top of a phone: it scrolls with the page (the quick-add bar still pins at the bottom). Left today shows both here and in the Right now widgets, so one of them could go. Every figure is made up.",
       "page": "r5"
     },
     {
-      "id": "note-2",
+      "id": "note-5",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -457,7 +653,7 @@
       "page": "r4"
     },
     {
-      "id": "note-3",
+      "id": "note-6",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -465,7 +661,7 @@
       "page": "r3d"
     },
     {
-      "id": "note-4",
+      "id": "note-7",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -473,7 +669,7 @@
       "page": "r3p"
     },
     {
-      "id": "note-5",
+      "id": "note-8",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -481,7 +677,7 @@
       "page": "r2p"
     },
     {
-      "id": "note-6",
+      "id": "note-9",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -489,7 +685,7 @@
       "page": "r2d"
     },
     {
-      "id": "note-7",
+      "id": "note-10",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -497,7 +693,7 @@
       "page": "cal"
     },
     {
-      "id": "note-8",
+      "id": "note-11",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -505,7 +701,7 @@
       "page": "alt"
     },
     {
-      "id": "note-9",
+      "id": "note-12",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -513,7 +709,7 @@
       "page": "budget"
     },
     {
-      "id": "note-10",
+      "id": "note-13",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -521,7 +717,7 @@
       "page": "phones"
     },
     {
-      "id": "note-11",
+      "id": "note-14",
       "x": 0,
       "y": -90,
       "w": 1100,
@@ -531,6 +727,6 @@
   ],
   "launch": {
     "view": "canvas",
-    "page": "r5"
+    "page": "r6q"
   }
 }
