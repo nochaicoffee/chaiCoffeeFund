@@ -43,7 +43,7 @@ jj new main@origin                      # start from the latest main
 # ...make the change; jj tracks edits automatically...
 jj describe -m "feat(cards): add statement form (#12)"
 jj git push --named feat/12-statement-form=@
-gh pr create --fill --base main --head feat/12-statement-form
+gh pr create --repo nochaicoffee/chaiCoffeeFund --base main --head feat/12-statement-form --title "feat(cards): add statement form (#12)" --body-file pr-body.md   # no .git, so gh needs --repo, --title and a body (no --fill); fill pr-body.md from .github/pull_request_template.md
 ```
 
 - One PR per issue. The PR body says `Closes #12` so merging closes the issue.
