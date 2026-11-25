@@ -8,20 +8,16 @@ A private personal-finance dashboard that runs on **your own** Google Sheet. Acc
 
 ## Get it running
 
-About 30 minutes, all on free tiers. The full guide is [docs/setup.md](docs/setup.md), and the same steps are on the `/setup` page of the running app, which also checks your setup live.
+About 30 minutes, all on free tiers, and nothing to install: every step is in a browser. The full guide is [docs/setup.md](docs/setup.md), and the same steps are on the `/setup` page of the running app, which also checks your setup live.
 
 The short version:
 
-```bash
-git clone https://github.com/<your-name>/chaiCoffeeFund.git   # a fork of this repo
-cd chaiCoffeeFund
-npm install
-cp .env.example .env.local        # then fill it in (docs/setup.md, steps 2 to 4)
-npm run dev                       # http://localhost:3000
-npm run create-sheet              # builds every tab in your empty Google Sheet
-```
+1. **Fork** this repository on GitHub.
+2. In [Google Cloud](https://console.cloud.google.com), make a project, turn on the Sheets API, and make a service account with a JSON key. Make an empty [Google Sheet](https://sheets.new) and share it with the service account. Make a Google sign-in (OAuth) client.
+3. On [Vercel](https://vercel.com/new), import your fork, paste in the settings (the table in step 6 of [docs/setup.md](docs/setup.md); the key goes in as `GOOGLE_SERVICE_ACCOUNT_KEY`, the whole JSON file), and deploy.
+4. Open `<your address>/setup`, sign in, and press **Create the missing tabs**.
 
-Then deploy the fork on [Vercel](https://vercel.com/new) with the settings from `.env.example`.
+A terminal is needed only for the optional Gmail statement import, or to change the code (see "Running it on your own computer" in [docs/setup.md](docs/setup.md)).
 
 ## Commands
 

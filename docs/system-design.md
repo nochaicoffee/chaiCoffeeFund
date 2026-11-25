@@ -777,6 +777,7 @@ A guide for someone running their own copy, with a live checklist. Nothing about
 - **No sidebar when signed out.** The root layout draws the shell only for a session (or locally), so a signed-out visitor to `/setup` doesn't get links that all bounce to the sign-in.
 - **The button** ("Create the missing tabs") posts to `/api/setup/sheet`, the same code as `npm run create-sheet`. It is the only client code besides Copy.
 - The guide text is in `components/setup/SetupGuide.tsx`, with the same steps in `docs/setup.md`: change one, change the other.
+- **Browser-only path (2026-11-26).** A new user never clones or installs anything: fork on GitHub, make the Google Cloud pieces, paste the settings into Vercel, deploy, sign in, press the button (step 7). Everything the local `.env.local` used to carry (key, Sheet ID, sign-in settings) goes straight into Vercel, and the redirect URI is added after the first deploy (the OAuth client is made without one). The terminal survives in two places only: the optional Gmail authorization (`npm run authorize-gmail`, which needs a program on the user's own computer to catch Google's redirect, and only the Gmail client ID and secret in a local `.env.local`) and changing the code, both under "Running it on your own computer" in `docs/setup.md`. A Vercel "Deploy" button was left out on purpose: it copies the repo instead of forking it, so "Sync fork" updates stop working.
 
 ## Phased implementation roadmap
 
