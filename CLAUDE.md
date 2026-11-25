@@ -1,17 +1,25 @@
 # Version Control
 
-This project uses **jj (Jujutsu)**, not git, for version control. Even though jj can operate on a colocated git repo, always use `jj` commands for version control operations — never `git` commands directly (no `git add`, `git commit`, `git push`, etc.).
+**This project is jj (Jujutsu), not git.** It is hosted on GitHub (`nochaicoffee/chaiCoffeeFund`), and jj handles all of that: fetch, push, branches and history. In the maintainer's checkout there is **no `.git` directory**: the Git data lives inside `.jj/`, so `git` commands fail with "not a git repository". Check with `ls -d .git .jj` rather than assuming. A fork cloned with `git clone` (see README) or a colocated jj clone does have a `.git`; the jj commands below still work there, so keep using them. Never run `git init` or create a `.git` yourself.
 
-Common mappings:
-- `jj status` instead of `git status`
-- `jj diff` instead of `git diff`
-- `jj new` to start a new change (jj has no staging area — edits are tracked automatically)
-- `jj describe -m "message"` to set a change's commit message (jj commit == describe + new)
-- `jj log` instead of `git log`
-- `jj git push` / `jj git fetch` for remote sync (if a git remote is configured)
-- `jj undo` / `jj op log` for safe recovery instead of `git reset`/`git reflog`
+- **Only `jj`, never `git`.** No `git add`, `commit`, `status`, `diff`, `log`, `push`, `checkout` or `reset`. The `git` binary has nothing to read here.
+- **GitHub goes through jj:** `jj git fetch` and `jj git push`. The remote is `origin`, and trunk is `main@origin`.
+- **Branches are bookmarks.** `jj git push --named <name>=@` creates one and pushes it. Plain `jj git push` pushes existing bookmarks.
+- **`gh` can't find the repo on its own** when there is no `.git` (it shells out to `git`). Pass `--repo <owner>/<repo>` (the maintainer's is `nochaicoffee/chaiCoffeeFund`; a fork uses its own), and give `gh pr create` an explicit `--head`, `--base`, `--title` and `--body-file`. `--fill` does not work without a `.git`.
+- **No staging area.** Edits are tracked automatically, so there is nothing to `add`. `@` is the working-copy change.
+- **Sessions share `@`.** Two agents in one checkout share one working copy, so `jj describe` or `jj git push --named x=@` can sweep in the other's unfinished edits (this has happened). Run `jj status` and `jj log` first. If another session may be active, work in a separate `jj workspace` (see `docs/process.md`) or use `jj new --no-edit` and `jj restore --from <rev> --into <rev> <paths>` to build a change without moving `@`.
+- **Follow the full build workflow in `docs/process.md` ("Build workflow (jj + GitHub)").**
 
-Follow the same safety principles as with git: avoid destructive/irreversible operations (e.g. `jj abandon`, force pushes) without explicit user confirmation, and never bypass hooks unless asked.
+| Instead of | Use |
+|---|---|
+| `git status` / `git diff` | `jj status` / `jj diff` |
+| `git log` | `jj log` |
+| `git commit -m` | `jj describe -m` (or `jj commit -m` to also start a new change) |
+| `git checkout -b` / start from main | `jj new main@origin` |
+| `git fetch` / `git push` | `jj git fetch` / `jj git push` |
+| `git reset` / `git reflog` | `jj undo` / `jj op log` |
+
+Follow the same safety principles as with git: avoid destructive or irreversible operations (e.g. `jj abandon`, force pushes) without explicit user confirmation, and never bypass hooks unless asked.
 
 # Pull Requests
 
