@@ -55,7 +55,7 @@ export async function saveDailySpend(_previous: FormState, formData: FormData): 
     }
     const created = await dailySpendsRepository.create(createDailySpendSchema.parse(result.input));
     updateTag(CACHE_TAGS.dailySpends);
-    return { status: "saved", at: Date.now(), id: created.id, undo: { id: created.id, message: `Added ${formatInrExact(result.input.amount)} on ${result.input.method === "UPI" ? "UPI" : "card"}` } };
+    return { status: "saved", at: Date.now(), id: created.id, undo: { id: created.id, message: `Added ${formatInrExact(result.input.amount)} ${result.input.method === "Cash" ? "in cash" : `on ${result.input.method === "UPI" ? "UPI" : "card"}`}` } };
   } catch (error) {
     if (error instanceof NotFoundError) return gone;
     if (error instanceof InvalidRowError) return { status: "invalid", errors: { form: error.message } };

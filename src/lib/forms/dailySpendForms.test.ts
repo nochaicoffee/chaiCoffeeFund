@@ -17,13 +17,17 @@ describe("readDailySpendForm", () => {
     expect(readDailySpendForm({ ...base, date: "2026-10-01" }, known, today).ok).toBe(true);
     expect(readDailySpendForm({ ...base, date: "2026-11-19" }, known, today)).toEqual({ ok: false, errors: { date: "That day hasn't come yet" } });
   });
+  it("takes cash as a way to pay, and a cheque is not one", () => {
+    expect(readDailySpendForm({ ...base, method: "Cash" }, known, today)).toMatchObject({ ok: true, input: { method: "Cash" } });
+    expect(readDailySpendForm({ ...base, method: "Cheque" }, known, today)).toEqual({ ok: false, errors: { method: "Choose how you paid" } });
+  });
   it("refuses a category that isn't there, and a note that's too long, field by field", () => {
-    const r = readDailySpendForm({ date: "", amount: "0", method: "Cash", category: "nope", note: "x".repeat(81) }, known, today);
+    const r = readDailySpendForm({ date: "", amount: "0", method: "Cheque", category: "nope", note: "x".repeat(81) }, known, today);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(Object.keys(r.errors).sort()).toEqual(["amount", "category", "date", "method", "note"]);
   });
   it("needs an amount and a method, and refuses a negative or unreadable amount", () => {
-    expect(readDailySpendForm({ date: today }, known, today)).toMatchObject({ ok: false, errors: { amount: "Enter what you spent", method: "Choose UPI or card" } });
+    expect(readDailySpendForm({ date: today }, known, today)).toMatchObject({ ok: false, errors: { amount: "Enter what you spent", method: "Choose how you paid" } });
     expect(readDailySpendForm({ ...base, amount: "-5" }, known, today).ok).toBe(false);
     expect(readDailySpendForm({ ...base, amount: "lots" }, known, today).ok).toBe(false);
   });

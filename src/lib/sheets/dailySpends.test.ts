@@ -12,8 +12,11 @@ describe("daily spend schemas", () => {
     expect(createDailySpendSchema.safeParse({ ...lunch, category: "c-4f2a9" }).success).toBe(true);
     expect(createDailySpendSchema.safeParse({ ...lunch, category: "" }).success).toBe(false);
   });
+  it("takes UPI, card and cash", () => {
+    for (const method of ["UPI", "Card", "Cash"]) expect(createDailySpendSchema.safeParse({ ...lunch, method }).success).toBe(true);
+  });
   it("refuses a method off the list, nothing spent, or a date that isn't a date", () => {
-    expect(createDailySpendSchema.safeParse({ ...lunch, method: "Cash" }).success).toBe(false);
+    expect(createDailySpendSchema.safeParse({ ...lunch, method: "Cheque" }).success).toBe(false);
     expect(createDailySpendSchema.safeParse({ ...lunch, amount: 0 }).success).toBe(false);
     expect(createDailySpendSchema.safeParse({ ...lunch, date: "18/11/2026" }).success).toBe(false);
   });

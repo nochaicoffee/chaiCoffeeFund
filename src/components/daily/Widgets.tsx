@@ -88,8 +88,9 @@ function Visual({ v }: { v: WidgetVisual }) {
       return (
         <div className="sp2">
           <span className="sp2-b" aria-hidden="true">
-            <i style={{ width: `${v.upi * 100}%`, background: "var(--card-teal)" }} />
-            <i style={{ width: `${v.card * 100}%`, background: "var(--card-ruby)" }} />
+            {v.parts.map((part) => (
+              <i key={part.colorKey} style={{ width: `${part.fraction * 100}%`, background: `var(--card-${part.colorKey})` }} />
+            ))}
           </span>
           <span className="sp2-l">
             {v.legend.map((l) => (
@@ -178,6 +179,7 @@ export function MonthsCard({ view }: { view: MonthsView }) {
             <span className="mo-bar" aria-hidden="true">
               <span style={{ width: `${r.upi * 100}%`, background: "var(--card-teal)" }} />
               <span style={{ width: `${r.card * 100}%`, background: "var(--card-ruby)" }} />
+              {r.cash > 0 && <span style={{ width: `${r.cash * 100}%`, background: "var(--card-emerald)" }} />}
               {r.limit !== null && <i className="mo-lim" style={{ left: `${r.limit * 100}%` }} />}
             </span>
             <b className="my-t">{r.total}</b>

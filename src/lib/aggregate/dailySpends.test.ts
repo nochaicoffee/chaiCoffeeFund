@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DailyBudget, DailySpend } from "../sheets/types";
-import { budgetView, daysInMonth, diaryStart, limitFor, methodShare, monthRows, monthView, periodView, readMonth, shiftMonth, usualMonth } from "./dailySpends";
+import { budgetView, daysInMonth, diaryStart, limitFor, methodAmount, methodShare, monthRows, monthView, periodView, readMonth, shiftMonth, usualMonth } from "./dailySpends";
 
 let n = 0;
 const spend = (date: string, amount: number, method: DailySpend["method"], category?: string, note?: string): DailySpend => ({ id: `s${++n}`, date, amount, method, ...(category && { category }), ...(note && { note }) });
@@ -170,12 +170,12 @@ describe("monthRows and usualMonth", () => {
     expect(rows.map((r) => [r.month, r.total])).toEqual([["2026-11", 300], ["2026-10", 1500], ["2026-09", 0], ["2026-08", 200]]);
   });
   it("averages the earlier months that have spends, leaving out this month and empty ones", () => {
-    expect(usualMonth(spends, "2026-11-18")).toEqual({ total: 850, upi: 350, card: 500 });
+    expect(usualMonth(spends, "2026-11-18")).toEqual({ total: 850, upi: 350, card: 500, cash: 0 });
     expect(usualMonth([spend("2026-11-02", 300, "UPI")], "2026-11-18")).toBeNull();
   });
   it("gives a method's share of a month", () => {
-    expect(methodShare({ total: 400, upi: 100, card: 300 }, "Card")).toBe(0.75);
-    expect(methodShare({ total: 0, upi: 0, card: 0 }, "UPI")).toBe(0);
+    expect(methodShare({ total: 400, upi: 100, card: 300, cash: 0 }, "Card")).toBe(0.75);
+    expect(methodShare({ total: 0, upi: 0, card: 0, cash: 0 }, "UPI")).toBe(0);
   });
 });
 
@@ -242,5 +242,26 @@ describe("periodView", () => {
   it("is empty and safe for a year with no diary in it", () => {
     const e = periodView(all, "year", "2025", today, limits);
     expect(e).toMatchObject({ total: 0, count: 0, average: null, completed: 0, categories: [], biggest: [], quiet: 0 });
+  });
+});
+
+describe("cash", () => {
+  const list = [spend("2026-11-02", 410, "UPI"), spend("2026-11-02", 120.1, "Cash"), spend("2026-11-03", 200, "Cash"), spend("2026-11-03", 899, "Card"), spend("2026-10-30", 50, "Cash")];
+  it("is its own part of a day, a week and a month, and the three always add up to the total", () => {
+    const v = monthView(list, "2026-11", "2026-11-18");
+    expect(v).toMatchObject({ total: 1629.1, upi: 410, card: 899, cash: 320.1 });
+    expect(v.days[1]).toMatchObject({ total: 530.1, upi: 410, card: 0, cash: 120.1 });
+    expect(v.weeks.reduce((a, w) => a + w.cash, 0)).toBeCloseTo(320.1, 2);
+  });
+  it("is zero in a month with none, so a diary without cash reads as it did", () => {
+    expect(monthView([spend("2026-11-02", 100, "UPI")], "2026-11", "2026-11-18").cash).toBe(0);
+  });
+  it("counts toward the usual month, a period's months and a method's share", () => {
+    expect(usualMonth(list, "2026-11-18")).toMatchObject({ cash: 50 });
+    const p = periodView(list, "year", "2026", "2026-11-18", () => null);
+    expect(p.cash).toBeCloseTo(370.1, 2);
+    expect(p.months.find((m) => m.month === "2026-11")?.cash).toBeCloseTo(320.1, 2);
+    expect(methodShare({ total: 400, upi: 100, card: 100, cash: 200 }, "Cash")).toBe(0.5);
+    expect(methodAmount({ total: 400, upi: 100, card: 100, cash: 200 }, "Cash")).toBe(200);
   });
 });

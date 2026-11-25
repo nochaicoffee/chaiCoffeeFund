@@ -1,13 +1,13 @@
 import type { SentencePart } from "@/app/cards/summarySentence";
 import type { GreetingRowData } from "@/components/shell/GreetingParts";
-import { budgetView, diaryStart, limitFor, methodShare, monthOf, monthRows, monthView, periodView, readMonth, shiftMonth, usualMonth, type BudgetView, type CategoryRow, type MonthView, type PeriodView } from "@/lib/aggregate/dailySpends";
+import { budgetView, diaryStart, limitFor, methodAmount, methodShare, monthOf, monthRows, monthView, periodView, readMonth, shiftMonth, usualMonth, type BudgetView, type CategoryRow, type MonthView, type PeriodView } from "@/lib/aggregate/dailySpends";
 import { resolveCategories, type CategoryDef } from "@/lib/daily/categories";
 import { PENDING_PREFIX } from "@/lib/daily/pendingAdds";
 import { cardColorKey, type ColorKey } from "@/lib/format/colors";
 import { formatDayDate, formatMonthShort, formatMonthYear, formatShortDate, MONTH_NAMES } from "@/lib/format/date";
 import { ordinal } from "@/lib/format/labels";
 import { formatInrCompact, formatInrExact } from "@/lib/format/money";
-import type { DailyBudget, DailyCategory, DailySpend, DailySpendMethod } from "@/lib/sheets/types";
+import { DAILY_SPEND_METHODS, type DailyBudget, type DailyCategory, type DailySpend, type DailySpendMethod } from "@/lib/sheets/types";
 
 /**
  * Everything the Daily page shows (docs/design/daily.md, round 3), worked out once from lib/aggregate/dailySpends and handed to the components as plain,
@@ -20,9 +20,9 @@ const percent = (fraction: number) => `${Math.round(fraction * 100)}%`;
 const dayLabel = formatDayDate;
 const dayRange = (from: string, to: string) => (from === to ? String(Number(from.slice(8))) : `${Number(from.slice(8))}–${Number(to.slice(8))}`);
 
-export const METHOD_NAMES: Record<DailySpendMethod, string> = { UPI: "UPI", Card: "Credit card" };
-/** Colour token keys (`var(--card-<key>)`): UPI and credit card. */
-export const METHOD_COLORS: Record<DailySpendMethod, ColorKey> = { UPI: "teal", Card: "ruby" };
+export const METHOD_NAMES: Record<DailySpendMethod, string> = { UPI: "UPI", Card: "Credit card", Cash: "Cash" };
+/** Colour token keys (`var(--card-<key>)`): UPI, credit card and cash. */
+export const METHOD_COLORS: Record<DailySpendMethod, ColorKey> = { UPI: "teal", Card: "ruby", Cash: "emerald" };
 
 export interface CategoryView {
   id: string;
@@ -82,7 +82,7 @@ export function dailyModel(input: { spends: DailySpend[]; budgets: DailyBudget[]
 
 // ---------- The greeting ----------
 
-export type DailyPoint = "spent" | "upi" | "card" | "perDay" | "left" | "allowance";
+export type DailyPoint = "spent" | "upi" | "card" | "cash" | "perDay" | "left" | "allowance";
 
 export function summarySentence(model: DailyModel): SentencePart[] {
   const m = model.current;
@@ -93,9 +93,10 @@ export function summarySentence(model: DailyModel): SentencePart[] {
     { text: money(m.total), strong: true, point: "spent" },
     { text: ` in ${name} so far: ` },
     { text: money(m.upi), strong: true, point: "upi" },
-    { text: " on UPI and " },
+    { text: m.cash > 0 ? " on UPI, " : " on UPI and " },
     { text: money(m.card), strong: true, point: "card" },
-    { text: " on credit cards, about " },
+    // Cash joins the sentence only once some is written down, so a diary with none reads as it always did.
+    ...(m.cash > 0 ? [{ text: " on credit cards and " }, { text: money(m.cash), strong: true, point: "cash" as const }, { text: " in cash, about " }] : [{ text: " on credit cards, about " }]),
     { text: money(m.perDay), strong: true, point: "perDay" },
     { text: " a day." },
   ];
@@ -132,12 +133,13 @@ export function greetingView(model: DailyModel): DailyGreetingCards {
   cards.spent = {
     title: `Spent in ${month}`,
     total: money(m.total),
-    rows: (["UPI", "Card"] as const).filter((x) => (x === "UPI" ? m.upi : m.card) > 0).map((x) => methodRow(x, x === "UPI" ? m.upi : m.card, m.total)),
+    rows: DAILY_SPEND_METHODS.filter((x) => methodAmount(m, x) > 0).map((x) => methodRow(x, methodAmount(m, x), m.total)),
     note: usual !== null ? `${plural(m.count, "spend")} written down. A usual month is ${money(usual)}, the average of the earlier months.` : `${plural(m.count, "spend")} written down.`,
   };
-  const share = (method: DailySpendMethod): GreetingCard => ({ title: `${METHOD_NAMES[method]} in ${month}`, total: money(method === "UPI" ? m.upi : m.card), rows: [{ key: method, name: `${percent(methodShare(m, method))} of the month`, colorKey: METHOD_COLORS[method], amount: money(method === "UPI" ? m.upi : m.card), fraction: methodShare(m, method) }] });
+  const share = (method: DailySpendMethod): GreetingCard => ({ title: `${METHOD_NAMES[method]} in ${month}`, total: money(methodAmount(m, method)), rows: [{ key: method, name: `${percent(methodShare(m, method))} of the month`, colorKey: METHOD_COLORS[method], amount: money(methodAmount(m, method)), fraction: methodShare(m, method) }] });
   if (m.upi > 0) cards.upi = share("UPI");
   if (m.card > 0) cards.card = share("Card");
+  if (m.cash > 0) cards.cash = share("Cash");
   cards.perDay = {
     title: "Spent each day",
     total: money(m.perDay),
@@ -206,6 +208,7 @@ export interface CalendarCell {
   compact: string;
   upi: boolean;
   card: boolean;
+  cash: boolean;
   count: number;
   /** 0 nothing, 1 to 4 by size of the day. */
   level: 0 | 1 | 2 | 3 | 4;
@@ -223,6 +226,8 @@ export interface DayDetail {
   total: string;
   upi: string;
   card: string;
+  /** Empty when no cash was spent that day (the panel then shows only UPI and card). */
+  cash: string;
   rows: { id: string; title: string; /** The category's name, for its tile. */ tile: string; sub: string; amount: string; method: DailySpendMethod; colorKey: ColorKey; /** Added a moment ago and still being saved to the Sheet. */ saving: boolean }[];
   isToday: boolean;
   /** A day to come can't have a spend added to it. */
@@ -283,12 +288,13 @@ export function heroView(model: DailyModel, periodParam?: string): HeroView {
       total: money(d.total),
       upi: money(d.upi),
       card: money(d.card),
+      cash: d.cash > 0 ? money(d.cash) : "",
       rows: d.spends.map((s) => ({ id: s.id, title: s.note ?? model.nameOf(s.category), tile: model.nameOf(s.category), sub: [s.note ? model.nameOf(s.category) : undefined, METHOD_NAMES[s.method]].filter(Boolean).join(" · "), amount: money(s.amount), method: s.method, colorKey: model.colorOf(s.category), saving: s.id.startsWith(PENDING_PREFIX) })).reverse(),
       isToday: d.date === today,
       canAdd: d.date <= today,
     };
   }
-  const weeks = m.weeks.map((w) => w.cells.map((c): CalendarCell | null => (c ? { date: c.date, day: c.day, total: c.total > 0 ? money(c.total) : "", compact: c.total > 0 ? formatInrCompact(c.total) : "", upi: c.upi > 0, card: c.card > 0, count: c.spends.length, level: level(c.total), today: c.date === today, future: !c.elapsed, quiet: c.kept && c.spends.length === 0 && c.date !== today } : null)));
+  const weeks = m.weeks.map((w) => w.cells.map((c): CalendarCell | null => (c ? { date: c.date, day: c.day, total: c.total > 0 ? money(c.total) : "", compact: c.total > 0 ? formatInrCompact(c.total) : "", upi: c.upi > 0, card: c.card > 0, cash: c.cash > 0, count: c.spends.length, level: level(c.total), today: c.date === today, future: !c.elapsed, quiet: c.kept && c.spends.length === 0 && c.date !== today } : null)));
   const defaultSelected = defaultSelectedDay(model);
   const next = shiftMonth(m.month, 1);
   const limit = model.limitOf(m.month);
@@ -319,7 +325,7 @@ export type WidgetVisual =
   | { kind: "columns"; bars: { height: number; className: "" | "cur" | "fut" | "q"; label: string }[]; line?: number }
   | { kind: "stack"; segments: { width: number; colorKey: ColorKey }[]; legend: { name: string; percent: string; colorKey: ColorKey }[] }
   | { kind: "bigs"; rows: { title: string; tile: string; sub: string; amount: string; colorKey: ColorKey }[] }
-  | { kind: "split"; upi: number; card: number; legend: { name: string; percent: string; colorKey: ColorKey }[] }
+  | { kind: "split"; parts: { fraction: number; colorKey: ColorKey }[]; legend: { name: string; percent: string; colorKey: ColorKey }[] }
   | { kind: "pills"; pills: { text: string; state: "ok" | "mid" | "bad" | "cur" | "fut" | "none" }[] };
 
 export interface WidgetView {
@@ -403,14 +409,18 @@ export function periodWidgets(model: DailyModel): WidgetView[] {
     visual: { kind: "bigs", rows: p.biggest.slice(1).map((b) => ({ title: b.note ?? model.nameOf(b.category), tile: model.nameOf(b.category), sub: formatShortDate(b.date), amount: money(b.amount), colorKey: model.colorOf(b.category) })) },
   });
 
+  // UPI and credit card, with cash added once some is written down (a diary with none keeps the card and UPI wording it had).
+  const hasCash = p.cash > 0;
+  const used = DAILY_SPEND_METHODS.filter((x) => x !== "Cash" || hasCash);
+  const biggestMethod = used.reduce((a, x) => (methodAmount(p, x) > methodAmount(p, a) ? x : a), "Card" as DailySpendMethod);
   w.push({
     key: "split",
-    title: "UPI vs credit card",
+    title: hasCash ? "How you paid" : "UPI vs credit card",
     tag,
     isNow: false,
-    value: empty ? "—" : `${percent(p.card / p.total)} card`,
-    sub: empty ? "Nothing yet" : `${money(p.upi)} UPI · ${money(p.card)} card`,
-    visual: { kind: "split", upi: empty ? 0 : p.upi / p.total, card: empty ? 0 : p.card / p.total, legend: empty ? [] : [{ name: "UPI", percent: percent(p.upi / p.total), colorKey: METHOD_COLORS.UPI }, { name: "Credit card", percent: percent(p.card / p.total), colorKey: METHOD_COLORS.Card }] },
+    value: empty ? "—" : hasCash ? `${percent(methodShare(p, biggestMethod))} ${METHOD_NAMES[biggestMethod].toLowerCase()}` : `${percent(p.card / p.total)} card`,
+    sub: empty ? "Nothing yet" : used.map((x) => `${money(methodAmount(p, x))} ${x === "Card" ? "card" : METHOD_NAMES[x]}`).join(" · "),
+    visual: { kind: "split", parts: used.map((x) => ({ fraction: empty ? 0 : methodAmount(p, x) / p.total, colorKey: METHOD_COLORS[x] })), legend: empty ? [] : used.map((x) => ({ name: METHOD_NAMES[x], percent: percent(methodAmount(p, x) / p.total), colorKey: METHOD_COLORS[x] })) },
   });
 
   const run = p.longestRun;
@@ -478,6 +488,7 @@ export interface MonthsRow {
   label: string;
   upi: number;
   card: number;
+  cash: number;
   total: string;
   diff: string;
   over: boolean;
@@ -498,8 +509,8 @@ export function monthsView(model: DailyModel, periodParam?: string): MonthsView 
   const p = model.period;
   const rows =
     p.kind === "year"
-      ? p.months.map((x) => ({ month: x.month, upi: x.upi, card: x.card, total: x.total, count: x.count, empty: x.empty }))
-      : monthRows(model.spends, model.today, p.key, 6).map((x) => ({ month: x.month, upi: x.upi, card: x.card, total: x.total, count: x.count, empty: x.count === 0 }));
+      ? p.months.map((x) => ({ month: x.month, upi: x.upi, card: x.card, cash: x.cash, total: x.total, count: x.count, empty: x.empty }))
+      : monthRows(model.spends, model.today, p.key, 6).map((x) => ({ month: x.month, upi: x.upi, card: x.card, cash: x.cash, total: x.total, count: x.count, empty: x.count === 0 }));
   const max = Math.max(...rows.map((r) => r.total), ...rows.map((r) => model.limitOf(r.month) ?? 0), 1);
   const lim = model.limitOf(model.current.month);
   return {
@@ -514,6 +525,7 @@ export function monthsView(model: DailyModel, periodParam?: string): MonthsView 
         label: p.kind === "year" ? MONTH_NAMES[Number(r.month.slice(5, 7)) - 1].slice(0, 3) : `${formatMonthShort(r.month)} ${r.month.slice(0, 4)}`,
         upi: r.upi / max,
         card: r.card / max,
+        cash: r.cash / max,
         total: r.empty ? "—" : money(r.total),
         diff: !done || limit === null ? "" : r.total > limit ? `${money(r.total - limit)} over` : `${money(limit - r.total)} under`,
         over: done && limit !== null && r.total > limit,
