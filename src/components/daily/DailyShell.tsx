@@ -20,7 +20,7 @@ import { ManageCategories } from "./ManageCategories";
 import { Sheet } from "./Sheet";
 import { SpendForm } from "./SpendForm";
 
-type Open = { kind: "add"; draft: { date: string; amount: string; method: DailySpendMethod } } | { kind: "edit"; id: string } | { kind: "delete"; id: string } | { kind: "limit" };
+type Open = { kind: "add"; draft: { date: string; amount: string; method: DailySpendMethod }; fromBar: boolean } | { kind: "edit"; id: string } | { kind: "delete"; id: string } | { kind: "limit" };
 
 /** What the page was asked for and what the Sheet holds: the shell works every figure out from this plus any spend still being saved. */
 export interface DailyRaw {
@@ -68,6 +68,9 @@ export function DailyShell({ raw, children }: { raw: DailyRaw; children: ReactNo
   const [, startTransition] = useTransition();
   const { saved, fail, view } = useUndoToast(undoAddedSpend);
   const close = () => setOpen(null);
+  // The phone's quick-add bar empties after each add: a new key remounts it, whether the add came from the bar or from the sheet it handed its amount to.
+  const [barKey, setBarKey] = useState(0);
+  const emptyBar = () => setBarKey((n) => n + 1);
   const spend = open && "id" in open ? model.spends.find((s) => s.id === open.id) : undefined;
   const categories: CategoryView[] = useMemo(() => model.categories.map((c) => ({ id: c.id, name: c.name, colorKey: cardColorKey(c.color), hidden: c.hidden, builtIn: c.builtIn })), [model.categories]);
 
@@ -117,7 +120,7 @@ export function DailyShell({ raw, children }: { raw: DailyRaw; children: ReactNo
       failed,
       retry,
       dismiss,
-      openAdd: (draft?: { date?: string; amount?: string; method?: DailySpendMethod }) => setOpen({ kind: "add", draft: { date: draft?.date ?? (selected > today ? today : selected), amount: draft?.amount ?? "", method: draft?.method ?? "UPI" } }),
+      openAdd: (draft?: { date?: string; amount?: string; method?: DailySpendMethod; fromBar?: boolean }) => setOpen({ kind: "add", draft: { date: draft?.date ?? (selected > today ? today : selected), amount: draft?.amount ?? "", method: draft?.method ?? "UPI" }, fromBar: draft?.fromBar ?? false }),
       openEdit: (id: string) => setOpen({ kind: "edit", id }),
       openManage: () => setManaging(true),
       openLimit: () => setOpen({ kind: "limit" }),
@@ -131,10 +134,11 @@ export function DailyShell({ raw, children }: { raw: DailyRaw; children: ReactNo
   return (
     <DailyProvider value={value}>
       <div className="dy">{children}</div>
-      <QuickBar />
+      <QuickBar key={barKey} onAdded={emptyBar} />
       {open?.kind === "add" && (
         <Sheet title="Add a spend" subtitle="What you spent, and how you paid. A rough diary, nothing more." onClose={close}>
-          <SpendForm variant="sheet" draft={{ ...open.draft, category: "", note: "" }} onAdded={close} />
+          {/* The sheet took the bar's amount over, so once it's added the bar empties too; a sheet opened from the calendar leaves what's typed in the bar alone. */}
+          <SpendForm variant="sheet" draft={{ ...open.draft, category: "", note: "" }} onAdded={() => { if (open.fromBar) emptyBar(); close(); }} />
         </Sheet>
       )}
       {open?.kind === "edit" && spend && (
@@ -183,13 +187,7 @@ export function DailyShell({ raw, children }: { raw: DailyRaw; children: ReactNo
 }
 
 /** The bar pinned to the foot of a phone: the amount, UPI or card, a chevron for the rest, and the add button. It adds to today. */
-function QuickBar() {
-  // The bar empties after each add: a new key remounts it.
-  const [added, setAdded] = useState(0);
-  return <QuickBarForm key={added} onAdded={() => setAdded((n) => n + 1)} />;
-}
-
-function QuickBarForm({ onAdded }: { onAdded: () => void }) {
+function QuickBar({ onAdded }: { onAdded: () => void }) {
   const daily = useDaily();
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState<DailySpendMethod>("UPI");
@@ -226,7 +224,7 @@ function QuickBarForm({ onAdded }: { onAdded: () => void }) {
             </label>
           ))}
         </div>
-        <button type="button" className="qb-more" aria-label={`More: day, category and note (${METHOD_NAMES[method]})`} onClick={() => daily.openAdd({ date: daily.today, amount, method })}>
+        <button type="button" className="qb-more" aria-label={`More: day, category and note (${METHOD_NAMES[method]})`} onClick={() => daily.openAdd({ date: daily.today, amount, method, fromBar: true })}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><polyline points="6 15 12 9 18 15" /></svg>
         </button>
         <button type="submit" className="qb-add" aria-label="Add spend" disabled={amount.trim() === ""}>
