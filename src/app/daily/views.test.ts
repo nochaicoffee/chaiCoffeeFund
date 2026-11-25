@@ -146,6 +146,20 @@ describe("the widgets", () => {
     expect(ws[0]).toMatchObject({ title: "Spent in November", tag: "November 2026", sub: "₹1,165.67 a day · 18 days" });
     expect(ws[5]).toMatchObject({ title: "Days under the allowance", value: "13 of 18" });
   });
+  it("the quiet-days columns never outgrow the chart: the month with the most fills it, the rest are in proportion", () => {
+    const sparse = [spend("2026-09-01", 100, "UPI", "food"), spend("2026-09-02", 100, "UPI", "food"), spend("2026-10-01", 100, "UPI", "food"), spend("2026-11-01", 100, "UPI", "food"), spend("2026-11-18", 100, "UPI", "food")];
+    const model = dailyModel({ ...base, spends: sparse });
+    const quiet = model.period.months.map((x) => x.quiet);
+    expect(Math.max(...quiet)).toBeGreaterThan(4);
+    const visual = periodWidgets(model).find((x) => x.key === "quiet")!.visual;
+    if (visual.kind !== "columns") throw new Error("a year draws columns");
+    const heights = visual.bars.map((b) => b.height);
+    expect(Math.max(...heights)).toBe(100);
+    expect(heights.every((h) => h <= 100)).toBe(true);
+    const i = quiet.indexOf(Math.max(...quiet));
+    const j = quiet.findIndex((q, k) => k !== i && q > 0 && !model.period.months[k].empty);
+    expect(heights[j]).toBeCloseTo((quiet[j] / quiet[i]) * 100);
+  });
   it("safe with an empty diary", () => {
     const ws = periodWidgets(dailyModel({ ...base, spends: [] }));
     expect(ws.map((w) => w.value)).toEqual(["₹0", "—", "—", "—", "0 days", "—"]);

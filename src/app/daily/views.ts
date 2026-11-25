@@ -377,6 +377,8 @@ export function periodWidgets(model: DailyModel): WidgetView[] {
   const columnScale = Math.max(maxMonth, (limitForLine ?? 0) * 1.3, 1);
   const dayCols = model.picked.days.filter((d) => d.kept);
   const maxDay = Math.max(...dayCols.map((d) => d.total), 1);
+  /** The quiet-days columns are drawn against the month with the most, so the tallest fills the chart and none spills out of it. */
+  const maxQuiet = Math.max(...p.months.filter((x) => !x.isFuture && !x.empty).map((x) => x.quiet), 1);
   const w: WidgetView[] = [];
 
   w.push({
@@ -435,7 +437,7 @@ export function periodWidgets(model: DailyModel): WidgetView[] {
     value: plural(p.quiet, "day"),
     sub: run && p.currentRun !== null ? `Longest run under the daily allowance: ${plural(run.run, "day")} (${formatMonthShort(run.month)}) · now ${p.currentRun}` : "Days with nothing written down",
     visual: isYear
-      ? { kind: "columns", bars: p.months.map((x) => ({ height: x.isFuture || x.empty ? 6 : Math.max(8, (x.quiet / 4) * 100), className: x.isFuture || x.empty ? "fut" : "q", label: "JFMAMJJASOND"[Number(x.month.slice(5, 7)) - 1] })) }
+      ? { kind: "columns", bars: p.months.map((x) => ({ height: x.isFuture || x.empty ? 6 : Math.max(8, (x.quiet / maxQuiet) * 100), className: x.isFuture || x.empty ? "fut" : "q", label: "JFMAMJJASOND"[Number(x.month.slice(5, 7)) - 1] })) }
       : { kind: "pills", pills: dayCols.slice(-12).map((d) => ({ text: String(d.day), state: d.spends.length === 0 ? "none" : "ok" })) },
   });
 
