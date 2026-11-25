@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { RefreshButton } from "@/components/RefreshButton";
 import { SkippedRowsNotice } from "@/components/SkippedRowsNotice";
 import { DailyBody } from "@/components/daily/DailyBody";
@@ -26,7 +27,18 @@ export default async function DailyPage({ searchParams }: PageProps<"/daily">) {
 
   return (
     <DailyShell raw={{ spends: spends.records, budgets: budgets.records, categoryLimits: categoryLimits.records, categoryRows: categoryRows.records, today, month, period: one(params.period) }}>
-      <PageHeader section="Daily" title={greetingTitle()} actions={<RefreshButton iconOnly />}>
+      <PageHeader
+        section="Daily"
+        title={greetingTitle()}
+        actions={
+          <>
+            <Link href="/daily/entries" className="inline-flex min-h-11 items-center rounded-full border border-surface-line bg-surface px-4 text-[13px] font-bold shadow-soft hover:bg-fill focus-visible:outline-2 focus-visible:outline-accent md:min-h-10">
+              All spends
+            </Link>
+            <RefreshButton iconOnly />
+          </>
+        }
+      >
         <GreetingConnected />
         <SkippedRowsNotice tabs={skipped} />
       </PageHeader>
