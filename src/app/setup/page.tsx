@@ -44,7 +44,7 @@ export default async function SetupPage() {
               <a href={`#${step.id}`} className="font-bold text-fg underline-offset-2 hover:underline">
                 {index + 1}. {step.title}
               </a>
-              {index >= 6 ? <span className="ml-1.5 text-[12px] text-muted">optional</span> : null}
+              {step.optional ? <span className="ml-1.5 text-[12px] text-muted">optional</span> : null}
             </li>
           ))}
         </ol>

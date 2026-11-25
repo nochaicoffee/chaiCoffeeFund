@@ -62,7 +62,7 @@ export function envChecks(env: Env, key: KeyState): EnvCheck[] {
   add("signin", "GOOGLE_CLIENT_SECRET", true, filled(env.GOOGLE_CLIENT_SECRET), "That client's secret.");
   const email = allowedEmail(auth);
   add("signin", "ALLOWED_EMAIL", true, /^[^@\s]+@[^@\s]+$/.test(email), email ? "Must be one email address, not a list." : "The one Google address that may sign in.");
-  add("signin", "SESSION_SECRET", true, (env.SESSION_SECRET?.length ?? 0) >= MIN_SECRET_LENGTH, `At least ${MIN_SECRET_LENGTH} random characters: run openssl rand -base64 48.`);
+  add("signin", "SESSION_SECRET", true, (env.SESSION_SECRET?.length ?? 0) >= MIN_SECRET_LENGTH, `At least ${MIN_SECRET_LENGTH} random characters, from your password manager's generator or openssl rand -base64 48.`);
 
   const gmailSet = GMAIL_SETTINGS.filter((name) => filled(env[name]));
   const gmailPartial = gmailSet.length > 0 && gmailSet.length < GMAIL_SETTINGS.length;
