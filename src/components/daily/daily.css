@@ -178,6 +178,8 @@
   .dy .row2 { grid-template-columns: minmax(0, 1fr); } .dy .c4, .dy .c8 { grid-column: 1 / -1; }
 }
 @media (max-width: 767px) {
+  /* the hover cards are always laid out (just see-through), and some stick out past the right edge; on a phone that widened the page and made it drag sideways. Clip at the screen's edge (main's 16px side padding put back as the clip's own) */
+  .dy { margin-inline: -16px; padding-inline: 16px; overflow-x: clip; }
   .dy .cal-hd, .dy .cal-r { gap: 4px; } .dy .cal-hd { font-size: 10px; }
   .dy .cd { min-height: 54px; padding: 5px 4px 4px; border-radius: 11px; align-items: center; } .dy .cd-n { font-size: 10.5px; align-self: flex-start; padding-left: 3px; }
   .dy .cd-dots { position: static; gap: 3px; margin-top: 1px; } .dy .cd-dots .md { width: 6px; height: 6px; box-shadow: none; }
