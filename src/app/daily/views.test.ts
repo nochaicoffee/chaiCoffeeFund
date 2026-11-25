@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { DailyBudget, DailyCategory, DailySpend } from "@/lib/sheets/types";
-import { dailyModel, greetingView, heroView, monthsView, nowWidgets, periodOptions, periodWidgets, stripView, summarySentence, whereView } from "./views";
+import { dailyModel, greetingView, heroView, monthsView, nowWidgets, periodOptions, periodWidgets, limitsView, stripView, summarySentence, whereView } from "./views";
 
 const today = "2026-11-18";
 let n = 0;
@@ -212,5 +212,37 @@ describe("a spend still being saved", () => {
   });
   it("takes nothing from the figures once it's gone (a save that failed)", () => {
     expect(stripView(before).value).toBe("₹9,018");
+  });
+});
+
+describe("limitsView", () => {
+  const limits = [{ id: "l1", category: "shopping", month: "2026-11", limit: 5000 }, { id: "l2", category: "food", month: "2026-11", limit: 3000 }, { id: "l3", category: "bills", month: "2026-11", limit: 2000 }];
+  const OCT = [spend("2026-10-05", 2000, "UPI", "food"), spend("2026-10-12", 1000, "Card", "shopping"), spend("2026-10-25", 700, "UPI", "food")];
+  it("lists each category against its limit, over ones flagged, with what's left", () => {
+    const v = limitsView(dailyModel({ ...base, categoryLimits: limits }));
+    expect(v.title).toBe("Where November 2026 went");
+    const shopping = v.rows.find((r) => r.id === "shopping");
+    expect(shopping).toMatchObject({ spent: "₹6,298", of: "of ₹5,000 · 126%", state: "over", status: "₹1,298 over", fraction: 1 });
+    expect(v.rows.find((r) => r.id === "food")).toMatchObject({ spent: "₹4,520", state: "over", status: "₹1,520 over" });
+    expect(v.rows.find((r) => r.id === "bills")).toMatchObject({ spent: "₹1,850", state: "near", status: "93% used" });
+    expect(v.rows.find((r) => r.id === "transport")).toMatchObject({ state: "none", status: "No limit", of: "" });
+    expect(v.hasLimits).toBe(true);
+  });
+  it("says what needs a look, the furthest along first, and what the limits leave of the monthly one", () => {
+    const v = limitsView(dailyModel({ ...base, categoryLimits: limits }));
+    expect(v.attention.map((a) => a.text)).toEqual(["Food is ₹1,520 over its ₹3,000 limit", "Shopping is ₹1,298 over its ₹5,000 limit", "Bills is at 93% of its ₹2,000"]);
+    expect(v.footnote).toBe("₹20,000 of your ₹30,000 isn't given to a category.");
+    expect(limitsView(dailyModel({ ...base, categoryLimits: [{ id: "l9", category: "food", month: "2026-11", limit: 40000 }] })).footnote).toContain("more than your ₹30,000 monthly limit");
+  });
+  it("compares with the same days of last month only when the diary was kept then", () => {
+    const withOct = limitsView(dailyModel({ ...base, spends: [...OCT, ...NOV], categoryLimits: limits }));
+    // Food last month by the 18th: the 5th only (₹2,000); this month ₹4,520.
+    expect(withOct.rows.find((r) => r.id === "food")?.vs).toEqual({ text: "₹2,520 vs Oct", tone: "up" });
+    expect(limitsView(dailyModel({ ...base, categoryLimits: limits })).rows.every((r) => r.vs === null)).toBe(true);
+  });
+  it("has no limits, no attention and no footnote until a category is given one", () => {
+    const v = limitsView(dailyModel(base));
+    expect(v).toMatchObject({ hasLimits: false, attention: [], footnote: null });
+    expect(v.rows.length).toBeGreaterThan(0);
   });
 });

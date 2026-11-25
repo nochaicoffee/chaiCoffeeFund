@@ -4,12 +4,13 @@ import { updateTag } from "next/cache";
 import { resolveCategories } from "@/lib/daily/categories";
 import { todayIso } from "@/lib/format/date";
 import { readCategoryForm } from "@/lib/forms/dailyCategoryForms";
-import { readLimitForm } from "@/lib/forms/dailyLimitForms";
+import { readLimitsForm } from "@/lib/forms/dailyLimitForms";
 import { readDailySpendForm } from "@/lib/forms/dailySpendForms";
 import type { FormState } from "@/lib/forms/formState";
-import { planCategorySave, planCategoryStatus, planLimit } from "@/lib/daily/writes";
+import { planCategoryLimits, planCategorySave, planCategoryStatus, planLimit } from "@/lib/daily/writes";
 import { CACHE_TAGS, getCachedDailyCategoriesTab } from "@/lib/sheets/cached";
 import { dailyBudgetsRepository } from "@/lib/sheets/dailyBudgets";
+import { dailyCategoryLimitsRepository } from "@/lib/sheets/dailyCategoryLimits";
 import { createDailyCategorySchema, dailyCategoriesRepository, updateDailyCategorySchema } from "@/lib/sheets/dailyCategories";
 import { createDailySpendSchema, dailySpendsRepository, updateDailySpendSchema } from "@/lib/sheets/dailySpends";
 import { isQuotaError, isTimeoutError, sheetsFailureMessage } from "@/lib/sheets/errors";
@@ -141,20 +142,32 @@ export async function setCategoryStatus(_previous: FormState, formData: FormData
   }
 }
 
-/** Set the monthly limit from a month on: the month's own row if it has one, else a new row (lib/daily/writes.ts). */
-export async function setLimit(_previous: FormState, formData: FormData): Promise<FormState> {
-  const result = readLimitForm(fields(formData));
-  if (!result.ok) return { status: "invalid", errors: result.errors };
-  const { month, limit } = result.input;
+/**
+ * Set the monthly limit and the category limits from a month on (docs/design/daily.md, round 6, L1): the month's own row if it has one, else a new row
+ * (lib/daily/writes.ts decides, for both). The category rows are written one at a time, since the Sheet can't take two writes to one tab at once.
+ */
+export async function setLimits(_previous: FormState, formData: FormData): Promise<FormState> {
   try {
-    const write = planLimit(await dailyBudgetsRepository.list(), month, limit);
-    if (write.kind === "update") await dailyBudgetsRepository.update(write.id, { limit });
-    else await dailyBudgetsRepository.create({ month, limit });
-    updateTag(CACHE_TAGS.dailyBudgets);
+    const categoryIds = resolveCategories((await getCachedDailyCategoriesTab()).records).map((c) => c.id);
+    const result = readLimitsForm(fields(formData), categoryIds);
+    if (!result.ok) return { status: "invalid", errors: result.errors };
+    const { month, limit, categories } = result.input;
+    // A blank monthly box leaves the monthly limit as it is.
+    if (limit !== null) {
+      const write = planLimit(await dailyBudgetsRepository.list(), month, limit);
+      if (write.kind === "update") await dailyBudgetsRepository.update(write.id, { limit });
+      else await dailyBudgetsRepository.create({ month, limit });
+      updateTag(CACHE_TAGS.dailyBudgets);
+    }
+    for (const w of planCategoryLimits(await dailyCategoryLimitsRepository.list(), month, categories)) {
+      if (w.kind === "update") await dailyCategoryLimitsRepository.update(w.id, { limit: w.limit });
+      else await dailyCategoryLimitsRepository.create({ category: w.category, month: w.month, limit: w.limit });
+    }
+    updateTag(CACHE_TAGS.dailyCategoryLimits);
     return { status: "saved", at: Date.now() };
   } catch (error) {
     if (error instanceof NotFoundError) return gone;
     if (error instanceof InvalidRowError) return { status: "invalid", errors: { form: error.message } };
-    return failed("setLimit", error);
+    return failed("setLimits", error);
   }
 }

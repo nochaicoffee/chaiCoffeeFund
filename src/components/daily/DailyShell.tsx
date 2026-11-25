@@ -10,7 +10,7 @@ import { formatDate } from "@/lib/format/date";
 import { formatInr, formatInrExact } from "@/lib/format/money";
 import { readDailySpendForm, type DailySpendInput } from "@/lib/forms/dailySpendForms";
 import { IDLE, type FormState } from "@/lib/forms/formState";
-import { DAILY_SPEND_METHODS, type DailyBudget, type DailyCategory, type DailySpend, type DailySpendMethod } from "@/lib/sheets/types";
+import { DAILY_SPEND_METHODS, type DailyBudget, type DailyCategory, type DailyCategoryLimit, type DailySpend, type DailySpendMethod } from "@/lib/sheets/types";
 import { AlertIcon, CheckIcon } from "../cards/forms/icons";
 import { useUndoToast } from "../shell/UndoToast";
 import { ConfirmDialog } from "../subscriptions/forms/ConfirmDialog";
@@ -27,6 +27,7 @@ type Open = { kind: "add"; draft: { date: string; amount: string; method: DailyS
 export interface DailyRaw {
   spends: DailySpend[];
   budgets: DailyBudget[];
+  categoryLimits: DailyCategoryLimit[];
   categoryRows: DailyCategory[];
   today: string;
   month?: string;
@@ -51,7 +52,7 @@ const toFormData = (input: DailySpendInput) => {
  */
 export function DailyShell({ raw, children }: { raw: DailyRaw; children: ReactNode }) {
   const [spends, addOptimistic] = useOptimistic(raw.spends, (list: DailySpend[], spend: DailySpend) => [...list, spend]);
-  const model = useMemo(() => dailyModel({ spends, budgets: raw.budgets, categoryRows: raw.categoryRows, today: raw.today, month: raw.month, period: raw.period }), [spends, raw.budgets, raw.categoryRows, raw.today, raw.month, raw.period]);
+  const model = useMemo(() => dailyModel({ spends, budgets: raw.budgets, categoryLimits: raw.categoryLimits, categoryRows: raw.categoryRows, today: raw.today, month: raw.month, period: raw.period }), [spends, raw.budgets, raw.categoryLimits, raw.categoryRows, raw.today, raw.month, raw.period]);
   const { today } = raw;
   const [selected, setSelected] = useState(() => defaultSelectedDay(model));
   // Moving to another month starts on its default day; anything still being saved, or failed, stays.
@@ -178,7 +179,7 @@ export function DailyShell({ raw, children }: { raw: DailyRaw; children: ReactNo
         </Sheet>
       )}
       {open?.kind === "limit" && (
-        <Sheet title="Monthly limit" subtitle="The most you want to spend in a month." onClose={close}>
+        <Sheet title="Limits" subtitle="The most you want to spend in a month, and optionally in each category." onClose={close}>
           <LimitForm month={model.current.month} current={model.limit} onSaved={() => { saved(undefined, "Limit saved."); close(); }} />
         </Sheet>
       )}

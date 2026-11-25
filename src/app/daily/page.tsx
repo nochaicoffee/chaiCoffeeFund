@@ -6,7 +6,7 @@ import { DailyShell } from "@/components/daily/DailyShell";
 import { GreetingConnected } from "@/components/daily/GreetingConnected";
 import { PageHeader } from "@/components/shell/PageHeader";
 import { greetingTitle, todayIso } from "@/lib/format/date";
-import { getCachedDailyBudgetsTab, getCachedDailyCategoriesTab, getCachedDailySpendsTab } from "@/lib/sheets/cached";
+import { getCachedDailyBudgetsTab, getCachedDailyCategoriesTab, getCachedDailyCategoryLimitsTab, getCachedDailySpendsTab } from "@/lib/sheets/cached";
 
 export const metadata: Metadata = { title: "Daily" };
 
@@ -20,12 +20,12 @@ const one = (v: string | string[] | undefined) => (typeof v === "string" ? v : u
 export default async function DailyPage({ searchParams }: PageProps<"/daily">) {
   const params = await searchParams;
   const today = todayIso();
-  const [spends, categoryRows, budgets] = await Promise.all([getCachedDailySpendsTab(), getCachedDailyCategoriesTab(), getCachedDailyBudgetsTab()]);
+  const [spends, categoryRows, budgets, categoryLimits] = await Promise.all([getCachedDailySpendsTab(), getCachedDailyCategoriesTab(), getCachedDailyBudgetsTab(), getCachedDailyCategoryLimitsTab()]);
   const month = one(params.month);
-  const skipped = [spends.skipped, categoryRows.skipped, budgets.skipped].filter((s) => s.rows.length > 0);
+  const skipped = [spends.skipped, categoryRows.skipped, budgets.skipped, categoryLimits.skipped].filter((s) => s.rows.length > 0);
 
   return (
-    <DailyShell raw={{ spends: spends.records, budgets: budgets.records, categoryRows: categoryRows.records, today, month, period: one(params.period) }}>
+    <DailyShell raw={{ spends: spends.records, budgets: budgets.records, categoryLimits: categoryLimits.records, categoryRows: categoryRows.records, today, month, period: one(params.period) }}>
       <PageHeader section="Daily" title={greetingTitle()} actions={<RefreshButton iconOnly />}>
         <GreetingConnected />
         <SkippedRowsNotice tabs={skipped} />

@@ -1,5 +1,6 @@
 import type { SentencePart } from "@/app/cards/summarySentence";
 import type { GreetingRowData } from "@/components/shell/GreetingParts";
+import { categoryLimitRows, givenOut, needsLook } from "@/lib/aggregate/dailyCategoryLimits";
 import { budgetView, diaryStart, limitFor, methodAmount, methodShare, monthOf, monthRows, monthView, periodView, readMonth, shiftMonth, usualMonth, type BudgetView, type CategoryRow, type MonthView, type PeriodView } from "@/lib/aggregate/dailySpends";
 import { resolveCategories, type CategoryDef } from "@/lib/daily/categories";
 import { PENDING_PREFIX } from "@/lib/daily/pendingAdds";
@@ -7,7 +8,7 @@ import { cardColorKey, type ColorKey } from "@/lib/format/colors";
 import { formatDayDate, formatMonthShort, formatMonthYear, formatShortDate, MONTH_NAMES } from "@/lib/format/date";
 import { ordinal } from "@/lib/format/labels";
 import { formatInrCompact, formatInrExact } from "@/lib/format/money";
-import { DAILY_SPEND_METHODS, type DailyBudget, type DailyCategory, type DailySpend, type DailySpendMethod } from "@/lib/sheets/types";
+import { DAILY_SPEND_METHODS, type DailyBudget, type DailyCategory, type DailyCategoryLimit, type DailySpend, type DailySpendMethod } from "@/lib/sheets/types";
 
 /**
  * Everything the Daily page shows (docs/design/daily.md, round 3), worked out once from lib/aggregate/dailySpends and handed to the components as plain,
@@ -45,13 +46,14 @@ export interface DailyModel {
   categories: CategoryDef[];
   spends: DailySpend[];
   budgets: DailyBudget[];
+  categoryLimits: DailyCategoryLimit[];
   /** What a category id reads as; a spend with none, or one that isn't known, reads as grey. */
   nameOf: (id: string | null | undefined) => string;
   colorOf: (id: string | null | undefined) => ColorKey;
   limitOf: (month: string) => number | null;
 }
 
-export function dailyModel(input: { spends: DailySpend[]; budgets: DailyBudget[]; categoryRows: DailyCategory[]; today: string; month?: string; period?: string }): DailyModel {
+export function dailyModel(input: { spends: DailySpend[]; budgets: DailyBudget[]; categoryLimits?: DailyCategoryLimit[]; categoryRows: DailyCategory[]; today: string; month?: string; period?: string }): DailyModel {
   const { spends, budgets, today } = input;
   const categories = resolveCategories(input.categoryRows);
   const byId = new Map(categories.map((c) => [c.id, c]));
@@ -74,6 +76,7 @@ export function dailyModel(input: { spends: DailySpend[]; budgets: DailyBudget[]
     categories,
     spends,
     budgets,
+    categoryLimits: input.categoryLimits ?? [],
     nameOf: (id) => (id ? (byId.get(id)?.name ?? "Unknown") : "No category"),
     colorOf: (id) => (id && byId.has(id) ? cardColorKey(byId.get(id)?.color) : "slate"),
     limitOf,
@@ -481,6 +484,70 @@ export function whereView(model: DailyModel): WhereView {
   const p = model.period;
   const top = p.categories[0]?.amount ?? 1;
   return { title: `Where ${model.periodLabel} went`, total: money(p.total), rows: p.categories.map((c) => ({ id: c.category ?? "none", name: model.nameOf(c.category), colorKey: model.colorOf(c.category), amount: money(c.amount), share: percent(c.share), fraction: c.amount / top })) };
+}
+
+// ---------- Category limits (round 6, L1) ----------
+
+export interface LimitRowView {
+  id: string;
+  name: string;
+  colorKey: ColorKey;
+  spent: string;
+  /** "of ₹6,000", with the share once it's past; empty without a limit. */
+  of: string;
+  /** How much of the limit is used, 0 to 1 (the bar stops at full). */
+  fraction: number;
+  state: "none" | "ok" | "near" | "over";
+  status: string;
+  /** This month against the same days of the month before, or null when neither had anything. */
+  vs: { text: string; tone: "up" | "down" } | null;
+}
+export interface LimitsView {
+  title: string;
+  note: string;
+  month: string;
+  rows: LimitRowView[];
+  /** The ones near or over their limit, in words. */
+  attention: { id: string; text: string; state: "near" | "over" }[];
+  /** True when any category has a limit this month. */
+  hasLimits: boolean;
+  /** What the limits leave of the monthly limit, or says they add up to more. */
+  footnote: string | null;
+}
+
+/** The calendar's month against each category's limit: where it went, with a bar for each limit. */
+export function limitsView(model: DailyModel): LimitsView {
+  const month = model.picked.month;
+  const rows = categoryLimitRows(model.spends, model.categoryLimits, month, model.today, model.categories.map((c) => c.id));
+  const before = formatMonthShort(shiftMonth(month, -1));
+  // A month the diary wasn't kept in is nothing to compare with: the diary starts on its first spend.
+  const hadBefore = model.spends.some((s) => monthOf(s.date) === shiftMonth(month, -1));
+  const monthly = model.limitOf(month);
+  const given = givenOut(rows);
+  const hasLimits = rows.some((r) => r.limit !== null);
+  const footnote = !hasLimits ? null : monthly === null ? `${money(given)} is given out to categories.` : given > monthly ? `The category limits add up to ${money(given)}, more than your ${money(monthly)} monthly limit. The monthly one still decides the strip.` : `${money(monthly - given)} of your ${money(monthly)} isn't given to a category.`;
+  return {
+    title: `Where ${formatMonthYear(month)} went`,
+    note: "against each category's limit",
+    month,
+    hasLimits,
+    footnote,
+    rows: rows.map((r): LimitRowView => {
+      const diff = r.spent - r.previous;
+      return {
+        id: r.category ?? "none",
+        name: model.nameOf(r.category),
+        colorKey: model.colorOf(r.category),
+        spent: money(r.spent),
+        of: r.limit === null ? "" : `of ${money(r.limit)}${r.state === "over" ? ` · ${percent(r.used ?? 0)}` : ""}`,
+        fraction: r.used === null ? 0 : Math.min(1, r.used),
+        state: r.state,
+        status: r.state === "over" ? `${money(-(r.left ?? 0))} over` : r.state === "near" ? `${percent(r.used ?? 0)} used` : r.state === "ok" ? `${money(r.left ?? 0)} left` : "No limit",
+        vs: !hadBefore || diff === 0 ? null : { text: `${money(Math.abs(diff))} vs ${before}`, tone: diff > 0 ? "up" : "down" },
+      };
+    }),
+    attention: needsLook(rows).map((r) => ({ id: r.category ?? "none", state: r.state as "near" | "over", text: r.state === "over" ? `${model.nameOf(r.category)} is ${money(-(r.left ?? 0))} over its ${money(r.limit ?? 0)} limit` : `${model.nameOf(r.category)} is at ${percent(r.used ?? 0)} of its ${money(r.limit ?? 0)}` })),
+  };
 }
 
 export interface MonthsRow {

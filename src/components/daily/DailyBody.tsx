@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
-import { heroView, monthsView, nowWidgets, periodOptions, periodWidgets, stripView, whereView } from "@/app/daily/views";
+import { heroView, limitsView, monthsView, nowWidgets, periodOptions, periodWidgets, stripView, whereView } from "@/app/daily/views";
 import { BudgetStrip } from "./BudgetStrip";
+import { CategoryLimitsCard, NeedsLook } from "./CategoryLimits";
 import { useDaily } from "./context";
 import { FailedAdds } from "./FailedAdds";
 import { Hero } from "./Hero";
@@ -17,7 +18,7 @@ import { MonthsCard, Widgets, WhereCard } from "./Widgets";
 export function DailyBody() {
   const { model, periodParam, today } = useDaily();
   const v = useMemo(
-    () => ({ hero: heroView(model, periodParam), strip: stripView(model), picker: periodOptions(model), now: nowWidgets(model), period: periodWidgets(model), where: whereView(model), months: monthsView(model, periodParam) }),
+    () => ({ hero: heroView(model, periodParam), strip: stripView(model), picker: periodOptions(model), now: nowWidgets(model), period: periodWidgets(model), where: whereView(model), limits: limitsView(model), months: monthsView(model, periodParam) }),
     [model, periodParam],
   );
   return (
@@ -36,6 +37,8 @@ export function DailyBody() {
           <Widgets widgets={v.now} />
         </>
       )}
+      <NeedsLook view={v.limits} />
+      <CategoryLimitsCard view={v.limits} />
       <div className="sec">
         <div className="sec-t">
           <h2>In {model.periodLabel}</h2>
