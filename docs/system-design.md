@@ -709,6 +709,10 @@ Next.js (App Router), TypeScript:
   - **`touch-action: pan-y`** lets a vertical swipe scroll the page. The browser then sends `pointercancel`, which puts the range back.
   - **The Lifetime rows' FLIP** sets an inline `transition` for the slide and clears it on `transitionend`. Otherwise it would override the row's own opacity transition when the pick changes.
   - **Checking motion:** the Browser pane freezes transitions while it's hidden. These were checked by driving headless Edge over CDP, with real mouse, touch and key events and screenshots. In a phone emulation, a `captureBeyondViewport` screenshot shifts where the next touch lands, so take plain screenshots before touch steps.
+- **Daily's widget bars: texture, hover cards and a CSS pipeline gotcha (#463; the spec is "Widgets, round 7" in `docs/design/daily.md`).** What's not obvious from the code:
+  - **In `daily.css`, custom properties belong in the first `.dy` block and `@keyframes` outside it.** In the later nested `.dy { … }` block the pipeline silently dropped the custom properties (the texture then computed to `none`, with no error).
+  - **Never scale an element that owns a hover card.** The card is its `::after`, so a `transform: scaleY()` stretches the card too; grow the bar by `height` instead.
+  - **A tone class beats the texture on specificity** (`.gl-bar i.neg` sets a `background` shorthand), so the texture selectors name the tones (`:is(*, .warn, .neg)`). The inline fills are `backgroundColor`, never `background`, or they would wipe the texture.
 - Every category page ships with an "add new" form for **both** its master/definition entity (a new Card, Account, Subscription, Loan, IncomeSource, FixedDeposit) **and** its log tab (a statement, a payment, an income entry) — not log tabs only. This is a firm requirement, not a nice-to-have: the explicit point of the app is that adding data never again requires opening the Sheet directly. Full inline editing of historical rows is still fine to land incrementally per page — that's about correcting existing data, a different (lower-priority) concern from being able to add new data at all.
 
 ## Secrets & auth

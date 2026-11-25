@@ -59,7 +59,7 @@ export function CategoryLimitsCard({ view }: { view: LimitsView }) {
               {r.vs && <small className={`vs ${r.vs.tone}`}>{r.vs.tone === "up" ? "↑" : "↓"} {r.vs.text}</small>}
             </span>
             <span className={`lm-bar ${r.state}`} aria-hidden="true">
-              <i style={{ width: `${(r.state === "none" ? 0 : r.fraction) * 100}%`, background: barColor(r) }} />
+              <i style={{ width: `${(r.state === "none" ? 0 : r.fraction) * 100}%`, backgroundColor: barColor(r) }} />
               {r.state !== "none" && <u />}
             </span>
             <span className="lm-v">

@@ -322,14 +322,14 @@ export function heroView(model: DailyModel, periodParam?: string): HeroView {
 // ---------- The widgets ----------
 
 export type WidgetVisual =
-  | { kind: "bar"; fraction: number; tone: "ok" | "warn" | "neg" }
-  | { kind: "track"; fraction: number; tick: number; tone: "ok" | "warn" | "neg" }
-  | { kind: "week"; days: { label: string; height: number; today: boolean; future: boolean }[] }
-  | { kind: "columns"; bars: { height: number; className: "" | "cur" | "fut" | "q"; label: string }[]; line?: number }
-  | { kind: "stack"; segments: { width: number; colorKey: ColorKey }[]; legend: { name: string; percent: string; colorKey: ColorKey }[] }
+  | { kind: "bar"; fraction: number; tone: "ok" | "warn" | "neg"; tip: string }
+  | { kind: "track"; fraction: number; tick: number; tone: "ok" | "warn" | "neg"; tip: string }
+  | { kind: "week"; days: { label: string; height: number; today: boolean; future: boolean; tip: string }[] }
+  | { kind: "columns"; bars: { height: number; className: "" | "cur" | "fut" | "q"; label: string; tip: string }[]; line?: number }
+  | { kind: "stack"; segments: { name: string; width: number; colorKey: ColorKey; tip: string }[]; legend: { name: string; percent: string; colorKey: ColorKey }[] }
   | { kind: "bigs"; rows: { title: string; tile: string; sub: string; amount: string; colorKey: ColorKey }[] }
-  | { kind: "split"; parts: { fraction: number; colorKey: ColorKey }[]; legend: { name: string; percent: string; colorKey: ColorKey }[] }
-  | { kind: "pills"; pills: { text: string; state: "ok" | "mid" | "bad" | "cur" | "fut" | "none" }[] };
+  | { kind: "split"; parts: { name: string; fraction: number; colorKey: ColorKey; tip: string }[]; legend: { name: string; percent: string; colorKey: ColorKey }[] }
+  | { kind: "pills"; pills: { text: string; state: "ok" | "mid" | "bad" | "cur" | "fut" | "none"; tip: string }[] };
 
 export interface WidgetView {
   key: string;
@@ -356,9 +356,9 @@ export function nowWidgets(model: DailyModel): WidgetView[] | null {
   const maxDay = Math.max(b.limit / m.length, ...(week?.cells.map((c) => c?.total ?? 0) ?? [0]));
   const scale = b.limit * 1.4;
   return [
-    { key: "left-today", title: "Left today", tag: "Now", isNow: true, value: t.left < 0 ? `−${money(-t.left)}` : money(t.left), valueTone: t.left < 0 ? "neg" : undefined, sub: t.left < 0 ? `past today's ${money(t.allowance)}` : `of ${money(t.allowance)} for today`, visual: { kind: "bar", fraction: t.allowance ? t.spent / t.allowance : 1, tone: t.left < 0 ? "neg" : "ok" } },
-    { key: "week", title: "Week so far", tag: "Now", isNow: true, value: money(w.spent), sub: `${money(Math.max(0, w.share - w.spent))} left of ${money(w.share)} · ${dayRange(w.from, w.to)} ${formatMonthShort(w.to.slice(0, 7))}`, visual: { kind: "week", days: (week?.cells ?? []).map((c, i) => ({ label: "MTWTFSS"[i], height: c && c.elapsed ? Math.max(6, (c.total / maxDay) * 100) : 6, today: c?.date === model.today, future: !c || !c.elapsed })) } },
-    { key: "track", title: "On track to end at", tag: "Now", isNow: true, value: m.pace === null ? "—" : money(m.pace), valueTone: m.pace !== null && m.pace > b.limit ? "warn" : undefined, sub: m.pace === null ? "Nothing written down yet" : m.pace > b.limit ? `${money(m.pace - b.limit)} over your ${money(b.limit)}` : `${money(b.limit - m.pace)} under your ${money(b.limit)}`, visual: { kind: "track", fraction: Math.min(1, (m.pace ?? 0) / scale), tick: b.limit / scale, tone: m.pace !== null && m.pace > b.limit ? "warn" : "ok" } },
+    { key: "left-today", title: "Left today", tag: "Now", isNow: true, value: t.left < 0 ? `−${money(-t.left)}` : money(t.left), valueTone: t.left < 0 ? "neg" : undefined, sub: t.left < 0 ? `past today's ${money(t.allowance)}` : `of ${money(t.allowance)} for today`, visual: { kind: "bar", fraction: t.allowance ? t.spent / t.allowance : 1, tone: t.left < 0 ? "neg" : "ok", tip: `${money(t.spent)} spent of ${money(t.allowance)}` } },
+    { key: "week", title: "Week so far", tag: "Now", isNow: true, value: money(w.spent), sub: `${money(Math.max(0, w.share - w.spent))} left of ${money(w.share)} · ${dayRange(w.from, w.to)} ${formatMonthShort(w.to.slice(0, 7))}`, visual: { kind: "week", days: (week?.cells ?? []).map((c, i) => ({ label: "MTWTFSS"[i], height: c && c.elapsed ? Math.max(6, (c.total / maxDay) * 100) : 6, today: c?.date === model.today, future: !c || !c.elapsed, tip: c ? `${formatDayDate(c.date)} · ${c.elapsed ? (c.total ? money(c.total) : "nothing written") : "to come"}` : "" })) } },
+    { key: "track", title: "On track to end at", tag: "Now", isNow: true, value: m.pace === null ? "—" : money(m.pace), valueTone: m.pace !== null && m.pace > b.limit ? "warn" : undefined, sub: m.pace === null ? "Nothing written down yet" : m.pace > b.limit ? `${money(m.pace - b.limit)} over your ${money(b.limit)}` : `${money(b.limit - m.pace)} under your ${money(b.limit)}`, visual: { kind: "track", fraction: Math.min(1, (m.pace ?? 0) / scale), tick: b.limit / scale, tone: m.pace !== null && m.pace > b.limit ? "warn" : "ok", tip: m.pace === null ? "Nothing written down yet" : `Heading for ${money(m.pace)} · limit ${money(b.limit)}` } },
   ];
 }
 
@@ -389,8 +389,8 @@ export function periodWidgets(model: DailyModel): WidgetView[] {
     value: money(p.total),
     sub: empty ? "Nothing written down yet" : isYear ? (p.average !== null ? `${money(p.average)} a month on average · ${plural(p.completed, "month")} over` : `${plural(p.months.filter((x) => !x.empty).length, "month")} so far`) : `${money(model.picked.perDay)} a day · ${plural(model.picked.daysCounted, "day")}`,
     visual: isYear
-      ? { kind: "columns", bars: p.months.map((x) => ({ height: x.isFuture || x.empty ? 6 : Math.max(4, (x.total / columnScale) * 100), className: x.isFuture || x.empty ? "fut" : x.month === model.current.month ? "cur" : "", label: "JFMAMJJASOND"[Number(x.month.slice(5, 7)) - 1] })), line: limitForLine === null ? undefined : (limitForLine / columnScale) * 100 }
-      : { kind: "columns", bars: dayCols.map((d) => ({ height: Math.max(4, (d.total / maxDay) * 100), className: d.date === model.today ? "cur" : "", label: "" })) },
+      ? { kind: "columns", bars: p.months.map((x) => ({ height: x.isFuture || x.empty ? 6 : Math.max(4, (x.total / columnScale) * 100), className: x.isFuture || x.empty ? "fut" : x.month === model.current.month ? "cur" : "", label: "JFMAMJJASOND"[Number(x.month.slice(5, 7)) - 1], tip: `${MONTH_NAMES[Number(x.month.slice(5, 7)) - 1]} · ${x.isFuture ? "to come" : x.empty ? "nothing written" : money(x.total)}` })), line: limitForLine === null ? undefined : (limitForLine / columnScale) * 100 }
+      : { kind: "columns", bars: dayCols.map((d) => ({ height: Math.max(4, (d.total / maxDay) * 100), className: d.date === model.today ? "cur" : "", label: "", tip: `${formatDayDate(d.date)} · ${d.total ? money(d.total) : "nothing written"}` })) },
   });
 
   w.push({
@@ -401,7 +401,7 @@ export function periodWidgets(model: DailyModel): WidgetView[] {
     value: first ? model.nameOf(first.category) : "—",
     valueColor: first ? model.colorOf(first.category) : undefined,
     sub: first ? `${money(first.amount)} · ${percent(first.share)} of ${isYear ? "the year" : "the month"}` : "Nothing yet",
-    visual: first ? { kind: "stack", segments: p.categories.slice(0, 5).map((c) => ({ width: c.share * 100, colorKey: model.colorOf(c.category) })), legend: legendOf(p.categories, model, 1, 4) } : { kind: "stack", segments: [], legend: [] },
+    visual: first ? { kind: "stack", segments: p.categories.slice(0, 5).map((c) => ({ name: model.nameOf(c.category), width: c.share * 100, colorKey: model.colorOf(c.category), tip: `${model.nameOf(c.category)} · ${money(c.amount)} · ${percent(c.share)}` })), legend: legendOf(p.categories, model, 1, 4) } : { kind: "stack", segments: [], legend: [] },
   });
 
   w.push({
@@ -425,7 +425,7 @@ export function periodWidgets(model: DailyModel): WidgetView[] {
     isNow: false,
     value: empty ? "—" : hasCash ? `${percent(methodShare(p, biggestMethod))} ${METHOD_NAMES[biggestMethod].toLowerCase()}` : `${percent(p.card / p.total)} card`,
     sub: empty ? "Nothing yet" : used.map((x) => `${money(methodAmount(p, x))} ${x === "Card" ? "card" : METHOD_NAMES[x]}`).join(" · "),
-    visual: { kind: "split", parts: used.map((x) => ({ fraction: empty ? 0 : methodAmount(p, x) / p.total, colorKey: METHOD_COLORS[x] })), legend: empty ? [] : used.map((x) => ({ name: METHOD_NAMES[x], percent: percent(methodAmount(p, x) / p.total), colorKey: METHOD_COLORS[x] })) },
+    visual: { kind: "split", parts: used.map((x) => ({ name: METHOD_NAMES[x], fraction: empty ? 0 : methodAmount(p, x) / p.total, colorKey: METHOD_COLORS[x], tip: `${METHOD_NAMES[x]} · ${money(methodAmount(p, x))} · ${percent(empty ? 0 : methodAmount(p, x) / p.total)}` })), legend: empty ? [] : used.map((x) => ({ name: METHOD_NAMES[x], percent: percent(methodAmount(p, x) / p.total), colorKey: METHOD_COLORS[x] })) },
   });
 
   const run = p.longestRun;
@@ -437,8 +437,8 @@ export function periodWidgets(model: DailyModel): WidgetView[] {
     value: plural(p.quiet, "day"),
     sub: run && p.currentRun !== null ? `Longest run under the daily allowance: ${plural(run.run, "day")} (${formatMonthShort(run.month)}) · now ${p.currentRun}` : "Days with nothing written down",
     visual: isYear
-      ? { kind: "columns", bars: p.months.map((x) => ({ height: x.isFuture || x.empty ? 6 : Math.max(8, (x.quiet / maxQuiet) * 100), className: x.isFuture || x.empty ? "fut" : "q", label: "JFMAMJJASOND"[Number(x.month.slice(5, 7)) - 1] })) }
-      : { kind: "pills", pills: dayCols.slice(-12).map((d) => ({ text: String(d.day), state: d.spends.length === 0 ? "none" : "ok" })) },
+      ? { kind: "columns", bars: p.months.map((x) => ({ height: x.isFuture || x.empty ? 6 : Math.max(8, (x.quiet / maxQuiet) * 100), className: x.isFuture || x.empty ? "fut" : "q", label: "JFMAMJJASOND"[Number(x.month.slice(5, 7)) - 1], tip: `${MONTH_NAMES[Number(x.month.slice(5, 7)) - 1]} · ${x.isFuture ? "to come" : x.empty ? "nothing written" : plural(x.quiet, "quiet day")}` })) }
+      : { kind: "pills", pills: dayCols.slice(-12).map((d) => ({ text: String(d.day), state: d.spends.length === 0 ? "none" : "ok", tip: `${formatDayDate(d.date)} · ${d.spends.length === 0 ? "nothing written" : money(d.total)}` })) },
   });
 
   if (isYear) {
@@ -449,7 +449,7 @@ export function periodWidgets(model: DailyModel): WidgetView[] {
       isNow: false,
       value: p.withLimit ? `${p.inside} of ${p.withLimit}` : "—",
       sub: p.withLimit ? (p.overMonths.length ? `${p.overMonths.map((o) => `${formatMonthShort(o.month)} ${money(o.total)}`).join(" and ")} went over` : "None went over") : model.limit === null ? "Set a limit to see these" : "Counted once a month is over",
-      visual: { kind: "pills", pills: p.months.map((x) => ({ text: "JFMAMJJASOND"[Number(x.month.slice(5, 7)) - 1], state: x.isFuture || x.empty ? "fut" : x.month === model.current.month ? "cur" : x.limit === null ? "none" : x.total <= x.limit ? "ok" : "bad" })) },
+      visual: { kind: "pills", pills: p.months.map((x) => ({ text: "JFMAMJJASOND"[Number(x.month.slice(5, 7)) - 1], state: x.isFuture || x.empty ? "fut" : x.month === model.current.month ? "cur" : x.limit === null ? "none" : x.total <= x.limit ? "ok" : "bad", tip: `${MONTH_NAMES[Number(x.month.slice(5, 7)) - 1]} · ${x.isFuture ? "to come" : x.empty ? "nothing written" : x.limit === null ? `${money(x.total)}, no limit` : `${money(x.total)} of ${money(x.limit)}`}` })) },
     });
   } else {
     const du = p.daysUnder;
@@ -460,7 +460,7 @@ export function periodWidgets(model: DailyModel): WidgetView[] {
       isNow: false,
       value: du ? `${du.under} of ${du.of}` : "—",
       sub: du ? "Days at or under the limit divided by the days in the month" : "Set a limit to see these",
-      visual: { kind: "pills", pills: dayCols.slice(-12).map((d) => { const a = (model.limitOf(p.key) ?? Infinity) / model.picked.length; return { text: String(d.day), state: d.total <= a ? "ok" : d.total <= a * 2 ? "mid" : "bad" }; }) },
+      visual: { kind: "pills", pills: dayCols.slice(-12).map((d) => { const a = (model.limitOf(p.key) ?? Infinity) / model.picked.length; return { text: String(d.day), state: d.total <= a ? "ok" : d.total <= a * 2 ? "mid" : "bad", tip: `${formatDayDate(d.date)} · ${money(d.total)}${Number.isFinite(a) ? ` of ${money(a)}` : ""}` }; }) },
     });
   }
   return w;
@@ -475,6 +475,8 @@ export interface WhereRow {
   amount: string;
   share: string;
   fraction: number;
+  /** The bar's hover card: the category's amount and its share of the period. */
+  tip: string;
 }
 export interface WhereView {
   title: string;
@@ -485,7 +487,7 @@ export interface WhereView {
 export function whereView(model: DailyModel): WhereView {
   const p = model.period;
   const top = p.categories[0]?.amount ?? 1;
-  return { title: `Where ${model.periodLabel} went`, total: money(p.total), rows: p.categories.map((c) => ({ id: c.category ?? "none", name: model.nameOf(c.category), colorKey: model.colorOf(c.category), amount: money(c.amount), share: percent(c.share), fraction: c.amount / top })) };
+  return { title: `Where ${model.periodLabel} went`, total: money(p.total), rows: p.categories.map((c) => ({ id: c.category ?? "none", name: model.nameOf(c.category), colorKey: model.colorOf(c.category), amount: money(c.amount), share: percent(c.share), fraction: c.amount / top, tip: `${model.nameOf(c.category)} · ${money(c.amount)} · ${percent(c.share)} of ${model.period.kind === "year" ? "the year" : "the month"}` })) };
 }
 
 // ---------- Category limits (round 6, L1) ----------
@@ -558,6 +560,8 @@ export interface MonthsRow {
   upi: number;
   card: number;
   cash: number;
+  /** What each part of the bar is, for its hover card. */
+  tips: { upi: string; card: string; cash: string };
   total: string;
   diff: string;
   over: boolean;
@@ -595,6 +599,7 @@ export function monthsView(model: DailyModel, periodParam?: string): MonthsView 
         upi: r.upi / max,
         card: r.card / max,
         cash: r.cash / max,
+        tips: { upi: `UPI · ${money(r.upi)}`, card: `Credit card · ${money(r.card)}`, cash: `Cash · ${money(r.cash)}` },
         total: r.empty ? "—" : money(r.total),
         diff: !done || limit === null ? "" : r.total > limit ? `${money(r.total - limit)} over` : `${money(limit - r.total)} under`,
         over: done && limit !== null && r.total > limit,
