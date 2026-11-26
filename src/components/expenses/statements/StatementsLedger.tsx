@@ -92,7 +92,7 @@ export function StatementsLedger({ months, counts }: { months: StatementMonth[];
               <li key={r.key} className="grid grid-cols-[44px_36px_minmax(0,1fr)_auto] items-center gap-3 rule-b px-1 py-2.5 md:grid-cols-[44px_36px_minmax(0,1fr)_130px_170px_110px]">
                 <span className="grid justify-items-center rounded-[11px] bg-fill py-1.5 leading-none">
                   <b className="text-[15px] font-extrabold">{r.day}</b>
-                  <small className="mt-0.5 text-[9.5px] font-extrabold text-muted uppercase">{r.mon}</small>
+                  <small className="mt-0.5 text-[9.5px] font-extrabold text-muted uppercase label-face">{r.mon}</small>
                 </span>
                 <RowIcon part={r.part} />
                 <span className="min-w-0">

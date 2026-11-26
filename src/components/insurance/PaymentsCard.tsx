@@ -22,7 +22,7 @@ export function PaymentsCard({ view, pickName, picked, allHref }: { view: Paymen
         <p className="flex flex-1 items-center justify-center py-10 text-sm font-semibold text-muted">No premium is recorded yet.</p>
       ) : (
         <div className="min-w-0">
-          <div className={`${GRID} hidden pb-2 text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase sm:grid`} aria-hidden="true">
+          <div className={`${GRID} hidden pb-2 text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase label-face sm:grid`} aria-hidden="true">
             <span>Paid on</span>
             <span>Policy and cover period</span>
             <span className="text-right">Amount</span>
@@ -85,7 +85,7 @@ export function PaymentsCard({ view, pickName, picked, allHref }: { view: Paymen
         <div className="mt-auto grid grid-cols-3 gap-2.5">
           {view.tiles.map((t) => (
             <div key={t.label} className="rounded-2xl bg-fill px-3.5 py-3">
-              <small className="block text-[10.5px] font-extrabold tracking-[0.04em] text-muted uppercase">{t.label}</small>
+              <small className="block text-[10.5px] font-extrabold tracking-[0.04em] text-muted uppercase label-face">{t.label}</small>
               <b className="text-lg font-extrabold tabular-nums">{t.value}</b>
             </div>
           ))}

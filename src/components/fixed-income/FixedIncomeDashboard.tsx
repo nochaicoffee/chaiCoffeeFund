@@ -90,7 +90,7 @@ function Stage({ stage }: { stage: StageView }) {
     <section aria-label={stage.title} className="grid gap-6 rounded-[26px] p-5 text-on-card md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:p-7" style={{ background: colorGradient(doorColor(stage.id)) }}>
       <div className="flex min-w-0 flex-col gap-4">
         <div>
-          <p className="text-[11px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase">{stage.eyebrow}</p>
+          <p className="text-[11px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase label-face">{stage.eyebrow}</p>
           <h2 className="mt-1 text-[26px] font-extrabold">{stage.title}</h2>
         </div>
         <p className="flex items-baseline gap-1.5 leading-none" aria-label={`${stage.big.amount}${stage.big.unit}`}>
@@ -111,7 +111,7 @@ function Stage({ stage }: { stage: StageView }) {
         <dl className="grid grid-cols-2 gap-2.5">
           {stage.tiles.map((tile) => (
             <div key={tile.label} className="rounded-[14px] bg-on-card-fill p-3.5">
-              <dt className="text-[10px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase">{tile.label}</dt>
+              <dt className="text-[10px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase label-face">{tile.label}</dt>
               <dd className={`mt-1 text-xl font-extrabold tabular-nums max-md:text-lg ${/^[₹≈]/.test(tile.value) ? "whitespace-nowrap" : ""}`}>{tile.value}</dd>
               <dd className="mt-0.5 text-[11px] font-medium text-on-card-muted">{tile.note}</dd>
             </div>

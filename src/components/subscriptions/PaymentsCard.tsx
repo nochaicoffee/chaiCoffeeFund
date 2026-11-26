@@ -71,7 +71,7 @@ function Table({ payments, all, lit = null, onPoint }: { payments: PaymentsView;
   if (payments.rows.length === 0) return <p className="py-10 text-center text-[13px] font-medium text-muted">{payments.empty}</p>;
   return (
     <div role="table" aria-label="Payments" onPointerLeave={() => onPoint?.(null)}>
-      <div role="row" className={`hidden text-[10px] font-bold tracking-[0.03em] text-muted uppercase md:grid ${columns}`}>
+      <div role="row" className={`hidden text-[10px] font-bold tracking-[0.03em] text-muted uppercase label-face md:grid ${columns}`}>
         {heads.map((h, i) => (
           <span role="columnheader" key={h} className={i === heads.length - 1 ? "text-right" : ""}>
             {h}

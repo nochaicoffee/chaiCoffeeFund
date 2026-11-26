@@ -95,7 +95,7 @@ function Planet({ planet, pick, dimOthers, onPick }: { planet: PlanetView; pick:
       </span>
       <span role="tooltip" className="pointer-events-none invisible absolute top-[calc(100%+8px)] left-1/2 z-40 w-[230px] -translate-x-1/2 opacity-0 group-focus-within/p:visible group-focus-within/p:opacity-100 group-hover/p:visible group-hover/p:opacity-100 motion-safe:transition-opacity">
         <span className="block rounded-[14px] border border-[var(--tip-line)] bg-[var(--tip-surface)] p-3 text-left text-[var(--tip-fg)] shadow-[var(--tip-shadow)]">
-          <span className="flex items-center justify-between gap-2 text-[11px] font-extrabold tracking-[0.04em] text-[var(--tip-muted)] uppercase">
+          <span className="flex items-center justify-between gap-2 text-[11px] font-extrabold tracking-[0.04em] text-[var(--tip-muted)] uppercase label-face">
             <span>{planet.tip.head}</span>
             <NeedBadge need={planet.tip.need} />
           </span>
@@ -135,22 +135,22 @@ function Sky({ sky, pick, onPick }: { sky: SkyView; pick: string; onPick: (id: s
         {sky.hasSomeday && <circle cx={C} cy={C} r={ringRadius(SOMEDAY_RING)} fill="none" stroke="oklch(1 0 0 / .16)" strokeDasharray="2 6" />}
       </svg>
       {[6, 12, 24, 36, ...(sky.rings.length ? [1, 3] : [])].map((m) => (
-        <span key={m} aria-hidden="true" className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-[oklch(0.17_0.04_265)] px-2 text-[10px] font-extrabold tracking-[0.05em] text-white/50 uppercase ${m === 1 || m === 3 ? "max-md:hidden" : ""}`} style={{ left: "50%", top: pc(C - ringRadius(m)) }}>
+        <span key={m} aria-hidden="true" className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-[oklch(0.17_0.04_265)] px-2 text-[10px] font-extrabold tracking-[0.05em] text-white/50 uppercase label-face ${m === 1 || m === 3 ? "max-md:hidden" : ""}`} style={{ left: "50%", top: pc(C - ringRadius(m)) }}>
           {label(m)}
         </span>
       ))}
       {sky.hasOverdue && (
-        <span aria-hidden="true" className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-[oklch(0.3_0.1_20)] px-2 text-[10px] font-extrabold tracking-[0.05em] text-[oklch(0.88_0.1_25)] uppercase" style={{ left: "50%", top: pc(C - ringRadius(OVERDUE_RING)) }}>
+        <span aria-hidden="true" className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-[oklch(0.3_0.1_20)] px-2 text-[10px] font-extrabold tracking-[0.05em] text-[oklch(0.88_0.1_25)] uppercase label-face" style={{ left: "50%", top: pc(C - ringRadius(OVERDUE_RING)) }}>
           overdue
         </span>
       )}
       {sky.hasSomeday && (
-        <span aria-hidden="true" className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-[oklch(0.17_0.04_265)] px-2 text-[10px] font-extrabold tracking-[0.05em] text-white/50 uppercase" style={{ left: "50%", top: pc(C + ringRadius(SOMEDAY_RING)) }}>
+        <span aria-hidden="true" className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-[oklch(0.17_0.04_265)] px-2 text-[10px] font-extrabold tracking-[0.05em] text-white/50 uppercase label-face" style={{ left: "50%", top: pc(C + ringRadius(SOMEDAY_RING)) }}>
           someday
         </span>
       )}
       <div className={`absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full text-center ${sky.sun.empty ? "" : ""}`} style={{ left: "50%", top: "50%", width: pc(156), aspectRatio: "1", background: sky.sun.empty ? "radial-gradient(circle at 35% 30%, oklch(0.5 0.03 262), oklch(0.28 0.03 262) 70%)" : "radial-gradient(circle at 35% 30%, oklch(0.78 0.16 150), oklch(0.42 0.11 155) 70%)", boxShadow: sky.sun.done ? "0 0 80px oklch(0.85 0.18 140 / .55), inset 0 1px 0 oklch(1 0 0/.3)" : "0 0 60px oklch(0.8 0.17 140 / .35), inset 0 1px 0 oklch(1 0 0/.3)" }}>
-        <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase opacity-75 max-md:text-[8px]">{sky.sun.done ? "Funded" : "Set aside"}</span>
+        <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase label-face opacity-75 max-md:text-[8px]">{sky.sun.done ? "Funded" : "Set aside"}</span>
         <b className="text-[clamp(18px,3.9vw,30px)] leading-[1.05] font-extrabold tracking-tight">{sky.sun.saved}</b>
         <small className="text-[11.5px] font-bold opacity-85 max-md:text-[9px]">{sky.sun.of}</small>
       </div>
@@ -199,7 +199,7 @@ function SideAll({ side, onPick }: { side: SideView; onPick: (id: string) => voi
           card && (
             <ColorCard key={card.kind} colorKey={card.colorKey} className="flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold tracking-[0.05em] uppercase opacity-80">{card.kind}</span>
+                <span className="text-[11px] font-extrabold tracking-[0.05em] uppercase label-face opacity-80">{card.kind}</span>
                 <GoalTile category={card.category} colorKey={card.colorKey} size={30} />
               </div>
               <div className="mt-auto">

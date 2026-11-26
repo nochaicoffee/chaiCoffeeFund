@@ -56,7 +56,7 @@ function RowEditor({ initial, months, fixedMonth, hasPension, onSave, onCancel, 
   return (
     <div className="flex flex-col gap-3 rounded-[14px] border-dashed surface-edge p-3.5">
       <div className="grid grid-cols-2 gap-3 max-md:grid-cols-1">
-        <label className="flex flex-col gap-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+        <label className="flex flex-col gap-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
           Wage month
           {fixedMonth ? (
             <span className="flex h-10 items-center text-sm font-semibold tracking-normal text-fg normal-case">{wageMonthLabel(wageMonth)}</span>
@@ -66,20 +66,20 @@ function RowEditor({ initial, months, fixedMonth, hasPension, onSave, onCancel, 
             </select>
           )}
         </label>
-        <label className="flex flex-col gap-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+        <label className="flex flex-col gap-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
           Credited on
           <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={inputClass(!/^\d{4}-\d{2}-\d{2}$/.test(date))} />
         </label>
-        <label className="flex flex-col gap-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+        <label className="flex flex-col gap-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
           Employee ₹
           <input inputMode="numeric" value={employee} onChange={(e) => setEmployee(e.target.value)} className={inputClass(amounts[0] === null)} />
         </label>
-        <label className="flex flex-col gap-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+        <label className="flex flex-col gap-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
           Employer ₹
           <input inputMode="numeric" value={employer} onChange={(e) => setEmployer(e.target.value)} className={inputClass(amounts[1] === null)} />
         </label>
         {hasPension && (
-          <label className="flex flex-col gap-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+          <label className="flex flex-col gap-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
             Pension ₹
             <input inputMode="numeric" value={pension} onChange={(e) => setPension(e.target.value)} className={inputClass(amounts[2] === null)} />
           </label>
@@ -130,7 +130,7 @@ export function EpfReview({ plan, state, setState, accounts }: { plan: ImportPla
       )}
 
       <section aria-label="Account" className="flex flex-col gap-2">
-        <h3 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Account</h3>
+        <h3 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">Account</h3>
         {chooser ? (
           <div className="flex flex-col gap-2">
             <select aria-label="Which EPF account" value={selected} onChange={(e) => setState({ ...state, choice: e.target.value === "new" ? { kind: "new", name: plan.passbook.establishment ?? "" } : e.target.value ? { kind: "existing", id: e.target.value } : null })} className={inputClass(!plan.choice)}>
@@ -150,7 +150,7 @@ export function EpfReview({ plan, state, setState, accounts }: { plan: ImportPla
       </section>
 
       <section aria-label="Rows" className="flex flex-col gap-2">
-        <h3 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Every credit in the file · {plan.passbook.credits.length}</h3>
+        <h3 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">Every credit in the file · {plan.passbook.credits.length}</h3>
         <ul className="flex flex-col divide-rule rounded-[14px] surface-edge">
           {plan.credits.map((row) => {
             const c = row.credit;
@@ -188,7 +188,7 @@ export function EpfReview({ plan, state, setState, accounts }: { plan: ImportPla
 
       {conflicts.length > 0 && (
         <section aria-label="Conflicts" className="flex flex-col gap-2">
-          <h3 className="text-[11px] font-bold tracking-[0.04em] text-warning-text uppercase">Already there, with a different day or amount</h3>
+          <h3 className="text-[11px] font-bold tracking-[0.04em] text-warning-text uppercase label-face">Already there, with a different day or amount</h3>
           {conflicts.map((row) => (
             <div key={row.credit.wageMonth} className="flex flex-col gap-2 rounded-[14px] bg-warning-tint/50 px-3.5 py-3 text-xs">
               <p><b>{wageMonthLabel(row.credit.wageMonth)}</b>: in the app {formatInr(totalOf(row.existing!))} on {formatDate(row.existing!.date)}{row.existing!.source === "Typed" ? " (typed)" : ""}; in this file {formatInr(totalOf(row.credit))} on {formatDate(row.credit.date)}.</p>
@@ -200,7 +200,7 @@ export function EpfReview({ plan, state, setState, accounts }: { plan: ImportPla
 
       {plan.contradicted.length > 0 && (
         <section aria-label="Typed credits the file doesn't have" className="flex flex-col gap-2">
-          <h3 className="text-[11px] font-bold tracking-[0.04em] text-warning-text uppercase">You typed these, and the file doesn&apos;t have them</h3>
+          <h3 className="text-[11px] font-bold tracking-[0.04em] text-warning-text uppercase label-face">You typed these, and the file doesn&apos;t have them</h3>
           {plan.contradicted.map((e) => (
             <div key={e.id} className="flex flex-wrap items-center justify-between gap-2 rounded-[14px] bg-warning-tint/50 px-3.5 py-3 text-xs">
               <span><b>{wageMonthLabel(e.wageMonth ?? "")}</b>: {formatInr(totalOf(e))} on {formatDate(e.date)}</span>
@@ -212,7 +212,7 @@ export function EpfReview({ plan, state, setState, accounts }: { plan: ImportPla
 
       {plan.passbook.interest && (
         <section aria-label="Interest" className="flex flex-col gap-2">
-          <h3 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Interest credited</h3>
+          <h3 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">Interest credited</h3>
           <div className="flex flex-col gap-2 rounded-[14px] bg-fill px-3.5 py-3 text-sm">
             <span><b className="font-extrabold">{formatInr(totalOf(plan.passbook.interest))}</b> on {formatDate(plan.passbook.interest.date)} <span className="text-muted">({formatInr(plan.passbook.interest.employee)} + {formatInr(plan.passbook.interest.employer)})</span></span>
             {rule && <span className="text-xs text-muted">The rule at {rule.ratePercent}% ({rule.source.toLowerCase()}) gives {formatInr(rule.ruleGives.total)}{rule.impliedRatePercent !== null ? `; what was credited works out to ${rule.impliedRatePercent}%` : ""}. The credited figure is what is kept.</span>}

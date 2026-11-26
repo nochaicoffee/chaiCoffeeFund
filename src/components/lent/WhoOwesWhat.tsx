@@ -191,7 +191,7 @@ function PaneBody({ pane }: { pane: HeroPane }) {
   return (
     <div className="flex min-w-0 flex-col gap-4">
       <div>
-        <p className="text-[11px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase">{pane.eyebrow}</p>
+        <p className="text-[11px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase label-face">{pane.eyebrow}</p>
         <h3 className="mt-1 text-[24px] font-extrabold">{pane.title}</h3>
       </div>
       <p className="flex items-baseline gap-1.5 leading-none" aria-label={`₹${pane.big}`}>
@@ -252,7 +252,7 @@ function PaneBody({ pane }: { pane: HeroPane }) {
         <dl className="grid grid-cols-2 gap-2.5">
           {pane.tiles.map((t) => (
             <div key={t.label} className="rounded-[14px] bg-on-card-fill p-3.5">
-              <dt className="text-[10px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase">{t.label}</dt>
+              <dt className="text-[10px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase label-face">{t.label}</dt>
               <dd className="mt-1 text-xl font-extrabold tabular-nums max-md:text-lg">{t.value}</dd>
               <dd className="mt-0.5 text-[11px] font-medium text-on-card-muted">{t.note}</dd>
             </div>

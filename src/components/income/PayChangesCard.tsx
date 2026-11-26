@@ -22,17 +22,17 @@ export function PayChangesCard({ card }: { card: PayChangesData }) {
       </div>
       <dl className="grid grid-cols-3 gap-4">
         <div className="flex flex-col gap-0.5">
-          <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">Changes</dt>
+          <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">Changes</dt>
           <dd className="text-xl font-extrabold tabular-nums">{card.count}</dd>
           <dd className="text-[11.5px] font-semibold text-muted">{card.countNote}</dd>
         </div>
         <div className="flex flex-col gap-0.5">
-          <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">Biggest rise</dt>
+          <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">Biggest rise</dt>
           <dd className="text-xl font-extrabold text-accent-text tabular-nums">{card.biggest?.value ?? "—"}</dd>
           <dd className="text-[11.5px] font-semibold text-muted">{card.biggest?.note ?? "no rise"}</dd>
         </div>
         <div className="flex flex-col gap-0.5">
-          <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">Added up</dt>
+          <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">Added up</dt>
           <dd className="text-xl font-extrabold tabular-nums">{card.added.value}</dd>
           <dd className="text-[11.5px] font-semibold text-muted">{card.added.note}</dd>
         </div>

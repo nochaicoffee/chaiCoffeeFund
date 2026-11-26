@@ -48,7 +48,7 @@ export function WhereWentCard({ view }: { view: WhereView }) {
       </ul>
       {view.usual && (
         <div className="flex flex-col gap-2">
-          <div className="text-[11px] font-extrabold tracking-[0.05em] text-muted uppercase">
+          <div className="text-[11px] font-extrabold tracking-[0.05em] text-muted uppercase label-face">
             Against your usual month <small className="ml-1 font-semibold tracking-normal normal-case">the average of the months worked out</small>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
@@ -139,7 +139,7 @@ export function MonthsTable({ view }: { view: MonthsView }) {
       <div className="-mx-2 overflow-x-auto px-2">
         <table className="w-full min-w-[960px] border-collapse text-[13.5px]">
           <thead>
-            <tr className="rule-b text-[11px] font-extrabold tracking-[0.05em] text-muted uppercase">
+            <tr className="rule-b text-[11px] font-extrabold tracking-[0.05em] text-muted uppercase label-face">
               {head.map((h, i) => (
                 <th key={h} scope="col" className={`px-2.5 py-2.5 ${i === 0 ? "text-left" : "text-right"}`}>
                   {h}

@@ -22,7 +22,7 @@ export function Tip({ children, card, className = "", place = "up", align = "cen
 export function TipBody({ head, aside, total, detail, rows = [], foot }: { head: string; aside?: ReactNode; total?: string; detail?: string; rows?: { name: string; amount: string; mark?: ReactNode }[]; foot?: string }) {
   return (
     <>
-      <span className="flex items-center justify-between gap-2 text-[11px] font-extrabold tracking-[0.04em] text-[var(--tip-muted)] uppercase">
+      <span className="flex items-center justify-between gap-2 text-[11px] font-extrabold tracking-[0.04em] text-[var(--tip-muted)] uppercase label-face">
         <span>{head}</span>
         {aside}
       </span>

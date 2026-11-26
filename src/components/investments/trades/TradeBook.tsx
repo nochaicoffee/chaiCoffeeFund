@@ -25,7 +25,7 @@ export function TradeBook({ view, holdings }: { view: BookView; holdings: Holdin
           ← All trades
         </Link>
         {held.map((h) => <HoldingChip key={h.id} h={h} on={h.id === view.ref.id} />)}
-        {soldOut.length > 0 && <span className="ml-1 shrink-0 text-[11px] font-extrabold tracking-[0.05em] text-muted uppercase">Sold out</span>}
+        {soldOut.length > 0 && <span className="ml-1 shrink-0 text-[11px] font-extrabold tracking-[0.05em] text-muted uppercase label-face">Sold out</span>}
         {soldOut.map((h) => <HoldingChip key={h.id} h={h} on={h.id === view.ref.id} />)}
       </nav>
 
@@ -46,7 +46,7 @@ export function TradeBook({ view, holdings }: { view: BookView; holdings: Holdin
           <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {view.figures.map((f) => (
               <div key={f.label} className="min-w-0 rounded-[16px] bg-fill px-3.5 py-3">
-                <div className="text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase">{f.label}</div>
+                <div className="text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase label-face">{f.label}</div>
                 <div className="mt-1 truncate text-[19px] font-extrabold tabular-nums">{f.value}</div>
                 <div className="mt-0.5 text-[11.5px] font-semibold text-muted">{f.note}</div>
               </div>
@@ -122,7 +122,7 @@ export function TradeBook({ view, holdings }: { view: BookView; holdings: Holdin
             Back to all trades →
           </Link>
         </div>
-        <div className={`hidden gap-3.5 px-1.5 pb-1 text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase lg:grid ${COLS}`}>
+        <div className={`hidden gap-3.5 px-1.5 pb-1 text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face lg:grid ${COLS}`}>
           <span>Date</span>
           <span>Kind</span>
           <span className="text-right">Shares</span>
@@ -251,7 +251,7 @@ function BookRow({ r, name }: { r: BookRowView; name: string }) {
 function Cell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col text-[13px] tabular-nums lg:items-end lg:text-right [&_b]:font-extrabold [&_small]:mt-0.5 [&_small]:text-[11px] [&_small]:font-semibold [&_small]:text-muted">
-      <span className="text-[10px] font-extrabold tracking-[0.05em] text-muted uppercase lg:hidden">{label}</span>
+      <span className="text-[10px] font-extrabold tracking-[0.05em] text-muted uppercase label-face lg:hidden">{label}</span>
       {children}
     </div>
   );

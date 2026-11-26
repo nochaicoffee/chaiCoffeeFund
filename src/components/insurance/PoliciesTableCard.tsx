@@ -16,7 +16,7 @@ export function PoliciesTableCard({ table, pickId, onPick }: { table: TableView;
   return (
     <WidgetCard label="Policies" title="Policies" note="everything you're insured under" gap="gap-3" right={<FormTrigger className={SMALL_SOFT} label="+ Add policy" onClick={() => open({ kind: "add" })} />}>
       <div className="min-w-0">
-        <div className={`hidden gap-4 pb-2 text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase lg:grid ${COLS}`} aria-hidden="true">
+        <div className={`hidden gap-4 pb-2 text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase label-face lg:grid ${COLS}`} aria-hidden="true">
           {HEADS.map((h) => (
             <span key={h}>{h}</span>
           ))}

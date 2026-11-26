@@ -66,7 +66,7 @@ export function HeroTrend({ pick, checkIns, flowItems, periodLabel, today, onPic
     <div className="flex min-w-0 flex-col gap-4">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-[11px] font-extrabold tracking-wider text-muted uppercase">{mode === "trend" ? `Balance · ${periodLabel}` : "Balance · when it was read"}</div>
+          <div className="text-[11px] font-extrabold tracking-wider text-muted uppercase label-face">{mode === "trend" ? `Balance · ${periodLabel}` : "Balance · when it was read"}</div>
           <h2 className="mt-0.5 truncate text-xl font-extrabold">{pick.name}</h2>
         </div>
         <div role="group" aria-label="Show" className="flex shrink-0 rounded-full bg-fill p-[3px]">
@@ -92,7 +92,7 @@ function Facts({ facts }: { facts: FactView[] }) {
     <dl className="grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-4">
       {facts.map((f) => (
         <div key={f.label} className="min-w-0">
-          <dt className="truncate text-[10px] font-extrabold tracking-wider text-muted uppercase">{f.label}</dt>
+          <dt className="truncate text-[10px] font-extrabold tracking-wider text-muted uppercase label-face">{f.label}</dt>
           <dd className={`mt-0.5 truncate text-lg leading-tight font-extrabold tabular-nums ${f.warn ? "text-[var(--card-copper)]" : ""}`}>{f.value}</dd>
           {f.note && <dd className="truncate text-[11px] font-semibold text-muted">{f.note}</dd>}
         </div>

@@ -26,7 +26,7 @@ export function GrowthCard({ view }: { view: GrowthView }) {
       }
     >
       <div>
-        <p className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase">
+        <p className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">
           In {step.years} years ({step.year})
         </p>
         <p className="mt-1 text-4xl font-extrabold tabular-nums">{step.total}</p>

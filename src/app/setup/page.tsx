@@ -27,7 +27,7 @@ export default async function SetupPage() {
   return (
     <div className="mx-auto flex w-full max-w-[820px] flex-col gap-6">
       <header className="flex flex-col gap-2">
-        <p className="text-[12px] font-extrabold tracking-[0.14em] text-muted uppercase">{appConfig.appName}</p>
+        <p className="text-[12px] font-extrabold tracking-[0.14em] text-muted uppercase label-face">{appConfig.appName}</p>
         <h1 className="text-3xl font-extrabold tracking-tight text-fg">Set up your own copy</h1>
         <p className="max-w-prose text-[15px] text-muted">
           About 30 minutes, all free. You&apos;ll make a Google Sheet that holds your data, a Google Cloud project that lets the app use it, and a Vercel project that runs the app. Everything stays in your accounts.
@@ -37,7 +37,7 @@ export default async function SetupPage() {
       {status && scope ? <SetupStatusPanel status={status} scope={scope} local={open} /> : null}
 
       <nav aria-label="Steps" className="rounded-card border border-divider bg-surface p-6">
-        <h2 className="text-[13px] font-extrabold tracking-wide text-muted uppercase">The steps</h2>
+        <h2 className="text-[13px] font-extrabold tracking-wide text-muted uppercase label-face">The steps</h2>
         <ol className="mt-2 grid gap-x-6 gap-y-1 text-[14.5px] sm:grid-cols-2">
           {STEPS.map((step, index) => (
             <li key={step.id}>

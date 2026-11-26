@@ -28,7 +28,7 @@ export function CashCard({ view }: { view: CashView }) {
 function Summary({ view }: { view: CashView }) {
   return (
     <div className="flex min-w-0 flex-col gap-2 rounded-[18px] bg-fill p-4">
-      <div className="text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase">Idle at the brokers</div>
+      <div className="text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase label-face">Idle at the brokers</div>
       <div className="text-[28px] leading-none font-extrabold tracking-tight tabular-nums">{view.total}</div>
       <div className="text-[12px] font-semibold text-muted">{view.accountsLine}</div>
       <span role="img" aria-label={`Holdings ${view.holdings}, ${view.investedText} of what you have at your brokers; cash ${view.total}, ${view.idleText}`} className="flex h-2 overflow-hidden rounded-full bg-surface">

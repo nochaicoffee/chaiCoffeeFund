@@ -46,7 +46,7 @@ export function CreditsCard({ view }: { view: CreditsView }) {
       </div>
       {view.note && <p className="text-xs font-medium text-muted">{view.note}</p>}
       <div className="flex flex-col gap-1.5 rule-t pt-3">
-        <div className="flex justify-between text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase">
+        <div className="flex justify-between text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">
           <span>Passbook check</span>
           <span className="normal-case">opening + credits + interest = closing</span>
         </div>

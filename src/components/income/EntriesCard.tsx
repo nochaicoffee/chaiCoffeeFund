@@ -35,7 +35,7 @@ export function EntriesCard({ card, pickLabel, allHref }: { card: EntriesCardDat
           <div className="-mx-1 flex-1 overflow-x-auto px-1">
             <table className="w-full min-w-[520px] border-collapse text-left text-[13px]">
               <thead>
-                <tr className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">
+                <tr className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">
                   <th className="pb-2 font-extrabold">Source</th>
                   <th className="pb-2 font-extrabold">Landed on</th>
                   <th className="pb-2 text-right font-extrabold">Amount</th>

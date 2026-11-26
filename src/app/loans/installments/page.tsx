@@ -48,7 +48,7 @@ export default async function LoanInstallmentsPage({ searchParams }: PageProps<"
             </>
           }
         >
-          <p className="max-w-[720px] text-[15px] font-semibold text-muted">Every EMI, worked out from each loan&apos;s terms and its prepayments. Paid ones stay as they were paid; the rest change only when a prepayment is added.</p>
+          <p className="max-w-[720px] text-[length:var(--greeting-sentence-size-sm,15px)] font-semibold text-[color:var(--greeting-sentence-color,var(--muted))] md:text-[length:var(--greeting-sentence-size,15px)]">Every EMI, worked out from each loan&apos;s terms and its prepayments. Paid ones stay as they were paid; the rest change only when a prepayment is added.</p>
           {demo && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
           <SkippedRowsNotice tabs={skipped} />
         </PageHeader>

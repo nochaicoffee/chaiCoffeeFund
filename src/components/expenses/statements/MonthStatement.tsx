@@ -26,7 +26,7 @@ export function MonthStatement({ view }: { view: MonthStatementView }) {
           <div key={s.part} className="grid pt-1 pb-2.5">
             <div className="grid grid-cols-[auto_auto_minmax(0,1fr)_auto] items-baseline gap-2.5 border-b-[1.5px] border-fg pt-2.5 pb-2">
               <i aria-hidden="true" className="size-2.5 self-center rounded-[3px]" style={{ background: s.part === "cash" ? `${HATCH}, var(--card-${s.colorKey})` : `var(--card-${s.colorKey})` }} />
-              <b className="text-[13px] font-extrabold tracking-[0.04em] uppercase">{s.name}</b>
+              <b className="text-[13px] font-extrabold tracking-[0.04em] uppercase label-face">{s.name}</b>
               <small className="text-xs font-semibold text-muted">{s.note}</small>
               <span className="text-[15px] font-extrabold tabular-nums">{s.total}</span>
             </div>
@@ -50,7 +50,7 @@ export function MonthStatement({ view }: { view: MonthStatementView }) {
           </div>
         ))}
         {view.loose.length > 0 && <LooseTags tags={view.loose} />}
-        <div className="mt-auto flex items-baseline justify-between border-t-2 border-fg pt-3.5 text-[15px] font-extrabold tracking-[0.04em] uppercase">
+        <div className="mt-auto flex items-baseline justify-between border-t-2 border-fg pt-3.5 text-[15px] font-extrabold tracking-[0.04em] uppercase label-face">
           {view.total.label} <b className="text-[22px] tracking-tight tabular-nums">{view.total.amount}</b>
         </div>
       </section>
@@ -95,7 +95,7 @@ export function MonthStatement({ view }: { view: MonthStatementView }) {
         )}
         <div className="mt-1.5 grid gap-2.5">
           <div className="flex items-baseline justify-between">
-            <b className="text-xs font-extrabold tracking-[0.05em] text-muted uppercase">Every month</b>
+            <b className="text-xs font-extrabold tracking-[0.05em] text-muted uppercase label-face">Every month</b>
             {view.usualLabel && <small className="text-xs font-semibold text-muted">{view.usualLabel}</small>}
           </div>
           <nav aria-label="Every month" className="relative grid h-[220px] grid-cols-12 gap-1.5">

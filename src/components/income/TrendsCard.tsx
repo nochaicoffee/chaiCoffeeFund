@@ -86,7 +86,7 @@ export function TrendsCard({ trends }: { trends: TrendsData }) {
         <dl className="grid grid-cols-1 gap-4 rule-t pt-4 sm:grid-cols-3">
           {trends.movers.map((m) => (
             <div key={m.name} className="flex flex-col gap-0.5">
-              <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">{m.name}</dt>
+              <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">{m.name}</dt>
               <dd className={`text-lg font-extrabold tabular-nums ${m.up ? "text-accent-text" : "text-negative"}`}>{m.change}</dd>
               <dd className="text-[11.5px] font-semibold text-muted">{trends.moversNote}</dd>
             </div>

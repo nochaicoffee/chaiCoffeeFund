@@ -21,7 +21,7 @@ export function ClockCard({ clock, picked }: { clock: ClockView | null; picked: 
             ).map(([v, k]) => (
               <span key={k} className="flex min-w-[88px] flex-col items-center rounded-[18px] surface-edge bg-fill px-4 pt-3 pb-2.5">
                 <b className="text-[48px] leading-none font-extrabold tracking-[-0.03em] tabular-nums">{String(v).padStart(2, "0")}</b>
-                <small className="mt-1.5 text-[10.5px] font-extrabold tracking-[0.1em] text-muted uppercase">{k}</small>
+                <small className="mt-1.5 text-[10.5px] font-extrabold tracking-[0.1em] text-muted uppercase label-face">{k}</small>
               </span>
             ))}
           </div>

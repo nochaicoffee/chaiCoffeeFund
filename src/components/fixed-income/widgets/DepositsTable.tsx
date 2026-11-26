@@ -26,7 +26,7 @@ export function DepositsTable({ rows }: { rows: DepositTableRow[] }) {
       }
     >
       <div className="flex flex-col">
-        <div className={`hidden gap-3 px-1 pb-2 text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase lg:grid ${COLS}`} aria-hidden="true">
+        <div className={`hidden gap-3 px-1 pb-2 text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face lg:grid ${COLS}`} aria-hidden="true">
           <span>Deposit</span>
           <span className="text-right">Rate</span>
           <span className="text-right">Placed</span>
@@ -95,7 +95,7 @@ export function DepositsTable({ rows }: { rows: DepositTableRow[] }) {
 function Cell({ label, className = "", children }: { label: string; className?: string; children: React.ReactNode }) {
   return (
     <div className={`min-w-0 text-[13px] tabular-nums [&_b]:block [&_b]:font-extrabold [&_small]:block [&_small]:text-[11px] [&_small]:font-medium [&_small]:text-muted ${className}`}>
-      <span className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase lg:hidden">{label}</span>
+      <span className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face lg:hidden">{label}</span>
       {children}
     </div>
   );

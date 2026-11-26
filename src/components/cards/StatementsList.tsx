@@ -33,7 +33,7 @@ function Cell({ label, className = "", children }: { label?: string; className?:
   return (
     <div role="cell" className={`min-w-0 ${className}`}>
       {label && (
-        <span aria-hidden="true" className="block text-[10px] font-bold tracking-[0.03em] text-muted uppercase xl:hidden">
+        <span aria-hidden="true" className="block text-[10px] font-bold tracking-[0.03em] text-muted uppercase label-face xl:hidden">
           {label}
         </span>
       )}
@@ -299,7 +299,7 @@ export function StatementsList({
           <div role="rowgroup" className="max-xl:sr-only">
             <div role="row" className={`grid gap-3 rule-b px-3.5 pb-2.5 ${COLUMNS}`}>
               {HEADERS.map((h) => (
-                <span key={h} role="columnheader" className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase">
+                <span key={h} role="columnheader" className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase label-face">
                   {h}
                 </span>
               ))}

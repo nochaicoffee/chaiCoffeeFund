@@ -26,7 +26,7 @@ export function PaymentSections({ sections }: { sections: PaymentsPageSection[] 
             </svg>
           </summary>
           <div className="px-5 pb-5 md:px-6 md:pb-6">
-            <div className={`${GRID} hidden pb-2 text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase md:grid`} aria-hidden="true">
+            <div className={`${GRID} hidden pb-2 text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase label-face md:grid`} aria-hidden="true">
               <span>Paid on</span>
               <span>Cover period</span>
               <span className="text-right">Amount</span>

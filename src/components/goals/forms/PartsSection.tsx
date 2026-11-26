@@ -36,7 +36,7 @@ export function PartsSection({ rows, onChange, today, showGiven, error }: { rows
   const set = (key: string, patch: Partial<PartRow>) => onChange(rows.map((row) => (row.key === key ? { ...row, ...patch } : row)));
   return (
     <fieldset className="flex min-w-0 flex-col gap-2.5 md:col-span-2" aria-describedby={error ? "parts-error" : "parts-help"}>
-      <legend className="mb-1 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+      <legend className="mb-1 text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
         Parts <span className="font-semibold normal-case">· optional</span>
       </legend>
       {rows.map((row, index) => (

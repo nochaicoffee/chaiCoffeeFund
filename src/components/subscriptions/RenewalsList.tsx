@@ -334,7 +334,7 @@ export function RenewalsList({
           <div role="rowgroup" className="max-xl:hidden">
             <div role="row" className={`grid gap-3.5 px-2.5 pb-2 ${COLUMNS}`}>
               {HEADERS.map((h) => (
-                <span key={h} role="columnheader" className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase">
+                <span key={h} role="columnheader" className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase label-face">
                   {h}
                 </span>
               ))}

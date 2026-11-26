@@ -34,7 +34,7 @@ export function DetailsCard({ view }: { view: DetailsView | null }) {
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2">
             {view.fields.map((f) => (
               <div key={f.key} className={`flex min-w-0 flex-col gap-0.5 ${f.full ? "sm:col-span-2" : ""}`}>
-                <dt className="text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase">{f.label}</dt>
+                <dt className="text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase label-face">{f.label}</dt>
                 <dd className={`text-sm leading-snug ${f.quiet ? "font-semibold text-muted" : "font-bold"}`}>
                   {f.href ? (
                     <a href={f.href} target="_blank" rel="noopener noreferrer" className="text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">
@@ -49,7 +49,7 @@ export function DetailsCard({ view }: { view: DetailsView | null }) {
           </dl>
           {view.addOns.length > 0 && (
             <div>
-              <span className="mb-2 block text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase">Add-ons and covers</span>
+              <span className="mb-2 block text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase label-face">Add-ons and covers</span>
               <ul className="flex flex-wrap gap-2">
                 {view.addOns.map((a) => (
                   <li key={a} className="inline-flex items-center gap-1.5 rounded-full bg-fill px-3 py-1.5 text-xs font-bold">

@@ -28,7 +28,7 @@ export function CheckInCalendar({ view, pickId, onPick }: { view: CheckInsView; 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-4">
         {view.facts.map((f) => (
           <div key={f.label} className="min-w-0">
-            <dt className="truncate text-[10px] font-extrabold tracking-wider text-muted uppercase">{f.label}</dt>
+            <dt className="truncate text-[10px] font-extrabold tracking-wider text-muted uppercase label-face">{f.label}</dt>
             <dd className={`mt-0.5 truncate text-lg leading-tight font-extrabold tabular-nums ${f.warn ? "text-[var(--card-copper)]" : ""}`}>{f.value}</dd>
             {f.note && <dd className="truncate text-[11px] font-semibold text-muted">{f.note}</dd>}
           </div>
@@ -38,7 +38,7 @@ export function CheckInCalendar({ view, pickId, onPick }: { view: CheckInsView; 
         <div role="grid" aria-label="When each account's balance was read" className="grid min-w-[420px] content-start gap-1" style={{ gridTemplateColumns: `minmax(112px, 1.4fr) repeat(${view.months.length}, minmax(0, 1fr))` }}>
           <span />
           {view.months.map((m) => (
-            <span key={m.key} className="pb-0.5 text-center text-[10px] font-bold tracking-wider text-muted uppercase">
+            <span key={m.key} className="pb-0.5 text-center text-[10px] font-bold tracking-wider text-muted uppercase label-face">
               {m.label}
             </span>
           ))}

@@ -77,9 +77,9 @@ export function FutureYou({ view }: { view: FutureView }) {
     <section aria-label="Future you" data-scrubbing={guide ? "" : undefined} className="group/future relative isolate grid gap-6 overflow-clip rounded-[26px] p-5 text-on-card md:p-8 xl:grid-cols-[300px_minmax(0,1fr)]" style={{ background: "linear-gradient(140deg, var(--card-teal-from), var(--card-teal-to))" }}>
       <RingTexture width={1300} height={640} dx={40} dy={40} first={60} step={30} stroke="var(--rings-light)" opacity={0.08} sheen={SHEEN} ringsClassName={RIPPLE} />
       <div className="flex flex-col gap-3">
-        <div className="text-xs font-extrabold tracking-[0.06em] uppercase opacity-80">Future you</div>
+        <div className="text-xs font-extrabold tracking-[0.06em] uppercase label-face opacity-80">Future you</div>
         <h2 className="text-[22px] leading-tight font-extrabold">What you&apos;ll be worth, and when</h2>
-        <div className="mt-2 text-xs font-extrabold tracking-[0.05em] uppercase opacity-75">In</div>
+        <div className="mt-2 text-xs font-extrabold tracking-[0.05em] uppercase label-face opacity-75">In</div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="How far ahead">
           {HORIZONS.map((h) => (
             <button key={h} type="button" aria-pressed={years === h} onClick={() => setYears(h)} className={`min-h-9 rounded-full px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${years === h ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill hover:bg-[var(--on-card-hover,color-mix(in_oklab,#fff_25%,transparent))]"}`}>
@@ -87,7 +87,7 @@ export function FutureYou({ view }: { view: FutureView }) {
             </button>
           ))}
         </div>
-        <div className="mt-2 text-xs font-extrabold tracking-[0.05em] uppercase opacity-75">If your investments earn</div>
+        <div className="mt-2 text-xs font-extrabold tracking-[0.05em] uppercase label-face opacity-75">If your investments earn</div>
         <div className="flex items-baseline justify-between gap-3">
           <label className="flex items-center gap-1.5 text-[28px] font-extrabold">
             <span className="sr-only">Yearly return, in percent</span>
@@ -120,7 +120,7 @@ export function FutureYou({ view }: { view: FutureView }) {
       </div>
       <div className="flex min-w-0 flex-col gap-4">
         <div>
-          <div className="text-xs font-extrabold tracking-[0.06em] uppercase opacity-80">In {years} {years === 1 ? "year" : "years"} · {monthLabel(view.startMonth, years * 12)}</div>
+          <div className="text-xs font-extrabold tracking-[0.06em] uppercase label-face opacity-80">In {years} {years === 1 ? "year" : "years"} · {monthLabel(view.startMonth, years * 12)}</div>
           <div className="mt-1 text-[clamp(34px,6vw,64px)] leading-none font-extrabold tracking-tight whitespace-nowrap tabular-nums"><RollingNumber value={Math.round(p.net)} format="inr" /></div>
           <p className="mt-2 text-sm font-semibold opacity-90">is what you&apos;d be worth if your investments earn {a.returnPct}% a year. That is {at.change >= 0 ? "+" : "−"}{formatInrCompact(Math.abs(at.change))} on today.</p>
         </div>
@@ -185,7 +185,7 @@ export function FutureYou({ view }: { view: FutureView }) {
 function Tile({ k, v, s }: { k: string; v: string; s: string }) {
   return (
     <div className="rounded-[16px] bg-on-card-fill px-3.5 py-3">
-      <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase opacity-75">{k}</div>
+      <div className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase label-face opacity-75">{k}</div>
       <div className="mt-0.5 text-xl font-extrabold tabular-nums">{v}</div>
       <div className="text-[11.5px] font-semibold opacity-75">{s}</div>
     </div>

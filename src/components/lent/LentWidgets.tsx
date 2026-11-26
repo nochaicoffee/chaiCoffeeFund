@@ -45,7 +45,7 @@ function Dots({ verdicts }: { verdicts: PayoutVerdict[] }) {
 function Cell({ label, className = "", children }: { label: string; className?: string; children: React.ReactNode }) {
   return (
     <div className={`flex flex-col text-[13px] tabular-nums ${className}`}>
-      <span className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase lg:hidden">{label}</span>
+      <span className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face lg:hidden">{label}</span>
       {children}
     </div>
   );
@@ -57,7 +57,7 @@ export function LoansTable({ view }: { view: LoansTableView }) {
   return (
     <WidgetCard label="Loans" title="Loans" note="money you've lent, outside any bank">
       <div className="flex flex-col">
-        <div className={`hidden gap-3 px-1 pb-2 text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase lg:grid ${COLS}`} aria-hidden="true">
+        <div className={`hidden gap-3 px-1 pb-2 text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face lg:grid ${COLS}`} aria-hidden="true">
           <span>Loan</span>
           <span className="text-right">Rate</span>
           <span className="text-right">Lent</span>
@@ -112,7 +112,7 @@ export function LoansTable({ view }: { view: LoansTableView }) {
           </div>
         ))}
         <div className={`grid items-start gap-x-3 gap-y-1 border-t-2 border-divider px-1 pt-3.5 max-lg:grid-cols-2 ${COLS}`}>
-          <b className="text-[11px] font-extrabold tracking-[0.06em] text-muted uppercase max-lg:col-span-2">All loans</b>
+          <b className="text-[11px] font-extrabold tracking-[0.06em] text-muted uppercase label-face max-lg:col-span-2">All loans</b>
           <span className="max-lg:hidden" />
           <Cell label="Lent" className="lg:text-right"><b>{view.total.lent}</b></Cell>
           <Cell label="Back so far" className="lg:text-right"><b>{view.total.back}</b></Cell>

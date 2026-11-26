@@ -166,7 +166,7 @@ export function PrepaymentDialog({ forms, loanId, onClose, onSaved }: { forms: L
         </div>
         {limits.length > 0 && (
           <div className="flex flex-col gap-1.5 rounded-[14px] bg-fill px-4 py-3 md:col-span-2">
-            <span className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">{picked!.loan.lenderName}&apos;s limits · warnings, not blocks</span>
+            <span className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">{picked!.loan.lenderName}&apos;s limits · warnings, not blocks</span>
             {limits.map((l) => (
               <span key={l.rule} className={`flex items-start gap-2 text-[12.5px] font-bold ${l.ok ? "text-accent-text" : "text-warning-text"}`}>
                 {l.ok ? <CheckIcon /> : <AlertIcon />}

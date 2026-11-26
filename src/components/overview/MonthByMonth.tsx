@@ -112,7 +112,7 @@ export function MonthByMonth({ view }: { view: MonthlyView }) {
     <section aria-labelledby="monthly-heading" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
         <div>
-          <p className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">Month by month · {view.periodLabel}</p>
+          <p className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">Month by month · {view.periodLabel}</p>
           <h2 id="monthly-heading" className="mt-0.5 text-xl font-extrabold tracking-tight">
             Where each month&apos;s money went
           </h2>
@@ -239,13 +239,13 @@ function Together({ view }: { view: MonthlyView }) {
           {view.columns.map((month, i) => {
             const now = month === view.currentMonth;
             return (
-              <span role="columnheader" key={month} className={`text-center text-[10px] font-bold tracking-[0.02em] uppercase ${now ? "text-fg" : "text-muted"}`}>
+              <span role="columnheader" key={month} className={`text-center text-[10px] font-bold tracking-[0.02em] uppercase label-face ${now ? "text-fg" : "text-muted"}`}>
                 {columnLabel(month, i)}
                 {now && <span aria-hidden="true" className="ml-1 inline-block size-[5px] rounded-full bg-accent align-middle" />}
               </span>
             );
           })}
-          <span role="columnheader" className="text-right text-[10px] font-bold tracking-[0.02em] text-muted uppercase">
+          <span role="columnheader" className="text-right text-[10px] font-bold tracking-[0.02em] text-muted uppercase label-face">
             {view.totalsLabel === "Total" ? "In range" : "This year"}
           </span>
         </div>
@@ -319,7 +319,7 @@ function TogetherLedger({ view }: { view: MonthlyView }) {
                 onClick={() => setPicked(isOpen ? "none" : month)}
                 className="grid w-full cursor-pointer grid-cols-[40px_minmax(0,1fr)_14px] items-start gap-2 py-1.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
-                <span className={`text-[10px] leading-tight font-extrabold tracking-[0.03em] uppercase ${now || isOpen ? "text-fg" : "text-muted"}`}>
+                <span className={`text-[10px] leading-tight font-extrabold tracking-[0.03em] uppercase label-face ${now || isOpen ? "text-fg" : "text-muted"}`}>
                   {name}
                   {now && <span aria-hidden="true" className="ml-[3px] inline-block size-[5px] rounded-full bg-accent align-[1px]" />}
                   {year && <span className="block text-[9px] font-bold tracking-normal opacity-80">{year}</span>}

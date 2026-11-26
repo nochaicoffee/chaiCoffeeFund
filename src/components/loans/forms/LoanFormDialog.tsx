@@ -176,7 +176,7 @@ export function LoanFormDialog({ forms, editing, onClose, onSaved, onDelete }: {
         </Field>
         {editing ? (
           <div className="flex flex-col gap-1.5">
-            <span className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Terms</span>
+            <span className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">Terms</span>
             <p className="rounded-[12px] bg-fill px-3.5 py-2.5 text-[12.5px] font-semibold">
               {formatInr(loan!.principalAmount)} at {loan!.annualInterestRate}% · {loan!.tenureMonths} EMIs from {formatDate(loan!.firstEmiDate)}
             </p>

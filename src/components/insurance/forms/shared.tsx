@@ -30,7 +30,7 @@ export function PreviewCard({ mark, title, sub, big, small }: { mark: ReactNode;
       </span>
       <b className="text-[28px] leading-none font-extrabold tabular-nums">
         {big}
-        <small className="ml-1.5 text-[11px] font-extrabold tracking-[0.04em] text-muted uppercase">{small}</small>
+        <small className="ml-1.5 text-[11px] font-extrabold tracking-[0.04em] text-muted uppercase label-face">{small}</small>
       </b>
     </div>
   );

@@ -42,7 +42,7 @@ export function ChargedToField({
 
   return (
     <fieldset className="flex min-w-0 flex-col gap-1.5" aria-describedby={error ? `${name}-error` : `${name}-help`}>
-      <legend className="mb-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+      <legend className="mb-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
         {label} <span className="ml-1 text-[10px] font-semibold tracking-[0.02em] text-muted/80">Optional</span>
       </legend>
       <input type="hidden" name={name} value={value} />
