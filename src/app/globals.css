@@ -412,6 +412,27 @@
   --on-stage-line: var(--ink);
   --on-stage-pick-ink: var(--ink);
 
+  /* The frame (step 5a): no panel around the page, so it sits on the dotted ground, and the sidebar is a full-height
+     white column with an ink right edge, as on the boards. Only this look sets these; Classic reads the fallbacks. */
+  --frame-bg: transparent;
+  --frame-edge-width: 0px;
+  --frame-shadow: 0 0 #0000;
+  --frame-radius: 0px;
+  --frame-pad: 0px;
+  --frame-max: none;
+  /* The page runs full width, but its content stops where Classic's would on a wide screen. */
+  --frame-content-max: 1510px;
+  --frame-gap: 0px;
+  --frame-inset: 0px;
+  --frame-inner-x: 38px;
+  --frame-inner-y: 30px;
+  --rail-top: 0px;
+  --rail-inset: 0px;
+  --rail-edge: 0px;
+  --rail-shadow: 0 0 #0000;
+  --rail-radius: 0px;
+  --rail-width: 250px;
+
   /* Each card colour's own flat shade (a gradient from and to the same colour); the swatches for chart marks stay. */
   --card-amber-from: oklch(0.88 0.134 85);
   --card-amber-to: oklch(0.88 0.134 85);

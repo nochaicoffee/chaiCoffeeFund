@@ -156,8 +156,8 @@ export function Sidebar({
     <>
       <nav
         aria-label={`${appName} sections`}
-        className={`sticky top-6 hidden h-[calc(100dvh-3rem)] shrink-0 flex-col gap-2.5 surface-edge bg-surface py-[18px] shadow-soft md:flex ${
-          expanded ? "w-[212px] rounded-[28px] px-3" : "w-16 items-center rounded-full"
+        className={`sticky top-[var(--rail-top,1.5rem)] hidden h-[calc(100dvh-var(--rail-inset,3rem))] shrink-0 flex-col gap-2.5 border-solid border-[color:var(--surface-edge,var(--surface-line))] border-y-[length:var(--rail-edge,var(--surface-edge-width))] border-l-[length:var(--rail-edge,var(--surface-edge-width))] border-r-[length:var(--surface-edge-width)] bg-surface py-[18px] shadow-[var(--rail-shadow,var(--soft-shadow))] md:flex ${
+          expanded ? "w-[var(--rail-width,212px)] rounded-[var(--rail-radius,28px)] px-3" : "w-16 items-center rounded-[var(--rail-radius,calc(infinity*1px))]"
         }`}
       >
         <Link

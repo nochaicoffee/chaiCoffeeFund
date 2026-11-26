@@ -59,9 +59,34 @@ A flash happens when the browser draws one look and switches to another once it 
 - **The switch in each page's header:** the headers are full (period picker, refresh, add buttons), and the look belongs to the app, not to one page.
 - **A Settings page now:** a page for one switch, two clicks away. It becomes worth building once dark mode needs a switch as well.
 
+## Step 5 plan: match the boards (2026-11-26)
+
+Steps 1 to 4 gave Neubrutalism its ground, edges, shadows, font and readable heroes. Put side by side with `design/neubrutalism/`, the pages still look softer than the boards. Step 5 closes that gap.
+
+**The rules from steps 1 to 4 still hold:**
+- Only tokens change.
+- No component asks which look is on.
+- Every new token is either the exact Classic value, or set only by Neubrutalism with the Classic value as its `var()` fallback.
+- Classic's computed styles must fingerprint the same before and after on all 13 dashboards, at desktop and phone widths.
+
+Each part below is one PR: `/code-review`, then merge when green. Each is also checked by eye against its board.
+
+| Part | What changes | Where (shared first) |
+|---|---|---|
+| **5a. The frame** | The page's white bordered panel dissolves, so the content sits on the dotted cream. The sidebar becomes a full-height white column with an ink right edge, as on the board. | `<main>` in `layout.tsx` (tokens `--frame-bg`, `--frame-edge-width`, `--frame-shadow`, `--frame-radius`), `Sidebar.tsx`. |
+| **5b. The page header** | The greeting goes from 30px to 58px on desktop (smaller on a phone). The eyebrow becomes a tag: a Space Mono pill with an ink border in the page's colour. Pointed figures get a marker stripe in place of the dotted underline. Space Mono is loaded, but not preloaded, so Classic never fetches it. | `PageHeader` (22 pages), `PointingSentence` (every greeting), a `--font-label` token. |
+| **5c. Labels** | Small uppercase labels (eyebrows, axis labels, column heads, tile kickers) read in Space Mono through a `font-label` utility, which is the body font in Classic. | A mechanical sweep, page by page. |
+| **5d. Buttons** | Page and form buttons are white with a 3px ink border and a hard shadow, and the primary is ink. The three copies of the header button classes fold into the shared ones first. | `HEADER_PRIMARY_CLASS` / `HEADER_GHOST_CLASS` (15 files), `cards/forms/FormButtons.tsx`, `subscriptions/forms/SubscriptionForms.tsx`, `SyncButton.tsx`. |
+| **5e. Coloured surfaces and chips** | Every hero and tile drawn in a card colour gets an ink outline and a hard shadow: a `hero-edge` utility, 0 in Classic. The shadow's colour can be set locally, which gives the Loans cover the picked loan's colour (skipped in step 4). Chips and pills on them get ink borders. | The 38 `colorGradient` surfaces in 29 files, plus the chip rows. |
+| **5f. Charts, board by board** | Trend charts sit in a white boxed panel with an ink line, white dots and a yellow end dot (Overview, Accounts, Income, Investments). The Cards heatmap uses outlined squares. Accounts' grey area chart becomes an ink line. Each page is compared with its board. | Per page, in the order Overview, Accounts, Cards, Subscriptions, then the rest. |
+| **5g. Colours** | The flat card shades move toward the board's brighter palette. They stay unique (`colors.test.ts`). | `globals.css` only. |
+
+Defaults taken unless Prathik says otherwise: the phone greeting is 38px, not 58px; the sidebar becomes the board's column whether it is expanded (250px) or collapsed (the 64px rail, now flush to the edge too), and the page runs full width; and the dark scenes (Goals orbit, Investments stage) stay as they are.
+
 ## Updates
 - **2026-11-26, step 1 (first pass).** An exact count found 1,087 radius uses across 35 values (505 of them `rounded-full`, which stays round in both looks), 89 shadows (51 already on tokens) and 397 borders (317 of them 1px). The token list is narrowed: outlines get `surface-edge` (`--surface-edge-width`, `--surface-edge`), seven literal elevation shadows get named tokens, and only the card and control radii move to `--radius-card` and `--radius-control`; the other radii stay as numbers, since the Neubrutalism boards use nearly the same corners, so `--radius-tile` and `--radius-pill` aren't needed. Still to move: hairline dividers, chart marks and textures. Details in `system-design.md`, "Shape on tokens".
 - **2026-11-26, step 1 (second pass).** Solid row rules are `rule-t`, `rule-b` and `divide-rule` on `--rule-width` and `--rule`, and the hover card's arrow follows `--surface-edge-width`. Left for step 4: chart marks and textures.
 - **2026-11-26, step 2.** The Neubrutalism block is in `globals.css` with Space Grotesk through `--font-body`; each card colour has its own flat shade (tested unique). Ring textures and glows go transparent under it.
 - **2026-11-26, step 3.** The Settings tab, the layout's read with the cookie mirror and `LookCookieSync`, and `LookSwitch` (sidebar foot, rail icon, More sheet) are in. Round trip against the real Sheet done.
 - **2026-11-26, step 4.** Page fixes: what was drawn in literal white on a card colour (Overview's net worth and Future you charts, the ring's middle, the ups and downs on Overview and Expenses, the goal bar's fill) now reads `--on-card-mark` and friends, which are white in Classic and ink here. The picked pills on Overview and Lent read `--on-card-inverse`. The Loans cover stays dark, as on the board (`--dark-stage`). The Subscriptions stage reads in ink (`--on-stage-*`). Classic's computed styles are unchanged on every page touched.
+- **2026-11-26, step 5a.** The frame: `<main>` and the sidebar read `--frame-*` and `--rail-*`, which only Neubrutalism sets, so the page sits on the dotted ground, the sidebar is a full-height white column with an ink right edge, and the page is full width (no 1760px cap). Classic checked the same in both style and geometry: sidebar collapsed and expanded, Overview and Cards, and on a phone.
