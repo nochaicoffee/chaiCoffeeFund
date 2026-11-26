@@ -389,7 +389,7 @@ export function TrendChart({
           )}
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex rounded-full bg-fill p-[3px]" role="group" aria-label="Show">
+          <div className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-[3px]" role="group" aria-label="Show">
             <Toggle pressed={mode === "card"} onClick={() => setMode("card")}>
               By card
             </Toggle>
@@ -397,7 +397,7 @@ export function TrendChart({
               Total
             </Toggle>
           </div>
-          <div className="flex rounded-full bg-fill p-[3px]" role="group" aria-label="Chart type">
+          <div className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-[3px]" role="group" aria-label="Chart type">
             <Toggle pressed={line} onClick={toggleLine} label="Line">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <polyline points="3 17 9 11 13 15 21 7" />

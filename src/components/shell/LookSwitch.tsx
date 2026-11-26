@@ -90,7 +90,7 @@ export function LookSwitch({ look: saved, variant }: { look: Look; variant: "rai
         <span aria-hidden="true" className="flex text-muted">
           {icons.look}
         </span>
-        <span className="flex min-w-0 flex-1 rounded-full bg-fill p-0.5">
+        <span className="flex min-w-0 flex-1 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-0.5">
           {LOOKS.map((option) => (
             <button
               key={option}

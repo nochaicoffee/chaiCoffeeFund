@@ -69,7 +69,7 @@ export function HeroTrend({ pick, checkIns, flowItems, periodLabel, today, onPic
           <div className="text-[11px] font-extrabold tracking-wider text-muted uppercase label-face">{mode === "trend" ? `Balance · ${periodLabel}` : "Balance · when it was read"}</div>
           <h2 className="mt-0.5 truncate text-xl font-extrabold">{pick.name}</h2>
         </div>
-        <div role="group" aria-label="Show" className="flex shrink-0 rounded-full bg-fill p-[3px]">
+        <div role="group" aria-label="Show" className="flex shrink-0 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-[3px]">
           {(
             [
               ["trend", "Trend"],

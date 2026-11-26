@@ -34,7 +34,7 @@ export function EightThings({ items }: { items: Insight[] }) {
   const flip = (key: string) => setFlipped((s) => { const next = new Set(s); if (!next.delete(key)) next.add(key); return next; });
 
   return (
-    <section aria-label="Things noticed" className="relative isolate flex flex-col gap-5 overflow-clip rounded-[26px] p-5 text-on-card md:p-8" style={{ background: "linear-gradient(140deg, var(--card-violet-from), var(--card-violet-to))" }}>
+    <section aria-label="Things noticed" className="relative isolate flex flex-col gap-5 overflow-clip card-edge card-lift rounded-[26px] p-5 text-on-card md:p-8" style={{ background: "linear-gradient(140deg, var(--card-violet-from), var(--card-violet-to))" }}>
       <RingTexture width={1200} height={700} dx={40} dy={40} first={60} step={30} stroke="var(--rings-light)" opacity={0.08} sheen={SHEEN} />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
@@ -43,7 +43,7 @@ export function EightThings({ items }: { items: Insight[] }) {
         </div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by area">
           {(["all", ...INSIGHT_TAGS] as const).filter((t) => t === "all" || count(t) > 0).map((t) => (
-            <button key={t} type="button" aria-pressed={tag === t} onClick={() => setTag(t)} className={`inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 text-[13px] font-extrabold transition-colors focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill hover:bg-[var(--on-card-hover,color-mix(in_oklab,#fff_25%,transparent))]"}`}>
+            <button key={t} type="button" aria-pressed={tag === t} onClick={() => setTag(t)} className={`inline-flex min-h-9 items-center gap-1.5 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge px-4 text-[13px] font-extrabold transition-colors focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill hover:bg-[var(--on-card-hover,color-mix(in_oklab,#fff_25%,transparent))]"}`}>
               {t === "all" ? "All" : cap(t)}
               <small className="text-[11px] opacity-70">{count(t)}</small>
             </button>
@@ -59,7 +59,7 @@ export function EightThings({ items }: { items: Insight[] }) {
           <ul className="mt-auto flex flex-col gap-1.5 text-[11px] font-extrabold tracking-[0.05em] uppercase label-face">
             {INSIGHT_TAGS.filter((t) => count(t) > 0).map((t) => (
               <li key={t}>
-                <button type="button" aria-pressed={tag === t} aria-label={`${cap(t)}: ${count(t)}`} onClick={() => setTag(tag === t ? "all" : t)} className={`flex w-full cursor-pointer items-center justify-between rounded-full px-3 py-1 text-[11px] font-extrabold tracking-[0.05em] uppercase label-face motion-safe:transition-[background,color,translate] motion-safe:duration-200 hover:translate-x-0.5 focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill hover:bg-[var(--on-card-hover,color-mix(in_oklab,#fff_25%,transparent))]"}`}><span>{t}</span><span>{count(t)}</span></button>
+                <button type="button" aria-pressed={tag === t} aria-label={`${cap(t)}: ${count(t)}`} onClick={() => setTag(tag === t ? "all" : t)} className={`flex w-full cursor-pointer items-center justify-between rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge px-3 py-1 text-[11px] font-extrabold tracking-[0.05em] uppercase label-face motion-safe:transition-[background,color,translate] motion-safe:duration-200 hover:translate-x-0.5 focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill hover:bg-[var(--on-card-hover,color-mix(in_oklab,#fff_25%,transparent))]"}`}><span>{t}</span><span>{count(t)}</span></button>
               </li>
             ))}
           </ul>

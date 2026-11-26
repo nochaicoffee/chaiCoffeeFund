@@ -67,7 +67,7 @@ export function WalletCards({ picks, pickId, onPick }: { picks: PickView[]; pick
             tabIndex={isOpen ? -1 : undefined}
             data-open={isOpen}
             aria-current={isOpen ? "true" : undefined}
-            className={`group/card absolute isolate outline-none overflow-hidden rounded-[26px] border text-on-card motion-safe:transition-[top,height,left,right,transform,box-shadow] motion-safe:duration-[640ms] ${closedStyle(p)} ${isOpen ? "border-white/60 shadow-[var(--tile-shadow-soft-selected)]" : "border-on-card-line border-t-on-card-line-top shadow-[var(--tile-shadow-soft)] motion-safe:hover:-translate-y-[5px] motion-safe:hover:shadow-[var(--tile-shadow-soft-selected)]"}`}
+            className={`group/card absolute isolate outline-none overflow-hidden rounded-[26px] border-[length:var(--card-edge-width,1px)] text-on-card motion-safe:transition-[top,height,left,right,transform,box-shadow] motion-safe:duration-[640ms] ${closedStyle(p)} ${isOpen ? "border-[color:var(--card-edge-color,color-mix(in_oklab,var(--color-white)_60%,transparent))] shadow-[var(--tile-shadow-soft-selected)]" : "border-[color:var(--card-edge-color,var(--on-card-line))] border-t-[color:var(--card-edge-color,var(--on-card-line-top))] shadow-[var(--tile-shadow-soft)] motion-safe:hover:-translate-y-[5px] motion-safe:hover:shadow-[var(--tile-shadow-soft-selected)]"}`}
             style={style}
           >
             <RingTexture width={480} height={244} dx={10} dy={20} first={45} step={26} stroke="var(--rings-light)" opacity={0.08} />

@@ -15,7 +15,7 @@ export function InterestClock({ view, initialPick }: { view: ClockView; initialP
   const period = (PERIODS as readonly string[]).includes(pick) ? (pick as ClockPeriod) : "day";
   const p = view.periods[period];
   const style = { background: colorGradient(PERIOD_COLOR[period]) };
-  const card = "flex min-w-0 flex-col gap-4 rounded-[26px] p-5 text-on-card transition-[background] duration-300 md:p-6";
+  const card = "flex min-w-0 flex-col gap-4 rounded-[26px] card-edge card-lift p-5 text-on-card transition-[background] duration-300 md:p-6";
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-12">
       <section aria-label="Interest clock" className={`${card} xl:col-span-5`} style={style}>
@@ -26,7 +26,7 @@ export function InterestClock({ view, initialPick }: { view: ClockView; initialP
         <Dial p={p} />
         <div role="group" aria-label="Period" className="flex flex-wrap justify-center gap-2">
           {PERIODS.map((id) => (
-            <button key={id} type="button" aria-pressed={period === id} onClick={() => choose(id)} className={`min-h-9 rounded-full px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${period === id ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill"}`}>
+            <button key={id} type="button" aria-pressed={period === id} onClick={() => choose(id)} className={`min-h-9 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${period === id ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill"}`}>
               {view.periods[id].label}
             </button>
           ))}

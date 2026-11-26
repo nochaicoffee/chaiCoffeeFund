@@ -84,7 +84,7 @@ export function PickCarousel({ cards, pick, onPick }: { cards: PickCard[]; pick:
               type="button"
               aria-pressed={on}
               onClick={() => onPick(c.key)}
-              className="flex w-[232px] shrink-0 snap-start flex-col gap-2.5 rounded-card border border-white/[0.06] p-3.5 text-left text-on-card transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2"
+              className="flex w-[232px] shrink-0 snap-start flex-col gap-2.5 rounded-card border-[length:var(--card-edge-width,1px)] border-[color:var(--card-edge-color,color-mix(in_oklab,var(--color-white)_6%,transparent))] p-3.5 text-left text-on-card transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{
                 background: on ? "linear-gradient(160deg, oklch(0.34 0.035 255), oklch(0.2 0.018 260))" : "linear-gradient(160deg, oklch(0.22 0.015 255), oklch(0.15 0.01 260))",
                 boxShadow: on ? "0 0 0 2.5px oklch(0.84 0.13 160)" : "inset 0 1px 0 oklch(1 0 0 / 0.08)",

@@ -39,14 +39,14 @@ export function SplitCard({ dimensions }: { dimensions: SplitDimensionView[] }) 
   return (
     <WidgetCard label="How it's split" title="How it's split" note="slice it four ways" right={
       <div className="flex max-w-full flex-wrap items-center gap-2">
-        <div role="group" aria-label="Draw it as" className="flex rounded-full bg-fill p-1">
+        <div role="group" aria-label="Draw it as" className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-1">
           {([["wheel", "Spin wheel"], ["treemap", "Treemap"]] as const).map(([key, label]) => (
             <button key={key} type="button" aria-pressed={layout === key} onClick={() => setLayout(key)} className={`min-h-8 rounded-full px-3 text-[12px] font-extrabold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 ${layout === key ? "bg-ink text-on-ink" : "text-muted hover:text-fg"}`}>
               {label}
             </button>
           ))}
         </div>
-        <div role="group" aria-label="Slice it by" className="flex max-w-full flex-wrap rounded-full bg-fill p-1">
+        <div role="group" aria-label="Slice it by" className="flex max-w-full flex-wrap rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-1">
           {dimensions.map((d) => (
             <button key={d.key} type="button" aria-pressed={d.key === dim.key} onClick={() => setDimKey(d.key)} className={`min-h-8 rounded-full px-3 text-[12px] font-extrabold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 ${d.key === dim.key ? "bg-ink text-on-ink" : "text-muted hover:text-fg"}`}>
               {d.label}

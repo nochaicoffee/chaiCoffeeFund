@@ -26,6 +26,20 @@
   box-shadow: var(--btn-shadow, none);
 }
 
+/*
+ * A coloured card's edge and lift (ADR 0018 step 5e): Neubrutalism outlines every hero, tile and card drawn in a card
+ * colour in 3px ink, and lifts the ones with no shadow of their own on a hard ink shadow, as on the boards. Classic
+ * reads the fallbacks, which are what these surfaces had: no border and no shadow. A surface that had a 1px line keeps
+ * its own width and colour as the fallbacks of `border-[length:var(--card-edge-width,1px)]` and its colour class.
+ */
+@utility card-edge {
+  border-width: var(--card-edge-width, 0px);
+  border-color: var(--card-edge-color, currentColor);
+}
+@utility card-lift {
+  box-shadow: var(--card-hard-shadow, none);
+}
+
 @utility label-face {
   font-family: var(--font-label);
 }
@@ -500,6 +514,15 @@
   --btn-soft-bg: var(--surface);
   --btn-soft-hover: color-mix(in oklch, var(--ink) 7%, white);
   --btn-primary-offset: 3px 3px 0;
+
+  /* Coloured cards (step 5e): a 3px ink outline, and a hard ink shadow where the card had none. The Loans cover casts
+     its shadow in the picked loan's colour (--card-hard-offset with its own --stage-pick). */
+  --card-edge-width: 3px;
+  --card-edge-color: var(--ink);
+  --card-hard-shadow: 6px 6px 0 var(--ink);
+  --card-hard-offset: 9px 9px 0;
+  /* In front of a chip's own inline ring (Overview's "made of" chips), comma included; Classic's fallback is empty. */
+  --chip-hard-prefix: 3px 3px 0 var(--ink),;
 
   /* Each card colour's own flat shade (a gradient from and to the same colour); the swatches for chart marks stay. */
   --card-amber-from: oklch(0.88 0.134 85);

@@ -29,7 +29,7 @@ const MUTED = "oklch(0.74 0.01 250)";
 const W = 800;
 const H = 260;
 const STAGE_BG = "radial-gradient(120% 90% at 10% 0%, oklch(0.27 0.02 255), oklch(0.15 0.01 260) 60%)";
-const STAGE = "flex flex-col gap-4 rounded-[28px] px-5 py-6 text-on-card md:px-[26px]";
+const STAGE = "card-edge flex flex-col gap-4 rounded-[28px] px-5 py-6 text-on-card md:px-[26px]";
 const STAGE_STYLE = { background: STAGE_BG, boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.08), 0 22px 50px oklch(0 0 0 / 0.22)" } as const;
 
 export function Stage({ series, race = [], lenses = [], picks = [], holdingCount = 0 }: { series: StagePoint[]; race?: RaceLine[]; lenses?: LensView[]; picks?: PickCard[]; holdingCount?: number }) {

@@ -44,7 +44,7 @@ function Summary({ view }: { view: CashView }) {
 
 function Tile({ t }: { t: CashTile }) {
   const body = (
-    <div className="flex h-full min-w-0 flex-col gap-1.5 rounded-[18px] p-4 text-on-card" style={{ background: `linear-gradient(155deg, var(--card-${t.colorKey}-from), var(--card-${t.colorKey}-to))` }}>
+    <div className="flex h-full min-w-0 flex-col gap-1.5 card-edge card-lift rounded-[18px] p-4 text-on-card" style={{ background: `linear-gradient(155deg, var(--card-${t.colorKey}-from), var(--card-${t.colorKey}-to))` }}>
       <div className="flex items-center justify-between gap-2 text-[12.5px] font-extrabold">
         <span className="flex min-w-0 items-center gap-2">
           <i aria-hidden="true" className="flex size-5 shrink-0 items-center justify-center rounded-md bg-white/20 text-[10px] not-italic">{t.broker.slice(0, 1)}</i>

@@ -74,7 +74,7 @@ export function FutureYou({ view }: { view: FutureView }) {
   const guide = scrub === null ? null : points[scrub];
 
   return (
-    <section aria-label="Future you" data-scrubbing={guide ? "" : undefined} className="group/future relative isolate grid gap-6 overflow-clip rounded-[26px] p-5 text-on-card md:p-8 xl:grid-cols-[300px_minmax(0,1fr)]" style={{ background: "linear-gradient(140deg, var(--card-teal-from), var(--card-teal-to))" }}>
+    <section aria-label="Future you" data-scrubbing={guide ? "" : undefined} className="group/future relative isolate card-edge card-lift grid gap-6 overflow-clip rounded-[26px] p-5 text-on-card md:p-8 xl:grid-cols-[300px_minmax(0,1fr)]" style={{ background: "linear-gradient(140deg, var(--card-teal-from), var(--card-teal-to))" }}>
       <RingTexture width={1300} height={640} dx={40} dy={40} first={60} step={30} stroke="var(--rings-light)" opacity={0.08} sheen={SHEEN} ringsClassName={RIPPLE} />
       <div className="flex flex-col gap-3">
         <div className="text-xs font-extrabold tracking-[0.06em] uppercase label-face opacity-80">Future you</div>
@@ -82,7 +82,7 @@ export function FutureYou({ view }: { view: FutureView }) {
         <div className="mt-2 text-xs font-extrabold tracking-[0.05em] uppercase label-face opacity-75">In</div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="How far ahead">
           {HORIZONS.map((h) => (
-            <button key={h} type="button" aria-pressed={years === h} onClick={() => setYears(h)} className={`min-h-9 rounded-full px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${years === h ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill hover:bg-[var(--on-card-hover,color-mix(in_oklab,#fff_25%,transparent))]"}`}>
+            <button key={h} type="button" aria-pressed={years === h} onClick={() => setYears(h)} className={`min-h-9 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${years === h ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill hover:bg-[var(--on-card-hover,color-mix(in_oklab,#fff_25%,transparent))]"}`}>
               {h} <small className="font-bold opacity-70">{h === 1 ? "year" : "years"}</small>
             </button>
           ))}
@@ -171,7 +171,7 @@ export function FutureYou({ view }: { view: FutureView }) {
           <ul className="flex flex-wrap gap-2" aria-label="Milestones">
             {marks.map((mk) => (
               <li key={`${mk.month}${mk.label}`}>
-                <button type="button" onMouseEnter={() => setScrub(mk.month)} onMouseLeave={() => setScrub(null)} onFocus={() => setScrub(mk.month)} onBlur={() => setScrub(null)} onClick={() => setYears(nearestHorizon(mk.month, HORIZONS))} className="cursor-pointer rounded-full bg-on-card-fill px-3 py-1 text-xs font-bold motion-safe:transition-[background,translate] motion-safe:duration-200 hover:-translate-y-0.5 hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-on-card">{mk.label} · {monthLabel(view.startMonth, mk.month)}</button>
+                <button type="button" onMouseEnter={() => setScrub(mk.month)} onMouseLeave={() => setScrub(null)} onFocus={() => setScrub(mk.month)} onBlur={() => setScrub(null)} onClick={() => setYears(nearestHorizon(mk.month, HORIZONS))} className="cursor-pointer rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-on-card-fill px-3 py-1 text-xs font-bold motion-safe:transition-[background,translate] motion-safe:duration-200 hover:-translate-y-0.5 hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-on-card">{mk.label} · {monthLabel(view.startMonth, mk.month)}</button>
               </li>
             ))}
           </ul>

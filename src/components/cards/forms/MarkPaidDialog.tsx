@@ -237,7 +237,7 @@ export function MarkPaidDialog({
           Paid from <span className="ml-1 text-[10px] font-semibold tracking-[0.02em] text-muted/80">Optional</span>
         </legend>
         <div className="grid gap-2.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <div className="flex rounded-full bg-fill p-[3px]">
+          <div className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-[3px]">
             {(["account", "card"] as const).map((s) => (
               <label key={s} className="relative flex-1">
                 <input

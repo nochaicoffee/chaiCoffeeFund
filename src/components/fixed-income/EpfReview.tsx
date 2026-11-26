@@ -33,7 +33,7 @@ function Tag({ credit, added }: { credit: PlannedCredit; added: boolean }) {
 /** Two choices, as radio buttons so the arrow keys work. */
 function Choice<T extends string>({ name, value, onChange, options, label }: { name: string; value: T; onChange: (v: T) => void; options: { value: T; label: string }[]; label: string }) {
   return (
-    <fieldset className="flex rounded-full bg-fill p-[3px]" aria-label={label}>
+    <fieldset className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-[3px]" aria-label={label}>
       {options.map((o) => (
         <label key={o.value} className="relative flex-1">
           <input type="radio" name={name} value={o.value} checked={value === o.value} onChange={() => onChange(o.value)} className="peer absolute inset-0 cursor-pointer opacity-0" />

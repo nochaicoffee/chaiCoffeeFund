@@ -29,7 +29,7 @@ export function Segmented<T extends string>({ label, options, value, onChange, s
 
   return (
     // Clipped, so the spring's overshoot stays inside the track; a button's focus ring fits in the padding.
-    <span ref={group} role="radiogroup" aria-label={label} className="relative inline-flex gap-0.5 overflow-hidden rounded-full bg-fill p-[3px]">
+    <span ref={group} role="radiogroup" aria-label={label} className="relative inline-flex gap-0.5 overflow-hidden rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-[3px]">
       {pill && (
         <span
           aria-hidden="true"

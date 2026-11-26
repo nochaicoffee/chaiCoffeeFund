@@ -47,7 +47,7 @@ export function ChargedToField({
       </legend>
       <input type="hidden" name={name} value={value} />
       <div className="grid gap-2.5 sm:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-        <div className="flex rounded-full bg-fill p-[3px]">
+        <div className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-[3px]">
           {(["card", "account"] as const).map((k) => (
             <label key={k} className="relative flex-1">
               <input
