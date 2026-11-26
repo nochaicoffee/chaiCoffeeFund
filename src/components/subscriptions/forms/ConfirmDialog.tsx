@@ -104,13 +104,13 @@ export function ConfirmDialog({
               {alternative.label}
             </button>
           )}
-          <button type="button" onClick={() => ref.current?.close()} className="min-h-11 rounded-full bg-fill px-5 text-[13px] font-bold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:min-h-10">
+          <button type="button" onClick={() => ref.current?.close()} className="min-h-11 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] px-5 text-[13px] font-bold hover:bg-[var(--btn-soft-hover,var(--fill-strong))] focus-visible:outline-2 focus-visible:outline-accent md:min-h-10">
             {keepLabel}
           </button>
           <button
             type="submit"
             disabled={pending}
-            className={`min-h-11 rounded-full px-5 text-[13px] font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-60 md:min-h-10 ${tone === "danger" ? "bg-negative-tint text-negative hover:bg-negative hover:text-on-accent" : "bg-ink text-on-ink hover:opacity-90"}`}
+            className={`min-h-11 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge px-5 text-[13px] font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-60 md:min-h-10 ${tone === "danger" ? "bg-negative-tint text-negative hover:bg-negative hover:text-on-accent" : "bg-ink text-on-ink hover:opacity-90"}`}
           >
             {pending ? "Saving…" : failed ? "Try again" : confirmLabel}
           </button>

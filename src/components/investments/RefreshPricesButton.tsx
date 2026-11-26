@@ -32,7 +32,7 @@ export function RefreshPricesButton() {
             router.refresh();
           })
         }
-        className="rounded-full bg-accent px-5 py-2.5 text-[13px] font-bold text-on-accent hover:opacity-90 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50 max-md:min-h-11"
+        className="rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-accent px-5 py-2.5 text-[13px] font-bold text-on-accent hover:opacity-90 focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50 max-md:min-h-11"
       >
         {pending ? "Refreshing prices…" : "Refresh prices"}
       </button>

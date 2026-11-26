@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useTransition, type ReactNode, type Ref } from "react";
 import { changeSubscriptionStatus, deletePayment, deleteSubscription, markRenewalPaid, markRenewalSkipped, undoMarkPaid, type MarkPaidResult, type WrittenPayment } from "@/app/subscriptions/actions";
 import type { FormsData, PaymentRef } from "@/app/subscriptions/formsView";
+import { HEADER_GHOST_CLASS as HEADER_GHOST, HEADER_PRIMARY_CLASS as HEADER_PRIMARY } from "@/components/shell/FormTriggerButton";
 import { formatShortDate } from "@/lib/format/date";
 import { formatInr } from "@/lib/format/money";
 import { AlertIcon } from "../../cards/forms/icons";
@@ -271,8 +272,6 @@ export function FormTrigger({
   );
 }
 
-const HEADER_PRIMARY = "flex min-h-11 items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold whitespace-nowrap text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:min-h-0";
-const HEADER_GHOST = "flex min-h-11 items-center gap-1.5 rounded-full bg-fill px-5 py-2.5 text-[13px] font-bold whitespace-nowrap text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:min-h-0";
 
 /** The Renewals page header's Record payment (#130): for the subscription it's filtered to, or any. */
 export function RecordPaymentButton({ subscriptionId }: { subscriptionId?: string }) {

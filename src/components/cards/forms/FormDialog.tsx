@@ -138,14 +138,14 @@ export function FormDialog({
           <button
             type="button"
             onClick={shut}
-            className="min-h-11 rounded-full bg-fill px-5 text-[13px] font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent max-md:hidden md:min-h-10"
+            className="min-h-11 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] px-5 text-[13px] font-bold text-fg hover:bg-[var(--btn-soft-hover,var(--fill-strong))] focus-visible:outline-2 focus-visible:outline-accent max-md:hidden md:min-h-10"
           >
             Cancel
           </button>
           <button
             type="submit"
             disabled={pending}
-            className="min-h-11 rounded-full bg-ink px-6 text-[13px] font-bold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-60 max-md:w-full max-md:min-h-12 md:min-h-10"
+            className="min-h-11 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-ink px-6 text-[13px] font-bold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-60 max-md:w-full max-md:min-h-12 md:min-h-10"
           >
             {label}
           </button>
