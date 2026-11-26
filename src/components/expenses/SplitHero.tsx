@@ -39,7 +39,7 @@ export function SplitHero({ view }: { view: HeroView }) {
         <div className="flex flex-wrap gap-2">
           {view.pills.map((p) => (
             <span key={p.key} className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-3 py-1.5 text-xs font-semibold">
-              <b className={`font-extrabold ${p.tone === "good" ? "text-[oklch(0.86_0.15_150)]" : p.tone === "bad" ? "text-[oklch(0.85_0.12_40)]" : ""}`}>{p.strong}</b>
+              <b className={`font-extrabold ${p.tone === "good" ? "text-[var(--on-card-up,oklch(0.86_0.15_150))]" : p.tone === "bad" ? "text-[var(--on-card-down,oklch(0.85_0.12_40))]" : ""}`}>{p.strong}</b>
               {p.text}
             </span>
           ))}
@@ -62,14 +62,14 @@ export function SplitHero({ view }: { view: HeroView }) {
             href={`/expenses?month=${c.month}`}
             scroll={false}
             aria-current={c.picked ? "true" : undefined}
-            className={`relative flex min-w-[64px] flex-1 flex-col items-center gap-1 rounded-[14px] px-2 pt-2.5 pb-2 text-center focus-visible:outline-2 focus-visible:outline-white ${c.picked ? "bg-white text-[oklch(0.25_0.04_270)]" : "bg-white/8 hover:bg-white/15"}`}
+            className={`relative flex min-w-[64px] flex-1 flex-col items-center gap-1 rounded-[14px] px-2 pt-2.5 pb-2 text-center focus-visible:outline-2 focus-visible:outline-[var(--on-card-mark)] ${c.picked ? "bg-white text-[oklch(0.25_0.04_270)]" : "bg-white/8 hover:bg-white/15"}`}
           >
             <span aria-hidden="true" className="flex h-6 w-3 items-end overflow-hidden rounded-[4px] bg-current/15">
               <i className="block w-full rounded-[4px] bg-current" style={{ height: `${Math.max(c.status === "done" ? 12 : 0, c.level * 100)}%`, opacity: c.status === "done" ? 0.9 : 0.4 }} />
             </span>
             <b className="text-[13px] font-extrabold">{c.label}</b>
             <small className={`text-[10.5px] font-semibold tabular-nums ${c.picked ? "opacity-70" : "opacity-75"}`}>{c.amount}</small>
-            {c.hasBig && <span aria-label="has a big spend" className="absolute top-1.5 right-2 text-[10px] text-[oklch(0.85_0.13_85)]">★</span>}
+            {c.hasBig && <span aria-label="has a big spend" className="absolute top-1.5 right-2 text-[10px] text-[var(--on-card-flag,oklch(0.85_0.13_85))]">★</span>}
           </Link>
         ))}
       </ChipStrip>

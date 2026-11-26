@@ -203,7 +203,7 @@ function SideAll({ side, onPick }: { side: SideView; onPick: (id: string) => voi
                 <GoalTile category={card.category} colorKey={card.colorKey} size={30} />
               </div>
               <div className="mt-auto">
-                <button type="button" onClick={() => onPick(card.topId)} className="block text-left text-lg font-extrabold hover:underline focus-visible:outline-2 focus-visible:outline-white">
+                <button type="button" onClick={() => onPick(card.topId)} className="block text-left text-lg font-extrabold hover:underline focus-visible:outline-2 focus-visible:outline-[var(--on-card-mark)]">
                   {card.name}
                 </button>
                 <div className="mt-1 text-[26px] leading-[1.1] font-extrabold tracking-tight">

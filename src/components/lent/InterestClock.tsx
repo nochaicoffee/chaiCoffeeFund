@@ -26,7 +26,7 @@ export function InterestClock({ view, initialPick }: { view: ClockView; initialP
         <Dial p={p} />
         <div role="group" aria-label="Period" className="flex flex-wrap justify-center gap-2">
           {PERIODS.map((id) => (
-            <button key={id} type="button" aria-pressed={period === id} onClick={() => choose(id)} className={`min-h-9 rounded-full px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${period === id ? "bg-on-card text-ink" : "bg-on-card-fill"}`}>
+            <button key={id} type="button" aria-pressed={period === id} onClick={() => choose(id)} className={`min-h-9 rounded-full px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${period === id ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill"}`}>
               {view.periods[id].label}
             </button>
           ))}

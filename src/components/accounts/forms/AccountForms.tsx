@@ -150,8 +150,8 @@ export function HeaderFormButtons() {
   );
 }
 
-const HERO_PRIMARY = "min-h-9 rounded-full bg-white px-4 text-xs font-extrabold text-[var(--ink)] hover:opacity-90 focus-visible:outline-2 focus-visible:outline-white";
-const HERO_SOFT = "min-h-9 rounded-full bg-on-card-fill px-4 text-xs font-bold text-on-card hover:bg-on-card-line-top focus-visible:outline-2 focus-visible:outline-white";
+const HERO_PRIMARY = "min-h-9 rounded-full bg-white px-4 text-xs font-extrabold text-[var(--ink)] hover:opacity-90 focus-visible:outline-2 focus-visible:outline-[var(--on-card-mark)]";
+const HERO_SOFT = "min-h-9 rounded-full bg-on-card-fill px-4 text-xs font-bold text-on-card hover:bg-on-card-line-top focus-visible:outline-2 focus-visible:outline-[var(--on-card-mark)]";
 
 /** The open card's buttons: Update balance, Edit and Close for an account (Reopen and Edit when closed); the check-in and Add account for All. */
 export function HeroButtons({ pickId, kind, closed }: { pickId: string; kind: "all" | "account"; closed: boolean }) {

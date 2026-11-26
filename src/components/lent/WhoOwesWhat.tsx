@@ -21,7 +21,7 @@ export function WhoOwesWhat({ view, initialPick }: { view: HeroView; initialPick
           <h2 className="text-[15px] font-extrabold">{view.title}</h2>
           <p className="mt-0.5 text-xs font-semibold text-on-card-muted">{view.sub}</p>
         </div>
-        <button type="button" aria-pressed={picked === ALL} onClick={() => choose(ALL)} className={`min-h-9 shrink-0 rounded-full px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${picked === ALL ? "bg-on-card text-ink" : "bg-on-card-fill"}`}>
+        <button type="button" aria-pressed={picked === ALL} onClick={() => choose(ALL)} className={`min-h-9 shrink-0 rounded-full px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${picked === ALL ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill"}`}>
           Everyone
         </button>
       </div>

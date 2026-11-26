@@ -305,6 +305,8 @@
   --on-card-line: oklch(1 0 0 / 0.12);
   --on-card-line-top: oklch(1 0 0 / 0.22);
   --on-card-lime: oklch(0.88 0.17 138);
+  /* Marks drawn straight on a card colour (trend lines, a ring's middle): white here, ink under Neubrutalism. */
+  --on-card-mark: #fff;
   --card-chip: oklch(0.8 0.13 80);
   --card-chip-mid: oklch(0.68 0.13 80);
   --card-chip-deep: oklch(0.55 0.1 80);
@@ -389,6 +391,26 @@
   --on-card-line: oklch(0 0 0 / 0.2);
   --on-card-line-top: oklch(0 0 0 / 0.28);
   --on-card-lime: oklch(0.45 0.15 140);
+  --on-card-mark: var(--ink);
+  /* Only this look sets these: each component falls back to its own Classic value, so Classic doesn't move. Ups and
+     downs, a ring's empty track, and the picked pill's text, all on a light card colour. */
+  --on-card-up: oklch(0.42 0.14 150);
+  --on-card-down: oklch(0.5 0.19 25);
+  --on-card-track: oklch(0 0 0 / 0.12);
+  --on-card-inverse: oklch(1 0 0);
+  --on-card-hover: oklch(1 0 0 / 0.85);
+  --on-card-flag: oklch(0.5 0.14 65);
+  /* A hero that sets its own dark stage (the Loans cover) stays dark, flat ink, as on the board. */
+  --dark-stage: var(--ink);
+  /* The Subscriptions stage is a card colour, light here: its text and fills read in ink. */
+  --on-stage-fg: var(--ink);
+  --on-stage-muted: oklch(0 0 0 / 0.66);
+  --on-stage-fill: oklch(1 0 0 / 0.55);
+  --on-stage-fill-strong: oklch(1 0 0 / 0.8);
+  --on-stage-divider: oklch(0 0 0 / 0.2);
+  --on-stage-surface: var(--surface);
+  --on-stage-line: var(--ink);
+  --on-stage-pick-ink: var(--ink);
 
   /* Each card colour's own flat shade (a gradient from and to the same colour); the swatches for chart marks stay. */
   --card-amber-from: oklch(0.88 0.134 85);
@@ -496,6 +518,7 @@
   --color-on-card-line: var(--on-card-line);
   --color-on-card-line-top: var(--on-card-line-top);
   --color-on-card-lime: var(--on-card-lime);
+  --color-on-card-mark: var(--on-card-mark);
   --color-heat-1: var(--heat-1);
   --color-heat-2: var(--heat-2);
   --color-heat-3: var(--heat-3);

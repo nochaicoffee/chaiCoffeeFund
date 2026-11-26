@@ -50,7 +50,7 @@ export function WalletCards({ picks, pickId, onPick }: { picks: PickView[]; pick
       ref={wallet}
       role="group"
       aria-label="Accounts"
-      className="relative [--open-h:300px] motion-safe:transition-[height] motion-safe:duration-[640ms] md:[--open-h:244px]"
+      className="relative isolate [--open-h:300px] motion-safe:transition-[height] motion-safe:duration-[640ms] md:[--open-h:244px]"
       style={{ height: `calc(var(--open-h) + ${others.length > 0 ? STRIP_GAP + (others.length - 1) * pitch + STRIP_HEIGHT : 0}px)`, transitionTimingFunction: EASE }}
     >
       {picks.map((p) => {
@@ -73,7 +73,7 @@ export function WalletCards({ picks, pickId, onPick }: { picks: PickView[]; pick
             <RingTexture width={480} height={244} dx={10} dy={20} first={45} step={26} stroke="var(--rings-light)" opacity={0.08} />
             {/* The strip: the whole of it picks the account. It fades away as the card opens, and back once the card has folded. */}
             <div inert={isOpen} className={`absolute inset-0 transition-opacity motion-reduce:transition-none ${isOpen ? "pointer-events-none opacity-0 delay-0 duration-100" : "opacity-100 delay-[280ms] duration-200"}`}>
-              <button type="button" aria-label={`Open ${p.name}`} onClick={() => onPick(p.id)} className="absolute inset-0 cursor-pointer rounded-[inherit] focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-white" />
+              <button type="button" aria-label={`Open ${p.name}`} onClick={() => onPick(p.id)} className="absolute inset-0 cursor-pointer rounded-[inherit] focus-visible:outline-2 focus-visible:-outline-offset-4 focus-visible:outline-[var(--on-card-mark)]" />
               <StripFace pick={p} />
             </div>
             {/* The open face: laid out at the card's full width, so nothing reflows while it grows, and its parts rise in one after another. */}
