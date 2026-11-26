@@ -433,6 +433,42 @@
   --rail-radius: 0px;
   --rail-width: 250px;
 
+  /* The page header (step 5b), as on the boards: a big greeting, the section's name in a Space Mono tag of its own
+     colour (PageHeader sets --tag-bg from --tag-bg-<section>), and a marker in that colour under each figure. */
+  --font-label: var(--font-space-mono), ui-monospace, monospace;
+  --tag-display: inline-block;
+  --tag-edge: 3px;
+  --tag-pad-x: 12px;
+  --tag-pad-y: 7px;
+  --tag-size: 11px;
+  --tag-leading: 1;
+  --tag-color: var(--ink);
+  --eyebrow-sep: none;
+  --eyebrow-gap: 10px;
+  --tag-bg-overview: #ffd43b;
+  --tag-bg-bank-accounts: #ff8fb1;
+  --tag-bg-cards: #7fd4ff;
+  --tag-bg-subscriptions: #b79cff;
+  --tag-bg-income: #c6f24e;
+  --tag-bg-expenses: #ff9f3c;
+  --tag-bg-daily: #ffe066;
+  --tag-bg-loans: #ff6b57;
+  --tag-bg-lent-out: #ffc46b;
+  --tag-bg-insurance: #3fd6a6;
+  --tag-bg-fixed-income: #6fe0c5;
+  --tag-bg-investments: #9fb0ff;
+  --tag-bg-goals: #ffa3d7;
+  --greeting-size: 58px;
+  --greeting-size-sm: 38px;
+  --greeting-leading: 1;
+  --greeting-weight: 700;
+  --greeting-tracking: -0.04em;
+  --greeting-sentence-size: 19px;
+  --greeting-sentence-size-sm: 17px;
+  --greeting-sentence-leading: 1.55;
+  --greeting-sentence-color: var(--ink);
+  --figure-line: var(--ink);
+
   /* Each card colour's own flat shade (a gradient from and to the same colour); the swatches for chart marks stay. */
   --card-amber-from: oklch(0.88 0.134 85);
   --card-amber-to: oklch(0.88 0.134 85);

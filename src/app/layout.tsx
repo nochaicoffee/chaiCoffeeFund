@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Manrope, Space_Grotesk } from "next/font/google";
+import { Manrope, Space_Grotesk, Space_Mono } from "next/font/google";
 import { cookies } from "next/headers";
 import { LookCookieSync } from "@/components/shell/LookCookieSync";
 import { Sidebar } from "@/components/shell/Sidebar";
@@ -26,6 +26,16 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
+// Neubrutalism's label face (ADR 0018 step 5b): the page tag, and later the small uppercase labels. One weight, and not
+// preloaded: Classic never draws with it, so a Classic visit shouldn't fetch it. Under Neubrutalism the 11px tag may show
+// its fallback for a moment on a first visit; the file is cached after that.
+const spaceMono = Space_Mono({
+  variable: "--font-space-mono",
+  subsets: ["latin"],
+  weight: "700",
+  preload: false,
+});
+
 export const metadata: Metadata = {
   title: { default: appConfig.appName, template: `%s · ${appConfig.appName}` },
   description: "Personal finance dashboard",
@@ -50,7 +60,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const look = resolveLook(sheetLook, cookieLook);
 
   return (
-    <html lang="en" data-look={dataLookOf(look)} className={`${manrope.variable} ${spaceGrotesk.variable} h-full antialiased`}>
+    <html lang="en" data-look={dataLookOf(look)} className={`${manrope.variable} ${spaceGrotesk.variable} ${spaceMono.variable} h-full antialiased`}>
       <body className="min-h-full">
         {sheetLook !== undefined && cookieLook !== look && <LookCookieSync look={look} />}
         {showShell ? (
