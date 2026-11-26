@@ -62,7 +62,7 @@ function Row({ row: r, on, dim, onPick }: { row: TableRow; on: boolean; dim: boo
         <small className="text-[11px] font-semibold text-muted">{r.yearSub}</small>
       </span>
       <span className="col-span-2 flex min-w-0 flex-col gap-1.5 lg:col-span-1">
-        <span aria-hidden="true" className="relative block h-2 overflow-hidden rounded-full bg-fill-strong">
+        <span aria-hidden="true" className="relative block h-[var(--track-h,0.5rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill-strong">
           <i className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${r.off ? 0 : Math.max(2, r.elapsed * 100)}%`, background: r.warn ? WARN_BAR : `var(--card-${r.colorKey})` }} />
         </span>
         <small className={`text-[11px] font-semibold ${r.warn ? "text-warning-text" : "text-muted"}`}>{r.termSub}</small>

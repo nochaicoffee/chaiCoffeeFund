@@ -33,7 +33,7 @@ export function InterestClock({ view, initialPick }: { view: ClockView; initialP
         </div>
         <ul className="flex flex-col gap-2">
           {p.rows.map((r) => (
-            <li key={r.key} className="flex items-center gap-3 rounded-[14px] bg-on-card-fill px-3 py-2.5">
+            <li key={r.key} className="flex items-center gap-3 rounded-[14px] border-[length:var(--chart-edge-width,0px)] border-[color:var(--chart-edge-color,currentColor)] bg-[var(--chart-panel-bg,var(--on-card-fill))] [box-shadow:var(--stat-shadow,none)] px-3 py-2.5">
               <Swatch colorKey={r.colorKey} />
               <span className="min-w-0 flex-1">
                 <b className="block truncate text-[13px] font-extrabold">{r.name}</b>
@@ -91,7 +91,7 @@ function Swatch({ colorKey, small }: { colorKey: ColorKey; small?: boolean }) {
 
 function Tile({ title, amount, note }: { title: string; amount: string; note: string }) {
   return (
-    <div className="rounded-[16px] bg-on-card-fill p-4">
+    <div className="rounded-[16px] border-[length:var(--chart-edge-width,0px)] border-[color:var(--chart-edge-color,currentColor)] bg-[var(--chart-panel-bg,var(--on-card-fill))] [box-shadow:var(--stat-shadow,none)] p-4">
       <p className="text-[10px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase label-face">{title}</p>
       <p className="mt-1 text-[26px] leading-tight font-extrabold tabular-nums max-md:text-[22px]">{amount}</p>
       <p className="mt-1 text-[11px] font-semibold text-on-card-muted">{note}</p>
@@ -195,7 +195,7 @@ function Chart({ chart, band, all }: { chart: ChartView; band: [number, number];
         </text>
         {chart.lines.map((l) => (
           <g key={l.key}>
-            <polyline points={pts(l.points)} fill="none" stroke={pastel(l.colorKey)} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+            <polyline points={pts(l.points)} fill="none" stroke={pastel(l.colorKey)} style={{ strokeWidth: "var(--chart-line-width, 2.5)" }} strokeLinejoin="round" strokeLinecap="round" />
             {l.projection && <polyline points={pts(l.projection)} fill="none" stroke={pastel(l.colorKey)} strokeWidth="2" strokeDasharray="2 5" strokeLinecap="round" opacity="0.7" />}
           </g>
         ))}

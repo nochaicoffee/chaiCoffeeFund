@@ -105,7 +105,7 @@ export function CycleBar({ pickId, fraction, cycle }: { pickId: string; fraction
       className={`relative z-[1] -mx-2 -mt-1 -mb-2.5 rounded-lg px-2 py-2.5 max-md:-mt-[12px] max-md:-mb-[18px] max-md:py-[18px] ${cycle ? "cursor-ew-resize touch-pan-y focus-visible:outline-2 focus-visible:outline-[var(--pick-soft)]" : ""}`}
     >
       <div className="relative">
-        <div ref={track} className="h-2 overflow-hidden rounded-full bg-fill">
+        <div ref={track} className="h-[var(--track-h,0.5rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill">
           <span
             className="block h-full rounded-[inherit] bg-[var(--pick-soft)] transition-[width,background-color] duration-500 motion-reduce:transition-none"
             style={{ width: `${(fraction ?? 0) * 100}%` }}

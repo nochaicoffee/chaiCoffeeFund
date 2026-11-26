@@ -325,7 +325,7 @@ export function ChargedToCard({ rows, onPoint }: { rows: ChargedToRow[]; onPoint
                   </span>
                 </div>
                 {/* 3B: on hover the bar splits into its subscriptions, in their colours. */}
-                <div className="relative h-1.5 overflow-hidden rounded-full bg-fill">
+                <div className="relative h-[var(--track-h,0.375rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill">
                   <span className={`absolute inset-y-0 left-0 rounded-[inherit] motion-safe:transition-opacity motion-safe:duration-200 ${on ? "opacity-0" : ""}`} style={{ width: `${r.fraction * 100}%`, background: `var(--card-${r.chip.color})` }} />
                   <span className={`absolute inset-y-0 left-0 flex gap-0.5 motion-safe:transition-opacity motion-safe:duration-200 ${on ? "" : "opacity-0"}`} style={{ width: `${r.fraction * 100}%` }} aria-hidden="true">
                     {r.members.map((m) => (

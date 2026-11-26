@@ -126,4 +126,10 @@ describe("shape stays on tokens", () => {
     const offenders = files.filter(({ text }) => classLists(text).some((list) => (list.includes("chart-panel") || list.includes("stat-box")) && list.some((c) => own.test(c))));
     expect(offenders.map((f) => f.path)).toEqual([]);
   });
+
+  it("outlines every taller track (step 5f)", () => {
+    // A track that grows under Neubrutalism (--track-h, --track-h-sm) has to take the ink edge too, or it's a fat grey bar.
+    const offenders = files.filter(({ text }) => classLists(text).some((list) => list.some((c) => c.includes("var(--track-h")) && !list.some((c) => c.includes("var(--track-edge"))));
+    expect(offenders.map((f) => f.path)).toEqual([]);
+  });
 });

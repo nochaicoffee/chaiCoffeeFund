@@ -38,7 +38,7 @@ export function BlockCardBody({ block, per, picked }: { block: MapBlock; per: "m
         <span className="text-xs font-semibold text-muted"> a {per}</span>
       </div>
       <div className="text-[11px] font-semibold text-muted">{own ? `${block.cycle} plan` : `${block.cycle} plan · ${card.price}`}</div>
-      <div className="mt-2.5 h-1.5 overflow-hidden rounded-full bg-fill" aria-hidden="true">
+      <div className="mt-2.5 h-[var(--track-h-sm,0.375rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill" aria-hidden="true">
         <span className="block h-full rounded-[inherit]" style={{ width: `${Math.max(2, block.share * 100)}%`, background: `var(--card-${block.color})` }} />
       </div>
       <div className="mt-1.5 text-[11px] font-semibold text-muted">{card.share}</div>
