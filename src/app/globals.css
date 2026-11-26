@@ -68,6 +68,11 @@
    */
   --surface-edge-width: 1px;
 
+  /* The body's typeface and the page's ground pattern, so a look can change them. */
+  --font-body: var(--font-manrope);
+  --page-pattern: none;
+  --page-pattern-size: auto;
+
   /*
    * A row rule between the rows of a list or table (rule-t, rule-b, divide-rule). Its colour is --rule when a look sets
    * one, else the --divider in force there, for the same reason --surface-edge isn't defined here. The Loans cover and the
@@ -325,6 +330,141 @@
   --readout-shadow: 0 4px 12px oklch(0 0 0 / 0.25);
 }
 
+/*
+ * Neubrutalism (ADR 0018, boards in design/neubrutalism/): a cream dotted ground, ink outlines and rules, hard offset
+ * ink shadows, flat bright card colours with ink text, and Space Grotesk. Only tokens are redefined here; no component
+ * asks which look is on. Light only for now: the layout leaves data-theme off while this look is picked.
+ */
+:root[data-look="neubrutal"] {
+  --page: oklch(0.97 0.035 85);
+  --page-pattern: radial-gradient(oklch(0.16 0.008 260 / 0.16) 1.3px, transparent 1.8px);
+  --page-pattern-size: 22px 22px;
+  --surface: oklch(1 0 0);
+  --font-body: var(--font-space-grotesk), var(--font-manrope);
+
+  --surface-edge: var(--ink);
+  --surface-edge-width: 3px;
+  --rule: var(--ink);
+  --rule-width: 2px;
+
+  --card-shadow: 6px 6px 0 var(--ink);
+  --soft-shadow: 4px 4px 0 var(--ink);
+  --pop-shadow: 6px 6px 0 var(--ink);
+  --tip-shadow: 6px 6px 0 var(--ink);
+  --tile-shadow: 6px 6px 0 var(--ink);
+  --tile-shadow-selected: 6px 6px 0 var(--ink), 0 0 0 4px var(--accent);
+  --tile-shadow-soft: 5px 5px 0 var(--ink);
+  --tile-shadow-soft-selected: 7px 7px 0 var(--ink), 0 0 0 3px var(--accent);
+  --readout-shadow: 3px 3px 0 var(--ink);
+  --raised-shadow: 2px 2px 0 var(--ink);
+  --raised-strong-shadow: 3px 3px 0 var(--ink);
+  --sheen-shadow: 0 0 0 transparent;
+  --sheen-strong-shadow: 0 0 0 transparent;
+  --sheen-lift-shadow: 2px 2px 0 var(--ink);
+  --block-label-shadow: 2px 2px 0 var(--ink);
+  --lift-shadow: 8px 8px 0 var(--ink);
+
+  /* Flat: no glows, sheens or ring textures. */
+  --bar-glow: transparent;
+  --range-glow: transparent;
+  --due-glow: transparent;
+  --heat-glow: transparent;
+  --tile-glare: transparent;
+  --chip-glint: transparent;
+  --feature-tile-glow: transparent;
+  --feature-tile-rings: transparent;
+  --rings-ink: transparent;
+  --rings-light: transparent;
+
+  --accent-tint: oklch(0.92 0.09 145);
+  --on-accent: var(--ink);
+  --feature-tile: oklch(0.9 0.16 125);
+  --feature-tile-line: var(--ink);
+
+  /* Text and lines on a card colour: ink on the flat bright shades. */
+  --on-card: var(--ink);
+  --on-card-muted: oklch(0 0 0 / 0.74);
+  --on-card-faint: oklch(0 0 0 / 0.66);
+  --on-card-fill: oklch(1 0 0 / 0.55);
+  --on-card-line: oklch(0 0 0 / 0.2);
+  --on-card-line-top: oklch(0 0 0 / 0.28);
+  --on-card-lime: oklch(0.45 0.15 140);
+
+  /* Each card colour's own flat shade (a gradient from and to the same colour); the swatches for chart marks stay. */
+  --card-amber-from: oklch(0.88 0.134 85);
+  --card-amber-to: oklch(0.88 0.134 85);
+  --card-aubergine-from: oklch(0.76 0.098 285);
+  --card-aubergine-to: oklch(0.76 0.098 285);
+  --card-azure-from: oklch(0.82 0.14 237);
+  --card-azure-to: oklch(0.82 0.14 237);
+  --card-bronze-from: oklch(0.814 0.077 85);
+  --card-bronze-to: oklch(0.814 0.077 85);
+  --card-burgundy-from: oklch(0.76 0.098 25);
+  --card-burgundy-to: oklch(0.76 0.098 25);
+  --card-cobalt-from: oklch(0.76 0.087 252);
+  --card-cobalt-to: oklch(0.76 0.087 252);
+  --card-copper-from: oklch(0.846 0.14 55);
+  --card-copper-to: oklch(0.846 0.14 55);
+  --card-coral-from: oklch(0.866 0.15 35);
+  --card-coral-to: oklch(0.866 0.15 35);
+  --card-emerald-from: oklch(0.84 0.118 153);
+  --card-emerald-to: oklch(0.84 0.118 153);
+  --card-forest-from: oklch(0.84 0.118 138);
+  --card-forest-to: oklch(0.84 0.118 138);
+  --card-graphite-from: oklch(0.76 0.028 285);
+  --card-graphite-to: oklch(0.76 0.028 285);
+  --card-honey-from: oklch(0.88 0.14 70);
+  --card-honey-to: oklch(0.88 0.14 70);
+  --card-indigo-from: oklch(0.76 0.154 278);
+  --card-indigo-to: oklch(0.76 0.154 278);
+  --card-jade-from: oklch(0.833 0.118 170);
+  --card-jade-to: oklch(0.833 0.118 170);
+  --card-magenta-from: oklch(0.82 0.17 335);
+  --card-magenta-to: oklch(0.82 0.17 335);
+  --card-mocha-from: oklch(0.78 0.055 55);
+  --card-mocha-to: oklch(0.78 0.055 55);
+  --card-moss-from: oklch(0.802 0.069 120);
+  --card-moss-to: oklch(0.802 0.069 120);
+  --card-mulberry-from: oklch(0.76 0.092 318);
+  --card-mulberry-to: oklch(0.76 0.092 318);
+  --card-navy-from: oklch(0.76 0.069 221);
+  --card-navy-to: oklch(0.76 0.069 221);
+  --card-ocean-from: oklch(0.82 0.118 221);
+  --card-ocean-to: oklch(0.82 0.118 221);
+  --card-olive-from: oklch(0.88 0.118 120);
+  --card-olive-to: oklch(0.88 0.118 120);
+  --card-onyx-from: oklch(0.8 0.046 75);
+  --card-onyx-to: oklch(0.8 0.046 75);
+  --card-orchid-from: oklch(0.82 0.17 300);
+  --card-orchid-to: oklch(0.82 0.17 300);
+  --card-pine-from: oklch(0.766 0.075 152);
+  --card-pine-to: oklch(0.766 0.075 152);
+  --card-pink-from: oklch(0.859 0.17 352);
+  --card-pink-to: oklch(0.859 0.17 352);
+  --card-plum-from: oklch(0.82 0.161 318);
+  --card-plum-to: oklch(0.82 0.161 318);
+  --card-raspberry-from: oklch(0.778 0.098 352);
+  --card-raspberry-to: oklch(0.778 0.098 352);
+  --card-rose-from: oklch(0.86 0.145 355);
+  --card-rose-to: oklch(0.86 0.145 355);
+  --card-ruby-from: oklch(0.82 0.17 25);
+  --card-ruby-to: oklch(0.82 0.17 25);
+  --card-rust-from: oklch(0.772 0.08 55);
+  --card-rust-to: oklch(0.772 0.08 55);
+  --card-sapphire-from: oklch(0.82 0.15 252);
+  --card-sapphire-to: oklch(0.82 0.15 252);
+  --card-sky-from: oklch(0.833 0.118 205);
+  --card-sky-to: oklch(0.833 0.118 205);
+  --card-slate-from: oklch(0.84 0.037 250);
+  --card-slate-to: oklch(0.84 0.037 250);
+  --card-spruce-from: oklch(0.76 0.062 187);
+  --card-spruce-to: oklch(0.76 0.062 187);
+  --card-teal-from: oklch(0.82 0.107 187);
+  --card-teal-to: oklch(0.82 0.107 187);
+  --card-violet-from: oklch(0.82 0.17 285);
+  --card-violet-to: oklch(0.82 0.17 285);
+}
+
 @theme inline {
   --color-page: var(--page);
   --color-surface: var(--surface);
@@ -368,7 +508,7 @@
   --color-background: var(--page);
   --color-foreground: var(--fg);
 
-  --font-sans: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: var(--card-shadow);
   --shadow-soft: var(--soft-shadow);
   --shadow-tile: var(--tile-shadow);
@@ -508,6 +648,8 @@
 
 body {
   background: var(--page);
+  background-image: var(--page-pattern);
+  background-size: var(--page-pattern-size);
   color: var(--fg);
   font-family: var(--font-sans);
 }

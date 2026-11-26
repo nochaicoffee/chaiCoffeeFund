@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Manrope } from "next/font/google";
+import { Manrope, Space_Grotesk } from "next/font/google";
 import { cookies } from "next/headers";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { SIDEBAR_COOKIE } from "@/components/shell/sections";
@@ -15,6 +15,13 @@ const manrope = Manrope({
   subsets: ["latin"],
 });
 
+// Neubrutalism's typeface (ADR 0018, design/neubrutalism/), as --font-space-grotesk for --font-body under that look.
+// Preloaded like Manrope, so a page drawn in that look never flashes the fallback font first.
+const spaceGrotesk = Space_Grotesk({
+  variable: "--font-space-grotesk",
+  subsets: ["latin"],
+});
+
 export const metadata: Metadata = {
   title: { default: appConfig.appName, template: `%s · ${appConfig.appName}` },
   description: "Personal finance dashboard",
@@ -27,7 +34,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   const showShell = !loginRequired(process.env) || (await verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value, sessionKey(process.env)));
 
   return (
-    <html lang="en" className={`${manrope.variable} h-full antialiased`}>
+    <html lang="en" className={`${manrope.variable} ${spaceGrotesk.variable} h-full antialiased`}>
       <body className="min-h-full">
         {showShell ? (
           <div className="mx-auto flex min-h-dvh w-full max-w-[1760px] flex-col md:flex-row md:items-start md:gap-5 md:p-6">
