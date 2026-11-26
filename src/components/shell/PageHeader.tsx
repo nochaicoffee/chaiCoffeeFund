@@ -1,6 +1,9 @@
 import { connection } from "next/server";
 import type { CSSProperties, ReactNode } from "react";
 import { formatHeaderDate } from "@/lib/format/date";
+import { sectionKey } from "./sectionKey";
+
+export { sectionKey };
 
 /**
  * The top of every page, as in the design: a small "Cards · Sat, 17 Oct"
@@ -12,13 +15,6 @@ import { formatHeaderDate } from "@/lib/format/date";
  * It reads the clock, so it waits for a real request (`connection()`) rather
  * than being prerendered with the build date.
  */
-/**
- * A section's name as the key of its Neubrutalism tag colour, `--tag-bg-<key>` (ADR 0018 step 5b): "Lent out" → "lent-out".
- * Anything but letters and digits becomes one hyphen, so the key is always a valid custom property name.
- */
-export function sectionKey(section: string): string {
-  return section.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
-}
 
 /**
  * The tag's classes. Every value is a token only Neubrutalism sets, falling back to what the plain eyebrow text was,

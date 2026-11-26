@@ -132,4 +132,11 @@ describe("shape stays on tokens", () => {
     const offenders = files.filter(({ text }) => classLists(text).some((list) => list.some((c) => c.includes("var(--track-h")) && !list.some((c) => c.includes("var(--track-edge"))));
     expect(offenders.map((f) => f.path)).toEqual([]);
   });
+
+  it("keeps the navigation's Neubrutalism chips invisible in Classic", () => {
+    // The icon chip is a wrapper that must add no box in Classic: its display falls back to `contents`.
+    const sidebar = files.find((f) => f.path === "components/shell/Sidebar.tsx")?.text ?? "";
+    expect(sidebar).toContain("[display:var(--nav-chip-display,contents)]");
+    expect(sidebar).toContain("navColorKey(");
+  });
 });

@@ -563,6 +563,36 @@
   --chart-projection-width: 3.6;
   /* A secondary series beside a main one (Goals' actual line against plan and minimum): lighter, as in Classic. */
   --chart-line-width-secondary: 3.6;
+
+  /* The navigation (design/neubrutalism/Sidebar.dc.html): icons in chips of their section's colour (the page tag's,
+     set on each link as --nav-chip), the page you are on as an ink pill with a hard shadow in that colour, and the logo
+     as a tilted yellow block. */
+  --nav-chip-display: flex;
+  --nav-chip-radius: 10px;
+  --nav-chip-edge: 3px;
+  --nav-chip-ink: var(--ink);
+  --nav-item-radius: 14px;
+  --nav-item-edge: 3px;
+  --nav-idle-edge: transparent;
+  --nav-active-edge: var(--ink);
+  --nav-active-offset: 5px 5px 0;
+  --nav-item-h: 42px;
+  --nav-rail-item: 42px;
+  /* Tighter than Classic's 10px; the list of sections scrolls when the screen is too short for it and the footer, with
+     room for the active pill's shadow. */
+  --rail-gap: 6px;
+  --nav-list-display: flex;
+  --nav-list-pad: 6px;
+  --nav-label-size: 15px;
+  --nav-label-leading: 1.25;
+  --nav-label-weight: 700;
+  --logo-bg: #ffd43b;
+  --logo-edge: 3px;
+  --logo-shadow: 5px 5px 0 var(--ink);
+  --logo-tilt: -1.5deg;
+  --logo-radius: 16px;
+  --logo-pad-y: 10px;
+  --logo-pad-x-sm: 10px;
   --chart-area-opacity: 0.6;
   --chart-end-dot: #ffd43b;
   --chart-end-ring: var(--ink);
