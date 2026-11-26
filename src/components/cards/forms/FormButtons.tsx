@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import type { PaymentContext } from "@/lib/aggregate/cardEntry";
 import type { ClientCard } from "@/lib/forms/clientCard";
+import { HEADER_GHOST_CLASS, HEADER_PRIMARY_CLASS } from "@/components/shell/FormTriggerButton";
 import { cardName } from "@/lib/format/labels";
 import { formatDate } from "@/lib/format/date";
 import type { CardColor, Statement } from "@/lib/sheets/types";
@@ -19,9 +20,10 @@ import { StatementFormDialog } from "./StatementFormDialog";
  * sample data never reaches the Sheet.
  */
 
-const PRIMARY = "flex min-h-11 items-center gap-1.5 rounded-full bg-ink px-5 py-2.5 text-[13px] font-bold whitespace-nowrap text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50 md:min-h-0";
-const GHOST = "flex min-h-11 items-center gap-1.5 rounded-full bg-fill px-5 py-2.5 text-[13px] font-bold whitespace-nowrap text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50 md:min-h-0";
-const SMALL = "inline-flex min-h-11 items-center justify-center rounded-full bg-fill px-3 py-1.5 text-[11px] font-bold whitespace-nowrap text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50 lg:min-h-0";
+// The page header's buttons, shared with every dashboard (step 5d folded the copies here into the one source).
+const PRIMARY = `${HEADER_PRIMARY_CLASS} disabled:cursor-not-allowed disabled:opacity-50`;
+const GHOST = `${HEADER_GHOST_CLASS} disabled:cursor-not-allowed disabled:opacity-50`;
+const SMALL = "inline-flex min-h-11 items-center justify-center rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] px-3 py-1.5 text-[11px] font-bold whitespace-nowrap text-fg hover:bg-[var(--btn-soft-hover,var(--fill-strong))] focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-50 lg:min-h-0";
 
 /**
  * A button that opens a form. When it can't be used it stays focusable

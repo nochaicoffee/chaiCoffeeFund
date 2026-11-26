@@ -8,7 +8,7 @@ export function SyncButton({ running, onClick }: { running: boolean; onClick: ()
       disabled={running}
       aria-busy={running || undefined}
       onClick={onClick}
-      className="flex items-center gap-2 rounded-full bg-fill px-5 py-2.5 text-[13px] font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-60 max-md:min-h-11"
+      className="flex items-center gap-2 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] px-5 py-2.5 text-[13px] font-bold text-fg hover:bg-[var(--btn-soft-hover,var(--fill-strong))] focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-60 max-md:min-h-11"
     >
       {running && (
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" aria-hidden="true" className="animate-spin motion-reduce:animate-none">

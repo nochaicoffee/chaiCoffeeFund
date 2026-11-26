@@ -93,4 +93,17 @@ describe("shape stays on tokens", () => {
     const other = files.filter(({ text }) => /textTransform\s*:|text-transform:\s*uppercase/.test(text));
     expect(other.map((f) => f.path)).toEqual([]);
   });
+
+  it("keeps the page's action buttons on the button tokens, in one place (step 5d)", () => {
+    const shared = files.find((f) => f.path === "components/shell/FormTriggerButton.tsx")?.text ?? "";
+    for (const name of ["HEADER_PRIMARY_CLASS", "HEADER_GHOST_CLASS"]) {
+      const line = shared.split("\n").find((l) => l.startsWith(`export const ${name} =`)) ?? "";
+      expect(line, name).toContain("btn-edge");
+      expect(line, name).toContain("rounded-[var(--btn-radius,");
+    }
+    // A copy of the header button's classes elsewhere would miss the next change to them: import the shared ones.
+    const looksLikeHeaderButton = (list: string[]) => ["px-5", "py-2.5", "text-[13px]", "font-bold", "whitespace-nowrap", "min-h-11"].every((c) => list.includes(c)) && (list.includes("bg-ink") || list.includes("bg-fill") || list.some((c) => c.startsWith("bg-[var(--btn-soft-bg")));
+    const copies = files.filter(({ path, text }) => path !== "components/shell/FormTriggerButton.tsx" && classLists(text).some(looksLikeHeaderButton));
+    expect(copies.map((f) => f.path)).toEqual([]);
+  });
 });

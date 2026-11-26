@@ -13,6 +13,19 @@
  * --font-label; in Classic the declaration is invalid at computed time, so font-family falls back to inheriting, which
  * is what every label did before. Sits beside `uppercase` wherever a label is drawn.
  */
+/*
+ * An action button's edge (ADR 0018 step 5d): Neubrutalism gives page and dialog buttons a 3px ink border and a hard
+ * shadow, as on the boards. Only that look sets these; Classic reads the fallbacks, which are what the buttons had
+ * (no border, the border colour Tailwind's reset leaves, no shadow). It owns the button's box-shadow: don't pair it with
+ * a `shadow-*` class. The header's primary sets --btn-shadow itself from --btn-primary-offset (Neubrutalism only) and
+ * the section's colour, so it casts a coloured shadow as on the boards; in Classic that's invalid and falls back to none.
+ */
+@utility btn-edge {
+  border-width: var(--btn-edge-width, 0px);
+  border-color: var(--btn-edge-color, currentColor);
+  box-shadow: var(--btn-shadow, none);
+}
+
 @utility label-face {
   font-family: var(--font-label);
 }
@@ -478,6 +491,15 @@
   --greeting-sentence-leading: 1.55;
   --greeting-sentence-color: var(--ink);
   --figure-line: var(--ink);
+
+  /* Buttons (step 5d): white with an ink edge and a hard shadow, the primary staying ink, as on the boards. */
+  --btn-edge-width: 3px;
+  --btn-edge-color: var(--ink);
+  --btn-shadow: 3px 3px 0 var(--ink);
+  --btn-radius: 12px;
+  --btn-soft-bg: var(--surface);
+  --btn-soft-hover: color-mix(in oklch, var(--ink) 7%, white);
+  --btn-primary-offset: 3px 3px 0;
 
   /* Each card colour's own flat shade (a gradient from and to the same colour); the swatches for chart marks stay. */
   --card-amber-from: oklch(0.88 0.134 85);

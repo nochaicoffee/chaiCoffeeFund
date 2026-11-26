@@ -23,7 +23,7 @@ export function RefreshButton({ iconOnly = false }: { iconOnly?: boolean } = {})
       }
       aria-label={iconOnly ? (isPending ? "Refreshing data" : "Refresh data") : undefined}
       title={iconOnly ? "Refresh data from the Sheet" : undefined}
-      className={`rounded-full bg-fill text-[13px] font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50 ${
+      className={`rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] text-[13px] font-bold text-fg hover:bg-[var(--btn-soft-hover,var(--fill-strong))] focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-50 ${
         iconOnly ? "flex size-11 items-center justify-center md:size-10" : "px-5 py-2.5 max-md:min-h-11"
       }`}
     >
