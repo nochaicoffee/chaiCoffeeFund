@@ -45,7 +45,7 @@ export function SetupStatusPanel({ status, scope, local = false }: { status: Set
 
       {scope === "full" ? (
         <div className="mt-4 rounded-2xl bg-fill p-4">
-          <h3 className="text-[13px] font-extrabold tracking-wide text-muted uppercase">Connection to your Sheet</h3>
+          <h3 className="text-[13px] font-extrabold tracking-wide text-muted uppercase label-face">Connection to your Sheet</h3>
           {status.serviceAccountEmail ? (
             <p className="mt-1 text-[13px] text-muted">
               Share the Sheet, as Editor, with <code className="font-bold break-all text-fg">{status.serviceAccountEmail}</code>
@@ -89,7 +89,7 @@ export function SetupStatusPanel({ status, scope, local = false }: { status: Set
       <div className="mt-4 flex flex-col gap-4">
         {groups.map((group) => (
           <div key={group}>
-            <h3 className="text-[13px] font-extrabold tracking-wide text-muted uppercase">{GROUP_LABELS[group]}</h3>
+            <h3 className="text-[13px] font-extrabold tracking-wide text-muted uppercase label-face">{GROUP_LABELS[group]}</h3>
             {local && group === "signin" ? <p className="mt-0.5 text-[13px] text-muted">Running on your computer, nothing asks you to sign in. These are needed on the host (step 6).</p> : null}
             <ul className="divide-rule">
               {status.checks

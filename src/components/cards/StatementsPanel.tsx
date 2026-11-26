@@ -76,7 +76,7 @@ function StatementsView({
         <MaybeQuickPay on={quickPay}>
           <table className="w-full min-w-[440px] text-left text-[13px]">
             <thead>
-              <tr className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase">
+              <tr className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase label-face">
                 <th className="py-2 pr-3 font-bold">Card</th>
                 <th className="py-2 pr-3 font-bold">Statement</th>
                 <th className="py-2 pr-3 font-bold">Due</th>

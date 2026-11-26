@@ -82,7 +82,7 @@ export function Passbook({ book, sources, hrefFor }: { book: PassbookData; sourc
           <dl className="grid grid-cols-2 gap-x-5 gap-y-4 md:grid-cols-5">
             {book.figures.map((f) => (
               <div key={f.label} className="flex min-w-0 flex-col gap-0.5">
-                <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">{f.label}</dt>
+                <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">{f.label}</dt>
                 <dd className={`truncate text-lg font-extrabold tabular-nums ${f.tone === "accent" ? "text-accent-text" : f.tone === "warn" ? "text-warning-text" : ""}`}>{f.value}</dd>
                 <dd className={`text-[11.5px] font-semibold ${f.tone === "warn" ? "text-warning-text" : "text-muted"}`}>{f.note}</dd>
               </div>

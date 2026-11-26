@@ -96,7 +96,7 @@ export function PaymentFormDialog({ subscriptionId, renewalDate, forms, onClose 
           </span>
         )}
       </div>
-      <span className="text-[11px] font-extrabold tracking-[0.06em] text-accent-text uppercase max-md:hidden">After this payment</span>
+      <span className="text-[11px] font-extrabold tracking-[0.06em] text-accent-text uppercase label-face max-md:hidden">After this payment</span>
       <div className="flex flex-col gap-1.5 rounded-[14px] bg-surface/80 px-3.5 py-3">
         <Row label="Next renewal" value={after ? formatShortDate(after) : "–"} />
         <Row label="Paid so far" value={c && paid !== null ? `${formatInr(c.paid)} → ${formatInr(c.paid + paid)}` : "–"} />

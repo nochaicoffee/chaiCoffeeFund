@@ -233,7 +233,7 @@ export function MarkPaidDialog({
       )}
 
       <fieldset className="flex flex-col gap-1.5" aria-describedby={errors.paidFrom ? "paid-from-error" : "paid-from-help"}>
-        <legend className="mb-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+        <legend className="mb-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
           Paid from <span className="ml-1 text-[10px] font-semibold tracking-[0.02em] text-muted/80">Optional</span>
         </legend>
         <div className="grid gap-2.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">

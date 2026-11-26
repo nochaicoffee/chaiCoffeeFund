@@ -59,7 +59,7 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
     <section aria-label="Net worth" data-linked={hot ? "" : undefined} className="group/nw relative isolate flex flex-col gap-6 overflow-clip rounded-[26px] p-5 text-on-card md:flex-row md:items-stretch md:justify-between md:gap-10 md:p-9" style={{ background: colorGradient("indigo", 140) }}>
       <RingTexture width={1300} height={680} dx={40} dy={40} first={60} step={30} stroke="var(--rings-light)" opacity={0.08} sheen={SHEEN} ringsClassName={RIPPLE} />
       <div className="flex min-w-0 flex-1 flex-col gap-3.5">
-        <div className="text-xs font-extrabold tracking-[0.06em] uppercase opacity-80">Net worth {month.today ? "today" : `at the end of ${month.full}`}</div>
+        <div className="text-xs font-extrabold tracking-[0.06em] uppercase label-face opacity-80">Net worth {month.today ? "today" : `at the end of ${month.full}`}</div>
         <div className="flex flex-wrap gap-2.5" aria-live="polite">
           {month.vsPrev && <Move move={month.vsPrev} label={`vs ${month.vsPrev.from}`} />}
           {month.sinceFirst && <Move move={month.sinceFirst} label={`since ${month.sinceFirst.from}`} />}

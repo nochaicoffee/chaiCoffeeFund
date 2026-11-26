@@ -40,7 +40,7 @@ export function PayCalendarCard({ calendar }: { calendar: ReturnType<typeof payC
       <div role="grid" aria-label={month.title} className="flex flex-1 flex-col gap-1.5">
         <div role="row" className="grid grid-cols-7 gap-1.5">
           {DAYS.map((d) => (
-            <span role="columnheader" key={d} className="text-center text-[10.5px] font-extrabold text-muted uppercase">
+            <span role="columnheader" key={d} className="text-center text-[10.5px] font-extrabold text-muted uppercase label-face">
               {d}
             </span>
           ))}

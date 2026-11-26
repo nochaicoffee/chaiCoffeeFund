@@ -133,7 +133,7 @@ function WorthStage({ series, race, holdingCount, range: chosen, onRange, goBack
 
       <div className="flex flex-wrap items-end justify-between gap-x-7 gap-y-2 pt-2">
         <div className="min-w-0">
-          <div className="text-[11px] font-extrabold tracking-[0.05em] uppercase" style={{ color: MUTED }}>{heading}</div>
+          <div className="text-[11px] font-extrabold tracking-[0.05em] uppercase label-face" style={{ color: MUTED }}>{heading}</div>
           <div className="mt-1.5 text-[52px] leading-[0.95] font-extrabold tracking-[-0.045em] tabular-nums md:text-[76px]">{formatLakh(reading.value)}</div>
         </div>
         <p className="max-w-[460px] pb-2 text-sm leading-normal font-extrabold md:text-right" style={{ color: gainColour }}>
@@ -305,7 +305,7 @@ function LensStage({ lens }: { lens: LensView }) {
             </p>
           </div>
         </div>
-        <div className="mt-3 text-[11px] font-extrabold tracking-[0.05em] uppercase" style={{ color: MUTED }}>
+        <div className="mt-3 text-[11px] font-extrabold tracking-[0.05em] uppercase label-face" style={{ color: MUTED }}>
           {hover === null ? "Latest price" : `Price on ${formatDate(at.date)}`}
         </div>
         <div className="mt-1.5 text-[52px] leading-[0.95] font-extrabold tracking-[-0.045em] tabular-nums md:text-[76px]">{big}</div>

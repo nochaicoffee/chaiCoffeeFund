@@ -83,4 +83,14 @@ describe("shape stays on tokens", () => {
       expect(sidebar, token).toContain(`var(${token},`);
     }
   });
+
+  it("draws every uppercase label in the label face (step 5c)", () => {
+    const offenders = files.filter(({ text }) => classLists(text).some((list) => list.includes("uppercase") && !list.includes("label-face")));
+    expect(offenders.map((f) => f.path)).toEqual([]);
+  });
+
+  it("makes labels uppercase only with the utility, so the label face can't be missed (step 5c)", () => {
+    const other = files.filter(({ text }) => /textTransform\s*:|text-transform:\s*uppercase/.test(text));
+    expect(other.map((f) => f.path)).toEqual([]);
+  });
 });

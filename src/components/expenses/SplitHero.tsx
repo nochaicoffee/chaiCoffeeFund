@@ -17,7 +17,7 @@ function SplitRow({ segments, label }: { segments: SplitSegment[]; label: string
           className="flex min-h-[56px] min-w-[84px] flex-col justify-center rounded-[14px] px-3.5 py-2 text-white"
           style={{ flexGrow: s.share, flexBasis: 0, background: s.hatched ? `${HATCH}, var(--card-${s.colorKey})` : `var(--card-${s.colorKey})` }}
         >
-          <span className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase opacity-85">{s.label}</span>
+          <span className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase label-face opacity-85">{s.label}</span>
           <b className="text-[17px] leading-tight font-extrabold tabular-nums">{s.amount}</b>
         </div>
       ))}
@@ -33,7 +33,7 @@ function SplitRow({ segments, label }: { segments: SplitSegment[]; label: string
 export function SplitHero({ view }: { view: HeroView }) {
   return (
     <section aria-label="Spent this month" className="flex flex-col gap-5 rounded-[26px] p-5 text-on-card md:p-8" style={{ background: colorGradient("indigo", 140) }}>
-      <div className="text-xs font-extrabold tracking-[0.06em] uppercase opacity-80">{view.eyebrow}</div>
+      <div className="text-xs font-extrabold tracking-[0.06em] uppercase label-face opacity-80">{view.eyebrow}</div>
       <div className="text-[clamp(40px,8vw,92px)] leading-none font-extrabold tracking-tight whitespace-nowrap tabular-nums">{formatInr(Math.round(view.value))}</div>
       {view.pills.length > 0 && (
         <div className="flex flex-wrap gap-2">
@@ -48,7 +48,7 @@ export function SplitHero({ view }: { view: HeroView }) {
       {view.notice && <p className="max-w-[760px] rounded-[14px] bg-white/10 px-4 py-3 text-[13px] leading-relaxed font-semibold">{view.notice}</p>}
       {view.cameIn && (
         <div className="flex min-h-[56px] flex-col justify-center rounded-[14px] bg-white/90 px-4 py-2 text-[oklch(0.25_0.04_270)]">
-          <span className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase opacity-70">{view.cameIn.label}</span>
+          <span className="text-[10.5px] font-extrabold tracking-[0.06em] uppercase label-face opacity-70">{view.cameIn.label}</span>
           <b className="text-[19px] leading-tight font-extrabold tabular-nums">{view.cameIn.amount}</b>
         </div>
       )}

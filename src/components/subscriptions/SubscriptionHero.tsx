@@ -322,7 +322,7 @@ function Caption({ pick }: { pick: PickView }) {
   return (
     <div className="flex flex-col items-center gap-3 text-center md:gap-4">
       <div>
-        <span className="text-xs font-bold tracking-[0.04em] text-muted uppercase">{pick.eyebrow}</span>
+        <span className="text-xs font-bold tracking-[0.04em] text-muted uppercase label-face">{pick.eyebrow}</span>
         <h2 className="mt-1 text-2xl leading-[1.15] font-extrabold text-fg md:text-[32px]">{pick.name}</h2>
       </div>
       <div className="w-full max-w-[560px]">
@@ -341,7 +341,7 @@ function Caption({ pick }: { pick: PickView }) {
         {pick.stats.map((s, i) => (
           // Kept by place, so a money figure rolls to the next pick's in the same place (2A), and Paid so far rolls up when a payment lands (4B).
           <div key={i} className={`flex min-w-0 flex-col gap-[3px] md:px-5 ${i ? "md:border-l md:border-divider" : ""}`}>
-            <span className="text-[11px] font-extrabold tracking-[0.04em] text-muted uppercase">{s.label}</span>
+            <span className="text-[11px] font-extrabold tracking-[0.04em] text-muted uppercase label-face">{s.label}</span>
             <b className="truncate text-[17px] font-extrabold whitespace-nowrap text-fg">
               {s.money ? (
                 // Tabular, as every RollingNumber is: each digit's slot is a 0 wide.
@@ -373,7 +373,7 @@ function EmptyCaption() {
   return (
     <div className="flex flex-col items-center gap-3 text-center">
       <div>
-        <span className="text-xs font-bold tracking-[0.04em] text-muted uppercase">Nothing yet</span>
+        <span className="text-xs font-bold tracking-[0.04em] text-muted uppercase label-face">Nothing yet</span>
         <h2 className="mt-1 text-2xl leading-[1.15] font-extrabold text-fg md:text-[28px]">Add your first subscription</h2>
       </div>
       <p className="max-w-[440px] text-[13px] leading-relaxed font-medium text-muted">Each one becomes a card here. Turn to it to see what it costs, when it renews and what you&apos;ve paid.</p>

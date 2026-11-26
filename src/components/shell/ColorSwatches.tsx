@@ -41,7 +41,7 @@ export function ColorSwatches({ colors, value, onChange, error, optional = false
 
   return (
     <fieldset aria-describedby={error ? "color-error" : undefined}>
-      <legend className="mb-2 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+      <legend className="mb-2 text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
         Colour
         {optional ? <span className="ml-1 font-semibold normal-case opacity-70">optional</span> : <span className="text-negative" aria-hidden="true"> *</span>}
         {optional && value && (

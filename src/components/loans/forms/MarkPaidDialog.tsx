@@ -168,7 +168,7 @@ export function MarkPaidDialog({ forms, installmentId, editing = false, onClose,
           </Field>
         </div>
         <div className="flex flex-col gap-1.5">
-          <span className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Due on</span>
+          <span className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">Due on</span>
           <p className="flex h-10 items-center rounded-[12px] bg-fill px-3.5 text-sm font-semibold">{picked ? formatDate(picked.i.dueDate) : "—"}</p>
         </div>
         <Field id="paidDate" label="Paid on" required error={errors.paidDate}>

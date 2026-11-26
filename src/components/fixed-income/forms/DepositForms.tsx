@@ -104,7 +104,7 @@ export function ClosedDeposits() {
   if (closed.length === 0) return <p className="text-xs font-medium text-muted">Nothing matured or closed yet.</p>;
   return (
     <section aria-label="Matured and pre-closed" className="flex flex-col gap-2">
-      <h3 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Matured and pre-closed · {closed.length}</h3>
+      <h3 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">Matured and pre-closed · {closed.length}</h3>
       <ul className="flex flex-col divide-rule rounded-[14px] surface-edge">
         {closed.map((d) => (
           <li key={d.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-3.5 py-2.5 text-sm">

@@ -52,7 +52,7 @@ export function HoldingsTable({ rows: now, asOf }: { rows: HoldingTableRow[]; as
       }
     >
       <div className="flex flex-col">
-        <div className={`hidden gap-3.5 pb-2 text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase lg:grid ${COLS}`} aria-hidden="true">
+        <div className={`hidden gap-3.5 pb-2 text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face lg:grid ${COLS}`} aria-hidden="true">
           <span>Holding</span>
           <span className="text-right">Quantity</span>
           <span className="text-right">Average cost</span>
@@ -65,7 +65,7 @@ export function HoldingsTable({ rows: now, asOf }: { rows: HoldingTableRow[]; as
         {holdingGroups(rows).filter((g) => active === "all" || active === g.market).map((g) => {
           return (
             <div key={g.market} role="group" aria-label={g.title}>
-              <div className="flex items-baseline justify-between rule-b pt-3.5 pb-1.5 text-[11px] font-extrabold tracking-[0.05em] text-muted uppercase">
+              <div className="flex items-baseline justify-between rule-b pt-3.5 pb-1.5 text-[11px] font-extrabold tracking-[0.05em] text-muted uppercase label-face">
                 <span>{g.title}</span>
                 <b className="text-[12.5px] tracking-normal text-fg normal-case">{g.summary}</b>
               </div>
@@ -121,7 +121,7 @@ function Row({ r, dayLabel }: { r: HoldingTableRow; dayLabel: string }) {
         <small className={TONE[r.gainTone]}>{r.gainNote}</small>
       </Cell>
       <div className="flex min-w-0 flex-col text-[13px] max-lg:col-span-2">
-        <span className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase lg:sr-only">Share</span>
+        <span className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face lg:sr-only">Share</span>
         <b className="text-[12.5px]">{r.share}</b>
         <span aria-hidden="true" className="mt-1 block h-2 overflow-hidden rounded-full bg-fill">
           <i className="block h-full rounded-full" style={{ width: `${Math.min(100, r.shareFraction * 250)}%`, background: `var(--card-${r.colorKey})` }} />
@@ -134,7 +134,7 @@ function Row({ r, dayLabel }: { r: HoldingTableRow; dayLabel: string }) {
 function Cell({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col text-[13px] lg:items-end lg:text-right [&_small]:mt-0.5 [&_small]:text-[11px] [&_small]:font-semibold [&_small]:text-muted">
-      <span className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase lg:sr-only">{label}</span>
+      <span className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face lg:sr-only">{label}</span>
       {children}
     </div>
   );

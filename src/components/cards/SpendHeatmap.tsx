@@ -167,14 +167,14 @@ export function SpendHeatmap({
                     <span
                       role="columnheader"
                       key={m}
-                      className={`text-center text-[10px] font-bold tracking-[0.02em] uppercase ${isCurrent ? "text-fg" : "text-muted"}`}
+                      className={`text-center text-[10px] font-bold tracking-[0.02em] uppercase label-face ${isCurrent ? "text-fg" : "text-muted"}`}
                     >
                       {formatMonthShort(m)}
                       {isCurrent && <span aria-hidden="true" className="ml-1 inline-block size-[5px] rounded-full bg-accent align-middle" />}
                     </span>
                   );
                 })}
-                <span role="columnheader" className="text-right text-[10px] font-bold tracking-[0.02em] text-muted uppercase">
+                <span role="columnheader" className="text-right text-[10px] font-bold tracking-[0.02em] text-muted uppercase label-face">
                   {totalsLabel}
                 </span>
               </div>

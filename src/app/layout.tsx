@@ -26,9 +26,10 @@ const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
 });
 
-// Neubrutalism's label face (ADR 0018 step 5b): the page tag, and later the small uppercase labels. One weight, and not
-// preloaded: Classic never draws with it, so a Classic visit shouldn't fetch it. Under Neubrutalism the 11px tag may show
-// its fallback for a moment on a first visit; the file is cached after that.
+// Neubrutalism's label face (ADR 0018 steps 5b, 5c): the page tag and every small uppercase label. One weight, and not
+// preloaded: Classic never draws with it, so a Classic visit shouldn't fetch it. The cost is on a first Neubrutalism
+// visit only: labels draw in next/font's metric-matched fallback until the file arrives (so they barely move), then
+// swap. After that it's cached. next/font can't preload per look, since the call is static.
 const spaceMono = Space_Mono({
   variable: "--font-space-mono",
   subsets: ["latin"],

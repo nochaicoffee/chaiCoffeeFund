@@ -51,7 +51,7 @@ function Table({ rows, all, onEdit, spacer = false }: { rows: HistoryTableRow[];
   const heads = all ? ["Account", "Read on", "Balance", "Change", "Source"] : ["Read on", "Balance", "Change", "After the one before", "Source"];
   return (
     <div role="table" aria-label="Balance history">
-      <div role="row" className={`hidden text-[10px] font-bold tracking-[0.03em] text-muted uppercase md:grid ${columns}`}>
+      <div role="row" className={`hidden text-[10px] font-bold tracking-[0.03em] text-muted uppercase label-face md:grid ${columns}`}>
         {heads.map((h, i) => (
           <span role="columnheader" key={h} className={i === heads.length - 1 ? "text-right" : ""}>
             {h}

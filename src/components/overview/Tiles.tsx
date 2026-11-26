@@ -25,7 +25,7 @@ export function Tiles({ tiles }: { tiles: TileView[] }) {
           <Link href={t.href} className="group/tile relative isolate flex min-h-[148px] flex-col gap-1 overflow-hidden rounded-card p-4 text-on-card shadow-[var(--card-shadow)] transition-transform duration-200 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] focus-visible:outline-2 focus-visible:outline-accent md:min-h-[168px] md:p-5" style={{ background: colorGradient(t.colorKey) }}>
             <RingTexture width={300} height={168} dx={10} dy={19} first={45} step={26} stroke="var(--rings-light)" opacity={0.1} ringsClassName={RIPPLE} />
             <Glyph name={t.glyph} className="pointer-events-none absolute top-1/2 -right-5 size-28 -translate-y-1/2 text-on-card opacity-[0.1] transition-opacity duration-200 group-hover/tile:opacity-[0.16] md:size-32" />
-            <span className="relative flex items-center gap-2 text-[10.5px] font-extrabold tracking-[0.08em] uppercase opacity-80">
+            <span className="relative flex items-center gap-2 text-[10.5px] font-extrabold tracking-[0.08em] uppercase label-face opacity-80">
               {t.group}
               <span className="flex gap-1">
                 {t.flags.map((tone, k) => (
@@ -39,7 +39,7 @@ export function Tiles({ tiles }: { tiles: TileView[] }) {
               {t.per && <small className="ml-1.5 text-[13px] font-bold opacity-75"> {t.per}</small>}
             </span>
             <span className="relative mt-auto flex flex-wrap items-center gap-2 pt-2 text-xs font-semibold">
-              <span className="rounded-full bg-on-card-fill px-2.5 py-0.5 text-[10.5px] font-extrabold tracking-[0.05em] uppercase">{t.tag}</span>
+              <span className="rounded-full bg-on-card-fill px-2.5 py-0.5 text-[10.5px] font-extrabold tracking-[0.05em] uppercase label-face">{t.tag}</span>
               <span className="opacity-85">{t.sub}</span>
             </span>
           </Link>

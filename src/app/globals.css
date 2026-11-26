@@ -8,6 +8,15 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* A surface's whole outline, from tokens: what `border border-surface-line` drew, so a look can change its width and colour. */
+/*
+ * The face for small uppercase labels (ADR 0018 step 5c): Space Mono under Neubrutalism. Only that look sets
+ * --font-label; in Classic the declaration is invalid at computed time, so font-family falls back to inheriting, which
+ * is what every label did before. Sits beside `uppercase` wherever a label is drawn.
+ */
+@utility label-face {
+  font-family: var(--font-label);
+}
+
 @utility surface-edge {
   border-style: var(--tw-border-style, solid);
   border-width: var(--surface-edge-width);
@@ -435,7 +444,8 @@
 
   /* The page header (step 5b), as on the boards: a big greeting, the section's name in a Space Mono tag of its own
      colour (PageHeader sets --tag-bg from --tag-bg-<section>), and a marker in that colour under each figure. */
-  --font-label: var(--font-space-mono), ui-monospace, monospace;
+  /* Manrope after Space Mono: the Latin subset has no ₹, so a rupee in a label draws in the app's usual face. */
+  --font-label: var(--font-space-mono), var(--font-manrope), ui-monospace, monospace;
   --tag-display: inline-block;
   --tag-edge: 3px;
   --tag-pad-x: 12px;

@@ -160,12 +160,12 @@ function OpenFace({ pick, open, rollFrom }: { pick: PickView; open: boolean; rol
       </div>
       {/* The stamps rise in with the rest, so a folded card doesn't show one through its strip. */}
       {pick.stale && (
-        <span className={`${RISE} absolute top-14 right-4 rotate-6 rounded border-2 border-[var(--card-copper)] px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-[var(--card-copper)] uppercase`} style={{ "--d": "385ms" } as CSSProperties}>
+        <span className={`${RISE} absolute top-14 right-4 rotate-6 rounded border-2 border-[var(--card-copper)] px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-[var(--card-copper)] uppercase label-face`} style={{ "--d": "385ms" } as CSSProperties}>
           Not read · {pick.daysSince} days
         </span>
       )}
       {pick.closed && (
-        <span className={`${RISE} absolute top-14 right-4 rotate-6 rounded border-2 border-on-card-faint px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-on-card-faint uppercase`} style={{ "--d": "385ms" } as CSSProperties}>
+        <span className={`${RISE} absolute top-14 right-4 rotate-6 rounded border-2 border-on-card-faint px-2 py-0.5 text-[10px] font-extrabold tracking-wider text-on-card-faint uppercase label-face`} style={{ "--d": "385ms" } as CSSProperties}>
           Closed
         </span>
       )}

@@ -11,7 +11,7 @@ export function EpfCard({ view }: { view: EpfCardView }) {
       <dl className="grid grid-cols-3 gap-2.5">
         {view.tiles.map((t) => (
           <div key={t.label} className="rounded-[14px] bg-fill p-3.5 max-md:p-3">
-            <dt className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase">{t.label}</dt>
+            <dt className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">{t.label}</dt>
             <dd className="mt-1 text-xl font-extrabold tabular-nums max-md:text-base">{t.value}</dd>
             <dd className="mt-0.5 text-[11px] font-medium text-muted">{t.note}</dd>
           </div>

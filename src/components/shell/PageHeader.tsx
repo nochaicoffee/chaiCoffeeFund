@@ -61,7 +61,7 @@ export async function PageHeader({
       }`}
     >
       <div className="flex min-w-0 flex-col gap-3 [grid-area:title]">
-        <div className="text-xs font-bold tracking-[0.04em] text-muted uppercase">
+        <div className="text-xs font-bold tracking-[0.04em] text-muted uppercase label-face">
           {eyebrow ?? (
             <>
               <span className={TAG}>{section}</span>

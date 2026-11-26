@@ -26,7 +26,7 @@ export function MoneyInCard({ view }: { view: MoneyInView }) {
           <div className="grid grid-cols-[34px_repeat(12,minmax(0,1fr))] gap-1.5 text-[10px] font-bold text-muted" aria-hidden="true">
             <span />
             {MONTHS.map((m) => (
-              <span key={m} className="text-center uppercase max-md:hidden">
+              <span key={m} className="text-center uppercase label-face max-md:hidden">
                 {m}
               </span>
             ))}
@@ -64,7 +64,7 @@ export function MoneyInCard({ view }: { view: MoneyInView }) {
         <dl className="flex flex-col gap-4 border-divider lg:border-l lg:pl-6">
           {view.stats.map((s) => (
             <div key={s.label}>
-              <dt className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase">{s.label}</dt>
+              <dt className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">{s.label}</dt>
               <dd className="mt-1 text-xl font-extrabold tabular-nums">{s.value}</dd>
               <dd className="mt-0.5 text-[11px] font-medium text-muted">{s.note}</dd>
             </div>

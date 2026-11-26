@@ -71,11 +71,11 @@ export function WhatIfCard({ what, today, isAll }: { what: WhatIfLoan; today: st
           </svg>
           <div className="grid grid-cols-2 gap-3">
             <div className="rounded-[16px] bg-ink px-4 py-3 text-on-ink">
-              <span className="block text-[10.5px] font-extrabold tracking-[0.06em] uppercase opacity-70">Interest saved · estimate</span>
+              <span className="block text-[10.5px] font-extrabold tracking-[0.06em] uppercase label-face opacity-70">Interest saved · estimate</span>
               <b className="mt-1 block text-[22px] font-extrabold tabular-nums">{formatInr(result.interestSaved)}</b>
             </div>
             <div className="rounded-[16px] surface-edge px-4 py-3">
-              <span className="block text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">Charge · separate</span>
+              <span className="block text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">Charge · separate</span>
               <b className="mt-1 block text-[22px] font-extrabold tabular-nums">{formatInr(result.charge)}</b>
             </div>
           </div>

@@ -57,7 +57,7 @@ export function IncomeCover({ cover, pickId, onPick }: { cover: CoverView; pickI
   return (
     <section aria-label="Money in" className="flex min-w-0 flex-col gap-5 rounded-[26px] surface-edge bg-surface p-5 shadow-[var(--card-shadow)] md:p-7">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <span className="text-[11px] font-extrabold tracking-[0.08em] text-muted uppercase">Money in · {pick.eyebrow}</span>
+        <span className="text-[11px] font-extrabold tracking-[0.08em] text-muted uppercase label-face">Money in · {pick.eyebrow}</span>
         <Segmented label="Columns by" options={[{ value: "source", label: "By source" }, { value: "tag", label: "Regular & bonus" }]} value={mode} onChange={setMode} small />
       </div>
 
@@ -75,7 +75,7 @@ export function IncomeCover({ cover, pickId, onPick }: { cover: CoverView; pickI
         <dl className="grid grid-cols-2 gap-x-6 gap-y-4 md:grid-cols-4">
           {pick.figures.map((f) => (
             <div key={f.label} className="flex min-w-0 flex-col gap-0.5">
-              <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">{f.label}</dt>
+              <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">{f.label}</dt>
               <dd className={`truncate text-lg font-extrabold tabular-nums md:text-xl ${f.tone === "warn" ? "text-warning-text" : ""}`}>{f.value}</dd>
               <dd className={`text-[11.5px] font-semibold ${f.tone === "warn" ? "text-warning-text" : f.tone === "good" ? "text-accent-text" : "text-muted"}`}>{f.note}</dd>
             </div>

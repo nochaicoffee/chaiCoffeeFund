@@ -12,7 +12,7 @@ const KIND_STYLE: Record<TradeKind, { className?: string; style?: { background: 
 export function KindBadge({ kind, label }: { kind: TradeKind; label: string }) {
   const s = KIND_STYLE[kind];
   return (
-    <span className={`inline-flex rounded-[6px] px-2 py-0.5 text-[10px] font-extrabold tracking-[0.05em] whitespace-nowrap uppercase ${s.className ?? ""}`} style={s.style}>
+    <span className={`inline-flex rounded-[6px] px-2 py-0.5 text-[10px] font-extrabold tracking-[0.05em] whitespace-nowrap uppercase label-face ${s.className ?? ""}`} style={s.style}>
       {label}
     </span>
   );

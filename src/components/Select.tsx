@@ -370,7 +370,7 @@ export function Select({
                 {section.divider && <div role="presentation" className="mx-2 my-1.5 h-px bg-divider" />}
                 {section.heading ? (
                   <div role="group" aria-labelledby={`${id}-group-${k}`}>
-                    <div id={`${id}-group-${k}`} role="presentation" className="px-3 pt-2 pb-1 text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase">
+                    <div id={`${id}-group-${k}`} role="presentation" className="px-3 pt-2 pb-1 text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">
                       {section.heading}
                     </div>
                     {section.items.map(renderOption)}

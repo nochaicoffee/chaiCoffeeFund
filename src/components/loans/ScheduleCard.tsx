@@ -44,7 +44,7 @@ export function ScheduleTable({ rows, wide = false }: { rows: ScheduleRow[]; wid
     <div className="-mx-1 overflow-x-auto px-1">
       <table className={`w-full border-collapse text-left text-[13px] ${wide ? "min-w-[720px]" : "min-w-[600px]"}`}>
         <thead>
-          <tr className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">
+          <tr className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">
             <th className="pb-2 font-extrabold">#</th>
             <th className="pb-2 font-extrabold">Due</th>
             <th className="pb-2 font-extrabold">Opening</th>

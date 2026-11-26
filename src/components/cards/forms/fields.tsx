@@ -37,7 +37,7 @@ export function Field({
 }) {
   return (
     <div className={`flex min-w-0 flex-col gap-1.5 ${className}`}>
-      <label id={`${id}-label`} htmlFor={id} className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+      <label id={`${id}-label`} htmlFor={id} className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
         {label}
         {required ? (
           <span className="text-negative" aria-hidden="true">
@@ -173,7 +173,7 @@ export function Segmented<T extends string>({
 }) {
   return (
     <fieldset className="flex min-w-0 flex-col gap-1.5" aria-describedby={error ? `${name}-error` : help ? `${name}-help` : undefined}>
-      <legend className="mb-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+      <legend className="mb-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
         {legend}
         {required && (
           <span className="text-negative" aria-hidden="true">
@@ -221,7 +221,7 @@ export function PreviewPanel({ children, caption }: { children: ReactNode; capti
   return (
     <div className="relative isolate flex flex-col gap-4 overflow-hidden rounded-card border border-feature-tile-line bg-feature-tile p-5 max-md:gap-3 max-md:p-4">
       <RingTexture width={320} height={600} dx={20} dy={40} first={30} step={30} stroke="var(--feature-tile-rings)" />
-      <span className="text-[11px] font-extrabold tracking-[0.06em] text-accent-text uppercase max-md:hidden">Live preview</span>
+      <span className="text-[11px] font-extrabold tracking-[0.06em] text-accent-text uppercase label-face max-md:hidden">Live preview</span>
       {children}
       {caption && <p className="text-[11px] font-semibold text-muted max-md:hidden">{caption}</p>}
     </div>

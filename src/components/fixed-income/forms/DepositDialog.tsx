@@ -126,7 +126,7 @@ export function DepositDialog({ forms, deposit, onClose, onSaved, onDelete }: { 
           </Field>
         ) : (
           <div className="flex min-w-0 flex-col gap-1.5">
-            <span className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+            <span className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
               Runs for <span className="text-negative" aria-hidden="true">*</span>
             </span>
             <div className="grid grid-cols-2 gap-2.5">

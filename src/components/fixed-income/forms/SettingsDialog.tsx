@@ -74,7 +74,7 @@ export function SettingsDialog({ forms, onClose, onSaved }: { forms: EpfFormsDat
         </p>
       )}
       <div className="flex flex-col gap-3">
-        <span className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Rate for each year</span>
+        <span className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">Rate for each year</span>
         {(account?.years ?? []).map((y) =>
           y.editable ? (
             <div key={y.financialYear} className="flex flex-col gap-2 rounded-[14px] surface-edge p-3">

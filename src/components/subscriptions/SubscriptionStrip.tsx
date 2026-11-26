@@ -35,7 +35,7 @@ export function SubscriptionStrip({ strip, today }: { strip: StripView; today: s
       </div>
       <section aria-labelledby="price-history-title" className="flex min-w-0 flex-col gap-1.5 rounded-card surface-edge bg-surface px-[18px] py-4 shadow-soft">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 id="price-history-title" className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase">
+          <h3 id="price-history-title" className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase label-face">
             What each payment cost
           </h3>
           {strip.lastChange ? (

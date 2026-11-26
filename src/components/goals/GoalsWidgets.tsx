@@ -28,7 +28,7 @@ export function GoalsTableCard({ rows, pick, onPick }: { rows: TableRow[]; pick:
     <WidgetCard label="Goals" title="Goals" note="main goals only · a goal's parts are inside it · the line on a bar is where saving should be by now" gap="gap-2">
       <div className="overflow-x-auto">
         <div className="min-w-[980px]">
-          <div className={`grid ${cols} gap-3 pb-2 text-[11px] font-extrabold tracking-[0.04em] text-muted uppercase`}>
+          <div className={`grid ${cols} gap-3 pb-2 text-[11px] font-extrabold tracking-[0.04em] text-muted uppercase label-face`}>
             <span>Goal</span>
             <span>Why</span>
             <span>Horizon</span>
@@ -303,7 +303,7 @@ export function StairCard({ view }: { view: StairView | null }) {
           </span>
         ))}
         {view.labels.map((label) => (
-          <span key={label.month} className="absolute top-[calc(100%+6px)] -translate-x-1/2 text-[10px] font-extrabold tracking-[0.04em] text-muted uppercase" style={{ left: `${(label.month / view.months) * 100}%` }}>
+          <span key={label.month} className="absolute top-[calc(100%+6px)] -translate-x-1/2 text-[10px] font-extrabold tracking-[0.04em] text-muted uppercase label-face" style={{ left: `${(label.month / view.months) * 100}%` }}>
             {label.text}
           </span>
         ))}

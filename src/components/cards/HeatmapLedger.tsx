@@ -82,7 +82,7 @@ export function HeatmapLedger({
 function Row({ row, isPeak, isCurrent, noData }: { row: LedgerRow; isPeak: boolean; isCurrent: boolean; noData: string }) {
   const label = formatMonthYear(row.month);
   const month = (
-    <span className={`text-[10px] font-extrabold tracking-[0.03em] whitespace-nowrap uppercase ${isCurrent ? "text-fg" : "text-muted"}`}>
+    <span className={`text-[10px] font-extrabold tracking-[0.03em] whitespace-nowrap uppercase label-face ${isCurrent ? "text-fg" : "text-muted"}`}>
       {formatMonthShort(row.month)}
       {isCurrent && <span aria-hidden="true" className="ml-[3px] inline-block size-[5px] rounded-full bg-accent align-[1px]" />}
     </span>

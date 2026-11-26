@@ -106,7 +106,7 @@ export function TradesList({ view, holdings }: { view: TradesListView; holdings:
           </div>
         ) : (
           <div>
-            <div className={`hidden gap-3.5 px-1.5 pb-1 text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase xl:grid ${COLS}`}>
+            <div className={`hidden gap-3.5 px-1.5 pb-1 text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face xl:grid ${COLS}`}>
               <span>Date</span>
               <span>Holding</span>
               <span>Kind</span>

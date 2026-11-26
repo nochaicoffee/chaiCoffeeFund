@@ -23,7 +23,7 @@ export function CostCard({ view }: { view: CostView }) {
       </div>
       <div className="min-w-0 overflow-x-auto">
         <div className="min-w-[420px]">
-          <div className={`${GRID} pb-1.5 text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase`} aria-hidden="true">
+          <div className={`${GRID} pb-1.5 text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase label-face`} aria-hidden="true">
             <span>Policy</span>
             <span>A year</span>
             <span>Cover</span>

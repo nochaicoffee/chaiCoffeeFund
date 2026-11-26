@@ -38,7 +38,7 @@ export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: 
       <RingTexture width={1416} height={640} dx={60} dy={60} first={60} step={30} stroke="var(--rings-ink)" opacity={0.09} />
       <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-5">
         <div className="flex min-w-0 flex-col gap-2.5">
-          <div className="text-xs font-extrabold tracking-[0.04em] text-muted uppercase">What&apos;s protected · by what, and for how much</div>
+          <div className="text-xs font-extrabold tracking-[0.04em] text-muted uppercase label-face">What&apos;s protected · by what, and for how much</div>
           <div className="text-[44px] leading-none font-extrabold tracking-[-0.03em] tabular-nums md:text-[56px]">
             {cover.count}
             <small className="ml-2 text-[22px] font-bold tracking-normal md:text-[26px]">{cover.count === 1 ? "policy in force" : "policies in force"}</small>
@@ -51,7 +51,7 @@ export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: 
         <dl className="flex flex-wrap gap-x-10 gap-y-4">
           {cover.figures.map((f) => (
             <div key={f.key} className="flex flex-col gap-0.5">
-              <dt className="text-[11px] font-extrabold tracking-[0.04em] text-muted uppercase">{f.label}</dt>
+              <dt className="text-[11px] font-extrabold tracking-[0.04em] text-muted uppercase label-face">{f.label}</dt>
               <dd className="text-[22px] leading-tight font-extrabold tabular-nums">{f.value}</dd>
               <dd className="text-[11.5px] font-semibold text-muted">{f.sub}</dd>
             </div>
@@ -166,7 +166,7 @@ function Box({ box, pickId, onPick }: { box: PolicyBox; pickId: string; onPick: 
         </span>
         <span className="text-[22px] leading-none font-extrabold tracking-[-0.02em] tabular-nums">
           {box.cover}
-          <small className="ml-1.5 text-[10.5px] font-extrabold tracking-[0.04em] text-muted uppercase">{box.coverWord}</small>
+          <small className="ml-1.5 text-[10.5px] font-extrabold tracking-[0.04em] text-muted uppercase label-face">{box.coverWord}</small>
         </span>
       </button>
       {box.tip.rows.length > 0 ? (

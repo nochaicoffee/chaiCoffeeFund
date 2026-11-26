@@ -32,7 +32,7 @@ export function CostCard({ cost }: { cost: CostView | null }) {
           </div>
           <table className="w-full border-collapse text-left text-[13px]">
             <thead>
-              <tr className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">
+              <tr className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">
                 <th className="pb-1.5 font-extrabold">By loan</th>
                 <th className="pb-1.5 font-extrabold">Interest</th>
                 <th className="pb-1.5 font-extrabold">Charges</th>

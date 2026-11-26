@@ -14,7 +14,7 @@ export function InterestCard({ view }: { view: InterestView }) {
           <dl className="grid grid-cols-3 gap-2.5 max-md:grid-cols-1">
             {view.tiles.map((t) => (
               <div key={t.label} className="rounded-[14px] bg-fill p-3.5">
-                <dt className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase">{t.label}</dt>
+                <dt className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">{t.label}</dt>
                 <dd className="mt-1 text-xl font-extrabold tabular-nums">{t.value}</dd>
                 <dd className="mt-0.5 text-[11px] font-medium text-muted">{t.note}</dd>
               </div>
@@ -26,7 +26,7 @@ export function InterestCard({ view }: { view: InterestView }) {
       <div className="xl:col-span-5">
         <WidgetCard label="EPF settings" title="EPF settings" note="what the estimates use">
           <div>
-            <p className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase">Rate for this year</p>
+            <p className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">Rate for this year</p>
             <p className="mt-1 text-2xl font-extrabold">{view.rate.value}</p>
             <p className="mt-1 text-xs font-medium text-muted">{view.rate.note}</p>
           </div>

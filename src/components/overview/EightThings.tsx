@@ -38,7 +38,7 @@ export function EightThings({ items }: { items: Insight[] }) {
       <RingTexture width={1200} height={700} dx={40} dy={40} first={60} step={30} stroke="var(--rings-light)" opacity={0.08} sheen={SHEEN} />
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <div className="text-xs font-extrabold tracking-[0.06em] uppercase opacity-80">Things I noticed</div>
+          <div className="text-xs font-extrabold tracking-[0.06em] uppercase label-face opacity-80">Things I noticed</div>
           <h2 className="mt-1 text-[22px] leading-tight font-extrabold md:text-[30px]">{heading}</h2>
         </div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by area">
@@ -53,13 +53,13 @@ export function EightThings({ items }: { items: Insight[] }) {
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="relative isolate flex flex-col gap-3 overflow-clip rounded-card bg-on-card-fill p-5">
           <RingTexture width={380} height={420} dx={10} dy={19} first={45} step={26} stroke="var(--rings-light)" opacity={0.1} />
-          <div className="text-xs font-extrabold tracking-[0.06em] uppercase opacity-80">What I noticed</div>
+          <div className="text-xs font-extrabold tracking-[0.06em] uppercase label-face opacity-80">What I noticed</div>
           <div className="text-[64px] leading-none font-extrabold">{items.length}<small className="ml-2 text-xl font-bold opacity-80">{items.length === 1 ? "thing" : "things"}</small></div>
           <p className="text-sm font-semibold opacity-90">in your numbers today.{starred > 0 ? ` ${WORDS[starred] ?? starred} ${starred === 1 ? "is" : "are"} worth acting on, the rest are worth knowing.` : " All are worth knowing."}</p>
-          <ul className="mt-auto flex flex-col gap-1.5 text-[11px] font-extrabold tracking-[0.05em] uppercase">
+          <ul className="mt-auto flex flex-col gap-1.5 text-[11px] font-extrabold tracking-[0.05em] uppercase label-face">
             {INSIGHT_TAGS.filter((t) => count(t) > 0).map((t) => (
               <li key={t}>
-                <button type="button" aria-pressed={tag === t} aria-label={`${cap(t)}: ${count(t)}`} onClick={() => setTag(tag === t ? "all" : t)} className={`flex w-full cursor-pointer items-center justify-between rounded-full px-3 py-1 text-[11px] font-extrabold tracking-[0.05em] uppercase motion-safe:transition-[background,color,translate] motion-safe:duration-200 hover:translate-x-0.5 focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill hover:bg-[var(--on-card-hover,color-mix(in_oklab,#fff_25%,transparent))]"}`}><span>{t}</span><span>{count(t)}</span></button>
+                <button type="button" aria-pressed={tag === t} aria-label={`${cap(t)}: ${count(t)}`} onClick={() => setTag(tag === t ? "all" : t)} className={`flex w-full cursor-pointer items-center justify-between rounded-full px-3 py-1 text-[11px] font-extrabold tracking-[0.05em] uppercase label-face motion-safe:transition-[background,color,translate] motion-safe:duration-200 hover:translate-x-0.5 focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill hover:bg-[var(--on-card-hover,color-mix(in_oklab,#fff_25%,transparent))]"}`}><span>{t}</span><span>{count(t)}</span></button>
               </li>
             ))}
           </ul>
@@ -69,7 +69,7 @@ export function EightThings({ items }: { items: Insight[] }) {
           <article key={i.key} className={`group/thing relative isolate flex min-h-[290px] flex-col gap-3 overflow-clip rounded-card bg-surface p-5 text-fg shadow-[var(--card-shadow)] motion-safe:transition-[translate,box-shadow] motion-safe:duration-200 hover:-translate-y-0.5 hover:shadow-[var(--lift-shadow)] ${i.star ? "ring-2 ring-[oklch(0.8_0.15_85)]" : ""}`}>
             <RingTexture width={380} height={290} dx={10} dy={19} first={45} step={26} stroke="var(--rings-ink)" opacity={0.07} ringsClassName={RIPPLE} />
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold tracking-[0.04em] uppercase ${TAG_STYLE[i.tag]}`}>{i.tag}</span>
+              <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold tracking-[0.04em] uppercase label-face ${TAG_STYLE[i.tag]}`}>{i.tag}</span>
               {i.star && <span className="rounded-full bg-[oklch(0.94_0.06_150)] px-2.5 py-0.5 text-[11px] font-extrabold text-[oklch(0.4_0.11_150)]">worth acting on</span>}
             </div>
             <div key={String(flipped.has(i.key))} className="flex flex-1 flex-col gap-3 motion-safe:animate-tip-in">

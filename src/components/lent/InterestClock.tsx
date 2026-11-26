@@ -92,7 +92,7 @@ function Swatch({ colorKey, small }: { colorKey: ColorKey; small?: boolean }) {
 function Tile({ title, amount, note }: { title: string; amount: string; note: string }) {
   return (
     <div className="rounded-[16px] bg-on-card-fill p-4">
-      <p className="text-[10px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase">{title}</p>
+      <p className="text-[10px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase label-face">{title}</p>
       <p className="mt-1 text-[26px] leading-tight font-extrabold tabular-nums max-md:text-[22px]">{amount}</p>
       <p className="mt-1 text-[11px] font-semibold text-on-card-muted">{note}</p>
     </div>
@@ -129,7 +129,7 @@ function Dial({ p }: { p: ClockPeriodView }) {
         </g>
       </svg>
       <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center">
-        <p className="text-[10px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase">Interest earned</p>
+        <p className="text-[10px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase label-face">Interest earned</p>
         <p className="mt-1 flex items-baseline gap-1 leading-none">
           <span className="text-xl font-bold text-on-card-muted">₹</span>
           <b className={`font-extrabold tabular-nums ${p.big.length >= 8 ? "text-[34px]" : "text-[44px]"}`}>{p.big}</b>

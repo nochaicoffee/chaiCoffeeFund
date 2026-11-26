@@ -194,7 +194,7 @@ export function StatementFormDialog({
       )}
 
       <fieldset aria-describedby={errors.cardId ? "statement-card-error" : undefined}>
-        <legend className="mb-2 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
+        <legend className="mb-2 text-[11px] font-bold tracking-[0.04em] text-muted uppercase label-face">
           Card<span className="text-negative" aria-hidden="true"> *</span>
         </legend>
         {cards.length === 0 ? (

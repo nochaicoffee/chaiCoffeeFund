@@ -166,7 +166,7 @@ function HoverCard({ m, box, total, width, height }: { m: SplitMemberView; box: 
   const left = Math.max(0, Math.min(width - CARD, box.x + box.w + 8 + CARD <= width ? box.x + box.w + 8 : box.x - CARD - 8));
   return (
     <div role="status" className="pointer-events-none absolute z-20 rounded-[14px] border border-[var(--tip-line)] bg-[var(--tip-surface)] p-3 text-[var(--tip-fg)] shadow-[var(--tip-shadow)]" style={{ left, top: Math.max(0, Math.min(box.y, height - TALL)), width: CARD }}>
-      <span className="block text-[11px] font-extrabold tracking-[0.04em] text-[var(--tip-muted)] uppercase">{m.symbol}</span>
+      <span className="block text-[11px] font-extrabold tracking-[0.04em] text-[var(--tip-muted)] uppercase label-face">{m.symbol}</span>
       <b className="mt-1 block text-[15px] font-extrabold">{m.name}</b>
       <span className="mt-1 block text-lg font-extrabold tabular-nums">{m.value}</span>
       <span className="block text-[11.5px] font-semibold text-[var(--tip-muted)]">{shareText(m.valueInr / total)} of what you hold{m.gain ? ` · ${m.gain} on what it cost` : ""}</span>
