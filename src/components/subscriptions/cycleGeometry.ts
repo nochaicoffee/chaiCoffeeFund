@@ -42,6 +42,17 @@ export function readCycleDay(day: number, cycle: CycleDays): CycleReading {
 }
 
 /**
+ * Where a pointer is along a track, as a fraction of its fill, and the bar's inner width. The fill sits inside the
+ * track's border, so `edge` (its width, 0 in Classic, Neubrutalism's outline otherwise) comes off both sides.
+ * The width is null when there's no fill to read.
+ */
+export function trackFraction(clientX: number, left: number, outerWidth: number, edge: number): { fraction: number; width: number } | null {
+  const width = outerWidth - 2 * edge;
+  if (width <= 0) return null;
+  return { fraction: (clientX - left - edge) / width, width };
+}
+
+/**
  * The reading at `fraction` along the bar. Within `snap` (a fraction of the bar) of
  * today or the renewal it snaps there, the nearer one winning; elsewhere it's the
  * nearest day.

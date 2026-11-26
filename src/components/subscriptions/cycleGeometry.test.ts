@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CycleRead } from "@/app/subscriptions/views";
-import { cycleDays, cycleReadout, readCycleAt, readCycleDay } from "./cycleGeometry";
+import { cycleDays, cycleReadout, readCycleAt, readCycleDay, trackFraction } from "./cycleGeometry";
 
 // Netflix in the design: Sep 23 to Oct 23, today Oct 20.
 const netflix: CycleRead = {
@@ -99,5 +99,20 @@ describe("cycleReadout", () => {
 
   it("falls back to how far the start is when nothing is known about it", () => {
     expect(cycleReadout(readCycleDay(0, days), { ...netflix, start: "" })).toEqual({ date: "Sep 23", note: "27 days ago" });
+  });
+});
+
+describe("trackFraction", () => {
+  it("reads the fill's own box, inside the track's edge", () => {
+    expect(trackFraction(100, 100, 200, 0)).toEqual({ fraction: 0, width: 200 });
+    expect(trackFraction(300, 100, 200, 0)).toEqual({ fraction: 1, width: 200 });
+    // A 2.5px edge: the fill starts 2.5px in and is 5px narrower.
+    expect(trackFraction(102.5, 100, 200, 2.5)).toEqual({ fraction: 0, width: 195 });
+    expect(trackFraction(297.5, 100, 200, 2.5)).toEqual({ fraction: 1, width: 195 });
+  });
+
+  it("has nothing to read on a track with no fill", () => {
+    expect(trackFraction(10, 0, 5, 2.5)).toBeNull();
+    expect(trackFraction(10, 0, 0, 0)).toBeNull();
   });
 });

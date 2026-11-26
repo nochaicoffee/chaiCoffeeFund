@@ -65,7 +65,8 @@ function Bar({ bar, top, monthly, align }: { bar: SplitBar; top: number; monthly
       <span className="block text-center text-[9.5px] font-extrabold whitespace-nowrap text-muted tabular-nums max-sm:hidden" style={{ visibility: total ? "visible" : "hidden" }}>
         {short(total)}
       </span>
-      <span className="flex flex-col overflow-hidden rounded-t-[8px] rounded-b-[3px] border-[length:var(--bar-edge,0px)] border-[color:var(--chart-edge-color,currentColor)]" style={{ height }} aria-hidden="true">
+      {/* An empty month has no bar, so it takes no edge either (a 0px-tall box would still draw its border). */}
+      <span className={`flex flex-col overflow-hidden rounded-t-[8px] rounded-b-[3px] ${total ? "border-[length:var(--bar-edge,0px)] border-[color:var(--chart-edge-color,currentColor)]" : ""}`} style={{ height }} aria-hidden="true">
         <i className="block border-[1.5px] border-b-0 border-dashed border-[var(--loan-interest)] bg-[var(--loan-interest-tint)]" style={{ height: total ? `${(bar.interest / total) * 100}%` : 0 }} />
         <i className="block flex-1 bg-[var(--loan-principal)]" />
       </span>
