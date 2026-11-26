@@ -85,7 +85,7 @@ export function TrendsCard({ trends }: { trends: TrendsData }) {
       {trends.movers.length > 0 && view !== "rhythm" && (
         <dl className="grid grid-cols-1 gap-4 rule-t pt-4 sm:grid-cols-3">
           {trends.movers.map((m) => (
-            <div key={m.name} className="flex flex-col gap-0.5">
+            <div key={m.name} className="stat-box flex flex-col gap-0.5">
               <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase label-face">{m.name}</dt>
               <dd className={`text-lg font-extrabold tabular-nums ${m.up ? "text-accent-text" : "text-negative"}`}>{m.change}</dd>
               <dd className="text-[11.5px] font-semibold text-muted">{trends.moversNote}</dd>
@@ -134,9 +134,9 @@ function Year({ trends, innerH, x, w }: { trends: TrendsData; innerH: number; x:
       <Axis top={top} innerH={innerH} w={w} />
       <path d={`M${path(trends.lastYear)}`} fill="none" className="stroke-muted" strokeWidth={2} strokeDasharray="5 4" />
       {now >= 0 && <path d={`M${x(0)},${y(0)} L${path(trends.thisYear)} L${x(now)},${y(0)} Z`} className="fill-accent/12" />}
-      {now >= 0 && <path d={`M${path(trends.thisYear)}`} fill="none" className="stroke-accent" strokeWidth={3} strokeLinejoin="round" />}
+      {now >= 0 && <path d={`M${path(trends.thisYear)}`} fill="none" className="stroke-accent" style={{ strokeWidth: "var(--chart-line-width, 3)" }} strokeLinejoin="round" />}
       {trends.projected.length > 0 && now >= 0 && <path d={`M${x(now)},${y(trends.thisYear[now])} L${path(trends.projected, now)}`} fill="none" className="stroke-accent" strokeWidth={2} strokeDasharray="2 5" strokeLinecap="round" />}
-      {now >= 0 && <circle cx={x(now)} cy={y(trends.thisYear[now])} r={5} className="fill-accent stroke-surface" strokeWidth={2} />}
+      {now >= 0 && <circle cx={x(now)} cy={y(trends.thisYear[now])} r={5} className="fill-accent" style={{ stroke: "var(--chart-end-ring, var(--surface))" }} strokeWidth={2} />}
     </>
   );
 }

@@ -65,7 +65,7 @@ export function MoneyIn({ view }: { view: MoneyInView }) {
         {view.years.map((y) => (
           <div key={y.year} className="grid grid-cols-[38px_1fr_64px] items-center gap-2.5 text-xs font-bold">
             <span>{y.year}</span>
-            <span aria-hidden="true" className="block h-2 overflow-hidden rounded-full bg-fill">
+            <span aria-hidden="true" className="block h-[var(--track-h,0.5rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill">
               <i className="block h-full rounded-full" style={{ width: `${y.fraction * 100}%`, background: "var(--card-teal)" }} />
             </span>
             <span className="text-right tabular-nums">{y.total}</span>

@@ -225,7 +225,7 @@ export function MonthCard({ view }: { view: MonthView }) {
 }
 
 const Meter = ({ value, max, left, color }: { value: number; max: number; left: number; color: string }) => (
-  <div className="relative h-3.5 rounded-full bg-fill">
+  <div className="relative h-[var(--track-h,0.875rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] rounded-full bg-fill">
     <i className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${Math.min(100, (value / max) * 100)}%`, background: color }} />
     <b className="absolute -top-1 -bottom-1 w-0.5 rounded bg-ink" style={{ left: `${Math.min(100, (left / max) * 100)}%` }} />
   </div>
@@ -293,9 +293,9 @@ export function StairCard({ view }: { view: StairView | null }) {
             <line key={f} x1={0} x2={W} y1={y(view.total * f)} y2={y(view.total * f)} stroke="var(--divider)" strokeDasharray="4 5" />
           ))}
           <path d={`${d} V${H} H0 Z`} fill="color-mix(in oklch, var(--negative) 9%, transparent)" />
-          <path d={d} fill="none" stroke="var(--negative)" strokeWidth="2.5" vectorEffect="non-scaling-stroke" />
-          {view.planned > 0 && <path d={line(view.plan)} fill="none" stroke="var(--accent)" strokeWidth="3" vectorEffect="non-scaling-stroke" />}
-          {view.minimum.length > 0 && <path d={line(view.minimum)} fill="none" stroke="var(--ink)" strokeWidth="3" vectorEffect="non-scaling-stroke" />}
+          <path d={d} fill="none" stroke="var(--negative)" style={{ strokeWidth: "var(--chart-line-width-secondary, 2.5)" }} vectorEffect="non-scaling-stroke" />
+          {view.planned > 0 && <path d={line(view.plan)} fill="none" stroke="var(--accent)" style={{ strokeWidth: "var(--chart-line-width, 3)" }} vectorEffect="non-scaling-stroke" />}
+          {view.minimum.length > 0 && <path d={line(view.minimum)} fill="none" stroke="var(--ink)" style={{ strokeWidth: "var(--chart-line-width, 3)" }} vectorEffect="non-scaling-stroke" />}
         </svg>
         {[0, 0.25, 0.5, 0.75, 1].map((f) => (
           <span key={f} className="absolute -left-12 w-10 text-right text-[10px] font-bold text-muted" style={{ top: `calc(${(1 - 0.97 * f) * 100}% - 7px)` }}>
@@ -313,7 +313,7 @@ export function StairCard({ view }: { view: StairView | null }) {
 }
 
 const Split = ({ a, b, ca, cb }: { a: number; b: number; ca: string; cb: string }) => (
-  <div className="flex h-3 overflow-hidden rounded-full bg-fill">
+  <div className="flex h-[var(--track-h,0.75rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill">
     <span style={{ width: `${(a / Math.max(1, a + b)) * 100}%`, background: ca }} />
     <span style={{ width: `${(b / Math.max(1, a + b)) * 100}%`, background: cb }} />
   </div>
@@ -340,7 +340,7 @@ export function NeedsWantsCard({ view }: { view: NeedsWantsView }) {
         {view.categories.map((c) => (
           <div key={c.category} className="grid grid-cols-[86px_minmax(0,1fr)_70px] items-center gap-2.5 text-xs font-bold">
             <span>{c.category}</span>
-            <span className="h-2 rounded-full bg-fill"><i className="block h-full rounded-full" style={{ width: `${(c.amount / top) * 100}%`, background: `var(--card-${c.colorKey})` }} /></span>
+            <span className="h-[var(--track-h,0.5rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] rounded-full bg-fill"><i className="block h-full rounded-full" style={{ width: `${(c.amount / top) * 100}%`, background: `var(--card-${c.colorKey})` }} /></span>
             <span className="text-right tabular-nums">{formatInrCompact(c.amount)}</span>
           </div>
         ))}

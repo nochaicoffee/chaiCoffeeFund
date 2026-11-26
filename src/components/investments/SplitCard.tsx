@@ -111,7 +111,7 @@ export function SplitCard({ dimensions }: { dimensions: SplitDimensionView[] }) 
             {slice.members.map((m) => (
               <li key={m.key} className="grid grid-cols-[minmax(0,6.5rem)_minmax(0,1fr)_3rem_4.5rem] items-center gap-2.5 text-[12px] font-bold">
                 <span className="truncate" title={m.name}>{m.symbol}</span>
-                <span aria-hidden="true" className="block h-2 overflow-hidden rounded-full bg-fill">
+                <span aria-hidden="true" className="block h-[var(--track-h,0.5rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill">
                   <i className="block h-full rounded-full" style={{ width: `${m.fraction * 100}%`, background: colourOf(slice) }} />
                 </span>
                 <b className="text-right font-extrabold tabular-nums">{m.percent}</b>

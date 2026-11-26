@@ -101,3 +101,9 @@ Defaults taken unless Prathik says otherwise: the phone greeting is 38px, not 58
   - Lent's interest clock rows and its two "adding up" figures are boxed, and its interest lines heavier.
   - The Loans cover's own tracks stay as they are, on its dark stage.
   - Classic checked the same in light and dark; the only differences were date-driven, and main showed the same.
+- **2026-11-27, step 5f (part 2b).** Investments, Fixed Income, Income and Goals:
+  - 12 more progress tracks are taller and outlined. That's Investments' holdings, money-in, same-money, split, concentration, what-if and targets bars; Fixed Income's deposits; and Goals' bars.
+  - Income's trend stats are boxed (`stat-box`), and its this-year line is heavier with an ink-ringed end dot.
+  - Investments' bold growth line and Goals' three set-aside lines read `--chart-line-width`.
+  - Daily is a dark scene (calendar and hero), so it stays as it is, like the Goals orbit and the Investments stage.
+  - Classic checked the same in light and dark: 0 differences.

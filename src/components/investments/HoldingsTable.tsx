@@ -123,7 +123,7 @@ function Row({ r, dayLabel }: { r: HoldingTableRow; dayLabel: string }) {
       <div className="flex min-w-0 flex-col text-[13px] max-lg:col-span-2">
         <span className="text-[10px] font-extrabold tracking-[0.06em] text-muted uppercase label-face lg:sr-only">Share</span>
         <b className="text-[12.5px]">{r.share}</b>
-        <span aria-hidden="true" className="mt-1 block h-2 overflow-hidden rounded-full bg-fill">
+        <span aria-hidden="true" className="mt-1 block h-[var(--track-h-sm,0.5rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill">
           <i className="block h-full rounded-full" style={{ width: `${Math.min(100, r.shareFraction * 250)}%`, background: `var(--card-${r.colorKey})` }} />
         </span>
       </div>

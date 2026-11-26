@@ -561,6 +561,8 @@
   --stat-cols: repeat(2, minmax(0, 1fr));
   --chart-line-width: 4.5;
   --chart-projection-width: 3.6;
+  /* A secondary series beside a main one (Goals' actual line against plan and minimum): lighter, as in Classic. */
+  --chart-line-width-secondary: 3.6;
   --chart-area-opacity: 0.6;
   --chart-end-dot: #ffd43b;
   --chart-end-ring: var(--ink);

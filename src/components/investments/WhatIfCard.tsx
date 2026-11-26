@@ -66,7 +66,7 @@ export function WhatIfCard({ view }: { view: WhatIfView }) {
                 <li key={r.key} className="grid grid-cols-[24px_3.5rem_minmax(0,1fr)_5rem] items-center gap-x-3 text-[13px]">
                   <Tile tile={r.tile} colorKey={r.colorKey} />
                   <b className="truncate font-extrabold">{r.symbol}</b>
-                  <span className="relative h-2.5 rounded-full bg-fill" aria-hidden="true">
+                  <span className="relative h-[var(--track-h,0.625rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] rounded-full bg-fill" aria-hidden="true">
                     <i className="absolute inset-y-0 left-1/2 w-px bg-divider" />
                     {r.bar !== 0 && <i className="absolute inset-y-0 rounded-full" style={{ background: r.bar < 0 ? "var(--negative)" : "var(--positive)", ...(r.bar < 0 ? { right: "50%", width: `${-r.bar * 50}%` } : { left: "50%", width: `${r.bar * 50}%` }) }} />}
                   </span>
@@ -77,7 +77,7 @@ export function WhatIfCard({ view }: { view: WhatIfView }) {
                 <li key={r.key} className="grid grid-cols-[24px_3.5rem_minmax(0,1fr)_5rem] items-center gap-x-3 text-[13px]">
                   <Tile tile={r.tile} colorKey={r.colorKey} />
                   <b className="truncate font-extrabold">{r.symbol}</b>
-                  <span className="h-2.5 rounded-full bg-fill" aria-hidden="true">
+                  <span className="h-[var(--track-h,0.625rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] rounded-full bg-fill" aria-hidden="true">
                     <i className="block h-full rounded-full" style={{ width: `${Math.min(100, r.bar * 100)}%`, background: `var(--card-${r.colorKey})` }} />
                   </span>
                   <span className="text-right font-extrabold">{r.share}</span>
