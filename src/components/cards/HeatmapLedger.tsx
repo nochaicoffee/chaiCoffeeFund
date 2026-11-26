@@ -58,7 +58,7 @@ export function HeatmapLedger({
                 type="button"
                 aria-pressed={on}
                 onClick={() => setPicked(y.year)}
-                className={`min-w-0 flex-1 cursor-pointer rounded-[14px] px-1 py-1.5 text-center text-[13px] leading-tight font-extrabold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${on ? "bg-ink text-on-ink" : "bg-fill"}`}
+                className={`min-w-0 flex-1 cursor-pointer rounded-[14px] border-[length:var(--heat-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] px-1 py-1.5 text-center text-[13px] leading-tight font-extrabold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${on ? "bg-ink text-on-ink" : "bg-fill"}`}
               >
                 {y.year}
                 <small className={`block truncate text-[10px] font-bold tabular-nums ${on ? "opacity-70" : "text-muted"}`}>{formatInrCompact(t?.total ?? 0)}</small>
@@ -103,7 +103,7 @@ function Row({ row, isPeak, isCurrent, noData }: { row: LedgerRow; isPeak: boole
     return (
       <div role="listitem" aria-label={`${label}: ${noData.toLowerCase()}${isCurrent ? " yet, this month" : ""}`} className={grid}>
         {month}
-        <div className={`flex h-6 items-center rounded-[9px] pl-2.5 text-[10px] font-bold text-muted ${ring}`} style={{ background: NO_DATA_STRIPES }}>
+        <div className={`flex h-6 items-center rounded-[9px] border-[length:var(--heat-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] pl-2.5 text-[10px] font-bold text-muted ${ring}`} style={{ background: NO_DATA_STRIPES }}>
           {isCurrent ? "This month" : ""}
         </div>
         <span className="text-right text-xs font-semibold text-muted">–</span>
@@ -123,7 +123,7 @@ function Row({ row, isPeak, isCurrent, noData }: { row: LedgerRow; isPeak: boole
       className={`group/cell ${grid} cursor-default rounded-[9px] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent`}
     >
       {month}
-      <div className={`flex h-6 items-center rounded-[9px] bg-fill ${ring}`}>
+      <div className={`flex h-6 items-center rounded-[9px] border-[length:var(--heat-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] bg-fill ${ring}`}>
         <div className="relative isolate flex h-full shrink-0 items-center overflow-hidden rounded-[9px] pl-2 transition-[box-shadow] duration-200 group-data-active/cell:shadow-card" style={{ width: `${row.width}%`, background: `var(--heat-${row.level})` }}>
           <RingTexture
             width={120}

@@ -40,7 +40,7 @@ export function Cell({ cell, isPeak, isCurrent, noData }: { cell: HeatCell; isPe
       <div
         role="cell"
         aria-label={`${label}: ${noData.toLowerCase()}${isCurrent ? " yet, this month" : ""}`}
-        className={`flex h-[52px] flex-col items-center justify-center rounded-control text-xs font-semibold text-muted ${
+        className={`flex h-[52px] flex-col items-center justify-center rounded-control border-[length:var(--heat-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] text-xs font-semibold text-muted ${
           isCurrent ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""
         }`}
         style={{ background: NO_DATA_STRIPES }}
@@ -59,7 +59,7 @@ export function Cell({ cell, isPeak, isCurrent, noData }: { cell: HeatCell; isPe
       // Hovering, focusing or tapping it opens the month card (HeatmapHover): the cell lifts and its rings ripple.
       data-month={cell.month}
       tabIndex={0}
-      className={`group/cell relative isolate flex h-[52px] cursor-default flex-col items-center justify-center overflow-hidden rounded-control text-[11px] font-bold tabular-nums transition-[translate,box-shadow] duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent data-active:-translate-y-[3px] data-active:shadow-card ${
+      className={`group/cell relative isolate flex h-[52px] cursor-default flex-col items-center justify-center overflow-hidden rounded-control border-[length:var(--heat-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] text-[11px] font-bold tabular-nums transition-[translate,box-shadow] duration-200 ease-out focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent data-active:-translate-y-[3px] data-active:shadow-card ${
         dark ? "text-on-accent" : "text-heat-ink"
       } ${isCurrent ? "ring-2 ring-accent ring-offset-2 ring-offset-surface" : ""}`}
       style={{ background: `var(--heat-${cell.level})` }}
@@ -138,13 +138,13 @@ export function SpendHeatmap({
           {heading} <span className="text-muted">· {title}</span>
         </h2>
         <div className="flex flex-wrap items-center gap-[7px] text-[11px] text-muted" aria-hidden="true">
-          <Swatch style={{ background: "repeating-linear-gradient(135deg, var(--fill-strong) 0 2px, transparent 2px 4px)" }} />
+          <Swatch className="border-[length:var(--heat-edge,0px)] border-[color:var(--chart-edge-color,currentColor)]" style={{ background: "repeating-linear-gradient(135deg, var(--fill-strong) 0 2px, transparent 2px 4px)" }} />
           <span>{legendNoData}</span>
           <Swatch className="ml-2 border-[1.5px] border-dashed border-heat-upcoming" />
           <span>{legendUpcoming}</span>
           <span className="ml-3">Low</span>
           {[1, 2, 3, 4, 5].map((level) => (
-            <Swatch key={level} style={{ background: `var(--heat-${level})` }} />
+            <Swatch key={level} className="border-[length:var(--heat-edge,0px)] border-[color:var(--chart-edge-color,currentColor)]" style={{ background: `var(--heat-${level})` }} />
           ))}
           <span>High</span>
         </div>

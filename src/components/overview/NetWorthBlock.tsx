@@ -68,7 +68,7 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
           <RollingNumber value={month.net} format="inr" />
         </div>
         {n > 1 && (
-          <div className="relative mt-1" role="group" aria-label="Net worth by month">
+          <div className="chart-panel relative mt-1" role="group" aria-label="Net worth by month">
             <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" aria-hidden="true">
               <defs>
                 <linearGradient id="nw-fill" x1="0" y1="0" x2="0" y2="1">
@@ -77,7 +77,7 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
                 </linearGradient>
               </defs>
               <path d={`${line}L${x(n - 1)},${H - 34}L${x(0)},${H - 34}Z`} fill="url(#nw-fill)" />
-              <path d={line} fill="none" stroke="var(--on-card-mark)" strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round" />
+              <path d={line} fill="none" stroke="var(--on-card-mark)" style={{ strokeWidth: "var(--chart-line-width, 3.4)" }} strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             {view.months.map((m, i) => (
               <button
@@ -90,8 +90,8 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
                 style={{ left: `${((x(i) - (W - 2 * PAD) / (2 * Math.max(1, n - 1))) / W) * 100}%`, width: `${((W - 2 * PAD) / Math.max(1, n - 1) / W) * 100}%` }}
               >
                 <span aria-hidden="true" className={`absolute top-0 bottom-6 left-1/2 w-px -translate-x-1/2 bg-on-card-mark/35 transition-opacity ${i === pick ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} />
-                <i className={`absolute left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white transition-all duration-200 ${i === pick ? "size-[18px] shadow-[0_0_0_5px_rgba(255,255,255,0.3)]" : "size-[9px] group-hover:size-[13px]"}`} style={{ top: `${(y(m.net) / H) * 100}%` }} />
-                <span className={`absolute left-1/2 -translate-x-1/2 -translate-y-full rounded-[9px] bg-white px-2 py-1 text-[11.5px] font-extrabold whitespace-nowrap text-ink transition-opacity ${i === pick ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} style={{ top: `calc(${(y(m.net) / H) * 100}% - 14px)` }}>
+                <i className={`absolute left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border-[length:var(--chart-dot-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] transition-all duration-200 ${i === pick ? "size-[18px] bg-[var(--chart-end-dot,var(--color-white))] shadow-[0_0_0_5px_rgba(255,255,255,0.3)]" : "size-[9px] bg-white group-hover:size-[13px]"}`} style={{ top: `${(y(m.net) / H) * 100}%` }} />
+                <span className={`absolute left-1/2 -translate-x-1/2 -translate-y-full rounded-[9px] border-[length:var(--chart-dot-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] bg-white px-2 py-1 text-[11.5px] font-extrabold whitespace-nowrap text-ink transition-opacity ${i === pick ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} style={{ top: `calc(${(y(m.net) / H) * 100}% - 14px)` }}>
                   {formatInrCompact(m.net)}
                 </span>
                 <span className={`absolute inset-x-0 bottom-1 text-center text-[10.5px] font-bold opacity-75 ${(n - 1 - i) % labelStep !== 0 ? "hidden" : labelStep === 1 && (n - 1 - i) % 2 === 1 ? "max-sm:hidden" : ""}`}>{m.label}</span>

@@ -118,4 +118,12 @@ describe("shape stays on tokens", () => {
     }));
     expect(offenders.map((f) => f.path)).toEqual([]);
   });
+
+  it("puts chart-panel and stat-box only where they don't overwrite Classic (step 5f)", () => {
+    // Both set background, border, radius, shadow (and stat-box padding) from Neubrutalism-only tokens, with Classic
+    // fallbacks of "none". On an element with its own of any of those, the fallback could win and change Classic.
+    const own = /^(?:bg-|rounded|border|shadow|ring|p-(?!\[var\(--chart-panel-pad)|px-|py-|pt-|pb-|pl-|pr-)/;
+    const offenders = files.filter(({ text }) => classLists(text).some((list) => (list.includes("chart-panel") || list.includes("stat-box")) && list.some((c) => own.test(c))));
+    expect(offenders.map((f) => f.path)).toEqual([]);
+  });
 });
