@@ -1,0 +1,282 @@
+<title>Chai Coffee Fund Guide</title>
+<link rel="artifact-thumbnail" href="thumb.jpg">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: one reading column; the tour video first, then each dashboard as a section with a desktop shot and a phone shot side by side. */
+:root {
+  --bg: #f3f5f3;
+  --surface: #ffffff;
+  --fg: #16211c;
+  --muted: #5a6761;
+  --line: #dde3df;
+  --accent: #0f766e;
+  --accent-soft: #e0f0ed;
+  --note-bg: #fff6df;
+  --note-fg: #6b4a00;
+  --display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --body: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101614; --surface: #18201d; --fg: #e6ece9; --muted: #9aa8a2; --line: #2a3531;
+    --accent: #4fc2b4; --accent-soft: #173330; --note-bg: #2e2612; --note-fg: #f1d48a; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101614; --surface: #18201d; --fg: #e6ece9; --muted: #9aa8a2; --line: #2a3531;
+  --accent: #4fc2b4; --accent-soft: #173330; --note-bg: #2e2612; --note-fg: #f1d48a; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg); font: 400 16px/1.6 var(--body);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 40px 80px;
+}
+.wrap { max-width: 1080px; margin: 0 auto; display: grid; gap: 56px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; line-height: 1.15; margin: 0; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -0.02em; }
+h2 { font-size: 1.6rem; letter-spacing: -0.01em; }
+p { margin: 0; }
+.eyebrow { font: 600 0.75rem/1 var(--body); letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+header { display: grid; gap: 14px; max-width: 68ch; }
+.lede { font-size: 1.1rem; color: var(--muted); }
+.note { background: var(--note-bg); color: var(--note-fg); border-radius: 10px; padding: 10px 14px; font-size: 0.92rem; }
+.tour { display: grid; gap: 12px; }
+video { width: 100%; max-width: 100%; border-radius: 14px; border: 1px solid var(--line); background: #000; display: block; aspect-ratio: 16 / 10; }
+.caption { color: var(--muted); font-size: 0.9rem; }
+nav.toc { display: flex; flex-wrap: wrap; gap: 8px; }
+nav.toc a { text-decoration: none; color: var(--fg); background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 6px 14px; font-size: 0.9rem; font-weight: 500; }
+nav.toc a:hover, nav.toc a:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+.basics { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+.basics div { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: grid; gap: 6px; align-content: start; }
+.basics h3 { font-size: 1.05rem; }
+.basics p { color: var(--muted); font-size: 0.95rem; }
+section.page { display: grid; gap: 18px; scroll-margin-top: 24px; padding-top: 32px; border-top: 1px solid var(--line); }
+.head { display: grid; gap: 8px; max-width: 68ch; }
+.head p { color: var(--muted); }
+.steps { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; max-width: 72ch; }
+.steps b { font-weight: 600; }
+.btn { font: 600 0.85em/1 var(--body); background: var(--accent-soft); color: var(--accent); border-radius: 6px; padding: 2px 7px; white-space: nowrap; }
+.shots { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 260px); gap: 18px; align-items: start; }
+figure { margin: 0; display: grid; gap: 6px; min-width: 0; }
+figure img { width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); display: block; background: var(--surface); }
+figcaption { font-size: 0.82rem; color: var(--muted); }
+figcaption a { color: var(--accent); }
+footer { color: var(--muted); font-size: 0.9rem; display: grid; gap: 6px; max-width: 72ch; }
+footer code { font-size: 0.9em; }
+@media (max-width: 720px) {
+  .shots { grid-template-columns: minmax(0, 1fr); }
+  .shots figure.phone { max-width: 280px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+html { scroll-behavior: smooth; }
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">How to use the app</span>
+    <h1>Chai Coffee Fund</h1>
+    <p class="lede">A personal finance dashboard that keeps everything in your own Google Sheet: bank balances, cards, subscriptions, salary, loans, insurance, goals and investments, all on one page each.</p>
+    <p class="note">Every name, number and date in this guide is made up. It's a demo copy with a pretend person called Rahul, so nothing here is anyone's real money.</p>
+  </header>
+
+  <div class="tour">
+    <video id="tour" controls preload="metadata" playsinline poster="shots/01-overview-desktop.jpg">
+      <source src="tour.mp4" type="video/mp4">
+    </video>
+    <p class="caption">A 2½-minute tour of every page, with one spend added on the Daily page to show how saving works.</p>
+  </div>
+
+  <div class="basics">
+    <div><h3>Your data, your Sheet</h3><p>The app reads and writes a Google Sheet that you own. Nobody else's data mixes with yours, and you can open the Sheet any time.</p></div>
+    <div><h3>Bold figures explain themselves</h3><p>Each page opens with a sentence. Point at a bold figure (tap it on a phone) to see what it's made of.</p></div>
+    <div><h3>Buttons at the top add things</h3><p>Every page has its own add buttons under the greeting, like <span class="btn">Add card</span> or <span class="btn">Record income</span>. Saving updates the page at once.</p></div>
+    <div><h3>Works on a phone</h3><p>The bottom bar has Overview, Accounts, Cards and Daily. Everything else is under <span class="btn">More</span>.</p></div>
+  </div>
+
+  <nav class="toc" aria-label="Pages">
+    <a href="#overview">Overview</a><a href="#accounts">Accounts</a><a href="#cards">Cards</a><a href="#subscriptions">Subscriptions</a><a href="#income">Income</a><a href="#expenses">Expenses</a><a href="#daily">Daily</a><a href="#loans">Loans</a><a href="#lent">Lent out</a><a href="#insurance">Insurance</a><a href="#goals">Goals</a><a href="#investments">Investments</a><a href="#fixed-income">Fixed income</a>
+  </nav>
+
+  <section class="page" id="overview">
+    <div class="head"><h2>Overview</h2><p>Your whole picture: what you're worth today, how the year is going, and what's coming up.</p></div>
+    <ol class="steps">
+      <li>Pick the period at the top right (<span class="btn">This year</span>, a month, or a custom range). The whole page follows it.</li>
+      <li>Each tile is one part of your money. Click a tile to open its page.</li>
+      <li><b>Where each month's money went</b> shows every month side by side: income, investing, EMIs, card bills and cash.</li>
+      <li><b>Things worth knowing</b> points out what needs a look, like cash sitting idle or a renewal coming up.</li>
+      <li><b>Coming up</b> lists the next salary, EMIs, card bills and renewals by date.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/01-overview-desktop.jpg" alt="Overview page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/01-overview-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/01-overview-phone.jpg" alt="Overview page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="page" id="accounts">
+    <div class="head"><h2>Accounts</h2><p>Every bank and broker balance, and how money moved in and out of each one.</p></div>
+    <ol class="steps">
+      <li>Press <span class="btn">Add account</span> once for each bank account.</li>
+      <li>Press <span class="btn">Update balances</span> every so often and type what each account holds today. The chart grows from these.</li>
+      <li>Pick an account's card to see only that account. <b>Balance history</b> lists every balance you've entered.</li>
+      <li>Bank statements can be imported from Gmail, so balances fill themselves in.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/02-accounts-desktop.jpg" alt="Accounts page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/02-accounts-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/02-accounts-phone.jpg" alt="Accounts page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="page" id="cards">
+    <div class="head"><h2>Cards</h2><p>Each credit card's bill, due date and spending, month by month.</p></div>
+    <ol class="steps">
+      <li>Press <span class="btn">Add card</span> with its limit, statement day and colour.</li>
+      <li>Each month's bill shows as Pending until you press <b>Mark paid</b> and say which account paid it.</li>
+      <li>The heatmap shows which months ran high. Statements open the full list.</li>
+      <li><span class="btn">Sync statements</span> reads card statement emails from Gmail and fills the bills in for you.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/03-cards-desktop.jpg" alt="Cards page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/03-cards-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/03-cards-phone.jpg" alt="Cards page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="page" id="subscriptions">
+    <div class="head"><h2>Subscriptions</h2><p>Everything that renews: what it costs a month and a year, and what's due next.</p></div>
+    <ol class="steps">
+      <li>Press <span class="btn">Add subscription</span> with its price, how often it renews and what it's charged to.</li>
+      <li>Swipe through the cards at the top to look at one subscription at a time.</li>
+      <li>When a renewal is charged, press <span class="btn">Record payment</span>. A cancelled one keeps its history.</li>
+      <li><b>Renewals</b> lists every renewal with what's been paid and what hasn't.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/04-subscriptions-desktop.jpg" alt="Subscriptions page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/04-subscriptions-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/04-subscriptions-phone.jpg" alt="Subscriptions page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="page" id="income">
+    <div class="head"><h2>Income</h2><p>Salary and every other income, month by month, with pay changes and late payments.</p></div>
+    <ol class="steps">
+      <li>Press <span class="btn">Add source</span> for your salary and anything else that pays you, with how often it comes.</li>
+      <li>Each payday, press <span class="btn">Record income</span>, or <b>Mark received</b> on a payment that's due.</li>
+      <li>A payment that's late shows in yellow at the top. Salary can also be read from bank statements.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/05-income-desktop.jpg" alt="Income page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/05-income-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/05-income-phone.jpg" alt="Income page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="page" id="expenses">
+    <div class="head"><h2>Expenses</h2><p>Where each month's money actually went: card bills, cash and UPI, EMIs, subscriptions and what you invested.</p></div>
+    <ol class="steps">
+      <li>Nothing to type here: it's worked out from your balances, income, card bills and the rest.</li>
+      <li>Pick a month in the strip to see that month split up.</li>
+      <li>Press <span class="btn">Add a big spend</span> for a large purchase (a phone, a holiday) so you remember why a month ran high.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/06-expenses-desktop.jpg" alt="Expenses page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/06-expenses-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/06-expenses-phone.jpg" alt="Expenses page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="page" id="daily">
+    <div class="head"><h2>Daily</h2><p>A quick diary of everyday spends, with a monthly limit.</p></div>
+    <ol class="steps">
+      <li>Tap a usual spend under <b>Often</b> to add it to today in one tap.</li>
+      <li>Or type an amount, pick UPI, card or cash, a category if you like, and press <span class="btn">Add to today</span>.</li>
+      <li>Set a monthly limit and limits per category. The calendar shows each day's total.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/07-daily-desktop.jpg" alt="Daily page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/07-daily-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/07-daily-phone.jpg" alt="Daily page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="page" id="loans">
+    <div class="head"><h2>Loans</h2><p>Each loan's EMIs, what's still owed, and what a prepayment would save.</p></div>
+    <ol class="steps">
+      <li>Press <span class="btn">Add loan</span> with the amount, rate, tenure and first EMI date. The whole EMI schedule is made for you.</li>
+      <li>Press <span class="btn">Mark EMI paid</span> each month.</li>
+      <li>Add a prepayment to see how many months, or how much interest, it saves.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/08-loans-desktop.jpg" alt="Loans page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/08-loans-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/08-loans-phone.jpg" alt="Loans page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="page" id="lent">
+    <div class="head"><h2>Lent out</h2><p>Money you lent to friends or family: what's owed back, with any interest.</p></div>
+    <ol class="steps">
+      <li>Press <span class="btn">Add a loan</span> with who, how much, when, and the interest if any.</li>
+      <li>When money comes back, press <span class="btn">Record a repayment</span>.</li>
+      <li>Interest that's building up is shown day by day.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/09-lent-desktop.jpg" alt="Lent out page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/09-lent-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/09-lent-phone.jpg" alt="Lent out page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="page" id="insurance">
+    <div class="head"><h2>Insurance</h2><p>Every policy, who and what it covers, and when it renews.</p></div>
+    <ol class="steps">
+      <li>Press <span class="btn">Add policy</span> for health, life, car or home cover.</li>
+      <li>A renewal coming up shows at the top. Press <span class="btn">Renew a policy</span> when you've paid the next premium.</li>
+      <li>Keep the claims number and notes (waiting periods, what's excluded) with each policy.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/10-insurance-desktop.jpg" alt="Insurance page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/10-insurance-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/10-insurance-phone.jpg" alt="Insurance page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="page" id="goals">
+    <div class="head"><h2>Goals</h2><p>Things you're saving for. Each goal is a planet: the closer to the middle, the sooner it's due.</p></div>
+    <ol class="steps">
+      <li>Press <span class="btn">Add goal</span> with the amount, the date, and whether it's a need or a want.</li>
+      <li>Press <span class="btn">Set aside</span> when you put money towards a goal, and say which account it sits in.</li>
+      <li>A big goal can have parts (a wedding: gift, travel). Mark a goal done when you buy the thing.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/11-goals-desktop.jpg" alt="Goals page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/11-goals-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/11-goals-phone.jpg" alt="Goals page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="page" id="investments">
+    <div class="head"><h2>Investments</h2><p>Your holdings at today's prices, returns against the index, and the targets you set.</p></div>
+    <ol class="steps">
+      <li>Press <span class="btn">Add trade</span> for each buy or sell. Holdings and returns are worked out from your trades.</li>
+      <li><span class="btn">Refresh prices</span> fetches the latest prices. US holdings are counted in rupees.</li>
+      <li>Set your own targets (say 55% India, 15% US) and the page shows how far off you are.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/12-investments-desktop.jpg" alt="Investments page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/12-investments-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/12-investments-phone.jpg" alt="Investments page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="page" id="fixed-income">
+    <div class="head"><h2>Fixed income</h2><p>Fixed deposits and PF: what they're worth today and when they mature.</p></div>
+    <ol class="steps">
+      <li>Press <span class="btn">Add deposit</span> with the amount, rate and maturity date.</li>
+      <li>Add your PF passbook with <span class="btn">Add EPF statement</span>, and its yearly interest is counted.</li>
+      <li>Deposits that matured stay in the history with what you got back.</li>
+    </ol>
+    <div class="shots">
+      <figure><img src="shots/13-fixed-income-desktop.jpg" alt="Fixed income page on a computer, with made-up numbers" loading="lazy" width="1440" height="900"><figcaption>On a computer. <a href="shots/13-fixed-income-desktop-full.jpg" target="_blank" rel="noopener">See the whole page</a></figcaption></figure>
+      <figure class="phone"><img src="shots/13-fixed-income-phone.jpg" alt="Fixed income page on a phone, with made-up numbers" loading="lazy" width="390" height="844"><figcaption>On a phone</figcaption></figure>
+    </div>
+  </section>
+
+  <footer>
+    <h2>Getting your own copy</h2>
+    <p>Each person runs their own copy: their own Google Sheet, their own Google sign-in, nothing shared. It takes about 30 minutes on free accounts (Google Cloud and Vercel). The app's <b>Setup</b> page walks through every step and checks your settings as you go.</p>
+    <p>Built for India first: rupees, lakh and crore formatting, and statement imports for Indian banks.</p>
+  </footer>
+</div>
