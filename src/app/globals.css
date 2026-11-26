@@ -566,6 +566,11 @@
   --chart-end-size: 18px;
   --chart-dot-edge: 2.5px;
   --heat-edge: 2px;
+  /* Progress tracks and bar columns (step 5f, part 2a): taller, outlined tracks and outlined bars, as on the boards. */
+  --track-h: 14px;
+  --track-h-sm: 8px;
+  --track-edge: 2.5px;
+  --bar-edge: 2px;
 
   /* Each card colour's own flat shade (a gradient from and to the same colour); the swatches for chart marks stay. */
   --card-amber-from: oklch(0.88 0.134 85);

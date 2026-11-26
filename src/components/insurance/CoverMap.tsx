@@ -192,7 +192,7 @@ function Box({ box, pickId, onPick }: { box: PolicyBox; pickId: string; onPick: 
 
 function TermBar({ box }: { box: PolicyBox }) {
   return (
-    <span className="relative block h-2 overflow-hidden rounded-full bg-fill-strong" aria-hidden="true">
+    <span className="relative block h-[var(--track-h,0.5rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill-strong" aria-hidden="true">
       <i className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${Math.max(2, box.elapsed * 100)}%`, background: box.warn ? WARN_BAR : "var(--c)" }} />
     </span>
   );

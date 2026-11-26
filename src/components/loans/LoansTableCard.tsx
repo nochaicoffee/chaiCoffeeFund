@@ -49,7 +49,7 @@ export function LoansTableCard({ table, picked, onPick, allHref }: { table: Loan
                     label={`${r.loan.name}: ${r.hover.title}`}
                     card={<TipBody head={r.loan.name} total={r.hover.title} detail={r.hover.detail} rows={r.hover.rows.map((x) => ({ name: x.name, amount: x.amount, mark: x.kind === "principal" ? <PrincipalMark size={8} /> : x.kind === "interest" ? <InterestMark size={8} /> : undefined }))} foot={r.hover.note} />}
                   >
-                    <span aria-hidden="true" className="block h-2.5 overflow-hidden rounded-full bg-fill">
+                    <span aria-hidden="true" className="block h-[var(--track-h,0.625rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill">
                       <i className="block h-full rounded-full" style={{ width: `${Math.max(2, r.repaidShare * 100)}%`, background: fillOf(r.loan.colorKey) }} />
                     </span>
                     <span className="mt-1.5 block text-[11px] font-semibold text-muted">{r.repaidText}</span>

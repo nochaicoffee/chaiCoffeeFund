@@ -22,7 +22,7 @@ export function CostCard({ cost }: { cost: CostView | null }) {
             <Line label="Interest and charges" value={cost.total} strong />
           </dl>
           <div className="flex flex-col gap-1.5">
-            <span aria-hidden="true" className="block h-3.5 overflow-hidden rounded-full bg-fill">
+            <span aria-hidden="true" className="block h-[var(--track-h,0.875rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill">
               <i className="block h-full rounded-full" style={{ width: `${Math.max(2, cost.paidShare * 100)}%`, background: fillOf("emerald") }} />
             </span>
             <span className="flex flex-wrap justify-between gap-2 text-[11.5px] font-semibold text-muted">
