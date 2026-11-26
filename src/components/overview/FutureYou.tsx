@@ -130,7 +130,7 @@ export function FutureYou({ view }: { view: FutureView }) {
           <Tile k="Investments then" v={formatInrCompact(p.investments)} s={`from ${formatInrCompact(view.start.investments)} today`} />
           <Tile k="Still owed then" v={p.owed > 0 ? formatInrCompact(p.owed) : "₹0"} s={p.loans > 0 ? "loans and cards" : view.start.cards > 0 ? "loans are gone; cards remain" : "nothing"} />
         </div>
-        <div className="rounded-card bg-on-card-fill p-3">
+        <div className="rounded-card border-[length:var(--chart-edge-width,0px)] border-[color:var(--chart-edge-color,currentColor)] bg-[var(--chart-panel-bg,var(--on-card-fill))] p-3 [box-shadow:var(--chart-panel-shadow,none)]">
           <svg viewBox={`0 0 ${W} ${H}`} className="block w-full cursor-crosshair" style={{ touchAction: "pan-y" }} role="img" aria-label={`Net worth over twenty years at ${a.returnPct}% a year`} onPointerMove={(e) => setScrub(monthAt(e))} onPointerDown={(e) => setScrub(monthAt(e))} onPointerLeave={() => setScrub(null)}>
             {Array.from({ length: Math.round(ymax / step) + 1 }, (_, i) => i * step).map((v) => (
               <g key={v}><line x1={PAD.l} x2={W - PAD.r} y1={y(v)} y2={y(v)} stroke="var(--on-card-mark)" strokeOpacity={v ? 0.13 : 0.3} strokeDasharray={v ? "3 5" : undefined} /><text x={PAD.l - 8} y={y(v) + 4} textAnchor="end" fontSize={11} fill="var(--on-card-mark)" fillOpacity={0.65}>{cr(v)}</text></g>
@@ -138,7 +138,7 @@ export function FutureYou({ view }: { view: FutureView }) {
             {[0, 60, 120, 180, 240].map((m) => <text key={m} x={x(m)} y={base + 18} textAnchor="middle" fontSize={11} fill="var(--on-card-mark)" fillOpacity={0.65}>{m === 0 ? "Today" : monthLabel(view.startMonth, m).slice(-4)}</text>)}
             <path d={owedArea} fill="oklch(0.7 0.18 25)" fillOpacity={0.38} />
             <path d={`${line}L${x(240)},${base}L${x(0)},${base}Z`} fill="#fff" fillOpacity={0.13} />
-            <path d={line} fill="none" stroke="var(--on-card-mark)" strokeWidth={3.2} strokeLinejoin="round" />
+            <path d={line} fill="none" stroke="var(--on-card-mark)" style={{ strokeWidth: "var(--chart-line-width, 3.2)" }} strokeLinejoin="round" />
             {HORIZONS.map((h) => { const pt = points[h * 12]; const sel = h === years; return (
               <g key={h} className="cursor-pointer" onClick={() => setYears(h)}>
                 <line x1={x(pt.month)} x2={x(pt.month)} y1={y(pt.net)} y2={base} stroke="var(--on-card-mark)" strokeOpacity={sel ? 0.9 : 0.35} strokeDasharray="3 4" />

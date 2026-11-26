@@ -89,9 +89,9 @@ export function HeroTrend({ pick, checkIns, flowItems, periodLabel, today, onPic
 
 function Facts({ facts }: { facts: FactView[] }) {
   return (
-    <dl className="grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-4">
+    <dl className="grid grid-cols-2 gap-x-4 gap-y-3 md:grid-cols-[var(--stat-cols,repeat(4,minmax(0,1fr)))]">
       {facts.map((f) => (
-        <div key={f.label} className="min-w-0">
+        <div key={f.label} className="stat-box min-w-0">
           <dt className="truncate text-[10px] font-extrabold tracking-wider text-muted uppercase label-face">{f.label}</dt>
           <dd className={`mt-0.5 truncate text-lg leading-tight font-extrabold tabular-nums ${f.warn ? "text-[var(--card-copper)]" : ""}`}>{f.value}</dd>
           {f.note && <dd className="truncate text-[11px] font-semibold text-muted">{f.note}</dd>}
@@ -193,7 +193,7 @@ function Trend({ pick, flowItems, today }: { pick: PickView; flowItems: FlowItem
     <>
       <p className="-mt-2 min-h-5 text-xs font-semibold text-muted">{sub}</p>
       <Facts facts={facts} />
-      <div className="flex min-h-56 flex-1 flex-col gap-2">
+      <div className="chart-panel flex min-h-56 flex-1 flex-col gap-2 p-[var(--chart-panel-pad,0px)]">
         <div
           ref={chartRef}
           role="img"
@@ -212,12 +212,12 @@ function Trend({ pick, flowItems, today }: { pick: PickView; flowItems: FlowItem
           <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" style={{ stopColor: "var(--c)" }} stopOpacity="0.34" />
+                <stop offset="0" style={{ stopColor: "var(--c)", stopOpacity: "var(--chart-area-opacity, 0.34)" }} />
                 <stop offset="1" style={{ stopColor: "var(--c)" }} stopOpacity="0" />
               </linearGradient>
             </defs>
             <path d={`${curve.d} L ${W} ${H} L 0 ${H} Z`} fill={`url(#${gradientId})`} />
-            <path d={curve.d} fill="none" stroke="var(--fg)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+            <path d={curve.d} fill="none" stroke="var(--fg)" style={{ strokeWidth: "var(--chart-line-width, 3)" }} strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
           </svg>
           {range && (
             <>
@@ -227,7 +227,7 @@ function Trend({ pick, flowItems, today }: { pick: PickView; flowItems: FlowItem
             </>
           )}
           {/* Today's end of the line, with a ring that keeps breathing out. */}
-          <i className="pointer-events-none absolute right-[-4px] size-2.5 -translate-y-1/2 rounded-full bg-fg ring-[3px] ring-surface" style={{ top: `${(curve.ys[n - 1] / H) * 100}%` }}>
+          <i className="pointer-events-none absolute right-[-4px] size-[var(--chart-end-size,10px)] -translate-y-1/2 rounded-full bg-[var(--chart-end-dot,var(--fg))] ring-[3px] ring-[color:var(--chart-end-ring,var(--surface))]" style={{ top: `${(curve.ys[n - 1] / H) * 100}%` }}>
             <span aria-hidden="true" className="absolute -inset-1.5 rounded-full border-[1.5px] border-[var(--c)] motion-safe:animate-ping" />
           </i>
           {hp && hover !== null && (

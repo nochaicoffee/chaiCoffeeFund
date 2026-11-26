@@ -40,6 +40,28 @@
   box-shadow: var(--card-hard-shadow, none);
 }
 
+/*
+ * Charts (ADR 0018 step 5f): under Neubrutalism a chart sits in a white boxed panel and its stats in small outlined
+ * boxes, as on the boards. Only for elements with no background, border, radius, padding or shadow of their own: the
+ * fallbacks are exactly "none of those". Padding is separate (`p-[var(--chart-panel-pad,0px)]`), because a chart's
+ * positioned marks are often laid out against the panel itself.
+ */
+@utility chart-panel {
+  background-color: var(--chart-panel-bg, transparent);
+  border-width: var(--chart-edge-width, 0px);
+  border-color: var(--chart-edge-color, currentColor);
+  border-radius: var(--chart-panel-radius, 0px);
+  box-shadow: var(--chart-panel-shadow, none);
+}
+@utility stat-box {
+  background-color: var(--chart-panel-bg, transparent);
+  border-width: var(--chart-edge-width, 0px);
+  border-color: var(--chart-edge-color, currentColor);
+  border-radius: var(--stat-radius, 0px);
+  padding: var(--stat-pad, 0px);
+  box-shadow: var(--stat-shadow, none);
+}
+
 @utility label-face {
   font-family: var(--font-label);
 }
@@ -523,6 +545,27 @@
   --card-hard-offset: 9px 9px 0;
   /* In front of a chip's own inline ring (Overview's "made of" chips), comma included; Classic's fallback is empty. */
   --chip-hard-prefix: 3px 3px 0 var(--ink),;
+
+  /* Charts (step 5f): a boxed white panel, outlined stat boxes, a heavier ink line, a fuller area, a yellow end dot
+     with an ink ring, outlined dots, and outlined heatmap cells. */
+  --chart-panel-bg: var(--surface);
+  --chart-edge-width: 3px;
+  --chart-edge-color: var(--ink);
+  --chart-panel-radius: 14px;
+  --chart-panel-pad: 12px;
+  --chart-panel-shadow: 5px 5px 0 var(--ink);
+  --stat-radius: 12px;
+  --stat-pad: 10px 12px;
+  --stat-shadow: 3px 3px 0 var(--ink);
+  /* Two stats a row, as on the board: four boxed stats in one row leave the amounts no room. */
+  --stat-cols: repeat(2, minmax(0, 1fr));
+  --chart-line-width: 4.5;
+  --chart-area-opacity: 0.6;
+  --chart-end-dot: #ffd43b;
+  --chart-end-ring: var(--ink);
+  --chart-end-size: 18px;
+  --chart-dot-edge: 2.5px;
+  --heat-edge: 2px;
 
   /* Each card colour's own flat shade (a gradient from and to the same colour); the swatches for chart marks stay. */
   --card-amber-from: oklch(0.88 0.134 85);
