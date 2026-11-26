@@ -9,7 +9,7 @@ import type { PickDetail } from "@/app/accounts/detailView";
 export function ComingUpCard({ detail }: { detail: PickDetail }) {
   const { coming } = detail;
   return (
-    <section className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]" aria-label="Coming up">
+    <section className="flex min-w-0 flex-col gap-3 rounded-card surface-edge bg-surface p-5 shadow-[var(--card-shadow)]" aria-label="Coming up">
       <h2 className="text-[15px] font-extrabold">
         Coming up <small className="ml-2 text-xs font-semibold text-muted">Next 45 days</small>
       </h2>

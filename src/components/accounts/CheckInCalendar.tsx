@@ -20,7 +20,7 @@ export function CheckInCalendar({ view, pickId, onPick }: { view: CheckInsView; 
     const id = requestAnimationFrame(() => requestAnimationFrame(() => setShown(true)));
     return () => cancelAnimationFrame(id);
   }, []);
-  if (view.rows.length === 0) return <div className="flex min-h-56 flex-1 items-center justify-center rounded-[22px] bg-fill px-6 text-center text-sm font-semibold text-muted">No accounts yet.</div>;
+  if (view.rows.length === 0) return <div className="flex min-h-56 flex-1 items-center justify-center rounded-card bg-fill px-6 text-center text-sm font-semibold text-muted">No accounts yet.</div>;
   const picked = cell ? view.rows[cell[0]]?.cells[cell[1]] : undefined;
   const row = cell ? view.rows[cell[0]] : undefined;
   return (

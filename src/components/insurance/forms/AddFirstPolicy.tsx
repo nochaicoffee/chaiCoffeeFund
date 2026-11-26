@@ -30,7 +30,7 @@ export function EmptyKinds() {
             aria-disabled={disabledReason ? true : undefined}
             title={disabledReason}
             onClick={() => open({ kind: "add", start: { policyKind: k.kind } })}
-            className="flex h-full w-full flex-col items-start gap-3 rounded-[22px] border border-surface-line bg-surface/60 p-[18px] text-left shadow-soft hover:-translate-y-px hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent aria-disabled:cursor-not-allowed aria-disabled:opacity-60 motion-safe:transition-[transform,background]"
+            className="flex h-full w-full flex-col items-start gap-3 rounded-card surface-edge bg-surface/60 p-[18px] text-left shadow-soft hover:-translate-y-px hover:bg-surface focus-visible:outline-2 focus-visible:outline-accent aria-disabled:cursor-not-allowed aria-disabled:opacity-60 motion-safe:transition-[transform,background]"
           >
             <TileMark icon={k.icon} size={40} />
             <span>

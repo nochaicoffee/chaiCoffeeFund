@@ -75,7 +75,7 @@ export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: 
         {cover.tiles.map((tile) => (
           <Tile key={tile.key} tile={tile} pickId={pickId} onPick={onPick} onAdd={() => open({ kind: "add", start: tile.gap?.start })} />
         ))}
-        <div className="flex min-w-0 flex-col gap-3.5 rounded-[22px] border-[1.5px] border-dashed border-fg/20 p-[18px]">
+        <div className="flex min-w-0 flex-col gap-3.5 rounded-card border-[1.5px] border-dashed border-fg/20 p-[18px]">
           <div className="flex items-center gap-3">
             <span aria-hidden="true" className="flex size-10 items-center justify-center rounded-xl bg-fill-strong text-muted">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -115,7 +115,7 @@ export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: 
 function Tile({ tile, pickId, onPick, onAdd }: { tile: CoverTile; pickId: string; onPick: (id: string) => void; onAdd: () => void }) {
   const wide = tile.boxes.length > 1;
   return (
-    <div className={`flex min-w-0 flex-col gap-3.5 rounded-[22px] p-[18px] ${tile.gap ? "border-[1.5px] border-dashed border-fg/20" : "border border-surface-line bg-surface/60 shadow-soft"} ${wide ? "sm:col-span-2" : ""}`}>
+    <div className={`flex min-w-0 flex-col gap-3.5 rounded-card p-[18px] ${tile.gap ? "border-[1.5px] border-dashed border-fg/20" : "surface-edge bg-surface/60 shadow-soft"} ${wide ? "sm:col-span-2" : ""}`}>
       <div className="flex items-center gap-3">
         <TileMark icon={tile.icon} />
         <span className="min-w-0 flex-1">
@@ -154,7 +154,7 @@ function Box({ box, pickId, onPick }: { box: PolicyBox; pickId: string; onPick: 
     <div
       onClick={() => onPick(box.id)}
       style={style}
-      className={`flex min-w-0 cursor-pointer flex-col gap-2 rounded-2xl border border-surface-line border-l-4 border-l-[var(--c)] bg-surface p-3 shadow-soft motion-safe:transition-[box-shadow,opacity,transform] motion-safe:duration-200 hover:-translate-y-px ${pickId !== ALL && !on ? "opacity-45" : ""}`}
+      className={`flex min-w-0 cursor-pointer flex-col gap-2 rounded-2xl surface-edge border-l-4 border-l-[var(--c)] bg-surface p-3 shadow-soft motion-safe:transition-[box-shadow,opacity,transform] motion-safe:duration-200 hover:-translate-y-px ${pickId !== ALL && !on ? "opacity-45" : ""}`}
     >
       <button type="button" aria-pressed={on} aria-label={`${box.name}, ${box.insurer}`} className="flex min-w-0 flex-col gap-2 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
         <span className="flex items-center justify-between gap-2">

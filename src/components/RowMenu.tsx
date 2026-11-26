@@ -163,7 +163,7 @@ export function RowMenu({ triggerLabel, menuLabel, children }: { triggerLabel: s
           onBlur={(e) => {
             if (e.relatedTarget instanceof Node && !e.currentTarget.contains(e.relatedTarget) && e.relatedTarget !== triggerRef.current) setOpen(false);
           }}
-          className="fixed inset-auto m-0 flex w-[220px] max-w-[calc(100vw-32px)] origin-top-right flex-col rounded-[16px] border border-surface-line bg-surface p-1.5 text-fg shadow-pop data-[side=top]:origin-bottom-right data-[side=top]:[--pop-from:4px] motion-safe:animate-pop-in"
+          className="fixed inset-auto m-0 flex w-[220px] max-w-[calc(100vw-32px)] origin-top-right flex-col rounded-[16px] surface-edge bg-surface p-1.5 text-fg shadow-pop data-[side=top]:origin-bottom-right data-[side=top]:[--pop-from:4px] motion-safe:animate-pop-in"
         >
           <MenuContext.Provider value={controls}>{children}</MenuContext.Provider>
         </div>

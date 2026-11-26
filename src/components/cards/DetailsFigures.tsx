@@ -91,7 +91,7 @@ export function MonthsChart({ months, highest, lowest }: { months: MonthAmount[]
     <div
       aria-hidden="true"
       data-open={open ? "" : undefined}
-      className="pointer-events-none absolute inset-x-0 top-full z-20 mt-2 origin-top rounded-[16px] border border-surface-line bg-surface px-3.5 pt-3 pb-2.5 opacity-0 shadow-pop [transform:translateY(-4px)_scale(0.98)] data-open:opacity-100 data-open:[transform:none] motion-safe:transition-[opacity,transform] motion-safe:duration-200 motion-safe:ease-out"
+      className="pointer-events-none absolute inset-x-0 top-full z-20 mt-2 origin-top rounded-[16px] surface-edge bg-surface px-3.5 pt-3 pb-2.5 opacity-0 shadow-pop [transform:translateY(-4px)_scale(0.98)] data-open:opacity-100 data-open:[transform:none] motion-safe:transition-[opacity,transform] motion-safe:duration-200 motion-safe:ease-out"
     >
       <div className="flex items-center justify-between gap-3 text-xs font-bold text-muted">
         <span>{title}</span>

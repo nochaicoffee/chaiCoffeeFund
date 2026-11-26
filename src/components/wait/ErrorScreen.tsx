@@ -36,7 +36,7 @@ export function ErrorScreen({ digest, retry, home }: { digest?: string; retry: (
 
   return (
     <div role="alert" className="mx-auto flex min-h-[60dvh] max-w-[420px] flex-col items-center justify-center gap-2 px-2 py-8 text-center">
-      <div aria-hidden="true" className="grid size-10 place-items-center rounded-[13px] bg-negative-tint text-lg font-extrabold text-negative">
+      <div aria-hidden="true" className="grid size-10 place-items-center rounded-control bg-negative-tint text-lg font-extrabold text-negative">
         !
       </div>
       <h2 className="text-lg font-extrabold tracking-tight text-fg">{online ? "This page didn't load" : "You're offline"}</h2>

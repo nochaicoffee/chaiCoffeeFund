@@ -65,7 +65,7 @@ function Mono({ row }: { row: GreetingRow }) {
   return (
     <span
       aria-hidden="true"
-      className="inline-flex size-6 shrink-0 items-center justify-center rounded-[8px] text-[11px] font-extrabold text-on-card shadow-[inset_0_1px_0_oklch(1_0_0/0.18),0_2px_6px_oklch(0_0_0/0.18)]"
+      className="inline-flex size-6 shrink-0 items-center justify-center rounded-[8px] text-[11px] font-extrabold text-on-card shadow-[var(--sheen-lift-shadow)]"
       style={{ background: row.swatch }}
     >
       {row.initial}

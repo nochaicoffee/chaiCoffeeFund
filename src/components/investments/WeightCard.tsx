@@ -110,7 +110,7 @@ function Tip({ b, box }: { b: WeightBubble; box: Box }) {
   return (
     <div
       role="status"
-      className="pointer-events-none absolute z-10 w-[220px] rounded-xl border border-surface-line bg-surface p-3 text-xs shadow-[var(--card-shadow)]"
+      className="pointer-events-none absolute z-10 w-[220px] rounded-xl surface-edge bg-surface p-3 text-xs shadow-[var(--card-shadow)]"
       style={{ left: px(b.x), top: py(b.y), transform: `translate(${flip ? `calc(-100% - ${gap}px)` : `${gap}px`}, -50%)` }}
     >
       <b className="block text-[13px] font-extrabold">{b.name}</b>

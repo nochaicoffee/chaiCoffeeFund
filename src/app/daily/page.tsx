@@ -34,7 +34,7 @@ export default async function DailyPage({ searchParams }: PageProps<"/daily">) {
         actions={
           <>
             <HeaderPeriodPicker />
-            <Link href="/daily/entries" className="inline-flex min-h-11 items-center rounded-full border border-surface-line bg-surface px-4 text-[13px] font-bold shadow-soft hover:bg-fill focus-visible:outline-2 focus-visible:outline-accent md:min-h-10">
+            <Link href="/daily/entries" className="inline-flex min-h-11 items-center rounded-full surface-edge bg-surface px-4 text-[13px] font-bold shadow-soft hover:bg-fill focus-visible:outline-2 focus-visible:outline-accent md:min-h-10">
               All spends
             </Link>
             <RefreshButton iconOnly />

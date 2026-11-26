@@ -81,7 +81,7 @@ export function DetailsCard({
 
   return (
     <DetailsFigureProvider>
-      <section aria-label={`${card ? cardName(card) : "All Cards"} details`} className="flex flex-col gap-4 rounded-[24px] border border-surface-line bg-surface p-[22px] shadow-soft">
+      <section aria-label={`${card ? cardName(card) : "All Cards"} details`} className="flex flex-col gap-4 rounded-[24px] surface-edge bg-surface p-[22px] shadow-soft">
         <DetailsHeader
           className="relative isolate -mx-3 -mt-3 flex flex-col gap-4 rounded-[18px] border border-on-card-line px-3 pt-3 pb-3.5 text-on-card shadow-tile"
           style={{ background }}

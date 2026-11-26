@@ -9,7 +9,7 @@ const LOOK = {
   /** Mark paid on the renewal due within 3 days. */
   accent: "inline-flex min-h-[30px] shrink-0 items-center gap-1.5 rounded-full bg-accent-tint px-3 text-xs font-bold whitespace-nowrap text-accent-text hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-accent",
   /** Record payment on a renewal not recorded. */
-  ghost: "inline-flex min-h-[30px] shrink-0 items-center rounded-full border border-surface-line bg-surface px-3 text-xs font-bold whitespace-nowrap text-fg shadow-soft hover:bg-fill focus-visible:outline-2 focus-visible:outline-accent",
+  ghost: "inline-flex min-h-[30px] shrink-0 items-center rounded-full surface-edge bg-surface px-3 text-xs font-bold whitespace-nowrap text-fg shadow-soft hover:bg-fill focus-visible:outline-2 focus-visible:outline-accent",
   /** The phone's text-only Mark paid and Record. */
   link: "inline-flex min-h-11 shrink-0 items-center px-1 text-xs font-bold whitespace-nowrap text-accent-text focus-visible:outline-2 focus-visible:outline-accent md:min-h-0",
   warningLink: "inline-flex min-h-11 shrink-0 items-center px-1 text-xs font-bold whitespace-nowrap text-warning-text focus-visible:outline-2 focus-visible:outline-accent md:min-h-0",

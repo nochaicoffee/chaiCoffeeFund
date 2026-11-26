@@ -14,8 +14,8 @@ import { AlertIcon, InfoIcon } from "./icons";
  */
 
 export const inputClass = (invalid: boolean) =>
-  `h-10 w-full min-w-0 rounded-[12px] border bg-surface px-3.5 text-sm font-semibold text-fg tabular-nums placeholder:font-medium placeholder:text-muted focus-visible:outline-none focus-visible:ring-[3px] max-md:h-11 ${
-    invalid ? "border-negative ring-[3px] ring-negative/15 focus-visible:ring-negative/25" : "border-surface-line focus-visible:border-accent focus-visible:ring-accent/25"
+  `h-10 w-full min-w-0 rounded-[12px] surface-edge bg-surface px-3.5 text-sm font-semibold text-fg tabular-nums placeholder:font-medium placeholder:text-muted focus-visible:outline-none focus-visible:ring-[3px] max-md:h-11 ${
+    invalid ? "[--surface-edge:var(--negative)] ring-[3px] ring-negative/15 focus-visible:ring-negative/25" : "focus-visible:border-accent focus-visible:ring-accent/25"
   }`;
 
 export function Field({
@@ -219,7 +219,7 @@ export function Segmented<T extends string>({
 /** The mint signature surface of the live preview panel: the details card's treatment, with rings. */
 export function PreviewPanel({ children, caption }: { children: ReactNode; caption?: ReactNode }) {
   return (
-    <div className="relative isolate flex flex-col gap-4 overflow-hidden rounded-[22px] border border-feature-tile-line bg-feature-tile p-5 max-md:gap-3 max-md:p-4">
+    <div className="relative isolate flex flex-col gap-4 overflow-hidden rounded-card border border-feature-tile-line bg-feature-tile p-5 max-md:gap-3 max-md:p-4">
       <RingTexture width={320} height={600} dx={20} dy={40} first={30} step={30} stroke="var(--feature-tile-rings)" />
       <span className="text-[11px] font-extrabold tracking-[0.06em] text-accent-text uppercase max-md:hidden">Live preview</span>
       {children}

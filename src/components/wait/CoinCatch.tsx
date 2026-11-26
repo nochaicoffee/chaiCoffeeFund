@@ -219,7 +219,7 @@ export function CoinCatch({ onExit }: { onExit: () => void }) {
         ref={canvas}
         tabIndex={0}
         aria-label="Coin catch, an optional game. Arrow keys or drag to move the cup. Escape to leave."
-        className="block h-[200px] w-full cursor-grab touch-pan-y rounded-[18px] border border-surface-line bg-page focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="block h-[200px] w-full cursor-grab touch-pan-y rounded-[18px] surface-edge bg-page focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       />
       <div className="mt-2 flex items-center justify-between text-xs font-semibold text-muted">
         <span>

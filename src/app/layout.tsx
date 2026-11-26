@@ -32,7 +32,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {showShell ? (
           <div className="mx-auto flex min-h-dvh w-full max-w-[1760px] flex-col md:flex-row md:items-start md:gap-5 md:p-6">
             <Sidebar initiallyExpanded={sidebarExpanded} appName={appConfig.appName} ownerName={appConfig.ownerName} showSignOut={loginRequired(process.env)} />
-            <main className="min-w-0 flex-1 bg-surface py-5 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] max-md:pb-[calc(var(--phone-nav-h)+1.25rem)] md:min-h-[calc(100dvh-3rem)] md:rounded-[36px] md:border md:border-surface-line md:p-[26px] md:shadow-card">
+            <main className="min-w-0 flex-1 bg-surface py-5 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] max-md:pb-[calc(var(--phone-nav-h)+1.25rem)] md:min-h-[calc(100dvh-3rem)] md:rounded-[36px] md:surface-edge md:p-[26px] md:shadow-card">
               {children}
             </main>
           </div>

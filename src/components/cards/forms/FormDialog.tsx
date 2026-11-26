@@ -92,11 +92,11 @@ export function FormDialog({
       ref={ref}
       onClose={onClose}
       aria-labelledby="form-dialog-title"
-      className="m-auto max-h-[calc(100dvh-48px)] w-[min(1000px,calc(100vw-48px))] max-w-none overflow-y-auto rounded-[28px] border border-surface-line bg-surface p-0 text-fg shadow-card backdrop:bg-ink/35 max-md:h-dvh max-md:max-h-dvh max-md:w-screen max-md:rounded-none"
+      className="m-auto max-h-[calc(100dvh-48px)] w-[min(1000px,calc(100vw-48px))] max-w-none overflow-y-auto rounded-[28px] surface-edge bg-surface p-0 text-fg shadow-card backdrop:bg-ink/35 max-md:h-dvh max-md:max-h-dvh max-md:w-screen max-md:rounded-none"
     >
       <form {...formProps} noValidate className="flex min-h-full flex-col">
         <header className="flex items-center gap-3.5 px-7 pt-7 pb-1 max-md:sticky max-md:top-0 max-md:z-10 max-md:gap-2 max-md:border-b max-md:border-divider max-md:bg-surface max-md:px-3 max-md:py-2.5">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-[13px] bg-accent-tint text-accent-text max-md:hidden" aria-hidden="true">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-control bg-accent-tint text-accent-text max-md:hidden" aria-hidden="true">
             {icon}
           </span>
           <button

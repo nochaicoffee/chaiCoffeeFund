@@ -214,7 +214,7 @@ function TrendHoverCard({
     .sort((a, b) => b.amount - a.amount);
   const largest = split[0]?.amount ?? 0;
   return (
-    <div className="rounded-[16px] border border-surface-line bg-surface p-3.5 text-fg shadow-pop" style={{ width: HOVER_CARD_WIDTH }}>
+    <div className="rounded-[16px] surface-edge bg-surface p-3.5 text-fg shadow-pop" style={{ width: HOVER_CARD_WIDTH }}>
       <div className="flex items-center justify-between gap-2 text-xs font-bold text-muted">
         <span>{formatMonthYear(month)}</span>
         {month === peak ? (
@@ -290,7 +290,7 @@ function CompareBracket({ shown }: { shown: TrendPoint[] }) {
         />
         <foreignObject x={(ax + bx) / 2 - 100} y={top - 30} width={200} height={26}>
           <div className="flex h-full items-center justify-center">
-            <span className="rounded-full border border-surface-line bg-surface px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap text-fg tabular-nums">
+            <span className="rounded-full surface-edge bg-surface px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap text-fg tabular-nums">
               <span className={diff >= 0 ? "text-negative" : "text-positive"}>
                 {diff >= 0 ? "▲" : "▼"} {formatInrCompact(Math.abs(diff))}
               </span>
@@ -356,7 +356,7 @@ export function TrendChart({
   const toggleLine = () => setLine((on) => (on && !bars ? on : !on));
 
   return (
-    <section aria-labelledby="trend-heading" className="flex flex-col gap-3 rounded-[24px] border border-surface-line bg-surface p-[22px] shadow-soft">
+    <section aria-labelledby="trend-heading" className="flex flex-col gap-3 rounded-[24px] surface-edge bg-surface p-[22px] shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
         <div className="flex flex-wrap items-center gap-x-[18px] gap-y-2">
           <h2 id="trend-heading" className="text-sm font-bold text-fg">

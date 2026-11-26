@@ -161,7 +161,7 @@ function Block({
         </button>
       )}
       {picked && !quiet && (
-        <span aria-hidden="true" className="absolute -top-[7px] -right-[7px] z-[3] flex size-[21px] items-center justify-center rounded-full bg-accent text-on-accent shadow-[0_2px_6px_oklch(0_0_0/0.4)]">
+        <span aria-hidden="true" className="absolute -top-[7px] -right-[7px] z-[3] flex size-[21px] items-center justify-center rounded-full bg-accent text-on-accent shadow-[var(--block-label-shadow)]">
           <CheckIcon />
         </span>
       )}
@@ -305,7 +305,7 @@ export function CostMapCard({
   const fromFocus = (id: string) => (e: FocusEvent<HTMLElement>) => e.currentTarget.matches(":focus-visible") && showGhost(id);
 
   return (
-    <section ref={card} aria-labelledby="cost-map-title" className="relative flex min-w-0 flex-col gap-4 rounded-[22px] border border-surface-line bg-surface p-4 shadow-[var(--card-shadow)] md:p-[22px]">
+    <section ref={card} aria-labelledby="cost-map-title" className="relative flex min-w-0 flex-col gap-4 rounded-card surface-edge bg-surface p-4 shadow-[var(--card-shadow)] md:p-[22px]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 id="cost-map-title" className="text-[15px] font-extrabold text-fg">
           What each one costs<small className="ml-2 text-xs font-semibold text-muted max-md:hidden">sized by what it costs · pick one for its payments</small>

@@ -74,7 +74,7 @@ function TipCard({ tip }: { tip: MonthTipView }) {
 }
 
 /** One button of the row. Always one row of six: an icon over the figure on a phone, the name and the note too from a laptop up (the name is the button's label either way). */
-const BUTTON_BASE = "flex min-h-[64px] min-w-0 cursor-pointer flex-col items-center justify-between gap-1.5 rounded-[16px] border border-surface-line px-1 py-2.5 text-center shadow-soft transition-[translate,background,color] duration-200 motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:rounded-[20px] sm:px-2 lg:min-h-[88px] lg:items-stretch lg:px-3.5 lg:py-3 lg:text-left";
+const BUTTON_BASE = "flex min-h-[64px] min-w-0 cursor-pointer flex-col items-center justify-between gap-1.5 rounded-[16px] surface-edge px-1 py-2.5 text-center shadow-soft transition-[translate,background,color] duration-200 motion-safe:hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent sm:rounded-[20px] sm:px-2 lg:min-h-[88px] lg:items-stretch lg:px-3.5 lg:py-3 lg:text-left";
 
 /** The Overview's own glyph for each measure, drawn as a plain line so it holds at badge size. */
 const FLOW_GLYPH: Record<FlowKey, GlyphKey> = { income: "income", invested: "invest", emis: "loans", cards: "cards", cash: "spent" };
@@ -189,7 +189,7 @@ export function MonthByMonth({ view }: { view: MonthlyView }) {
       </p>
 
       {view.empty ? (
-        <p className="rounded-[24px] border border-surface-line bg-surface p-6 text-center text-sm text-muted shadow-soft">Nothing recorded in this period yet.</p>
+        <p className="rounded-[24px] surface-edge bg-surface p-6 text-center text-sm text-muted shadow-soft">Nothing recorded in this period yet.</p>
       ) : one ? (
         <MeasureHover view={view}>
         <div data-measure={one.meta.key} style={heatStyle(one.meta.hue)}>
@@ -250,7 +250,7 @@ function Together({ view }: { view: MonthlyView }) {
           </span>
         </div>
         {view.measures.map((m) => (
-          <div key={m.meta.key} role="row" data-measure={m.meta.key} className="grid items-center gap-1.5 rounded-[24px] border border-surface-line bg-surface px-[22px] py-3.5 shadow-soft" style={{ ...grid, ...heatStyle(m.meta.hue) }}>
+          <div key={m.meta.key} role="row" data-measure={m.meta.key} className="grid items-center gap-1.5 rounded-[24px] surface-edge bg-surface px-[22px] py-3.5 shadow-soft" style={{ ...grid, ...heatStyle(m.meta.hue) }}>
             <div role="rowheader" className="flex min-w-0 items-center gap-2.5">
               <FlowBadge m={m} />
               <Link href={m.meta.href} className="min-w-0 leading-tight hover:underline">
@@ -293,7 +293,7 @@ function TogetherLedger({ view }: { view: MonthlyView }) {
   const open = picked === "none" ? null : picked !== null && view.columns.includes(picked) ? picked : latest;
 
   return (
-    <section aria-label={`Five measures by month, ${view.periodName}`} className="flex flex-col gap-3 rounded-[24px] border border-surface-line bg-surface p-[18px] shadow-soft sm:hidden">
+    <section aria-label={`Five measures by month, ${view.periodName}`} className="flex flex-col gap-3 rounded-[24px] surface-edge bg-surface p-[18px] shadow-soft sm:hidden">
       <h3 className="text-sm font-bold">
         Five measures <span className="text-muted">· {view.periodName}</span>
       </h3>

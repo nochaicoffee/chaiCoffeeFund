@@ -30,7 +30,7 @@ function Swatch({ swatch }: { swatch: NonNullable<SelectOption["swatch"]> }) {
   return (
     <span
       aria-hidden="true"
-      className={`shrink-0 ${swatch.shape === "card" ? "h-3.5 w-5 rounded-[4px] shadow-[inset_0_1px_0_oklch(1_0_0/0.2)]" : "size-2.5 rounded-[3px]"}`}
+      className={`shrink-0 ${swatch.shape === "card" ? "h-3.5 w-5 rounded-[4px] shadow-[var(--sheen-shadow)]" : "size-2.5 rounded-[3px]"}`}
       style={{ background: swatch.background }}
     />
   );
@@ -362,7 +362,7 @@ export function Select({
           data-side="bottom"
           // Pressing on the menu keeps focus on the control.
           onMouseDown={(e) => e.preventDefault()}
-          className="fixed inset-auto m-0 max-w-[calc(100vw-32px)] origin-top overflow-hidden rounded-[16px] border border-surface-line bg-surface p-1.5 text-fg shadow-pop data-[side=top]:origin-bottom data-[side=top]:[--pop-from:4px] motion-safe:animate-pop-in"
+          className="fixed inset-auto m-0 max-w-[calc(100vw-32px)] origin-top overflow-hidden rounded-[16px] surface-edge bg-surface p-1.5 text-fg shadow-pop data-[side=top]:origin-bottom data-[side=top]:[--pop-from:4px] motion-safe:animate-pop-in"
         >
           <div ref={listRef} role="listbox" id={listId} {...labelProps} className="overflow-y-auto overscroll-contain">
             {sections.map((section, k) => (

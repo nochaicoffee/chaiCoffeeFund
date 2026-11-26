@@ -511,7 +511,7 @@ export function DayByDay({ chart, pick, empty }: { chart: ChartView; pick: PickV
           {drawn}
         </div>
         {empty && (
-          <span className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full border border-surface-line bg-surface px-3 py-1.5 text-xs font-bold text-muted shadow-[var(--pop-shadow)]">
+          <span className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full surface-edge bg-surface px-3 py-1.5 text-xs font-bold text-muted shadow-[var(--pop-shadow)]">
             Renewals land on their day here
           </span>
         )}
@@ -557,7 +557,7 @@ export function DayByDay({ chart, pick, empty }: { chart: ChartView; pick: PickV
         id={CARD_ID}
         role="tooltip"
         aria-hidden={hover ? undefined : true}
-        className="pointer-events-none absolute top-0 left-0 z-20 rounded-[16px] border border-surface-line bg-surface p-3.5 text-fg opacity-0 shadow-pop [transform:translate(var(--x,0px),var(--y,0px))_scale(0.96)] data-open:opacity-100 data-open:[transform:translate(var(--x,0px),var(--y,0px))] motion-safe:transition-[transform,opacity] motion-safe:duration-200 motion-safe:ease-out"
+        className="pointer-events-none absolute top-0 left-0 z-20 rounded-[16px] surface-edge bg-surface p-3.5 text-fg opacity-0 shadow-pop [transform:translate(var(--x,0px),var(--y,0px))_scale(0.96)] data-open:opacity-100 data-open:[transform:translate(var(--x,0px),var(--y,0px))] motion-safe:transition-[transform,opacity] motion-safe:duration-200 motion-safe:ease-out"
         style={{ width: CARD_WIDTH }}
       >
         {shownDay ? <DayCard day={shownDay} hint={hint} /> : shownMonth ? <MonthCard month={shownMonth} pickId={pick.id} /> : null}

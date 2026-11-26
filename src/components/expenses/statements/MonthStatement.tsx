@@ -10,7 +10,7 @@ const NAV = "inline-flex min-h-9 items-center gap-1 rounded-full bg-fill px-3.5 
 export function MonthStatement({ view }: { view: MonthStatementView }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] items-stretch gap-5 xl:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
-      <section aria-label={view.title} className="flex min-w-0 flex-col gap-1.5 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
+      <section aria-label={view.title} className="flex min-w-0 flex-col gap-1.5 rounded-card surface-edge bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-[15px] font-extrabold">
             {view.title} <small className="ml-1.5 text-xs font-semibold text-muted">{view.span}</small>
@@ -55,7 +55,7 @@ export function MonthStatement({ view }: { view: MonthStatementView }) {
         </div>
       </section>
 
-      <section aria-label="How it adds up" className="flex min-w-0 flex-col gap-4 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
+      <section aria-label="How it adds up" className="flex min-w-0 flex-col gap-4 rounded-card surface-edge bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
         <h2 className="text-[15px] font-extrabold">How it adds up</h2>
         {view.addsUp ? (
           <dl className="grid">

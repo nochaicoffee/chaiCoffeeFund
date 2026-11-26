@@ -12,7 +12,7 @@ import { PriceStepChart } from "./PriceStepChart";
 export function SubscriptionStrip({ strip, today }: { strip: StripView; today: string }) {
   return (
     <div className="grid gap-4 lg:grid-cols-[1.1fr_1.4fr] lg:gap-5">
-      <div className="relative isolate flex min-w-0 flex-col gap-2.5 overflow-hidden rounded-[22px] border border-feature-tile-line bg-feature-tile px-5 py-[18px] shadow-soft">
+      <div className="relative isolate flex min-w-0 flex-col gap-2.5 overflow-hidden rounded-card border border-feature-tile-line bg-feature-tile px-5 py-[18px] shadow-soft">
         <RingTexture width={520} height={170} dx={12} dy={30} first={30} step={22} stroke="var(--feature-tile-rings)" sheen="radial-gradient(circle at 92% 8%, var(--feature-tile-glow), transparent 45%)" />
         <div className="flex min-w-0 items-center gap-3">
           <Mono mark={strip.mark} size={40} />
@@ -33,7 +33,7 @@ export function SubscriptionStrip({ strip, today }: { strip: StripView; today: s
           ))}
         </dl>
       </div>
-      <section aria-labelledby="price-history-title" className="flex min-w-0 flex-col gap-1.5 rounded-[22px] border border-surface-line bg-surface px-[18px] py-4 shadow-soft">
+      <section aria-labelledby="price-history-title" className="flex min-w-0 flex-col gap-1.5 rounded-card surface-edge bg-surface px-[18px] py-4 shadow-soft">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 id="price-history-title" className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase">
             What each payment cost

@@ -101,7 +101,7 @@ export function RunwayCard({ view }: { view: RunwayView }) {
         </div>
         {nowAt >= 0 && (
           <div aria-hidden="true" className="absolute top-0 bottom-7 border-l-[1.5px] border-dashed border-muted" style={{ left: `calc(40px + (100% - 40px) * ${(nowAt + view.monthShare) / n})` }}>
-            <span className="absolute -top-1 left-1.5 rounded-full border border-surface-line bg-surface px-2 py-0.5 text-[10.5px] font-extrabold whitespace-nowrap shadow-soft">Today</span>
+            <span className="absolute -top-1 left-1.5 rounded-full surface-edge bg-surface px-2 py-0.5 text-[10.5px] font-extrabold whitespace-nowrap shadow-soft">Today</span>
           </div>
         )}
         <div aria-hidden="true" className="absolute right-0 bottom-0 left-10 flex h-7 text-[10.5px] font-extrabold text-muted">

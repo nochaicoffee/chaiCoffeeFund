@@ -44,7 +44,7 @@ export function Ending({ view }: { view: EndingView }) {
 
 function Warning({ w }: { w: WarningItem }) {
   return (
-    <div className="flex items-center gap-3 rounded-[16px] border border-surface-line bg-surface px-3.5 py-2.5 shadow-[var(--soft-shadow)] motion-safe:transition-[translate,box-shadow] motion-safe:duration-200 hover:-translate-y-px hover:shadow-[var(--card-shadow)]" style={w.tone === "red" ? { boxShadow: "inset 3px 0 0 var(--negative)" } : undefined}>
+    <div className="flex items-center gap-3 rounded-[16px] surface-edge bg-surface px-3.5 py-2.5 shadow-[var(--soft-shadow)] motion-safe:transition-[translate,box-shadow] motion-safe:duration-200 hover:-translate-y-px hover:shadow-[var(--card-shadow)]" style={w.tone === "red" ? { boxShadow: "inset 3px 0 0 var(--negative)" } : undefined}>
       <i aria-hidden="true" className={`size-2.5 shrink-0 rounded-full ${DOT[w.tone]}`} />
       <div className="min-w-0 flex-1">
         <b className="block text-[13.5px] font-extrabold">{w.text}</b>
@@ -60,7 +60,7 @@ function Event({ e }: { e: EventItem }) {
   const day = Number(e.date.slice(8, 10));
   const month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][Number(e.date.slice(5, 7)) - 1];
   return (
-    <div className={`flex items-center gap-3 rounded-[16px] border border-surface-line bg-surface px-3.5 py-2.5 shadow-[var(--soft-shadow)] motion-safe:transition-[translate,box-shadow] motion-safe:duration-200 hover:-translate-y-px hover:shadow-[var(--card-shadow)] ${e.cash ? "" : "opacity-75"}`} style={e.warning?.tone === "red" ? { boxShadow: "inset 3px 0 0 var(--negative)" } : undefined}>
+    <div className={`flex items-center gap-3 rounded-[16px] surface-edge bg-surface px-3.5 py-2.5 shadow-[var(--soft-shadow)] motion-safe:transition-[translate,box-shadow] motion-safe:duration-200 hover:-translate-y-px hover:shadow-[var(--card-shadow)] ${e.cash ? "" : "opacity-75"}`} style={e.warning?.tone === "red" ? { boxShadow: "inset 3px 0 0 var(--negative)" } : undefined}>
       <span className="grid w-11 shrink-0 justify-items-center rounded-[12px] bg-fill py-1.5 leading-none"><b className="text-[17px] font-extrabold">{day}</b><small className="text-[10px] font-extrabold tracking-[0.04em] text-muted uppercase">{month}</small></span>
       <div className="min-w-0 flex-1">
         <b className="block text-[13.5px] font-extrabold">{e.label}</b>
@@ -131,7 +131,7 @@ function Calendar({ view }: { view: EndingView }) {
               const outside = date < view.today || date > view.until;
               const g = byDate.get(date);
               return (
-                <button key={date} type="button" disabled={outside} aria-pressed={pick === date} aria-label={`${formatDayDate(date)}${g ? `, ${g.events.length} ${g.events.length === 1 ? "thing" : "things"}` : ""}`} onClick={() => setPick(date)} className={`flex min-h-[84px] flex-col gap-1.5 rounded-[14px] border p-2 text-left transition-shadow focus-visible:outline-2 focus-visible:outline-accent ${outside ? "border-dashed border-divider opacity-40" : "border-surface-line bg-surface hover:-translate-y-px"} ${pick === date ? "ring-2 ring-ink" : ""}`}>
+                <button key={date} type="button" disabled={outside} aria-pressed={pick === date} aria-label={`${formatDayDate(date)}${g ? `, ${g.events.length} ${g.events.length === 1 ? "thing" : "things"}` : ""}`} onClick={() => setPick(date)} className={`flex min-h-[84px] flex-col gap-1.5 rounded-[14px] surface-edge p-2 text-left transition-shadow focus-visible:outline-2 focus-visible:outline-accent ${outside ? "border-dashed opacity-40 [--surface-edge:var(--divider)]" : "bg-surface hover:-translate-y-px"} ${pick === date ? "ring-2 ring-ink" : ""}`}>
                   <b className={`grid min-w-6 place-items-center rounded-full px-1.5 text-[12.5px] font-extrabold ${date === view.today ? "bg-ink text-on-ink" : ""}`}>{Number(date.slice(8, 10))}</b>
                   {g && (
                     <>

@@ -130,7 +130,7 @@ export function FutureYou({ view }: { view: FutureView }) {
           <Tile k="Investments then" v={formatInrCompact(p.investments)} s={`from ${formatInrCompact(view.start.investments)} today`} />
           <Tile k="Still owed then" v={p.owed > 0 ? formatInrCompact(p.owed) : "₹0"} s={p.loans > 0 ? "loans and cards" : view.start.cards > 0 ? "loans are gone; cards remain" : "nothing"} />
         </div>
-        <div className="rounded-[22px] bg-on-card-fill p-3">
+        <div className="rounded-card bg-on-card-fill p-3">
           <svg viewBox={`0 0 ${W} ${H}`} className="block w-full cursor-crosshair" style={{ touchAction: "pan-y" }} role="img" aria-label={`Net worth over twenty years at ${a.returnPct}% a year`} onPointerMove={(e) => setScrub(monthAt(e))} onPointerDown={(e) => setScrub(monthAt(e))} onPointerLeave={() => setScrub(null)}>
             {Array.from({ length: Math.round(ymax / step) + 1 }, (_, i) => i * step).map((v) => (
               <g key={v}><line x1={PAD.l} x2={W - PAD.r} y1={y(v)} y2={y(v)} stroke="#fff" strokeOpacity={v ? 0.13 : 0.3} strokeDasharray={v ? "3 5" : undefined} /><text x={PAD.l - 8} y={y(v) + 4} textAnchor="end" fontSize={11} fill="#fff" fillOpacity={0.65}>{cr(v)}</text></g>

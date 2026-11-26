@@ -58,3 +58,6 @@ A flash happens when the browser draws one look and switches to another once it 
 - **Build a dark Neubrutalism now:** the classic dark palette isn't built yet, and a dark Neubrutalism changes the look's character (white outlines on black). It is a design question to draw first, not a palette to guess.
 - **The switch in each page's header:** the headers are full (period picker, refresh, add buttons), and the look belongs to the app, not to one page.
 - **A Settings page now:** a page for one switch, two clicks away. It becomes worth building once dark mode needs a switch as well.
+
+## Updates
+- **2026-11-26, step 1 (first pass).** An exact count found 1,087 radius uses across 35 values (505 of them `rounded-full`, which stays round in both looks), 89 shadows (51 already on tokens) and 397 borders (317 of them 1px). The token list is narrowed: outlines get `surface-edge` (`--surface-edge-width`, `--surface-edge`), seven literal elevation shadows get named tokens, and only the card and control radii move to `--radius-card` and `--radius-control`; the other radii stay as numbers, since the Neubrutalism boards use nearly the same corners, so `--radius-tile` and `--radius-pill` aren't needed. Still to move: hairline dividers, chart marks and textures. Details in `system-design.md`, "Shape on tokens".

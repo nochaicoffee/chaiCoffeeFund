@@ -55,7 +55,7 @@ export function IncomeCover({ cover, pickId, onPick }: { cover: CoverView; pickI
   const legend = mode === "tag" ? TAG_SEGMENTS.map((t) => ({ key: t.tag, label: t.label, colorKey: t.colorKey })) : pick.id === ALL ? cover.sources.map((s) => ({ key: s.id, label: s.label, colorKey: s.colorKey })) : [{ key: pick.id, label: pick.label, colorKey: pick.colorKey }];
 
   return (
-    <section aria-label="Money in" className="flex min-w-0 flex-col gap-5 rounded-[26px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)] md:p-7">
+    <section aria-label="Money in" className="flex min-w-0 flex-col gap-5 rounded-[26px] surface-edge bg-surface p-5 shadow-[var(--card-shadow)] md:p-7">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <span className="text-[11px] font-extrabold tracking-[0.08em] text-muted uppercase">Money in · {pick.eyebrow}</span>
         <Segmented label="Columns by" options={[{ value: "source", label: "By source" }, { value: "tag", label: "Regular & bonus" }]} value={mode} onChange={setMode} small />
@@ -151,7 +151,7 @@ function Column({ shown, y }: { shown: ShownMonth; y: (n: number) => number }) {
       {month.future && expected > 0 ? (
         <span className="block w-full rounded-[10px] border-[1.5px] border-dashed border-fg/30 bg-fill" style={{ height: y(expected) }} />
       ) : (
-        <span className="relative isolate flex w-full flex-col-reverse overflow-hidden rounded-[10px] shadow-[inset_0_1px_0_oklch(1_0_0/0.25)]" style={{ height: (total ? Math.max(3, y(total)) : 0) + (pending ? y(pending) : 0) }}>
+        <span className="relative isolate flex w-full flex-col-reverse overflow-hidden rounded-[10px] shadow-[var(--sheen-strong-shadow)]" style={{ height: (total ? Math.max(3, y(total)) : 0) + (pending ? y(pending) : 0) }}>
           {segments.map((s) => (
             <i key={s.key} className="block w-full border-t border-surface/60 first:border-t-0" style={{ height: y(s.amount), background: `linear-gradient(180deg, color-mix(in oklch, var(--card-${s.colorKey}) 80%, white), var(--card-${s.colorKey}))` }} />
           ))}

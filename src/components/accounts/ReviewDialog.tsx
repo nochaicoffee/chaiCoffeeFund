@@ -52,11 +52,11 @@ function ReviewDialog({ item, demo, onClose }: { item: AttentionItem; demo: bool
   const button = "min-h-11 rounded-full px-5 text-[13px] font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60 md:min-h-10";
 
   return (
-    <dialog ref={ref} onClose={onClose} aria-labelledby="review-title" className="m-auto w-[min(480px,calc(100vw-32px))] max-w-none rounded-[24px] border border-surface-line bg-surface p-0 text-fg shadow-card backdrop:bg-ink/35">
+    <dialog ref={ref} onClose={onClose} aria-labelledby="review-title" className="m-auto w-[min(480px,calc(100vw-32px))] max-w-none rounded-[24px] surface-edge bg-surface p-0 text-fg shadow-card backdrop:bg-ink/35">
       <form action={formAction} className="flex flex-col gap-4 p-6">
         <input type="hidden" name="id" value={item.id} />
         <div className="flex items-start gap-3.5">
-          <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-[13px] bg-warning-tint text-warning-text">
+          <span aria-hidden="true" className="flex size-10 shrink-0 items-center justify-center rounded-control bg-warning-tint text-warning-text">
             <AlertIcon />
           </span>
           <div className="min-w-0">

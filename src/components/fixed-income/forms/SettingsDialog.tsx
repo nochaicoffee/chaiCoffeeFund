@@ -77,7 +77,7 @@ export function SettingsDialog({ forms, onClose, onSaved }: { forms: EpfFormsDat
         <span className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Rate for each year</span>
         {(account?.years ?? []).map((y) =>
           y.editable ? (
-            <div key={y.financialYear} className="flex flex-col gap-2 rounded-[14px] border border-surface-line p-3">
+            <div key={y.financialYear} className="flex flex-col gap-2 rounded-[14px] surface-edge p-3">
               <Field id={`rate-${y.financialYear}`} label={`FY ${y.financialYear}`} error={errors[`rate:${y.financialYear}`]} help={y.ratePercent !== null && !y.entered ? `${y.ratePercent}% is used now (${WHERE[y.source ?? "Assumed"]}). Type one to replace it, or leave blank.` : "Leave blank to go back to the latest known rate."}>
                 <TextInput {...describedBy(`rate-${y.financialYear}`, errors[`rate:${y.financialYear}`], true)} inputMode="decimal" name={`rate:${y.financialYear}`} placeholder={y.ratePercent !== null ? String(y.ratePercent) : "8.25"} value={rates[y.financialYear] ?? ""} onChange={(e) => setRates({ ...rates, [y.financialYear]: e.target.value })} onBlur={() => reveal(`rate:${y.financialYear}`)} invalid={Boolean(errors[`rate:${y.financialYear}`])} />
               </Field>

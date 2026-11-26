@@ -61,7 +61,7 @@ export function StatementsLedger({ months, counts }: { months: StatementMonth[];
   const shown = all ? filtered : filtered.slice(0, MONTHS_FIRST);
 
   return (
-    <section aria-label="Every payment" className="flex flex-col gap-1 rounded-[22px] border border-surface-line bg-surface p-4 shadow-[var(--card-shadow)] md:p-6">
+    <section aria-label="Every payment" className="flex flex-col gap-1 rounded-card surface-edge bg-surface p-4 shadow-[var(--card-shadow)] md:p-6">
       <div className="flex flex-wrap items-center gap-1.5 pb-3">
         {KINDS.map((k) => (
           <button key={k} type="button" aria-pressed={kind === k} onClick={() => setKind(k)} className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-fill px-3.5 text-[12.5px] font-bold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent aria-pressed:bg-ink aria-pressed:text-on-ink">

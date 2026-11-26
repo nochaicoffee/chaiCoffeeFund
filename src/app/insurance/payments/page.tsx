@@ -63,7 +63,7 @@ export default async function InsurancePaymentsPage({ searchParams }: PageProps<
             );
           })}
         </nav>
-        {view.sections.length === 0 ? <p className="rounded-[22px] border border-dashed border-divider bg-surface px-6 py-14 text-center text-sm font-semibold text-muted">{policyId ? "This policy has no payment recorded. Renew it to record its next term." : "No payments yet. Add a policy and its first payment is recorded with it."}</p> : <PaymentSections sections={view.sections} />}
+        {view.sections.length === 0 ? <p className="rounded-card border border-dashed border-divider bg-surface px-6 py-14 text-center text-sm font-semibold text-muted">{policyId ? "This policy has no payment recorded. Renew it to record its next term." : "No payments yet. Add a policy and its first payment is recorded with it."}</p> : <PaymentSections sections={view.sections} />}
       </div>
     </InsuranceFormsProvider>
   );

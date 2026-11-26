@@ -70,14 +70,14 @@ export function ConfirmDialog({
       ref={ref}
       onClose={onClose}
       aria-labelledby="confirm-title"
-      className="m-auto w-[min(440px,calc(100vw-32px))] max-w-none rounded-[24px] border border-surface-line bg-surface p-0 text-fg shadow-card backdrop:bg-ink/35"
+      className="m-auto w-[min(440px,calc(100vw-32px))] max-w-none rounded-[24px] surface-edge bg-surface p-0 text-fg shadow-card backdrop:bg-ink/35"
     >
       <form action={formAction} className="flex flex-col gap-4 p-6">
         {Object.entries(hidden).map(([name, v]) => (
           <input key={name} type="hidden" name={name} value={v} />
         ))}
         <div className="flex items-start gap-3.5">
-          <span aria-hidden="true" className={`flex size-10 shrink-0 items-center justify-center rounded-[13px] ${tone === "danger" ? "bg-negative-tint text-negative" : "bg-fill text-fg"}`}>
+          <span aria-hidden="true" className={`flex size-10 shrink-0 items-center justify-center rounded-control ${tone === "danger" ? "bg-negative-tint text-negative" : "bg-fill text-fg"}`}>
             {icon}
           </span>
           <div className="min-w-0">

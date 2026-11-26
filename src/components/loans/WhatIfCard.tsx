@@ -56,7 +56,7 @@ export function WhatIfCard({ what, today, isAll }: { what: WhatIfLoan; today: st
             <span className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-muted" aria-hidden="true">
               ₹
             </span>
-            <input type="text" inputMode="decimal" value={effect === "Close" ? "" : amountText} placeholder={effect === "Close" ? "all of it" : ""} disabled={effect === "Close"} onChange={(e) => setAmountText(e.target.value)} className="h-8 w-[118px] rounded-full border border-surface-line bg-surface pr-3 pl-6 text-xs font-extrabold tabular-nums focus-visible:border-accent focus-visible:ring-[3px] focus-visible:ring-accent/25 focus-visible:outline-none disabled:bg-fill" />
+            <input type="text" inputMode="decimal" value={effect === "Close" ? "" : amountText} placeholder={effect === "Close" ? "all of it" : ""} disabled={effect === "Close"} onChange={(e) => setAmountText(e.target.value)} className="h-8 w-[118px] rounded-full surface-edge bg-surface pr-3 pl-6 text-xs font-extrabold tabular-nums focus-visible:border-accent focus-visible:ring-[3px] focus-visible:ring-accent/25 focus-visible:outline-none disabled:bg-fill" />
           </label>
           today
         </span>
@@ -74,7 +74,7 @@ export function WhatIfCard({ what, today, isAll }: { what: WhatIfLoan; today: st
               <span className="block text-[10.5px] font-extrabold tracking-[0.06em] uppercase opacity-70">Interest saved · estimate</span>
               <b className="mt-1 block text-[22px] font-extrabold tabular-nums">{formatInr(result.interestSaved)}</b>
             </div>
-            <div className="rounded-[16px] border border-surface-line px-4 py-3">
+            <div className="rounded-[16px] surface-edge px-4 py-3">
               <span className="block text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">Charge · separate</span>
               <b className="mt-1 block text-[22px] font-extrabold tabular-nums">{formatInr(result.charge)}</b>
             </div>

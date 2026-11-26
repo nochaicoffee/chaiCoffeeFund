@@ -27,7 +27,7 @@ export function TrendsCard({ trends }: { trends: TrendsData }) {
   const x = (i: number) => PAD.l + (innerW * (i + 0.5)) / 12;
 
   return (
-    <section aria-label="Trends" className="flex min-w-0 flex-col gap-4 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
+    <section aria-label="Trends" className="flex min-w-0 flex-col gap-4 rounded-card surface-edge bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[15px] font-extrabold">
           Trends <small className="ml-2 text-xs font-semibold text-muted">{view === "rhythm" ? "days after the expected day, a dot per payment" : "money received"}</small>

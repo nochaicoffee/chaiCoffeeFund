@@ -54,7 +54,7 @@ export function TimelineCard({ view, pickId, onPick }: { view: TimelineView; pic
               </div>
             ))}
             <div aria-hidden="true" className="pointer-events-none absolute top-0 bottom-0 border-l-2 border-dashed border-fg/50" style={{ left: `calc(${LABEL + 12}px + (100% - ${LABEL + 12}px) * ${view.nowAt / 100})` }}>
-              <span className="absolute top-[-2px] left-1.5 rounded-full border border-surface-line bg-surface px-2.5 py-0.5 text-[11px] font-extrabold shadow-soft">Today</span>
+              <span className="absolute top-[-2px] left-1.5 rounded-full surface-edge bg-surface px-2.5 py-0.5 text-[11px] font-extrabold shadow-soft">Today</span>
             </div>
           </div>
         </div>

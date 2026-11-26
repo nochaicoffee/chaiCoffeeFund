@@ -56,7 +56,7 @@ export default async function LentPage({ searchParams }: PageProps<"/lent">) {
         </div>
       )}
       {model.data.loans.length === 0 && (
-        <section className="rounded-[22px] border border-surface-line bg-surface p-6 text-sm font-semibold text-muted">
+        <section className="rounded-card surface-edge bg-surface p-6 text-sm font-semibold text-muted">
           <p>Money you have lent to friends or family, outside any bank, goes here.</p>
           <div className="mt-4"><AddFirstLoanButton /></div>
         </section>

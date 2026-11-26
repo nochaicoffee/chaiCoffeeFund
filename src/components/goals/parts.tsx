@@ -76,7 +76,7 @@ export function ProgressBar({ progress, expected, colorKey, height = 8, label }:
 /** The ring texture's coloured card for a goal (the focus card, the stat cards). */
 export function ColorCard({ colorKey, children, className = "" }: { colorKey: ColorKey; children: ReactNode; className?: string }) {
   return (
-    <div className={`relative overflow-hidden rounded-[22px] p-5 text-on-card ${className}`} style={{ background: colorGradient(colorKey, 150), boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.16), 0 6px 16px oklch(0 0 0 / 0.12)" }}>
+    <div className={`relative overflow-hidden rounded-card p-5 text-on-card ${className}`} style={{ background: colorGradient(colorKey, 150), boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.16), 0 6px 16px oklch(0 0 0 / 0.12)" }}>
       <span aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background: "repeating-radial-gradient(circle at calc(100% + 10px) calc(100% + 18px), oklch(1 0 0 / 0.22) 0 1px, transparent 1px 15px)" }} />
       <div className="relative flex h-full flex-col gap-3">{children}</div>
     </div>

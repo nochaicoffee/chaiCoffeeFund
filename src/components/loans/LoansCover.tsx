@@ -49,7 +49,7 @@ export function LoansCover({ cover, pickId, onPick }: { cover: CoverView; pickId
               type="button"
               aria-pressed={on}
               onClick={() => onPick(t.id)}
-              className="flex min-w-0 cursor-pointer flex-col gap-3 rounded-[22px] border px-5 py-4 text-left backdrop-blur-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ink)] motion-safe:transition-[background,border-color,box-shadow,transform] motion-safe:duration-300 hover:-translate-y-0.5"
+              className="flex min-w-0 cursor-pointer flex-col gap-3 rounded-card border px-5 py-4 text-left backdrop-blur-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--ink)] motion-safe:transition-[background,border-color,box-shadow,transform] motion-safe:duration-300 hover:-translate-y-0.5"
               style={{
                 background: on ? `color-mix(in oklch, var(--card-${t.colorKey}) 26%, oklch(1 0 0 / 0.04))` : "oklch(1 0 0 / 0.045)",
                 borderColor: on ? `color-mix(in oklch, var(--card-${t.colorKey}) 70%, white)` : "oklch(1 0 0 / 0.12)",
@@ -108,7 +108,7 @@ function Cliffs({ cliffs, pickId }: { cliffs: CoverView["cliffs"]; pickId: strin
       </figcaption>
       <div className="flex flex-wrap gap-2">
         {cliffs.flags.map((f) => (
-          <span key={f.loanId} className={`inline-flex items-center gap-2 rounded-[10px] border border-surface-line bg-[oklch(0_0_0/0.35)] px-2.5 py-1.5 text-[11px] font-bold motion-safe:transition-opacity ${pickId !== ALL && pickId !== f.loanId ? "opacity-30" : ""}`}>
+          <span key={f.loanId} className={`inline-flex items-center gap-2 rounded-[10px] surface-edge bg-[oklch(0_0_0/0.35)] px-2.5 py-1.5 text-[11px] font-bold motion-safe:transition-opacity ${pickId !== ALL && pickId !== f.loanId ? "opacity-30" : ""}`}>
             <ColorMark colorKey={cliffs.loans.find((l) => l.id === f.loanId)!.colorKey} />
             <span>
               <b className="block font-extrabold">{f.name} ends</b>

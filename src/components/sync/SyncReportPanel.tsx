@@ -18,7 +18,7 @@ export function SyncReportPanel() {
   if (state.phase === "idle") return null;
 
   return (
-    <section aria-label="Statement sync" aria-live="polite" className="flex w-full flex-col gap-3.5 rounded-[18px] border border-surface-line bg-surface p-4 shadow-soft">
+    <section aria-label="Statement sync" aria-live="polite" className="flex w-full flex-col gap-3.5 rounded-[18px] surface-edge bg-surface p-4 shadow-soft">
       {state.phase === "running" && (
         <>
           <Heading

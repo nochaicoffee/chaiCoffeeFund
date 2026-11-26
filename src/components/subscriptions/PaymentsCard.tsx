@@ -158,7 +158,7 @@ export function PaymentsCard({ pick, payments, onAll, lit = null, onPoint }: { p
   const [view, setView] = useState<"payments" | "history">("payments");
   const all = pick.status === "All";
   return (
-    <section aria-labelledby="payments-title" className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-4 shadow-[var(--card-shadow)] md:p-[22px]">
+    <section aria-labelledby="payments-title" className="flex min-w-0 flex-col gap-3 rounded-card surface-edge bg-surface p-4 shadow-[var(--card-shadow)] md:p-[22px]">
       {/* On one line at xl, where a long name truncates instead of wrapping the toggle onto a second line, which would change the card's height. */}
       <div className="flex flex-wrap items-center justify-between gap-3 xl:flex-nowrap">
         <h2 id="payments-title" className="flex min-w-0 items-center gap-2.5 text-[15px] font-extrabold text-fg">
@@ -285,7 +285,7 @@ export function ChargedToCard({ rows, onPoint }: { rows: ChargedToRow[]; onPoint
   }, [active]);
 
   return (
-    <section aria-labelledby="charged-to-title" className="relative flex min-w-0 flex-col gap-4 rounded-[22px] border border-surface-line bg-surface p-[22px] shadow-[var(--card-shadow)] max-md:hidden">
+    <section aria-labelledby="charged-to-title" className="relative flex min-w-0 flex-col gap-4 rounded-card surface-edge bg-surface p-[22px] shadow-[var(--card-shadow)] max-md:hidden">
       <h2 id="charged-to-title" className="text-[15px] font-extrabold text-fg">
         Charged to<small className="ml-2 text-xs font-semibold text-muted">a month</small>
       </h2>
@@ -342,7 +342,7 @@ export function ChargedToCard({ rows, onPoint }: { rows: ChargedToRow[]; onPoint
           id="charged-to-card"
           role="tooltip"
           aria-hidden={!active}
-          className="pointer-events-none absolute top-0 right-0 left-0 z-20 rounded-[16px] border border-surface-line bg-surface p-3.5 text-fg opacity-0 shadow-pop [transform:translateY(var(--y,0px))_scale(0.97)] data-open:opacity-100 data-open:[transform:translateY(var(--y,0px))] motion-safe:transition-[transform,opacity] motion-safe:duration-200 motion-safe:ease-out"
+          className="pointer-events-none absolute top-0 right-0 left-0 z-20 rounded-[16px] surface-edge bg-surface p-3.5 text-fg opacity-0 shadow-pop [transform:translateY(var(--y,0px))_scale(0.97)] data-open:opacity-100 data-open:[transform:translateY(var(--y,0px))] motion-safe:transition-[transform,opacity] motion-safe:duration-200 motion-safe:ease-out"
         >
           {row && <NextCard row={row} />}
         </div>

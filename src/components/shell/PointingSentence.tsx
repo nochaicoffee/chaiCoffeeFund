@@ -88,7 +88,7 @@ export function PointingSentence({ parts, has, card: cardFor }: { parts: Sentenc
         id={TIP_ID}
         role="tooltip"
         aria-hidden={!open}
-        className="pointer-events-none absolute top-0 left-0 z-30 w-[300px] max-w-full rounded-[16px] border border-surface-line bg-surface p-3.5 text-fg opacity-0 shadow-pop [transform:translate(var(--x,0px),var(--y,0px))_scale(0.97)] data-open:pointer-events-auto data-open:opacity-100 data-open:[transform:translate(var(--x,0px),var(--y,0px))] motion-safe:transition-[transform,opacity] motion-safe:duration-200 motion-safe:ease-out"
+        className="pointer-events-none absolute top-0 left-0 z-30 w-[300px] max-w-full rounded-[16px] surface-edge bg-surface p-3.5 text-fg opacity-0 shadow-pop [transform:translate(var(--x,0px),var(--y,0px))_scale(0.97)] data-open:pointer-events-auto data-open:opacity-100 data-open:[transform:translate(var(--x,0px),var(--y,0px))] motion-safe:transition-[transform,opacity] motion-safe:duration-200 motion-safe:ease-out"
       >
         {shown && cardFor(shown)}
       </div>

@@ -11,8 +11,8 @@ export function InstallmentSections({ sections }: { sections: InstallmentsSectio
   return (
     <div className="flex flex-col gap-4">
       {sections.map((s) => (
-        <details key={s.loan.id} open={s.open} className="group rounded-[22px] border border-surface-line bg-surface shadow-[var(--card-shadow)]">
-          <summary className="flex cursor-pointer list-none flex-wrap items-center gap-3 rounded-[22px] p-5 focus-visible:outline-2 focus-visible:outline-accent md:p-6 [&::-webkit-details-marker]:hidden">
+        <details key={s.loan.id} open={s.open} className="group rounded-card surface-edge bg-surface shadow-[var(--card-shadow)]">
+          <summary className="flex cursor-pointer list-none flex-wrap items-center gap-3 rounded-card p-5 focus-visible:outline-2 focus-visible:outline-accent md:p-6 [&::-webkit-details-marker]:hidden">
             <LoanIcon category={s.loan.category} colorKey={s.loan.colorKey} size={36} closed={s.loan.closed} />
             <span className="min-w-0 flex-1">
               <b className="block text-[15px] font-extrabold">{s.loan.name}</b>

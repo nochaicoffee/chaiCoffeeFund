@@ -98,7 +98,7 @@ function StatementRow({
       className={`grid grid-cols-2 items-start gap-x-4 gap-y-2.5 border-b border-divider px-3.5 py-3.5 text-[13px] tabular-nums xl:min-h-[60px] xl:items-center xl:gap-3 xl:py-2 ${COLUMNS}`}
     >
       <Cell className="flex items-center gap-2.5">
-        <span className="h-5 w-[30px] shrink-0 rounded-[5px] shadow-[0_2px_5px_oklch(0_0_0/0.18)]" style={{ background: cardGradient(card?.color) }} aria-hidden="true" />
+        <span className="h-5 w-[30px] shrink-0 rounded-[5px] shadow-[var(--raised-strong-shadow)]" style={{ background: cardGradient(card?.color) }} aria-hidden="true" />
         <div className="min-w-0 leading-tight">
           <div className="truncate font-bold">{card ? cardName(card) : "Unknown card"}</div>
           <div className="truncate text-[11px] font-semibold text-muted">
@@ -207,7 +207,7 @@ export function StatementsList({
     }`;
 
   return (
-    <section aria-label="Statements" className="flex flex-col gap-4 rounded-[24px] border border-surface-line bg-surface p-4 shadow-soft md:p-[22px]">
+    <section aria-label="Statements" className="flex flex-col gap-4 rounded-[24px] surface-edge bg-surface p-4 shadow-soft md:p-[22px]">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div className="flex min-w-0 flex-wrap items-center gap-x-3.5 gap-y-3">
           <nav aria-label="Status" className="flex rounded-full bg-fill p-[3px]">

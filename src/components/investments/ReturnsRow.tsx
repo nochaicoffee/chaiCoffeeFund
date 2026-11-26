@@ -52,7 +52,7 @@ export function ReturnsRow({ cards: now, asOf, holdings }: { cards: ReturnCard[]
       <div className={`grid gap-4 sm:grid-cols-2 ${own ? "lg:grid-cols-4" : "lg:grid-cols-3"}`}>
         {cards.map((c) => {
           const body = (
-            <div className="flex h-full flex-col gap-5 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]">
+            <div className="flex h-full flex-col gap-5 rounded-card surface-edge bg-surface p-5 shadow-[var(--card-shadow)]">
               <div className="flex items-center gap-2 text-sm font-extrabold">
                 <Icon name={c.icon} />
                 {c.label}

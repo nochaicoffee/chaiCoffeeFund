@@ -21,7 +21,7 @@ export function PayCalendarCard({ calendar }: { calendar: ReturnType<typeof payC
   const [index, setIndex] = useState(calendar.start);
   const month = calendar.months[Math.min(index, calendar.months.length - 1)];
   return (
-    <section aria-label="Pay calendar" className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]">
+    <section aria-label="Pay calendar" className="flex min-w-0 flex-col gap-3 rounded-card surface-edge bg-surface p-5 shadow-[var(--card-shadow)]">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-[15px] font-extrabold">
           Pay calendar <small className="ml-2 text-xs font-semibold text-muted">

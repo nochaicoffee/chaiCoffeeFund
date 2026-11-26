@@ -132,7 +132,7 @@ export function SpendHeatmap({
   const showsCurrentYear = rows.some((r) => r.cells.some((c) => c.month === currentMonth && c.state !== "outside"));
 
   return (
-    <section aria-labelledby="heatmap-heading" className="flex flex-col gap-3 rounded-[24px] border border-surface-line bg-surface p-[22px] shadow-soft">
+    <section aria-labelledby="heatmap-heading" className="flex flex-col gap-3 rounded-[24px] surface-edge bg-surface p-[22px] shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
         <h2 id="heatmap-heading" className="text-sm font-bold text-fg">
           {heading} <span className="text-muted">· {title}</span>

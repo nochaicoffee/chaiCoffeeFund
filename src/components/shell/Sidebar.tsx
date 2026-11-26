@@ -151,7 +151,7 @@ export function Sidebar({
     <>
       <nav
         aria-label={`${appName} sections`}
-        className={`sticky top-6 hidden h-[calc(100dvh-3rem)] shrink-0 flex-col gap-2.5 border border-surface-line bg-surface py-[18px] shadow-soft md:flex ${
+        className={`sticky top-6 hidden h-[calc(100dvh-3rem)] shrink-0 flex-col gap-2.5 surface-edge bg-surface py-[18px] shadow-soft md:flex ${
           expanded ? "w-[212px] rounded-[28px] px-3" : "w-16 items-center rounded-full"
         }`}
       >

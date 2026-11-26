@@ -51,7 +51,7 @@ export function EightThings({ items }: { items: Insight[] }) {
         </div>
       </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <div className="relative isolate flex flex-col gap-3 overflow-clip rounded-[22px] bg-on-card-fill p-5">
+        <div className="relative isolate flex flex-col gap-3 overflow-clip rounded-card bg-on-card-fill p-5">
           <RingTexture width={380} height={420} dx={10} dy={19} first={45} step={26} stroke="var(--rings-light)" opacity={0.1} />
           <div className="text-xs font-extrabold tracking-[0.06em] uppercase opacity-80">What I noticed</div>
           <div className="text-[64px] leading-none font-extrabold">{items.length}<small className="ml-2 text-xl font-bold opacity-80">{items.length === 1 ? "thing" : "things"}</small></div>
@@ -66,7 +66,7 @@ export function EightThings({ items }: { items: Insight[] }) {
           <p className="border-t border-on-card-fill pt-2 text-[11.5px] font-semibold opacity-80">Each one is worked out from your own figures, and says how. They&apos;re measures, never advice.</p>
         </div>
         {shown.map((i) => (
-          <article key={i.key} className={`group/thing relative isolate flex min-h-[290px] flex-col gap-3 overflow-clip rounded-[22px] bg-surface p-5 text-fg shadow-[var(--card-shadow)] motion-safe:transition-[translate,box-shadow] motion-safe:duration-200 hover:-translate-y-0.5 hover:shadow-[0_16px_34px_oklch(0_0_0/0.22)] ${i.star ? "ring-2 ring-[oklch(0.8_0.15_85)]" : ""}`}>
+          <article key={i.key} className={`group/thing relative isolate flex min-h-[290px] flex-col gap-3 overflow-clip rounded-card bg-surface p-5 text-fg shadow-[var(--card-shadow)] motion-safe:transition-[translate,box-shadow] motion-safe:duration-200 hover:-translate-y-0.5 hover:shadow-[var(--lift-shadow)] ${i.star ? "ring-2 ring-[oklch(0.8_0.15_85)]" : ""}`}>
             <RingTexture width={380} height={290} dx={10} dy={19} first={45} step={26} stroke="var(--rings-ink)" opacity={0.07} ringsClassName={RIPPLE} />
             <div className="flex flex-wrap items-center gap-2">
               <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold tracking-[0.04em] uppercase ${TAG_STYLE[i.tag]}`}>{i.tag}</span>
