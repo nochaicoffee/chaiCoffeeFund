@@ -88,7 +88,7 @@ export default async function FixedIncomePage({ searchParams }: PageProps<"/fixe
               </div>
             )}
             {data.epfEntries.length > 0 && (
-            <details className="group rounded-[22px] border border-surface-line bg-surface p-5 md:p-6">
+            <details className="group rounded-card surface-edge bg-surface p-5 md:p-6">
               <summary className="cursor-pointer text-[15px] font-extrabold">Every EPF row <small className="ml-2 text-xs font-semibold text-muted">to edit or delete a typed one, or delete one read from a passbook</small></summary>
               <div className="mt-4">
                 <EpfEntriesList />

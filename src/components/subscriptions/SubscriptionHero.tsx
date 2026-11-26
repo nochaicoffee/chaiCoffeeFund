@@ -490,7 +490,7 @@ export function SubscriptionHero({ picks, index, onIndex }: { picks: PickView[];
   return (
     <section
       aria-label="Subscriptions"
-      className="relative isolate flex flex-col gap-1.5 overflow-hidden rounded-[22px] bg-ink px-4 pt-1 pb-[18px] text-fg shadow-[var(--card-shadow)] md:px-[22px] md:pt-2 md:pb-[26px]"
+      className="relative isolate flex flex-col gap-1.5 overflow-hidden rounded-card bg-ink px-4 pt-1 pb-[18px] text-fg shadow-[var(--card-shadow)] md:px-[22px] md:pt-2 md:pb-[26px]"
       style={{ ...STAGE_TOKENS, "--pick-soft": `color-mix(in oklch, var(--card-${pick.color}) 46%, white)`, "--pick-ink": `var(--card-${pick.color}-to)` } as CSSProperties}
     >
       {/* One layer per colour: the pick's fades in over 650ms as the last one fades out. */}

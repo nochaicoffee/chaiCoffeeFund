@@ -106,7 +106,7 @@ export function HistoryCard({ pick, rows, href, hasAll, onAll }: { pick: PickVie
   const all = pick.kind === "all";
   const shown = rows.slice(0, ROWS);
   return (
-    <section aria-labelledby="history-title" className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-4 shadow-[var(--card-shadow)] md:p-[22px]">
+    <section aria-labelledby="history-title" className="flex min-w-0 flex-col gap-3 rounded-card surface-edge bg-surface p-4 shadow-[var(--card-shadow)] md:p-[22px]">
       <div className="flex flex-wrap items-center justify-between gap-3 xl:flex-nowrap">
         <h2 id="history-title" className="flex min-w-0 items-center gap-2.5 text-[15px] font-extrabold text-fg">
           Balance history <span className="font-semibold text-muted">·</span>

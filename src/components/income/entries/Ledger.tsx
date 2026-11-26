@@ -61,7 +61,7 @@ export function Ledger({ rows, sources, today, year, current }: { rows: LedgerRo
   );
 
   return (
-    <section aria-label="Every payment" className="flex min-w-0 flex-col gap-4 rounded-[24px] border border-surface-line bg-surface p-4 shadow-[var(--card-shadow)] md:p-5">
+    <section aria-label="Every payment" className="flex min-w-0 flex-col gap-4 rounded-[24px] surface-edge bg-surface p-4 shadow-[var(--card-shadow)] md:p-5">
       <div className="flex flex-wrap items-center gap-2">
         <div role="group" aria-label="Show" className="flex flex-wrap gap-1 rounded-full bg-fill p-1">
           {chip("all", "All", counts.all)}
@@ -69,9 +69,9 @@ export function Ledger({ rows, sources, today, year, current }: { rows: LedgerRo
           {counts.pending > 0 && chip("pending", "Pending", counts.pending)}
           {chip("received", "Received", counts.received)}
         </div>
-        <Select variant="pill" aria-label="Source" options={[{ value: "", label: "All sources" }, ...sources.map((s) => ({ value: s.id, label: s.name }))]} value="" onChange={openSource} className="flex min-h-9 cursor-pointer items-center gap-2 rounded-full border border-surface-line bg-surface px-3.5 text-[12.5px] font-bold" />
-        <Select variant="pill" aria-label="Tag" options={[{ value: "", label: "Tag: any" }, { value: "Regular", label: "Regular" }, { value: "Bonus", label: "Bonus" }, { value: "One-off", label: "One-off" }]} value={tag} onChange={setTag} className="flex min-h-9 cursor-pointer items-center gap-2 rounded-full border border-surface-line bg-surface px-3.5 text-[12.5px] font-bold" />
-        <label className="ml-auto flex min-h-9 min-w-[200px] items-center gap-2 rounded-full border border-surface-line bg-surface px-3.5 text-[12.5px] max-md:ml-0 max-md:w-full">
+        <Select variant="pill" aria-label="Source" options={[{ value: "", label: "All sources" }, ...sources.map((s) => ({ value: s.id, label: s.name }))]} value="" onChange={openSource} className="flex min-h-9 cursor-pointer items-center gap-2 rounded-full surface-edge bg-surface px-3.5 text-[12.5px] font-bold" />
+        <Select variant="pill" aria-label="Tag" options={[{ value: "", label: "Tag: any" }, { value: "Regular", label: "Regular" }, { value: "Bonus", label: "Bonus" }, { value: "One-off", label: "One-off" }]} value={tag} onChange={setTag} className="flex min-h-9 cursor-pointer items-center gap-2 rounded-full surface-edge bg-surface px-3.5 text-[12.5px] font-bold" />
+        <label className="ml-auto flex min-h-9 min-w-[200px] items-center gap-2 rounded-full surface-edge bg-surface px-3.5 text-[12.5px] max-md:ml-0 max-md:w-full">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="text-muted">
             <circle cx="11" cy="11" r="7" />
             <line x1="21" y1="21" x2="16.5" y2="16.5" />
@@ -79,7 +79,7 @@ export function Ledger({ rows, sources, today, year, current }: { rows: LedgerRo
           <span className="sr-only">Search</span>
           <input type="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search source or amount" className="min-w-0 flex-1 bg-transparent font-semibold outline-none" />
         </label>
-        <button type="button" onClick={() => setOldestFirst(!oldestFirst)} className="min-h-9 rounded-full border border-surface-line bg-surface px-3.5 text-[12.5px] font-bold focus-visible:outline-2 focus-visible:outline-accent">
+        <button type="button" onClick={() => setOldestFirst(!oldestFirst)} className="min-h-9 rounded-full surface-edge bg-surface px-3.5 text-[12.5px] font-bold focus-visible:outline-2 focus-visible:outline-accent">
           {oldestFirst ? "Oldest first" : "Newest first"}
         </button>
       </div>

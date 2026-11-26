@@ -18,7 +18,7 @@ const tint = (colorKey: string) => `color-mix(in oklab, var(--card-${colorKey}) 
 export function AccountsHero({ view, pickId, onPick }: { view: AccountsPageView; pickId: string; onPick: (id: string) => void }) {
   const pick = view.picks.find((p) => p.id === pickId) ?? view.picks[0];
   return (
-    <section aria-label="Your accounts" className="rounded-[28px] border border-surface-line p-4 text-fg shadow-card transition-colors duration-[650ms] motion-reduce:transition-none md:rounded-[36px] md:p-7" style={{ backgroundColor: tint(pick.colorKey) }}>
+    <section aria-label="Your accounts" className="rounded-[28px] surface-edge p-4 text-fg shadow-card transition-colors duration-[650ms] motion-reduce:transition-none md:rounded-[36px] md:p-7" style={{ backgroundColor: tint(pick.colorKey) }}>
       {!view.hasAccounts ? (
         <EmptyStage balance={pick.balance} />
       ) : (

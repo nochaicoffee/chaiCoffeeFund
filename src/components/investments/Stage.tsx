@@ -287,7 +287,7 @@ function LensStage({ lens }: { lens: LensView }) {
       </div>
       <div className="min-w-0 pt-2">
         <div className="flex items-center gap-3">
-          <span aria-hidden="true" className="flex size-[44px] shrink-0 items-center justify-center rounded-[13px] text-[11px] font-extrabold text-on-card" style={{ background: `linear-gradient(155deg, var(--card-${lens.header.colorKey}-from), var(--card-${lens.header.colorKey}-to))` }}>
+          <span aria-hidden="true" className="flex size-[44px] shrink-0 items-center justify-center rounded-control text-[11px] font-extrabold text-on-card" style={{ background: `linear-gradient(155deg, var(--card-${lens.header.colorKey}-from), var(--card-${lens.header.colorKey}-to))` }}>
             {lens.header.tile}
           </span>
           <div className="min-w-0">

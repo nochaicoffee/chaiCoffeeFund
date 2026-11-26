@@ -62,7 +62,7 @@ export default async function LoanInstallmentsPage({ searchParams }: PageProps<"
             );
           })}
         </nav>
-        {sections.length === 0 ? <p className="rounded-[22px] border border-dashed border-divider bg-surface px-6 py-14 text-center text-sm font-semibold text-muted">No loans yet.</p> : <InstallmentSections sections={sections} />}
+        {sections.length === 0 ? <p className="rounded-card border border-dashed border-divider bg-surface px-6 py-14 text-center text-sm font-semibold text-muted">No loans yet.</p> : <InstallmentSections sections={sections} />}
       </div>
     </LoanFormsProvider>
   );

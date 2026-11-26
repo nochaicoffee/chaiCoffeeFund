@@ -162,7 +162,7 @@ export function CostMapHover({
         id={TIP_ID}
         role="tooltip"
         aria-hidden={!key}
-        className="pointer-events-none absolute top-0 left-0 z-20 w-[264px] rounded-[16px] border border-surface-line bg-surface p-3.5 text-fg opacity-0 shadow-pop [transform:translate(var(--x,0px),var(--y,0px))_scale(0.96)] data-open:opacity-100 data-open:[transform:translate(var(--x,0px),var(--y,0px))] motion-safe:transition-[transform,opacity] motion-safe:duration-200 motion-safe:ease-out"
+        className="pointer-events-none absolute top-0 left-0 z-20 w-[264px] rounded-[16px] surface-edge bg-surface p-3.5 text-fg opacity-0 shadow-pop [transform:translate(var(--x,0px),var(--y,0px))_scale(0.96)] data-open:opacity-100 data-open:[transform:translate(var(--x,0px),var(--y,0px))] motion-safe:transition-[transform,opacity] motion-safe:duration-200 motion-safe:ease-out"
       >
         {shown && renderBlock(shown)}
         {shown && renderCategory(shown)}

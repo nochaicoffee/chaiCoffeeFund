@@ -91,7 +91,7 @@ export function MonthCardHover({
         ref={tip}
         id={tipId}
         role="tooltip"
-        className="pointer-events-none absolute top-0 left-0 z-20 w-[256px] rounded-[16px] border border-surface-line bg-surface p-3.5 text-fg opacity-0 shadow-pop [transform:translate(var(--x,0px),var(--y,0px))_scale(0.96)] data-open:opacity-100 data-open:[transform:translate(var(--x,0px),var(--y,0px))] motion-safe:transition-[transform,opacity] motion-safe:duration-200 motion-safe:ease-out"
+        className="pointer-events-none absolute top-0 left-0 z-20 w-[256px] rounded-[16px] surface-edge bg-surface p-3.5 text-fg opacity-0 shadow-pop [transform:translate(var(--x,0px),var(--y,0px))_scale(0.96)] data-open:opacity-100 data-open:[transform:translate(var(--x,0px),var(--y,0px))] motion-safe:transition-[transform,opacity] motion-safe:duration-200 motion-safe:ease-out"
       >
         {key && render(key)}
         {/* Its two outer sides carry the card's edge round the point: bottom and right when the card is above the cell, top and left when it's below. */}

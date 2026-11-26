@@ -13,7 +13,7 @@ export function PayChangesCard({ card }: { card: PayChangesData }) {
   const [by, setBy] = useState<"pct" | "inr">("pct");
   const top = Math.max(0.0001, ...card.bars.map((b) => Math.abs(by === "pct" ? b.ratio : b.change)));
   return (
-    <section aria-label="Pay changes" className="flex min-w-0 flex-col gap-4 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]">
+    <section aria-label="Pay changes" className="flex min-w-0 flex-col gap-4 rounded-card surface-edge bg-surface p-5 shadow-[var(--card-shadow)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[15px] font-extrabold">
           Pay changes <small className="ml-2 text-xs font-semibold text-muted">a payment 2% or more off the one before it</small>

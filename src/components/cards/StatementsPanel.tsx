@@ -319,7 +319,7 @@ export function StatementsPanel({
   // Only promise "where this month sits" when the period includes this month.
   const showsCurrentMonth = range.showsCurrentMonth;
   return (
-    <section aria-labelledby="panel-heading" className="flex min-h-full flex-col gap-3 rounded-[24px] border border-surface-line bg-surface p-[22px] shadow-soft">
+    <section aria-labelledby="panel-heading" className="flex min-h-full flex-col gap-3 rounded-[24px] surface-edge bg-surface p-[22px] shadow-soft">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <h2 id="panel-heading" className="text-sm font-bold text-fg">
           {view === "statements" ? (

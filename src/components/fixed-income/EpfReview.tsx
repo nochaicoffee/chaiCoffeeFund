@@ -54,7 +54,7 @@ function RowEditor({ initial, months, fixedMonth, hasPension, onSave, onCancel, 
   const amounts = [parseAmountText(employee), parseAmountText(employer), hasPension ? parseAmountText(pension) : 0];
   const valid = /^\d{4}-\d{2}-\d{2}$/.test(date) && amounts.every((a) => a !== null && Number.isInteger(a) && a >= 0);
   return (
-    <div className="flex flex-col gap-3 rounded-[14px] border border-dashed border-surface-line p-3.5">
+    <div className="flex flex-col gap-3 rounded-[14px] border-dashed surface-edge p-3.5">
       <div className="grid grid-cols-2 gap-3 max-md:grid-cols-1">
         <label className="flex flex-col gap-1.5 text-[11px] font-bold tracking-[0.04em] text-muted uppercase">
           Wage month
@@ -151,7 +151,7 @@ export function EpfReview({ plan, state, setState, accounts }: { plan: ImportPla
 
       <section aria-label="Rows" className="flex flex-col gap-2">
         <h3 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Every credit in the file · {plan.passbook.credits.length}</h3>
-        <ul className="flex flex-col divide-y divide-divider rounded-[14px] border border-surface-line">
+        <ul className="flex flex-col divide-y divide-divider rounded-[14px] surface-edge">
           {plan.credits.map((row) => {
             const c = row.credit;
             const isEditing = editing === c.wageMonth;

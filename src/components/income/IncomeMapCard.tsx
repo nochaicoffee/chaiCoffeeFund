@@ -29,7 +29,7 @@ export function IncomeMapCard({ map, picked, onPick }: { map: IncomeMap; picked:
   const layout = mapLayout(all.map((b) => entry(blocks.find((x) => x.id === b.id) ?? b)), { by: "each", without: hidden.size ? hidden : NONE, ghost: null, width: size.w, height: size.h });
 
   return (
-    <section aria-label="What each one pays" className="flex min-w-0 flex-col gap-4 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]">
+    <section aria-label="What each one pays" className="flex min-w-0 flex-col gap-4 rounded-card surface-edge bg-surface p-5 shadow-[var(--card-shadow)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[15px] font-extrabold">
           What each one pays <small className="ml-2 text-xs font-semibold text-muted">sized by what it pays · pick one for the cover</small>

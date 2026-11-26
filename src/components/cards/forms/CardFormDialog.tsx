@@ -203,7 +203,7 @@ export function CardFormDialog({
         />
       </Field>
 
-      <details open={importOpen} onToggle={(e) => setImportOpen(e.currentTarget.open)} className="group rounded-[16px] border border-surface-line">
+      <details open={importOpen} onToggle={(e) => setImportOpen(e.currentTarget.open)} className="group rounded-[16px] surface-edge">
         <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 focus-visible:outline-2 focus-visible:outline-accent [&::-webkit-details-marker]:hidden">
           <span>
             <span className="text-sm font-bold">Statement import from email</span>{" "}

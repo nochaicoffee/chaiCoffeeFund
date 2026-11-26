@@ -26,7 +26,7 @@ export interface RangeStart {
  */
 /** The pill's look, shared with the Income page's year pill. */
 export const PILL_SELECT_CLASS =
-  "flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-surface-line bg-surface py-2.5 pr-4 pl-4 text-[13px] font-bold text-fg shadow-soft focus-visible:outline-2 focus-visible:outline-accent aria-expanded:border-accent/45 md:min-h-0";
+  "flex min-h-11 cursor-pointer items-center gap-2 rounded-full surface-edge bg-surface py-2.5 pr-4 pl-4 text-[13px] font-bold text-fg shadow-soft focus-visible:outline-2 focus-visible:outline-accent aria-expanded:border-accent/45 md:min-h-0";
 
 export function CalendarIcon() {
   return (
@@ -209,7 +209,7 @@ function MonthRangePicker({
       onBlur={(e) => {
         if (e.relatedTarget instanceof Node && !e.currentTarget.contains(e.relatedTarget)) onClose(false);
       }}
-      className="fixed inset-auto m-0 flex w-[316px] max-w-[calc(100vw-32px)] origin-top-right flex-col gap-3 rounded-[16px] border border-surface-line bg-surface p-3.5 text-fg shadow-pop data-[side=top]:origin-bottom-right data-[side=top]:[--pop-from:4px] motion-safe:animate-pop-in"
+      className="fixed inset-auto m-0 flex w-[316px] max-w-[calc(100vw-32px)] origin-top-right flex-col gap-3 rounded-[16px] surface-edge bg-surface p-3.5 text-fg shadow-pop data-[side=top]:origin-bottom-right data-[side=top]:[--pop-from:4px] motion-safe:animate-pop-in"
     >
       <div className="flex items-center justify-between gap-2">
         <span className="text-[13px] font-extrabold">Custom range</span>

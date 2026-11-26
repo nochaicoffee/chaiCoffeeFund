@@ -41,7 +41,7 @@ function Mono({ row, size }: { row: HistoryRowView; size: number }) {
   return (
     <span
       aria-hidden="true"
-      className={`flex shrink-0 items-center justify-center font-extrabold text-on-card shadow-[inset_0_1px_0_oklch(1_0_0/0.18),0_2px_6px_oklch(0_0_0/0.18)] ${row.closed ? "opacity-60 grayscale" : ""}`}
+      className={`flex shrink-0 items-center justify-center font-extrabold text-on-card shadow-[var(--sheen-lift-shadow)] ${row.closed ? "opacity-60 grayscale" : ""}`}
       style={{ width: size, height: size, borderRadius: Math.round(size * 0.3), fontSize: Math.round(size * 0.44), background: colorGradient(row.colorKey) }}
     >
       {row.initial}
@@ -90,7 +90,7 @@ function Row({ row }: { row: HistoryRowView }) {
 }
 
 function PageLink({ href, label, disabled, children }: { href: string; label: string; disabled: boolean; children: ReactNode }) {
-  const className = "flex size-11 items-center justify-center rounded-full border border-surface-line bg-surface text-base shadow-soft lg:size-9";
+  const className = "flex size-11 items-center justify-center rounded-full surface-edge bg-surface text-base shadow-soft lg:size-9";
   if (disabled)
     return (
       <span className={`${className} opacity-50`} aria-hidden="true">
@@ -118,7 +118,7 @@ export function HistoryList({ view, state, hrefFor, accountsHref, today }: { vie
   const rows = view.groups.some((g) => g.rows.length > 0);
 
   return (
-    <section aria-label="Balances" className="flex flex-col gap-3 rounded-[24px] border border-surface-line bg-surface p-4 shadow-soft md:p-[22px]">
+    <section aria-label="Balances" className="flex flex-col gap-3 rounded-[24px] surface-edge bg-surface p-4 shadow-soft md:p-[22px]">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-3 max-lg:w-full">
           <nav aria-label="Change" className="-mx-4 flex max-w-[calc(100%+32px)] gap-1.5 overflow-x-auto px-4 [scrollbar-width:none] lg:mx-0 lg:max-w-full lg:gap-0.5 lg:rounded-full lg:bg-fill lg:p-[3px]">
@@ -131,7 +131,7 @@ export function HistoryList({ view, state, hrefFor, accountsHref, today }: { vie
                   scroll={false}
                   aria-current={on ? "page" : undefined}
                   className={`flex h-10 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-bold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-accent lg:h-[30px] lg:px-[13px] ${
-                    on ? "bg-ink text-on-ink lg:bg-surface lg:text-accent-text lg:shadow-[0_1px_3px_oklch(0_0_0/0.14)]" : "bg-fill text-fg hover:bg-fill-strong lg:bg-transparent lg:text-muted lg:hover:bg-transparent lg:hover:text-fg"
+                    on ? "bg-ink text-on-ink lg:bg-surface lg:text-accent-text lg:shadow-[var(--raised-shadow)]" : "bg-fill text-fg hover:bg-fill-strong lg:bg-transparent lg:text-muted lg:hover:bg-transparent lg:hover:text-fg"
                   }`}
                 >
                   {s.label}

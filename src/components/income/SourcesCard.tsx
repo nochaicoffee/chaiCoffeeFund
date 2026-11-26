@@ -18,7 +18,7 @@ const STATUS = {
 export function SourcesCard({ table, picked, onPick }: { table: SourcesTable; picked: string; onPick: (id: string) => void }) {
   const { open } = useIncomeForms();
   return (
-    <section aria-label="Sources" className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
+    <section aria-label="Sources" className="flex min-w-0 flex-col gap-3 rounded-card surface-edge bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[15px] font-extrabold">
           Sources <small className="ml-2 text-xs font-semibold text-muted">everything that pays you · a month is what each is worth spread over its cycle</small>

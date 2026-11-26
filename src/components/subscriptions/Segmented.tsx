@@ -33,7 +33,7 @@ export function Segmented<T extends string>({ label, options, value, onChange, s
       {pill && (
         <span
           aria-hidden="true"
-          className="absolute top-[3px] bottom-[3px] rounded-full bg-surface shadow-[0_1px_3px_oklch(0_0_0/0.14)] motion-safe:transition-[left,width] motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+          className="absolute top-[3px] bottom-[3px] rounded-full bg-surface shadow-[var(--raised-shadow)] motion-safe:transition-[left,width] motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.34,1.56,0.64,1)]"
           style={{ left: pill.left, width: pill.width }}
         />
       )}
@@ -45,7 +45,7 @@ export function Segmented<T extends string>({ label, options, value, onChange, s
           aria-checked={o.value === value}
           onClick={() => onChange(o.value)}
           className={`relative inline-flex items-center rounded-full font-bold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-accent motion-safe:transition-colors motion-safe:duration-200 ${small ? "px-2.5 py-1.5 text-[11.5px]" : "px-[13px] py-1.5 text-xs"} ${
-            o.value === value ? `text-accent-text ${pill ? "" : "bg-surface shadow-[0_1px_3px_oklch(0_0_0/0.14)]"}` : "text-muted hover:text-fg"
+            o.value === value ? `text-accent-text ${pill ? "" : "bg-surface shadow-[var(--raised-shadow)]"}` : "text-muted hover:text-fg"
           }`}
         >
           {o.label}

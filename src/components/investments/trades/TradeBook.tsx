@@ -20,7 +20,7 @@ export function TradeBook({ view, holdings }: { view: BookView; holdings: Holdin
   const soldOut = holdings.filter((h) => h.soldOut);
   return (
     <>
-      <nav aria-label="Holdings" className="flex items-center gap-2 overflow-x-auto rounded-[22px] border border-surface-line bg-surface p-2.5 shadow-soft md:flex-wrap md:px-4">
+      <nav aria-label="Holdings" className="flex items-center gap-2 overflow-x-auto rounded-card surface-edge bg-surface p-2.5 shadow-soft md:flex-wrap md:px-4">
         <Link href="/investments/trades" className={`${CHIP} bg-fill text-fg hover:bg-fill-strong`}>
           ← All trades
         </Link>
@@ -30,7 +30,7 @@ export function TradeBook({ view, holdings }: { view: BookView; holdings: Holdin
       </nav>
 
       <div className="grid items-stretch gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <section aria-label={`${view.ref.name} at a glance`} className="flex min-w-0 flex-col gap-3.5 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
+        <section aria-label={`${view.ref.name} at a glance`} className="flex min-w-0 flex-col gap-3.5 rounded-card surface-edge bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
           <div className="flex items-center gap-3.5">
             <HoldingTile tile={view.ref.tile} colorKey={view.ref.colorKey} size={46} />
             <div className="min-w-0">
@@ -61,7 +61,7 @@ export function TradeBook({ view, holdings }: { view: BookView; holdings: Holdin
           <StepChart steps={view.steps} first={view.firstDate} today={view.today} colorKey={view.ref.colorKey} name={view.ref.name} />
         </section>
 
-        <section aria-label="How the shares came in" className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-5 text-[13px] font-semibold shadow-[var(--card-shadow)] md:p-6">
+        <section aria-label="How the shares came in" className="flex min-w-0 flex-col gap-3 rounded-card surface-edge bg-surface p-5 text-[13px] font-semibold shadow-[var(--card-shadow)] md:p-6">
           <h3 className="text-[15px] font-extrabold">How the shares came in</h3>
           <div className="flex h-4 gap-[3px] overflow-hidden rounded-full" aria-hidden="true">
             {view.cameIn.map((c) => (
@@ -113,7 +113,7 @@ export function TradeBook({ view, holdings }: { view: BookView; holdings: Holdin
         </section>
       </div>
 
-      <section aria-label={`Every trade in ${view.ref.name}`} className="flex min-w-0 flex-col rounded-[22px] border border-surface-line bg-surface p-4 shadow-[var(--card-shadow)] md:p-5">
+      <section aria-label={`Every trade in ${view.ref.name}`} className="flex min-w-0 flex-col rounded-card surface-edge bg-surface p-4 shadow-[var(--card-shadow)] md:p-5">
         <div className="flex flex-wrap items-center justify-between gap-3 pb-2">
           <h3 className="text-[15px] font-extrabold">
             Every trade in it<small className="ml-2 text-xs font-semibold text-muted">newest first · shares and average cost after each one</small>

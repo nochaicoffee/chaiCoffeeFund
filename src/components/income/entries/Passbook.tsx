@@ -28,7 +28,7 @@ export function Passbook({ book, sources, hrefFor }: { book: PassbookData; sourc
   return (
     <div className="grid grid-cols-[minmax(0,1fr)] gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
       <aside className="flex min-w-0 flex-col gap-5">
-        <nav aria-label="Sources" className="flex flex-col gap-1 rounded-[22px] border border-surface-line bg-surface p-3 shadow-[var(--card-shadow)] max-lg:flex-row max-lg:overflow-x-auto">
+        <nav aria-label="Sources" className="flex flex-col gap-1 rounded-card surface-edge bg-surface p-3 shadow-[var(--card-shadow)] max-lg:flex-row max-lg:overflow-x-auto">
           <div className="flex items-center justify-between px-2 pt-1 pb-2 max-lg:hidden">
             <h2 className="text-[14px] font-extrabold">Sources</h2>
             <FormTrigger className="min-h-8 rounded-full bg-fill px-3 text-xs font-bold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent" label="+ Add" onClick={() => open({ kind: "add-source" })} />
@@ -44,7 +44,7 @@ export function Passbook({ book, sources, hrefFor }: { book: PassbookData; sourc
           ))}
         </nav>
         {book.changes.length > 0 && (
-          <section aria-label="Pay changes" className="flex flex-col gap-2.5 rounded-[22px] border border-surface-line bg-surface p-4 shadow-[var(--card-shadow)] max-lg:hidden">
+          <section aria-label="Pay changes" className="flex flex-col gap-2.5 rounded-card surface-edge bg-surface p-4 shadow-[var(--card-shadow)] max-lg:hidden">
             <h2 className="text-[14px] font-extrabold">
               Pay changes <small className="ml-1 text-xs font-semibold text-muted">{book.name}</small>
             </h2>
@@ -65,7 +65,7 @@ export function Passbook({ book, sources, hrefFor }: { book: PassbookData; sourc
       </aside>
 
       <div className="flex min-w-0 flex-col gap-5">
-        <section aria-label={book.name} className="flex flex-col gap-5 rounded-[24px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
+        <section aria-label={book.name} className="flex flex-col gap-5 rounded-[24px] surface-edge bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <span className="flex items-center gap-3">
               <SourceIcon icon={book.icon} name={book.name} colorKey={book.colorKey} size={44} />
@@ -108,7 +108,7 @@ export function Passbook({ book, sources, hrefFor }: { book: PassbookData; sourc
           </ol>
         </section>
 
-        <section aria-label="Every payment" className="flex flex-col gap-3 rounded-[24px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
+        <section aria-label="Every payment" className="flex flex-col gap-3 rounded-[24px] surface-edge bg-surface p-5 shadow-[var(--card-shadow)] md:p-6">
           <h2 className="text-[15px] font-extrabold">
             Every payment <small className="ml-2 text-xs font-semibold text-muted">newest first, with what&apos;s next on top</small>
           </h2>

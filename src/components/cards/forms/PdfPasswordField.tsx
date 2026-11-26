@@ -45,7 +45,7 @@ export function PdfPasswordField({ id, help, saved, value, onChange }: { id: str
             </button>
           </div>
         ) : (
-          <div className="flex min-h-10 flex-wrap items-center gap-2 rounded-[12px] border border-surface-line px-3.5 py-2 text-sm font-semibold">
+          <div className="flex min-h-10 flex-wrap items-center gap-2 rounded-[12px] surface-edge px-3.5 py-2 text-sm font-semibold">
             <LockIcon />
             {mode === "keep" ? "Saved" : "Will be removed"}
             <span className="ml-auto flex gap-1.5">

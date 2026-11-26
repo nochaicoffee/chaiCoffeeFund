@@ -111,7 +111,7 @@ function ShareBar({ shares }: { shares: MoneyShare[] }) {
 /** The card a month column opens on hover or focus: the month, its total, each part with its colour, and what the figure is. */
 function MonthCard({ name, total, parts, foot, side }: { name: string; total: string; parts: Part[]; foot: string; side: "left" | "right" }) {
   return (
-    <span role="tooltip" className={`pointer-events-none absolute top-2 z-20 hidden w-56 flex-col gap-1.5 rounded-2xl border border-surface-line bg-surface p-3 text-left shadow-[var(--card-shadow)] group-focus-within:flex group-hover:flex ${side === "left" ? "left-0" : "right-0"}`}>
+    <span role="tooltip" className={`pointer-events-none absolute top-2 z-20 hidden w-56 flex-col gap-1.5 rounded-2xl surface-edge bg-surface p-3 text-left shadow-[var(--card-shadow)] group-focus-within:flex group-hover:flex ${side === "left" ? "left-0" : "right-0"}`}>
       <span className="flex items-baseline justify-between gap-2">
         <b className="text-xs font-extrabold">{name}</b>
         <b className="text-sm font-extrabold tabular-nums">{total}</b>
@@ -151,7 +151,7 @@ export function MoneySection({ detail }: { detail: PickDetail }) {
   const legend = [...new Map(columns.flatMap((c) => [...c.up, ...c.down]).filter((p) => p.value > 0).map((p) => [p.name, p])).values()];
 
   return (
-    <section className="flex min-w-0 flex-col gap-5 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]" aria-label="Money in and out">
+    <section className="flex min-w-0 flex-col gap-5 rounded-card surface-edge bg-surface p-5 shadow-[var(--card-shadow)]" aria-label="Money in and out">
       <h2 className="text-[15px] font-extrabold">
         {detail.periodName}, in four answers <small className="ml-2 text-xs font-semibold text-muted">Pick one to see its months. Worked out from your records and balances</small>
       </h2>

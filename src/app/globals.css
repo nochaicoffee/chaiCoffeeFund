@@ -7,11 +7,20 @@
  */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* A surface's whole outline, from tokens: what `border border-surface-line` drew, so a look can change its width and colour. */
+@utility surface-edge {
+  border-style: var(--tw-border-style, solid);
+  border-width: var(--surface-edge-width);
+  border-color: var(--surface-edge, var(--surface-line));
+}
+
 /*
  * Design tokens, taken from the final light Cards board
  * (design/dashboards/CardsListLight.dc.html). Components use only these
  * tokens, never literal colours, so the dark palette (#57) can be added by
- * redefining them under [data-theme="dark"].
+ * redefining them under [data-theme="dark"]. Shape too (outlines, elevation
+ * shadows, the card and control radii) goes through tokens, so a second look
+ * (ADR 0018) can redefine them under [data-look="…"].
  */
 :root {
   color-scheme: light;
@@ -26,6 +35,28 @@
   --divider: oklch(0 0 0 / 0.08);
   --card-shadow: 0 1px 2px oklch(0 0 0 / 0.04), 0 10px 24px oklch(0 0 0 / 0.06);
   --soft-shadow: 0 1px 2px oklch(0 0 0 / 0.03), 0 6px 16px oklch(0 0 0 / 0.05);
+
+  /*
+   * A surface's outline (the surface-edge utility): a card, a tile, a pill or a control on the page. Its colour is
+   * --surface-edge when a look sets one, else the --surface-line in force there (the Loans and Subscriptions heroes set
+   * their own), which is why --surface-edge isn't defined here: defined on :root, it would freeze :root's line. A look that sets
+   * --surface-edge must set it on those two heroes as well. A conditional colour sets [--surface-edge:…] on the element.
+   */
+  --surface-edge-width: 1px;
+
+  /*
+   * Small elevation shadows, by what they lift. Selection rings and glows are not elevation and stay where they're drawn.
+   * raised: a chip or segment above its track. raised-strong: a swatch, a pinned button. sheen: the light top edge of a
+   * control on a coloured card, and sheen-lift that edge with a small drop. block-label: a label on a map block.
+   * lift: a card lifted on hover.
+   */
+  --raised-shadow: 0 1px 3px oklch(0 0 0 / 0.14);
+  --raised-strong-shadow: 0 2px 5px oklch(0 0 0 / 0.18);
+  --sheen-shadow: inset 0 1px 0 oklch(1 0 0 / 0.2);
+  --sheen-strong-shadow: inset 0 1px 0 oklch(1 0 0 / 0.25);
+  --sheen-lift-shadow: inset 0 1px 0 oklch(1 0 0 / 0.18), 0 2px 6px oklch(0 0 0 / 0.18);
+  --block-label-shadow: 0 2px 6px oklch(0 0 0 / 0.4);
+  --lift-shadow: 0 16px 34px oklch(0 0 0 / 0.22);
 
   --accent: oklch(0.72 0.19 145);
   --accent-tint: oklch(0.93 0.06 145);

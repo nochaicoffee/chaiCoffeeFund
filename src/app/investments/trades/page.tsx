@@ -101,7 +101,7 @@ function Sentence({ parts }: { parts: Part[] }) {
 /** No trades yet (design state A): the header's buttons add the first one. */
 function NoTrades() {
   return (
-    <section aria-label="No trades yet" className="rounded-[24px] border border-surface-line bg-surface p-8 text-center shadow-[var(--card-shadow)]">
+    <section aria-label="No trades yet" className="rounded-[24px] surface-edge bg-surface p-8 text-center shadow-[var(--card-shadow)]">
       <p className="text-sm font-bold">Nothing here yet.</p>
       <p className="mt-1 text-[13px] font-semibold text-muted">Add a trade, record an RSU vest or an ESPP purchase with the buttons above, and every trade you make lists here by month.</p>
     </section>

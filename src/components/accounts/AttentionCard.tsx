@@ -14,7 +14,7 @@ export function AttentionCard({ items }: { items: AttentionItem[] }) {
   const { open } = useReview();
   if (items.length === 0) return null;
   return (
-    <section aria-label="Balances that need a look" className="flex flex-col gap-1 rounded-[22px] border border-warning/40 bg-warning-tint p-4 md:p-5">
+    <section aria-label="Balances that need a look" className="flex flex-col gap-1 rounded-card border border-warning/40 bg-warning-tint p-4 md:p-5">
       <h2 className="flex items-center gap-2 text-[15px] font-extrabold text-warning-text">
         <AlertIcon />
         {items.length === 1 ? "A statement disagrees with a balance" : `${items.length} statements disagree with balances`}

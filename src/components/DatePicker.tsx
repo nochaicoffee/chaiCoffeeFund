@@ -373,7 +373,7 @@ export function DatePicker({
           // Pressing on the calendar keeps focus where it is, in the field or on a day.
           onMouseDown={(e) => e.preventDefault()}
           onKeyDown={onCalendarKeyDown}
-          className="fixed inset-auto m-0 flex w-[300px] max-w-[calc(100vw-32px)] origin-top-left flex-col gap-1.5 overflow-visible rounded-[16px] border border-surface-line bg-surface p-3 text-fg shadow-pop data-[side=top]:origin-bottom-left data-[side=top]:[--pop-from:4px] motion-safe:animate-pop-in max-md:w-[320px] max-md:p-2.5 pointer-coarse:w-[320px] pointer-coarse:p-2.5"
+          className="fixed inset-auto m-0 flex w-[300px] max-w-[calc(100vw-32px)] origin-top-left flex-col gap-1.5 overflow-visible rounded-[16px] surface-edge bg-surface p-3 text-fg shadow-pop data-[side=top]:origin-bottom-left data-[side=top]:[--pop-from:4px] motion-safe:animate-pop-in max-md:w-[320px] max-md:p-2.5 pointer-coarse:w-[320px] pointer-coarse:p-2.5"
         >
           {offered.length > 0 && (
             <div role="group" aria-label="Shortcuts" className="mb-0.5 flex flex-wrap gap-1.5 border-b border-divider pb-2.5">

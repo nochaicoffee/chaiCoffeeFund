@@ -140,7 +140,7 @@ function Trend({ pick, flowItems, today }: { pick: PickView; flowItems: FlowItem
 
   if (n < 2) {
     return (
-      <div className="flex min-h-56 flex-1 items-center justify-center rounded-[22px] bg-fill px-6 text-center text-sm font-semibold text-muted">
+      <div className="flex min-h-56 flex-1 items-center justify-center rounded-card bg-fill px-6 text-center text-sm font-semibold text-muted">
         {n === 1 ? "One balance so far. The line starts with the next." : "No balances in this period yet."}
       </div>
     );

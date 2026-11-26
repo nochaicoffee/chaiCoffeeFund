@@ -73,7 +73,7 @@ const niceMax = (v: number, step = 2000) => Math.max(step, Math.ceil(v / step) *
 function TrendCard({ month, running, lineColor }: { month: TrendMonthView; running?: RunningView["months"][string]; lineColor: string }) {
   const { card } = month;
   return (
-    <div style={{ width: CARD_WIDTH }} className="rounded-[16px] border border-surface-line bg-surface p-3.5 text-left text-fg shadow-[var(--pop-shadow)]">
+    <div style={{ width: CARD_WIDTH }} className="rounded-[16px] surface-edge bg-surface p-3.5 text-left text-fg shadow-[var(--pop-shadow)]">
       <div className="flex items-center justify-between gap-2 text-xs font-bold">
         <span>{card.title}</span>
         <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${card.pill === "Expected" ? "bg-fill text-muted" : "bg-accent-tint text-accent-text"}`}>{card.pill}</span>
@@ -241,7 +241,7 @@ function Trend({ chart, pick }: { chart: ChartView; pick: PickView }) {
           <span aria-hidden="true" className="pointer-events-none absolute right-0 border-t-2 border-dashed opacity-70" style={{ left, bottom: bottom + Y(usual), borderColor: all ? "var(--accent-text)" : `var(--card-${pick.color})` }} />
           {!phone && (
             <span
-              className={`pointer-events-none absolute rounded-full border border-surface-line bg-surface px-[9px] py-0.5 text-[11px] font-extrabold ${all ? "text-accent-text" : "text-fg"}`}
+              className={`pointer-events-none absolute rounded-full surface-edge bg-surface px-[9px] py-0.5 text-[11px] font-extrabold ${all ? "text-accent-text" : "text-fg"}`}
               style={{ left: left + 6, bottom: bottom + Y(usual) + 5 }}
             >
               {all ? "A usual month" : `${pick.alias} a month`} {formatInr(usual)}
@@ -405,7 +405,7 @@ export function SubscriptionChart({ chart, pick, empty }: { chart: ChartView; pi
   const VIEWS = views(chart);
   const current = VIEWS.find((v) => v.value === view)!;
   return (
-    <section aria-labelledby="chart-title" className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-4 shadow-[var(--card-shadow)] md:p-[22px]">
+    <section aria-labelledby="chart-title" className="flex min-w-0 flex-col gap-3 rounded-card surface-edge bg-surface p-4 shadow-[var(--card-shadow)] md:p-[22px]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <span className="flex items-center gap-3.5">
           <h2 id="chart-title" className="text-[15px] font-extrabold text-fg max-md:sr-only">

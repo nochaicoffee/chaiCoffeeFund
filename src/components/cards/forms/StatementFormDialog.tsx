@@ -204,8 +204,8 @@ export function StatementFormDialog({
             {cards.map((c, i) => (
               <label key={c.id} className="relative">
                 <input type="radio" name="cardId" value={c.id} checked={cardId === c.id} onChange={() => pickCard(c.id)} onBlur={() => reveal("cardId")} className="peer sr-only" data-autofocus={i === 0 && !initial ? true : undefined} />
-                <span className="flex min-h-12 cursor-pointer items-center gap-2.5 rounded-[14px] border border-surface-line bg-surface px-3 py-2 peer-checked:border-accent peer-checked:bg-accent-tint/40 peer-checked:ring-[3px] peer-checked:ring-accent/20 peer-focus-visible:outline-2 peer-focus-visible:outline-accent">
-                  <span className="h-[18px] w-7 shrink-0 rounded-[5px] shadow-[0_2px_5px_oklch(0_0_0/0.18)]" style={{ background: cardGradient(c.color) }} aria-hidden="true" />
+                <span className="flex min-h-12 cursor-pointer items-center gap-2.5 rounded-[14px] surface-edge bg-surface px-3 py-2 peer-checked:border-accent peer-checked:bg-accent-tint/40 peer-checked:ring-[3px] peer-checked:ring-accent/20 peer-focus-visible:outline-2 peer-focus-visible:outline-accent">
+                  <span className="h-[18px] w-7 shrink-0 rounded-[5px] shadow-[var(--raised-strong-shadow)]" style={{ background: cardGradient(c.color) }} aria-hidden="true" />
                   <span className="min-w-0 flex-1 leading-tight">
                     <span className="block truncate text-xs font-bold">{cardName(c)}</span>
                     <span className="block truncate text-[10px] font-semibold text-muted">{optionLabel(c.issuer)}</span>

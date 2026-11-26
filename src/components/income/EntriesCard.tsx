@@ -21,7 +21,7 @@ const TONES = {
 export function EntriesCard({ card, pickLabel, allHref }: { card: EntriesCardData; pickLabel: string; allHref: string }) {
   const [view, setView] = useState<"entries" | "changes">("entries");
   return (
-    <section aria-label="Entries" className="flex min-w-0 flex-col gap-3 rounded-[22px] border border-surface-line bg-surface p-5 shadow-[var(--card-shadow)]">
+    <section aria-label="Entries" className="flex min-w-0 flex-col gap-3 rounded-card surface-edge bg-surface p-5 shadow-[var(--card-shadow)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-[15px] font-extrabold">
           {view === "entries" ? "Entries" : "Pay changes"} <small className="ml-2 text-xs font-semibold text-muted">{pickLabel} · newest first</small>

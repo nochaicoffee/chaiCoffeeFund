@@ -19,8 +19,8 @@ export function StatementsSummary({ tiles }: { tiles: SummaryTile[] }) {
       {tiles.map((tile, i) => (
         <div
           key={tile.label}
-          className={`relative isolate flex min-w-0 flex-col gap-1 overflow-hidden rounded-[22px] border px-4 py-4 shadow-soft md:px-5 md:py-[18px] ${
-            i === 0 ? "border-feature-tile-line bg-feature-tile" : "border-surface-line bg-surface"
+          className={`relative isolate flex min-w-0 flex-col gap-1 overflow-hidden rounded-card surface-edge px-4 py-4 shadow-soft md:px-5 md:py-[18px] ${
+            i === 0 ? "bg-feature-tile [--surface-edge:var(--feature-tile-line)]" : "bg-surface"
           }`}
         >
           {i === 0 && (

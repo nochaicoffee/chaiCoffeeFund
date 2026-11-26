@@ -16,7 +16,7 @@ export function AccountSyncReportPanel() {
   if (state.phase === "idle") return null;
 
   return (
-    <section aria-label="Account statement sync" aria-live="polite" className="flex w-full flex-col gap-3.5 rounded-[18px] border border-surface-line bg-surface p-4 shadow-soft">
+    <section aria-label="Account statement sync" aria-live="polite" className="flex w-full flex-col gap-3.5 rounded-[18px] surface-edge bg-surface p-4 shadow-soft">
       {state.phase === "running" && (
         <>
           <Heading icon={<Spinner />} title="Reading your bank statement emails…" detail={state.remaining === null ? "This can take up to a minute." : `${state.read} read, ${state.remaining} to go.`} />

@@ -60,7 +60,7 @@ export function ColorSwatches({ colors, value, onChange, error, optional = false
               type="button"
               aria-pressed={i === browsing}
               onClick={() => setBrowsing(i)}
-              className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full border py-0.5 pr-2.5 pl-1 text-xs font-semibold text-fg ${focus} ${i === browsing ? "border-accent bg-surface ring-2 ring-accent/25" : "border-surface-line bg-surface/70 hover:bg-surface"}`}
+              className={`inline-flex cursor-pointer items-center gap-1.5 rounded-full surface-edge py-0.5 pr-2.5 pl-1 text-xs font-semibold text-fg ${focus} ${i === browsing ? "bg-surface ring-2 ring-accent/25 [--surface-edge:var(--accent)]" : "bg-surface/70 hover:bg-surface"}`}
             >
               <span aria-hidden="true" className="size-[18px] rounded-md" style={{ background: gradient(holdsPick ? (value as Color) : f.colors[0]) }} />
               {f.name}
@@ -83,7 +83,7 @@ export function ColorSwatches({ colors, value, onChange, error, optional = false
               <button key={c} type="button" role="radio" aria-checked={on} tabIndex={i === rovingIndex ? 0 : -1} onClick={() => onChange(c)} className={`flex w-[46px] cursor-pointer flex-col items-center gap-1 rounded-[9px] ${focus}`}>
                 <span
                   aria-hidden="true"
-                  className={`relative flex size-9 items-center justify-center rounded-[9px] text-sm font-bold text-white shadow-[0_2px_5px_oklch(0_0_0/0.18)] ring-offset-2 ring-offset-feature-tile ${on ? "ring-2 ring-accent" : ""}`}
+                  className={`relative flex size-9 items-center justify-center rounded-[9px] text-sm font-bold text-white shadow-[var(--raised-strong-shadow)] ring-offset-2 ring-offset-feature-tile ${on ? "ring-2 ring-accent" : ""}`}
                   style={{ background: gradient(c) }}
                 >
                   {on && <span className="[text-shadow:0_1px_2px_oklch(0_0_0/0.5)]">✓</span>}

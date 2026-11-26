@@ -14,7 +14,7 @@ type Kind = "all" | TradeKind;
 type Market = "all" | "IND" | "US";
 const STEP = 60;
 const CHIP = "inline-flex min-h-9 shrink-0 items-center whitespace-nowrap gap-1.5 rounded-full px-3.5 text-[12.5px] font-bold text-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-accent aria-pressed:bg-surface aria-pressed:text-fg aria-pressed:shadow-soft";
-const PILL = "flex min-h-9 cursor-pointer items-center gap-2 rounded-full border border-surface-line bg-surface px-3.5 text-[12.5px] font-bold";
+const PILL = "flex min-h-9 cursor-pointer items-center gap-2 rounded-full surface-edge bg-surface px-3.5 text-[12.5px] font-bold";
 const COLS = "xl:grid-cols-[4.5rem_minmax(0,1.3fr)_5.5rem_minmax(0,1.8fr)_8rem_7rem_8.5rem_1.5rem]";
 
 /**
@@ -49,7 +49,7 @@ export function TradesList({ view, holdings }: { view: TradesListView; holdings:
   return (
     <>
       <StatementsSummary tiles={tiles.map((t) => ({ label: t.label, value: <span className={t.tone === "down" ? "text-negative" : t.tone === "up" ? "text-positive" : ""}>{t.value}</span>, caption: t.caption }))} />
-      <section aria-label="Every trade" className="flex min-w-0 flex-col gap-4 rounded-[24px] border border-surface-line bg-surface p-4 shadow-[var(--card-shadow)] md:p-5">
+      <section aria-label="Every trade" className="flex min-w-0 flex-col gap-4 rounded-[24px] surface-edge bg-surface p-4 shadow-[var(--card-shadow)] md:p-5">
         <div className="flex flex-col gap-2.5">
           <div className="flex flex-wrap items-center gap-2">
             <div role="group" aria-label="Kind" className="flex gap-1 max-md:max-w-full max-md:overflow-x-auto md:flex-wrap rounded-full bg-fill p-1">
@@ -85,7 +85,7 @@ export function TradesList({ view, holdings }: { view: TradesListView; holdings:
             <div className="flex flex-wrap items-center gap-2 xl:ml-auto">
               <Select variant="pill" aria-label="Holding" options={[{ value: "", label: "Every holding" }, ...holdings.map((h) => ({ value: h.id, label: h.soldOut ? `${h.name} · sold out` : h.name }))]} value="" onChange={(id) => id && router.push(`/investments/trades?holding=${encodeURIComponent(id)}`)} className={PILL} />
               {view.brokers.length > 1 && <Select variant="pill" aria-label="Broker" options={[{ value: "", label: "Every broker" }, ...view.brokers.map((b) => ({ value: b, label: b }))]} value={broker} onChange={pick(setBroker)} className={PILL} />}
-              <label className="flex min-h-9 min-w-[200px] items-center gap-2 rounded-full border border-surface-line bg-surface px-3.5 text-[12.5px] max-md:w-full">
+              <label className="flex min-h-9 min-w-[200px] items-center gap-2 rounded-full surface-edge bg-surface px-3.5 text-[12.5px] max-md:w-full">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true" className="text-muted">
                   <circle cx="11" cy="11" r="7" />
                   <line x1="21" y1="21" x2="16.5" y2="16.5" />
@@ -100,7 +100,7 @@ export function TradesList({ view, holdings }: { view: TradesListView; holdings:
         {visible.length === 0 ? (
           <div className="flex flex-col items-center gap-3 py-12 text-center">
             <p className="text-sm font-bold">{nothing}</p>
-            <button type="button" onClick={() => { setKind("all"); setMarket("all"); setYear(""); setBroker(""); setQuery(""); }} className="min-h-9 rounded-full border border-surface-line bg-surface px-4 text-xs font-bold focus-visible:outline-2 focus-visible:outline-accent">
+            <button type="button" onClick={() => { setKind("all"); setMarket("all"); setYear(""); setBroker(""); setQuery(""); }} className="min-h-9 rounded-full surface-edge bg-surface px-4 text-xs font-bold focus-visible:outline-2 focus-visible:outline-accent">
               Clear the filters
             </button>
           </div>
