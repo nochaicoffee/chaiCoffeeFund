@@ -19,6 +19,20 @@ describe("the card palette", () => {
     }
   });
 
+  it("gives every colour its own flat shade under Neubrutalism (ADR 0018), so no two cards picked apart look alike", () => {
+    const start = css.indexOf(':root[data-look="neubrutal"] {');
+    const block = css.slice(start, css.indexOf("\n}", start));
+    const shades = COLORS.map((name) => {
+      const key = name.toLowerCase();
+      const from = block.match(new RegExp(`--card-${key}-from: ([^;]+);`))?.[1];
+      const to = block.match(new RegExp(`--card-${key}-to: ([^;]+);`))?.[1];
+      expect(from, `${name} has no Neubrutalism shade`).toBeDefined();
+      expect(to, `${name}'s Neubrutalism shade isn't flat`).toBe(from);
+      return from;
+    });
+    expect(new Set(shades).size).toBe(COLORS.length);
+  });
+
   it("offers cards and accounts everything but Emerald, which is All Cards', and subscriptions all of it", () => {
     expect(CARD_COLORS).toHaveLength(COLORS.length - 1);
     expect(CARD_COLORS).not.toContain("Emerald");
