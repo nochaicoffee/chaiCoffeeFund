@@ -15,13 +15,13 @@ export function WhoOwesWhat({ view, initialPick }: { view: HeroView; initialPick
   const pane = view.panes[pick] ?? view.panes[ALL];
   const picked = view.panes[pick] ? pick : ALL;
   return (
-    <section aria-label={view.title} className="flex flex-col gap-5 rounded-[26px] p-5 text-on-card transition-[background] duration-300 md:p-7" style={{ background: colorGradient(pane.colorKey) }}>
+    <section aria-label={view.title} className="flex flex-col gap-5 rounded-[26px] card-edge card-lift p-5 text-on-card transition-[background] duration-300 md:p-7" style={{ background: colorGradient(pane.colorKey) }}>
       <div className="flex items-start justify-between gap-4">
         <div>
           <h2 className="text-[15px] font-extrabold">{view.title}</h2>
           <p className="mt-0.5 text-xs font-semibold text-on-card-muted">{view.sub}</p>
         </div>
-        <button type="button" aria-pressed={picked === ALL} onClick={() => choose(ALL)} className={`min-h-9 shrink-0 rounded-full px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${picked === ALL ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill"}`}>
+        <button type="button" aria-pressed={picked === ALL} onClick={() => choose(ALL)} className={`min-h-9 shrink-0 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${picked === ALL ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill"}`}>
           Everyone
         </button>
       </div>
@@ -113,7 +113,7 @@ function Blocks({ blocks, picked, choose }: { blocks: HeroBlock[]; picked: strin
             aria-pressed={on}
             aria-label={`${b.name}, ${b.owed}, ${b.share}`}
             onClick={() => choose(b.id)}
-            className={`flex min-h-[170px] min-w-0 flex-col justify-between gap-3 rounded-[20px] p-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-card ${big ? "sm:col-span-2 md:col-span-1 md:row-span-2" : ""} ${on ? "ring-2 ring-on-card" : picked === ALL ? "" : "opacity-75"}`}
+            className={`flex min-h-[170px] min-w-0 flex-col card-edge justify-between gap-3 rounded-[20px] p-4 text-left transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-on-card ${big ? "sm:col-span-2 md:col-span-1 md:row-span-2" : ""} ${on ? "ring-2 ring-on-card" : picked === ALL ? "" : "opacity-75"}`}
             style={{ background: colorGradient(b.colorKey, 135) }}
           >
             <span className="flex items-start gap-2.5">
@@ -133,7 +133,7 @@ function Blocks({ blocks, picked, choose }: { blocks: HeroBlock[]; picked: strin
               <span className="flex flex-col items-start gap-2">
                 <small className="text-[11px] font-bold text-on-card-muted">Promised against arrived</small>
                 <Dots verdicts={b.promises.verdicts} />
-                {b.promises.notHere && <span className="rounded-full bg-on-card-fill px-2.5 py-0.5 text-[11px] font-extrabold">{b.promises.notHere}</span>}
+                {b.promises.notHere && <span className="rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-on-card-fill px-2.5 py-0.5 text-[11px] font-extrabold">{b.promises.notHere}</span>}
               </span>
             ) : (
               <span />
@@ -182,7 +182,7 @@ function RepaidStrip({ repaid }: { repaid: HeroRepaid }) {
       <span className="min-w-0 flex-1 text-[12px] font-semibold">
         <b className="font-extrabold">{repaid.name}</b> <small className="text-on-card-muted">{repaid.note}</small>
       </span>
-      <span className="rounded-full bg-on-card-fill px-2.5 py-0.5 text-[11px] font-extrabold">Repaid</span>
+      <span className="rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-on-card-fill px-2.5 py-0.5 text-[11px] font-extrabold">Repaid</span>
     </div>
   );
 }
@@ -202,7 +202,7 @@ function PaneBody({ pane }: { pane: HeroPane }) {
       {pane.chips.length > 0 && (
         <ul className="flex flex-wrap gap-2">
           {pane.chips.map((c) => (
-            <li key={c} className="rounded-full bg-on-card-fill px-3 py-1 text-xs font-bold">
+            <li key={c} className="rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-on-card-fill px-3 py-1 text-xs font-bold">
               {c}
             </li>
           ))}

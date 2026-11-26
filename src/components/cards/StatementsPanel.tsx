@@ -27,7 +27,7 @@ function Segmented({ view, hrefFor }: { view: PanelView; hrefFor: (v: PanelView)
     ["range", "Spend range"],
   ];
   return (
-    <nav aria-label="Panel view" className="flex rounded-full bg-fill p-[3px]">
+    <nav aria-label="Panel view" className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-[3px]">
       {options.map(([value, label]) => (
         <Link
           key={value}

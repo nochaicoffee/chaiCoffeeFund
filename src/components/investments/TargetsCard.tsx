@@ -21,7 +21,7 @@ export function TargetsCard({ view }: { view: TargetsView }) {
       right={
         <div className="flex flex-wrap items-center gap-2">
           {view.anySet && (
-            <div role="group" aria-label="Add new money" className="flex rounded-full bg-fill p-1">
+            <div role="group" aria-label="Add new money" className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-1">
               {view.newMoney.map((n) => (
                 <button key={n.key} type="button" aria-pressed={add === n.key} onClick={() => setAdd(add === n.key ? null : n.key)} className={`min-h-8 rounded-full px-3 text-[12px] font-extrabold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 ${add === n.key ? "bg-ink text-on-ink" : "text-muted hover:text-fg"}`}>
                   +{n.short}

@@ -56,7 +56,7 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
   const line = smooth(points);
 
   return (
-    <section aria-label="Net worth" data-linked={hot ? "" : undefined} className="group/nw relative isolate flex flex-col gap-6 overflow-clip rounded-[26px] p-5 text-on-card md:flex-row md:items-stretch md:justify-between md:gap-10 md:p-9" style={{ background: colorGradient("indigo", 140) }}>
+    <section aria-label="Net worth" data-linked={hot ? "" : undefined} className="group/nw relative isolate card-edge card-lift flex flex-col gap-6 overflow-clip rounded-[26px] p-5 text-on-card md:flex-row md:items-stretch md:justify-between md:gap-10 md:p-9" style={{ background: colorGradient("indigo", 140) }}>
       <RingTexture width={1300} height={680} dx={40} dy={40} first={60} step={30} stroke="var(--rings-light)" opacity={0.08} sheen={SHEEN} ringsClassName={RIPPLE} />
       <div className="flex min-w-0 flex-1 flex-col gap-3.5">
         <div className="text-xs font-extrabold tracking-[0.06em] uppercase label-face opacity-80">Net worth {month.today ? "today" : `at the end of ${month.full}`}</div>
@@ -112,8 +112,8 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
                   onFocus={(e) => e.currentTarget.matches(":focus-visible") && setOver(c.key)}
                   onBlur={() => setOver(null)}
                   onClick={() => setKept((k) => (k === c.key ? null : c.key))}
-                  className={`inline-flex cursor-pointer items-center gap-2 rounded-full px-3 py-1.5 text-[13px] font-bold motion-safe:transition-[transform,opacity,box-shadow] motion-safe:duration-200 focus-visible:outline-2 focus-visible:outline-on-card ${hot && !on ? "opacity-55" : ""} ${on ? "-translate-y-0.5" : ""}`}
-                  style={{ background: `color-mix(in oklch, var(--card-${c.colorKey}) ${on ? 52 : 32}%, transparent)`, boxShadow: `inset 0 0 0 ${on ? 2 : 1}px color-mix(in oklch, var(--card-${c.colorKey}) ${on ? 90 : 60}%, white)` }}
+                  className={`inline-flex cursor-pointer items-center gap-2 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge px-3 py-1.5 text-[13px] font-bold motion-safe:transition-[transform,opacity,box-shadow] motion-safe:duration-200 focus-visible:outline-2 focus-visible:outline-on-card ${hot && !on ? "opacity-55" : ""} ${on ? "-translate-y-0.5" : ""}`}
+                  style={{ background: `color-mix(in oklch, var(--card-${c.colorKey}) ${on ? 52 : 32}%, transparent)`, boxShadow: `var(--chip-hard-prefix,) inset 0 0 0 ${on ? 2 : 1}px color-mix(in oklch, var(--card-${c.colorKey}) ${on ? 90 : 60}%, white)` }}
                 >
                   <i aria-hidden="true" className="size-2.5 rounded-[3px]" style={{ background: `var(--card-${c.colorKey})` }} />
                   {c.name}
@@ -132,7 +132,7 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
 
 function Move({ move, label }: { move: { amount: number; text: string }; label: string }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-full bg-on-card-fill px-3 py-1.5 text-[13px] font-extrabold">
+    <span className="inline-flex items-center gap-1.5 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-on-card-fill px-3 py-1.5 text-[13px] font-extrabold">
       <span className={move.amount >= 0 ? "text-[var(--on-card-up,oklch(0.9_0.15_150))]" : "text-[var(--on-card-down,oklch(0.86_0.12_25))]"}>{move.amount >= 0 ? "▲" : "▼"} {move.text}</span>
       <small className="text-xs font-bold opacity-75">{label}</small>
     </span>

@@ -31,7 +31,7 @@ export function FixedIncomeDashboard({ doors, stages, attention, initialPick, ch
               type="button"
               aria-pressed={on}
               onClick={() => choose(door.id)}
-              className={`flex min-h-[104px] w-[78%] shrink-0 snap-start scroll-mx-4 flex-col justify-between rounded-[20px] p-4 text-left text-on-card transition md:w-auto md:shrink-[transform,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:p-5 ${on ? "scale-[1.015] shadow-[0_0_0_3px_var(--surface),0_0_0_5px_currentColor]" : "opacity-95 hover:opacity-100"}`}
+              className={`flex min-h-[104px] w-[78%] card-edge shrink-0 snap-start scroll-mx-4 flex-col justify-between rounded-[20px] p-4 text-left text-on-card transition md:w-auto md:shrink-[transform,box-shadow] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:p-5 ${on ? "scale-[1.015] shadow-[0_0_0_3px_var(--surface),0_0_0_5px_currentColor]" : "opacity-95 hover:opacity-100"}`}
               style={{ background: colorGradient(doorColor(door.id)) }}
             >
               <span className="text-[13px] font-extrabold">{door.label}</span>
@@ -65,7 +65,7 @@ function EmptyStage({ stage }: { stage: StageView }) {
   return (
     <section aria-label={stage.title} className={`grid gap-4 ${cards.length > 1 ? "md:grid-cols-2" : ""}`}>
       {cards.map((c) => (
-        <div key={c.id} className="flex flex-col gap-3 rounded-[26px] p-5 text-on-card md:p-7" style={{ background: colorGradient(doorColor(c.id)) }}>
+        <div key={c.id} className="flex flex-col gap-3 rounded-[26px] card-edge card-lift p-5 text-on-card md:p-7" style={{ background: colorGradient(doorColor(c.id)) }}>
           <h2 className="text-xl font-extrabold">{c.title}</h2>
           <p className="max-w-[56ch] text-[13px] font-medium text-on-card-muted">{c.text}</p>
           <div>
@@ -87,7 +87,7 @@ function Stage({ stage }: { stage: StageView }) {
   const epf = useEpfForms();
   const deposits = useDepositForms();
   return (
-    <section aria-label={stage.title} className="grid gap-6 rounded-[26px] p-5 text-on-card md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:p-7" style={{ background: colorGradient(doorColor(stage.id)) }}>
+    <section aria-label={stage.title} className="grid gap-6 rounded-[26px] card-edge card-lift p-5 text-on-card md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] md:p-7" style={{ background: colorGradient(doorColor(stage.id)) }}>
       <div className="flex min-w-0 flex-col gap-4">
         <div>
           <p className="text-[11px] font-extrabold tracking-[0.06em] text-on-card-muted uppercase label-face">{stage.eyebrow}</p>

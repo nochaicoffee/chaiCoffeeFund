@@ -123,7 +123,7 @@ function Block({ m, share, box, grouped, gone, picked, dim, lifted, glide, onPic
         onClick={onPick}
         onFocus={() => onActive(true)}
         onBlur={() => onActive(false)}
-        className={`relative isolate flex size-full flex-col justify-between overflow-hidden border border-on-card-line text-left text-on-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${big ? "rounded-[14px] p-3" : mid ? "rounded-xl p-2" : "items-center justify-center rounded-lg p-1"}`}
+        className={`relative isolate flex size-full flex-col justify-between overflow-hidden border-[length:var(--card-edge-width,1px)] border-[color:var(--card-edge-color,var(--on-card-line))] text-left text-on-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${big ? "rounded-[14px] p-3" : mid ? "rounded-xl p-2" : "items-center justify-center rounded-lg p-1"}`}
         style={{ background: gradient(m.colorKey), boxShadow: picked ? PICKED_RING : "none" }}
       >
         {/* Cut into slices, a holding takes its slice's colour, fading in over its own (under the rings). */}

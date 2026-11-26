@@ -63,7 +63,7 @@ export function Ledger({ rows, sources, today, year, current }: { rows: LedgerRo
   return (
     <section aria-label="Every payment" className="flex min-w-0 flex-col gap-4 rounded-[24px] surface-edge bg-surface p-4 shadow-[var(--card-shadow)] md:p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <div role="group" aria-label="Show" className="flex flex-wrap gap-1 rounded-full bg-fill p-1">
+        <div role="group" aria-label="Show" className="flex flex-wrap gap-1 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-1">
           {chip("all", "All", counts.all)}
           {counts.upcoming > 0 && chip("upcoming", "Upcoming", counts.upcoming)}
           {counts.pending > 0 && chip("pending", "Pending", counts.pending)}

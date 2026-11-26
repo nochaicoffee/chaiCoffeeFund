@@ -34,7 +34,7 @@ export function GrowthCard({ view }: { view: GrowthView }) {
       title="Where it could go in ten years"
       note="a yearly return YOU assume · not a forecast"
       right={
-        <div role="group" aria-label="The yearly return to assume" className="flex rounded-full bg-fill p-1">
+        <div role="group" aria-label="The yearly return to assume" className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-1">
           {view.rates.map((r) => (
             <button key={r.key} type="button" aria-pressed={r.key === rate.key} onClick={() => setRateKey(r.key)} className={`min-h-8 rounded-full px-3 text-[12px] font-extrabold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 ${r.key === rate.key ? "bg-ink text-on-ink" : "text-muted hover:text-fg"}`}>
               {r.label}

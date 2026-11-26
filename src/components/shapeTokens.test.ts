@@ -106,4 +106,16 @@ describe("shape stays on tokens", () => {
     const copies = files.filter(({ path, text }) => path !== "components/shell/FormTriggerButton.tsx" && classLists(text).some(looksLikeHeaderButton));
     expect(copies.map((f) => f.path)).toEqual([]);
   });
+
+  it("never pairs an edge that owns box-shadow with a ring or shadow class (steps 5d, 5e)", () => {
+    // btn-edge and card-lift set box-shadow, with Classic's fallback `none`. A ring-* or shadow-* class on the same
+    // element is a box-shadow too, and one would wipe out the other: the Fixed Income carousel's picked ring did.
+    const owns = (list: string[]) => list.includes("btn-edge") || list.includes("card-lift");
+    const clash = (list: string[]) => list.some((c) => /^(?:[a-z-]+:)*(?:ring|shadow)(?:-|$)/.test(c) || c.startsWith("[box-shadow"));
+    const offenders = files.filter(({ text }) => [...text.matchAll(/`[^`]*`|"[^"\n]*"/g)].some((m) => {
+      const all = m[0].split(/[\s"`${}?:]+/);
+      return owns(all) && clash(all);
+    }));
+    expect(offenders.map((f) => f.path)).toEqual([]);
+  });
 });

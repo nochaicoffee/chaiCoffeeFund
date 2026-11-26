@@ -52,7 +52,7 @@ export function TradesList({ view, holdings }: { view: TradesListView; holdings:
       <section aria-label="Every trade" className="flex min-w-0 flex-col gap-4 rounded-[24px] surface-edge bg-surface p-4 shadow-[var(--card-shadow)] md:p-5">
         <div className="flex flex-col gap-2.5">
           <div className="flex flex-wrap items-center gap-2">
-            <div role="group" aria-label="Kind" className="flex gap-1 max-md:max-w-full max-md:overflow-x-auto md:flex-wrap rounded-full bg-fill p-1">
+            <div role="group" aria-label="Kind" className="flex gap-1 max-md:max-w-full max-md:overflow-x-auto md:flex-wrap rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-1">
               {kindChip("all", "Everything")}
               {view.counts.buy > 0 && kindChip("buy", "Buys")}
               {view.counts.sell > 0 && kindChip("sell", "Sales")}
@@ -60,7 +60,7 @@ export function TradesList({ view, holdings }: { view: TradesListView; holdings:
               {view.counts.espp > 0 && kindChip("espp", "ESPP")}
             </div>
             {markets.size > 1 && (
-              <div role="group" aria-label="Market" className="flex gap-1 rounded-full bg-fill p-1 xl:ml-auto">
+              <div role="group" aria-label="Market" className="flex gap-1 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-1 xl:ml-auto">
                 {(["all", "IND", "US"] as const).map((m) => (
                   <button key={m} type="button" aria-pressed={market === m} onClick={() => pick(setMarket)(m)} className={CHIP}>
                     {m === "all" ? "India and US" : m === "IND" ? "India" : "US"}
@@ -71,7 +71,7 @@ export function TradesList({ view, holdings }: { view: TradesListView; holdings:
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {view.years.length > 1 && (
-              <div role="group" aria-label="Financial year" className="flex gap-1 max-md:max-w-full max-md:overflow-x-auto md:flex-wrap rounded-full bg-fill p-1">
+              <div role="group" aria-label="Financial year" className="flex gap-1 max-md:max-w-full max-md:overflow-x-auto md:flex-wrap rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-1">
                 <button type="button" aria-pressed={year === ""} onClick={() => pick(setYear)("")} className={CHIP}>
                   All years
                 </button>

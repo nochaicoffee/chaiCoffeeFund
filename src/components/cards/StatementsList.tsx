@@ -210,7 +210,7 @@ export function StatementsList({
     <section aria-label="Statements" className="flex flex-col gap-4 rounded-[24px] surface-edge bg-surface p-4 shadow-soft md:p-[22px]">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
         <div className="flex min-w-0 flex-wrap items-center gap-x-3.5 gap-y-3">
-          <nav aria-label="Status" className="flex rounded-full bg-fill p-[3px]">
+          <nav aria-label="Status" className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-[3px]">
             {STATUS_OPTIONS.map(([value, label]) => (
               <Link
                 key={value}

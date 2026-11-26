@@ -121,7 +121,7 @@ function Sky({ sky, pick, onPick }: { sky: SkyView; pick: string; onPick: (id: s
   const dimOthers = sky.planets.some((planet) => planet.topId === pick);
   const label = (months: number) => (months < 12 ? `${months} mo` : months === MAX_RING_MONTHS ? "3 yr+" : `${months / 12} yr`);
   return (
-    <div className="relative aspect-square w-full overflow-visible rounded-[30px] text-white" style={{ background: "radial-gradient(circle at 50% 50%, oklch(0.27 0.07 262), oklch(0.12 0.035 268) 75%)", boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.14)" }}>
+    <div className="relative aspect-square w-full card-edge overflow-visible rounded-[30px] text-white" style={{ background: "radial-gradient(circle at 50% 50%, oklch(0.27 0.07 262), oklch(0.12 0.035 268) 75%)", boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.14)" }}>
       <div aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-[inherit]">
         {STARS.map((star, i) => (
           <i key={i} className="absolute rounded-full bg-white" style={{ left: `${star.left}%`, top: `${star.top}%`, width: star.big ? 2 : 1, height: star.big ? 2 : 1, opacity: star.opacity }} />

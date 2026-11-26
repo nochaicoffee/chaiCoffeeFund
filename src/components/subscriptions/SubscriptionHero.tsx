@@ -137,7 +137,7 @@ function Cover({
       style={{ ...style, ...colors }}
     >
       <span
-        className={`relative isolate flex size-full flex-col justify-between rounded-[inherit] px-3 py-2.5 text-on-card transition-[box-shadow,transform] duration-[500ms,520ms] ease-[ease,cubic-bezier(0.22,0.8,0.2,1)] motion-reduce:transition-none md:px-4 md:py-3.5 ${peeking ? PEEK.face : ""}`}
+        className={`relative isolate flex size-full flex-col justify-between rounded-[inherit] card-edge px-3 py-2.5 text-on-card transition-[box-shadow,transform] duration-[500ms,520ms] ease-[ease,cubic-bezier(0.22,0.8,0.2,1)] motion-reduce:transition-none md:px-4 md:py-3.5 ${peeking ? PEEK.face : ""}`}
         style={{
           background: coverBackground(pick),
           boxShadow: picked ? "0 0 0 3px var(--surface), 0 0 0 5.5px var(--pick-soft), 0 24px 40px oklch(0 0 0 / 0.35)" : peeking ? "0 26px 44px oklch(0 0 0 / 0.42)" : "0 18px 30px oklch(0 0 0 / 0.28)",
@@ -490,7 +490,7 @@ export function SubscriptionHero({ picks, index, onIndex }: { picks: PickView[];
   return (
     <section
       aria-label="Subscriptions"
-      className="relative isolate flex flex-col gap-1.5 overflow-hidden rounded-card bg-ink px-4 pt-1 pb-[18px] text-fg shadow-[var(--card-shadow)] md:px-[22px] md:pt-2 md:pb-[26px]"
+      className="relative isolate flex flex-col gap-1.5 overflow-hidden card-edge rounded-card bg-ink px-4 pt-1 pb-[18px] text-fg shadow-[var(--card-shadow)] md:px-[22px] md:pt-2 md:pb-[26px]"
       style={{ ...STAGE_TOKENS, "--pick-soft": `color-mix(in oklch, var(--card-${pick.color}) 46%, white)`, "--pick-ink": `var(--on-stage-pick-ink, var(--card-${pick.color}-to))` } as CSSProperties}
     >
       {/* One layer per colour: the pick's fades in over 650ms as the last one fades out. */}

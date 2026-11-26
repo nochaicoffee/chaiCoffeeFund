@@ -85,7 +85,7 @@ export interface CardTileProps {
 export function CardTile(props: CardTileProps) {
   const isAll = props.variant === "all";
   const className = `relative isolate flex h-[196px] w-[300px] max-w-full shrink-0 snap-start flex-col justify-between rounded-card p-[18px] text-on-card ${
-    props.selected ? "border-[1.5px] border-accent shadow-tile-selected" : "border border-on-card-line shadow-tile"
+    props.selected ? "border-[length:var(--card-edge-width,1.5px)] border-[color:var(--card-edge-color,var(--accent))] shadow-tile-selected" : "border-[length:var(--card-edge-width,1px)] border-[color:var(--card-edge-color,var(--on-card-line))] shadow-tile"
   } ${props.dimmed && !props.selected ? "opacity-55 saturate-50 hover:opacity-80" : ""}`;
   const style = { background: isAll ? ALL_CARDS_BACKGROUND : cardGradient(props.color) };
   const face = <TileFace {...props} isAll={isAll} />;

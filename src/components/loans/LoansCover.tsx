@@ -33,8 +33,10 @@ const stage = (c: ColorKey) =>
   `var(--dark-stage, radial-gradient(1200px 800px at 6% -8%, color-mix(in oklch, var(--card-${c}) 78%, transparent), transparent 64%), radial-gradient(1000px 700px at 104% 104%, color-mix(in oklch, var(--card-${c}) 46%, transparent), transparent 70%), linear-gradient(180deg, color-mix(in oklch, var(--card-${c}-from) 72%, black), color-mix(in oklch, var(--card-${c}-to) 90%, black)))`;
 
 export function LoansCover({ cover, pickId, onPick }: { cover: CoverView; pickId: string; onPick: (id: string) => void }) {
+  // The picked loan's colour, for the hard shadow Neubrutalism casts under the cover (ADR 0018 step 5e).
+  const pickColor = cover.tiles.find((t) => t.id === pickId)?.colorKey;
   return (
-    <section aria-label="Your loans" className="relative isolate flex min-w-0 flex-col gap-6 overflow-hidden rounded-[26px] border border-[oklch(1_0_0/0.12)] p-5 text-fg md:p-7" style={STAGE}>
+    <section aria-label="Your loans" className="relative isolate flex min-w-0 flex-col gap-6 overflow-hidden rounded-[26px] border-[length:var(--card-edge-width,1px)] border-[color:var(--card-edge-color,oklch(1_0_0/0.12))] [box-shadow:var(--card-hard-offset)_var(--stage-pick)] p-5 text-fg md:p-7" style={pickColor ? ({ ...STAGE, "--stage-pick": `var(--card-${pickColor})` } as CSSProperties) : STAGE}>
       {cover.tiles.map((t) => (
         <div key={t.id} aria-hidden="true" className="absolute inset-0 -z-10 motion-safe:transition-opacity motion-safe:duration-700" style={{ background: stage(t.colorKey), opacity: t.id === pickId ? 1 : 0 }} />
       ))}

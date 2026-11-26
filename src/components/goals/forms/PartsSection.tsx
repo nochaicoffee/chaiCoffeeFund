@@ -49,7 +49,7 @@ export function PartsSection({ rows, onChange, today, showGiven, error }: { rows
           <div className="col-span-3 grid grid-cols-2 items-center gap-2 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_auto]">
             <MoneyInput aria-label={`${row.name.trim() || `Part ${index + 1}`} cost`} placeholder="Cost" value={row.amount} onChange={(e) => set(row.key, { amount: e.target.value })} invalid={false} />
             <DateInput label={`${row.name.trim() || `Part ${index + 1}`} date`} name={`partDate${index}`} value={row.targetDate} onChange={(value) => set(row.key, { targetDate: value })} today={today} invalid={false} placeholder="Goal's date" />
-            <div role="group" aria-label={`${row.name.trim() || `Part ${index + 1}`}: Need or Want`} className="flex rounded-full bg-fill p-[3px] max-md:col-span-2">
+            <div role="group" aria-label={`${row.name.trim() || `Part ${index + 1}`}: Need or Want`} className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-[3px] max-md:col-span-2">
               {NEED_WANT.map((option) => (
                 <button key={option} type="button" aria-pressed={row.necessity === option} onClick={() => set(row.key, { necessity: option })} className={`min-h-7 flex-1 rounded-full px-3 text-xs font-extrabold focus-visible:outline-2 focus-visible:outline-accent ${row.necessity === option ? "bg-surface text-fg shadow-sm" : "text-muted"}`}>
                   {option}

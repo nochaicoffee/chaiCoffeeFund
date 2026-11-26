@@ -41,7 +41,7 @@ export function HoldingsTable({ rows: now, asOf }: { rows: HoldingTableRow[]; as
           {then && <button type="button" onClick={() => setGoBack("now")} className="min-h-8 rounded-full bg-ink px-3.5 text-[12.5px] font-extrabold whitespace-nowrap text-on-ink focus-visible:outline-2 focus-visible:outline-offset-2">
             Back to today
           </button>}
-        <div role="group" aria-label="Which holdings" className="flex rounded-full bg-fill p-1">
+        <div role="group" aria-label="Which holdings" className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-1">
           {chips.map((c) => (
             <button key={c.key} type="button" aria-pressed={active === c.key} onClick={() => setFilter(c.key)} className={`min-h-8 rounded-full px-3.5 text-[12.5px] font-extrabold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 ${active === c.key ? "bg-ink text-on-ink" : "text-muted hover:text-fg"}`}>
               {c.label}

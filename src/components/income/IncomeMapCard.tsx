@@ -56,7 +56,7 @@ export function IncomeMapCard({ map, picked, onPick }: { map: IncomeMap; picked:
                 aria-label={`${b.name}, ${b.amount}, ${Math.round(b.share * 100)}%${b.chip ? `, ${b.chip}` : ""}`}
                 aria-pressed={picked === b.id}
                 onClick={() => onPick(b.id)}
-                className={`absolute isolate flex cursor-pointer flex-col justify-between overflow-hidden rounded-[16px] p-3 text-left text-on-card focus-visible:outline-2 focus-visible:outline-accent ${measured ? GLIDE : ""} ${off ? "pointer-events-none opacity-0" : ""}`}
+                className={`absolute isolate flex cursor- card-edgepointer flex-col justify-between overflow-hidden rounded-[16px] p-3 text-left text-on-card focus-visible:outline-2 focus-visible:outline-accent ${measured ? GLIDE : ""} ${off ? "pointer-events-none opacity-0" : ""}`}
                 style={{ ...at(rect), background: colorGradient(b.colorKey), boxShadow: picked === b.id ? "0 0 0 2.5px var(--surface), 0 0 0 5px var(--accent)" : "none" }}
               >
                 <RingTexture width={200} height={140} dx={10} dy={14} first={26} step={18} stroke="var(--rings-light)" opacity={0.09} />

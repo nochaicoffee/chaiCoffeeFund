@@ -32,13 +32,13 @@ function SplitRow({ segments, label }: { segments: SplitSegment[]; label: string
  */
 export function SplitHero({ view }: { view: HeroView }) {
   return (
-    <section aria-label="Spent this month" className="flex flex-col gap-5 rounded-[26px] p-5 text-on-card md:p-8" style={{ background: colorGradient("indigo", 140) }}>
+    <section aria-label="Spent this month" className="flex flex-col gap-5 rounded-[26px] p-5 text-on-card md:p-8 card-edge card-lift" style={{ background: colorGradient("indigo", 140) }}>
       <div className="text-xs font-extrabold tracking-[0.06em] uppercase label-face opacity-80">{view.eyebrow}</div>
       <div className="text-[clamp(40px,8vw,92px)] leading-none font-extrabold tracking-tight whitespace-nowrap tabular-nums">{formatInr(Math.round(view.value))}</div>
       {view.pills.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {view.pills.map((p) => (
-            <span key={p.key} className="inline-flex items-center gap-1.5 rounded-full bg-white/12 px-3 py-1.5 text-xs font-semibold">
+            <span key={p.key} className="inline-flex items-center gap-1.5 rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-white/12 px-3 py-1.5 text-xs font-semibold">
               <b className={`font-extrabold ${p.tone === "good" ? "text-[var(--on-card-up,oklch(0.86_0.15_150))]" : p.tone === "bad" ? "text-[var(--on-card-down,oklch(0.85_0.12_40))]" : ""}`}>{p.strong}</b>
               {p.text}
             </span>

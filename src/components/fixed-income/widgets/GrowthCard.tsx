@@ -16,7 +16,7 @@ export function GrowthCard({ view }: { view: GrowthView }) {
       title="Growth path"
       note="where EPF gets to if nothing changes"
       right={
-        <div role="group" aria-label="How many years" className="flex rounded-full bg-fill p-[3px]">
+        <div role="group" aria-label="How many years" className="flex rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] p-[3px]">
           {view.steps.map((s) => (
             <button key={s.years} type="button" aria-pressed={s.years === step.years} onClick={() => setYears(s.years)} className={`min-h-8 rounded-full px-3 text-xs font-bold focus-visible:outline-2 focus-visible:outline-accent ${s.years === step.years ? "bg-surface text-accent-text shadow-soft" : "text-muted"}`}>
               {s.years} years

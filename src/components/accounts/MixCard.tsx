@@ -59,7 +59,7 @@ function Block({ box, block, picked, grouped, glide, onPick }: { box: Box; block
         aria-pressed={picked}
         aria-label={`${block.alias}, ${block.balanceText}, ${percent(block.share)} of what you hold`}
         onClick={onPick}
-        className={`relative isolate flex size-full flex-col justify-between overflow-hidden border border-on-card-line border-t-on-card-line-top text-left text-on-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+        className={`relative isolate flex size-full flex-col justify-between overflow-hidden border-[length:var(--card-edge-width,1px)] border-[color:var(--card-edge-color,var(--on-card-line))] border-t-[color:var(--card-edge-color,var(--on-card-line-top))] text-left text-on-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
           grouped ? "rounded-lg p-2" : big ? "rounded-[18px] p-4" : tiny ? "items-center justify-center rounded-xl p-1.5" : "rounded-xl p-2.5"
         }`}
         style={{ background: colorGradient(block.color), boxShadow: picked && !grouped ? PICKED_RING : "none" }}
