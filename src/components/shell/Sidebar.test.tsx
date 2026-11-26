@@ -1,11 +1,12 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
+vi.mock("next/navigation", () => ({ usePathname: () => "/", useRouter: () => ({ refresh: () => {} }) }));
 
 const { Sidebar } = await import("./Sidebar");
 
-const render = (showSignOut: boolean) => renderToStaticMarkup(<Sidebar initiallyExpanded appName="App" ownerName="Owner" showSignOut={showSignOut} />);
+const render = (showSignOut: boolean, look: "Classic" | "Neubrutalism" = "Classic") =>
+  renderToStaticMarkup(<Sidebar initiallyExpanded appName="App" ownerName="Owner" showSignOut={showSignOut} look={look} />);
 
 describe("Sidebar sign out", () => {
   it("posts to /logout from a button, so a link on another site can't sign him out", () => {
@@ -47,5 +48,14 @@ describe("Sidebar on a phone", () => {
 
   it("keeps the More sheet out of the page until it is opened", () => {
     expect(html).not.toContain('id="phone-menu"');
+  });
+});
+
+describe("Sidebar look switch (ADR 0018)", () => {
+  it("offers Classic and Neubrutalism at the foot, with the saved look picked", () => {
+    const html = render(true, "Neubrutalism");
+    expect(html).toContain('role="group" aria-label="Look"');
+    expect(html).toMatch(/aria-pressed="true"[^>]*>Neubrutalism</);
+    expect(html).toMatch(/aria-pressed="false"[^>]*>Classic</);
   });
 });

@@ -6,7 +6,9 @@ import { useEffect, useRef, useState } from "react";
 import { icons } from "./icons";
 import { trapTarget } from "./focusTrap";
 import { LogoLockup, LogoMark } from "./Logo";
+import { LookSwitch } from "./LookSwitch";
 import { isActiveSection, SECTIONS, SIDEBAR_COOKIE, splitForPhone, type Section } from "./sections";
+import type { Look } from "@/lib/sheets/types";
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 /** Matches Tailwind's `md` breakpoint, where the rail replaces the phone menu. */
@@ -83,12 +85,15 @@ export function Sidebar({
   appName,
   ownerName,
   showSignOut,
+  look,
 }: {
   initiallyExpanded: boolean;
   appName: string;
   ownerName: string;
   /** Whether the app is behind a login. Without one (local development) there is nothing to sign out of. */
   showSignOut: boolean;
+  /** The look the page is drawn in (ADR 0018), for the switch. */
+  look: Look;
 }) {
   const pathname = usePathname();
   const [expanded, setExpanded] = useState(initiallyExpanded);
@@ -172,7 +177,10 @@ export function Sidebar({
           />
         ))}
 
-        <div className={`mt-auto flex gap-3 ${expanded ? "items-center justify-between px-1" : "flex-col items-center"}`}>
+        <div className="mt-auto flex flex-col gap-3">
+        {expanded && <LookSwitch look={look} variant="rail-expanded" />}
+        <div className={`flex gap-3 ${expanded ? "items-center justify-between px-1" : "flex-col items-center"}`}>
+          {!expanded && <LookSwitch look={look} variant="rail" />}
           <button
             type="button"
             onClick={toggleExpanded}
@@ -202,6 +210,7 @@ export function Sidebar({
           >
             {initial}
           </div>
+        </div>
         </div>
       </nav>
 
@@ -244,6 +253,7 @@ export function Sidebar({
                 );
               })}
             </nav>
+            <LookSwitch look={look} variant="sheet" />
             {showSignOut && (
               <form method="post" action="/logout" className="mt-3">
                 <button

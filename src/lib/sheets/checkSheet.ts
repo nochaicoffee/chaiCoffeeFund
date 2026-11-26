@@ -31,6 +31,7 @@ import { bigSpendsRepository } from "./bigSpends";
 import { dailySpendsRepository } from "./dailySpends";
 import { dailyCategoriesRepository } from "./dailyCategories";
 import { dailyBudgetsRepository } from "./dailyBudgets";
+import { settingsRepository } from "./settings";
 import { dailyCategoryLimitsRepository } from "./dailyCategoryLimits";
 import { instrumentsRepository } from "./instruments";
 import { investmentTargetsRepository } from "./investmentTargets";
@@ -71,6 +72,7 @@ export const checkedRepositories = [
   dailyCategoriesRepository,
   dailyBudgetsRepository,
   dailyCategoryLimitsRepository,
+  settingsRepository,
   instrumentsRepository,
   investmentTargetsRepository,
   priceSnapshotsRepository,
