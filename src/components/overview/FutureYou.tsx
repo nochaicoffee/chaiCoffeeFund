@@ -82,7 +82,7 @@ export function FutureYou({ view }: { view: FutureView }) {
         <div className="mt-2 text-xs font-extrabold tracking-[0.05em] uppercase opacity-75">In</div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="How far ahead">
           {HORIZONS.map((h) => (
-            <button key={h} type="button" aria-pressed={years === h} onClick={() => setYears(h)} className={`min-h-9 rounded-full px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${years === h ? "bg-on-card text-ink" : "bg-on-card-fill hover:bg-white/25"}`}>
+            <button key={h} type="button" aria-pressed={years === h} onClick={() => setYears(h)} className={`min-h-9 rounded-full px-4 text-[13px] font-extrabold focus-visible:outline-2 focus-visible:outline-on-card ${years === h ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill hover:bg-[var(--on-card-hover,color-mix(in_oklab,#fff_25%,transparent))]"}`}>
               {h} <small className="font-bold opacity-70">{h === 1 ? "year" : "years"}</small>
             </button>
           ))}
@@ -95,7 +95,7 @@ export function FutureYou({ view }: { view: FutureView }) {
           </label>
           <small className="text-[13px] font-bold opacity-75">a year</small>
         </div>
-        <input type="range" min={2} max={14} step={1} value={Math.min(14, Math.max(2, Math.round(a.returnPct)))} onChange={(e) => setRate(Number(e.target.value))} aria-label="Yearly return, by slider" className="w-full accent-white" />
+        <input type="range" min={2} max={14} step={1} value={Math.min(14, Math.max(2, Math.round(a.returnPct)))} onChange={(e) => setRate(Number(e.target.value))} aria-label="Yearly return, by slider" className="w-full accent-[var(--on-card-mark)]" />
         <div className="flex justify-between text-[10.5px] font-bold opacity-70" aria-hidden="true">{Array.from({ length: 13 }, (_, i) => i + 2).map((n) => <span key={n}>{n}</span>)}</div>
         <div className="mt-auto rounded-[18px] bg-on-card-fill p-4 text-xs font-semibold">
           <b className="block text-[13px] font-extrabold">What it assumes (change any)</b>
@@ -133,17 +133,17 @@ export function FutureYou({ view }: { view: FutureView }) {
         <div className="rounded-card bg-on-card-fill p-3">
           <svg viewBox={`0 0 ${W} ${H}`} className="block w-full cursor-crosshair" style={{ touchAction: "pan-y" }} role="img" aria-label={`Net worth over twenty years at ${a.returnPct}% a year`} onPointerMove={(e) => setScrub(monthAt(e))} onPointerDown={(e) => setScrub(monthAt(e))} onPointerLeave={() => setScrub(null)}>
             {Array.from({ length: Math.round(ymax / step) + 1 }, (_, i) => i * step).map((v) => (
-              <g key={v}><line x1={PAD.l} x2={W - PAD.r} y1={y(v)} y2={y(v)} stroke="#fff" strokeOpacity={v ? 0.13 : 0.3} strokeDasharray={v ? "3 5" : undefined} /><text x={PAD.l - 8} y={y(v) + 4} textAnchor="end" fontSize={11} fill="#fff" fillOpacity={0.65}>{cr(v)}</text></g>
+              <g key={v}><line x1={PAD.l} x2={W - PAD.r} y1={y(v)} y2={y(v)} stroke="var(--on-card-mark)" strokeOpacity={v ? 0.13 : 0.3} strokeDasharray={v ? "3 5" : undefined} /><text x={PAD.l - 8} y={y(v) + 4} textAnchor="end" fontSize={11} fill="var(--on-card-mark)" fillOpacity={0.65}>{cr(v)}</text></g>
             ))}
-            {[0, 60, 120, 180, 240].map((m) => <text key={m} x={x(m)} y={base + 18} textAnchor="middle" fontSize={11} fill="#fff" fillOpacity={0.65}>{m === 0 ? "Today" : monthLabel(view.startMonth, m).slice(-4)}</text>)}
+            {[0, 60, 120, 180, 240].map((m) => <text key={m} x={x(m)} y={base + 18} textAnchor="middle" fontSize={11} fill="var(--on-card-mark)" fillOpacity={0.65}>{m === 0 ? "Today" : monthLabel(view.startMonth, m).slice(-4)}</text>)}
             <path d={owedArea} fill="oklch(0.7 0.18 25)" fillOpacity={0.38} />
             <path d={`${line}L${x(240)},${base}L${x(0)},${base}Z`} fill="#fff" fillOpacity={0.13} />
-            <path d={line} fill="none" stroke="#fff" strokeWidth={3.2} strokeLinejoin="round" />
+            <path d={line} fill="none" stroke="var(--on-card-mark)" strokeWidth={3.2} strokeLinejoin="round" />
             {HORIZONS.map((h) => { const pt = points[h * 12]; const sel = h === years; return (
               <g key={h} className="cursor-pointer" onClick={() => setYears(h)}>
-                <line x1={x(pt.month)} x2={x(pt.month)} y1={y(pt.net)} y2={base} stroke="#fff" strokeOpacity={sel ? 0.9 : 0.35} strokeDasharray="3 4" />
+                <line x1={x(pt.month)} x2={x(pt.month)} y1={y(pt.net)} y2={base} stroke="var(--on-card-mark)" strokeOpacity={sel ? 0.9 : 0.35} strokeDasharray="3 4" />
                 <circle cx={x(pt.month)} cy={y(pt.net)} r={sel ? 8 : 5} fill="#fff" stroke="var(--card-teal)" strokeWidth={sel ? 4 : 3} />
-                {(sel || h === 20) && <text x={x(pt.month) - (h === 20 ? 12 : 0)} y={y(pt.net) - 14} textAnchor={h === 20 ? "end" : "middle"} fontSize={13} fontWeight={800} fill="#fff">{formatInrCompact(pt.net)}</text>}
+                {(sel || h === 20) && <text x={x(pt.month) - (h === 20 ? 12 : 0)} y={y(pt.net) - 14} textAnchor={h === 20 ? "end" : "middle"} fontSize={13} fontWeight={800} fill="var(--on-card-mark)">{formatInrCompact(pt.net)}</text>}
               </g>
             ); })}
             {guide && scrub !== null && (() => {
@@ -152,7 +152,7 @@ export function FutureYou({ view }: { view: FutureView }) {
               const bx = left ? gx - 12 - 150 : gx + 12;
               return (
                 <g pointerEvents="none" className="motion-safe:animate-tip-in">
-                  <line x1={gx} x2={gx} y1={PAD.t} y2={base} stroke="#fff" strokeOpacity={0.7} />
+                  <line x1={gx} x2={gx} y1={PAD.t} y2={base} stroke="var(--on-card-mark)" strokeOpacity={0.7} />
                   <circle cx={gx} cy={y(guide.net)} r={6} fill="#fff" stroke="var(--card-teal)" strokeWidth={3.5} />
                   <rect x={bx} y={PAD.t - 4} width={150} height={58} rx={11} fill="#fff" />
                   <text x={bx + 12} y={PAD.t + 14} fontSize={11} fontWeight={700} fill="var(--muted)">{monthLabel(view.startMonth, scrub)}</text>
@@ -164,7 +164,7 @@ export function FutureYou({ view }: { view: FutureView }) {
           </svg>
           <div className="mt-1 flex flex-wrap gap-x-5 gap-y-1 px-1 text-[11.5px] font-bold opacity-85">
             <span className="inline-flex items-center gap-1.5"><i className="h-2 w-3.5 rounded-[3px] bg-[oklch(0.7_0.18_25_/_0.7)]" />What you owe, shrinking as the loans clear</span>
-            <span className="inline-flex items-center gap-1.5"><i className="h-2 w-3.5 rounded-[3px] bg-white" />Your net worth</span>
+            <span className="inline-flex items-center gap-1.5"><i className="h-2 w-3.5 rounded-[3px] bg-on-card-mark" />Your net worth</span>
           </div>
         </div>
         {marks.length > 0 && (

@@ -77,7 +77,7 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
                 </linearGradient>
               </defs>
               <path d={`${line}L${x(n - 1)},${H - 34}L${x(0)},${H - 34}Z`} fill="url(#nw-fill)" />
-              <path d={line} fill="none" stroke="#fff" strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round" />
+              <path d={line} fill="none" stroke="var(--on-card-mark)" strokeWidth={3.4} strokeLinecap="round" strokeLinejoin="round" />
             </svg>
             {view.months.map((m, i) => (
               <button
@@ -89,7 +89,7 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
                 className="group absolute top-0 bottom-0 cursor-pointer focus-visible:outline-2 focus-visible:outline-on-card"
                 style={{ left: `${((x(i) - (W - 2 * PAD) / (2 * Math.max(1, n - 1))) / W) * 100}%`, width: `${((W - 2 * PAD) / Math.max(1, n - 1) / W) * 100}%` }}
               >
-                <span aria-hidden="true" className={`absolute top-0 bottom-6 left-1/2 w-px -translate-x-1/2 bg-white/35 transition-opacity ${i === pick ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} />
+                <span aria-hidden="true" className={`absolute top-0 bottom-6 left-1/2 w-px -translate-x-1/2 bg-on-card-mark/35 transition-opacity ${i === pick ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} />
                 <i className={`absolute left-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white transition-all duration-200 ${i === pick ? "size-[18px] shadow-[0_0_0_5px_rgba(255,255,255,0.3)]" : "size-[9px] group-hover:size-[13px]"}`} style={{ top: `${(y(m.net) / H) * 100}%` }} />
                 <span className={`absolute left-1/2 -translate-x-1/2 -translate-y-full rounded-[9px] bg-white px-2 py-1 text-[11.5px] font-extrabold whitespace-nowrap text-ink transition-opacity ${i === pick ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`} style={{ top: `calc(${(y(m.net) / H) * 100}% - 14px)` }}>
                   {formatInrCompact(m.net)}
@@ -133,7 +133,7 @@ export function NetWorthBlock({ view }: { view: NetWorthView }) {
 function Move({ move, label }: { move: { amount: number; text: string }; label: string }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full bg-on-card-fill px-3 py-1.5 text-[13px] font-extrabold">
-      <span className={move.amount >= 0 ? "text-[oklch(0.9_0.15_150)]" : "text-[oklch(0.86_0.12_25)]"}>{move.amount >= 0 ? "▲" : "▼"} {move.text}</span>
+      <span className={move.amount >= 0 ? "text-[var(--on-card-up,oklch(0.9_0.15_150))]" : "text-[var(--on-card-down,oklch(0.86_0.12_25))]"}>{move.amount >= 0 ? "▲" : "▼"} {move.text}</span>
       <small className="text-xs font-bold opacity-75">{label}</small>
     </span>
   );
@@ -179,20 +179,20 @@ function Ring({ month, hot, onOver, onKeep }: { month: MonthView; hot: TypeChip 
   return (
     <div className="flex shrink-0 flex-col items-center justify-center gap-2.5 self-center">
       <svg viewBox="0 0 220 220" className="size-[190px] md:size-[240px]" role="img" aria-label={`You keep ${keep}% of what you own`}>
-        <circle cx={110} cy={110} r={92} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={20} />
-        <circle cx={110} cy={110} r={64} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth={20} />
+        <circle cx={110} cy={110} r={92} fill="none" stroke="var(--on-card-track, rgba(255,255,255,0.12))" strokeWidth={20} />
+        <circle cx={110} cy={110} r={64} fill="none" stroke="var(--on-card-track, rgba(255,255,255,0.12))" strokeWidth={20} />
         {month.owned > 0 && ring(own, 92)}
         {month.owed > 0 && ring(owe, 64)}
         {hot ? (
           <g key={hot.key} className="motion-safe:animate-tip-in" pointerEvents="none">
-            <text x={110} y={104} textAnchor="middle" fill="#fff" fontSize={32} fontWeight={800}>{Math.round(hot.share * 100)}%</text>
-            <text x={110} y={123} textAnchor="middle" fill="#fff" fontSize={12.5} fontWeight={700}>{clip(hot.name)}</text>
-            <text x={110} y={140} textAnchor="middle" fill="#fff" fillOpacity={0.75} fontSize={12} fontWeight={600}>{hot.amountText}</text>
+            <text x={110} y={104} textAnchor="middle" fill="var(--on-card-mark)" fontSize={32} fontWeight={800}>{Math.round(hot.share * 100)}%</text>
+            <text x={110} y={123} textAnchor="middle" fill="var(--on-card-mark)" fontSize={12.5} fontWeight={700}>{clip(hot.name)}</text>
+            <text x={110} y={140} textAnchor="middle" fill="var(--on-card-mark)" fillOpacity={0.75} fontSize={12} fontWeight={600}>{hot.amountText}</text>
           </g>
         ) : (
           <g pointerEvents="none">
-            <text x={110} y={106} textAnchor="middle" fill="#fff" fontSize={34} fontWeight={800}>{keep}%</text>
-            <text x={110} y={128} textAnchor="middle" fill="#fff" fillOpacity={0.75} fontSize={13} fontWeight={600}>you keep</text>
+            <text x={110} y={106} textAnchor="middle" fill="var(--on-card-mark)" fontSize={34} fontWeight={800}>{keep}%</text>
+            <text x={110} y={128} textAnchor="middle" fill="var(--on-card-mark)" fillOpacity={0.75} fontSize={13} fontWeight={600}>you keep</text>
           </g>
         )}
       </svg>

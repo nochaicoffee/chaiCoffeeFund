@@ -30,7 +30,7 @@ const STAGE: CSSProperties = {
 } as CSSProperties;
 
 const stage = (c: ColorKey) =>
-  `radial-gradient(1200px 800px at 6% -8%, color-mix(in oklch, var(--card-${c}) 78%, transparent), transparent 64%), radial-gradient(1000px 700px at 104% 104%, color-mix(in oklch, var(--card-${c}) 46%, transparent), transparent 70%), linear-gradient(180deg, color-mix(in oklch, var(--card-${c}-from) 72%, black), color-mix(in oklch, var(--card-${c}-to) 90%, black))`;
+  `var(--dark-stage, radial-gradient(1200px 800px at 6% -8%, color-mix(in oklch, var(--card-${c}) 78%, transparent), transparent 64%), radial-gradient(1000px 700px at 104% 104%, color-mix(in oklch, var(--card-${c}) 46%, transparent), transparent 70%), linear-gradient(180deg, color-mix(in oklch, var(--card-${c}-from) 72%, black), color-mix(in oklch, var(--card-${c}-to) 90%, black)))`;
 
 export function LoansCover({ cover, pickId, onPick }: { cover: CoverView; pickId: string; onPick: (id: string) => void }) {
   return (

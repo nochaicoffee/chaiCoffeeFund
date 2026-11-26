@@ -83,12 +83,12 @@ export function ColorCard({ colorKey, children, className = "" }: { colorKey: Co
   );
 }
 
-/** A progress bar drawn on a coloured card: white on a translucent track. */
+/** A progress bar drawn on a coloured card: the card's mark colour (white in Classic, ink in Neubrutalism) on a translucent track. */
 export function CardBar({ progress, expected, height = 10 }: { progress: number; expected: number | null; height?: number }) {
   return (
     <div role="img" aria-label={`${Math.round(progress * 100)}% set aside`} className="relative w-full rounded-full bg-white/25" style={{ height }}>
-      <span className="absolute inset-y-0 left-0 rounded-full bg-white/95" style={{ width: `${progress * 100}%` }} />
-      {expected !== null && <span className="absolute -top-[3px] -bottom-[3px] w-0.5 rounded bg-[oklch(0.85_0.17_95)]" style={{ left: `${expected * 100}%` }} />}
+      <span className="absolute inset-y-0 left-0 rounded-full bg-on-card-mark/95" style={{ width: `${progress * 100}%` }} />
+      {expected !== null && <span className="absolute -top-[3px] -bottom-[3px] w-0.5 rounded bg-[var(--on-card-flag,oklch(0.85_0.17_95))]" style={{ left: `${expected * 100}%` }} />}
     </div>
   );
 }

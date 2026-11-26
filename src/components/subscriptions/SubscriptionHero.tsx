@@ -28,13 +28,13 @@ import { CheckIcon, ChevronIcon, EditIcon, MoreIcon, PlayIcon, PlusIcon, RenewIc
 
 /** The coloured card's own tokens, as the design's dark stage sets them, so text and fills read on any pick's colour. */
 const STAGE_TOKENS = {
-  "--fg": "oklch(0.97 0.004 260)",
-  "--muted": "oklch(1 0 0 / 0.62)",
-  "--divider": "oklch(1 0 0 / 0.14)",
-  "--fill": "oklch(1 0 0 / 0.12)",
-  "--fill-strong": "oklch(1 0 0 / 0.22)",
-  "--surface": "oklch(0.22 0.012 260)",
-  "--surface-line": "oklch(1 0 0 / 0.1)",
+  "--fg": "var(--on-stage-fg, oklch(0.97 0.004 260))",
+  "--muted": "var(--on-stage-muted, oklch(1 0 0 / 0.62))",
+  "--divider": "var(--on-stage-divider, oklch(1 0 0 / 0.14))",
+  "--fill": "var(--on-stage-fill, oklch(1 0 0 / 0.12))",
+  "--fill-strong": "var(--on-stage-fill-strong, oklch(1 0 0 / 0.22))",
+  "--surface": "var(--on-stage-surface, oklch(0.22 0.012 260))",
+  "--surface-line": "var(--on-stage-line, oklch(1 0 0 / 0.1))",
 } as CSSProperties;
 
 const stageLayer = (color: ColorKey) => `radial-gradient(circle at 50% -10%, oklch(1 0 0 / 0.2), transparent 55%), ${colorGradient(color, 165)}`;
@@ -120,7 +120,7 @@ function Cover({
   onClick: () => void;
 }) {
   const due = pick.dueIn;
-  const colors = { "--cover-soft": `color-mix(in oklch, var(--card-${pick.color}) 46%, white)`, "--cover-ink": `var(--card-${pick.color}-to)` } as CSSProperties;
+  const colors = { "--cover-soft": `color-mix(in oklch, var(--card-${pick.color}) 46%, white)`, "--cover-ink": `var(--on-stage-pick-ink, var(--card-${pick.color}-to))` } as CSSProperties;
   return (
     <button
       id={`cover-${pick.id}`}
@@ -174,8 +174,8 @@ const LOOK = {
   primary: "bg-[var(--pick-soft)] px-3 text-[var(--pick-ink)] transition-[background-color,color] duration-500 hover:brightness-105",
   // 4B: Mark paid turns green, the way the pick's colour is mixed with white, and springs a little larger.
   paid: "scale-[1.04] cursor-default bg-[color-mix(in_oklch,var(--accent)_46%,white)] px-3 text-[oklch(0.32_0.1_145)] motion-safe:transition-[background-color,color,scale] motion-safe:duration-300 motion-safe:ease-[cubic-bezier(0.34,1.56,0.64,1)]",
-  soft: "bg-[oklch(1_0_0/0.14)] px-3 text-fg hover:bg-[oklch(1_0_0/0.22)]",
-  icon: "w-[30px] justify-center bg-[oklch(1_0_0/0.14)] text-fg hover:bg-[oklch(1_0_0/0.22)]",
+  soft: "bg-[var(--on-stage-fill,oklch(1_0_0/0.14))] px-3 text-fg hover:bg-[var(--on-stage-fill-strong,oklch(1_0_0/0.22))]",
+  icon: "w-[30px] justify-center bg-[var(--on-stage-fill,oklch(1_0_0/0.14))] text-fg hover:bg-[var(--on-stage-fill-strong,oklch(1_0_0/0.22))]",
 };
 const BUTTON = "inline-flex min-h-[30px] items-center gap-1.5 rounded-full text-xs font-bold whitespace-nowrap focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pick-soft)] max-md:min-h-11";
 
@@ -491,7 +491,7 @@ export function SubscriptionHero({ picks, index, onIndex }: { picks: PickView[];
     <section
       aria-label="Subscriptions"
       className="relative isolate flex flex-col gap-1.5 overflow-hidden rounded-card bg-ink px-4 pt-1 pb-[18px] text-fg shadow-[var(--card-shadow)] md:px-[22px] md:pt-2 md:pb-[26px]"
-      style={{ ...STAGE_TOKENS, "--pick-soft": `color-mix(in oklch, var(--card-${pick.color}) 46%, white)`, "--pick-ink": `var(--card-${pick.color}-to)` } as CSSProperties}
+      style={{ ...STAGE_TOKENS, "--pick-soft": `color-mix(in oklch, var(--card-${pick.color}) 46%, white)`, "--pick-ink": `var(--on-stage-pick-ink, var(--card-${pick.color}-to))` } as CSSProperties}
     >
       {/* One layer per colour: the pick's fades in over 650ms as the last one fades out. */}
       {colors.map((c) => (

@@ -43,7 +43,7 @@ export function EightThings({ items }: { items: Insight[] }) {
         </div>
         <div className="flex flex-wrap gap-2" role="group" aria-label="Filter by area">
           {(["all", ...INSIGHT_TAGS] as const).filter((t) => t === "all" || count(t) > 0).map((t) => (
-            <button key={t} type="button" aria-pressed={tag === t} onClick={() => setTag(t)} className={`inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 text-[13px] font-extrabold transition-colors focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-on-card text-ink" : "bg-on-card-fill hover:bg-white/25"}`}>
+            <button key={t} type="button" aria-pressed={tag === t} onClick={() => setTag(t)} className={`inline-flex min-h-9 items-center gap-1.5 rounded-full px-4 text-[13px] font-extrabold transition-colors focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill hover:bg-[var(--on-card-hover,color-mix(in_oklab,#fff_25%,transparent))]"}`}>
               {t === "all" ? "All" : cap(t)}
               <small className="text-[11px] opacity-70">{count(t)}</small>
             </button>
@@ -59,7 +59,7 @@ export function EightThings({ items }: { items: Insight[] }) {
           <ul className="mt-auto flex flex-col gap-1.5 text-[11px] font-extrabold tracking-[0.05em] uppercase">
             {INSIGHT_TAGS.filter((t) => count(t) > 0).map((t) => (
               <li key={t}>
-                <button type="button" aria-pressed={tag === t} aria-label={`${cap(t)}: ${count(t)}`} onClick={() => setTag(tag === t ? "all" : t)} className={`flex w-full cursor-pointer items-center justify-between rounded-full px-3 py-1 text-[11px] font-extrabold tracking-[0.05em] uppercase motion-safe:transition-[background,color,translate] motion-safe:duration-200 hover:translate-x-0.5 focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-on-card text-ink" : "bg-on-card-fill hover:bg-white/25"}`}><span>{t}</span><span>{count(t)}</span></button>
+                <button type="button" aria-pressed={tag === t} aria-label={`${cap(t)}: ${count(t)}`} onClick={() => setTag(tag === t ? "all" : t)} className={`flex w-full cursor-pointer items-center justify-between rounded-full px-3 py-1 text-[11px] font-extrabold tracking-[0.05em] uppercase motion-safe:transition-[background,color,translate] motion-safe:duration-200 hover:translate-x-0.5 focus-visible:outline-2 focus-visible:outline-on-card ${tag === t ? "bg-on-card text-[var(--on-card-inverse,var(--ink))]" : "bg-on-card-fill hover:bg-[var(--on-card-hover,color-mix(in_oklab,#fff_25%,transparent))]"}`}><span>{t}</span><span>{count(t)}</span></button>
               </li>
             ))}
           </ul>
