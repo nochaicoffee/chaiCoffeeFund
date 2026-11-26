@@ -928,6 +928,21 @@ export interface DailyCategory {
  * The monthly limit on the Daily page. One row per change, not per month: a month uses the latest row at or before it,
  * so a row is added only when the limit changes (lib/aggregate/dailySpends.ts, limitFor).
  */
+/** The app's looks (ADR 0018), as the Settings tab's `look` row holds them. Classic is the default. */
+export const LOOKS = ["Classic", "Neubrutalism"] as const;
+export type Look = (typeof LOOKS)[number];
+
+/** The keys a Settings row can have. Each key has one row. */
+export const SETTING_KEYS = ["look"] as const;
+export type SettingKey = (typeof SETTING_KEYS)[number];
+
+/** One app-wide setting (ADR 0018): a key and its value, one row per key, so every device reads the same. */
+export interface Setting {
+  id: string;
+  key: SettingKey;
+  value: string;
+}
+
 export interface DailyBudget {
   id: string;
   /** "2026-11": the first month the limit applies to. */

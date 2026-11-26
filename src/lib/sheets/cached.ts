@@ -34,6 +34,8 @@ import { bigSpendsRepository } from "./bigSpends";
 import { dailySpendsRepository } from "./dailySpends";
 import { dailyCategoriesRepository } from "./dailyCategories";
 import { dailyBudgetsRepository } from "./dailyBudgets";
+import { isMissingTabError } from "./missingTab";
+import { settingsRepository } from "./settings";
 import { dailyCategoryLimitsRepository } from "./dailyCategoryLimits";
 
 /**
@@ -87,6 +89,8 @@ export const CACHE_TAGS = {
   dailyCategories: "dailyCategories",
   dailyBudgets: "dailyBudgets",
   dailyCategoryLimits: "dailyCategoryLimits",
+  /** App-wide settings, read by the root layout (ADR 0018). */
+  settings: "settings",
   /** Today's USD to INR, for dollar accounts (lib/prices/usdInr.ts). */
   usdInr: "usdInr",
 } as const;
@@ -248,3 +252,23 @@ export const getCachedDailySpends = cachedList(getCachedDailySpendsTab);
 export const getCachedDailyCategoriesTab = cachedTab(dailyCategoriesRepository, CACHE_TAGS.dailyCategories);
 export const getCachedDailyBudgetsTab = cachedTab(dailyBudgetsRepository, CACHE_TAGS.dailyBudgets);
 export const getCachedDailyCategoryLimitsTab = cachedTab(dailyCategoryLimitsRepository, CACHE_TAGS.dailyCategoryLimits);
+
+/**
+ * The Settings tab (ADR 0018), read by the root layout on every signed-in page. A Sheet set up before the tab existed
+ * has none: that reads as no settings and is cached like any answer, so a page never waits on a failing read; any other
+ * failure still throws, and the layout falls back to the cookie.
+ */
+const settingsOrNone: Pick<typeof settingsRepository, "sheetName" | "readAll"> = {
+  sheetName: settingsRepository.sheetName,
+  readAll: async () => {
+    try {
+      return await settingsRepository.readAll();
+    } catch (error) {
+      if (isMissingTabError(error, settingsRepository.sheetName)) return { records: [], invalid: [] };
+      throw error;
+    }
+  },
+};
+export const getCachedSettingsTab = cachedTab(settingsOrNone, CACHE_TAGS.settings);
+export const getCachedSettings = cachedList(getCachedSettingsTab);
+export const getCachedSettingById = cachedGetById(getCachedSettings);
