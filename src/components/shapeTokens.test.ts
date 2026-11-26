@@ -71,4 +71,16 @@ describe("shape stays on tokens", () => {
     const offenders = files.filter(({ text }) => literalShadows.some((shadow) => text.includes(shadow)));
     expect(offenders.map((f) => f.path)).toEqual([]);
   });
+
+  it("keeps the page frame and the sidebar on the frame tokens (step 5a)", () => {
+    const text = (path: string) => files.find((f) => f.path === path)?.text ?? "";
+    const layout = text("app/layout.tsx");
+    for (const token of ["--frame-bg", "--frame-edge-width", "--frame-shadow", "--frame-radius", "--frame-pad", "--frame-max", "--frame-gap", "--frame-inset", "--frame-inner-x", "--frame-inner-y", "--frame-content-max"]) {
+      expect(layout, token).toContain(`var(${token},`);
+    }
+    const sidebar = text("components/shell/Sidebar.tsx");
+    for (const token of ["--rail-top", "--rail-inset", "--rail-edge", "--rail-shadow", "--rail-radius", "--rail-width"]) {
+      expect(sidebar, token).toContain(`var(${token},`);
+    }
+  });
 });
