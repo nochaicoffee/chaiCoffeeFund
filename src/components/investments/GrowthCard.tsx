@@ -64,7 +64,7 @@ export function GrowthCard({ view }: { view: GrowthView }) {
         ))}
         {shown.map((l) => (
           <g key={l.key}>
-            <path d={pathOf(l)} fill="none" stroke={l.colour} strokeWidth={l.bold ? 3 : 2.2} strokeLinejoin="round" />
+            <path d={pathOf(l)} fill="none" stroke={l.colour} style={{ strokeWidth: l.bold ? "var(--chart-line-width, 3)" : 2.2 }} strokeLinejoin="round" />
             <rect x={ML + PW + 6} y={y(l.endY) - 10} width={88} height={20} rx={10} fill={l.colour} />
             <text x={ML + PW + 50} y={y(l.endY) + 4} textAnchor="middle" className="fill-white text-[11px] font-extrabold">{l.end}</text>
           </g>

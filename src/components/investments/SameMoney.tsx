@@ -20,7 +20,7 @@ export function SameMoney({ rows }: { rows: SameMoneyRow[] }) {
             </span>
             <b className="font-extrabold tabular-nums">{r.value}</b>
           </div>
-          <span aria-hidden="true" className="block h-2 overflow-hidden rounded-full bg-fill">
+          <span aria-hidden="true" className="block h-[var(--track-h,0.5rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill">
             <i className="block h-full rounded-full" style={{ width: `${r.fraction * 100}%`, background: r.colour }} />
           </span>
           <small className={`text-[11.5px] font-bold ${TONE[r.tone]}`}>{r.note}</small>

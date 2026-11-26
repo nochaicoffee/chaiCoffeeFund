@@ -81,7 +81,7 @@ function Row({ r, after }: { r: TargetRowView; after?: { add: string; after: num
         <b className="font-extrabold">{after ? after.afterText : r.shareText}</b>
         <small className="ml-1.5 font-semibold text-muted">{after ? (after.add === "—" ? "no change" : after.add) : (r.drift ?? r.worth)}</small>
       </div>
-      <div className="relative col-span-2 h-2.5 rounded-full bg-fill" role="img" aria-label={`${r.label}: ${after ? after.afterText : r.shareText} of what you hold${r.targetText ? `, ${r.targetText}` : ""}`}>
+      <div className="relative col-span-2 h-[var(--track-h,0.625rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] rounded-full bg-fill" role="img" aria-label={`${r.label}: ${after ? after.afterText : r.shareText} of what you hold${r.targetText ? `, ${r.targetText}` : ""}`}>
         <i className="absolute inset-y-0 left-0 block rounded-full" style={{ width: `${Math.min(100, shown * 100)}%`, background: `var(--card-${r.colour})` }} />
         {r.target !== null && <i aria-hidden="true" className="absolute -top-1 -bottom-1 w-0.5 rounded-full bg-ink" style={{ left: `${Math.min(100, r.target * 100)}%` }} />}
       </div>

@@ -71,7 +71,7 @@ export function DepositsTable({ rows }: { rows: DepositTableRow[] }) {
             </Cell>
             <div className="flex flex-col gap-1 max-lg:col-span-2">
               <span className="text-xs font-bold tabular-nums">{Math.round(r.through * 100)}%</span>
-              <i className="block h-1.5 overflow-hidden rounded-full bg-fill" role="img" aria-label={`${Math.round(r.through * 100)}% through its term`}>
+              <i className="block h-[var(--track-h,0.375rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill" role="img" aria-label={`${Math.round(r.through * 100)}% through its term`}>
                 <i className="block h-full rounded-full" style={{ width: `${Math.max(1, Math.round(r.through * 100))}%`, background: `var(--card-${CHIPS[i % CHIPS.length]})` }} />
               </i>
             </div>

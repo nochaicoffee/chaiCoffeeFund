@@ -62,7 +62,7 @@ export function ConcentrationCard({ view, limits }: { view: ConcentrationView; l
                   <b className="font-extrabold">{l.label}</b>
                   <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold ${l.breached ? "bg-negative-tint text-negative" : "bg-accent-tint text-positive"}`}>{l.chip}</span>
                 </div>
-                <div className="relative h-2 rounded-full bg-fill" role="img" aria-label={`${l.label}: ${l.detail}. ${l.chip}.`}>
+                <div className="relative h-[var(--track-h,0.5rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] rounded-full bg-fill" role="img" aria-label={`${l.label}: ${l.detail}. ${l.chip}.`}>
                   <i className="absolute inset-y-0 left-0 block rounded-full" style={{ width: `${Math.min(100, l.now * 100)}%`, background: l.breached ? "var(--negative)" : "var(--positive)" }} />
                   <i aria-hidden="true" className="absolute -top-1 -bottom-1 w-0.5 rounded-full bg-ink" style={{ left: `${Math.min(100, l.limit * 100)}%` }} />
                 </div>
