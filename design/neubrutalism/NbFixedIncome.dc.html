@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fixed Income, Neubrutalism</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@700&display=swap">
+  <style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.nb { --y:#FFD43B; --p:#FF8FB1; --b:#7FD4FF; --v:#B79CFF; --g:#3FD6A6; --l:#C6F24E; --o:#FF9F3C; --r:#FF6B57; --ac:#6FE0C5; font-family:'Space Grotesk',system-ui,sans-serif; color:#111; background:#FFF3D6; background-image:radial-gradient(rgba(17,17,17,.16) 1.3px,transparent 1.8px); background-size:22px 22px; min-height:2350px; display:flex; flex-wrap:wrap; align-items:stretch; }
+.side { flex:0 0 250px; background:#fff; border-right:3px solid #111; }
+.main { flex:999 1 640px; min-width:0; padding:30px 38px 56px; display:flex; flex-direction:column; gap:24px; }
+.top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+.bx { border:3px solid #111; border-radius:20px; box-shadow:6px 6px 0 #111; background:#fff; padding:22px; min-width:0; }
+.lbl { font:700 12px/1.25 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.06em; }
+.tag { display:inline-block; font:700 11px/1 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.06em; padding:7px 12px; border:3px solid #111; border-radius:999px; background:var(--ac); }
+.gr { margin:12px 0 10px; font-size:58px; line-height:1; letter-spacing:-.04em; font-weight:700; }
+.sn { margin:0; font-size:19px; line-height:1.55; max-width:820px; font-weight:500; }
+.hl { font-weight:700; background:linear-gradient(transparent 58%,var(--ac) 58%); padding:0 3px; border-bottom:2px dotted #111; }
+.h2 { margin:0; font-size:25px; line-height:1.1; letter-spacing:-.025em; font-weight:700; }
+.sub { margin:4px 0 0; font-size:14px; line-height:1.4; font-weight:500; color:#3d3d3d; }
+.num { font-weight:700; letter-spacing:-.04em; font-variant-numeric:tabular-nums; line-height:1; }
+.btn { display:inline-block; cursor:pointer; font:700 14px/1 'Space Grotesk',sans-serif; padding:11px 16px; border:3px solid #111; border-radius:12px; background:#fff; box-shadow:3px 3px 0 #111; color:#111; text-decoration:none; }
+.chip { display:inline-flex; align-items:center; gap:7px; font-weight:700; font-size:14px; padding:6px 12px; border:3px solid #111; border-radius:12px; box-shadow:3px 3px 0 #111; background:#fff; }
+.pill { display:inline-block; font:700 11px/1 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.05em; padding:5px 9px; border:2.5px solid #111; border-radius:999px; background:#fff; }
+.prog { height:22px; border:3px solid #111; border-radius:999px; background:#fff; overflow:hidden; display:flex; }
+.prog > i { display:block; height:100%; border-right:3px solid #111; }
+.y{background:var(--y)} .p{background:var(--p)} .b{background:var(--b)} .v{background:var(--v)} .g{background:var(--g)} .l{background:var(--l)} .o{background:var(--o)} .r{background:var(--r)} .w{background:#fff} .k{background:#111;color:#fff}
+.two { display:flex; flex-wrap:wrap; gap:24px; align-items:stretch; }
+.two > .bx { flex:1 1 440px; display:flex; flex-direction:column; gap:12px; }
+.door { flex:1 1 200px; min-width:0; height:270px; border:3px solid #111; border-radius:110px 110px 18px 18px; box-shadow:7px 7px 0 #111; padding:64px 20px 20px; display:flex; flex-direction:column; justify-content:space-between; position:relative; text-decoration:none; color:#111; }
+.knob { position:absolute; right:18px; top:140px; width:20px; height:20px; border:3px solid #111; border-radius:50%; background:#fff; }
+.mgrid { display:grid; grid-template-columns:60px repeat(12,minmax(0,1fr)); gap:6px; align-items:center; }
+.mgrid > i { height:34px; border:2.5px solid #111; border-radius:7px; }
+.tick { width:24px; height:24px; border:3px solid #111; border-radius:7px; }
+.row { display:flex; align-items:center; gap:12px; padding:11px 13px; border:3px solid #111; border-radius:13px; box-shadow:3px 3px 0 #111; background:#fff; }
+.t7 { display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr) minmax(0,.7fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.9fr); gap:10px; align-items:center; padding:12px 4px; border-bottom:3px solid #111; font-weight:600; font-size:14px; }
+.t7.h { font:700 11px 'Space Mono',monospace; text-transform:uppercase; padding-top:0; }
+@media (max-width:820px){ .main{padding:22px 16px 40px;} .gr{font-size:40px;} }
+  </style>
+</helmet>
+<div class="nb" style="--ac:#6FE0C5">
+  <div class="side"><dc-import name="Sidebar" active="fixed" hint-size="250px,760px"></dc-import></div>
+  <main class="main">
+    <div class="top">
+      <span class="tag">Fixed Income</span>
+      <div style="display:flex; gap:10px; flex-wrap:wrap"><a class="btn" href="#">Add EPF statement</a><a class="btn" href="#">+ Add deposit</a><button type="button" class="btn" aria-label="Refresh">↻</button></div>
+    </div>
+    <div>
+      <h1 class="gr">Good afternoon, Prathik</h1>
+      <p class="sn"><span class="hl">₹24,36,300</span> sits in EPF and <span class="hl">4 deposits</span>, it earned <span class="hl">₹96,800</span> this year, and <span class="hl">1 deposit</span> has matured.</p>
+    </div>
+
+    <section class="bx y" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; box-shadow:5px 5px 0 #111">
+      <div style="flex:1 1 400px"><b style="font-size:18px">Needs attention</b><p class="sub" style="color:#111;margin:2px 0 0">SBI FD matured on Nov 18 at ₹3,21,300 and isn't closed yet.</p></div>
+      <a class="btn" href="#" style="background:#111;color:#fff;box-shadow:3px 3px 0 #6FE0C5">Close this deposit</a>
+    </section>
+
+    <div style="display:flex; gap:24px; align-items:flex-end; flex-wrap:wrap">
+      <a href="#" class="door" style="background:#6FE0C5; box-shadow:7px 7px 0 #111, 0 0 0 5px #FFD43B"><span class="knob"></span><div><span class="lbl">Everything</span><div class="num" style="font-size:36px;margin-top:8px">₹24,36,300</div></div><span style="font-weight:700;font-size:14px">EPF and 4 deposits</span></a>
+      <a href="#" class="door l"><span class="knob"></span><div><span class="lbl">EPF</span><div class="num" style="font-size:36px;margin-top:8px">₹9,86,300</div></div><span style="font-weight:700;font-size:14px">8.25% · ₹21,600 a month</span></a>
+      <a href="#" class="door b"><span class="knob"></span><div><span class="lbl">Fixed deposits</span><div class="num" style="font-size:36px;margin-top:8px">₹14,50,000</div></div><span style="font-weight:700;font-size:14px">4 deposits · 1 matured</span></a>
+    </div>
+
+    <section class="bx" style="padding:26px; box-shadow:9px 9px 0 #111; background:#E6FAF4; display:flex; flex-wrap:wrap; gap:24px">
+      <div style="flex:2 1 520px; min-width:0; display:flex; flex-direction:column; gap:12px">
+        <div><span class="lbl">Everything · how it built up</span><h2 class="h2" style="font-size:30px;margin-top:6px">Put in, and what it earned</h2></div>
+        <div class="bx" style="padding:14px 14px 8px; box-shadow:5px 5px 0 #111">
+          <svg viewBox="0 0 600 200" width="100%" height="200" role="img" aria-label="Fixed income building up to 24.4 lakh, mostly what was put in">
+            <polygon points="10,190 110,170 210,150 310,128 410,104 510,80 590,62 590,190" fill="#6FE0C5"></polygon>
+            <polygon points="10,190 110,182 210,172 310,160 410,146 510,128 590,114 590,190" fill="#fff"></polygon>
+            <polyline points="10,190 110,170 210,150 310,128 410,104 510,80 590,62" fill="none" stroke="#111" stroke-width="5" stroke-linejoin="round"></polyline>
+            <polyline points="10,190 110,182 210,172 310,160 410,146 510,128 590,114" fill="none" stroke="#111" stroke-width="3" stroke-dasharray="8 7"></polyline>
+            <line x1="10" y1="190" x2="590" y2="190" stroke="#111" stroke-width="4"></line>
+          </svg>
+          <div style="display:flex; justify-content:space-between; font:700 11px 'Space Mono',monospace"><span>2020</span><span>2022</span><span>2024</span><span>2026</span></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><span class="pill w">Put in</span><span class="pill" style="background:#6FE0C5">Interest earned</span></div>
+      </div>
+      <div style="flex:1 1 260px; display:flex; flex-direction:column; gap:12px">
+        <div class="bx" style="padding:14px;box-shadow:4px 4px 0 #111"><span class="lbl">Put in</span><div class="num" style="font-size:28px;margin-top:6px">₹19,80,000</div></div>
+        <div class="bx" style="padding:14px;box-shadow:4px 4px 0 #111"><span class="lbl">Interest earned</span><div class="num" style="font-size:28px;margin-top:6px">₹4,56,300</div></div>
+        <div class="bx" style="padding:14px;box-shadow:4px 4px 0 #111"><span class="lbl">This year</span><div class="num" style="font-size:28px;margin-top:6px">₹96,800</div><span style="font-size:12px;font-weight:700">EPF interest an estimate until March</span></div>
+      </div>
+    </section>
+
+    <section class="bx" style="display:flex; flex-direction:column; gap:12px">
+      <div><h2 class="h2">Money in each month</h2><p class="sub">EPF credits and deposit interest, 2026</p></div>
+      <div class="mgrid">
+        <span></span><span class="lbl" style="text-align:center">J</span><span class="lbl" style="text-align:center">F</span><span class="lbl" style="text-align:center">M</span><span class="lbl" style="text-align:center">A</span><span class="lbl" style="text-align:center">M</span><span class="lbl" style="text-align:center">J</span><span class="lbl" style="text-align:center">J</span><span class="lbl" style="text-align:center">A</span><span class="lbl" style="text-align:center">S</span><span class="lbl" style="text-align:center">O</span><span class="lbl" style="text-align:center">N</span><span class="lbl" style="text-align:center">D</span>
+        <b>EPF</b><i class="l"></i><i class="l"></i><i style="background:#86B81A"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="l"></i><i class="l"></i><i style="background:#fff;border-style:dashed"></i>
+        <b>FDs</b><i class="w"></i><i class="w"></i><i class="b"></i><i class="w"></i><i class="w"></i><i class="b"></i><i class="w"></i><i class="w"></i><i class="b"></i><i class="w"></i><i style="background:#3C9BE6"></i><i style="background:#fff;border-style:dashed"></i>
+      </div>
+    </section>
+
+    <div class="two">
+      <section class="bx">
+        <div><h2 class="h2">Credits on time</h2><p class="sub">EPF, this financial year</p></div>
+        <div style="display:flex; gap:7px; flex-wrap:wrap"><i class="tick g"></i><i class="tick g"></i><i class="tick g"></i><i class="tick g"></i><i class="tick g"></i><i class="tick g"></i><i class="tick g"></i><i class="tick w" style="border-style:dashed"></i><i class="tick w" style="border-style:dashed"></i><i class="tick w" style="border-style:dashed"></i><i class="tick w" style="border-style:dashed"></i><i class="tick w" style="border-style:dashed"></i></div>
+        <div style="display:flex;justify-content:space-between;font:700 11px 'Space Mono',monospace;text-transform:uppercase"><span>Apr</span><span>Oct</span><span>Mar</span></div>
+        <p style="margin:auto 0 0;font-weight:700">7 of 7 so far, about the 17th each month.</p>
+      </section>
+      <section class="bx">
+        <div><h2 class="h2">Growth path</h2><p class="sub">If rates hold</p></div>
+        <svg viewBox="0 0 500 150" width="100%" height="150" role="img" aria-label="Growing to about 33.9 lakh by 2030">
+          <line x1="10" y1="140" x2="490" y2="140" stroke="#111" stroke-width="4"></line>
+          <polyline points="10,118 130,100 250,80 370,58 480,32" fill="none" stroke="#111" stroke-width="6" stroke-linejoin="round"></polyline>
+          <circle cx="480" cy="32" r="10" fill="#FFD43B" stroke="#111" stroke-width="4"></circle>
+        </svg>
+        <div style="display:flex;justify-content:space-between;font-weight:700"><span>Now ₹24.4 L</span><span class="pill l">₹33.9 L by Mar 2030</span></div>
+      </section>
+    </div>
+
+    <section class="bx" style="display:flex; flex-direction:column; gap:6px">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><h2 class="h2">Fixed deposits</h2><p class="sub">Open first · matured and pre-closed below</p></div><a class="btn" href="#" style="padding:9px 12px">+ Add deposit</a></div>
+      <div class="t7 h"><span>Deposit</span><span>Put in</span><span>Rate</span><span>Started</span><span>Matures</span><span>At maturity</span><span>Status</span></div>
+      <div class="t7" style="background:#FFE9B0"><b>SBI FD</b><span>₹3,00,000</span><span>7.1%</span><span>Nov 18, 2025</span><span>Nov 18, 2026</span><b>₹3,21,300</b><span><span class="pill y">Matured</span></span></div>
+      <div class="t7"><b>HDFC FD</b><span>₹5,00,000</span><span>7.4%</span><span>Mar 14, 2026</span><span>Mar 14, 2027</span><b>₹5,37,000</b><span><span class="pill g">Open</span></span></div>
+      <div class="t7"><b>Axis FD</b><span>₹4,00,000</span><span>7.25%</span><span>Sep 2, 2025</span><span>Sep 2, 2027</span><b>₹4,60,100</b><span><span class="pill g">Open</span></span></div>
+      <div class="t7" style="border-bottom:none"><b>Canara FD</b><span>₹2,50,000</span><span>6.9%</span><span>Jan 5, 2026</span><span>Jan 5, 2028</span><b>₹2,86,800</b><span><span class="pill g">Open</span></span></div>
+    </section>
+
+    <div class="two">
+      <section class="bx">
+        <div><h2 class="h2">Coming up</h2><p class="sub">Credits and maturities</p></div>
+        <div class="row" style="background:#FFE9B0"><span class="pill k">Now</span><b style="flex:1">SBI FD, matured</b><b>₹3,21,300</b></div>
+        <div class="row"><span class="pill">Dec 17</span><b style="flex:1">EPF credit, November</b><b>₹21,600</b></div>
+        <div class="row"><span class="pill">Mar 14</span><b style="flex:1">HDFC FD matures</b><b>₹5,37,000</b></div>
+        <div class="row"><span class="pill">Mar 31</span><b style="flex:1">EPF interest, FY 26-27 (estimate)</b><b>₹74,800</b></div>
+      </section>
+      <section class="bx l">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h2 class="h2">Provident fund</h2><p class="sub" style="color:#111">From the passbook, Oct 2026</p></div><a href="#" style="color:#111;font-weight:700;font-size:13px">EPF settings</a></div>
+        <div class="num" style="font-size:44px">₹9,86,300</div>
+        <div class="prog" style="height:30px;border-radius:10px"><i class="w" style="width:46%"></i><i class="y" style="width:38%"></i><i class="g" style="width:16%"></i></div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;font-weight:700;font-size:13px"><span>Your share 46%</span><span>Employer 38%</span><span>Interest 16%</span></div>
+        <a href="#" style="color:#111;font-weight:700;font-size:14px">Every credit in the file →</a>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2350}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Accounts, Neubrutalism</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@700&display=swap">
+  <style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.nb { --y:#FFD43B; --p:#FF8FB1; --b:#7FD4FF; --v:#B79CFF; --g:#3FD6A6; --l:#C6F24E; --o:#FF9F3C; --r:#FF6B57; --ac:#FF8FB1; font-family:'Space Grotesk',system-ui,sans-serif; color:#111; background:#FFF3D6; background-image:radial-gradient(rgba(17,17,17,.16) 1.3px,transparent 1.8px); background-size:22px 22px; min-height:2300px; display:flex; flex-wrap:wrap; align-items:stretch; }
+.side { flex:0 0 250px; background:#fff; border-right:3px solid #111; }
+.main { flex:999 1 640px; min-width:0; padding:30px 38px 56px; display:flex; flex-direction:column; gap:24px; }
+.top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+.bx { border:3px solid #111; border-radius:20px; box-shadow:6px 6px 0 #111; background:#fff; padding:22px; min-width:0; }
+.lbl { font:700 12px/1.25 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.06em; }
+.tag { display:inline-block; font:700 11px/1 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.06em; padding:7px 12px; border:3px solid #111; border-radius:999px; background:var(--ac); }
+.gr { margin:12px 0 10px; font-size:58px; line-height:1; letter-spacing:-.04em; font-weight:700; }
+.sn { margin:0; font-size:19px; line-height:1.55; max-width:820px; font-weight:500; }
+.hl { font-weight:700; background:linear-gradient(transparent 58%,var(--ac) 58%); padding:0 3px; border-bottom:2px dotted #111; }
+.h2 { margin:0; font-size:25px; line-height:1.1; letter-spacing:-.025em; font-weight:700; }
+.sub { margin:4px 0 0; font-size:14px; line-height:1.4; font-weight:500; color:#3d3d3d; }
+.num { font-weight:700; letter-spacing:-.04em; font-variant-numeric:tabular-nums; line-height:1; }
+.btn { display:inline-block; cursor:pointer; font:700 14px/1 'Space Grotesk',sans-serif; padding:11px 16px; border:3px solid #111; border-radius:12px; background:#fff; box-shadow:3px 3px 0 #111; color:#111; text-decoration:none; }
+.chip { display:inline-flex; align-items:center; gap:7px; font-weight:700; font-size:14px; padding:6px 12px; border:3px solid #111; border-radius:12px; box-shadow:3px 3px 0 #111; background:#fff; }
+.pill { display:inline-block; font:700 11px/1 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.05em; padding:5px 9px; border:2.5px solid #111; border-radius:999px; background:#fff; }
+.g4 { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; }
+.tile { border:3px solid #111; border-radius:18px; box-shadow:5px 5px 0 #111; padding:18px; min-width:0; }
+.item { display:flex; align-items:center; gap:14px; padding:12px 14px; border:3px solid #111; border-radius:14px; box-shadow:4px 4px 0 #111; min-width:0; }
+.prog { height:22px; border:3px solid #111; border-radius:999px; background:#fff; overflow:hidden; display:flex; }
+.prog > i { display:block; height:100%; border-right:3px solid #111; }
+.prog > i:last-child { border-right:none; }
+.seg { display:flex; border:3px solid #111; border-radius:12px; overflow:hidden; background:#fff; box-shadow:3px 3px 0 #111; font-weight:700; font-size:14px; }
+:where(.seg) > button { font:inherit; color:inherit; background:#fff; border:0; cursor:pointer; }
+.seg > button { padding:9px 14px; border-right:3px solid #111; }
+.seg > button:last-child { border-right:none; }
+.y{background:var(--y)} .p{background:var(--p)} .b{background:var(--b)} .v{background:var(--v)} .g{background:var(--g)} .l{background:var(--l)} .o{background:var(--o)} .r{background:var(--r)} .w{background:#fff} .k{background:#111;color:#fff}
+.strip { height:74px; margin-top:-14px; border:3px solid #111; border-radius:18px; box-shadow:5px 5px 0 #111; padding:12px 16px; display:flex; align-items:center; gap:12px; }
+.mono { flex:0 0 38px; height:38px; border:3px solid #111; border-radius:50%; background:#fff; display:flex; align-items:center; justify-content:center; font-weight:700; }
+.blk { border:3px solid #111; border-radius:14px; box-shadow:4px 4px 0 #111; padding:12px; display:flex; flex-direction:column; justify-content:space-between; min-width:0; overflow:hidden; }
+.tr { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.9fr) minmax(0,1fr); gap:10px; align-items:center; padding:11px 4px; border-bottom:3px solid #111; font-weight:600; font-size:14px; }
+.th { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr) minmax(0,.9fr) minmax(0,1fr); gap:10px; padding:0 4px 8px; border-bottom:3px solid #111; font:700 11px 'Space Mono',monospace; text-transform:uppercase; }
+.mc { flex:1; display:flex; flex-direction:column; justify-content:flex-end; border:3px solid #111; border-bottom:none; border-radius:9px 9px 0 0; overflow:hidden; }
+.mc > div { border-top:3px solid #111; }
+.mc > div:first-child { border-top:none; }
+.hatch { background:repeating-linear-gradient(45deg,#fff 0 6px,#FFD43B 6px 12px); }
+@media (max-width:820px){ .g4{grid-template-columns:repeat(2,minmax(0,1fr));} .main{padding:22px 16px 40px;} .gr{font-size:40px;} }
+  </style>
+</helmet>
+<div class="nb" style="--ac:#FF8FB1">
+  <div class="side"><dc-import name="Sidebar" active="accounts" hint-size="250px,760px"></dc-import></div>
+  <main class="main">
+    <div class="top">
+      <span class="tag">Accounts</span>
+      <div style="display:flex; gap:10px; flex-wrap:wrap"><button type="button" class="btn">Last 12 months ⌄</button><a class="btn" href="#">Update balances</a><a class="btn" href="#">+ Add account</a><a class="btn" href="#">Sync statements</a><button type="button" class="btn" aria-label="Refresh">↻</button></div>
+    </div>
+    <div>
+      <h1 class="gr">Good afternoon, Prathik</h1>
+      <p class="sn">You hold <span class="hl">₹8,42,100</span> across <span class="hl">6 accounts</span>, up <span class="hl">₹1.9 L</span> since November 2025, and <span class="hl">1 balance</span> from your statements needs a look.</p>
+    </div>
+
+    <section class="bx y" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; box-shadow:5px 5px 0 #111">
+      <div style="flex:1 1 400px"><b style="font-size:18px">Balances that need a look</b><p class="sub" style="color:#111;margin:2px 0 0">Canara on 20 Nov: your Sheet says ₹37,550, the statement says ₹36,900. Your Sheet keeps its own balance until you choose.</p></div>
+      <a class="btn" href="#" style="background:#111;color:#fff;box-shadow:3px 3px 0 #FF8FB1">Review</a>
+    </section>
+
+    <section class="bx" style="padding:26px; background:#FFE3EC; box-shadow:9px 9px 0 #111; display:flex; flex-wrap:wrap; gap:28px">
+      <div style="flex:1 1 400px; min-width:0; display:flex; flex-direction:column">
+        <div class="b" style="border:3px solid #111; border-radius:22px; box-shadow:6px 6px 0 #111; padding:20px; height:220px; display:flex; flex-direction:column; justify-content:space-between; position:relative; z-index:2">
+          <div style="display:flex; justify-content:space-between; align-items:center"><div style="display:flex;align-items:center;gap:10px"><span class="mono">H</span><b style="font-size:21px">HDFC Savings</b></div><span class="pill">Spending</span></div>
+          <div><div class="num" style="font-size:52px">₹4,12,300</div><div style="font-weight:700; font-size:14px; margin-top:8px">Updated Nov 24 · +₹38,200 since Oct 24</div></div>
+        </div>
+        <div class="strip g" style="z-index:1"><span class="mono">S</span><div style="flex:1;min-width:0"><b>SBI Savings</b><div style="font-size:12px;font-weight:700">17% · Salary</div></div><svg width="70" height="22" viewBox="0 0 70 22" aria-hidden="true"><polyline points="2,18 14,16 26,17 38,10 50,12 62,6 68,4" fill="none" stroke="#111" stroke-width="3"></polyline></svg><span class="num" style="font-size:20px">₹1,45,800</span></div>
+        <div class="strip y" style="margin-right:10px"><span class="mono">A</span><div style="flex:1;min-width:0"><b>Axis Savings</b><div style="font-size:12px;font-weight:700">13% · Emergency</div></div><span class="num" style="font-size:20px">₹1,10,000</span></div>
+        <div class="strip o" style="margin-right:20px"><span class="mono">J</span><div style="flex:1;min-width:0"><b>Jupiter</b><div style="font-size:12px;font-weight:700">10% · Spending</div></div><span class="num" style="font-size:20px">₹82,150</span></div>
+        <div class="strip l" style="margin-right:30px"><span class="mono">S</span><div style="flex:1;min-width:0"><b>Slice</b><div style="font-size:12px;font-weight:700">6% · Spending</div></div><span class="num" style="font-size:20px">₹54,300</span></div>
+        <div class="strip w" style="margin-right:40px"><span class="mono">C</span><div style="flex:1;min-width:0"><b>Canara</b><div style="font-size:12px;font-weight:700;color:#8a5a00">Needs a look · Nov 20</div></div><span class="num" style="font-size:20px">₹37,550</span></div>
+      </div>
+      <div style="flex:1.1 1 440px; min-width:0; display:flex; flex-direction:column; gap:16px">
+        <div style="display:flex; justify-content:space-between; gap:10px; align-items:center; flex-wrap:wrap"><div><b style="font-size:20px">HDFC Savings</b><p class="sub" style="color:#111;margin:2px 0 0">Up ₹1.1 L over the last 12 months</p></div><div class="seg"><button type="button" class="k">Trend</button><button type="button">Check-ins</button></div></div>
+        <div class="bx" style="padding:14px 14px 8px; box-shadow:5px 5px 0 #111">
+          <svg viewBox="0 0 500 170" width="100%" height="170" role="img" aria-label="HDFC Savings balance over 12 months, ending at 4.12 lakh">
+            <polygon points="10,140 50,132 90,136 130,118 170,112 210,120 250,96 290,88 330,92 370,70 410,64 450,46 490,30 490,160 10,160" fill="#7FD4FF"></polygon>
+            <polyline points="10,140 50,132 90,136 130,118 170,112 210,120 250,96 290,88 330,92 370,70 410,64 450,46 490,30" fill="none" stroke="#111" stroke-width="5" stroke-linejoin="round"></polyline>
+            <line x1="10" y1="160" x2="490" y2="160" stroke="#111" stroke-width="4"></line>
+            <circle cx="490" cy="30" r="10" fill="#FFD43B" stroke="#111" stroke-width="4"></circle>
+          </svg>
+          <div style="display:flex; justify-content:space-between; font:700 11px 'Space Mono',monospace; text-transform:uppercase"><span>Dec</span><span>Mar</span><span>Jun</span><span>Sep</span><span>Nov</span></div>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px">
+          <div class="tile w" style="padding:14px;box-shadow:4px 4px 0 #111"><span class="lbl">Came in</span><div class="num" style="font-size:28px;margin-top:6px">₹9,80,000</div></div>
+          <div class="tile w" style="padding:14px;box-shadow:4px 4px 0 #111"><span class="lbl">Spent</span><div class="num" style="font-size:28px;margin-top:6px">₹6,12,400</div></div>
+          <div class="tile w" style="padding:14px;box-shadow:4px 4px 0 #111"><span class="lbl">Invested</span><div class="num" style="font-size:28px;margin-top:6px">₹2,55,000</div></div>
+          <div class="tile w" style="padding:14px;box-shadow:4px 4px 0 #111"><span class="lbl">Left the bank</span><div class="num" style="font-size:28px;margin-top:6px">₹8,67,400</div></div>
+        </div>
+        <p class="sub" style="font-size:12px">Hover a week to read it. Drag across the line to measure a stretch.</p>
+      </div>
+    </section>
+
+    <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:stretch">
+      <section class="bx" style="flex:1 1 420px; display:flex; flex-direction:column; gap:14px">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><h2 class="h2">Where it sits</h2><p class="sub">Each account, sized by its balance</p></div><div class="seg"><button type="button" class="k">Accounts</button><button type="button">By purpose</button></div></div>
+        <div style="flex:1; min-height:380px; display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); grid-template-rows:repeat(4,minmax(0,1fr)); gap:10px">
+          <div class="blk b" style="grid-column:1 / span 3; grid-row:1 / span 4; box-shadow:4px 4px 0 #111, 0 0 0 4px #FFD43B"><div><b>HDFC Savings</b><div style="font-size:12px;font-weight:700">Spending · HDFC Bank</div></div><div><span class="pill k">49%</span><div class="num" style="font-size:28px;margin-top:8px">₹4,12,300</div><div style="font-size:12px;font-weight:700">Updated Nov 24</div></div></div>
+          <div class="blk g" style="grid-column:4 / span 3; grid-row:1 / span 2"><b>SBI Savings</b><div><span class="pill">17%</span> <span class="num" style="font-size:22px">₹1,45,800</span></div></div>
+          <div class="blk y" style="grid-column:4 / span 2; grid-row:3 / span 2"><b>Axis Savings</b><span class="num" style="font-size:20px">₹1,10,000</span></div>
+          <div class="blk o" style="grid-column:6; grid-row:3"><b style="font-size:13px">Jupiter</b><span class="num" style="font-size:14px">₹82,150</span></div>
+          <div class="blk l" style="grid-column:6; grid-row:4; padding:8px"><b style="font-size:12px">Slice + Canara</b><span class="num" style="font-size:13px">₹91,850</span></div>
+        </div>
+      </section>
+      <section class="bx" style="flex:1.2 1 480px; display:flex; flex-direction:column; gap:10px">
+        <div><h2 class="h2">Balance history</h2><p class="sub">Every account</p></div>
+        <div class="th"><span>Account</span><span>Read on</span><span>Balance</span><span>Change</span><span>Source</span></div>
+        <div class="tr"><span style="display:flex;align-items:center;gap:8px"><i style="width:12px;height:12px;border:2.5px solid #111;border-radius:4px;background:#7FD4FF"></i>HDFC Savings</span><span>Nov 24</span><b>₹4,12,300</b><span>+₹38,200</span><span>Statement</span></div>
+        <div class="tr"><span style="display:flex;align-items:center;gap:8px"><i style="width:12px;height:12px;border:2.5px solid #111;border-radius:4px;background:#3FD6A6"></i>SBI Savings</span><span>Nov 23</span><b>₹1,45,800</b><span>+₹12,400</span><span>Statement</span></div>
+        <div class="tr"><span style="display:flex;align-items:center;gap:8px"><i style="width:12px;height:12px;border:2.5px solid #111;border-radius:4px;background:#FF6B57"></i>Canara</span><span>Nov 20</span><b>₹37,550</b><span>−₹2,100</span><span><span class="pill y">Needs attention</span></span></div>
+        <div class="tr"><span style="display:flex;align-items:center;gap:8px"><i style="width:12px;height:12px;border:2.5px solid #111;border-radius:4px;background:#FFD43B"></i>Axis Savings</span><span>Nov 18</span><b>₹1,10,000</b><span>+₹10,000</span><span>By hand</span></div>
+        <div class="tr"><span style="display:flex;align-items:center;gap:8px"><i style="width:12px;height:12px;border:2.5px solid #111;border-radius:4px;background:#FF9F3C"></i>Jupiter</span><span>Nov 15</span><b>₹82,150</b><span>−₹6,300</span><span>Statement</span></div>
+        <div class="tr"><span style="display:flex;align-items:center;gap:8px"><i style="width:12px;height:12px;border:2.5px solid #111;border-radius:4px;background:#C6F24E"></i>Slice</span><span>Nov 12</span><b>₹54,300</b><span>+₹4,000</span><span>Statement</span></div>
+        <div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px;margin-top:6px"><span class="sub" style="margin:0">The 6 most recent of 142</span><a href="#" style="color:#111">View all balances →</a></div>
+      </section>
+    </div>
+
+    <section class="bx" style="display:flex; flex-direction:column; gap:16px">
+      <div><h2 class="h2">The four answers</h2><p class="sub">Pick one to see its months. Worked out from your records and balances.</p></div>
+      <div class="g4">
+        <div class="tile l"><span class="lbl">Came in</span><div class="num" style="font-size:34px;margin:10px 0 6px">₹26.4 L</div><span style="font-size:13px;font-weight:700">Income only; a loan paid in is apart</span></div>
+        <div class="tile r" style="box-shadow:5px 5px 0 #111, 0 0 0 4px #FFD43B"><span class="lbl">Spent</span><div class="num" style="font-size:34px;margin:10px 0 6px">₹13.2 L</div><span style="font-size:13px;font-weight:700">Bills, subscriptions, EMIs, big spends</span></div>
+        <div class="tile" style="background:#9FB0FF"><span class="lbl">Invested</span><div class="num" style="font-size:34px;margin:10px 0 6px">₹6.75 L</div><span style="font-size:13px;font-weight:700">Sent less what came back</span></div>
+        <div class="tile b"><span class="lbl">In the bank now</span><div class="num" style="font-size:34px;margin:10px 0 6px">+₹1.9 L</div><span style="font-size:13px;font-weight:700">₹1.2 L lent out, ₹3.4 L into deposits</span></div>
+      </div>
+      <div style="display:flex; gap:10px; flex-wrap:wrap"><span class="pill r">Card bills</span><span class="pill" style="background:#6FE0C5">EMIs</span><span class="pill p">Big spends</span><span class="pill v">Subscriptions</span><span class="pill hatch">Cash and UPI</span></div>
+      <div style="display:flex; align-items:flex-end; gap:12px; height:220px; border-bottom:3px solid #111">
+        <div class="mc" style="height:150px"><div class="hatch" style="flex:3"></div><div class="v" style="flex:.6"></div><div style="flex:3;background:#6FE0C5"></div><div class="r" style="flex:4"></div></div>
+        <div class="mc" style="height:160px"><div class="hatch" style="flex:3"></div><div class="v" style="flex:.6"></div><div style="flex:3;background:#6FE0C5"></div><div class="r" style="flex:4.5"></div></div>
+        <div class="mc" style="height:140px"><div class="hatch" style="flex:3"></div><div class="v" style="flex:.6"></div><div style="flex:3;background:#6FE0C5"></div><div class="r" style="flex:3.5"></div></div>
+        <div class="mc" style="height:176px"><div class="hatch" style="flex:3"></div><div class="v" style="flex:.6"></div><div style="flex:3;background:#6FE0C5"></div><div class="r" style="flex:5"></div></div>
+        <div class="mc" style="height:186px"><div class="p" style="flex:2"></div><div class="hatch" style="flex:3"></div><div class="v" style="flex:.6"></div><div style="flex:3;background:#6FE0C5"></div><div class="r" style="flex:4"></div></div>
+        <div class="mc" style="height:150px"><div class="hatch" style="flex:3"></div><div class="v" style="flex:.6"></div><div style="flex:3;background:#6FE0C5"></div><div class="r" style="flex:4"></div></div>
+        <div class="mc" style="height:164px"><div class="hatch" style="flex:3"></div><div class="v" style="flex:.6"></div><div style="flex:3;background:#6FE0C5"></div><div class="r" style="flex:4.6"></div></div>
+        <div class="mc" style="height:180px"><div class="p" style="flex:1.5"></div><div class="hatch" style="flex:3"></div><div class="v" style="flex:.6"></div><div style="flex:3;background:#6FE0C5"></div><div class="r" style="flex:4.4"></div></div>
+        <div class="mc" style="height:158px"><div class="hatch" style="flex:3"></div><div class="v" style="flex:.6"></div><div style="flex:3;background:#6FE0C5"></div><div class="r" style="flex:4.2"></div></div>
+        <div class="mc" style="height:170px"><div class="hatch" style="flex:3"></div><div class="v" style="flex:.6"></div><div style="flex:3;background:#6FE0C5"></div><div class="r" style="flex:4.8"></div></div>
+        <div class="mc" style="height:200px"><div class="hatch" style="flex:3"></div><div class="v" style="flex:.6"></div><div style="flex:3;background:#6FE0C5"></div><div class="r" style="flex:6"></div></div>
+        <div class="mc" style="height:196px"><div class="p" style="flex:3"></div><div class="hatch" style="flex:3"></div><div class="v" style="flex:.6"></div><div style="flex:3;background:#6FE0C5"></div><div class="r" style="flex:4"></div></div>
+      </div>
+      <div style="display:flex; gap:12px; font:700 11px 'Space Mono',monospace; text-align:center"><span style="flex:1">D</span><span style="flex:1">J</span><span style="flex:1">F</span><span style="flex:1">M</span><span style="flex:1">A</span><span style="flex:1">M</span><span style="flex:1">J</span><span style="flex:1">J</span><span style="flex:1">A</span><span style="flex:1">S</span><span style="flex:1">O</span><span style="flex:1">N</span></div>
+      <p class="sub" style="font-size:12px;margin:0">Hatched is worked out from the balances.</p>
+    </section>
+
+    <section class="bx" style="display:flex; flex-direction:column; gap:12px">
+      <div><h2 class="h2">Coming up</h2><p class="sub">Next 45 days, out of these accounts</p></div>
+      <div class="item w"><span class="pill">1 Dec</span><b style="flex:1">NetApp salary → SBI Savings</b><span class="num" style="font-size:18px">+₹1,92,000</span></div>
+      <div class="item w"><span class="pill">3 Dec</span><b style="flex:1">HDFC Regalia bill, from HDFC Savings</b><span class="num" style="font-size:18px">₹48,720</span></div>
+      <div class="item w"><span class="pill">7 Dec</span><b style="flex:1">Car loan EMI, from HDFC Savings</b><span class="num" style="font-size:18px">₹18,450</span></div>
+      <div class="item w"><span class="pill">12 Dec</span><b style="flex:1">Personal loan EMI, from Axis Savings</b><span class="num" style="font-size:18px">₹9,200</span></div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2300}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
