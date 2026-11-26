@@ -33,6 +33,23 @@ describe("the card palette", () => {
     expect(new Set(shades).size).toBe(COLORS.length);
   });
 
+  it("keeps every two Neubrutalism shades apart enough to tell picked cards apart (step 5g)", () => {
+    const start = css.indexOf(':root[data-look="neubrutal"] {');
+    const block = css.slice(start, css.indexOf("\n}", start));
+    const lab = COLORS.map((name) => {
+      const m = block.match(new RegExp(`--card-${name.toLowerCase()}-from: oklch\\(([\\d.]+) ([\\d.]+) ([\\d.]+)\\);`));
+      expect(m, `${name}'s shade isn't a plain oklch()`).not.toBeNull();
+      const [l, c, h] = m!.slice(1).map(Number);
+      return { name, l, a: c * Math.cos((h * Math.PI) / 180), b: c * Math.sin((h * Math.PI) / 180) };
+    });
+    let closest = Infinity;
+    for (let i = 0; i < lab.length; i++)
+      for (let j = i + 1; j < lab.length; j++) closest = Math.min(closest, Math.hypot(lab[i].l - lab[j].l, lab[i].a - lab[j].a, lab[i].b - lab[j].b));
+    // Before 5g, Pink and Rose (0.026) and Mocha and Rust were almost the same colour. Now the closest pair is
+    // Aubergine and Indigo, about 0.033 apart: keep every pair at least that distinct.
+    expect(closest).toBeGreaterThanOrEqual(0.032);
+  });
+
   it("offers cards and accounts everything but Emerald, which is All Cards', and subscriptions all of it", () => {
     expect(CARD_COLORS).toHaveLength(COLORS.length - 1);
     expect(CARD_COLORS).not.toContain("Emerald");
