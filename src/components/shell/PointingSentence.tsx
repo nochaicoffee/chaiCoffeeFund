@@ -69,13 +69,13 @@ export function PointingSentence({ parts, has, card: cardFor }: { parts: Sentenc
 
   return (
     <div ref={wrap} className="relative" onPointerLeave={(e) => e.pointerType === "mouse" && hide()}>
-      <p className="max-w-[960px] text-base leading-[1.7] font-medium text-muted">
+      <p className="max-w-[960px] text-[length:var(--greeting-sentence-size-sm,1rem)] leading-[var(--greeting-sentence-leading,1.7)] font-medium text-[color:var(--greeting-sentence-color,var(--muted))] md:text-[length:var(--greeting-sentence-size,1rem)]">
         {parts.map((part, i) => {
           const key = part.point;
           if (!part.strong) return <span key={i}>{part.text}</span>;
           if (!key || !has(key)) {
             return (
-              <span key={i} className="font-bold whitespace-nowrap text-fg tabular-nums">
+              <span key={i} className="bg-[image:var(--figure-mark,none)] font-bold whitespace-nowrap text-fg tabular-nums">
                 {part.text}
               </span>
             );
@@ -138,8 +138,8 @@ function Figure({
       // Only a keyboard's focus opens it; a tap's focus would open it just before its click closed it.
       onFocus={(e) => e.currentTarget.matches(":focus-visible") && show(point, index, e.currentTarget)}
       onBlur={(e) => !withinRef.current?.contains(e.relatedTarget as Node | null) && hide()}
-      className={`-mx-0.5 rounded-md px-0.5 font-bold whitespace-nowrap tabular-nums underline decoration-dotted decoration-[1.5px] underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent motion-safe:transition-colors motion-safe:duration-150 ${
-        on ? "bg-accent-tint text-accent-text decoration-transparent" : "text-fg decoration-muted/60 hover:bg-accent-tint hover:text-accent-text"
+      className={`-mx-0.5 rounded-md bg-[image:var(--figure-mark,none)] px-0.5 font-bold whitespace-nowrap tabular-nums underline decoration-dotted decoration-[1.5px] underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent motion-safe:transition-colors motion-safe:duration-150 ${
+        on ? "bg-accent-tint bg-none text-accent-text decoration-transparent" : "text-fg decoration-[color:var(--figure-line,color-mix(in_oklab,var(--color-muted)_60%,transparent))] hover:bg-accent-tint hover:bg-none hover:text-accent-text"
       }`}
     >
       {text}
