@@ -257,7 +257,7 @@ function MonthRangePicker({
           );
         })}
       </div>
-      <div className="flex items-center justify-between gap-3 border-t border-divider pt-3">
+      <div className="flex items-center justify-between gap-3 rule-t pt-3">
         <span className="text-xs font-semibold text-muted tabular-nums" aria-live="polite">
           {first !== null ? (
             <>

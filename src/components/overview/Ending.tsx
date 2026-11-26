@@ -163,7 +163,7 @@ function Calendar({ view }: { view: EndingView }) {
 function NowList({ view }: { view: EndingView }) {
   if (view.now.length === 0) return null;
   return (
-    <div className="mt-2 flex flex-col gap-2 border-t border-divider pt-3.5">
+    <div className="mt-2 flex flex-col gap-2 rule-t pt-3.5">
       <div className="flex items-baseline justify-between"><b className="text-sm font-extrabold">No day of their own</b><small className="text-xs font-semibold text-muted">{view.now.length} {view.now.length === 1 ? "thing" : "things"}</small></div>
       {view.now.map((w) => <Warning key={w.id} w={w} />)}
     </div>

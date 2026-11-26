@@ -73,11 +73,11 @@ export function MoneyIn({ view }: { view: MoneyInView }) {
         ))}
       </div>
 
-      <div className="flex items-baseline justify-between border-t border-divider pt-2.5 text-[13px] font-semibold">
+      <div className="flex items-baseline justify-between rule-t pt-2.5 text-[13px] font-semibold">
         <span className="text-muted">Months with a buy</span>
         <b className="font-extrabold">{view.monthsLine}</b>
       </div>
-      <p className="border-t border-divider pt-2.5 text-[11px] font-semibold text-muted">A red dot is a month you sold. An RSU vest counts at its fair value; the shares sold to cover its tax aren&apos;t a sale here.</p>
+      <p className="rule-t pt-2.5 text-[11px] font-semibold text-muted">A red dot is a month you sold. An RSU vest counts at its fair value; the shares sold to cover its tax aren&apos;t a sale here.</p>
     </WidgetCard>
   );
 }

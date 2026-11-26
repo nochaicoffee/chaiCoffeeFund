@@ -26,7 +26,7 @@ export interface GreetingMonthData {
 }
 
 /** The small line of text at the foot of a card. */
-export const GREETING_NOTE = "mt-2.5 border-t border-divider pt-2 text-[11px] font-semibold text-muted";
+export const GREETING_NOTE = "mt-2.5 rule-t pt-2 text-[11px] font-semibold text-muted";
 
 /** Month totals as small bars; `lit` months are in the accent, the rest quiet. */
 export function GreetingMonths({ months }: { months: GreetingMonthData[] }) {
@@ -52,7 +52,7 @@ export function GreetingMonths({ months }: { months: GreetingMonthData[] }) {
 
 export function GreetingRows({ rows }: { rows: GreetingRowData[] }) {
   return (
-    <ul className="mt-2.5 flex flex-col gap-1.5 border-t border-divider pt-2.5">
+    <ul className="mt-2.5 flex flex-col gap-1.5 rule-t pt-2.5">
       {rows.map((r) => (
         <li key={r.key} className="flex items-center gap-2 text-xs font-semibold">
           <i aria-hidden="true" className="size-2 shrink-0 rounded-[3px]" style={{ background: `var(--card-${r.colorKey})` }} />

@@ -30,7 +30,7 @@ export function PaymentsCard({ view, pickName, picked, allHref }: { view: Paymen
           </div>
           <ul>
             {rows.map((r) => (
-              <li key={r.id} className="border-t border-divider py-2.5">
+              <li key={r.id} className="rule-t py-2.5">
                 <div className="flex items-start justify-between gap-3 sm:hidden">
                   <span className="flex min-w-0 items-start gap-2">
                     <i aria-hidden="true" className="mt-1 size-2.5 shrink-0 rounded-[3px]" style={{ background: `var(--card-${r.colorKey})` }} />
@@ -91,7 +91,7 @@ export function PaymentsCard({ view, pickName, picked, allHref }: { view: Paymen
           ))}
         </div>
       )}
-      <div className={`flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3 text-xs font-semibold text-muted ${view.tiles ? "" : "mt-auto"}`}>
+      <div className={`flex flex-wrap items-center justify-between gap-2 rule-t pt-3 text-xs font-semibold text-muted ${view.tiles ? "" : "mt-auto"}`}>
         <span>{view.foot}</span>
         <span className="flex items-center gap-4">
           {view.rows.length > SHOWN && (

@@ -16,7 +16,7 @@ export function ComingUpCard({ detail }: { detail: PickDetail }) {
       {coming.length === 0 ? (
         <p className="py-8 text-center text-sm font-semibold text-muted">Nothing due in the next 45 days from what&rsquo;s recorded.</p>
       ) : (
-        <ul className="flex flex-1 flex-col divide-y divide-divider">
+        <ul className="flex flex-1 flex-col divide-rule">
           {coming.map((c) => (
             <li key={c.key} className="flex items-center gap-3 py-2.5">
               <i aria-hidden="true" className="size-2.5 shrink-0 rounded-[3px]" style={{ background: `var(--card-${c.color})` }} />

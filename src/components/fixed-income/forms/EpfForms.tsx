@@ -92,7 +92,7 @@ export function EpfEntriesList() {
   return (
     <section aria-label="EPF entries" className="flex flex-col gap-2">
       <h2 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Every row · {forms.entries.length}</h2>
-      <ul className="flex flex-col divide-y divide-divider rounded-[14px] surface-edge">
+      <ul className="flex flex-col divide-rule rounded-[14px] surface-edge">
         {forms.entries.map((e) => (
           <li key={e.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-3.5 py-2.5 text-sm">
             <span className="w-28 font-bold">{e.kind === "Contribution" ? wageMonthLabel(e.wageMonth ?? "") : e.kind === "Interest" ? "Interest" : "Opening balance"}</span>

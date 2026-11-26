@@ -82,11 +82,11 @@ export function TradeBook({ view, holdings }: { view: BookView; holdings: Holdin
           ) : (
             <p className="text-muted">Nothing sold yet</p>
           )}
-          <div className="flex justify-between gap-3 border-t border-divider pt-3 font-extrabold">
+          <div className="flex justify-between gap-3 rule-t pt-3 font-extrabold">
             <span>Held today</span>
             <span className="tabular-nums">{view.heldToday}</span>
           </div>
-          <div className="mt-1 flex flex-col gap-2.5 border-t border-divider pt-3.5">
+          <div className="mt-1 flex flex-col gap-2.5 rule-t pt-3.5">
             <h3 className="text-sm font-extrabold">
               What a share cost, by how it came<small className="ml-2 text-xs font-semibold text-muted">in rupees, on the day</small>
             </h3>
@@ -211,7 +211,7 @@ function BookRow({ r, name }: { r: BookRowView; name: string }) {
   const { open } = useTradeForms();
   const tone = { rise: "text-warning-text", fall: "text-positive", quiet: "text-muted" } as const;
   return (
-    <div className={`grid grid-cols-2 items-center gap-x-3.5 gap-y-1 border-t border-divider px-1.5 py-2.5 ${COLS} ${r.problem ? "rounded-[12px] bg-negative-tint" : ""}`}>
+    <div className={`grid grid-cols-2 items-center gap-x-3.5 gap-y-1 rule-t px-1.5 py-2.5 ${COLS} ${r.problem ? "rounded-[12px] bg-negative-tint" : ""}`}>
       <span className="text-[13px] font-extrabold">{r.date}</span>
       <span className="max-lg:justify-self-end"><KindBadge kind={r.kind} label={r.kindLabel} /></span>
       <Cell label="Shares">

@@ -46,7 +46,7 @@ export function GainCard({ view }: { view: GainView }) {
           </li>
         ))}
       </ul>
-      <div className="mt-1 flex items-baseline justify-between gap-3 border-t border-divider pt-3 text-[13px] font-semibold">
+      <div className="mt-1 flex items-baseline justify-between gap-3 rule-t pt-3 text-[13px] font-semibold">
         <span>Together</span>
         <b className={`font-extrabold ${TONE[view.totalTone]}`}>
           {view.total}

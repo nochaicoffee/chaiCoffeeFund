@@ -65,7 +65,7 @@ export function HoldingsTable({ rows: now, asOf }: { rows: HoldingTableRow[]; as
         {holdingGroups(rows).filter((g) => active === "all" || active === g.market).map((g) => {
           return (
             <div key={g.market} role="group" aria-label={g.title}>
-              <div className="flex items-baseline justify-between border-b border-divider pt-3.5 pb-1.5 text-[11px] font-extrabold tracking-[0.05em] text-muted uppercase">
+              <div className="flex items-baseline justify-between rule-b pt-3.5 pb-1.5 text-[11px] font-extrabold tracking-[0.05em] text-muted uppercase">
                 <span>{g.title}</span>
                 <b className="text-[12.5px] tracking-normal text-fg normal-case">{g.summary}</b>
               </div>
@@ -82,7 +82,7 @@ export function HoldingsTable({ rows: now, asOf }: { rows: HoldingTableRow[]; as
 
 function Row({ r, dayLabel }: { r: HoldingTableRow; dayLabel: string }) {
   return (
-    <div className={`grid items-center gap-x-3.5 gap-y-2 border-b border-divider py-3 last:border-b-0 max-lg:grid-cols-2 ${COLS}`}>
+    <div className={`grid items-center gap-x-3.5 gap-y-2 rule-b py-3 last:border-b-0 max-lg:grid-cols-2 ${COLS}`}>
       <div className="flex min-w-0 items-center gap-3 max-lg:col-span-2">
         <span aria-hidden="true" className="flex size-[38px] shrink-0 items-center justify-center rounded-[11px] text-[10px] font-extrabold text-on-card" style={{ background: `linear-gradient(155deg, var(--card-${r.colorKey}-from), var(--card-${r.colorKey}-to))` }}>
           {r.tile}

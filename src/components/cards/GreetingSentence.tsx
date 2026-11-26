@@ -14,7 +14,7 @@ export function GreetingSentence({ parts, cards }: { parts: SentencePart[]; card
   return <PointingSentence parts={parts} has={(point) => !!cards[point as keyof GreetingCards]} card={(point) => <CardBody point={point as keyof GreetingCards} cards={cards} />} />;
 }
 
-const NOTE = "mt-2.5 border-t border-divider pt-2 text-[11px] font-semibold text-muted";
+const NOTE = "mt-2.5 rule-t pt-2 text-[11px] font-semibold text-muted";
 
 /**
  * The period's months as small bars (as the design draws them): `stack` has every month in its
@@ -111,7 +111,7 @@ function CardBody({ point, cards }: { point: keyof GreetingCards; cards: Greetin
         <CardHead title={title} total={total} />
         <Strip months={months} mode="lit" lit={lit} />
         {rows.length > 0 && (
-          <ul className="mt-2.5 flex flex-col gap-1.5 border-t border-divider pt-2.5">
+          <ul className="mt-2.5 flex flex-col gap-1.5 rule-t pt-2.5">
             {rows.map((r) => (
               <li key={r.key} className="flex items-center gap-2 text-xs font-semibold">
                 <i aria-hidden="true" className="size-2 shrink-0 rounded-[3px]" style={{ background: r.swatch }} />
@@ -132,7 +132,7 @@ function CardBody({ point, cards }: { point: keyof GreetingCards; cards: Greetin
     return (
       <>
         <CardHead title={title} total={total} />
-        <ul className="mt-2.5 flex flex-col gap-2 border-t border-divider pt-2.5">
+        <ul className="mt-2.5 flex flex-col gap-2 rule-t pt-2.5">
           {rows.map((r) => (
             <li key={r.key} className="flex items-center gap-2 text-xs font-semibold">
               <Mono row={r} />

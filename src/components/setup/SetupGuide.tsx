@@ -137,7 +137,7 @@ SESSION_SECRET=(32 or more random characters)`}</Code>
                 <th className="px-4 py-2 font-extrabold">What to put</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-divider">
+            <tbody className="divide-rule">
               {[
                 ["GOOGLE_SERVICE_ACCOUNT_KEY", "The whole key file, pasted: open the downloaded .json in a text editor, select all, copy (step 3)."],
                 ["GOOGLE_SHEETS_SPREADSHEET_ID", "The Sheet's ID (step 4)."],

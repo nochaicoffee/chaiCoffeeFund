@@ -37,7 +37,7 @@ export function DepositsTable({ rows }: { rows: DepositTableRow[] }) {
           <span className="w-[116px]" />
         </div>
         {rows.map((r, i) => (
-          <div key={r.id} className={`grid items-center gap-x-3 gap-y-2 border-t border-divider py-3.5 max-lg:grid-cols-2 ${COLS} ${r.due ? "rounded-[14px] bg-negative-tint/60 px-3" : "px-1"}`}>
+          <div key={r.id} className={`grid items-center gap-x-3 gap-y-2 rule-t py-3.5 max-lg:grid-cols-2 ${COLS} ${r.due ? "rounded-[14px] bg-negative-tint/60 px-3" : "px-1"}`}>
             <div className="flex min-w-0 items-center gap-3 max-lg:col-span-2">
               <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-[11px] text-[11px] font-extrabold text-on-card" style={{ background: `linear-gradient(155deg, var(--card-${CHIPS[i % CHIPS.length]}-from), var(--card-${CHIPS[i % CHIPS.length]}-to))` }}>
                 FD

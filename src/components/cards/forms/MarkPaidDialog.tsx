@@ -113,7 +113,7 @@ export function MarkPaidDialog({
           {formatInrExact(statement.totalAmountDue)}
         </SummaryRow>
         <SummaryRow label="Minimum due">{formatInrExact(statement.minimumAmountDue)}</SummaryRow>
-        <div className="mt-1 flex flex-col gap-2 border-t border-divider pt-2">
+        <div className="mt-1 flex flex-col gap-2 rule-t pt-2">
           {bill?.status === "Pending" ? (
             <>
               <SummaryRow label="Left to pay" strong>

@@ -27,7 +27,7 @@ export function ComingUpCard({ card, picked, onPick }: { card: ComingUpView; pic
       ) : (
         <ul className="flex flex-1 flex-col">
           {rows.map((r) => (
-            <li key={r.id} className={`flex items-center gap-3 border-t border-divider first:border-t-0 motion-safe:transition-opacity ${picked !== "all" && picked !== r.policyId ? "opacity-40" : ""}`}>
+            <li key={r.id} className={`flex items-center gap-3 rule-t first:border-t-0 motion-safe:transition-opacity ${picked !== "all" && picked !== r.policyId ? "opacity-40" : ""}`}>
               <button type="button" onClick={() => onPick(r.policyId)} className="flex min-w-0 flex-1 items-center gap-3.5 py-3.5 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent">
                 <span className={`flex w-12 shrink-0 flex-col items-center rounded-[12px] py-1.5 ${r.soon ? "bg-warning-tint text-warning-text" : "bg-fill"}`}>
                   <b className="text-lg leading-none font-extrabold">{r.day}</b>
@@ -46,7 +46,7 @@ export function ComingUpCard({ card, picked, onPick }: { card: ComingUpView; pic
           ))}
         </ul>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3 text-xs font-semibold text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-2 rule-t pt-3 text-xs font-semibold text-muted">
         <span>{card.foot}</span>
         <span className="rounded-full bg-fill px-2.5 py-1 text-[11px] font-extrabold">From each policy&apos;s dates</span>
       </div>

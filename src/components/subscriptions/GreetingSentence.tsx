@@ -48,7 +48,7 @@ function CardBody({ point, cards }: { point: keyof GreetingCards; cards: Greetin
       <>
         <CardHead title={cards.paid.title} total={cards.paid.total} />
         <Strip months={cards.paid.months} />
-        <div className="mt-2.5 border-t border-divider pt-2 text-[11px] font-semibold text-muted">{cards.paid.note}</div>
+        <div className="mt-2.5 rule-t pt-2 text-[11px] font-semibold text-muted">{cards.paid.note}</div>
       </>
     );
   }
@@ -57,7 +57,7 @@ function CardBody({ point, cards }: { point: keyof GreetingCards; cards: Greetin
       <>
         <CardHead title={cards.average.title} total={cards.average.total} />
         <Strip months={cards.average.months} average={cards.average.average} />
-        <div className="mt-2.5 border-t border-divider pt-2 text-[11px] font-semibold text-muted">{cards.average.note}</div>
+        <div className="mt-2.5 rule-t pt-2 text-[11px] font-semibold text-muted">{cards.average.note}</div>
       </>
     );
   }
@@ -66,7 +66,7 @@ function CardBody({ point, cards }: { point: keyof GreetingCards; cards: Greetin
       <>
         <CardHead title={cards.biggest.title} total={cards.biggest.total} />
         <Strip months={cards.biggest.months} />
-        <ul className="mt-2.5 flex flex-col gap-1.5 border-t border-divider pt-2.5">
+        <ul className="mt-2.5 flex flex-col gap-1.5 rule-t pt-2.5">
           {cards.biggest.rows.map((r) => (
             <li key={r.key} className="flex items-center gap-2 text-xs font-semibold">
               <Mono mark={r.mark} size={18} />

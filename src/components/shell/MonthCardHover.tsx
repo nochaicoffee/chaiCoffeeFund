@@ -97,7 +97,7 @@ export function MonthCardHover({
         {/* Its two outer sides carry the card's edge round the point: bottom and right when the card is above the cell, top and left when it's below. */}
         <span
           aria-hidden="true"
-          className="absolute -bottom-1.5 left-[var(--arrow,50%)] size-3 -translate-x-1/2 rotate-45 rounded-[2px] border-r border-b border-surface-line bg-surface in-data-[below=true]:top-[-6px] in-data-[below=true]:bottom-auto in-data-[below=true]:border-r-0 in-data-[below=true]:border-b-0 in-data-[below=true]:border-t in-data-[below=true]:border-l"
+          className="absolute -bottom-1.5 left-[var(--arrow,50%)] size-3 -translate-x-1/2 rotate-45 rounded-[2px] border-r-[length:var(--surface-edge-width)] border-b-[length:var(--surface-edge-width)] [border-color:var(--surface-edge,var(--surface-line))] bg-surface in-data-[below=true]:top-[-6px] in-data-[below=true]:bottom-auto in-data-[below=true]:border-r-0 in-data-[below=true]:border-b-0 in-data-[below=true]:border-t-[length:var(--surface-edge-width)] in-data-[below=true]:border-l-[length:var(--surface-edge-width)]"
         />
       </div>
     </div>

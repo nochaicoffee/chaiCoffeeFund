@@ -51,7 +51,7 @@ export function LoadCard({ load, picked }: { load: LoadView | null; picked: stri
           </div>
           <ul className="flex flex-col">
             {load.segments.map((s) => (
-              <li key={s.loan.id} className={`grid grid-cols-[12px_minmax(0,1fr)_auto_56px] items-center gap-3 border-b border-divider py-2.5 text-[13px] ${picked && picked !== s.loan.id ? "opacity-35" : ""}`}>
+              <li key={s.loan.id} className={`grid grid-cols-[12px_minmax(0,1fr)_auto_56px] items-center gap-3 rule-b py-2.5 text-[13px] ${picked && picked !== s.loan.id ? "opacity-35" : ""}`}>
                 <ColorMark colorKey={s.loan.colorKey} />
                 <b className="truncate font-extrabold">{s.loan.name}</b>
                 <b className="font-extrabold tabular-nums">{s.amount}</b>

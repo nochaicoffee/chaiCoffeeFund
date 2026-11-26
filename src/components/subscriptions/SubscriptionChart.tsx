@@ -94,9 +94,9 @@ function TrendCard({ month, running, lineColor }: { month: TrendMonthView; runni
           ))}
         </ul>
       )}
-      {card.more > 0 && <div className="mt-2 border-t border-divider pt-2 text-[11px] font-semibold text-muted">and {card.more} more {card.more === 1 ? "renewal" : "renewals"}</div>}
+      {card.more > 0 && <div className="mt-2 rule-t pt-2 text-[11px] font-semibold text-muted">and {card.more} more {card.more === 1 ? "renewal" : "renewals"}</div>}
       {running && (
-        <div className="mt-2 flex items-start gap-2 border-t border-divider pt-2">
+        <div className="mt-2 flex items-start gap-2 rule-t pt-2">
           <span aria-hidden="true" className="mt-[7px] h-[2.5px] w-3 shrink-0 rounded-full" style={{ background: lineColor }} />
           <span className="min-w-0 text-[11.5px] leading-snug font-extrabold tabular-nums">
             {running.label}
@@ -160,7 +160,7 @@ function Trend({ chart, pick }: { chart: ChartView; pick: PickView }) {
       {!phone &&
         [0, max / 2, max].map((v) => (
           <span key={v} aria-hidden="true">
-            <span className={`absolute right-0 border-t border-divider ${v ? "border-dashed" : ""}`} style={{ left, bottom: bottom + Y(v) }} />
+            <span className={`absolute right-0 rule-t ${v ? "border-dashed" : ""}`} style={{ left, bottom: bottom + Y(v) }} />
             <span className="absolute left-0 text-[10.5px] font-bold text-muted" style={{ bottom: bottom + Y(v) - 6 }}>
               {formatInrCompact(v)}
             </span>

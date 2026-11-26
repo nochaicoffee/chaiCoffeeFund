@@ -205,7 +205,7 @@ export function Sidebar({
         </div>
       </nav>
 
-      <header className="sticky top-[env(safe-area-inset-top,0px)] z-20 flex min-h-14 items-center justify-between border-b border-divider bg-page py-1.5 pr-[max(0.75rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] md:hidden">
+      <header className="sticky top-[env(safe-area-inset-top,0px)] z-20 flex min-h-14 items-center justify-between rule-b bg-page py-1.5 pr-[max(0.75rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] md:hidden">
         <Link href="/" className={`rounded-full ${FOCUS_RING}`}>
           <LogoLockup appName={appName} size={26} />
         </Link>
@@ -261,7 +261,7 @@ export function Sidebar({
 
       <nav
         aria-label={`${appName} sections`}
-        className="fixed inset-x-0 bottom-0 z-30 flex border-t border-divider bg-surface pt-2 pr-[max(0.5rem,env(safe-area-inset-right))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pl-[max(0.5rem,env(safe-area-inset-left))] md:hidden"
+        className="fixed inset-x-0 bottom-0 z-30 flex rule-t bg-surface pt-2 pr-[max(0.5rem,env(safe-area-inset-right))] pb-[max(0.5rem,env(safe-area-inset-bottom))] pl-[max(0.5rem,env(safe-area-inset-left))] md:hidden"
       >
         {PHONE_TABS.map((section) => (
           <PhoneTab key={section.href} section={section} active={isActiveSection(section.href, pathname)} inSheetTrap={menuOpen} />

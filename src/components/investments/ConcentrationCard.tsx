@@ -50,7 +50,7 @@ export function ConcentrationCard({ view, limits }: { view: ConcentrationView; l
       </div>
       <p className="mt-4 text-xs font-semibold text-muted">Every holding, biggest first, as a share of the whole: hover a piece.</p>
 
-      <div className="flex flex-col gap-3 border-t border-divider pt-3">
+      <div className="flex flex-col gap-3 rule-t pt-3">
         <b className="text-[13px] font-extrabold">Your limits <small className="font-semibold text-muted">yours, not the app&apos;s</small></b>
         {limits.length === 0 ? (
           <p className="text-xs font-semibold text-muted">You haven&apos;t set any limits. Set one (one holding at most 30%, say) and this checks it against what you hold today. Nothing is set for you.</p>

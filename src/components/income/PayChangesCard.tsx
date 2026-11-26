@@ -65,7 +65,7 @@ export function PayChangesCard({ card }: { card: PayChangesData }) {
           })}
         </ul>
       )}
-      <p className="border-t border-divider pt-3 text-[11.5px] font-semibold text-muted">A raise, a bigger payment or a lower dividend, newest first.</p>
+      <p className="rule-t pt-3 text-[11.5px] font-semibold text-muted">A raise, a bigger payment or a lower dividend, newest first.</p>
     </section>
   );
 }

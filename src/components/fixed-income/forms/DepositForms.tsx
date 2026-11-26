@@ -105,7 +105,7 @@ export function ClosedDeposits() {
   return (
     <section aria-label="Matured and pre-closed" className="flex flex-col gap-2">
       <h3 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Matured and pre-closed · {closed.length}</h3>
-      <ul className="flex flex-col divide-y divide-divider rounded-[14px] surface-edge">
+      <ul className="flex flex-col divide-rule rounded-[14px] surface-edge">
         {closed.map((d) => (
           <li key={d.id} className="flex flex-wrap items-center gap-x-4 gap-y-1 px-3.5 py-2.5 text-sm">
             <span className="min-w-40 font-bold">{d.name}</span>

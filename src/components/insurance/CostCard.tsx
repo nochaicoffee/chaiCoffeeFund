@@ -31,7 +31,7 @@ export function CostCard({ view }: { view: CostView }) {
           </div>
           <ul>
             {view.rows.map((r) => (
-              <li key={r.id} className={`${GRID} items-center border-t border-divider py-2.5 text-[13px] font-bold`}>
+              <li key={r.id} className={`${GRID} items-center rule-t py-2.5 text-[13px] font-bold`}>
                 <span className="flex min-w-0 items-center gap-2">
                   <TileMark icon={r.icon} colorKey={r.colorKey} size={24} />
                   <b className="truncate text-[12.5px] font-extrabold">{r.name}</b>
@@ -44,7 +44,7 @@ export function CostCard({ view }: { view: CostView }) {
           </ul>
         </div>
       </div>
-      <p className="mt-auto border-t border-divider pt-3 text-xs font-semibold text-muted">{view.note}</p>
+      <p className="mt-auto rule-t pt-3 text-xs font-semibold text-muted">{view.note}</p>
     </WidgetCard>
   );
 }

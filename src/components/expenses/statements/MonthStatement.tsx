@@ -60,7 +60,7 @@ export function MonthStatement({ view }: { view: MonthStatementView }) {
         {view.addsUp ? (
           <dl className="grid">
             {view.addsUp.map((a) => (
-              <div key={a.key} className="flex items-center justify-between gap-3.5 border-b border-divider py-2.5 text-[13.5px] font-semibold">
+              <div key={a.key} className="flex items-center justify-between gap-3.5 rule-b py-2.5 text-[13.5px] font-semibold">
                 <dt className="grid">
                   {a.label}
                   {a.note && <small className="text-[11.5px] text-muted">{a.note}</small>}

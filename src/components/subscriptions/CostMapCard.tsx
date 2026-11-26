@@ -402,7 +402,7 @@ export function CostMapCard({
       )}
 
       {view.stopped.length > 0 && (
-        <div className="flex flex-wrap items-center gap-2.5 border-t border-divider pt-2.5" onPointerLeave={fromPointer(null)}>
+        <div className="flex flex-wrap items-center gap-2.5 rule-t pt-2.5" onPointerLeave={fromPointer(null)}>
           <span className="text-xs font-medium text-muted">Not in the map:</span>
           {view.stopped.map((s) => (
             <button

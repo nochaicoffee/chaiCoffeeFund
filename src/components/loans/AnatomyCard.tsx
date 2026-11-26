@@ -25,7 +25,7 @@ export function AnatomyCard({ rows, scale, picked }: { rows: AnatomyRow[]; scale
           </span>
         </div>
         {rows.map((r) => (
-          <div key={r.loan.id} className={`grid grid-cols-[minmax(0,140px)_minmax(0,1fr)_92px] items-center gap-4 border-t border-divider py-3 first-of-type:border-t-0 max-sm:grid-cols-[minmax(0,1fr)_64px] ${picked && picked !== r.loan.id ? "opacity-25" : r.loan.closed ? "opacity-55" : ""}`}>
+          <div key={r.loan.id} className={`grid grid-cols-[minmax(0,140px)_minmax(0,1fr)_92px] items-center gap-4 rule-t py-3 first-of-type:border-t-0 max-sm:grid-cols-[minmax(0,1fr)_64px] ${picked && picked !== r.loan.id ? "opacity-25" : r.loan.closed ? "opacity-55" : ""}`}>
             <span className="flex min-w-0 items-center gap-2.5 max-sm:col-span-2">
               <LoanIcon category={r.loan.category} colorKey={r.loan.colorKey} size={28} closed={r.loan.closed} />
               <span className="min-w-0">

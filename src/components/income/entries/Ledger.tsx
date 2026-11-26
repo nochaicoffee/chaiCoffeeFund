@@ -122,7 +122,7 @@ export function Ledger({ rows, sources, today, year, current }: { rows: LedgerRo
           </table>
         </div>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-divider pt-3 text-[11.5px] font-semibold text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-3 rule-t pt-3 text-[11.5px] font-semibold text-muted">
         <span>
           Showing {Math.min(shown, received.length)} of {received.length} received {current ? "this year" : `in ${year}`}. {current && "Upcoming ones come from each source's schedule at its usual amount; nothing is saved until one lands. "} <b className="text-fg">Change</b> compares a payment with the one before it.
         </span>
@@ -159,7 +159,7 @@ function Row({ row }: { row: LedgerRow }) {
   const entry = row.entryId ? forms.entries[row.entryId] : undefined;
   const edit = !disabledReason && entry ? () => open({ kind: "entry", start: { kind: "edit", entry } }) : undefined;
   return (
-    <tr className={`border-t border-divider ${row.kind === "upcoming" ? "text-muted" : ""}`}>
+    <tr className={`rule-t ${row.kind === "upcoming" ? "text-muted" : ""}`}>
       <td className="py-2.5 pr-3">
         <button type="button" onClick={edit} disabled={!edit} aria-label={edit ? `Edit payment: ${row.name}, ${row.amount}` : undefined} className="flex cursor-pointer items-center gap-2.5 rounded-control text-left focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-default">
           <SourceIcon icon={row.icon} name={row.name} colorKey={row.colorKey} size={30} />

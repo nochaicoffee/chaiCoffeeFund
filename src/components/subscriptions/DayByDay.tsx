@@ -83,7 +83,7 @@ function DayCard({ day, hint }: { day: GridDayView; hint: string }) {
           </li>
         ))}
       </ul>
-      {footer && <div className={`mt-2.5 border-t border-divider pt-2 text-[11px] font-semibold ${day.kind === "missing" ? "text-warning-text" : "text-muted"}`}>{footer}</div>}
+      {footer && <div className={`mt-2.5 rule-t pt-2 text-[11px] font-semibold ${day.kind === "missing" ? "text-warning-text" : "text-muted"}`}>{footer}</div>}
     </>
   );
 }
@@ -116,7 +116,7 @@ function MonthCard({ month, pickId }: { month: GridMonthView; pickId: string }) 
           ))}
         </ul>
       )}
-      <div className="mt-2.5 border-t border-divider pt-2 text-[11px] font-semibold text-muted">{card.footer}</div>
+      <div className="mt-2.5 rule-t pt-2 text-[11px] font-semibold text-muted">{card.footer}</div>
     </>
   );
 }

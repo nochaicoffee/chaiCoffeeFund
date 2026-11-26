@@ -67,7 +67,7 @@ export function LoansTable({ view }: { view: LoansTableView }) {
           <span className="text-right">Next due</span>
         </div>
         {view.rows.map((r) => (
-          <div key={r.id} className={`grid items-start gap-x-3 gap-y-3 border-t border-divider px-1 py-3.5 max-lg:grid-cols-2 ${COLS} ${r.repaid || r.settled ? "opacity-60" : ""}`}>
+          <div key={r.id} className={`grid items-start gap-x-3 gap-y-3 rule-t px-1 py-3.5 max-lg:grid-cols-2 ${COLS} ${r.repaid || r.settled ? "opacity-60" : ""}`}>
             <div className="flex min-w-0 items-start gap-3 max-lg:col-span-2">
               <Initial name={r.name} colorKey={r.colorKey} />
               <span className="min-w-0 flex-1">
@@ -190,7 +190,7 @@ export function MoneyBackCard({ view }: { view: MoneyBackView }) {
       {rows.length > 0 && (
         <ul className="flex flex-col">
           {rows.map((r) => (
-            <li key={r.key} className="grid grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-3 border-t border-divider py-3 first:border-t-0 first:pt-0">
+            <li key={r.key} className="grid grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-3 rule-t py-3 first:border-t-0 first:pt-0">
               <span aria-hidden="true" className="flex h-12 flex-col items-center justify-center rounded-[12px] bg-fill leading-none">
                 <b className="text-lg font-extrabold tabular-nums">{r.day}</b>
                 <small className="mt-0.5 text-[9px] font-extrabold tracking-[0.06em] text-muted">{r.month}</small>

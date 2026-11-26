@@ -12,7 +12,7 @@ export function TransfersCard({ rows }: { rows: TransferRow[] }) {
     <WidgetCard label="Transfers" title="Transfers to and from your brokers" note="newest first · pick one to edit or delete it" gap="gap-3">
       <ul className="flex flex-col">
         {rows.map((r) => (
-          <li key={r.id} className="border-t border-divider first:border-t-0">
+          <li key={r.id} className="rule-t first:border-t-0">
             <button type="button" onClick={() => open({ kind: "editTransfer", id: r.id })} aria-label={`Edit transfer: ${r.title}, ${r.date}`} className="grid w-full cursor-pointer grid-cols-[4.5rem_minmax(0,1fr)_auto] items-center gap-3 rounded-lg px-1 py-2.5 text-left hover:bg-fill focus-visible:outline-2 focus-visible:outline-accent">
               <span className="text-xs font-bold text-muted">{r.date}</span>
               <span className="min-w-0">

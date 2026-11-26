@@ -45,7 +45,7 @@ export function SourcesCard({ table, picked, onPick }: { table: SourcesTable; pi
               {table.rows.map((row) => {
                 const top = Math.max(1, ...row.months.map((m) => m.amount));
                 return (
-                  <tr key={row.id} className={`border-t border-divider ${row.inactive ? "opacity-60" : ""} ${picked === row.id ? "bg-accent-tint/50" : ""}`}>
+                  <tr key={row.id} className={`rule-t ${row.inactive ? "opacity-60" : ""} ${picked === row.id ? "bg-accent-tint/50" : ""}`}>
                     <td className="py-2.5 pr-3">
                       <button type="button" aria-pressed={picked === row.id} onClick={() => onPick(row.id)} className="flex cursor-pointer items-center gap-2.5 rounded-control text-left focus-visible:outline-2 focus-visible:outline-accent">
                         <SourceIcon icon={row.icon} name={row.name} colorKey={row.colorKey} size={32} />
@@ -89,7 +89,7 @@ export function SourcesCard({ table, picked, onPick }: { table: SourcesTable; pi
           </table>
         </div>
       )}
-      <p className="border-t border-divider pt-3 text-[11.5px] font-semibold text-muted">{table.note}</p>
+      <p className="rule-t pt-3 text-[11.5px] font-semibold text-muted">{table.note}</p>
     </section>
   );
 }

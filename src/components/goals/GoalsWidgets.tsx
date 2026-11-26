@@ -41,7 +41,7 @@ export function GoalsTableCard({ rows, pick, onPick }: { rows: TableRow[]; pick:
           {rows.map((r) => {
             const expanded = openIds.has(r.id);
             return (
-              <div key={r.id} className={`border-t border-divider ${r.off ? "opacity-60" : ""} ${dim(pick, r.topId)}`}>
+              <div key={r.id} className={`rule-t ${r.off ? "opacity-60" : ""} ${dim(pick, r.topId)}`}>
                 <div className={`grid ${cols} items-center gap-3 py-2.5`}>
                   <span className="flex min-w-0 items-center gap-3">
                     <button type="button" onClick={() => onPick(r.topId)} aria-label={`Open ${r.name}`} className="shrink-0 focus-visible:outline-2 focus-visible:outline-accent">
@@ -120,7 +120,7 @@ export function GoalsTableCard({ rows, pick, onPick }: { rows: TableRow[]; pick:
                       </div>
                     ))}
                     {r.boughtParts.length > 0 && (
-                      <div className="mt-1 flex flex-col gap-2 border-t border-divider pt-2 pl-4">
+                      <div className="mt-1 flex flex-col gap-2 rule-t pt-2 pl-4">
                         {r.boughtParts.map((part) => (
                           <SettledPartRow key={part.key} part={part} />
                         ))}
@@ -146,7 +146,7 @@ export function ComingUpCard({ rows, pick, onPick }: { rows: ComingUpRow[]; pick
       ) : (
         <ul className="flex flex-1 flex-col">
           {rows.map((r) => (
-            <li key={r.key} className={`border-t border-divider first:border-t-0 ${dim(pick, r.topId)}`}>
+            <li key={r.key} className={`rule-t first:border-t-0 ${dim(pick, r.topId)}`}>
               <button type="button" onClick={() => onPick(r.topId)} className={`flex w-full items-center gap-3 py-3 text-left focus-visible:outline-2 focus-visible:outline-accent ${r.risk ? "-mx-2 rounded-[12px] border-l-[3px] border-negative bg-negative-tint px-3" : ""}`}>
                 <GoalTile category={r.category} colorKey={r.colorKey} size={32} />
                 <span className="min-w-0 flex-1">
@@ -196,7 +196,7 @@ export function MonthCard({ view }: { view: MonthView }) {
       </div>
       <ul>
         {view.rows.map((r) => (
-          <li key={r.key} className="grid grid-cols-[minmax(0,1.6fr)_auto_minmax(0,1.4fr)_auto] items-center gap-4 border-t border-divider py-2.5 max-md:grid-cols-[minmax(0,1fr)_auto]">
+          <li key={r.key} className="grid grid-cols-[minmax(0,1.6fr)_auto_minmax(0,1.4fr)_auto] items-center gap-4 rule-t py-2.5 max-md:grid-cols-[minmax(0,1fr)_auto]">
             <span className="flex min-w-0 items-center gap-3">
               <GoalTile category={r.category} colorKey={r.colorKey} size={32} />
               <span className="min-w-0">
@@ -235,7 +235,7 @@ const Meter = ({ value, max, left, color }: { value: number; max: number; left: 
 export function AffordCard({ view }: { view: AffordView }) {
   const max = Math.max(view.required, view.leftAmount, view.planned, 1) * 1.08;
   const kv = (name: string, value: string) => (
-    <div className="flex items-center justify-between border-t border-divider py-2 text-[13px] font-semibold first:border-t-0">
+    <div className="flex items-center justify-between rule-t py-2 text-[13px] font-semibold first:border-t-0">
       <span className="text-muted">{name}</span>
       <b className="font-extrabold tabular-nums">{value}</b>
     </div>
@@ -359,7 +359,7 @@ export function SetAsidesCard({ rows, onPick }: { rows: EntryCard[]; onPick: (id
       ) : (
         <ul className="flex flex-1 flex-col">
           {rows.map((r) => (
-            <li key={r.id} className="border-t border-divider first:border-t-0">
+            <li key={r.id} className="rule-t first:border-t-0">
               <button type="button" onClick={() => onPick(r.topId)} className="flex w-full items-center gap-3 py-2.5 text-left focus-visible:outline-2 focus-visible:outline-accent">
                 <GoalTile category={r.category} colorKey={r.colorKey} size={30} />
                 <span className="min-w-0 flex-1">

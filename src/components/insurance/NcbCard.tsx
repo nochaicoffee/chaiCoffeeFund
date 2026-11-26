@@ -37,7 +37,7 @@ export function NcbCard({ view }: { view: NcbView }) {
           </div>
         ))}
       </div>
-      <p className="border-t border-divider pt-3 text-xs font-semibold text-muted">{view.note}</p>
+      <p className="rule-t pt-3 text-xs font-semibold text-muted">{view.note}</p>
     </WidgetCard>
   );
 }

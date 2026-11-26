@@ -83,7 +83,7 @@ function Table({ payments, all, lit = null, onPoint }: { payments: PaymentsView;
           role="row"
           key={r.key}
           onPointerEnter={(e) => e.pointerType !== "touch" && onPoint?.(r.subscriptionId)}
-          className={`grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-3 border-b border-divider py-[9px] text-[13px] hover:bg-fill motion-safe:transition-[opacity,background-color] motion-safe:duration-200 md:gap-x-0 md:py-[11px] ${columns} ${spot ? (r.subscriptionId === lit ? "bg-fill" : "opacity-40") : ""}`}
+          className={`grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-3 rule-b py-[9px] text-[13px] hover:bg-fill motion-safe:transition-[opacity,background-color] motion-safe:duration-200 md:gap-x-0 md:py-[11px] ${columns} ${spot ? (r.subscriptionId === lit ? "bg-fill" : "opacity-40") : ""}`}
         >
           {all ? (
             <span role="cell" className="flex min-w-0 items-center gap-2.5">
@@ -371,7 +371,7 @@ function NextCard({ row }: { row: ChargedToRow }) {
           </li>
         ))}
       </ul>
-      <div className="mt-3 border-t border-divider pt-2.5">
+      <div className="mt-3 rule-t pt-2.5">
         <div className="flex items-center justify-between gap-3 text-xs font-extrabold">
           <span>{next.title}</span>
           {next.total && <span className="tabular-nums">{next.total}</span>}

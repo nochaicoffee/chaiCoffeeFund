@@ -55,7 +55,7 @@ export function BlockCardBody({ block, per, picked }: { block: MapBlock; per: "m
           </Row>
         )}
       </div>
-      <div className="mt-3 border-t border-divider pt-2 text-[11px] font-semibold text-muted">{picked ? "Its payments are showing" : "Click to see its payments"}</div>
+      <div className="mt-3 rule-t pt-2 text-[11px] font-semibold text-muted">{picked ? "Its payments are showing" : "Click to see its payments"}</div>
     </>
   );
 }

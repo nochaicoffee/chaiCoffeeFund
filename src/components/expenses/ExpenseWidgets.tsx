@@ -139,7 +139,7 @@ export function MonthsTable({ view }: { view: MonthsView }) {
       <div className="-mx-2 overflow-x-auto px-2">
         <table className="w-full min-w-[960px] border-collapse text-[13.5px]">
           <thead>
-            <tr className="border-b border-divider text-[11px] font-extrabold tracking-[0.05em] text-muted uppercase">
+            <tr className="rule-b text-[11px] font-extrabold tracking-[0.05em] text-muted uppercase">
               {head.map((h, i) => (
                 <th key={h} scope="col" className={`px-2.5 py-2.5 ${i === 0 ? "text-left" : "text-right"}`}>
                   {h}
@@ -149,7 +149,7 @@ export function MonthsTable({ view }: { view: MonthsView }) {
           </thead>
           <tbody>
             {view.rows.map((r) => (
-              <tr key={r.month} className={`border-b border-divider ${r.picked ? "bg-accent-tint" : "hover:bg-fill"}`}>
+              <tr key={r.month} className={`rule-b ${r.picked ? "bg-accent-tint" : "hover:bg-fill"}`}>
                 <th scope="row" className="px-2.5 py-2.5 text-left">
                   <Link href={`/expenses?month=${r.month}`} scroll={false} aria-current={r.picked ? "true" : undefined} className="font-extrabold hover:underline focus-visible:outline-2 focus-visible:outline-accent">
                     {r.label}

@@ -213,7 +213,7 @@ export function CardFormDialog({
             <polyline points="6 9 12 15 18 9" />
           </svg>
         </summary>
-        <div className="flex flex-col gap-4 border-t border-divider px-4 py-4">
+        <div className="flex flex-col gap-4 rule-t px-4 py-4">
           <PdfPasswordField id="card-password" help="Opens this card's statement PDFs during email import. Stored in the Cards tab; never shown again after saving." saved={Boolean(card?.hasPdfPassword)} value={password} onChange={setPassword} />
           <Field id="card-keywords" label="Subject keywords" help={KEYWORDS_HELP}>
             <TextInput {...describedBy("card-keywords", undefined, true)} name="emailMatchKeywords" value={keywords} onChange={(e) => setKeywords(e.target.value)} placeholder="e.g. edge, csb" invalid={false} />
