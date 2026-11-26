@@ -1,0 +1,164 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-26T12:00:00Z"
+  },
+  "title": "Neubrutalism Dashboards",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 2900,
+      "title": "Overview",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NbAccounts.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 2300,
+      "title": "Accounts",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NbCards.dc.html": {
+      "x": 3040,
+      "y": 0,
+      "w": 1440,
+      "h": 1900,
+      "title": "Cards",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NbSubscriptions.dc.html": {
+      "x": 0,
+      "y": 3020,
+      "w": 1440,
+      "h": 2050,
+      "title": "Subscriptions",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NbIncome.dc.html": {
+      "x": 1520,
+      "y": 3020,
+      "w": 1440,
+      "h": 2500,
+      "title": "Income",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NbExpenses.dc.html": {
+      "x": 3040,
+      "y": 3020,
+      "w": 1440,
+      "h": 1800,
+      "title": "Expenses",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NbDaily.dc.html": {
+      "x": 0,
+      "y": 5640,
+      "w": 1440,
+      "h": 2250,
+      "title": "Daily",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NbLoans.dc.html": {
+      "x": 1520,
+      "y": 5640,
+      "w": 1440,
+      "h": 2650,
+      "title": "Loans",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NbLent.dc.html": {
+      "x": 3040,
+      "y": 5640,
+      "w": 1440,
+      "h": 2100,
+      "title": "Lent out",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NbInsurance.dc.html": {
+      "x": 0,
+      "y": 8410,
+      "w": 1440,
+      "h": 2400,
+      "title": "Insurance",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NbFixedIncome.dc.html": {
+      "x": 1520,
+      "y": 8410,
+      "w": 1440,
+      "h": 2350,
+      "title": "Fixed Income",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NbInvestments.dc.html": {
+      "x": 3040,
+      "y": 8410,
+      "w": 1440,
+      "h": 3500,
+      "title": "Investments",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "NbGoals.dc.html": {
+      "x": 0,
+      "y": 12030,
+      "w": 1440,
+      "h": 2500,
+      "title": "Goals",
+      "expand": "fill",
+      "is_interactive": true
+    },
+    "Sidebar.dc.html": {
+      "x": 1520,
+      "y": 12030,
+      "w": 250,
+      "h": 760,
+      "title": "Sidebar (shared)"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "NbAccounts.dc.html",
+    "NbCards.dc.html",
+    "NbSubscriptions.dc.html",
+    "NbIncome.dc.html",
+    "NbExpenses.dc.html",
+    "NbDaily.dc.html",
+    "NbLoans.dc.html",
+    "NbLent.dc.html",
+    "NbInsurance.dc.html",
+    "NbFixedIncome.dc.html",
+    "NbInvestments.dc.html",
+    "NbGoals.dc.html",
+    "Sidebar.dc.html"
+  ],
+  "notes": {
+    "title": {
+      "x": 0,
+      "y": -260,
+      "text": "Neubrutalism \u00b7 every dashboard",
+      "kind": "title1",
+      "maxW": 4480
+    }
+  },
+  "designSystems": []
+}

@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Investments, Neubrutalism</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@700&display=swap">
+  <style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.nb { --y:#FFD43B; --p:#FF8FB1; --b:#7FD4FF; --v:#B79CFF; --g:#3FD6A6; --l:#C6F24E; --o:#FF9F3C; --r:#FF6B57; --ac:#9FB0FF; font-family:'Space Grotesk',system-ui,sans-serif; color:#111; background:#FFF3D6; background-image:radial-gradient(rgba(17,17,17,.16) 1.3px,transparent 1.8px); background-size:22px 22px; min-height:3500px; display:flex; flex-wrap:wrap; align-items:stretch; }
+.side { flex:0 0 250px; background:#fff; border-right:3px solid #111; }
+.main { flex:999 1 640px; min-width:0; padding:30px 38px 56px; display:flex; flex-direction:column; gap:24px; }
+.top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+.bx { border:3px solid #111; border-radius:20px; box-shadow:6px 6px 0 #111; background:#fff; padding:22px; min-width:0; }
+.lbl { font:700 12px/1.25 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.06em; }
+.tag { display:inline-block; font:700 11px/1 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.06em; padding:7px 12px; border:3px solid #111; border-radius:999px; background:var(--ac); }
+.gr { margin:12px 0 10px; font-size:58px; line-height:1; letter-spacing:-.04em; font-weight:700; }
+.sn { margin:0; font-size:19px; line-height:1.55; max-width:820px; font-weight:500; }
+.hl { font-weight:700; background:linear-gradient(transparent 58%,var(--ac) 58%); padding:0 3px; border-bottom:2px dotted #111; }
+.h2 { margin:0; font-size:25px; line-height:1.1; letter-spacing:-.025em; font-weight:700; }
+.sub { margin:4px 0 0; font-size:14px; line-height:1.4; font-weight:500; color:#3d3d3d; }
+.num { font-weight:700; letter-spacing:-.04em; font-variant-numeric:tabular-nums; line-height:1; }
+.btn { display:inline-block; cursor:pointer; font:700 14px/1 'Space Grotesk',sans-serif; padding:11px 16px; border:3px solid #111; border-radius:12px; background:#fff; box-shadow:3px 3px 0 #111; color:#111; text-decoration:none; }
+.chip { display:inline-flex; align-items:center; gap:7px; font-weight:700; font-size:14px; padding:6px 12px; border:3px solid #111; border-radius:12px; box-shadow:3px 3px 0 #111; background:#fff; }
+.pill { display:inline-block; font:700 11px/1 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.05em; padding:5px 9px; border:2.5px solid #111; border-radius:999px; background:#fff; }
+.prog { height:22px; border:3px solid #111; border-radius:999px; background:#fff; overflow:hidden; display:flex; }
+.prog > i { display:block; height:100%; border-right:3px solid #111; }
+.prog > i:last-child { border-right:none; }
+.seg { display:flex; border:3px solid #111; border-radius:12px; overflow:hidden; background:#fff; box-shadow:3px 3px 0 #111; font-weight:700; font-size:13px; }
+:where(.seg) > button { font:inherit; color:inherit; background:#fff; border:0; cursor:pointer; }
+.seg > button { padding:8px 12px; border-right:3px solid #111; }
+.seg > button:last-child { border-right:none; }
+.y{background:var(--y)} .p{background:var(--p)} .b{background:var(--b)} .v{background:var(--v)} .g{background:var(--g)} .l{background:var(--l)} .o{background:var(--o)} .r{background:var(--r)} .w{background:#fff} .k{background:#111;color:#fff} .i{background:#9FB0FF}
+.two { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
+.two > .bx { display:flex; flex-direction:column; gap:12px; }
+.hs { flex:0 0 auto; display:flex; align-items:center; gap:8px; padding:9px 14px; border:3px solid #111; border-radius:14px; font-weight:700; font-size:14px; box-shadow:3px 3px 0 #111; background:#fff; }
+.ret { border:3px solid #111; border-radius:18px; box-shadow:5px 5px 0 #111; padding:16px; min-width:0; }
+.t7 { display:grid; grid-template-columns:minmax(0,1.5fr) minmax(0,.7fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.1fr) minmax(0,1fr) minmax(0,.7fr); gap:10px; align-items:center; padding:11px 4px; border-bottom:3px solid #111; font-weight:600; font-size:14px; }
+.t7.h { font:700 11px 'Space Mono',monospace; text-transform:uppercase; padding-top:0; }
+.row { display:flex; align-items:center; gap:12px; padding:11px 13px; border:3px solid #111; border-radius:13px; box-shadow:3px 3px 0 #111; background:#fff; }
+.mx { display:grid; grid-template-columns:56px repeat(12,minmax(0,1fr)); gap:5px; align-items:center; }
+.mx > i { height:28px; border:2.5px solid #111; border-radius:6px; }
+.blk { border:3px solid #111; border-radius:12px; box-shadow:3px 3px 0 #111; padding:8px 10px; display:flex; flex-direction:column; justify-content:space-between; min-width:0; overflow:hidden; font-size:13px; font-weight:700; }
+@media (max-width:820px){ .two{grid-template-columns:minmax(0,1fr);} .main{padding:22px 16px 40px;} .gr{font-size:40px;} }
+  </style>
+</helmet>
+<div class="nb" style="--ac:#9FB0FF">
+  <div class="side"><dc-import name="Sidebar" active="investments" hint-size="250px,760px"></dc-import></div>
+  <main class="main">
+    <div class="top">
+      <span class="tag">Investments</span>
+      <div style="display:flex; gap:10px; flex-wrap:wrap"><button type="button" class="btn" aria-label="Refresh">↻</button><a class="btn" href="#">+ Add trade</a><a class="btn" href="#">Trades</a><a class="btn" href="#">Refresh prices</a></div>
+    </div>
+    <div>
+      <h1 class="gr">Good afternoon, Prathik</h1>
+      <p class="sn">Your <span class="hl">6 holdings</span> are worth <span class="hl">₹29,05,000</span>, up <span class="hl">₹4,80,450</span> on what you put in, with <span class="hl">₹2,15,450</span> waiting at your brokers.</p>
+    </div>
+
+    <div style="display:flex; gap:12px; overflow-x:auto; padding:2px 8px 10px 2px" aria-label="Pick what to look at">
+      <span class="hs k" style="box-shadow:3px 3px 0 #9FB0FF">Everything</span>
+      <span class="hs v">NTAP</span><span class="hs g">PPFAS Flexi Cap</span><span class="hs y">NIFTYBEES</span><span class="hs b">HDFCBANK</span><span class="hs p">VOO</span><span class="hs o">INFY</span>
+    </div>
+
+    <section class="bx k" style="padding:28px; box-shadow:9px 9px 0 #9FB0FF; display:flex; flex-direction:column; gap:16px">
+      <div style="display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; align-items:flex-start">
+        <div><span class="lbl" style="color:#9FB0FF">Everything · worth today</span><div class="num" style="font-size:76px;margin-top:8px;color:#fff">₹29,05,000</div><div style="display:flex;gap:10px;margin-top:12px;flex-wrap:wrap"><span class="chip l">▲ ₹4,80,450 · 19.8%</span><span class="chip w">Put in ₹24,24,550</span></div></div>
+        <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-end"><div class="seg" aria-label="What to draw"><button type="button" class="i">Worth</button><button type="button">Race</button></div><button type="button" class="btn" style="background:#222;color:#fff;box-shadow:3px 3px 0 #9FB0FF">Go back to ⌄</button></div>
+      </div>
+      <svg viewBox="0 0 1000 260" width="100%" height="260" role="img" aria-label="Worth over three years against what was put in, worth ending at 29 lakh">
+        <polygon points="0,240 100,232 200,222 300,214 400,200 500,190 600,178 700,166 800,150 900,138 1000,126 1000,250 0,250" fill="#333"></polygon>
+        <polyline points="0,240 100,232 200,222 300,214 400,200 500,190 600,178 700,166 800,150 900,138 1000,126" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="9 8"></polyline>
+        <polyline points="0,236 60,226 120,230 180,208 240,214 300,192 360,170 420,182 480,150 540,136 600,148 660,118 720,96 780,108 840,78 900,64 960,52 1000,40" fill="none" stroke="#9FB0FF" stroke-width="6" stroke-linejoin="round"></polyline>
+        <circle cx="1000" cy="40" r="10" fill="#FFD43B" stroke="#fff" stroke-width="4"></circle>
+        <g fill="#C6F24E" stroke="#fff" stroke-width="2"><rect x="96" y="234" width="10" height="16"></rect><rect x="296" y="226" width="10" height="24"></rect><rect x="496" y="228" width="10" height="22"></rect><rect x="696" y="220" width="10" height="30"></rect><rect x="896" y="230" width="10" height="20"></rect></g>
+      </svg>
+      <div style="display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center"><div style="display:flex;gap:16px;font-weight:700;font-size:13px"><span style="color:#9FB0FF">━ Worth</span><span>┅ Put in</span><span style="color:#C6F24E">▮ Money added</span></div><div class="seg" aria-label="How far back"><button type="button">1M</button><button type="button">6M</button><button type="button">1Y</button><button type="button" class="i">3Y</button><button type="button">All</button></div></div>
+    </section>
+
+    <section style="display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px" aria-label="Returns">
+      <div class="ret l"><span class="lbl">Total return</span><div class="num" style="font-size:32px;margin-top:8px">+19.8%</div><span style="font-size:13px;font-weight:700">₹4,80,450 on cost</span></div>
+      <div class="ret w"><span class="lbl">Yearly return</span><div class="num" style="font-size:32px;margin-top:8px">14.6%</div><span style="font-size:13px;font-weight:700">money-weighted</span></div>
+      <div class="ret w"><span class="lbl">Today</span><div class="num" style="font-size:32px;margin-top:8px">+₹6,210</div><span style="font-size:13px;font-weight:700">+0.21%</span></div>
+      <div class="ret r"><span class="lbl">Deepest fall</span><div class="num" style="font-size:32px;margin-top:8px">−11.4%</div><span style="font-size:13px;font-weight:700">Mar 2025, back in 4 months</span></div>
+    </section>
+
+    <section class="bx" style="display:flex; flex-direction:column; gap:6px">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><h2 class="h2">Holdings</h2><p class="sub">As they stand today, biggest first</p></div><div class="seg"><button type="button" class="k">All</button><button type="button">India</button><button type="button">US</button></div></div>
+      <div class="t7 h"><span>Holding</span><span>Quantity</span><span>Average cost</span><span>Price</span><span>Value</span><span>Gain</span><span>Share</span></div>
+      <div class="t7"><span style="display:flex;align-items:center;gap:8px"><i style="width:14px;height:14px;border:2.5px solid #111;border-radius:4px;background:#B79CFF"></i><b>NetApp · NTAP</b></span><span>126</span><span>$71.20</span><span>$100.40</span><b>₹11,40,000</b><span style="color:#1d7a3a">+₹2,99,250</span><span>39%</span></div>
+      <div class="t7"><span style="display:flex;align-items:center;gap:8px"><i style="width:14px;height:14px;border:2.5px solid #111;border-radius:4px;background:#3FD6A6"></i><b>PPFAS Flexi Cap</b></span><span>7,140</span><span>₹74.30</span><span>₹86.83</span><b>₹6,20,000</b><span style="color:#1d7a3a">+₹89,600</span><span>21%</span></div>
+      <div class="t7"><span style="display:flex;align-items:center;gap:8px"><i style="width:14px;height:14px;border:2.5px solid #111;border-radius:4px;background:#FFD43B"></i><b>NIFTYBEES</b></span><span>1,520</span><span>₹240.60</span><span>₹269.70</span><b>₹4,10,000</b><span style="color:#1d7a3a">+₹44,200</span><span>14%</span></div>
+      <div class="t7"><span style="display:flex;align-items:center;gap:8px"><i style="width:14px;height:14px;border:2.5px solid #111;border-radius:4px;background:#7FD4FF"></i><b>HDFCBANK</b></span><span>160</span><span>₹1,675</span><span>₹1,781</span><b>₹2,85,000</b><span style="color:#1d7a3a">+₹16,900</span><span>10%</span></div>
+      <div class="t7"><span style="display:flex;align-items:center;gap:8px"><i style="width:14px;height:14px;border:2.5px solid #111;border-radius:4px;background:#FF8FB1"></i><b>VOO</b></span><span>4.6</span><span>$435</span><span>$521</span><b>₹2,40,000</b><span style="color:#1d7a3a">+₹39,600</span><span>8%</span></div>
+      <div class="t7" style="border-bottom:none"><span style="display:flex;align-items:center;gap:8px"><i style="width:14px;height:14px;border:2.5px solid #111;border-radius:4px;background:#FF9F3C"></i><b>INFY</b></span><span>140</span><span>₹1,565</span><span>₹1,500</span><b>₹2,10,000</b><span style="color:#b3261e">−₹9,100</span><span>7%</span></div>
+    </section>
+
+    <div class="two">
+      <section class="bx">
+        <div><h2 class="h2">Cash at your brokers</h2><p class="sub">Waiting to be invested</p></div>
+        <div class="num" style="font-size:40px">₹2,15,450</div>
+        <div class="row b"><b style="flex:1">Zerodha</b><span class="sub" style="margin:0;color:#111">Updated Nov 21</span><b>₹1,40,450</b></div>
+        <div class="row y"><b style="flex:1">INDmoney · $832</b><span class="sub" style="margin:0;color:#111">at ₹90.15</span><b>₹75,000</b></div>
+      </section>
+      <section class="bx">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><h2 class="h2">Transfers to and from your brokers</h2><p class="sub">Newest first</p></div><a class="btn" href="#" style="padding:8px 11px">+ Add transfer</a></div>
+        <div class="row"><span class="pill">Nov 21</span><b style="flex:1">HDFC Savings → Zerodha</b><b>₹25,000</b></div>
+        <div class="row"><span class="pill">Oct 30</span><b style="flex:1">HDFC Savings → INDmoney</b><b>₹40,000</b></div>
+        <div class="row"><span class="pill">Oct 2</span><b style="flex:1">Zerodha → SBI Savings</b><b>−₹22,650</b></div>
+      </section>
+    </div>
+
+    <div class="two">
+      <section class="bx">
+        <div><h2 class="h2">Money in</h2><p class="sub">What you added each month, by year</p></div>
+        <div class="mx">
+          <span></span><span class="lbl" style="text-align:center">J</span><span class="lbl" style="text-align:center">F</span><span class="lbl" style="text-align:center">M</span><span class="lbl" style="text-align:center">A</span><span class="lbl" style="text-align:center">M</span><span class="lbl" style="text-align:center">J</span><span class="lbl" style="text-align:center">J</span><span class="lbl" style="text-align:center">A</span><span class="lbl" style="text-align:center">S</span><span class="lbl" style="text-align:center">O</span><span class="lbl" style="text-align:center">N</span><span class="lbl" style="text-align:center">D</span>
+          <b>2024</b><i class="w"></i><i style="background:#E3E7FF"></i><i class="i"></i><i class="w"></i><i style="background:#E3E7FF"></i><i class="w"></i><i class="w"></i><i class="i"></i><i style="background:#E3E7FF"></i><i class="w"></i><i class="w"></i><i class="i"></i>
+          <b>2025</b><i style="background:#E3E7FF"></i><i class="w"></i><i style="background:#5D6FE0"></i><i style="background:#E3E7FF"></i><i class="w"></i><i class="i"></i><i class="w"></i><i class="i"></i><i style="background:#5D6FE0"></i><i class="w"></i><i style="background:#E3E7FF"></i><i class="i"></i>
+          <b>2026</b><i class="i"></i><i style="background:#E3E7FF"></i><i style="background:#5D6FE0"></i><i class="i"></i><i style="background:#E3E7FF"></i><i class="i"></i><i style="background:#E3E7FF"></i><i style="background:#5D6FE0"></i><i class="i"></i><i class="i"></i><i class="i"></i><i class="w" style="border-style:dashed"></i>
+        </div>
+        <p class="sub" style="margin:0">₹6.75 L added in the last 12 months.</p>
+      </section>
+      <section class="bx">
+        <div><h2 class="h2">The same money, somewhere else</h2><p class="sub">What ₹24.2 L put in would be worth today</p></div>
+        <div class="row i"><b style="flex:1">What you hold</b><b>₹29,05,000</b></div>
+        <div class="row"><b style="flex:1">Nifty 50</b><b>₹27,60,000</b></div>
+        <div class="row"><b style="flex:1">S&amp;P 500</b><b>₹28,90,000</b></div>
+        <div class="row"><b style="flex:1">A fixed deposit at 7%</b><b>₹26,70,000</b></div>
+      </section>
+    </div>
+
+    <h2 class="h2" style="font-size:30px;margin-top:8px">Understand it</h2>
+    <div class="two">
+      <section class="bx">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><h2 class="h2">How it's split</h2><p class="sub">Slice it by</p></div><div class="seg"><button type="button" class="k">Treemap</button><button type="button">Spin wheel</button></div></div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap"><span class="pill k">Holding</span><span class="pill">Asset class</span><span class="pill">Country</span><span class="pill">Sector</span><span class="pill">Broker</span><span class="pill">Currency</span></div>
+        <div style="flex:1; min-height:240px; display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); grid-template-rows:repeat(4,minmax(0,1fr)); gap:7px">
+          <div class="blk v" style="grid-column:1 / span 4; grid-row:1 / span 4"><span>NTAP</span><span>39%</span></div>
+          <div class="blk g" style="grid-column:5 / span 3; grid-row:1 / span 2"><span>PPFAS</span><span>21%</span></div>
+          <div class="blk y" style="grid-column:8 / span 3; grid-row:1 / span 2"><span>NIFTYBEES</span><span>14%</span></div>
+          <div class="blk b" style="grid-column:5 / span 2; grid-row:3 / span 2"><span>HDFCBANK</span><span>10%</span></div>
+          <div class="blk p" style="grid-column:7 / span 2; grid-row:3 / span 2"><span>VOO</span><span>8%</span></div>
+          <div class="blk o" style="grid-column:9 / span 2; grid-row:3 / span 2"><span>INFY</span><span>7%</span></div>
+        </div>
+      </section>
+      <section class="bx">
+        <div><h2 class="h2">Your targets</h2><p class="sub">Numbers you set, in percent of what you hold</p></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px"><span>India equity · target 55%</span><span>49%</span></div><div class="prog" style="height:22px;margin-top:5px;position:relative"><i class="g" style="width:49%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px"><span>US equity · target 35%</span><span>44%</span></div><div class="prog" style="height:22px;margin-top:5px"><i class="r" style="width:44%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px"><span>Cash · target 10%</span><span>7%</span></div><div class="prog" style="height:22px;margin-top:5px"><i class="y" style="width:7%"></i></div></div>
+        <p class="sub" style="margin-top:auto">US equity is 9 points over; India 6 under.</p>
+      </section>
+    </div>
+    <div class="two">
+      <section class="bx">
+        <div><h2 class="h2">Weight against return</h2><p class="sub">Each holding as a bubble, its share of what you hold against its return on cost</p></div>
+        <svg viewBox="0 0 420 220" width="100%" height="220" role="img" aria-label="NetApp is the heaviest and has the best return; Infosys is negative">
+          <line x1="30" y1="190" x2="410" y2="190" stroke="#111" stroke-width="4"></line><line x1="30" y1="10" x2="30" y2="190" stroke="#111" stroke-width="4"></line><line x1="30" y1="160" x2="410" y2="160" stroke="#111" stroke-width="2" stroke-dasharray="6 6"></line>
+          <circle cx="360" cy="40" r="32" fill="#B79CFF" stroke="#111" stroke-width="4"></circle><circle cx="220" cy="90" r="22" fill="#3FD6A6" stroke="#111" stroke-width="4"></circle><circle cx="170" cy="110" r="19" fill="#FFD43B" stroke="#111" stroke-width="4"></circle><circle cx="120" cy="66" r="15" fill="#FF8FB1" stroke="#111" stroke-width="4"></circle><circle cx="134" cy="136" r="16" fill="#7FD4FF" stroke="#111" stroke-width="4"></circle><circle cx="110" cy="176" r="14" fill="#FF9F3C" stroke="#111" stroke-width="4"></circle>
+        </svg>
+      </section>
+      <section class="bx">
+        <div><h2 class="h2">Who made the gain</h2><p class="sub">The ₹4,80,450, holding by holding</p></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px"><span>NTAP</span><span>+₹2,99,250</span></div><div class="prog" style="height:22px;margin-top:5px"><i class="v" style="width:100%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px"><span>PPFAS Flexi Cap</span><span>+₹89,600</span></div><div class="prog" style="height:22px;margin-top:5px"><i class="g" style="width:29.9%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px"><span>NIFTYBEES</span><span>+₹44,200</span></div><div class="prog" style="height:22px;margin-top:5px"><i class="y" style="width:14.8%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px"><span>HDFCBANK</span><span>+₹16,900</span></div><div class="prog" style="height:22px;margin-top:5px"><i class="b" style="width:5.6%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px"><span>VOO</span><span>+₹39,600</span></div><div class="prog" style="height:22px;margin-top:5px"><i class="p" style="width:13.2%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700;font-size:14px"><span>INFY</span><span>−₹9,100</span></div><div class="prog" style="height:22px;margin-top:5px"><i class="r" style="width:3%"></i></div></div>
+      </section>
+    </div>
+    <div class="two">
+      <section class="bx g">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><h2 class="h2">What if</h2><p class="sub" style="color:#111">Pick a what-if</p></div><button type="button" class="btn" style="padding:8px 12px">NTAP fell 20% ⌄</button></div>
+        <div class="bx" style="padding:16px;box-shadow:4px 4px 0 #111"><span class="lbl">Worth would be</span><div class="num" style="font-size:40px;margin-top:6px">₹26,77,000</div><span style="font-weight:700;font-size:13px">−₹2,28,000 · still +₹2.5 L on cost</span></div>
+      </section>
+      <section class="bx r">
+        <div><h2 class="h2">How concentrated</h2><p class="sub" style="color:#111">Your limit is 25% in one name</p></div>
+        <div class="num" style="font-size:64px;text-shadow:4px 4px 0 #fff">39%</div>
+        <div style="position:relative"><div class="prog" style="height:28px"><i class="v" style="width:39%"></i></div><i style="position:absolute;left:25%;top:-8px;width:4px;height:44px;background:#111"></i></div>
+        <p style="margin:0;font-weight:700">NTAP is ₹4.1 L over the limit you set.</p>
+      </section>
+    </div>
+    <section class="bx" style="display:flex; flex-direction:column; gap:12px">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><h2 class="h2">Where it could go in ten years</h2><p class="sub">The yearly return to assume</p></div><div class="seg"><button type="button">8%</button><button type="button" class="k">11%</button><button type="button">14%</button></div></div>
+      <svg viewBox="0 0 1000 180" width="100%" height="180" role="img" aria-label="29 lakh growing to about 1.15 crore in ten years at 11 percent with monthly additions">
+        <line x1="10" y1="170" x2="990" y2="170" stroke="#111" stroke-width="4"></line>
+        <polygon points="10,160 200,146 400,126 600,98 800,62 980,18 980,170 10,170" fill="#9FB0FF"></polygon>
+        <polyline points="10,160 200,146 400,126 600,98 800,62 980,18" fill="none" stroke="#111" stroke-width="6" stroke-linejoin="round"></polyline>
+        <circle cx="980" cy="18" r="10" fill="#FFD43B" stroke="#111" stroke-width="4"></circle>
+      </svg>
+      <div style="display:flex;justify-content:space-between;font-weight:700"><span>Today ₹29 L</span><span class="pill y">₹1.15 Cr in 2036</span></div>
+    </section>
+
+    <section class="bx" style="display:flex; flex-direction:column; gap:10px">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><h2 class="h2">Recent trades</h2><p class="sub">Newest first</p></div><a class="btn" href="#" style="padding:9px 12px">All trades →</a></div>
+      <div class="row"><span class="pill g">Buy</span><b style="flex:1">NIFTYBEES · 20 units · Zerodha</b><span class="sub" style="margin:0">Nov 21</span><b>₹5,400</b></div>
+      <div class="row"><span class="pill v">ESPP</span><b style="flex:1">NTAP · 12 shares · the plan bought them</b><span class="sub" style="margin:0">Nov 14</span><b>₹1,08,900</b></div>
+      <div class="row"><span class="pill b">RSU vest</span><b style="flex:1">NTAP · 18 vested, 6 sold to cover tax</b><span class="sub" style="margin:0">Nov 1</span><b>₹1,08,400</b></div>
+      <div class="row"><span class="pill r">Sell</span><b style="flex:1">INFY · 15 shares · Zerodha</b><span class="sub" style="margin:0">Nov 3</span><b>₹22,650</b></div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":3500}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

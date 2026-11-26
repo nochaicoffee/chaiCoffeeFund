@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Expenses, Neubrutalism</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@700&display=swap">
+  <style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.nb { --y:#FFD43B; --p:#FF8FB1; --b:#7FD4FF; --v:#B79CFF; --g:#3FD6A6; --l:#C6F24E; --o:#FF9F3C; --r:#FF6B57; --ac:#FF9F3C; font-family:'Space Grotesk',system-ui,sans-serif; color:#111; background:#FFF3D6; background-image:radial-gradient(rgba(17,17,17,.16) 1.3px,transparent 1.8px); background-size:22px 22px; min-height:1800px; display:flex; flex-wrap:wrap; align-items:stretch; }
+.side { flex:0 0 250px; background:#fff; border-right:3px solid #111; }
+.main { flex:999 1 640px; min-width:0; padding:30px 38px 56px; display:flex; flex-direction:column; gap:24px; }
+.top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+.bx { border:3px solid #111; border-radius:20px; box-shadow:6px 6px 0 #111; background:#fff; padding:22px; min-width:0; }
+.lbl { font:700 12px/1.25 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.06em; }
+.tag { display:inline-block; font:700 11px/1 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.06em; padding:7px 12px; border:3px solid #111; border-radius:999px; background:var(--ac); }
+.gr { margin:12px 0 10px; font-size:58px; line-height:1; letter-spacing:-.04em; font-weight:700; }
+.sn { margin:0; font-size:19px; line-height:1.55; max-width:820px; font-weight:500; }
+.hl { font-weight:700; background:linear-gradient(transparent 58%,var(--ac) 58%); padding:0 3px; border-bottom:2px dotted #111; }
+.h2 { margin:0; font-size:25px; line-height:1.1; letter-spacing:-.025em; font-weight:700; }
+.sub { margin:4px 0 0; font-size:14px; line-height:1.4; font-weight:500; color:#3d3d3d; }
+.num { font-weight:700; letter-spacing:-.04em; font-variant-numeric:tabular-nums; line-height:1; }
+.btn { display:inline-block; cursor:pointer; font:700 14px/1 'Space Grotesk',sans-serif; padding:11px 16px; border:3px solid #111; border-radius:12px; background:#fff; box-shadow:3px 3px 0 #111; color:#111; text-decoration:none; }
+.chip { display:inline-flex; align-items:center; gap:7px; font-weight:700; font-size:14px; padding:6px 12px; border:3px solid #111; border-radius:12px; box-shadow:3px 3px 0 #111; background:#fff; }
+.pill { display:inline-block; font:700 11px/1 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.05em; padding:5px 9px; border:2.5px solid #111; border-radius:999px; background:#fff; }
+.prog { height:22px; border:3px solid #111; border-radius:999px; background:#fff; overflow:hidden; display:flex; }
+.prog > i { display:block; height:100%; border-right:3px solid #111; }
+.prog > i:last-child { border-right:none; }
+.y{background:var(--y)} .p{background:var(--p)} .b{background:var(--b)} .v{background:var(--v)} .g{background:var(--g)} .l{background:var(--l)} .o{background:var(--o)} .r{background:var(--r)} .w{background:#fff} .k{background:#111;color:#fff}
+.part { flex:1 1 110px; min-width:96px; min-height:62px; border:3px solid #111; border-radius:14px; padding:9px 12px; display:flex; flex-direction:column; justify-content:center; background:#fff; box-shadow:3px 3px 0 #111; }
+.mchip { flex:0 0 auto; display:flex; align-items:center; gap:8px; padding:8px 12px; border:3px solid #111; border-radius:12px; background:#fff; font-weight:700; font-size:13px; }
+.mchip > i { width:12px; height:24px; border:2px solid #111; border-radius:4px; display:flex; align-items:flex-end; overflow:hidden; background:#fff; }
+.hatch { background:repeating-linear-gradient(45deg,#fff 0 6px,#FFD43B 6px 12px); }
+.tr { display:grid; grid-template-columns:minmax(0,1fr) repeat(5,minmax(0,1fr)); gap:10px; align-items:center; padding:12px 4px; border-bottom:3px solid #111; font-weight:600; font-size:14px; }
+.th { display:grid; grid-template-columns:minmax(0,1fr) repeat(5,minmax(0,1fr)); gap:10px; padding:0 4px 8px; border-bottom:3px solid #111; font:700 11px 'Space Mono',monospace; text-transform:uppercase; }
+@media (max-width:820px){ .main{padding:22px 16px 40px;} .gr{font-size:40px;} }
+  </style>
+</helmet>
+<div class="nb" style="--ac:#FF9F3C">
+  <div class="side"><dc-import name="Sidebar" active="expenses" hint-size="250px,760px"></dc-import></div>
+  <main class="main">
+    <div class="top">
+      <span class="tag">Expenses</span>
+      <div style="display:flex; gap:10px; flex-wrap:wrap"><button type="button" class="btn" aria-label="Refresh">↻</button><a class="btn" href="#">Statements</a><a class="btn" href="#">+ Big spend</a></div>
+    </div>
+    <div>
+      <h1 class="gr">Good afternoon, Prathik</h1>
+      <p class="sn">October took <span class="hl">₹1,18,600</span> of the <span class="hl">₹1,96,200</span> that came in, <span class="hl">₹42,100</span> of it on cards; you put <span class="hl">₹45,000</span> into investments.</p>
+    </div>
+
+    <section class="bx o" style="padding:30px; box-shadow:9px 9px 0 #111; display:flex; flex-direction:column; gap:20px">
+      <span class="lbl">October 2026 · what came in, split</span>
+      <div class="num" style="font-size:92px; text-shadow:5px 5px 0 #fff">₹1,96,200</div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap"><span class="chip w"><b>₹1,18,600</b> spent</span><span class="chip w"><b>₹45,000</b> invested</span><span class="chip w"><b>₹32,600</b> kept</span></div>
+      <div style="display:flex; height:64px; border:3px solid #111; border-radius:14px; overflow:hidden; box-shadow:5px 5px 0 #111">
+        <div class="r" style="flex:60.4; border-right:3px solid #111; display:flex; align-items:center; padding:0 14px; font-weight:700">Spent 60%</div>
+        <div style="flex:22.9; background:#9FB0FF; border-right:3px solid #111; display:flex; align-items:center; padding:0 12px; font-weight:700">Invested 23%</div>
+        <div class="l" style="flex:16.7; display:flex; align-items:center; padding:0 12px; font-weight:700">Kept 17%</div>
+      </div>
+      <div>
+        <span class="lbl">Spent, in parts</span>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px">
+          <div class="part" style="background:#7FD4FF"><span class="lbl" style="font-size:10px">Cards</span><span class="num" style="font-size:19px;margin-top:4px">₹42,100</span></div>
+          <div class="part" style="background:#6FE0C5"><span class="lbl" style="font-size:10px">EMIs</span><span class="num" style="font-size:19px;margin-top:4px">₹27,650</span></div>
+          <div class="part" style="background:#B79CFF"><span class="lbl" style="font-size:10px">Subs + insurance</span><span class="num" style="font-size:19px;margin-top:4px">₹11,070</span></div>
+          <div class="part hatch"><span class="lbl" style="font-size:10px">Cash and UPI</span><span class="num" style="font-size:19px;margin-top:4px">₹24,980</span></div>
+          <div class="part p"><span class="lbl" style="font-size:10px">Big spends</span><span class="num" style="font-size:19px;margin-top:4px">₹10,400</span></div>
+          <div class="part w"><span class="lbl" style="font-size:10px">Other</span><span class="num" style="font-size:19px;margin-top:4px">₹2,400</span></div>
+        </div>
+        <p style="margin:10px 0 0; font-size:12px; font-weight:700">Cash and UPI is worked out from the balances once a month ends.</p>
+      </div>
+      <div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:4px">
+        <span class="mchip"><i><b class="r" style="width:100%;height:55%"></b></i>Jun ₹98K</span>
+        <span class="mchip"><i><b class="r" style="width:100%;height:60%"></b></i>Jul ₹1.05 L</span>
+        <span class="mchip"><i><b class="r" style="width:100%;height:50%"></b></i>Aug ₹91K</span>
+        <span class="mchip"><i><b class="r" style="width:100%;height:70%"></b></i>Sep ₹1.18 L</span>
+        <span class="mchip k" style="box-shadow:3px 3px 0 #fff"><i><b class="r" style="width:100%;height:70%"></b></i>Oct ₹1.19 L</span>
+        <span class="mchip" style="border-style:dashed">Nov · still going</span>
+      </div>
+    </section>
+
+    <div style="display:flex; flex-wrap:wrap; gap:24px; align-items:stretch">
+      <section class="bx" style="flex:1 1 440px; display:flex; flex-direction:column; gap:13px">
+        <div><h2 class="h2">Spent this month</h2><p class="sub">November so far, by where it went · <a href="#" style="color:#111;font-weight:700">its statement →</a></p></div>
+        <div class="num" style="font-size:44px">₹87,420</div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700"><span>Cards</span><span>₹31,400</span></div><div class="prog" style="height:24px;margin-top:5px"><i class="b" style="width:100%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700"><span>EMIs</span><span>₹27,650</span></div><div class="prog" style="height:24px;margin-top:5px"><i style="width:88%;background:#6FE0C5"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700"><span>Big spends</span><span>₹21,000</span></div><div class="prog" style="height:24px;margin-top:5px"><i class="p" style="width:66.9%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700"><span>Subs + insurance</span><span>₹7,370</span></div><div class="prog" style="height:24px;margin-top:5px"><i class="v" style="width:23.5%"></i></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-weight:700"><span>Cash and UPI</span><span>after Nov 30</span></div><div class="prog hatch" style="height:24px;margin-top:5px"></div></div>
+      </section>
+      <section class="bx" style="flex:1 1 440px; display:flex; flex-direction:column; gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px"><div><h2 class="h2">Big spends</h2><p class="sub">A large purchase, so a month can say what it was</p></div><a class="btn" href="#" style="padding:9px 12px">+ Add</a></div>
+        <div class="item p" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border:3px solid #111;border-radius:14px;box-shadow:4px 4px 0 #111"><div style="flex:1"><b>Furniture</b><div class="sub" style="margin:0;color:#111">Nov 2 · SBI Savings</div></div><span class="num" style="font-size:21px">₹31,000</span></div>
+        <div class="o" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border:3px solid #111;border-radius:14px;box-shadow:4px 4px 0 #111"><div style="flex:1"><b>Flight tickets</b><div class="sub" style="margin:0;color:#111">Nov 12 · HDFC Savings</div></div><span class="num" style="font-size:21px">₹24,500</span></div>
+        <div class="b" style="display:flex;align-items:center;gap:14px;padding:12px 14px;border:3px solid #111;border-radius:14px;box-shadow:4px 4px 0 #111"><div style="flex:1"><b>Laptop repair</b><div class="sub" style="margin:0;color:#111">Oct 19 · Axis Savings</div></div><span class="num" style="font-size:21px">₹10,400</span></div>
+      </section>
+    </div>
+
+    <section class="bx" style="display:flex; flex-direction:column; gap:8px">
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><div><h2 class="h2">Month by month</h2><p class="sub">Each month that has ended · <a href="#" style="color:#111;font-weight:700">every payment →</a></p></div></div>
+      <div class="th"><span>Month</span><span>Came in</span><span>Spent</span><span>Invested</span><span>Lent or handed back</span><span>Kept</span></div>
+      <div class="tr"><b>Oct 2026</b><span>₹1,96,200</span><b>₹1,18,600</b><span>₹45,000</span><span>—</span><span>₹32,600</span></div>
+      <div class="tr"><b>Sep 2026</b><span>₹2,20,200</span><b>₹1,18,000</b><span>₹60,000</span><span>₹10,000</span><span>₹32,200</span></div>
+      <div class="tr"><b>Aug 2026</b><span>₹2,44,200</span><b>₹91,000</b><span>₹1,08,900</span><span>—</span><span>₹44,300</span></div>
+      <div class="tr"><b>Jul 2026</b><span>₹1,96,200</span><b>₹1,05,000</b><span>₹40,000</span><span>₹40,000</span><span>₹11,200</span></div>
+      <div class="tr"><b>Jun 2026</b><span>₹2,20,200</span><b>₹98,000</b><span>₹45,000</span><span>—</span><span>₹77,200</span></div>
+      <div class="tr" style="border-bottom:none;font-weight:700"><span>Average</span><span>₹2,15,400</span><span>₹1,06,120</span><span>₹59,780</span><span>₹10,000</span><span>₹39,500</span></div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1800}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Goals, Neubrutalism</title>
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Space+Mono:wght@700&display=swap">
+  <style>
+* { box-sizing: border-box; }
+body { margin: 0; }
+.nb { --y:#FFD43B; --p:#FF8FB1; --b:#7FD4FF; --v:#B79CFF; --g:#3FD6A6; --l:#C6F24E; --o:#FF9F3C; --r:#FF6B57; --ac:#FFA3D7; font-family:'Space Grotesk',system-ui,sans-serif; color:#111; background:#FFF3D6; background-image:radial-gradient(rgba(17,17,17,.16) 1.3px,transparent 1.8px); background-size:22px 22px; min-height:2500px; display:flex; flex-wrap:wrap; align-items:stretch; }
+.side { flex:0 0 250px; background:#fff; border-right:3px solid #111; }
+.main { flex:999 1 640px; min-width:0; padding:30px 38px 56px; display:flex; flex-direction:column; gap:24px; }
+.top { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; flex-wrap:wrap; }
+.bx { border:3px solid #111; border-radius:20px; box-shadow:6px 6px 0 #111; background:#fff; padding:22px; min-width:0; }
+.lbl { font:700 12px/1.25 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.06em; }
+.tag { display:inline-block; font:700 11px/1 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.06em; padding:7px 12px; border:3px solid #111; border-radius:999px; background:var(--ac); }
+.gr { margin:12px 0 10px; font-size:58px; line-height:1; letter-spacing:-.04em; font-weight:700; }
+.sn { margin:0; font-size:19px; line-height:1.55; max-width:820px; font-weight:500; }
+.hl { font-weight:700; background:linear-gradient(transparent 58%,var(--ac) 58%); padding:0 3px; border-bottom:2px dotted #111; }
+.h2 { margin:0; font-size:25px; line-height:1.1; letter-spacing:-.025em; font-weight:700; }
+.sub { margin:4px 0 0; font-size:14px; line-height:1.4; font-weight:500; color:#3d3d3d; }
+.num { font-weight:700; letter-spacing:-.04em; font-variant-numeric:tabular-nums; line-height:1; }
+.btn { display:inline-block; cursor:pointer; font:700 14px/1 'Space Grotesk',sans-serif; padding:11px 16px; border:3px solid #111; border-radius:12px; background:#fff; box-shadow:3px 3px 0 #111; color:#111; text-decoration:none; }
+.chip { display:inline-flex; align-items:center; gap:7px; font-weight:700; font-size:14px; padding:6px 12px; border:3px solid #111; border-radius:12px; box-shadow:3px 3px 0 #111; background:#fff; }
+.pill { display:inline-block; font:700 11px/1 'Space Mono',monospace; text-transform:uppercase; letter-spacing:.05em; padding:5px 9px; border:2.5px solid #111; border-radius:999px; background:#fff; }
+.prog { height:22px; border:3px solid #111; border-radius:999px; background:#fff; overflow:hidden; display:flex; }
+.prog > i { display:block; height:100%; border-right:3px solid #111; }
+.prog > i:last-child { border-right:none; }
+.y{background:var(--y)} .p{background:var(--p)} .b{background:var(--b)} .v{background:var(--v)} .g{background:var(--g)} .l{background:var(--l)} .o{background:var(--o)} .r{background:var(--r)} .w{background:#fff} .k{background:#111;color:#fff}
+.two { display:flex; flex-wrap:wrap; gap:24px; align-items:stretch; }
+.two > .bx { flex:1 1 440px; display:flex; flex-direction:column; gap:12px; }
+.row { display:flex; align-items:center; gap:12px; padding:11px 13px; border:3px solid #111; border-radius:13px; box-shadow:3px 3px 0 #111; background:#fff; }
+.t6 { display:grid; grid-template-columns:minmax(0,1.4fr) minmax(0,.7fr) minmax(0,1.6fr) minmax(0,1fr) minmax(0,.9fr) minmax(0,.8fr); gap:10px; align-items:center; padding:12px 4px; border-bottom:3px solid #111; font-weight:600; font-size:14px; }
+.t6.h { font:700 11px 'Space Mono',monospace; text-transform:uppercase; padding-top:0; }
+@media (max-width:820px){ .main{padding:22px 16px 40px;} .gr{font-size:40px;} }
+  </style>
+</helmet>
+<div class="nb" style="--ac:#FFA3D7">
+  <div class="side"><dc-import name="Sidebar" active="goals" hint-size="250px,760px"></dc-import></div>
+  <main class="main">
+    <div class="top">
+      <span class="tag">Goals</span>
+      <div style="display:flex; gap:10px; flex-wrap:wrap"><a class="btn" href="#">Set aside</a><a class="btn" href="#">+ Add goal</a><button type="button" class="btn" aria-label="Refresh">↻</button></div>
+    </div>
+    <div>
+      <h1 class="gr">Good afternoon, Prathik</h1>
+      <p class="sn">You've set aside <span class="hl">₹8,37,000</span> toward <span class="hl">4 goals</span> of ₹13,30,000, with <span class="hl">₹1,40,000</span> in the pot to give out, and the <span class="hl">MacBook</span> is next.</p>
+    </div>
+
+    <section class="bx y" style="display:flex; align-items:center; gap:16px; flex-wrap:wrap; box-shadow:5px 5px 0 #111">
+      <div style="flex:1 1 400px"><b style="font-size:18px">Needs attention</b><p class="sub" style="color:#111;margin:2px 0 0">The Europe trip needs ₹14,600 a month to make May 2028; lately it has had ₹0.</p></div>
+      <a class="btn" href="#" style="background:#111;color:#fff;box-shadow:3px 3px 0 #FFA3D7">See goal</a>
+    </section>
+
+    <section id="orbit" class="bx k" style="padding:24px; box-shadow:9px 9px 0 #FFA3D7; display:flex; flex-wrap:wrap; gap:24px">
+      <div style="flex:1.7 1 520px; min-width:0; display:flex; flex-direction:column; gap:8px">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap"><span class="lbl" style="color:#FFA3D7">Your goals in orbit</span><span class="pill">Closer in = sooner</span></div>
+        <svg viewBox="0 0 640 440" width="100%" height="440" role="img" aria-label="Four goals orbiting the pot: MacBook closest, then emergency fund, car upgrade and Europe trip furthest out">
+          <circle cx="320" cy="220" r="105" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="8 9"></circle>
+          <circle cx="320" cy="220" r="158" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="8 9"></circle>
+          <circle cx="320" cy="220" r="208" fill="none" stroke="#fff" stroke-width="3" stroke-dasharray="8 9"></circle>
+          <circle cx="326" cy="226" r="62" fill="#FFA3D7"></circle><circle cx="320" cy="220" r="62" fill="#FFD43B" stroke="#111" stroke-width="5"></circle>
+          <text x="320" y="212" text-anchor="middle" font-family="Space Mono, monospace" font-weight="700" font-size="12" fill="#111">THE POT</text>
+          <text x="320" y="240" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="24" fill="#111">₹1.4 L</text>
+          <circle cx="430" cy="156" r="30" fill="#fff"></circle><circle cx="426" cy="152" r="30" fill="#7FD4FF" stroke="#111" stroke-width="5"></circle><text x="426" y="158" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="16" fill="#111">85%</text>
+          <circle cx="170" cy="290" r="40" fill="#fff"></circle><circle cx="166" cy="286" r="40" fill="#3FD6A6" stroke="#111" stroke-width="5"></circle><text x="166" y="292" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="18" fill="#111">78%</text>
+          <circle cx="404" cy="374" r="34" fill="#fff"></circle><circle cx="400" cy="370" r="34" fill="#FF9F3C" stroke="#111" stroke-width="5"></circle><text x="400" y="376" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="17" fill="#111">47%</text>
+          <circle cx="164" cy="80" r="28" fill="#fff"></circle><circle cx="160" cy="76" r="28" fill="#B79CFF" stroke="#111" stroke-width="5"></circle><text x="160" y="82" text-anchor="middle" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="15" fill="#111">30%</text>
+          <circle cx="352" cy="372" r="9" fill="#fff" stroke="#111" stroke-width="3"></circle><circle cx="448" cy="402" r="9" fill="#fff" stroke="#111" stroke-width="3"></circle>
+          <text x="466" y="132" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="17" fill="#fff">MacBook</text>
+          <text x="40" y="352" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="17" fill="#fff">Emergency fund</text>
+          <text x="446" y="404" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="17" fill="#fff">Car upgrade</text>
+          <text x="200" y="52" font-family="Space Grotesk, sans-serif" font-weight="700" font-size="17" fill="#fff">Europe trip</text>
+        </svg>
+        <span style="font-size:12px;font-weight:700;color:#ddd">Moons are a goal's parts. Click a planet to pick it.</span>
+      </div>
+      <div style="flex:1 1 300px; min-width:0; display:flex; flex-direction:column; gap:12px">
+        <span class="lbl" style="color:#FFD43B">Picked · the pot</span>
+        <div class="num" style="font-size:58px;color:#FFD43B">₹1,40,000</div>
+        <p style="margin:0;font-weight:600;line-height:1.45">Set aside, not given to a goal yet. You give it out by hand.</p>
+        <div style="border:3px solid #fff;border-radius:14px;padding:14px"><span class="lbl">MacBook needs</span><div class="num" style="font-size:28px;margin-top:6px">₹27,000</div></div>
+        <div style="border:3px solid #fff;border-radius:14px;padding:14px"><span class="lbl">Europe trip is behind by</span><div class="num" style="font-size:28px;margin-top:6px">₹43,800</div></div>
+        <a class="btn" href="#" style="background:#FFD43B;text-align:center;box-shadow:3px 3px 0 #fff;margin-top:auto">Give it out</a>
+      </div>
+    </section>
+
+    <section class="bx" style="display:flex; flex-direction:column; gap:6px">
+      <div><h2 class="h2">Goals</h2><p class="sub">Soonest first · open one for its parts</p></div>
+      <div class="t6 h"><span>Goal</span><span>Kind</span><span>Set aside</span><span>Target</span><span>By</span><span>Status</span></div>
+      <div class="t6"><span style="display:flex;align-items:center;gap:8px"><i style="width:14px;height:14px;border:2.5px solid #111;border-radius:50%;background:#7FD4FF"></i><b>MacBook</b></span><span><span class="pill p">Want</span></span><span><div class="prog" style="height:16px"><i class="b" style="width:85%"></i></div></span><span>₹1,80,000</span><span>Feb 2027</span><span><span class="pill g">On track</span></span></div>
+      <div class="t6"><span style="display:flex;align-items:center;gap:8px"><i style="width:14px;height:14px;border:2.5px solid #111;border-radius:50%;background:#3FD6A6"></i><b>Emergency fund</b></span><span><span class="pill g">Need</span></span><span><div class="prog" style="height:16px"><i class="g" style="width:78%"></i></div></span><span>₹6,00,000</span><span>Jun 2027</span><span><span class="pill g">On track</span></span></div>
+      <div class="t6"><span style="display:flex;align-items:center;gap:8px"><i style="width:14px;height:14px;border:2.5px solid #111;border-radius:50%;background:#FF9F3C"></i><b>Car upgrade</b></span><span><span class="pill p">Want</span></span><span><div class="prog" style="height:16px"><i class="o" style="width:47%"></i></div></span><span>₹3,00,000</span><span>Dec 2027</span><span><span class="pill g">On track</span></span></div>
+      <div class="t6" style="border-bottom:none;background:#FFE9B0"><span style="display:flex;align-items:center;gap:8px"><i style="width:14px;height:14px;border:2.5px solid #111;border-radius:50%;background:#B79CFF"></i><b>Europe trip</b></span><span><span class="pill p">Want</span></span><span><div class="prog" style="height:16px"><i class="v" style="width:30%"></i></div></span><span>₹2,50,000</span><span>May 2028</span><span><span class="pill y">Behind</span></span></div>
+    </section>
+
+    <section class="bx p" style="display:flex; flex-wrap:wrap; gap:20px; align-items:center">
+      <div style="flex:1 1 260px"><h2 class="h2">This month</h2><p class="sub" style="color:#111">November</p><div class="num" style="font-size:48px;margin-top:10px">₹25,000</div></div>
+      <div style="flex:2 1 420px; display:flex; flex-direction:column; gap:10px">
+        <div class="row"><b style="flex:1">Emergency fund</b><b>₹15,000</b></div>
+        <div class="row"><b style="flex:1">MacBook</b><b>₹10,000</b></div>
+      </div>
+    </section>
+
+    <div class="two">
+      <section class="bx">
+        <div><h2 class="h2">Coming up</h2><p class="sub">Target dates, soonest first</p></div>
+        <div class="row"><span class="pill k">Feb 2027</span><b style="flex:1">MacBook</b><span class="sub" style="margin:0">₹27,000 to go</span></div>
+        <div class="row"><span class="pill">Jun 2027</span><b style="flex:1">Emergency fund</b><span class="sub" style="margin:0">₹1,32,000 to go</span></div>
+        <div class="row"><span class="pill">Dec 2027</span><b style="flex:1">Car upgrade</b><span class="sub" style="margin:0">₹1,59,000 to go</span></div>
+        <div class="row"><span class="pill">May 2028</span><b style="flex:1">Europe trip</b><span class="sub" style="margin:0">₹1,75,000 to go</span></div>
+      </section>
+      <section class="bx l">
+        <div><h2 class="h2">What your money allows</h2><p class="sub" style="color:#111">At what you set aside lately, ₹25,000 a month</p></div>
+        <div class="row"><b style="flex:1">Everything done by</b><b>Jan 2029</b></div>
+        <div class="row"><b style="flex:1">Needs done by</b><b>Apr 2027</b></div>
+        <div class="row"><b style="flex:1">To finish all on time</b><b>₹38,400 a month</b></div>
+      </section>
+    </div>
+
+    <section class="bx" style="display:flex; flex-direction:column; gap:12px">
+      <div><h2 class="h2">The staircase</h2><p class="sub">Set aside each month, and the goals it finished</p></div>
+      <div style="display:flex; align-items:flex-end; height:170px; border-bottom:3px solid #111">
+        <div class="p" style="flex:1;height:40px;border:3px solid #111;border-bottom:none;border-right:none"></div><div class="p" style="flex:1;height:56px;border:3px solid #111;border-bottom:none;border-right:none"></div><div class="p" style="flex:1;height:56px;border:3px solid #111;border-bottom:none;border-right:none"></div><div class="p" style="flex:1;height:74px;border:3px solid #111;border-bottom:none;border-right:none"></div><div class="p" style="flex:1;height:86px;border:3px solid #111;border-bottom:none;border-right:none"></div><div class="p" style="flex:1;height:96px;border:3px solid #111;border-bottom:none;border-right:none;position:relative"><span class="pill k" style="position:absolute;top:-28px;left:4px">Phone bought</span></div><div class="p" style="flex:1;height:110px;border:3px solid #111;border-bottom:none;border-right:none"></div><div class="p" style="flex:1;height:118px;border:3px solid #111;border-bottom:none;border-right:none"></div><div class="p" style="flex:1;height:130px;border:3px solid #111;border-bottom:none;border-right:none"></div><div class="p" style="flex:1;height:140px;border:3px solid #111;border-bottom:none;border-right:none"></div><div class="p" style="flex:1;height:148px;border:3px solid #111;border-bottom:none;border-right:none"></div><div class="y" style="flex:1;height:160px;border:3px solid #111;border-bottom:none"></div>
+      </div>
+      <div style="display:flex;font:700 11px 'Space Mono',monospace;text-align:center"><span style="flex:1">D</span><span style="flex:1">J</span><span style="flex:1">F</span><span style="flex:1">M</span><span style="flex:1">A</span><span style="flex:1">M</span><span style="flex:1">J</span><span style="flex:1">J</span><span style="flex:1">A</span><span style="flex:1">S</span><span style="flex:1">O</span><span style="flex:1">N</span></div>
+    </section>
+
+    <div class="two">
+      <section class="bx">
+        <div><h2 class="h2">Needs and wants</h2><p class="sub">Of the ₹13.3 L you're aiming for</p></div>
+        <div class="prog" style="height:44px;border-radius:14px"><i class="g" style="width:45.1%"></i><i class="p" style="width:54.9%"></i></div>
+        <div class="row g"><b style="flex:1">Needs · 1 goal</b><b>₹6.0 L</b></div>
+        <div class="row p"><b style="flex:1">Wants · 3 goals</b><b>₹7.3 L</b></div>
+      </section>
+      <section class="bx">
+        <div><h2 class="h2">Set aside lately</h2><p class="sub">Newest first</p></div>
+        <div class="row"><span class="pill">Nov 20</span><b style="flex:1">Emergency fund</b><b>₹15,000</b></div>
+        <div class="row"><span class="pill">Nov 20</span><b style="flex:1">MacBook</b><b>₹10,000</b></div>
+        <div class="row"><span class="pill">Oct 22</span><b style="flex:1">The pot</b><b>₹40,000</b></div>
+        <div class="row"><span class="pill">Oct 20</span><b style="flex:1">Car upgrade</b><b>₹12,000</b></div>
+      </section>
+    </div>
+
+    <section class="bx" style="display:flex; flex-direction:column; gap:10px">
+      <div><h2 class="h2">Finished</h2><p class="sub">Bought or closed</p></div>
+      <div class="row" style="opacity:.75"><span class="pill g">Bought</span><b style="flex:1">New phone</b><span class="sub" style="margin:0">May 2026</span><b>₹82,000</b></div>
+      <div class="row" style="opacity:.75"><span class="pill g">Bought</span><b style="flex:1">Bike service and tyres</b><span class="sub" style="margin:0">Jan 2026</span><b>₹18,500</b></div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2500}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
