@@ -25,6 +25,7 @@ ADRs 0001–0006 were backfilled on 2026-10-16 from decisions made between 2026-
 | [0015](0015-login-and-mcp-endpoint.md) | A login for the pages (passphrase, since replaced), and a bearer-token MCP endpoint for Claude | Accepted |
 | [0016](0016-google-sign-in.md) | Sign in with Google, for one allowed address, instead of a passphrase | Accepted |
 | [0017](0017-host-on-vercel-hobby.md) | Host on Vercel's free Hobby plan, with a daily cron for the statement syncs | Accepted |
+| [0018](0018-a-second-look-switched-by-tokens.md) | Offer Neubrutalism as a second look, saved in the Sheet for every device and drawn only through tokens | Accepted |
 
 ## Template
 
