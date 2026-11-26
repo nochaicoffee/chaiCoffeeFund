@@ -37,3 +37,4 @@ next-env.d.ts
 # Only synthetic test fixtures are committed.
 *.pdf
 !src/lib/pdf/__fixtures__/*.pdf
+/walkthrough-out/

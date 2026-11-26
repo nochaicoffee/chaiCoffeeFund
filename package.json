@@ -12,7 +12,8 @@
     "sync-statements": "tsx scripts/ingestStatements.ts",
     "check-sheet": "tsx scripts/checkSheet.ts",
     "create-sheet": "tsx scripts/createSheet.ts",
-    "refresh-prices": "tsx scripts/refreshPrices.ts"
+    "refresh-prices": "tsx scripts/refreshPrices.ts",
+    "seed-demo": "tsx --conditions=react-server scripts/seedDemoSheet.ts"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.32.2",
