@@ -196,7 +196,7 @@ function Chart({ chart, band, all }: { chart: ChartView; band: [number, number];
         {chart.lines.map((l) => (
           <g key={l.key}>
             <polyline points={pts(l.points)} fill="none" stroke={pastel(l.colorKey)} style={{ strokeWidth: "var(--chart-line-width, 2.5)" }} strokeLinejoin="round" strokeLinecap="round" />
-            {l.projection && <polyline points={pts(l.projection)} fill="none" stroke={pastel(l.colorKey)} strokeWidth="2" strokeDasharray="2 5" strokeLinecap="round" opacity="0.7" />}
+            {l.projection && <polyline points={pts(l.projection)} fill="none" stroke={pastel(l.colorKey)} style={{ strokeWidth: "var(--chart-projection-width, 2)" }} strokeDasharray="2 5" strokeLinecap="round" opacity="0.7" />}
           </g>
         ))}
         {chart.marks.map((m) => (

@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type PointerEvent } from "react";
 import type { CycleRead } from "@/app/subscriptions/views";
-import { cycleDays, cycleReadout, readCycleAt, readCycleDay, type CycleReading } from "./cycleGeometry";
+import { cycleDays, cycleReadout, readCycleAt, readCycleDay, trackFraction, type CycleReading } from "./cycleGeometry";
 
 // The readout snaps when the pointer is this close, in px, to today or the renewal.
 const SNAP_PX = 10;
@@ -29,14 +29,24 @@ export function CycleBar({ pickId, fraction, cycle }: { pickId: string; fraction
   // At rest the slider's value is today, or the start when today comes before it.
   const rest = days ? readCycleDay(days.today ?? 0, days) : null;
 
+  // The track's edge (Neubrutalism outlines it; 0 in Classic), read when a pointer arrives rather than on every move.
+  const edge = useRef(0);
+  function readEdge() {
+    const el = track.current;
+    edge.current = el ? parseFloat(getComputedStyle(el).borderLeftWidth) || 0 : 0;
+  }
   function readAt(clientX: number, touch: boolean) {
-    const box = track.current?.getBoundingClientRect();
-    if (!key || !days || !box || box.width <= 0) return;
-    setRead({ key, reading: readCycleAt((clientX - box.left) / box.width, days, SNAP_PX / box.width), touch });
+    const el = track.current;
+    if (!key || !days || !el) return;
+    const rect = el.getBoundingClientRect();
+    const at = trackFraction(clientX, rect.left, rect.width, edge.current);
+    if (!at) return;
+    setRead({ key, reading: readCycleAt(at.fraction, days, SNAP_PX / at.width), touch });
   }
   function onPointer(e: PointerEvent) {
     // A mouse or pen reads it as it moves over it; a finger, while it's down.
     if (e.pointerType === "touch" && e.buttons === 0) return;
+    if (e.type === "pointerdown") readEdge();
     readAt(e.clientX, e.pointerType === "touch");
   }
   function onKeyDown(e: KeyboardEvent) {
@@ -69,7 +79,9 @@ export function CycleBar({ pickId, fraction, cycle }: { pickId: string; fraction
     const label = pill.current;
     if (!box || !label || !reading) return;
     const half = label.offsetWidth / 2;
-    label.style.left = `${Math.min(box.offsetWidth - half, Math.max(half, reading.at * box.offsetWidth))}px`;
+    const edge = parseFloat(getComputedStyle(box).borderLeftWidth) || 0;
+    const width = box.offsetWidth - 2 * edge;
+    label.style.left = `${edge + Math.min(width - half, Math.max(half, reading.at * width))}px`;
   }, [reading]);
 
   const text = reading && cycle ? cycleReadout(reading, cycle) : null;
@@ -88,6 +100,7 @@ export function CycleBar({ pickId, fraction, cycle }: { pickId: string; fraction
           "aria-valuetext": shown ? `${shown.date}, ${shown.note}` : undefined,
           onPointerMove: onPointer,
           onPointerDown: onPointer,
+          onPointerEnter: readEdge,
           onPointerLeave: (e: PointerEvent) => e.pointerType !== "touch" && setRead(null),
           // A finger that starts scrolling the page lets go of the bar.
           onPointerCancel: () => setRead(null),
