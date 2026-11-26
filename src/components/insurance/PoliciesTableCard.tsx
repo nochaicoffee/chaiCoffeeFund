@@ -23,13 +23,13 @@ export function PoliciesTableCard({ table, pickId, onPick }: { table: TableView;
         </div>
         <ul>
           {table.rows.map((r) => (
-            <li key={r.id} className="border-t border-divider">
+            <li key={r.id} className="rule-t">
               <Row row={r} on={pickId === r.id} dim={pickId !== "all" && pickId !== r.id} onPick={onPick} />
             </li>
           ))}
         </ul>
       </div>
-      <div className="border-t border-divider pt-3 text-xs font-semibold text-muted">{table.foot}</div>
+      <div className="rule-t pt-3 text-xs font-semibold text-muted">{table.foot}</div>
     </WidgetCard>
   );
 }

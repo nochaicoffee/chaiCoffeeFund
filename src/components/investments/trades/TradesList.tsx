@@ -129,7 +129,7 @@ export function TradesList({ view, holdings }: { view: TradesListView; holdings:
             ))}
           </div>
         )}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-divider pt-3 text-[11.5px] font-semibold text-muted">
+        <div className="flex flex-wrap items-center justify-between gap-3 rule-t pt-3 text-[11.5px] font-semibold text-muted">
           <span>
             Showing {page.length} of {visible.length}. A US trade shows dollars, with rupees under it at that day&apos;s rate. An RSU vest and the shares sold to cover its tax are one row. A sale shows what it made at average cost.
           </span>
@@ -147,7 +147,7 @@ export function TradesList({ view, holdings }: { view: TradesListView; holdings:
 function Row({ row: r }: { row: TradeRowView }) {
   const { open } = useTradeForms();
   return (
-    <div className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3.5 gap-y-1.5 rounded-[12px] border-t border-divider px-1.5 py-2.5 hover:bg-fill ${COLS} ${r.problem ? "bg-negative-tint" : ""}`}>
+    <div className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3.5 gap-y-1.5 rounded-[12px] rule-t px-1.5 py-2.5 hover:bg-fill ${COLS} ${r.problem ? "bg-negative-tint" : ""}`}>
       <span className="text-[13px] font-extrabold max-xl:hidden">
         {r.date}
         <small className="block text-[11px] font-semibold text-muted">{r.weekday}</small>

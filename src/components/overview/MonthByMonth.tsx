@@ -59,7 +59,7 @@ function TipCard({ tip }: { tip: MonthTipView }) {
       {tip.versus && <div className={`mt-0.5 text-xs font-semibold ${tip.versus.tone === "good" ? "text-positive" : tip.versus.tone === "bad" ? "text-negative" : "text-muted"}`}>{tip.versus.text}</div>}
       {tip.rank && <div className="mt-0.5 text-xs font-semibold text-muted">{tip.rank}</div>}
       {tip.rows.length > 0 && (
-        <ul className="mt-2.5 flex flex-col gap-1 border-t border-divider pt-2">
+        <ul className="mt-2.5 flex flex-col gap-1 rule-t pt-2">
           {tip.rows.map((r, i) => (
             <li key={`${r.name}${i}`} className="flex items-center gap-2 text-xs font-semibold">
               <span className="min-w-0 flex-1 truncate text-muted">{r.name}</span>
@@ -68,7 +68,7 @@ function TipCard({ tip }: { tip: MonthTipView }) {
           ))}
         </ul>
       )}
-      {tip.foot && <div className="mt-2.5 border-t border-divider pt-2 text-[11px] font-semibold text-muted">{tip.foot}</div>}
+      {tip.foot && <div className="mt-2.5 rule-t pt-2 text-[11px] font-semibold text-muted">{tip.foot}</div>}
     </>
   );
 }
@@ -311,7 +311,7 @@ function TogetherLedger({ view }: { view: MonthlyView }) {
           const [name, year] = columnLabel(month, i).split(" ");
           const now = month === view.currentMonth;
           return (
-            <div key={month} className={isOpen ? "-mx-1 my-0.5 rounded-[14px] bg-fill px-2.5 py-1" : "border-t border-divider first:border-t-0"}>
+            <div key={month} className={isOpen ? "-mx-1 my-0.5 rounded-[14px] bg-fill px-2.5 py-1" : "rule-t first:border-t-0"}>
               <button
                 type="button"
                 aria-expanded={isOpen}

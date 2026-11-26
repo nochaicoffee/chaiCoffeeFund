@@ -30,7 +30,7 @@ export function LoansTableCard({ table, picked, onPick, allHref }: { table: Loan
           </thead>
           <tbody>
             {table.rows.map((r) => (
-              <tr key={r.loan.id} className={`border-t border-divider ${r.loan.closed ? "opacity-60" : ""} ${picked === r.loan.id ? "bg-accent-tint/50" : ""}`}>
+              <tr key={r.loan.id} className={`rule-t ${r.loan.closed ? "opacity-60" : ""} ${picked === r.loan.id ? "bg-accent-tint/50" : ""}`}>
                 <td className="py-3 pr-3">
                   <button type="button" disabled={r.loan.closed} aria-pressed={picked === r.loan.id} onClick={() => onPick(r.loan.id)} className="flex items-center gap-2.5 rounded-control text-left enabled:cursor-pointer focus-visible:outline-2 focus-visible:outline-accent">
                     <LoanIcon category={r.loan.category} colorKey={r.loan.colorKey} size={34} closed={r.loan.closed} />
@@ -81,7 +81,7 @@ export function LoansTableCard({ table, picked, onPick, allHref }: { table: Loan
           </tbody>
         </table>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3 text-xs font-semibold text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-2 rule-t pt-3 text-xs font-semibold text-muted">
         <span>
           {table.foot.active} active {table.foot.active === 1 ? "loan" : "loans"} · <b className="text-fg">{table.foot.owed}</b> still owed · {table.foot.emi} a month
         </span>

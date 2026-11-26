@@ -180,7 +180,7 @@ function BlockCard({ block, picked }: { block: MixBlock; picked: boolean }) {
           <span className={block.card.changeTone === "up" ? "text-positive" : block.card.changeTone === "down" ? "text-negative" : "text-muted"}>{block.card.change}</span>
         </Row>
       </div>
-      <div className="mt-3 border-t border-divider pt-2 text-[11px] font-semibold text-muted">{picked ? "Its card is open" : "Click to open its card"}</div>
+      <div className="mt-3 rule-t pt-2 text-[11px] font-semibold text-muted">{picked ? "Its card is open" : "Click to open its card"}</div>
     </>
   );
 }

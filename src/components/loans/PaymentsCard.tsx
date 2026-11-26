@@ -43,7 +43,7 @@ export function PaymentsCard({ card, pickName, picked, allHref }: { card: Paymen
               </thead>
               <tbody>
                 {card.rows.map((r) => (
-                  <tr key={r.id} className="h-[58px] border-t border-divider">
+                  <tr key={r.id} className="h-[58px] rule-t">
                     <td className="pr-3">
                       <span className="flex items-center gap-2.5">
                         <LoanIcon category={r.loan.category} colorKey={r.loan.colorKey} size={32} closed={r.loan.closed} />
@@ -65,7 +65,7 @@ export function PaymentsCard({ card, pickName, picked, allHref }: { card: Paymen
                   </tr>
                 ))}
                 {Array.from({ length: Math.max(0, 6 - card.rows.length) }, (_, k) => (
-                  <tr key={`pad-${k}`} aria-hidden="true" className="h-[58px] border-t border-divider">
+                  <tr key={`pad-${k}`} aria-hidden="true" className="h-[58px] rule-t">
                     <td colSpan={5} />
                   </tr>
                 ))}
@@ -90,7 +90,7 @@ export function PaymentsCard({ card, pickName, picked, allHref }: { card: Paymen
         <>
           <ul className="flex flex-1 flex-col">
             {card.prepayments.map((p) => (
-              <li key={p.id} className="flex flex-wrap items-center gap-3 border-t border-divider py-3 first:border-t-0">
+              <li key={p.id} className="flex flex-wrap items-center gap-3 rule-t py-3 first:border-t-0">
                 <LoanIcon category={p.loan.category} colorKey={p.loan.colorKey} size={32} closed={p.loan.closed} />
                 <span className="min-w-0 flex-1">
                   <b className="block truncate text-[13px] font-extrabold">

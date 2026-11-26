@@ -83,7 +83,7 @@ export function TrendsCard({ trends }: { trends: TrendsData }) {
       </div>
 
       {trends.movers.length > 0 && view !== "rhythm" && (
-        <dl className="grid grid-cols-1 gap-4 border-t border-divider pt-4 sm:grid-cols-3">
+        <dl className="grid grid-cols-1 gap-4 rule-t pt-4 sm:grid-cols-3">
           {trends.movers.map((m) => (
             <div key={m.name} className="flex flex-col gap-0.5">
               <dt className="text-[10.5px] font-extrabold tracking-[0.06em] text-muted uppercase">{m.name}</dt>

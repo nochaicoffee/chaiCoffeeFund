@@ -133,7 +133,7 @@ export function FormDialog({
           <div className="flex min-w-0 flex-col gap-4">{children}</div>
         </div>
 
-        <footer className="flex items-center gap-2.5 border-t border-divider px-7 py-5 max-md:sticky max-md:bottom-0 max-md:bg-surface max-md:px-4 max-md:py-3">
+        <footer className="flex items-center gap-2.5 rule-t px-7 py-5 max-md:sticky max-md:bottom-0 max-md:bg-surface max-md:px-4 max-md:py-3">
           <p className="mr-auto text-xs font-semibold text-muted max-md:hidden">{footerNote}</p>
           <button
             type="button"

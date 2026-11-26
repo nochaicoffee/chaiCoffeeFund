@@ -261,7 +261,7 @@ export function LoanFormDialog({ forms, editing, onClose, onSaved, onDelete }: {
 
 function Line({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) {
   return (
-    <div className={`flex justify-between gap-3 ${strong ? "border-t border-divider pt-1.5 font-extrabold" : ""}`}>
+    <div className={`flex justify-between gap-3 ${strong ? "rule-t pt-1.5 font-extrabold" : ""}`}>
       <dt className={strong ? "" : "text-muted"}>{label}</dt>
       <dd className="tabular-nums">{value}</dd>
     </div>

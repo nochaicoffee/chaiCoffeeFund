@@ -41,7 +41,7 @@ export function CostCard({ cost }: { cost: CostView | null }) {
             </thead>
             <tbody>
               {cost.rows.map((r) => (
-                <tr key={r.loan.id} className="border-t border-divider font-bold">
+                <tr key={r.loan.id} className="rule-t font-bold">
                   <td className="py-2.5">
                     <span className="flex items-center gap-2">
                       <LoanIcon category={r.loan.category} colorKey={r.loan.colorKey} size={22} />

@@ -13,7 +13,7 @@ export function RecentTrades({ rows }: { rows: TradeRow[] }) {
     <WidgetCard label="Recent trades" title="Recent trades" note="newest first · pick one to edit or delete it" right={<Link href="/investments/trades" className="text-[12.5px] font-extrabold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">All trades →</Link>}>
       <ul className="flex flex-col">
         {rows.map((r) => (
-          <li key={r.id} className="border-t border-divider first:border-t-0">
+          <li key={r.id} className="rule-t first:border-t-0">
             <button type="button" onClick={() => open({ kind: "edit", id: r.id })} aria-label={`Edit ${r.kind}: ${r.name}, ${r.date}`} className="grid w-full grid-cols-[4rem_minmax(0,1fr)_auto] items-center gap-3 rounded-[12px] px-1 py-3 text-left hover:bg-fill focus-visible:outline-2 focus-visible:outline-accent">
               <span className="text-xs font-bold text-muted">{r.date}</span>
               <span className="min-w-0">

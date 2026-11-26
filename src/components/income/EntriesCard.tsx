@@ -53,13 +53,13 @@ export function EntriesCard({ card, pickLabel, allHref }: { card: EntriesCardDat
       ) : card.changes.length === 0 ? (
         <p className="flex-1 py-10 text-center text-sm font-semibold text-muted">No payment has moved 2% or more from the one before it.</p>
       ) : (
-        <ul className="flex flex-1 flex-col divide-y divide-divider">
+        <ul className="flex flex-1 flex-col divide-rule">
           {card.changes.map((c) => (
             <Change key={c.key} change={c} />
           ))}
         </ul>
       )}
-      <p className="flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3 text-[11.5px] font-semibold text-muted">
+      <p className="flex flex-wrap items-center justify-between gap-2 rule-t pt-3 text-[11.5px] font-semibold text-muted">
         <span>{view === "entries" ? card.note : "A raise, a bigger payment or a lower dividend, newest first."}</span>
         <Link href={allHref} className="text-[12.5px] font-extrabold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">
           All entries →
@@ -74,7 +74,7 @@ function Entry({ row }: { row: EntryRow }) {
   const entry = forms.entries[row.key];
   const act = disabledReason ? undefined : row.owed ? () => receive(row.sourceId, row.expectedDate) : entry ? () => open({ kind: "entry", start: { kind: "edit", entry } }) : undefined;
   return (
-    <tr className="border-t border-divider">
+    <tr className="rule-t">
       <td className="py-2 pr-3">
         <button type="button" onClick={act} disabled={!act} aria-label={`${row.owed ? "Mark received" : "Edit payment"}: ${row.name}, ${row.amount}, ${row.when}`} title={disabledReason} className="flex w-full cursor-pointer items-center gap-2.5 rounded-control text-left focus-visible:outline-2 focus-visible:outline-accent disabled:cursor-default">
           <SourceIcon icon={row.icon} name={row.name} colorKey={row.colorKey} size={30} />

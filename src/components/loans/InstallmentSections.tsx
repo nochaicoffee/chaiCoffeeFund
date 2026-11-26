@@ -26,7 +26,7 @@ export function InstallmentSections({ sections }: { sections: InstallmentsSectio
           <div className="flex flex-col gap-4 px-5 pb-5 md:px-6 md:pb-6">
             <ScheduleTable rows={s.rows} wide />
             {s.prepayments.length > 0 && (
-              <div className="flex flex-col gap-2 border-t border-divider pt-3">
+              <div className="flex flex-col gap-2 rule-t pt-3">
                 <b className="text-[13px] font-extrabold">Prepayments</b>
                 {s.prepayments.map((p) => (
                   <div key={p.id} className="flex flex-wrap items-center gap-3 text-[12.5px] font-semibold">

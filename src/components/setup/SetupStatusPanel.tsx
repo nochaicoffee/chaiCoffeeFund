@@ -91,7 +91,7 @@ export function SetupStatusPanel({ status, scope, local = false }: { status: Set
           <div key={group}>
             <h3 className="text-[13px] font-extrabold tracking-wide text-muted uppercase">{GROUP_LABELS[group]}</h3>
             {local && group === "signin" ? <p className="mt-0.5 text-[13px] text-muted">Running on your computer, nothing asks you to sign in. These are needed on the host (step 6).</p> : null}
-            <ul className="divide-y divide-divider">
+            <ul className="divide-rule">
               {status.checks
                 .filter((check) => check.group === group)
                 .map((check) => (

@@ -62,7 +62,7 @@ export function DetailsCard({ view }: { view: DetailsView | null }) {
               </ul>
             </div>
           )}
-          <div className="mt-auto flex flex-col gap-3 border-t border-divider pt-3">
+          <div className="mt-auto flex flex-col gap-3 rule-t pt-3">
             <div className="flex flex-wrap gap-2">
               {view.state === "Cancelled" ? (
                 <FormTrigger className={SMALL_OK} label="↻ Restart" onClick={() => open({ kind: "restart", id: view.policyId })} />

@@ -63,7 +63,7 @@ function Change({ change }: { change: RenewalRowView["change"] }) {
 function Row({ row, openHref }: { row: RenewalRowView; openHref: string }) {
   const struck = row.stopped ? "line-through" : "";
   return (
-    <div role="row" className={`border-b border-divider text-[13px] tabular-nums ${row.stopped ? "opacity-70" : ""}`}>
+    <div role="row" className={`rule-b text-[13px] tabular-nums ${row.stopped ? "opacity-70" : ""}`}>
       {/* Phone: the name and amount, then when, where or why, with the action and status. */}
       <div role="cell" className="flex items-center gap-3 py-[11px] xl:hidden">
         <Mono mark={row.mark} size={34} />
@@ -133,7 +133,7 @@ function Group({ group, openHref, moreHref, lessHref }: { group: GroupView; open
   return (
     <div role="rowgroup">
       {(group.rows.length > 0 || !group.more) && (
-        <div role="row" className="border-b border-divider pt-3.5 pb-2 xl:px-2.5">
+        <div role="row" className="rule-b pt-3.5 pb-2 xl:px-2.5">
           <div role="cell" aria-colspan={HEADERS.length + 1} className="flex items-center justify-between gap-3">
             <span className="text-[13px] font-extrabold">
               <span className="xl:hidden">{group.phoneTitle}</span>

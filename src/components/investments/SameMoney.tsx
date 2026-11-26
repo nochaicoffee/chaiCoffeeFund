@@ -26,7 +26,7 @@ export function SameMoney({ rows }: { rows: SameMoneyRow[] }) {
           <small className={`text-[11.5px] font-bold ${TONE[r.tone]}`}>{r.note}</small>
         </div>
       ))}
-      <p className="border-t border-divider pt-2.5 text-[11px] font-semibold text-muted">A counterfactual, never advice: each buy and sale put into the line on its own day. An RSU vest counts as a buy at fair value. Gold isn&apos;t shown: there is no gold price saved to work it from.</p>
+      <p className="rule-t pt-2.5 text-[11px] font-semibold text-muted">A counterfactual, never advice: each buy and sale put into the line on its own day. An RSU vest counts as a buy at fair value. Gold isn&apos;t shown: there is no gold price saved to work it from.</p>
     </WidgetCard>
   );
 }

@@ -151,7 +151,7 @@ export function EpfReview({ plan, state, setState, accounts }: { plan: ImportPla
 
       <section aria-label="Rows" className="flex flex-col gap-2">
         <h3 className="text-[11px] font-bold tracking-[0.04em] text-muted uppercase">Every credit in the file · {plan.passbook.credits.length}</h3>
-        <ul className="flex flex-col divide-y divide-divider rounded-[14px] surface-edge">
+        <ul className="flex flex-col divide-rule rounded-[14px] surface-edge">
           {plan.credits.map((row) => {
             const c = row.credit;
             const isEditing = editing === c.wageMonth;

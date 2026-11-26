@@ -19,7 +19,7 @@ export function EpfCard({ view }: { view: EpfCardView }) {
       </dl>
       <ul className="flex flex-col">
         {view.rows.map((r) => (
-          <li key={r.label} className="flex items-baseline justify-between gap-3 border-t border-divider py-2.5 first:border-t-0">
+          <li key={r.label} className="flex items-baseline justify-between gap-3 rule-t py-2.5 first:border-t-0">
             <span className="min-w-0">
               <b className="block text-[13px] font-extrabold">{r.label}</b>
               <span className="block text-[11px] font-medium text-muted">{r.note}</span>

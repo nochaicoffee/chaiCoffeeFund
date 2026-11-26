@@ -20,7 +20,7 @@ export function CashCard({ view }: { view: CashView }) {
           <Tile key={t.key} t={t} />
         ))}
       </div>
-      <p className="border-t border-divider pt-2.5 text-[11px] font-semibold text-muted">These are today&apos;s balances, each read off a statement or typed in, and they count once in net worth on Accounts. Going back to a day changes the holdings above, not this card: an older balance is in the account&apos;s history.</p>
+      <p className="rule-t pt-2.5 text-[11px] font-semibold text-muted">These are today&apos;s balances, each read off a statement or typed in, and they count once in net worth on Accounts. Going back to a day changes the holdings above, not this card: an older balance is in the account&apos;s history.</p>
     </WidgetCard>
   );
 }

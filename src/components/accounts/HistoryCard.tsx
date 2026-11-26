@@ -62,7 +62,7 @@ function Table({ rows, all, onEdit, spacer = false }: { rows: HistoryTableRow[];
         </span>
       </div>
       {rows.map((r) => (
-        <div role="row" key={r.id} className={`grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-3 border-b border-divider py-[9px] text-[13px] hover:bg-fill motion-safe:transition-colors motion-safe:duration-200 md:gap-x-0 md:py-[11px] ${columns}`}>
+        <div role="row" key={r.id} className={`grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-3 rule-b py-[9px] text-[13px] hover:bg-fill motion-safe:transition-colors motion-safe:duration-200 md:gap-x-0 md:py-[11px] ${columns}`}>
           {all && (
             <span role="cell" className="flex min-w-0 items-center gap-2.5">
               <Mono mark={{ alias: r.accountName, initial: r.accountInitial, color: r.accountColor, muted: r.accountClosed }} size={24} />

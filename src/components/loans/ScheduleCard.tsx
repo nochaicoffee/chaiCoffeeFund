@@ -28,7 +28,7 @@ export function ScheduleCard({ schedule, allHref }: { schedule: ScheduleView; al
         The {schedule.loan.name}&apos;s schedule
       </span>
       <ScheduleTable rows={schedule.rows} />
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3 text-xs font-semibold text-muted">
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-2 rule-t pt-3 text-xs font-semibold text-muted">
         <span>{schedule.foot}</span>
         <Link href={allHref} className={LINK}>
           All {schedule.count} installments →
@@ -56,7 +56,7 @@ export function ScheduleTable({ rows, wide = false }: { rows: ScheduleRow[]; wid
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={r.id} className={`h-[42px] border-t border-divider tabular-nums ${r.paid ? "text-muted" : ""} ${r.next ? "bg-warning-tint/60 shadow-[inset_3px_0_0_var(--warning)]" : ""}`}>
+            <tr key={r.id} className={`h-[42px] rule-t tabular-nums ${r.paid ? "text-muted" : ""} ${r.next ? "bg-warning-tint/60 shadow-[inset_3px_0_0_var(--warning)]" : ""}`}>
               <td className="pr-2 pl-1 font-extrabold">{r.number}</td>
               <td className="pr-3 font-semibold whitespace-nowrap">{r.due}</td>
               <td className="pr-3 font-semibold">{r.opening}</td>

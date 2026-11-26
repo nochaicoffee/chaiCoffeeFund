@@ -51,7 +51,7 @@ export function TargetsCard({ view }: { view: TargetsView }) {
       {view.otherNote && <p className="text-xs font-semibold text-muted">{view.otherNote}</p>}
 
       {view.anySet && view.moves.length > 0 && !money && (
-        <div className="flex flex-col gap-2 border-t border-divider pt-3">
+        <div className="flex flex-col gap-2 rule-t pt-3">
           <b className="text-[13px] font-extrabold">To land exactly on your targets, with no new money</b>
           <div className="flex flex-wrap gap-2">
             {view.moves.map((m) => (

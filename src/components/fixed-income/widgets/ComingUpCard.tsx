@@ -25,7 +25,7 @@ export function ComingUpCard({ items, note }: { items: ComingUpRow[]; note: stri
     >
       <ul className="flex flex-col">
         {shown.map((i) => (
-          <li key={i.key} className="grid grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-3 border-t border-divider py-3 first:border-t-0 first:pt-0">
+          <li key={i.key} className="grid grid-cols-[48px_minmax(0,1fr)_auto] items-center gap-3 rule-t py-3 first:border-t-0 first:pt-0">
             <span aria-hidden="true" className="flex h-12 flex-col items-center justify-center rounded-[12px] bg-fill leading-none">
               <b className="text-lg font-extrabold tabular-nums">{i.day}</b>
               <small className="mt-0.5 text-[9px] font-extrabold tracking-[0.06em] text-muted">{i.month}</small>

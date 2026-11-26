@@ -25,7 +25,7 @@ export function RowIcon({ part }: { part: PartKey }) {
 /** Big spends from an account in a month not worked out yet: they'll sit in cash and UPI once it is. */
 export function LooseTags({ tags }: { tags: StatementRow["tags"] }) {
   return (
-    <div className="flex flex-wrap items-center gap-1.5 border-b border-divider px-1 py-2.5 text-[12px] font-semibold text-muted">
+    <div className="flex flex-wrap items-center gap-1.5 rule-b px-1 py-2.5 text-[12px] font-semibold text-muted">
       <span>From your accounts, inside cash and UPI once the month is worked out:</span>
       {tags.map((t) => (
         <BigTag key={t.key} tag={t} />
@@ -78,7 +78,7 @@ export function StatementsLedger({ months, counts }: { months: StatementMonth[];
       {shown.length === 0 && <p className="py-6 text-center text-sm font-semibold text-muted">Nothing matches.</p>}
       {shown.map((m) => (
         <div key={m.month} className="flex flex-col">
-          <div className="flex flex-wrap items-baseline gap-x-3.5 gap-y-1 border-b border-divider px-1 pt-5 pb-2">
+          <div className="flex flex-wrap items-baseline gap-x-3.5 gap-y-1 rule-b px-1 pt-5 pb-2">
             <b className="text-[15px] font-extrabold">{m.title}</b>
             <span className="min-w-0 flex-1 text-[12.5px] font-semibold text-muted">{m.summary}</span>
             <Link href={`/expenses/statements?month=${m.month}`} className="text-[13px] font-extrabold text-accent-text hover:underline focus-visible:outline-2 focus-visible:outline-accent">
@@ -89,7 +89,7 @@ export function StatementsLedger({ months, counts }: { months: StatementMonth[];
           {looseShown(m) && <LooseTags tags={m.loose} />}
           <ul>
             {m.rows.map((r) => (
-              <li key={r.key} className="grid grid-cols-[44px_36px_minmax(0,1fr)_auto] items-center gap-3 border-b border-divider px-1 py-2.5 md:grid-cols-[44px_36px_minmax(0,1fr)_130px_170px_110px]">
+              <li key={r.key} className="grid grid-cols-[44px_36px_minmax(0,1fr)_auto] items-center gap-3 rule-b px-1 py-2.5 md:grid-cols-[44px_36px_minmax(0,1fr)_130px_170px_110px]">
                 <span className="grid justify-items-center rounded-[11px] bg-fill py-1.5 leading-none">
                   <b className="text-[15px] font-extrabold">{r.day}</b>
                   <small className="mt-0.5 text-[9.5px] font-extrabold text-muted uppercase">{r.mon}</small>

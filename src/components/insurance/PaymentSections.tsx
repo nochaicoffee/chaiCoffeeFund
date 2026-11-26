@@ -36,7 +36,7 @@ export function PaymentSections({ sections }: { sections: PaymentsPageSection[] 
             </div>
             <ul>
               {s.rows.map((r) => (
-                <li key={r.id} className="border-t border-divider py-3">
+                <li key={r.id} className="rule-t py-3">
                   <div className={`${GRID} items-center max-md:flex max-md:flex-wrap max-md:gap-x-4 max-md:gap-y-1`}>
                     <b className="text-[12.5px] font-extrabold">
                       {r.day}, {r.year}

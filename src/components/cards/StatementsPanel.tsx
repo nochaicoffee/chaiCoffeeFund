@@ -89,7 +89,7 @@ function StatementsView({
                 const card = cardsById.get(s.cardId);
                 const days = daysBetween(today, s.dueDate);
                 return (
-                  <tr key={s.id} className="group/row h-11 border-t border-divider">
+                  <tr key={s.id} className="group/row h-11 rule-t">
                     <td className="pr-3 font-bold">
                       <span className="inline-flex items-center gap-2">
                         <span className="size-[9px] shrink-0 rounded-[3px]" style={{ background: cardSwatch(card?.color) }} aria-hidden="true" />
@@ -121,7 +121,7 @@ function StatementsView({
           </table>
         </MaybeQuickPay>
       </div>
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3">
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-2 rule-t pt-3">
         <span className="text-[11px] font-semibold text-muted">
           Showing the {statements.length} most recent
           {counts.closed > 0 && ` · ${counts.inFull} of ${counts.closed} closed ${counts.closed === 1 ? "statement" : "statements"} paid in full`}
@@ -258,7 +258,7 @@ function RangeView({ range, monthName }: { range: SpendRange; monthName: string 
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap gap-x-5 gap-y-1 border-t border-divider pt-3 text-xs font-bold tabular-nums">
+      <div className="flex flex-wrap gap-x-5 gap-y-1 rule-t pt-3 text-xs font-bold tabular-nums">
         {highest && (
           <span>
             <span className="text-negative" aria-hidden="true">▲ </span>Highest {formatInr(highest.amount)}{" "}

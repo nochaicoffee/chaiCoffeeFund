@@ -95,7 +95,7 @@ function StatementRow({
   return (
     <div
       role="row"
-      className={`grid grid-cols-2 items-start gap-x-4 gap-y-2.5 border-b border-divider px-3.5 py-3.5 text-[13px] tabular-nums xl:min-h-[60px] xl:items-center xl:gap-3 xl:py-2 ${COLUMNS}`}
+      className={`grid grid-cols-2 items-start gap-x-4 gap-y-2.5 rule-b px-3.5 py-3.5 text-[13px] tabular-nums xl:min-h-[60px] xl:items-center xl:gap-3 xl:py-2 ${COLUMNS}`}
     >
       <Cell className="flex items-center gap-2.5">
         <span className="h-5 w-[30px] shrink-0 rounded-[5px] shadow-[var(--raised-strong-shadow)]" style={{ background: cardGradient(card?.color) }} aria-hidden="true" />
@@ -297,7 +297,7 @@ export function StatementsList({
       ) : (
         <div role="table" aria-label={`Statements ${periodText}`} className="-mx-4 md:mx-0">
           <div role="rowgroup" className="max-xl:sr-only">
-            <div role="row" className={`grid gap-3 border-b border-divider px-3.5 pb-2.5 ${COLUMNS}`}>
+            <div role="row" className={`grid gap-3 rule-b px-3.5 pb-2.5 ${COLUMNS}`}>
               {HEADERS.map((h) => (
                 <span key={h} role="columnheader" className="text-[10px] font-bold tracking-[0.03em] text-muted uppercase">
                   {h}

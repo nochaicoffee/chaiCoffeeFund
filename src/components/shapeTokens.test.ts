@@ -25,12 +25,31 @@ const files = sources(src).map((path) => ({ path: relative(src, path), text: rea
  */
 const LINE_WITHOUT_EDGE: Record<string, string> = {
   "components/fixed-income/EpfStatementDialog.tsx": "the passbook drop zone: a 2px dashed target, not a surface",
-  "components/shell/MonthCardHover.tsx": "the hover card's arrow: two sides of a rotated square that swap when it opens below; ADR 0018 step 4",
 };
+
+/** Each class string, and each quoted string inside a template's `${…}`, as its list of classes. */
+function classLists(text: string): string[][] {
+  return [...text.matchAll(/"[^"\n]*"|'[^'\n]*'|`[^`]*`/g)].flatMap((m) => {
+    const body = m[0].slice(1, -1);
+    const nested = m[0].startsWith("`") ? [...body.matchAll(/"([^"\n]*)"|'([^'\n]*)'/g)].map((n) => n[1] ?? n[2]) : [];
+    return [body.replace(/\$\{[^}]*\}/g, " "), ...nested].map((s) => s.split(/\s+/));
+  });
+}
 
 describe("shape stays on tokens", () => {
   it("draws a surface's outline with surface-edge, not border-surface-line", () => {
     const offenders = files.filter(({ path, text }) => !(path in LINE_WITHOUT_EDGE) && /(?<![\w-])(?:[\w-]+:)*border-surface-line(?![\w-])/.test(text));
+    expect(offenders.map((f) => f.path)).toEqual([]);
+  });
+
+  it("draws a solid row rule with rule-t, rule-b or divide-rule, not border-divider", () => {
+    const offenders = files.filter(({ text }) =>
+      classLists(text).some(
+        (classes) =>
+          (classes.includes("border-divider") && (classes.includes("border-t") || classes.includes("border-b")) && !classes.includes("border-dashed")) ||
+          (classes.includes("divide-divider") && classes.includes("divide-y")),
+      ),
+    );
     expect(offenders.map((f) => f.path)).toEqual([]);
   });
 

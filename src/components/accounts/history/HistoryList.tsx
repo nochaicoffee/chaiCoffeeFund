@@ -55,7 +55,7 @@ function Pill({ pill }: { pill: NonNullable<HistoryRowView["pill"]> }) {
 
 function Row({ row }: { row: HistoryRowView }) {
   return (
-    <div role="row" className={`grid items-center gap-x-3.5 border-b border-divider py-[11px] text-[13px] tabular-nums ${COLUMNS} grid-cols-[minmax(0,1fr)_auto_36px] ${row.closed ? "opacity-80" : ""}`}>
+    <div role="row" className={`grid items-center gap-x-3.5 rule-b py-[11px] text-[13px] tabular-nums ${COLUMNS} grid-cols-[minmax(0,1fr)_auto_36px] ${row.closed ? "opacity-80" : ""}`}>
       <div role="cell" className="flex min-w-0 items-center gap-3">
         <Mono row={row} size={38} />
         <div className="min-w-0">
@@ -195,7 +195,7 @@ export function HistoryList({ view, state, hrefFor, accountsHref, today }: { vie
           <div role="table" aria-label="Balances">
             {view.groups.map((g) => (
               <div key={g.key} role="rowgroup">
-                <div role="row" className="flex items-center justify-between border-b border-divider pt-3.5 pb-2 text-[13px] font-extrabold">
+                <div role="row" className="flex items-center justify-between rule-b pt-3.5 pb-2 text-[13px] font-extrabold">
                   <span role="cell">{g.title}</span>
                   <span role="cell" className="text-xs font-semibold text-muted">{g.note}</span>
                 </div>

@@ -114,7 +114,7 @@ function RowList({ title, rows }: { title: string; rows: SyncReportRow[] }) {
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </summary>
-      <ul className="mt-2 flex flex-col divide-y divide-divider">
+      <ul className="mt-2 flex flex-col divide-rule">
         {rows.map((row) => (
           <li key={row.messageId} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 py-1.5 text-[13px]">
             <span className="font-semibold text-fg">{rowTitle(row)}</span>

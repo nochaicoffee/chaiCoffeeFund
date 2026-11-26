@@ -219,7 +219,7 @@ export function MoneySection({ detail }: { detail: PickDetail }) {
                       </span>
                     </span>
                     {bottom > 0 && (
-                      <span className="flex w-full items-start justify-center border-t border-divider" style={{ height: downH }}>
+                      <span className="flex w-full items-start justify-center rule-t" style={{ height: downH }}>
                         <span className="flex w-[62%] flex-col gap-px overflow-hidden rounded-[8px]">
                           {c.down.filter((p) => p.value > 0).map((p) => (
                             <i key={p.name} className="block w-full" style={{ height: Math.max(2, (p.value / bottom) * downH), background: p.hatch ? hatched(p.color) : p.color }} />

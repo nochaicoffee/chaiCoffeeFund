@@ -14,7 +14,7 @@ export function ComingUpCard({ card, picked }: { card: ComingUpView; picked: str
       ) : (
         <ul className="flex flex-1 flex-col">
           {card.rows.map((r, k) => (
-            <li key={r.id} className={`flex items-center gap-3.5 border-t border-divider py-3.5 first:border-t-0 motion-safe:transition-opacity ${picked && picked !== r.loanId ? "opacity-35" : ""}`}>
+            <li key={r.id} className={`flex items-center gap-3.5 rule-t py-3.5 first:border-t-0 motion-safe:transition-opacity ${picked && picked !== r.loanId ? "opacity-35" : ""}`}>
               <span className={`flex w-12 shrink-0 flex-col items-center rounded-[12px] py-1.5 ${r.soon ? "bg-warning-tint text-warning-text" : "bg-fill"}`}>
                 <b className="text-lg leading-none font-extrabold">{r.day}</b>
                 <span className="text-[10px] font-extrabold">{r.month}</span>
@@ -34,7 +34,7 @@ export function ComingUpCard({ card, picked }: { card: ComingUpView; picked: str
           ))}
         </ul>
       )}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-t border-divider pt-3 text-xs font-semibold text-muted">
+      <div className="flex flex-wrap items-center justify-between gap-2 rule-t pt-3 text-xs font-semibold text-muted">
         <span>{card.foot}</span>
         <span className="rounded-full bg-accent-tint px-2.5 py-1 text-[11px] font-extrabold text-accent-text">From the schedules</span>
       </div>

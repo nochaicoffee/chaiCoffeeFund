@@ -177,7 +177,7 @@ function SideAll({ side, onPick }: { side: SideView; onPick: (id: string) => voi
       </div>
       <div>
         {side.bands.map((band) => (
-          <div key={band.title} className="grid grid-cols-[1.3fr_1fr_1fr] items-center gap-3 border-b border-divider py-3 last:border-b-0">
+          <div key={band.title} className="grid grid-cols-[1.3fr_1fr_1fr] items-center gap-3 rule-b py-3 last:border-b-0">
             <div>
               <b className="block text-[13px] font-extrabold">{band.title}</b>
               <small className="block text-[11px] font-semibold text-muted">{band.count}</small>
@@ -302,7 +302,7 @@ function SideGoal({ view }: { view: GoalSideView }) {
               )}
             </div>
             {view.parts.map((part) => (
-              <div key={part.key} className="grid grid-cols-[22px_minmax(0,1.1fr)_minmax(0,1fr)_auto_auto] items-center gap-3 border-b border-divider py-1.5 last:border-b-0 max-md:grid-cols-[22px_minmax(0,1fr)_auto_auto]">
+              <div key={part.key} className="grid grid-cols-[22px_minmax(0,1.1fr)_minmax(0,1fr)_auto_auto] items-center gap-3 rule-b py-1.5 last:border-b-0 max-md:grid-cols-[22px_minmax(0,1fr)_auto_auto]">
                 <span aria-hidden="true" className="flex h-[22px] w-[22px] items-center justify-center rounded-full text-[10px] font-extrabold text-white" style={{ background: `var(--card-${part.colorKey})` }}>
                   {part.n}
                 </span>
@@ -362,7 +362,7 @@ function EntryList({ entries }: { entries: GoalSideView["entries"] }) {
   return (
     <>
       {shown.map((entry) => (
-        <div key={entry.id} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 border-b border-divider py-1.5 last:border-b-0">
+        <div key={entry.id} className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-3 rule-b py-1.5 last:border-b-0">
           <div className="min-w-0">
             <b className="block text-[13px] font-extrabold">{entry.kind === "Take-back" ? "Taken back" : "Set aside"}</b>
             <small className="block truncate text-[11px] font-semibold text-muted">{entry.note}</small>
@@ -399,7 +399,7 @@ function PlanetList({ planets, pick, onPick }: { planets: PlanetView[]; pick: st
   return (
     <ul className="flex flex-col md:hidden" aria-label="Every planet">
       {shown.map((planet) => (
-        <li key={planet.key} className={`border-t border-divider first:border-t-0 ${pick !== ALL && pick !== planet.topId ? "opacity-40" : ""}`}>
+        <li key={planet.key} className={`rule-t first:border-t-0 ${pick !== ALL && pick !== planet.topId ? "opacity-40" : ""}`}>
           <button type="button" onClick={() => onPick(planet.topId)} className="flex min-h-12 w-full items-center gap-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-accent">
             <GoalTile category={planet.category} colorKey={planet.colorKey} size={30} off={planet.paused} />
             <span className="min-w-0 flex-1">
@@ -411,7 +411,7 @@ function PlanetList({ planets, pick, onPick }: { planets: PlanetView[]; pick: st
         </li>
       ))}
       {shown.length < planets.length && (
-        <li className="border-t border-divider pt-2">
+        <li className="rule-t pt-2">
           <button type="button" onClick={() => setAll(true)} className="min-h-10 text-xs font-extrabold text-accent-text focus-visible:outline-2 focus-visible:outline-accent">
             Show all {planets.length}
           </button>

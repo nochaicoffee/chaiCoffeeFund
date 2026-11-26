@@ -15,6 +15,30 @@
 }
 
 /*
+ * A row rule, from tokens: what `border-t border-divider`, `border-b border-divider` and `divide-y divide-divider` drew
+ * between the rows of a list or table, so a look can thicken them. Dashed guide lines on charts stay as they are.
+ */
+@utility rule-t {
+  border-top-style: var(--tw-border-style, solid);
+  border-top-width: var(--rule-width);
+  border-color: var(--rule, var(--divider));
+}
+@utility rule-b {
+  border-bottom-style: var(--tw-border-style, solid);
+  border-bottom-width: var(--rule-width);
+  border-color: var(--rule, var(--divider));
+}
+@utility divide-rule {
+  :where(& > :not(:last-child)) {
+    border-top-style: var(--tw-border-style, solid);
+    border-bottom-style: var(--tw-border-style, solid);
+    border-top-width: 0px;
+    border-bottom-width: var(--rule-width);
+    border-color: var(--rule, var(--divider));
+  }
+}
+
+/*
  * Design tokens, taken from the final light Cards board
  * (design/dashboards/CardsListLight.dc.html). Components use only these
  * tokens, never literal colours, so the dark palette (#57) can be added by
@@ -43,6 +67,13 @@
    * --surface-edge must set it on those two heroes as well. A conditional colour sets [--surface-edge:…] on the element.
    */
   --surface-edge-width: 1px;
+
+  /*
+   * A row rule between the rows of a list or table (rule-t, rule-b, divide-rule). Its colour is --rule when a look sets
+   * one, else the --divider in force there, for the same reason --surface-edge isn't defined here. The Loans cover and the
+   * Subscriptions hero set their own --divider, so a look that sets --rule must set it on those two heroes as well.
+   */
+  --rule-width: 1px;
 
   /*
    * Small elevation shadows, by what they lift. Selection rings and glows are not elevation and stay where they're drawn.
