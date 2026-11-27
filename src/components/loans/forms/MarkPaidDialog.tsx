@@ -120,7 +120,7 @@ export function MarkPaidDialog({ forms, installmentId, editing = false, onClose,
               )}
               {after && (
                 <dl className="flex flex-col gap-1.5 rounded-[16px] bg-surface p-4 text-[12.5px] font-semibold">
-                  <span className="mb-1 w-fit rounded-full bg-accent-tint px-2.5 py-0.5 text-[11px] font-extrabold text-accent-text">Estimate</span>
+                  <span className="mb-1 w-fit rounded-full badge-edge badge-face bg-accent-tint px-2.5 py-0.5 text-[11px] font-extrabold text-accent-text">Estimate</span>
                   <Line label="Still owed" value={`${formatInr(after.balanceBefore)} → ${formatInr(after.balanceAfter)}`} />
                   {after.closes ? (
                     <Line label="The loan" value="Closes" strong />

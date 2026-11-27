@@ -49,13 +49,13 @@ export function PdfPasswordField({ id, help, saved, value, onChange }: { id: str
             <LockIcon />
             {mode === "keep" ? "Saved" : "Will be removed"}
             <span className="ml-auto flex gap-1.5">
-              <button type="button" onClick={() => setMode("change")} className="rounded-full bg-fill px-3 py-1 text-xs font-bold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent max-md:py-2">
+              <button type="button" onClick={() => setMode("change")} className="rounded-full btn-edge bg-fill px-3 py-1 text-xs font-bold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent max-md:py-2">
                 Change
               </button>
               <button
                 type="button"
                 onClick={() => setMode(mode === "remove" ? "keep" : "remove")}
-                className="rounded-full bg-fill px-3 py-1 text-xs font-bold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent max-md:py-2"
+                className="rounded-full btn-edge bg-fill px-3 py-1 text-xs font-bold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent max-md:py-2"
               >
                 {mode === "remove" ? "Keep it" : "Remove"}
               </button>

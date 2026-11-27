@@ -47,12 +47,12 @@ export function AttentionStrip({ items }: { items: AttentionItem[] }) {
               </span>
             </p>
             {item.kind === "interest" && (
-              <button type="button" aria-expanded={explaining === item.id} onClick={() => setExplaining(explaining === item.id ? null : item.id)} className="min-h-8 rounded-full bg-surface px-3.5 text-xs font-extrabold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
+              <button type="button" aria-expanded={explaining === item.id} onClick={() => setExplaining(explaining === item.id ? null : item.id)} className="min-h-8 rounded-full btn-edge bg-surface px-3.5 text-xs font-extrabold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
                 How it&apos;s worked out
               </button>
             )}
             {item.kind === "incomplete" && item.depositId && (
-              <button type="button" onClick={() => deposits.open({ kind: "edit", id: item.depositId! })} className="min-h-8 rounded-full bg-surface px-3.5 text-xs font-extrabold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
+              <button type="button" onClick={() => deposits.open({ kind: "edit", id: item.depositId! })} className="min-h-8 rounded-full btn-edge bg-surface px-3.5 text-xs font-extrabold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
                 Add them
               </button>
             )}
@@ -64,7 +64,7 @@ export function AttentionStrip({ items }: { items: AttentionItem[] }) {
             {item.kind === "late" && (
               <>
                 <AddEpfStatementButton />
-                <button type="button" onClick={() => epf.open({ kind: "contribution" })} className="min-h-8 rounded-full bg-surface px-3.5 text-xs font-extrabold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
+                <button type="button" onClick={() => epf.open({ kind: "contribution" })} className="min-h-8 rounded-full btn-edge bg-surface px-3.5 text-xs font-extrabold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
                   Add the credit
                 </button>
               </>

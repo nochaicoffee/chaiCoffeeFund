@@ -271,7 +271,7 @@ export function StatementsList({
             href={hrefFor({ sort: state.sort === "oldest" ? "newest" : "oldest" })}
             scroll={false}
             aria-label={`Sorted ${state.sort === "oldest" ? "oldest" : "newest"} first. Sort ${state.sort === "oldest" ? "newest" : "oldest"} first instead`}
-            className="flex h-11 shrink-0 items-center gap-1.5 rounded-full bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:h-[34px]"
+            className="flex h-11 shrink-0 items-center gap-1.5 rounded-full btn-edge bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:h-[34px]"
           >
             {state.sort === "oldest" ? "Oldest first" : "Newest first"}
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

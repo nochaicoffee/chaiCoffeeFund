@@ -67,7 +67,7 @@ export function IncomeCover({ cover, pickId, onPick }: { cover: CoverView; pickI
             <RollingNumber value={pick.total} format="inr" />
           </b>
           {pick.change && (
-            <span className={`rounded-full px-2.5 py-1 text-xs font-extrabold ${pick.change.up ? "bg-accent-tint text-accent-text" : "bg-fill text-muted"}`}>
+            <span className={`rounded-full badge-edge badge-face px-2.5 py-1 text-xs font-extrabold ${pick.change.up ? "bg-accent-tint text-accent-text" : "bg-fill text-muted"}`}>
               {pick.change.up ? "↑" : "↓"} {pick.change.text}
             </span>
           )}

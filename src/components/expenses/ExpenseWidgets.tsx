@@ -36,7 +36,7 @@ export function WhereWentCard({ view }: { view: WhereView }) {
             {r.bigs.length > 0 && (
               <span className="col-span-2 flex flex-wrap gap-1.5 md:col-start-2 md:col-end-4">
                 {r.bigs.map((b) => (
-                  <span key={b.key} className="inline-flex items-center gap-1.5 rounded-full bg-warning-tint px-2.5 py-1 text-[11.5px] font-bold text-warning-text">
+                  <span key={b.key} className="inline-flex items-center gap-1.5 rounded-full badge-edge bg-warning-tint px-2.5 py-1 text-[11.5px] font-bold text-warning-text">
                     <CategoryIcon category={b.category} size={12} />
                     {b.name} <b className="font-extrabold">{b.amount}</b>
                   </span>

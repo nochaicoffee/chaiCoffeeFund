@@ -7,7 +7,7 @@ import { TileMark } from "./parts";
 /** The no-claim bonus (InsFinal): a ladder for each motor policy, with the step it's on and the step it moves to at renewal. */
 export function NcbCard({ view }: { view: NcbView }) {
   return (
-    <WidgetCard label="No-claim bonus" title="No-claim bonus" note="the discount on the own-damage premium" gap="gap-4" right={<span className="rounded-full bg-fill px-2.5 py-1 text-[11px] font-extrabold">From each term</span>}>
+    <WidgetCard label="No-claim bonus" title="No-claim bonus" note="the discount on the own-damage premium" gap="gap-4" right={<span className="rounded-full badge-edge badge-face bg-fill px-2.5 py-1 text-[11px] font-extrabold">From each term</span>}>
       <div className="flex flex-1 flex-col justify-around gap-5">
         {view.rows.map((r) => (
           <div key={r.id} className="flex flex-col gap-2.5">

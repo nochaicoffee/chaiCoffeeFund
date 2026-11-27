@@ -41,7 +41,7 @@ export default async function InsurancePage({ searchParams }: PageProps<"/insura
         }
       >
         <GreetingSentence parts={summarySentence(data, today)} cards={greetingView(data, today)} />
-        {demo !== null && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
+        {demo !== null && <p className="w-fit rounded-full badge-edge bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
         <SkippedRowsNotice tabs={skipped} />
       </PageHeader>
       {data.policies.length > 0 ? (

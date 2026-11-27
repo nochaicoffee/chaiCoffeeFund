@@ -62,6 +62,22 @@
   box-shadow: var(--stat-shadow, none);
 }
 
+/*
+ * A small status pill (ADR 0018, after step 5): Neubrutalism outlines it in ink and sets it in Space Mono capitals, as the
+ * boards' `.pill`. Only that look sets these. In Classic the border width falls back to 0 and the colour to the reset's
+ * currentColor, and the face's declarations are invalid at computed time, so they inherit, exactly as with no declaration.
+ * A pill that sets its own tracking, case or face takes only `badge-edge`. Don't pair either with a border, ring or shadow.
+ */
+@utility badge-edge {
+  border-width: var(--badge-edge-width, 0px);
+  border-color: var(--badge-edge-color, currentColor);
+}
+@utility badge-face {
+  font-family: var(--badge-font);
+  text-transform: var(--badge-case);
+  letter-spacing: var(--badge-track);
+}
+
 @utility label-face {
   font-family: var(--font-label);
 }
@@ -785,6 +801,12 @@
   --cover-gap: var(--surface);
   --cover-gap-edge: 3px;
   --cover-gap-edge-color: var(--ink);
+  /* Small status pills, as the boards' `.pill`: an ink outline, Space Mono capitals. Small in-card buttons take btn-edge. */
+  --badge-edge-width: 2.5px;
+  --badge-edge-color: var(--ink);
+  --badge-font: var(--font-label);
+  --badge-case: uppercase;
+  --badge-track: 0.04em;
   /* A colour as a face (a hero's segment, a policy): its flat bright shade. Classic falls back to the swatch or the surface. */
   --face-amber: var(--card-amber-from);
   --face-aubergine: var(--card-aubergine-from);

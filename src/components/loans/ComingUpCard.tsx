@@ -24,7 +24,7 @@ export function ComingUpCard({ card, picked }: { card: ComingUpView; picked: str
                 <span className="block text-[11.5px] font-semibold text-muted">
                   <span className={r.soon ? "font-extrabold text-warning-text" : ""}>{r.when}</span> · {r.detail}
                 </span>
-                {r.short && <span className="mt-1 inline-block rounded-full bg-negative-tint px-2 py-0.5 text-[10.5px] font-extrabold text-negative">{r.short} can&rsquo;t cover this</span>}
+                {r.short && <span className="mt-1 inline-block rounded-full badge-edge badge-face bg-negative-tint px-2 py-0.5 text-[10.5px] font-extrabold text-negative">{r.short} can&rsquo;t cover this</span>}
               </span>
               <span className="flex shrink-0 flex-col items-end gap-1.5">
                 <b className="text-[15px] font-extrabold tabular-nums">{r.amount}</b>
@@ -36,7 +36,7 @@ export function ComingUpCard({ card, picked }: { card: ComingUpView; picked: str
       )}
       <div className="flex flex-wrap items-center justify-between gap-2 rule-t pt-3 text-xs font-semibold text-muted">
         <span>{card.foot}</span>
-        <span className="rounded-full bg-accent-tint px-2.5 py-1 text-[11px] font-extrabold text-accent-text">From the schedules</span>
+        <span className="rounded-full badge-edge badge-face bg-accent-tint px-2.5 py-1 text-[11px] font-extrabold text-accent-text">From the schedules</span>
       </div>
     </LoanCard>
   );

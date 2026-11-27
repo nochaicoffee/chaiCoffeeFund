@@ -113,7 +113,7 @@ export function ClosedDeposits() {
               {formatInr(d.principalAmount)} → {formatInr(d.receivedAmount ?? 0)}
             </span>
             <span className="text-muted">received {d.closedDate ? formatDate(d.closedDate) : "—"}</span>
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${d.closeKind === "Matured" ? "bg-accent-tint text-accent-text" : "bg-warning-tint text-warning-text"}`}>{d.closeKind === "Matured" ? "At maturity" : "Pre-closed"}</span>
+            <span className={`rounded-full badge-edge badge-face px-2 py-0.5 text-[10px] font-bold ${d.closeKind === "Matured" ? "bg-accent-tint text-accent-text" : "bg-warning-tint text-warning-text"}`}>{d.closeKind === "Matured" ? "At maturity" : "Pre-closed"}</span>
             <span className="ml-auto flex gap-2">
               <button type="button" onClick={() => open({ kind: "reopen", id: d.id })} className={SMALL} aria-label={`Reopen ${d.name}`}>
                 Reopen

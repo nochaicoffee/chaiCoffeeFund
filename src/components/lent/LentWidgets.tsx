@@ -73,7 +73,7 @@ export function LoansTable({ view }: { view: LoansTableView }) {
               <span className="min-w-0 flex-1">
                 <b className="block text-[13px] font-extrabold">
                   {r.name}
-                  <span className={`ml-2 rounded-full px-2 py-0.5 align-middle text-[10px] font-bold whitespace-nowrap ${r.repaid || r.settled ? "bg-fill text-muted" : r.kind === "Accruing" ? "bg-warning-tint text-warning-text" : "bg-accent-tint text-accent-text"}`}>{r.repaid ? "Repaid" : r.settled ? "Paid back" : r.kind}</span>
+                  <span className={`ml-2 rounded-full badge-edge badge-face px-2 py-0.5 align-middle text-[10px] font-bold whitespace-nowrap ${r.repaid || r.settled ? "bg-fill text-muted" : r.kind === "Accruing" ? "bg-warning-tint text-warning-text" : "bg-accent-tint text-accent-text"}`}>{r.repaid ? "Repaid" : r.settled ? "Paid back" : r.kind}</span>
                 </b>
                 <span className="block text-[11px] font-medium text-muted">{r.lent}</span>
                 {r.verdicts && <Dots verdicts={r.verdicts} />}
@@ -198,7 +198,7 @@ export function MoneyBackCard({ view }: { view: MoneyBackView }) {
               <span className="min-w-0">
                 <b className="flex items-center gap-1.5 text-[13px] font-extrabold">
                   <span className="min-w-0 truncate">{r.title}</span>
-                  <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${TAG[r.tag]}`}>{r.tag}</span>
+                  <span className={`shrink-0 rounded-full badge-edge badge-face px-2 py-0.5 text-[10px] font-bold ${TAG[r.tag]}`}>{r.tag}</span>
                 </b>
                 <span className="block text-[11px] font-medium text-muted">{r.note}</span>
               </span>

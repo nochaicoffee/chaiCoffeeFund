@@ -76,7 +76,7 @@ function TrendCard({ month, running, lineColor }: { month: TrendMonthView; runni
     <div style={{ width: CARD_WIDTH }} className="rounded-[16px] surface-edge bg-surface p-3.5 text-left text-fg shadow-[var(--pop-shadow)]">
       <div className="flex items-center justify-between gap-2 text-xs font-bold">
         <span>{card.title}</span>
-        <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${card.pill === "Expected" ? "bg-fill text-muted" : "bg-accent-tint text-accent-text"}`}>{card.pill}</span>
+        <span className={`rounded-full badge-edge badge-face px-2 py-0.5 text-[10px] font-extrabold ${card.pill === "Expected" ? "bg-fill text-muted" : "bg-accent-tint text-accent-text"}`}>{card.pill}</span>
       </div>
       <div className="mt-0.5 text-2xl leading-tight font-extrabold tabular-nums">{card.total}</div>
       {card.diff && <div className={`text-[11px] font-bold ${card.diff.up ? "text-negative" : "text-positive"}`}>{card.diff.text}</div>}
@@ -422,7 +422,7 @@ export function SubscriptionChart({ chart, pick, empty }: { chart: ChartView; pi
           <Legend view={view} />
           <span className="flex items-center gap-2">
             <span className="text-xs font-medium text-muted">Showing</span>
-            <span className="inline-flex items-center gap-2 rounded-full bg-fill px-3 py-1.5 text-xs font-bold whitespace-nowrap text-fg">
+            <span className="inline-flex items-center gap-2 rounded-full badge-edge bg-fill px-3 py-1.5 text-xs font-bold whitespace-nowrap text-fg">
               <Mono mark={pick} size={18} />
               {pick.alias}
             </span>

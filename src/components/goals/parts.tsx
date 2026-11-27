@@ -36,7 +36,7 @@ export function GoalTile({ category, colorKey, size = 34, off = false }: { categ
 }
 
 export function NeedBadge({ need }: { need: boolean }) {
-  return <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold ${need ? "bg-negative-tint text-negative" : "bg-[oklch(0.94_0.03_258)] text-[oklch(0.42_0.1_258)]"}`}>{need ? "Need" : "Want"}</span>;
+  return <span className={`rounded-full badge-edge badge-face px-2.5 py-0.5 text-[11px] font-extrabold ${need ? "bg-negative-tint text-negative" : "bg-[oklch(0.94_0.03_258)] text-[oklch(0.42_0.1_258)]"}`}>{need ? "Need" : "Want"}</span>;
 }
 
 export function ScaleBadge({ scale }: { scale: "Minor" | "Major" }) {
@@ -44,7 +44,7 @@ export function ScaleBadge({ scale }: { scale: "Minor" | "Major" }) {
 }
 
 export function FixedPill() {
-  return <span className="rounded-full bg-negative-tint px-2 py-0.5 text-[10px] font-extrabold text-negative">Fixed</span>;
+  return <span className="rounded-full badge-edge badge-face bg-negative-tint px-2 py-0.5 text-[10px] font-extrabold text-negative">Fixed</span>;
 }
 
 const STANDING_TONE: Record<GoalStanding, string> = {
@@ -60,7 +60,7 @@ const STANDING_TONE: Record<GoalStanding, string> = {
 };
 
 export function StandingPill({ standing, small = false }: { standing: GoalStanding; small?: boolean }) {
-  return <span className={`inline-flex items-center rounded-full font-extrabold whitespace-nowrap ${small ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-[11.5px]"} ${STANDING_TONE[standing]}`}>{standing}</span>;
+  return <span className={`inline-flex items-center rounded-full badge-edge badge-face font-extrabold whitespace-nowrap ${small ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-[11.5px]"} ${STANDING_TONE[standing]}`}>{standing}</span>;
 }
 
 /** A saved-over-target bar, with a tick for where saving should be by now. */

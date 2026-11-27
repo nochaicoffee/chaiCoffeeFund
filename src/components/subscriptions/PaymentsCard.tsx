@@ -26,7 +26,7 @@ const STATUS_PILL: Record<PaymentRowView["status"], string> = {
 };
 
 function Status({ status }: { status: PaymentRowView["status"] }) {
-  return <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap ${STATUS_PILL[status]}`}>{status}</span>;
+  return <span className={`inline-flex rounded-full badge-edge badge-face px-2.5 py-1 text-[11px] font-bold whitespace-nowrap ${STATUS_PILL[status]}`}>{status}</span>;
 }
 
 function Change({ change }: { change: PaymentRowView["change"] }) {
@@ -228,7 +228,7 @@ export function PaymentsCard({ pick, payments, onAll, lit = null, onPoint }: { p
           <span className="text-xs font-medium text-muted">Pick a block in the map for one subscription&apos;s payments</span>
         ) : (
           <>
-            <button type="button" onClick={onAll} className="inline-flex items-center gap-1.5 rounded-full bg-fill px-3 py-1.5 text-xs font-bold whitespace-nowrap text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
+            <button type="button" onClick={onAll} className="inline-flex items-center gap-1.5 rounded-full btn-edge bg-fill px-3 py-1.5 text-xs font-bold whitespace-nowrap text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
               <RenewIcon size={11} />
               All subscriptions
             </button>

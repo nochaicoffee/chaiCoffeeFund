@@ -50,8 +50,8 @@ function Warning({ w }: { w: WarningItem }) {
         <b className="block text-[13.5px] font-extrabold">{w.text}</b>
         <small className="block text-xs font-semibold text-muted">{w.detail}</small>
       </div>
-      <span className="hidden shrink-0 rounded-full bg-fill px-2.5 py-0.5 text-[11px] font-extrabold sm:inline">{w.page}</span>
-      <Link href={w.href} className="shrink-0 rounded-full bg-ink px-3 py-1.5 text-xs font-extrabold text-on-ink focus-visible:outline-2 focus-visible:outline-accent">{w.act}</Link>
+      <span className="hidden shrink-0 rounded-full badge-edge badge-face bg-fill px-2.5 py-0.5 text-[11px] font-extrabold sm:inline">{w.page}</span>
+      <Link href={w.href} className="shrink-0 rounded-full btn-edge bg-ink px-3 py-1.5 text-xs font-extrabold text-on-ink focus-visible:outline-2 focus-visible:outline-accent">{w.act}</Link>
     </div>
   );
 }
@@ -66,7 +66,7 @@ function Event({ e }: { e: EventItem }) {
         <b className="block text-[13.5px] font-extrabold">{e.label}</b>
         <small className="block text-xs font-semibold text-muted">{e.sub}</small>
       </div>
-      {e.warning && <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-[10.5px] font-extrabold ${e.warning.tone === "red" ? "bg-negative-tint text-negative" : "bg-warning-tint text-warning-text"}`}>needs a look</span>}
+      {e.warning && <span className={`shrink-0 rounded-full badge-edge badge-face px-2.5 py-0.5 text-[10.5px] font-extrabold ${e.warning.tone === "red" ? "bg-negative-tint text-negative" : "bg-warning-tint text-warning-text"}`}>needs a look</span>}
       <b className={`shrink-0 text-[15px] font-extrabold tabular-nums ${e.arrives ? "text-positive" : ""}`}>{e.amount}</b>
     </div>
   );

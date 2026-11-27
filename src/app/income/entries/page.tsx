@@ -74,8 +74,8 @@ export default async function IncomeEntriesPage({ searchParams }: PageProps<"/in
               ),
             )}
           </p>
-          {demo && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
-          {sourceId && !book && <p className="w-fit rounded-full bg-warning-tint px-3 py-1 text-xs font-bold text-warning-text">That source isn&apos;t in the Sheet any more, so every source is shown.</p>}
+          {demo && <p className="w-fit rounded-full badge-edge bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
+          {sourceId && !book && <p className="w-fit rounded-full badge-edge bg-warning-tint px-3 py-1 text-xs font-bold text-warning-text">That source isn&apos;t in the Sheet any more, so every source is shown.</p>}
           <SkippedRowsNotice tabs={skipped} />
         </PageHeader>
 

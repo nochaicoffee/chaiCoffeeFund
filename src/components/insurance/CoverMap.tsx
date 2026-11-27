@@ -44,7 +44,7 @@ export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: 
             <small className="ml-2 text-[22px] font-bold tracking-normal md:text-[26px]">{cover.count === 1 ? "policy in force" : "policies in force"}</small>
           </div>
           <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11.5px] font-extrabold ${cover.delta.tone === "ok" ? "bg-positive-tint text-positive" : "bg-negative-tint text-negative"}`}>{cover.delta.text}</span>
+            <span className={`inline-flex items-center gap-1 rounded-full badge-edge badge-face px-2.5 py-0.5 text-[11.5px] font-extrabold ${cover.delta.tone === "ok" ? "bg-positive-tint text-positive" : "bg-negative-tint text-negative"}`}>{cover.delta.text}</span>
             <span className="text-[12.5px] font-semibold text-muted">{cover.sub}</span>
           </div>
         </div>
@@ -163,7 +163,7 @@ function Box({ box, pickId, onPick }: { box: PolicyBox; pickId: string; onPick: 
             <b className="block truncate text-[13px] leading-tight font-extrabold">{box.name}</b>
             <small className="mt-px block truncate text-[11px] font-semibold text-[color:var(--on-face-muted,var(--color-muted))]">{box.insurer}</small>
           </span>
-          {badge && <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${badge.className}`}>{badge.text}</span>}
+          {badge && <span className={`shrink-0 rounded-full badge-edge badge-face px-2 py-0.5 text-[10px] font-extrabold ${badge.className}`}>{badge.text}</span>}
         </span>
         <span className="text-[22px] leading-none font-extrabold tracking-[-0.02em] tabular-nums">
           {box.cover}

@@ -123,3 +123,9 @@ Defaults taken unless Prathik says otherwise: the phone greeting is 38px, not 58
   - **Insurance** is teal-green (`--hero-insurance`), with white tiles. Each policy is filled with its own bright colour, with an even ink edge and an ink term bar. The "no policy" and "Something else?" tiles are white with ink dashes.
 
   A colour drawn as a face (a segment or a policy) reads `var(--face-<key>, <Classic value>)`. Neubrutalism sets `--face-<key>` to that colour's flat bright shade for all 36 colours, and a test keeps that list complete. Classic was checked the same on both pages, desktop and phone.
+- **2026-11-27, small pills and buttons.** Status pills and small in-card buttons now follow the boards under Neubrutalism.
+  - **Pills** (Paid, Due, In force, Sample data and the like): outlined in ink at 2.5px and set in Space Mono capitals, like the boards' `.pill`.
+  - **Small buttons** inside cards (Renew, See schedule, Add, Copy): they take `btn-edge`, so they get the 3px edge and hard shadow.
+  - **How:** two new utilities. `badge-edge` sets the border; `badge-face` sets the font, the capitals and the tracking. A pill that sets its own tracking or case takes only `badge-edge`. So do sentence notices (Sample data, warnings) and content chips (names, add-ons, suggestions), which keep the body face. In Classic both are no-ops: the border falls back to the reset's own value, and the face's declarations are invalid at computed time, so they inherit.
+  - **Left out:** labels on the dark stages (Goals orbit, Investments stage), tiny calendar pills, and text-only links.
+  - **Checked:** 76 files changed, mechanically. Classic was checked the same on all 17 page views (fingerprint with case and tracking added). A test keeps both utilities off elements that would conflict.

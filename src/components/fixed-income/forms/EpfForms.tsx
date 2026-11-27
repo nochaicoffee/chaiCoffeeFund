@@ -98,7 +98,7 @@ export function EpfEntriesList() {
             <span className="w-28 font-bold">{e.kind === "Contribution" ? wageMonthLabel(e.wageMonth ?? "") : e.kind === "Interest" ? "Interest" : "Opening balance"}</span>
             <span className="w-28 text-muted tabular-nums">{formatDate(e.date)}</span>
             <span className="font-semibold tabular-nums">{formatInr(e.employee + e.employer + e.pension)}</span>
-            <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold ${e.source === "Typed" ? "bg-warning-tint text-warning-text" : "bg-fill text-muted"}`}>{e.source === "Typed" ? "typed" : "passbook"}</span>
+            <span className={`rounded-full badge-edge badge-face px-2 py-0.5 text-[10px] font-bold ${e.source === "Typed" ? "bg-warning-tint text-warning-text" : "bg-fill text-muted"}`}>{e.source === "Typed" ? "typed" : "passbook"}</span>
             <span className="ml-auto flex gap-2">
               {e.source === "Typed" && (
                 <button type="button" onClick={() => open(e.kind === "Contribution" ? { kind: "contribution", entry: e } : { kind: "credited", entry: e })} className={SMALL} aria-label={`Edit ${e.kind === "Contribution" ? wageMonthLabel(e.wageMonth ?? "") : e.kind}`}>

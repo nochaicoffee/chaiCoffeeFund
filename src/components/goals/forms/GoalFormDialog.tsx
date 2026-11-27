@@ -116,7 +116,7 @@ export function GoalFormDialog({ forms, editing, category: startCategory, onClos
                 </>
               )}
               {pot > 0 && rows.length > 0 && (
-                <button type="button" onClick={fillRows} className="mt-1 inline-flex min-h-8 w-fit items-center rounded-full bg-fill px-3.5 text-xs font-extrabold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
+                <button type="button" onClick={fillRows} className="mt-1 inline-flex min-h-8 w-fit items-center rounded-full btn-edge bg-fill px-3.5 text-xs font-extrabold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
                   Fill in order
                 </button>
               )}

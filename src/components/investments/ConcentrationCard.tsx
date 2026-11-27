@@ -60,7 +60,7 @@ export function ConcentrationCard({ view, limits }: { view: ConcentrationView; l
               <li key={l.name} className="flex flex-col gap-1.5">
                 <div className="flex items-baseline justify-between gap-3 text-[13px]">
                   <b className="font-extrabold">{l.label}</b>
-                  <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold ${l.breached ? "bg-negative-tint text-negative" : "bg-accent-tint text-positive"}`}>{l.chip}</span>
+                  <span className={`rounded-full badge-edge badge-face px-2.5 py-0.5 text-[11px] font-extrabold ${l.breached ? "bg-negative-tint text-negative" : "bg-accent-tint text-positive"}`}>{l.chip}</span>
                 </div>
                 <div className="relative h-[var(--track-h,0.5rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] rounded-full bg-fill" role="img" aria-label={`${l.label}: ${l.detail}. ${l.chip}.`}>
                   <i className="absolute inset-y-0 left-0 block rounded-full" style={{ width: `${Math.min(100, l.now * 100)}%`, background: l.breached ? "var(--negative)" : "var(--positive)" }} />

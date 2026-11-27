@@ -29,7 +29,7 @@ export function DetailsCard({ view }: { view: DetailsView | null }) {
               <b className="block text-[17px] leading-tight font-extrabold">{view.name}</b>
               <small className="block text-[12.5px] font-semibold text-muted">{view.sub}</small>
             </span>
-            <span className={`rounded-full px-3 py-1 text-[11px] font-extrabold ${STATE_PILL[view.state]}`}>{view.stateText}</span>
+            <span className={`rounded-full badge-edge badge-face px-3 py-1 text-[11px] font-extrabold ${STATE_PILL[view.state]}`}>{view.stateText}</span>
           </div>
           <dl className="grid grid-cols-1 gap-x-6 gap-y-3.5 sm:grid-cols-2">
             {view.fields.map((f) => (
@@ -52,7 +52,7 @@ export function DetailsCard({ view }: { view: DetailsView | null }) {
               <span className="mb-2 block text-[10.5px] font-extrabold tracking-[0.05em] text-muted uppercase label-face">Add-ons and covers</span>
               <ul className="flex flex-wrap gap-2">
                 {view.addOns.map((a) => (
-                  <li key={a} className="inline-flex items-center gap-1.5 rounded-full bg-fill px-3 py-1.5 text-xs font-bold">
+                  <li key={a} className="inline-flex items-center gap-1.5 rounded-full badge-edge bg-fill px-3 py-1.5 text-xs font-bold">
                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--positive)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                       <polyline points="20 6 9 17 4 12" />
                     </svg>

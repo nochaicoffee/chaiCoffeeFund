@@ -40,10 +40,10 @@ export default async function GoalsPage({ searchParams }: PageProps<"/goals">) {
           }
         >
           <GreetingSentence parts={summarySentence(data, today, derived)} cards={greetingView(data, today, derived)} />
-          {demo !== null && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
+          {demo !== null && <p className="w-fit rounded-full badge-edge bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
           <SkippedRowsNotice tabs={skipped} />
           {orphanGoals(data).length > 0 && (
-            <p role="status" className="w-fit rounded-full bg-warning-tint px-3 py-1 text-xs font-bold text-warning-text">
+            <p role="status" className="w-fit rounded-full badge-edge bg-warning-tint px-3 py-1 text-xs font-bold text-warning-text">
               {orphanGoals(data).length} part{orphanGoals(data).length === 1 ? "" : "s"} ({orphanGoals(data).map((g) => g.name).join(", ")}) {orphanGoals(data).length === 1 ? "has" : "have"} no goal to belong to, so {orphanGoals(data).length === 1 ? "it isn't" : "they aren't"} counted. Fix the Parent id in the Goals tab.
             </p>
           )}

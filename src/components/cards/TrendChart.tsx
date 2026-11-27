@@ -218,9 +218,9 @@ function TrendHoverCard({
       <div className="flex items-center justify-between gap-2 text-xs font-bold text-muted">
         <span>{formatMonthYear(month)}</span>
         {month === peak ? (
-          <span className="rounded-full bg-accent-tint px-2 py-0.5 text-[10px] font-extrabold text-accent-text">Peak</span>
+          <span className="rounded-full badge-edge badge-face bg-accent-tint px-2 py-0.5 text-[10px] font-extrabold text-accent-text">Peak</span>
         ) : month === currentMonth ? (
-          <span className="rounded-full bg-fill px-2 py-0.5 text-[10px] font-extrabold">This month</span>
+          <span className="rounded-full badge-edge badge-face bg-fill px-2 py-0.5 text-[10px] font-extrabold">This month</span>
         ) : null}
       </div>
       <div className="mt-0.5 text-2xl leading-tight font-extrabold tabular-nums">{point.hasStatements ? formatInr(point.total) : "No statements"}</div>

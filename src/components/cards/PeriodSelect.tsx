@@ -270,14 +270,14 @@ function MonthRangePicker({
           )}
         </span>
         <div className="flex shrink-0 gap-1.5">
-          <button type="button" onClick={() => onClose(true)} className="h-[34px] rounded-full bg-fill px-3.5 text-xs font-extrabold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent pointer-coarse:h-10">
+          <button type="button" onClick={() => onClose(true)} className="h-[34px] rounded-full btn-edge bg-fill px-3.5 text-xs font-extrabold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent pointer-coarse:h-10">
             Cancel
           </button>
           <button
             type="button"
             disabled={first !== null}
             onClick={() => onApply(range.from, range.to)}
-            className="h-[34px] rounded-full bg-ink px-3.5 text-xs font-extrabold text-on-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40 pointer-coarse:h-10"
+            className="h-[34px] rounded-full btn-edge bg-ink px-3.5 text-xs font-extrabold text-on-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40 pointer-coarse:h-10"
           >
             Apply
           </button>

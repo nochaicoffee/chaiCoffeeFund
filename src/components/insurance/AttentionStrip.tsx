@@ -32,7 +32,7 @@ export function AttentionStrip({ items, onSee }: { items: AttentionItem[]; onSee
               onSee(item.policyId);
               document.getElementById("cover-map")?.scrollIntoView({ behavior: "smooth", block: "center" });
             }}
-            className="min-h-8 rounded-full bg-surface px-3.5 text-xs font-extrabold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent"
+            className="min-h-8 rounded-full btn-edge bg-surface px-3.5 text-xs font-extrabold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent"
           >
             See policy
           </button>

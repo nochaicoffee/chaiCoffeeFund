@@ -17,7 +17,7 @@ export function CopyButton({ text }: { text: string }) {
           // No clipboard (an insecure page, a locked-down browser): the text is still on screen to select.
         }
       }}
-      className="shrink-0 rounded-full bg-fill px-3 py-1 text-[11.5px] font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent"
+      className="shrink-0 rounded-full btn-edge bg-fill px-3 py-1 text-[11.5px] font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent"
       aria-label={copied ? "Copied" : `Copy ${text}`}
     >
       {copied ? "Copied" : "Copy"}

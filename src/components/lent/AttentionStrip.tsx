@@ -27,7 +27,7 @@ export function AttentionStrip({ items }: { items: AttentionItem[] }) {
             </span>
           </p>
           {item.href && item.action && (
-            <Link href={item.href} className="inline-flex min-h-8 items-center rounded-full bg-surface px-3.5 text-xs font-extrabold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
+            <Link href={item.href} className="inline-flex min-h-8 items-center rounded-full btn-edge bg-surface px-3.5 text-xs font-extrabold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
               {item.action}
             </Link>
           )}
