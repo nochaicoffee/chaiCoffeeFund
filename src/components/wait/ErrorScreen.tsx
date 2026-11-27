@@ -13,8 +13,8 @@ const subscribe = (notify: () => void) => {
 };
 const isOnline = () => navigator.onLine;
 
-const PRIMARY = "rounded-full bg-ink px-4 py-2 text-[13px] font-extrabold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
-const GHOST = "rounded-full bg-fill px-4 py-2 text-[13px] font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent";
+const PRIMARY = "rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-ink px-4 py-2 text-[13px] font-extrabold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+const GHOST = "rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-[var(--btn-soft-bg,var(--fill))] px-4 py-2 text-[13px] font-bold text-fg hover:bg-[var(--btn-soft-hover,var(--fill-strong))] focus-visible:outline-2 focus-visible:outline-accent";
 
 /**
  * What a page shows when it couldn't load (app/error.tsx and global-error.tsx). In production Next

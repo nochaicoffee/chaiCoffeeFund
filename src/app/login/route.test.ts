@@ -8,6 +8,17 @@ afterEach(() => vi.unstubAllEnvs());
 const page = (query = "") => GET(new Request(`https://app.example/login${query}`));
 
 describe("GET /login", () => {
+  it("follows the look the browser last saw (ADR 0018's cookie mirror), and ignores anything else", async () => {
+    const withCookie = (cookie: string) => GET(new Request("https://app.example/login", { headers: { cookie } })).then((r) => r.text());
+    const neubrutal = await withCookie("look=Neubrutalism");
+    expect(neubrutal).toContain('<html lang="en" data-look="neubrutal">');
+    // ...and the page's own CSS still has the block that attribute switches on.
+    expect(neubrutal).toContain(':root[data-look="neubrutal"] main');
+    expect(await withCookie("look=Classic")).toContain('<html lang="en">');
+    expect(await withCookie("look=%3Cscript%3E")).toContain('<html lang="en">');
+    expect(await (await page()).text()).toContain('<html lang="en">');
+  });
+
   it("shows the Google button, with the page to return to carried along", async () => {
     const res = await page("?next=/accounts");
     const html = await res.text();
