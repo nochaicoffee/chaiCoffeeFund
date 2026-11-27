@@ -648,6 +648,8 @@
   --dy-future-border: 2.5px dashed var(--ink);
   --dy-day-border: 2.5px solid var(--ink);
   --dy-day-radius: 10px;
+  /* the edge is thicker than Classic's none, so the padding gives the amount that room back */
+  --dy-day-pad: 9px 8px;
   --dy-blank-edge: transparent;
   --dy-lv1: #fff6c4;
   --dy-lv2: #ffe066;
