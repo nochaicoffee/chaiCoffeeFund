@@ -2,6 +2,8 @@ import { appConfig } from "@/lib/appConfig";
 import { SESSION_DAYS } from "@/lib/auth/session";
 import { KULHAD_CSS, kulhadSvg } from "@/lib/brand/kulhad";
 import { greetingTitle } from "@/lib/format/date";
+import { dataLookOf } from "@/lib/look/look";
+import type { Look } from "@/lib/sheets/types";
 import { signInView, type Notice, type SignInError, type SignInInput } from "./loginView";
 
 function escapeHtml(value: string): string {
@@ -13,6 +15,8 @@ export interface LoginPageProps extends Omit<SignInInput, "error"> {
   error: SignInError | null;
   /** When it is, for the greeting (a parameter so a test can fix it). */
   now?: Date;
+  /** The look from the browser's cookie (ADR 0018): the sign-in page can't read the Sheet, so the cookie mirror decides. */
+  look?: Look;
 }
 
 const ICONS = { err: "!", warn: "!", info: "i", ok: "✓" } as const;
@@ -63,6 +67,24 @@ const CSS = `${KULHAD_CSS}
   @media (prefers-reduced-motion: reduce) { .spin { animation: none; } }
   /* A phone on its side: the cup and the subtitle step aside so the button never scrolls off. */
   @media (max-height: 480px) { .kh, .sub { display: none; } main { padding: 18px 20px 16px; max-width: 420px; } }
+
+  /* Neubrutalism (ADR 0018), when the look cookie says so. This page stands alone with its own CSS, so its own tokens
+     are redefined here and the card, logo, button and notices take the app's ink edges and hard shadows. */
+  :root[data-look="neubrutal"] { --page: oklch(0.97 0.035 85); --surface: oklch(1 0 0); --line: var(--ink); --fill: oklch(1 0 0); --accent: #c6f24e; --accent-tint: oklch(0.92 0.09 145); }
+  :root[data-look="neubrutal"] body { background-color: var(--page); background-image: radial-gradient(oklch(0.16 0.008 260 / 0.16) 1.3px, transparent 1.8px); background-size: 22px 22px; }
+  :root[data-look="neubrutal"] body::before { display: none; }
+  :root[data-look="neubrutal"] main { border: 3px solid var(--ink); border-radius: 20px; box-shadow: 8px 8px 0 var(--ink); }
+  :root[data-look="neubrutal"] .brand { font-size: 15px; }
+  :root[data-look="neubrutal"] .mark { background: #ffd43b; border: 2.5px solid var(--ink); border-radius: 10px; box-shadow: 2px 2px 0 var(--ink); }
+  :root[data-look="neubrutal"] h1 { font-size: 30px; letter-spacing: -0.04em; font-weight: 800; }
+  :root[data-look="neubrutal"] .sub { color: var(--fg); }
+  :root[data-look="neubrutal"] .notice { border: 2.5px solid var(--ink); border-radius: 12px; }
+  :root[data-look="neubrutal"] .notice .ic { border: 2px solid var(--ink); }
+  :root[data-look="neubrutal"] .button { border: 3px solid var(--ink); border-radius: 12px; box-shadow: 4px 4px 0 var(--ink); color: var(--ink); }
+  :root[data-look="neubrutal"] .button:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+  :root[data-look="neubrutal"] .button .g { border: 2px solid var(--ink); }
+  :root[data-look="neubrutal"] .copy { border: 2.5px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+  :root[data-look="neubrutal"] .fine { color: var(--fg); }
 `;
 
 /**
@@ -118,8 +140,9 @@ export function loginPage(props: LoginPageProps): string {
   const href = `/login/google${props.next !== "/" ? `?next=${encodeURIComponent(props.next)}` : ""}`;
   const owner = escapeHtml(appConfig.ownerName);
   const button = `<a class="button" id="go" href="${escapeHtml(href)}"${view.disabled ? ' aria-disabled="true" tabindex="-1"' : ""}><span class="spin" hidden></span>${GOOGLE_G}<span data-label>${escapeHtml(view.button)}</span></a>`;
+  const look = props.look ? dataLookOf(props.look) : undefined;
   return `<!doctype html>
-<html lang="en">
+<html lang="en"${look ? ` data-look="${look}"` : ""}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">

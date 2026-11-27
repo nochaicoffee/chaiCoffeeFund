@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { loginConfigured, sessionKey } from "@/lib/auth/config";
 import { readCookie } from "@/lib/auth/cookies";
+import { isLook, LOOK_COOKIE } from "@/lib/look/look";
 import { safeNextPath } from "@/lib/auth/gate";
 import { SESSION_COOKIE, verifySessionToken } from "@/lib/auth/session";
 import { loginPage } from "./loginPage";
@@ -35,6 +36,8 @@ export async function GET(request: Request) {
     inApp: isInAppBrowser(request.headers.get("user-agent")),
     // Locally the missing settings are named, as before; on the host a stranger isn't told how it is set up.
     showSettingNames: process.env.NODE_ENV !== "production",
+    // The look the browser last saw (ADR 0018's cookie mirror): signed out, the Sheet can't be read.
+    look: ((value) => (isLook(value) ? value : undefined))(readCookie(request.headers.get("cookie"), LOOK_COOKIE)),
   });
   return new NextResponse(html, { status: configured ? 200 : 503, headers: HTML_HEADERS });
 }

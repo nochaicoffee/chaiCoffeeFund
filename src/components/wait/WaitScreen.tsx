@@ -17,7 +17,7 @@ const WINDOWS = lineWindows();
 
 // On the phone's teal splash the button is white (the light pill is the design's; ink on teal read dull).
 const CHIP =
-  "rounded-full bg-ink px-4 py-2 text-[13px] font-extrabold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent max-md:bg-splash-fg max-md:text-ink";
+  "rounded-[var(--btn-radius,calc(infinity*1px))] btn-edge bg-ink px-4 py-2 text-[13px] font-extrabold text-on-ink hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent max-md:bg-splash-fg max-md:text-ink";
 
 /**
  * True when this screen came in the page's own HTML (a hard load: the first open of the app, a reload, a
