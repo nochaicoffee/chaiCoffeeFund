@@ -182,7 +182,12 @@ export function Segmented<T extends string>({
           </span>
         )}
       </legend>
-      <div className={`flex rounded-full bg-fill p-[3px] ${error ? "ring-[3px] ring-negative/15" : ""}`}>
+      {/* Under Neubrutalism the toggle takes the button edge (ADR 0018 step 5d). Its shadow only shows without an error,
+          because the error's ring is a box-shadow too; with an error the edge turns red instead. The padding grows
+          a little so the picked option's own hard shadow clears the edge. Classic's fallbacks are what it had. */}
+      <div
+        className={`flex rounded-[var(--btn-radius,calc(infinity*1px))] border-[length:var(--btn-edge-width,0px)] bg-[var(--btn-soft-bg,var(--fill))] p-[var(--seg-pad,3px)] ${error ? "border-[color:var(--seg-error-edge,currentColor)] ring-[3px] ring-negative/15" : "border-[color:var(--btn-edge-color,currentColor)] [box-shadow:var(--btn-shadow,none)]"}`}
+      >
         {options.map((option) => (
           <label key={option.value} className="relative flex-1">
             <input

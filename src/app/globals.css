@@ -552,6 +552,9 @@
   --btn-soft-bg: var(--surface);
   --btn-soft-hover: color-mix(in oklch, var(--ink) 7%, white);
   --btn-primary-offset: 3px 3px 0;
+  /* The form-field toggle: room for the picked option's hard shadow, and a red edge while its field has an error. */
+  --seg-pad: 5px;
+  --seg-error-edge: var(--negative);
 
   /* Coloured cards (step 5e): a 3px ink outline, and a hard ink shadow where the card had none. The Loans cover casts
      its shadow in the picked loan's colour (--card-hard-offset with its own --stage-pick). */
