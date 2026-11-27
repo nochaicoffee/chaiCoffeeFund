@@ -14,6 +14,7 @@ import { accountsPeriodMenu, accountsPeriodValue, accountsRangeStart } from "../
 import { formsView } from "../views";
 import { historyHref, parseHistoryState, type HistoryState } from "./params";
 import { historyPageView } from "./views";
+import { figureClass } from "@/components/shell/sentenceFigure";
 
 export const metadata: Metadata = { title: "Balance history" };
 
@@ -64,7 +65,7 @@ export default async function BalanceHistoryPage({ searchParams }: PageProps<"/a
           <p className="text-[length:var(--greeting-sentence-size-sm,15px)] leading-[var(--greeting-sentence-leading,1.625)] font-medium text-[color:var(--greeting-sentence-color,var(--muted))] md:text-[length:var(--greeting-sentence-size,15px)]">
             {view.lede.map((part, i) =>
               part.strong ? (
-                <span key={i} className="font-bold whitespace-nowrap text-fg tabular-nums">
+                <span key={i} className={figureClass(part.text)}>
                   {part.text}
                 </span>
               ) : (

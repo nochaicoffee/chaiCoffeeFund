@@ -67,7 +67,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {showShell ? (
           <div className="mx-auto flex min-h-dvh w-full max-w-[var(--frame-max,1760px)] flex-col md:flex-row md:items-start md:gap-[var(--frame-gap,1.25rem)] md:p-[var(--frame-pad,1.5rem)]">
             <Sidebar initiallyExpanded={sidebarExpanded} appName={appConfig.appName} ownerName={appConfig.ownerName} showSignOut={loginRequired(process.env)} look={look} />
-            <main className="min-w-0 flex-1 md:max-w-[var(--frame-content-max,none)] bg-[var(--frame-bg,var(--surface))] py-5 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] max-md:pb-[calc(var(--phone-nav-h)+1.25rem)] md:min-h-[calc(100dvh-var(--frame-inset,3rem))] md:rounded-[var(--frame-radius,36px)] md:border-solid md:border-[length:var(--frame-edge-width,var(--surface-edge-width))] md:border-[color:var(--surface-edge,var(--surface-line))] md:px-[var(--frame-inner-x,26px)] md:py-[var(--frame-inner-y,26px)] md:shadow-[var(--frame-shadow,var(--card-shadow))]">
+            <main className="min-w-0 flex-1 max-md:relative max-md:[overflow-x:clip] md:max-w-[var(--frame-content-max,none)] bg-[var(--frame-bg,var(--surface))] py-5 pr-[max(1rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] max-md:pb-[calc(var(--phone-nav-h)+1.25rem)] md:min-h-[calc(100dvh-var(--frame-inset,3rem))] md:rounded-[var(--frame-radius,36px)] md:border-solid md:border-[length:var(--frame-edge-width,var(--surface-edge-width))] md:border-[color:var(--surface-edge,var(--surface-line))] md:px-[var(--frame-inner-x,26px)] md:py-[var(--frame-inner-y,26px)] md:shadow-[var(--frame-shadow,var(--card-shadow))]">
               {children}
             </main>
           </div>
