@@ -139,4 +139,20 @@ describe("shape stays on tokens", () => {
     expect(sidebar).toContain("[display:var(--nav-chip-display,contents)]");
     expect(sidebar).toContain("navColorKey(");
   });
+
+  it("gives every Daily token a Classic fallback and a Neubrutalism value", () => {
+    // daily.css reads its look from --dy-* tokens that only Neubrutalism sets, so each read needs the Classic value as its
+    // fallback, and each token the look sets has to be read somewhere.
+    const css = readFileSync(join(src, "components/daily/daily.css"), "utf8");
+    const globals = readFileSync(join(src, "app/globals.css"), "utf8");
+    const start = globals.indexOf(':root[data-look="neubrutal"]');
+    const look = globals.slice(start, globals.indexOf("\n}\n", start));
+    const reads = [...css.matchAll(/var\((--dy-[a-z0-9-]+)(,?)/g)];
+    const ownTokens = new Set([...css.matchAll(/(--dy-[a-z0-9-]+):/g)].map((m) => m[1]));
+    expect(reads.filter(([, name, comma]) => !comma && !ownTokens.has(name)).map(([, name]) => name)).toEqual([]);
+    const set = new Set([...look.matchAll(/(--dy-[a-z0-9-]+):/g)].map((m) => m[1]));
+    const read = new Set(reads.map(([, name]) => name));
+    expect([...read].filter((name) => !ownTokens.has(name) && !set.has(name))).toEqual([]);
+    expect([...set].filter((name) => !read.has(name))).toEqual([]);
+  });
 });
