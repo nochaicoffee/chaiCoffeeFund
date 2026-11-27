@@ -807,6 +807,72 @@
   --badge-font: var(--font-label);
   --badge-case: uppercase;
   --badge-track: 0.04em;
+  /* Subscriptions' day by day (NbSubscriptions): violet heat, every day outlined in ink, a day not paid yet yellow, empty days white. */
+  --sub-heat-1: #f2ecff;
+  --sub-heat-2: #e6dcff;
+  --sub-heat-3: #cdb8ff;
+  --sub-heat-4: #b79cff;
+  --sub-heat-5: #7a55e8;
+  --sub-missing: #ffd43b;
+  --sub-no-data: var(--surface);
+  --sub-day-edge: 2px;
+  --sub-day-edge-color: var(--ink);
+  --sub-legend-dot: 14px;
+  /* Goals' orbit (NbGoals): a flat ink sky with a pink shadow and no stars, white dashed rings, planets on their bright faces with an
+     ink edge and a white offset, and the pot yellow with an ink edge and a pink offset. */
+  --goal-sky: var(--ink);
+  --goal-sky-shadow: 9px 9px 0 #ffa3d7;
+  --goal-stars: none;
+  --goal-ring: #fff;
+  --goal-ring-width: 2.5;
+  --goal-ring-dash: 8 9;
+  --goal-planet-edge: 3px;
+  --goal-planet-edge-color: var(--ink);
+  --goal-planet-shadow: 3px 3px 0 #fff;
+  --goal-sun: #ffd43b;
+  --goal-sun-edge: 4px;
+  --goal-sun-ink: var(--ink);
+  /* no goals yet: a white pot, so its ink text reads */
+  --goal-sun-empty: var(--surface);
+  --goal-sun-shadow: 7px 7px 0 #ffa3d7;
+  /* Investments' stage (NbInvestments): flat ink with a periwinkle shadow and white text, a periwinkle worth line over a solid dark
+     area, what was put in as a white dash, money added in lime, the toggles as white boxes with ink dividers. The holding cards sit
+     on their bright faces in ink, Everything on ink. */
+  --inv-stage: var(--ink);
+  --inv-stage-shadow: 9px 9px 0 #9fb0ff;
+  --inv-stage-ink: #fff;
+  --inv-line: #9fb0ff;
+  --inv-line-width: 4.5;
+  --inv-cost: #fff;
+  --inv-cost-width: 2.5;
+  --inv-cost-dash: 9 8;
+  --inv-area: #333;
+  --inv-area-top: 1;
+  --inv-area-foot: 1;
+  --inv-up: #c6f24e;
+  --inv-down: #ff6b57;
+  --inv-muted: oklch(0.82 0 0);
+  --inv-bars: #c6f24e;
+  --inv-chips: #fff;
+  --inv-chips-edge: 3px;
+  --inv-chips-edge-color: var(--ink);
+  --inv-chips-radius: 12px;
+  --inv-chips-pad: 0px;
+  --inv-chips-shadow: 3px 3px 0 #9fb0ff;
+  --inv-chip-radius: 0px;
+  --inv-chip-divider: 3px;
+  --inv-chip-on: #9fb0ff;
+  --inv-chip-on-ink: var(--ink);
+  --inv-chip-ink: var(--ink);
+  --inv-pick-all: var(--ink);
+  --inv-pick-on-shadow: 5px 5px 0 #9fb0ff;
+  --inv-pick-shadow: 3px 3px 0 var(--ink);
+  --inv-pick-up: var(--on-card-up);
+  --inv-pick-down: var(--on-card-down);
+  --inv-pick-muted: oklch(0 0 0 / 0.7);
+  --inv-spark-width: 2.5;
+  --inv-pick-empty-edge: oklch(0 0 0 / 0.4);
+  --inv-pick-empty-ink: oklch(0 0 0 / 0.62);
   /* A colour as a face (a hero's segment, a policy): its flat bright shade. Classic falls back to the swatch or the surface. */
   --face-amber: var(--card-amber-from);
   --face-aubergine: var(--card-aubergine-from);
@@ -933,6 +999,12 @@
   --card-teal-to: oklch(0.82 0.143 187);
   --card-violet-from: oklch(0.82 0.17 285);
   --card-violet-to: oklch(0.82 0.17 285);
+}
+/* Subscriptions' day squares are about 10px on a phone: a thinner edge leaves their colour room. */
+@media (max-width: 767px) {
+  :root[data-look="neubrutal"] {
+    --sub-day-edge: 1.5px;
+  }
 }
 
 @theme inline {

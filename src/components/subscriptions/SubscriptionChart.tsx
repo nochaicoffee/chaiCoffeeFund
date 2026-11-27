@@ -33,18 +33,18 @@ const EASE_OUT = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function LegendDot({ style }: { style: CSSProperties }) {
-  return <i aria-hidden="true" className="inline-block size-[9px] rounded-[3px]" style={style} />;
+  return <i aria-hidden="true" className="inline-block size-[var(--sub-legend-dot,9px)] rounded-[3px] border-[length:var(--sub-day-edge,0px)] border-[color:var(--sub-day-edge-color,currentColor)]" style={style} />;
 }
 
 function Legend({ view }: { view: View }) {
   if (view === "lifetime") return <span className="text-xs font-semibold text-muted">The line shows what each payment cost</span>;
-  const expected = <LegendDot style={{ border: "1.5px dashed var(--heat-4)" }} />;
+  const expected = <LegendDot style={{ border: "1.5px dashed var(--sub-heat-4, var(--heat-4))" }} />;
   return (
     <span className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs font-semibold text-muted">
       {view === "days" ? (
         <>
           <span className="inline-flex items-center gap-1.5">
-            Less {[2, 3, 4, 5].map((l) => <LegendDot key={l} style={{ background: `var(--heat-${l})` }} />)} More
+            Less {[2, 3, 4, 5].map((l) => <LegendDot key={l} style={{ background: `var(--sub-heat-${l}, var(--heat-${l}))` }} />)} More
           </span>
           <span className="inline-flex items-center gap-1.5">{expected}Expected</span>
           <span className="inline-flex items-center gap-1.5">
@@ -55,7 +55,7 @@ function Legend({ view }: { view: View }) {
       ) : (
         <>
           <span className="inline-flex items-center gap-1.5">
-            <LegendDot style={{ background: "var(--heat-3)" }} />
+            <LegendDot style={{ background: "var(--sub-heat-3, var(--heat-3))" }} />
             Paid
           </span>
           <span className="inline-flex items-center gap-1.5">{expected}Expected</span>
@@ -174,8 +174,8 @@ function Trend({ chart, pick }: { chart: ChartView; pick: PickView }) {
         const peak = all && m.month === chart.trend.peak;
         const on = hovered === i;
         const body: CSSProperties = m.future
-          ? { border: `1.5px dashed ${all ? "var(--heat-4)" : tint(70)}`, background: all ? "color-mix(in oklch, var(--heat-1) 40%, transparent)" : tint(6) }
-          : { background: all ? `var(--heat-${level})` : tint(20), boxShadow: peak ? "0 12px 24px var(--trend-peak-shadow)" : undefined };
+          ? { border: `1.5px dashed ${all ? "var(--sub-heat-4, var(--heat-4))" : tint(70)}`, background: all ? "color-mix(in oklch, var(--sub-heat-1, var(--heat-1)) 40%, transparent)" : tint(6) }
+          : { background: all ? `var(--sub-heat-${level}, var(--heat-${level}))` : tint(20), boxShadow: peak ? "0 12px 24px var(--trend-peak-shadow)" : undefined };
         return (
           // The other months step back while one is hovered.
           <div key={m.month} className="motion-safe:transition-opacity motion-safe:duration-200" style={{ opacity: hovered !== null && !on ? 0.3 : 1 }}>

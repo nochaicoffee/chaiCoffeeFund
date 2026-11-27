@@ -61,7 +61,7 @@ function Moon({ moon, index, count }: { moon: PartLine; index: number; count: nu
       className="absolute z-10 flex h-[22px] w-[22px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-[10px] font-extrabold text-white"
       style={{ left: `calc(50% + ${Math.cos(angle).toFixed(3)} * (50% + 24px))`, top: `calc(50% + ${Math.sin(angle).toFixed(3)} * (50% + 24px))`, background: `conic-gradient(white ${moon.share * 360}deg, oklch(1 0 0 / 0.28) 0)`, boxShadow: moon.covered ? "0 0 10px oklch(1 0 0 / 0.55)" : undefined }}
     >
-      <span className="flex h-[16px] w-[16px] items-center justify-center rounded-full" style={{ background: `var(--card-${moon.colorKey})` }}>
+      <span className="flex h-[16px] w-[16px] items-center justify-center rounded-full text-[color:var(--on-face,var(--color-white))]" style={{ background: `var(--face-${moon.colorKey}, var(--card-${moon.colorKey}))` }}>
         {moon.n}
       </span>
     </span>
@@ -77,7 +77,7 @@ function Planet({ planet, pick, dimOthers, onPick }: { planet: PlanetView; pick:
   return (
     <span className={`group/p absolute ${picked ? "z-20" : "z-[2]"} hover:z-30 focus-within:z-30 motion-safe:transition-opacity ${dim ? "opacity-20" : ""} ${picked ? "drop-shadow-[0_0_14px_oklch(1_0_0/0.55)]" : ""}`} style={{ left: pc(x), top: pc(y), width: pc(d), minWidth: 26, aspectRatio: "1", transform: "translate(-50%, -50%)" }}>
       <button type="button" onClick={() => onPick(planet.topId)} aria-pressed={pick === planet.topId} aria-label={`${planet.name}: ${planet.note}`} className={`relative block h-full w-full rounded-full focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white ${planet.progress >= 1 ? "shadow-[0_0_22px_oklch(1_0_0/0.5)]" : ""} ${planet.late ? "shadow-[0_0_24px_oklch(0.7_0.2_25/0.6)]" : ""} ${planet.paused ? "opacity-55" : ""}`} style={{ background: `conic-gradient(${planet.late ? "oklch(0.78 0.17 25)" : "white"} ${Math.min(1, planet.progress) * 360}deg, oklch(1 0 0 / 0.2) 0)` }}>
-        <span className="absolute inset-[6%] flex items-center justify-center overflow-hidden rounded-full text-on-card" style={{ background: colorGradient(planet.colorKey, 150), boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.25)" }}>
+        <span className="absolute inset-[6%] flex items-center justify-center overflow-hidden rounded-full border-[length:var(--goal-planet-edge,0px)] border-[color:var(--goal-planet-edge-color,currentColor)] text-on-card" style={{ background: colorGradient(planet.colorKey, 150), boxShadow: "var(--goal-planet-shadow, inset 0 1px 0 oklch(1 0 0 / 0.25))" }}>
           <GoalIcon category={planet.category} size={Math.max(12, Math.round(planet.radius * 0.9))} />
         </span>
       </button>
@@ -121,18 +121,18 @@ function Sky({ sky, pick, onPick }: { sky: SkyView; pick: string; onPick: (id: s
   const dimOthers = sky.planets.some((planet) => planet.topId === pick);
   const label = (months: number) => (months < 12 ? `${months} mo` : months === MAX_RING_MONTHS ? "3 yr+" : `${months / 12} yr`);
   return (
-    <div className="relative aspect-square w-full card-edge overflow-visible rounded-[30px] text-white" style={{ background: "radial-gradient(circle at 50% 50%, oklch(0.27 0.07 262), oklch(0.12 0.035 268) 75%)", boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.14)" }}>
-      <div aria-hidden="true" className="absolute inset-0 overflow-hidden rounded-[inherit]">
+    <div className="relative aspect-square w-full card-edge overflow-visible rounded-[30px] text-white" style={{ background: "var(--goal-sky, radial-gradient(circle at 50% 50%, oklch(0.27 0.07 262), oklch(0.12 0.035 268) 75%))", boxShadow: "var(--goal-sky-shadow, inset 0 1px 0 oklch(1 0 0 / 0.14))" }}>
+      <div aria-hidden="true" className="absolute inset-0 [display:var(--goal-stars,block)] overflow-hidden rounded-[inherit]">
         {STARS.map((star, i) => (
           <i key={i} className="absolute rounded-full bg-white" style={{ left: `${star.left}%`, top: `${star.top}%`, width: star.big ? 2 : 1, height: star.big ? 2 : 1, opacity: star.opacity }} />
         ))}
       </div>
       <svg aria-hidden="true" viewBox={`0 0 ${S} ${S}`} className="absolute inset-0 h-full w-full">
         {rings.map((m) => (
-          <circle key={m} cx={C} cy={C} r={ringRadius(m)} fill="none" stroke="oklch(1 0 0 / .16)" strokeDasharray="2 6" />
+          <circle key={m} cx={C} cy={C} r={ringRadius(m)} fill="none" style={{ stroke: "var(--goal-ring, oklch(1 0 0 / .16))", strokeWidth: "var(--goal-ring-width, 1)", strokeDasharray: "var(--goal-ring-dash, 2 6)" }} />
         ))}
         {sky.hasOverdue && <circle cx={C} cy={C} r={ringRadius(OVERDUE_RING)} fill="none" stroke="oklch(0.7 0.18 25 / .6)" strokeDasharray="4 5" />}
-        {sky.hasSomeday && <circle cx={C} cy={C} r={ringRadius(SOMEDAY_RING)} fill="none" stroke="oklch(1 0 0 / .16)" strokeDasharray="2 6" />}
+        {sky.hasSomeday && <circle cx={C} cy={C} r={ringRadius(SOMEDAY_RING)} fill="none" style={{ stroke: "var(--goal-ring, oklch(1 0 0 / .16))", strokeWidth: "var(--goal-ring-width, 1)", strokeDasharray: "var(--goal-ring-dash, 2 6)" }} />}
       </svg>
       {[6, 12, 24, 36, ...(sky.rings.length ? [1, 3] : [])].map((m) => (
         <span key={m} aria-hidden="true" className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-[oklch(0.17_0.04_265)] px-2 text-[10px] font-extrabold tracking-[0.05em] text-white/50 uppercase label-face ${m === 1 || m === 3 ? "max-md:hidden" : ""}`} style={{ left: "50%", top: pc(C - ringRadius(m)) }}>
@@ -149,7 +149,7 @@ function Sky({ sky, pick, onPick }: { sky: SkyView; pick: string; onPick: (id: s
           someday
         </span>
       )}
-      <div className={`absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full text-center ${sky.sun.empty ? "" : ""}`} style={{ left: "50%", top: "50%", width: pc(156), aspectRatio: "1", background: sky.sun.empty ? "radial-gradient(circle at 35% 30%, oklch(0.5 0.03 262), oklch(0.28 0.03 262) 70%)" : "radial-gradient(circle at 35% 30%, oklch(0.78 0.16 150), oklch(0.42 0.11 155) 70%)", boxShadow: sky.sun.done ? "0 0 80px oklch(0.85 0.18 140 / .55), inset 0 1px 0 oklch(1 0 0/.3)" : "0 0 60px oklch(0.8 0.17 140 / .35), inset 0 1px 0 oklch(1 0 0/.3)" }}>
+      <div className={`absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center rounded-full border-[length:var(--goal-sun-edge,0px)] border-[color:var(--goal-planet-edge-color,currentColor)] text-center ${sky.sun.empty ? "" : ""}`} style={{ left: "50%", top: "50%", width: pc(156), aspectRatio: "1", color: "var(--goal-sun-ink, currentColor)", background: sky.sun.empty ? "var(--goal-sun-empty, radial-gradient(circle at 35% 30%, oklch(0.5 0.03 262), oklch(0.28 0.03 262) 70%))" : "var(--goal-sun, radial-gradient(circle at 35% 30%, oklch(0.78 0.16 150), oklch(0.42 0.11 155) 70%))", boxShadow: sky.sun.done ? "var(--goal-sun-shadow, 0 0 80px oklch(0.85 0.18 140 / .55), inset 0 1px 0 oklch(1 0 0/.3))" : "var(--goal-sun-shadow, 0 0 60px oklch(0.8 0.17 140 / .35), inset 0 1px 0 oklch(1 0 0/.3))" }}>
         <span className="text-[10px] font-extrabold tracking-[0.05em] uppercase label-face opacity-75 max-md:text-[8px]">{sky.sun.done ? "Funded" : "Set aside"}</span>
         <b className="text-[clamp(18px,3.9vw,30px)] leading-[1.05] font-extrabold tracking-tight">{sky.sun.saved}</b>
         <small className="text-[11.5px] font-bold opacity-85 max-md:text-[9px]">{sky.sun.of}</small>
