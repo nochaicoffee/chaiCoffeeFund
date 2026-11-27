@@ -58,7 +58,7 @@ function Tile({ t }: { t: CashTile }) {
       </div>
       <div className="mt-auto flex flex-wrap items-center gap-x-2 pt-1 text-[11px] font-semibold opacity-90">
         <span>{t.source} · {t.readOn}</span>
-        {t.stale ? <em className="rounded-full bg-warning-tint px-2 py-px text-[10px] font-extrabold text-warning-text not-italic">{t.stale}</em> : <small>{t.age}</small>}
+        {t.stale ? <em className="rounded-full badge-edge badge-face bg-warning-tint px-2 py-px text-[10px] font-extrabold text-warning-text not-italic">{t.stale}</em> : <small>{t.age}</small>}
       </div>
     </div>
   );

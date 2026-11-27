@@ -86,7 +86,7 @@ export function SplitTreemap({ dimension }: { dimension: SplitDimensionView }) {
             <span>
               Without <b className="font-extrabold">{gone.name}</b>: {formatLakh(left.leftInr)} left, {left.gainInr < 0 ? "a loss of" : "a gain of"} {formatLakh(Math.abs(left.gainInr))}. <span className="text-muted">Nothing is changed or saved.</span>
             </span>
-            <button type="button" onClick={() => setWithout(null)} className="rounded-full bg-ink px-3 py-1 text-xs font-extrabold text-on-ink focus-visible:outline-2 focus-visible:outline-offset-2">Put it back</button>
+            <button type="button" onClick={() => setWithout(null)} className="rounded-full btn-edge bg-ink px-3 py-1 text-xs font-extrabold text-on-ink focus-visible:outline-2 focus-visible:outline-offset-2">Put it back</button>
           </div>
         )}
         {pick && pick.key !== folded && (
@@ -95,7 +95,7 @@ export function SplitTreemap({ dimension }: { dimension: SplitDimensionView }) {
               <b className="font-extrabold">{pick.name}</b> · {pick.value} · {shareText(pick.valueInr / total)} of what you hold{pick.gain && <> · <span className={TONE[pick.gainTone]}>{pick.gain} on what it cost</span></>}
             </span>
             {flat && members.length > 1 && (
-              <button type="button" onClick={() => setWithout(pick.key)} className="rounded-full bg-ink px-3 py-1 text-xs font-extrabold text-on-ink focus-visible:outline-2 focus-visible:outline-offset-2">Try without {pick.symbol}</button>
+              <button type="button" onClick={() => setWithout(pick.key)} className="rounded-full btn-edge bg-ink px-3 py-1 text-xs font-extrabold text-on-ink focus-visible:outline-2 focus-visible:outline-offset-2">Try without {pick.symbol}</button>
             )}
           </div>
         )}

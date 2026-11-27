@@ -70,7 +70,7 @@ export default async function TradesPage({ searchParams }: PageProps<"/investmen
         >
           <Sentence parts={book ? book.sentence : listSentence(entries)} />
           {asked && !ref && (
-            <p role="status" className="w-fit rounded-full bg-warning-tint px-3 py-1 text-xs font-bold text-warning-text">
+            <p role="status" className="w-fit rounded-full badge-edge bg-warning-tint px-3 py-1 text-xs font-bold text-warning-text">
               That holding isn&apos;t in your trades any more, so every trade is shown.
             </p>
           )}

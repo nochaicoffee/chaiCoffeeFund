@@ -42,7 +42,7 @@ const Chevron = ({ up = false }: { up?: boolean }) => (
 
 function Status({ status }: { status: RenewalRowView["status"] }) {
   return (
-    <span className={`inline-flex items-center gap-[5px] rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap ${PILL[status.tone]}`}>
+    <span className={`inline-flex items-center gap-[5px] rounded-full badge-edge badge-face px-2.5 py-1 text-[11px] font-bold whitespace-nowrap ${PILL[status.tone]}`}>
       {status.stopped && <StopIcon />}
       {status.label}
     </span>
@@ -297,7 +297,7 @@ export function RenewalsList({
             href={hrefFor({ sort: state.sort === "oldest" ? "newest" : "oldest" })}
             scroll={false}
             aria-label={`Sorted ${state.sort === "oldest" ? "oldest" : "newest"} first. Sort ${state.sort === "oldest" ? "newest" : "oldest"} first instead`}
-            className="flex h-[34px] shrink-0 items-center gap-1.5 rounded-full bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent"
+            className="flex h-[34px] shrink-0 items-center gap-1.5 rounded-full btn-edge bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent"
           >
             {state.sort === "oldest" ? "Oldest first" : "Newest first"}
             <Chevron />
@@ -323,7 +323,7 @@ export function RenewalsList({
             <Link
               href={view.empty.action === "clear-filters" ? hrefFor({ status: "all", subscriptionId: undefined, place: undefined, search: undefined }) : view.empty.action === "show-all-time" ? hrefFor({ period: { kind: "all" } }) : subscriptionsHref}
               scroll={false}
-              className="mt-1 inline-flex min-h-11 items-center rounded-full bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:min-h-[30px]"
+              className="mt-1 inline-flex min-h-11 items-center rounded-full btn-edge bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:min-h-[30px]"
             >
               {view.empty.action === "clear-filters" ? "Clear filters" : view.empty.action === "show-all-time" ? "Show all time" : "Go to Subscriptions"}
             </Link>

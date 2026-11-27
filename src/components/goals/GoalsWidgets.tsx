@@ -54,7 +54,7 @@ export function GoalsTableCard({ rows, pick, onPick }: { rows: TableRow[]; pick:
                       <small className="flex items-center gap-1.5 truncate text-[11px] font-semibold text-muted">
                         {r.note}
                         {(r.parts.length > 0 || r.boughtParts.length > 0) && (
-                          <button type="button" onClick={() => toggle(r.id)} aria-expanded={expanded} aria-controls={`parts-${r.id}`} className="inline-flex min-h-5 items-center gap-1 rounded-full bg-ink px-2 text-[10.5px] font-extrabold text-on-ink focus-visible:outline-2 focus-visible:outline-accent">
+                          <button type="button" onClick={() => toggle(r.id)} aria-expanded={expanded} aria-controls={`parts-${r.id}`} className="inline-flex min-h-5 items-center gap-1 rounded-full badge-edge bg-ink px-2 text-[10.5px] font-extrabold text-on-ink focus-visible:outline-2 focus-visible:outline-accent">
                             {r.parts.length > 0 ? `${r.parts.length} ${r.parts.length === 1 ? "part" : "parts"}` : ""}
                             {r.parts.length > 0 && r.boughtParts.length > 0 ? " · " : ""}
                             {r.boughtParts.length > 0 ? `${r.boughtParts.length} done` : ""}
@@ -213,7 +213,7 @@ export function MonthCard({ view }: { view: MonthView }) {
               <small className="mt-1 block text-[11px] font-semibold text-muted">{r.done ? `${formatInr(r.done)}${r.lastOn ? ` on ${r.lastOn.slice(8).replace(/^0/, "")}` : ""}` : "nothing this month"}</small>
             </span>
             <span className="flex items-center justify-end gap-2">
-              <span className={`rounded-full px-2.5 py-1 text-[11px] font-extrabold ${r.state === "done" || r.state === "extra" ? "bg-accent-tint text-accent-text" : r.state === "short" ? "bg-warning-tint text-warning-text" : "bg-fill text-muted"}`}>{r.stateText}</span>
+              <span className={`rounded-full badge-edge badge-face px-2.5 py-1 text-[11px] font-extrabold ${r.state === "done" || r.state === "extra" ? "bg-accent-tint text-accent-text" : r.state === "short" ? "bg-warning-tint text-warning-text" : "bg-fill text-muted"}`}>{r.stateText}</span>
               {r.remaining > 0 && <ActionButton label={`Set aside ${formatInrCompact(r.remaining)}`} onClick={() => open({ kind: "set-aside", goalId: r.key.replace(/#own$/, ""), amount: r.remaining })} />}
             </span>
           </li>

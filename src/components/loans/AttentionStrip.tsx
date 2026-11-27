@@ -27,7 +27,7 @@ export function AttentionStrip({ items, onSchedule }: { items: AttentionItem[]; 
                 {item.name} · {item.amount}
               </b>{" "}
               {item.text}
-              {item.short && <span className="ml-2 inline-block rounded-full bg-negative-tint px-2 py-0.5 align-middle text-[10.5px] font-extrabold text-negative">{item.short} can&rsquo;t cover this</span>}
+              {item.short && <span className="ml-2 inline-block rounded-full badge-edge badge-face bg-negative-tint px-2 py-0.5 align-middle text-[10.5px] font-extrabold text-negative">{item.short} can&rsquo;t cover this</span>}
             </span>
           </p>
           <FormTrigger className={SMALL_OK} label="✓ Mark paid" onClick={() => open({ kind: "mark-paid", installmentId: item.installmentId })} />
@@ -37,7 +37,7 @@ export function AttentionStrip({ items, onSchedule }: { items: AttentionItem[]; 
               onSchedule(item.loanId);
               document.getElementById("loan-schedule")?.scrollIntoView({ behavior: "smooth", block: "center" });
             }}
-            className="min-h-8 rounded-full bg-surface px-3.5 text-xs font-extrabold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent"
+            className="min-h-8 rounded-full btn-edge bg-surface px-3.5 text-xs font-extrabold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent"
           >
             See schedule
           </button>

@@ -50,7 +50,7 @@ function Mono({ row, size }: { row: HistoryRowView; size: number }) {
 }
 
 function Pill({ pill }: { pill: NonNullable<HistoryRowView["pill"]> }) {
-  return <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap ${pill === "First balance" ? "bg-accent-tint text-accent-text" : "bg-fill text-muted"}`}>{pill}</span>;
+  return <span className={`inline-flex items-center rounded-full badge-edge badge-face px-2.5 py-1 text-[11px] font-bold whitespace-nowrap ${pill === "First balance" ? "bg-accent-tint text-accent-text" : "bg-fill text-muted"}`}>{pill}</span>;
 }
 
 function Row({ row }: { row: HistoryRowView }) {
@@ -166,7 +166,7 @@ export function HistoryList({ view, state, hrefFor, accountsHref, today }: { vie
             href={hrefFor({ sort: nextSort })}
             scroll={false}
             aria-label={`Sorted by ${sortLabel.toLowerCase()}. Sort by ${{ newest: "newest first", oldest: "oldest first", biggest: "biggest move" }[nextSort]} instead`}
-            className="flex h-10 shrink-0 items-center gap-1.5 rounded-full bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:h-[34px]"
+            className="flex h-10 shrink-0 items-center gap-1.5 rounded-full btn-edge bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:h-[34px]"
           >
             {sortLabel}
             <Chevron />
@@ -179,12 +179,12 @@ export function HistoryList({ view, state, hrefFor, accountsHref, today }: { vie
           <h2 className="text-[15px] font-extrabold">{view.empty.title}</h2>
           <p className="max-w-[460px] text-xs leading-normal font-medium text-muted">{view.empty.body}</p>
           {view.empty.action === "update-balances" ? (
-            <UpdateBalancesButton className="mt-1 inline-flex min-h-11 items-center rounded-full bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:min-h-[30px]" />
+            <UpdateBalancesButton className="mt-1 inline-flex min-h-11 items-center rounded-full btn-edge bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:min-h-[30px]" />
           ) : (
             <Link
               href={view.empty.action === "clear-filters" ? hrefFor({ status: "all", accountId: undefined, purpose: undefined, search: undefined }) : view.empty.action === "show-all-time" ? hrefFor({ period: { kind: "all" } }) : accountsHref}
               scroll={false}
-              className="mt-1 inline-flex min-h-11 items-center rounded-full bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:min-h-[30px]"
+              className="mt-1 inline-flex min-h-11 items-center rounded-full btn-edge bg-fill px-3.5 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent md:min-h-[30px]"
             >
               {view.empty.action === "clear-filters" ? "Clear filters" : view.empty.action === "show-all-time" ? "Show all time" : "Go to Accounts"}
             </Link>

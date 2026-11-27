@@ -21,7 +21,7 @@ import { NeedsAttentionChip } from "./NeedsAttentionChip";
 const ROWS = 6;
 
 function Source({ row }: { row: HistoryTableRow }) {
-  return <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-bold whitespace-nowrap ${row.fromStatement ? "bg-accent-tint text-accent-text" : "bg-fill text-muted"}`}>{row.sourceText}</span>;
+  return <span className={`inline-flex rounded-full badge-edge badge-face px-2.5 py-1 text-[11px] font-bold whitespace-nowrap ${row.fromStatement ? "bg-accent-tint text-accent-text" : "bg-fill text-muted"}`}>{row.sourceText}</span>;
 }
 
 const ALL_COLUMNS = "md:grid-cols-[1.5fr_1.1fr_1fr_0.9fr_1fr_40px]";
@@ -158,7 +158,7 @@ export function HistoryCard({ pick, rows, href, hasAll, onAll }: { pick: PickVie
             <span className="text-xs font-medium text-muted">Pick a block in the map for one account&apos;s balances</span>
           ) : (
             <>
-              <button type="button" onClick={onAll} className="inline-flex items-center gap-1.5 rounded-full bg-fill px-3 py-1.5 text-xs font-bold whitespace-nowrap text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
+              <button type="button" onClick={onAll} className="inline-flex items-center gap-1.5 rounded-full btn-edge bg-fill px-3 py-1.5 text-xs font-bold whitespace-nowrap text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
                 All accounts
               </button>
               <span className="text-xs font-medium text-muted">or pick a block in the map</span>

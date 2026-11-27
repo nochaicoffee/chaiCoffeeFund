@@ -31,7 +31,7 @@ export function Passbook({ book, sources, hrefFor }: { book: PassbookData; sourc
         <nav aria-label="Sources" className="flex flex-col gap-1 rounded-card surface-edge bg-surface p-3 shadow-[var(--card-shadow)] max-lg:flex-row max-lg:overflow-x-auto">
           <div className="flex items-center justify-between px-2 pt-1 pb-2 max-lg:hidden">
             <h2 className="text-[14px] font-extrabold">Sources</h2>
-            <FormTrigger className="min-h-8 rounded-full bg-fill px-3 text-xs font-bold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent" label="+ Add" onClick={() => open({ kind: "add-source" })} />
+            <FormTrigger className="min-h-8 rounded-full btn-edge bg-fill px-3 text-xs font-bold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent" label="+ Add" onClick={() => open({ kind: "add-source" })} />
           </div>
           {sources.map((s) => (
             <Link key={s.id} href={hrefFor[s.id]} aria-current={s.id === book.id ? "page" : undefined} className={`flex min-w-[180px] items-center gap-2.5 rounded-[14px] p-2 hover:bg-fill focus-visible:outline-2 focus-visible:outline-accent aria-[current=page]:bg-surface aria-[current=page]:ring-2 aria-[current=page]:ring-ink ${s.inactive ? "opacity-60" : ""}`}>
@@ -151,9 +151,9 @@ function Item({ item, sourceId }: { item: PassbookData["items"][number]; sourceI
           ) : (
             <span className="text-[13px] font-bold">{item.title}</span>
           )}
-          {item.status && <span className={`rounded-full px-2 py-0.5 text-[10.5px] font-extrabold ${TONES[item.status.tone]}`}>{item.status.text}</span>}
+          {item.status && <span className={`rounded-full badge-edge badge-face px-2 py-0.5 text-[10.5px] font-extrabold ${TONES[item.status.tone]}`}>{item.status.text}</span>}
           {item.state === "pending" && !disabledReason && (
-            <button type="button" onClick={() => receive(sourceId, item.expectedDate)} className="rounded-full bg-accent-tint px-2.5 py-0.5 text-[10.5px] font-extrabold text-accent-text hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-accent">
+            <button type="button" onClick={() => receive(sourceId, item.expectedDate)} className="rounded-full btn-edge bg-accent-tint px-2.5 py-0.5 text-[10.5px] font-extrabold text-accent-text hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-accent">
               Mark received
             </button>
           )}

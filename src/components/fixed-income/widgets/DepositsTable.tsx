@@ -45,7 +45,7 @@ export function DepositsTable({ rows }: { rows: DepositTableRow[] }) {
               <span className="min-w-0">
                 <b className="block truncate text-[13px] font-extrabold">
                   {r.name}
-                  {r.due && <span className="ml-2 rounded-full bg-negative-tint px-2 py-0.5 align-middle text-[10px] font-bold text-negative">Matured</span>}
+                  {r.due && <span className="ml-2 rounded-full badge-edge badge-face bg-negative-tint px-2 py-0.5 align-middle text-[10px] font-bold text-negative">Matured</span>}
                 </b>
                 <span className="block truncate text-[11px] font-medium text-muted">{r.sub}</span>
               </span>

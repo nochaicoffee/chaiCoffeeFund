@@ -80,7 +80,7 @@ export function SourcesCard({ table, picked, onPick }: { table: SourcesTable; pi
                     </td>
                     <td className="py-2.5 pr-3 text-[12.5px] font-semibold">{row.landsIn ?? <span className="text-muted">—</span>}</td>
                     <td className="py-2.5 text-right">
-                      <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold ${STATUS[row.status.tone]}`}>{row.status.text}</span>
+                      <span className={`inline-flex rounded-full badge-edge badge-face px-2.5 py-1 text-[11px] font-extrabold ${STATUS[row.status.tone]}`}>{row.status.text}</span>
                     </td>
                   </tr>
                 );

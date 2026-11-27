@@ -94,9 +94,9 @@ function Entry({ row }: { row: EntryRow }) {
       <td className="py-2 text-right font-extrabold tabular-nums">{row.amount}</td>
       <td className="py-2 pl-4">
         <span className="flex items-center gap-2">
-          <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap ${TONES[row.status.tone]}`}>{row.status.text}</span>
+          <span className={`inline-flex rounded-full badge-edge badge-face px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap ${TONES[row.status.tone]}`}>{row.status.text}</span>
           {row.owed && !disabledReason && (
-            <button type="button" onClick={() => receive(row.sourceId, row.expectedDate)} className="min-h-8 rounded-full bg-accent-tint px-3 text-[11px] font-extrabold whitespace-nowrap text-accent-text hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-accent">
+            <button type="button" onClick={() => receive(row.sourceId, row.expectedDate)} className="min-h-8 rounded-full btn-edge bg-accent-tint px-3 text-[11px] font-extrabold whitespace-nowrap text-accent-text hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-accent">
               Mark received
             </button>
           )}

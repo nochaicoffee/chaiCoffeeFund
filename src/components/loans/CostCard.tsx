@@ -10,7 +10,7 @@ import { InterestMark, LoanCard, LoanIcon, PrincipalMark, fillOf } from "./parts
  */
 export function CostCard({ cost }: { cost: CostView | null }) {
   return (
-    <LoanCard label="Cost of borrowing" title="Cost of borrowing" note="interest and charges, if every EMI is on time" right={<span className="rounded-full bg-accent-tint px-2.5 py-1 text-[11px] font-extrabold text-accent-text">Worked out</span>}>
+    <LoanCard label="Cost of borrowing" title="Cost of borrowing" note="interest and charges, if every EMI is on time" right={<span className="rounded-full badge-edge badge-face bg-accent-tint px-2.5 py-1 text-[11px] font-extrabold text-accent-text">Worked out</span>}>
       {!cost ? (
         <p className="flex flex-1 items-center justify-center py-10 text-sm font-semibold text-muted">No active loans.</p>
       ) : (

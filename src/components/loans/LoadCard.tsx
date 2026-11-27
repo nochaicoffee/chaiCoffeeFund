@@ -24,7 +24,7 @@ export function LoadCard({ load, picked }: { load: LoadView | null; picked: stri
               {Math.round(load.share * 100)}
               <small className="text-xl opacity-70">%</small>
             </span>
-            <span className={`rounded-full px-2.5 py-1 text-[11px] font-extrabold ${ZONE[load.zone]}`}>{load.zone}</span>
+            <span className={`rounded-full badge-edge badge-face px-2.5 py-1 text-[11px] font-extrabold ${ZONE[load.zone]}`}>{load.zone}</span>
             <span className="text-[13px] font-semibold text-muted">
               {load.emi} of your {load.salary} salary
             </span>

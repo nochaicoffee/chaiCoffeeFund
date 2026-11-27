@@ -60,7 +60,7 @@ export function ReturnsRow({ cards: now, asOf, holdings }: { cards: ReturnCard[]
               <div className={`flex flex-wrap items-baseline gap-2 text-[30px] font-extrabold tracking-tight tabular-nums ${c.muted ? "text-muted" : ""}`}>
                 {c.value}
                 {c.small && <small className="text-[13px] font-bold tracking-normal text-muted">{c.small}</small>}
-                {c.pill && <span className="rounded-full bg-ink px-2.5 py-1 text-xs font-extrabold tracking-normal text-on-ink">{c.pill}</span>}
+                {c.pill && <span className="rounded-full badge-edge bg-ink px-2.5 py-1 text-xs font-extrabold tracking-normal text-on-ink">{c.pill}</span>}
               </div>
             </div>
           );

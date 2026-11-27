@@ -98,7 +98,7 @@ export function StatementsLedger({ months, counts }: { months: StatementMonth[];
                 <span className="min-w-0">
                   <b className="flex items-center gap-2 text-[13.5px] font-extrabold">
                     {r.label}
-                    {r.worked && <small className="rounded-full bg-fill px-2 py-0.5 text-[10.5px] font-bold text-muted">worked out</small>}
+                    {r.worked && <small className="rounded-full badge-edge badge-face bg-fill px-2 py-0.5 text-[10.5px] font-bold text-muted">worked out</small>}
                   </b>
                   {r.detail && <small className="block text-[11.5px] font-semibold text-muted">{r.detail}</small>}
                   {r.tags.length > 0 && (

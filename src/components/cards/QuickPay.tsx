@@ -126,7 +126,7 @@ export function QuickPayStatus({ id, status, what }: { id: string; status: State
         disabled={saving}
         aria-label={`Mark ${what} paid in full, today`}
         title="Paid in full today. For a part payment or another account, use Mark paid on the Statements page."
-        className={`[grid-area:1/1] inline-flex h-[30px] items-center gap-1.5 rounded-full bg-ink px-3 text-xs font-extrabold whitespace-nowrap text-on-ink opacity-0 transition-opacity focus-visible:outline-2 focus-visible:outline-accent group-focus-within/row:opacity-100 group-hover/row:opacity-100 [@media(hover:none)]:opacity-100 ${saving ? "bg-accent-text opacity-100" : ""}`}
+        className={`[grid-area:1/1] inline-flex h-[30px] items-center gap-1.5 rounded-full btn-edge bg-ink px-3 text-xs font-extrabold whitespace-nowrap text-on-ink opacity-0 transition-opacity focus-visible:outline-2 focus-visible:outline-accent group-focus-within/row:opacity-100 group-hover/row:opacity-100 [@media(hover:none)]:opacity-100 ${saving ? "bg-accent-text opacity-100" : ""}`}
       >
         {saving && <span aria-hidden="true" className="size-3 rounded-full border-2 border-on-card-line-top border-t-on-ink motion-safe:animate-spin" />}
         {saving ? "Saving" : "Mark paid"}

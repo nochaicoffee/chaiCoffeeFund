@@ -183,7 +183,7 @@ export function Spinner() {
 /** A count, in its tone only when it isn't 0. */
 export function Count({ n, label, tone }: { n: number; label: string; tone: keyof typeof TONES }) {
   return (
-    <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${TONES[n === 0 ? "neutral" : tone]}`}>
+    <span className={`inline-flex items-center gap-1.5 rounded-full badge-edge badge-face px-3 py-1 text-xs font-bold ${TONES[n === 0 ? "neutral" : tone]}`}>
       <span className="tabular-nums">{n}</span>
       {label}
     </span>

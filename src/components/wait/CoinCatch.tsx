@@ -225,7 +225,7 @@ export function CoinCatch({ onExit }: { onExit: () => void }) {
         <span>
           ₹ {shown.score} · best {shown.best}
         </span>
-        <button type="button" onClick={onExit} className="rounded-full bg-fill px-3 py-1 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
+        <button type="button" onClick={onExit} className="rounded-full btn-edge bg-fill px-3 py-1 text-xs font-bold text-fg hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
           Done
         </button>
       </div>

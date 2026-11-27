@@ -144,7 +144,7 @@ export default async function CardsPage({ searchParams }: PageProps<"/cards">) {
             cards={greetingView(data, summary, monthDetails, period, today, cardId)}
           />
           {demo && (
-            <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">
+            <p className="w-fit rounded-full badge-edge bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">
               Sample data. Nothing here is from your Sheet.
             </p>
           )}

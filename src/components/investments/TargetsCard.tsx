@@ -55,7 +55,7 @@ export function TargetsCard({ view }: { view: TargetsView }) {
           <b className="text-[13px] font-extrabold">To land exactly on your targets, with no new money</b>
           <div className="flex flex-wrap gap-2">
             {view.moves.map((m) => (
-              <span key={m.bucket} className={`rounded-full px-3 py-1 text-xs font-extrabold ${m.sell ? "bg-negative-tint text-negative" : "bg-accent-tint text-positive"}`}>
+              <span key={m.bucket} className={`rounded-full badge-edge px-3 py-1 text-xs font-extrabold ${m.sell ? "bg-negative-tint text-negative" : "bg-accent-tint text-positive"}`}>
                 {m.text} <em className="font-semibold not-italic opacity-80">{m.label}</em>
               </span>
             ))}

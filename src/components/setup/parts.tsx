@@ -46,7 +46,7 @@ export function Step({ n, id, title, optional, children }: { n: number; id: stri
         <h2 id={`${id}-title`} className="text-lg font-extrabold tracking-tight text-fg">
           {title}
         </h2>
-        {optional ? <span className="rounded-full bg-fill px-2.5 py-0.5 text-[11.5px] font-bold text-muted">Optional</span> : null}
+        {optional ? <span className="rounded-full badge-edge badge-face bg-fill px-2.5 py-0.5 text-[11.5px] font-bold text-muted">Optional</span> : null}
       </div>
       <div className="mt-3 flex flex-col gap-2 text-[14.5px] leading-relaxed text-muted [&_ol>li]:ml-5 [&_ol>li]:list-decimal [&_ol>li]:pl-1 [&_ul>li]:pl-1 [&_ol]:flex [&_ol]:flex-col [&_ol]:gap-1.5 [&_strong]:text-fg">{children}</div>
     </section>

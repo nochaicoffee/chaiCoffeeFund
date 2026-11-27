@@ -109,7 +109,7 @@ function Row({ r, dayLabel }: { r: HoldingTableRow; dayLabel: string }) {
         {r.priceNote && <small className={r.price === "No price" || r.priceNote.includes("out of date") ? "text-negative" : undefined}>{r.priceNote}</small>}
       </Cell>
       <Cell label={dayLabel}>
-        <span className={`inline-flex w-fit items-center rounded-full px-2 py-0.5 text-[11.5px] font-extrabold whitespace-nowrap lg:ml-auto ${CHIP[r.dayTone]}`}>{r.day}</span>
+        <span className={`inline-flex w-fit items-center rounded-full badge-edge badge-face px-2 py-0.5 text-[11.5px] font-extrabold whitespace-nowrap lg:ml-auto ${CHIP[r.dayTone]}`}>{r.day}</span>
         {r.dayInr && <small className={TONE[r.dayInrTone]}>{r.dayInr}</small>}
       </Cell>
       <Cell label="Value">

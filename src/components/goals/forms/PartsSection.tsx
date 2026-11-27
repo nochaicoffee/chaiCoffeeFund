@@ -68,7 +68,7 @@ export function PartsSection({ rows, onChange, today, showGiven, error }: { rows
           )}
         </div>
       ))}
-      <button type="button" onClick={() => onChange([...rows, newPartRow()])} className="inline-flex min-h-9 w-fit items-center gap-1.5 rounded-full bg-fill px-3.5 text-xs font-extrabold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
+      <button type="button" onClick={() => onChange([...rows, newPartRow()])} className="inline-flex min-h-9 w-fit items-center gap-1.5 rounded-full btn-edge bg-fill px-3.5 text-xs font-extrabold hover:bg-fill-strong focus-visible:outline-2 focus-visible:outline-accent">
         <PlusIcon /> Add a part
       </button>
       {error ? (

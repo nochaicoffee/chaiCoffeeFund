@@ -88,7 +88,7 @@ export function PrepaymentDialog({ forms, loanId, onClose, onSaved }: { forms: L
       subtitle={picked ? `${picked.loan.name} · ${picked.loan.lenderName}` : "Principal paid off beyond the EMIs"}
       preview={
         <PreviewPanel caption="The interest in the month of a prepayment follows a proposed rule, so these are estimates until a bank letter confirms them. Paid EMIs never change.">
-          <span className="w-fit rounded-full bg-surface px-2.5 py-0.5 text-[11px] font-extrabold text-accent-text">Estimate</span>
+          <span className="w-fit rounded-full badge-edge badge-face bg-surface px-2.5 py-0.5 text-[11px] font-extrabold text-accent-text">Estimate</span>
           {what ? (
             <>
               <dl className="flex flex-col gap-1.5 rounded-[16px] bg-surface p-4 text-[12.5px] font-semibold">

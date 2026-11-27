@@ -181,7 +181,7 @@ function Row({ row }: { row: LedgerRow }) {
         {row.amountNote && <span className="block text-[11px] font-semibold text-muted">{row.amountNote}</span>}
       </td>
       <td className="py-2.5 pr-3">
-        <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap ${TONES[row.status.tone]}`}>{row.status.text}</span>
+        <span className={`inline-flex rounded-full badge-edge badge-face px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap ${TONES[row.status.tone]}`}>{row.status.text}</span>
       </td>
       <td className="py-2.5 pr-3">
         {row.received ? (
@@ -195,11 +195,11 @@ function Row({ row }: { row: LedgerRow }) {
       </td>
       <td className="py-2.5 pr-3 text-[12.5px] font-semibold">{row.landsIn ?? <span className="text-muted">—</span>}</td>
       <td className="py-2.5 pr-3">
-        <span className="rounded-full bg-fill px-2 py-0.5 text-[11px] font-bold text-muted">{row.tag}</span>
+        <span className="rounded-full badge-edge badge-face bg-fill px-2 py-0.5 text-[11px] font-bold text-muted">{row.tag}</span>
       </td>
       <td className="py-2.5">
         {row.kind === "pending" && !disabledReason ? (
-          <button type="button" onClick={() => receive(row.sourceId, row.expectedDate)} className="min-h-8 rounded-full bg-accent-tint px-3 text-[11px] font-extrabold whitespace-nowrap text-accent-text hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-accent">
+          <button type="button" onClick={() => receive(row.sourceId, row.expectedDate)} className="min-h-8 rounded-full btn-edge bg-accent-tint px-3 text-[11px] font-extrabold whitespace-nowrap text-accent-text hover:bg-accent hover:text-on-accent focus-visible:outline-2 focus-visible:outline-accent">
             ✓ Mark received
           </button>
         ) : row.change ? (

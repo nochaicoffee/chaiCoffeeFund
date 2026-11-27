@@ -42,7 +42,7 @@ export default async function LoansPage({ searchParams }: PageProps<"/loans">) {
           }
         >
           <GreetingSentence parts={summarySentence(data, today)} cards={greetingView(data, today)} />
-          {demo && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
+          {demo && <p className="w-fit rounded-full badge-edge bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
           <SkippedRowsNotice tabs={skipped} />
         </PageHeader>
         {anyActive ? (

@@ -48,7 +48,7 @@ export function ComingUpCard({ card, picked, onPick }: { card: ComingUpView; pic
       )}
       <div className="flex flex-wrap items-center justify-between gap-2 rule-t pt-3 text-xs font-semibold text-muted">
         <span>{card.foot}</span>
-        <span className="rounded-full bg-fill px-2.5 py-1 text-[11px] font-extrabold">From each policy&apos;s dates</span>
+        <span className="rounded-full badge-edge badge-face bg-fill px-2.5 py-1 text-[11px] font-extrabold">From each policy&apos;s dates</span>
       </div>
     </WidgetCard>
   );

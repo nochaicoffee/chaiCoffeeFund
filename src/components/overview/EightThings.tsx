@@ -69,8 +69,8 @@ export function EightThings({ items }: { items: Insight[] }) {
           <article key={i.key} className={`group/thing relative isolate flex min-h-[290px] flex-col gap-3 overflow-clip rounded-card bg-surface p-5 text-fg shadow-[var(--card-shadow)] motion-safe:transition-[translate,box-shadow] motion-safe:duration-200 hover:-translate-y-0.5 hover:shadow-[var(--lift-shadow)] ${i.star ? "ring-2 ring-[oklch(0.8_0.15_85)]" : ""}`}>
             <RingTexture width={380} height={290} dx={10} dy={19} first={45} step={26} stroke="var(--rings-ink)" opacity={0.07} ringsClassName={RIPPLE} />
             <div className="flex flex-wrap items-center gap-2">
-              <span className={`rounded-full px-2.5 py-0.5 text-[11px] font-extrabold tracking-[0.04em] uppercase label-face ${TAG_STYLE[i.tag]}`}>{i.tag}</span>
-              {i.star && <span className="rounded-full bg-[oklch(0.94_0.06_150)] px-2.5 py-0.5 text-[11px] font-extrabold text-[oklch(0.4_0.11_150)]">worth acting on</span>}
+              <span className={`rounded-full badge-edge px-2.5 py-0.5 text-[11px] font-extrabold tracking-[0.04em] uppercase label-face ${TAG_STYLE[i.tag]}`}>{i.tag}</span>
+              {i.star && <span className="rounded-full badge-edge badge-face bg-[oklch(0.94_0.06_150)] px-2.5 py-0.5 text-[11px] font-extrabold text-[oklch(0.4_0.11_150)]">worth acting on</span>}
             </div>
             <div key={String(flipped.has(i.key))} className="flex flex-1 flex-col gap-3 motion-safe:animate-tip-in">
               {flipped.has(i.key) ? (
@@ -88,7 +88,7 @@ export function EightThings({ items }: { items: Insight[] }) {
             </div>
             <div className="mt-auto flex items-center justify-between gap-2 pt-1">
               <button type="button" aria-pressed={flipped.has(i.key)} onClick={() => flip(i.key)} className="text-[13px] font-extrabold text-accent-text underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-accent">{flipped.has(i.key) ? "Back" : "How it's worked out"}</button>
-              <Link href={i.href} className="rounded-full bg-fill px-3.5 py-1.5 text-xs font-extrabold focus-visible:outline-2 focus-visible:outline-accent">{i.act}</Link>
+              <Link href={i.href} className="rounded-full btn-edge bg-fill px-3.5 py-1.5 text-xs font-extrabold focus-visible:outline-2 focus-visible:outline-accent">{i.act}</Link>
             </div>
           </article>
         ))}

@@ -45,7 +45,7 @@ export function ColorSwatches({ colors, value, onChange, error, optional = false
         Colour
         {optional ? <span className="ml-1 font-semibold normal-case opacity-70">optional</span> : <span className="text-negative" aria-hidden="true"> *</span>}
         {optional && value && (
-          <button type="button" onClick={() => onChange("")} className={`ml-2 rounded-full bg-fill px-2 py-0.5 text-[10px] font-extrabold normal-case hover:bg-fill-strong ${focus}`}>
+          <button type="button" onClick={() => onChange("")} className={`ml-2 rounded-full btn-edge bg-fill px-2 py-0.5 text-[10px] font-extrabold normal-case hover:bg-fill-strong ${focus}`}>
             Use the default
           </button>
         )}

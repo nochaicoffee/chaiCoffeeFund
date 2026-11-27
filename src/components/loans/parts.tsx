@@ -72,7 +72,7 @@ const PILL = {
 
 export function StatusPill({ tone, children, title }: { tone: keyof typeof PILL; children: ReactNode; title?: string }) {
   return (
-    <span title={title} className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap ${PILL[tone]}`}>
+    <span title={title} className={`inline-flex items-center gap-1 rounded-full badge-edge badge-face px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap ${PILL[tone]}`}>
       {children}
     </span>
   );

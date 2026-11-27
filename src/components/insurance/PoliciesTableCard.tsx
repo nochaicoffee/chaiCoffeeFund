@@ -68,7 +68,7 @@ function Row({ row: r, on, dim, onPick }: { row: TableRow; on: boolean; dim: boo
         <small className={`text-[11px] font-semibold ${r.warn ? "text-warning-text" : "text-muted"}`}>{r.termSub}</small>
       </span>
       <span className="col-span-2 flex flex-col lg:col-span-1">
-        {r.off ? <span className="w-fit rounded-full bg-fill px-2.5 py-0.5 text-[11px] font-extrabold text-muted">Cancelled</span> : <b className="text-[13px] font-extrabold">{r.renews}</b>}
+        {r.off ? <span className="w-fit rounded-full badge-edge badge-face bg-fill px-2.5 py-0.5 text-[11px] font-extrabold text-muted">Cancelled</span> : <b className="text-[13px] font-extrabold">{r.renews}</b>}
         <small className={`text-[11px] font-semibold text-muted ${TONE[r.renewsTone]}`}>{r.renewsSub}</small>
       </span>
     </button>

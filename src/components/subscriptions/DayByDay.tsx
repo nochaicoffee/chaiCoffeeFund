@@ -68,7 +68,7 @@ function DayCard({ day, hint }: { day: GridDayView; hint: string }) {
     <>
       <div className="flex items-center justify-between gap-2 text-xs font-bold text-muted">
         <span>{card.title}</span>
-        <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold whitespace-nowrap ${PILL[card.pill]}`}>{card.pill}</span>
+        <span className={`rounded-full badge-edge badge-face px-2 py-0.5 text-[10px] font-extrabold whitespace-nowrap ${PILL[card.pill]}`}>{card.pill}</span>
       </div>
       <div className="mt-0.5 text-[22px] leading-tight font-extrabold tabular-nums">{card.total}</div>
       <ul className="mt-2.5 flex flex-col gap-1.5">
@@ -94,7 +94,7 @@ function MonthCard({ month, pickId }: { month: GridMonthView; pickId: string }) 
     <>
       <div className="flex items-center justify-between gap-2 text-xs font-bold text-muted">
         <span>{card.title}</span>
-        <span className={`rounded-full px-2 py-0.5 text-[10px] font-extrabold ${card.pill === "Expected" ? "bg-fill text-muted" : "bg-accent-tint text-accent-text"}`}>{card.pill}</span>
+        <span className={`rounded-full badge-edge badge-face px-2 py-0.5 text-[10px] font-extrabold ${card.pill === "Expected" ? "bg-fill text-muted" : "bg-accent-tint text-accent-text"}`}>{card.pill}</span>
       </div>
       <div className="mt-0.5 text-[22px] leading-tight font-extrabold tabular-nums">{card.total}</div>
       {card.diff && <div className={`text-[11.5px] font-bold ${card.diff.up ? "text-negative" : "text-positive"}`}>{card.diff.text}</div>}

@@ -156,6 +156,18 @@ describe("shape stays on tokens", () => {
     expect([...set].filter((name) => !read.has(name))).toEqual([]);
   });
 
+  it("puts badge-edge and badge-face only where they don't overwrite Classic", () => {
+    // badge-edge sets the border width and colour (Classic: 0 and currentColor), so it can't share an element with a border
+    // of its own. badge-face's declarations fall back to inheriting in Classic, so an element that sets its own tracking,
+    // case or face would lose it: those take badge-edge alone.
+    const border = /^(?:[a-z-]+:)*(?:border(?:-|$)|surface-edge$|card-edge$|btn-edge$)/;
+    const face = /^(?:[a-z-]+:)*(?:tracking-|uppercase$|lowercase$|capitalize$|normal-case$|label-face$|font-\[)/;
+    const offenders = files.filter(({ text }) =>
+      classLists(text).some((list) => (list.includes("badge-edge") && list.some((c) => border.test(c))) || (list.includes("badge-face") && list.some((c) => face.test(c)))),
+    );
+    expect(offenders.map((f) => f.path)).toEqual([]);
+  });
+
   it("gives every card colour a Neubrutalism face", () => {
     // A segment or policy reads `var(--face-<key>, <Classic colour>)`, so every colour needs its face, or that one stays deep.
     const globals = readFileSync(join(src, "app/globals.css"), "utf8");

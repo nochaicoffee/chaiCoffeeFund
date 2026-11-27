@@ -37,7 +37,7 @@ export function SplitCard({ split }: { split: SplitView }) {
         <span className="text-muted">
           {view === "m" ? `This month, ${nowBar ? formatMonthYear(nowBar.key) : ""}` : "This year"}: <b className="text-fg">{formatInr(nowTotal)}</b> = {formatInr(now.principal)} principal + {formatInr(now.interest)} interest
         </span>
-        {nowTotal > 0 && <span className="rounded-full bg-warning-tint px-2.5 py-1 text-[11px] font-extrabold text-warning-text">{Math.round((now.interest / nowTotal) * 100)}% interest</span>}
+        {nowTotal > 0 && <span className="rounded-full badge-edge badge-face bg-warning-tint px-2.5 py-1 text-[11px] font-extrabold text-warning-text">{Math.round((now.interest / nowTotal) * 100)}% interest</span>}
       </div>
     </LoanCard>
   );

@@ -38,7 +38,7 @@ export function RunwayCard({ view }: { view: RunwayView }) {
           </span>
         ))}
         <span className="ml-auto inline-flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="rounded-full bg-ink px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap text-on-ink">{view.monthlyText}</span>
+          <span className="rounded-full badge-edge badge-face bg-ink px-2.5 py-1 text-[11px] font-extrabold whitespace-nowrap text-on-ink">{view.monthlyText}</span>
           <span className="inline-flex items-center gap-1.5">
             <i className="size-2.5 rounded-[3px] bg-fg/70" />
             Paid

@@ -27,7 +27,7 @@ export function ComingUpCard({ detail }: { detail: PickDetail }) {
                 <span className="block text-[11px] font-semibold text-muted">
                   {c.dateText} · {c.when} · {c.account}
                 </span>
-                {c.short && <span className="mt-0.5 inline-block rounded-full bg-negative-tint px-2 py-0.5 text-[10.5px] font-extrabold text-negative">{c.account} can&rsquo;t cover this</span>}
+                {c.short && <span className="mt-0.5 inline-block rounded-full badge-edge badge-face bg-negative-tint px-2 py-0.5 text-[10.5px] font-extrabold text-negative">{c.account} can&rsquo;t cover this</span>}
               </span>
               <b className={`text-[13px] font-extrabold tabular-nums ${c.kind === "Salary" ? "text-positive" : ""}`}>{c.about ? "≈ " : ""}{c.amountText}</b>
             </li>

@@ -50,7 +50,7 @@ export default async function InsurancePaymentsPage({ searchParams }: PageProps<
           }
         >
           <p className="max-w-[720px] text-[length:var(--greeting-sentence-size-sm,15px)] font-semibold text-[color:var(--greeting-sentence-color,var(--muted))] md:text-[length:var(--greeting-sentence-size,15px)]">{view.sentence} Edit a payment to enter the day it was paid or where it was paid from.</p>
-          {demo !== null && <p className="w-fit rounded-full bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
+          {demo !== null && <p className="w-fit rounded-full badge-edge bg-accent-tint px-3 py-1 text-xs font-bold text-accent-text">Sample data. Nothing here is from your Sheet.</p>}
           <SkippedRowsNotice tabs={skipped} />
         </PageHeader>
         <nav aria-label="Policies" className="flex flex-wrap gap-2">

@@ -61,7 +61,7 @@ export default async function ExpenseStatementsPage({ searchParams }: PageProps<
               ? "One month at a time, from what your accounts held at its start to what they held at its end. Every payment sits under its part; cash and UPI is what's left over."
               : ledger?.sentence.map((part, i) => (part.strong ? <span key={i} className="font-bold whitespace-nowrap text-fg tabular-nums">{part.text}</span> : <span key={i}>{part.text}</span>))}
           </p>
-          {requested !== undefined && !one && <p className="w-fit rounded-full bg-warning-tint px-3 py-1 text-xs font-bold text-warning-text">That month isn&apos;t one of the last 12, so every month is shown.</p>}
+          {requested !== undefined && !one && <p className="w-fit rounded-full badge-edge bg-warning-tint px-3 py-1 text-xs font-bold text-warning-text">That month isn&apos;t one of the last 12, so every month is shown.</p>}
           <SkippedRowsNotice tabs={skipped} />
         </PageHeader>
         <StatementsSummary tiles={(one ?? ledger)!.tiles.map((t) => ({ label: t.label, value: t.value, caption: t.note }))} />
