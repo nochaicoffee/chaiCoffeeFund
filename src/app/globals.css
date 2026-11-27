@@ -749,6 +749,79 @@
   --dy-nl-shadow: 3px 3px 0 var(--ink);
   --dy-qbar-edge: 3px solid var(--ink);
   --dy-qbar-shadow: none;
+
+  /* Heroes in their board's colour where the app's differs (Expenses orange, Insurance teal), the hero figure's white offset,
+     and the chips inside a coloured hero as white outlined boxes, the picked one ink. */
+  --hero-expenses: var(--tag-bg-expenses);
+  --hero-insurance: var(--tag-bg-insurance);
+  --hero-num-shadow: 5px 5px 0 #fff;
+  --hero-chip: var(--surface);
+  --hero-chip-hover: color-mix(in oklch, var(--ink) 7%, white);
+  --hero-chip-on: var(--ink);
+  --hero-chip-on-ink: #fff;
+  --hero-chip-on-flag: #ffd43b;
+  /* Expenses' split: what came in as one outlined bar, the parts as outlined boxes, all on their bright faces in ink. */
+  --on-face: var(--ink);
+  --split-gap: 0px;
+  --split-radius: 14px;
+  --split-edge: 3px;
+  --split-edge-color: var(--ink);
+  --split-shadow: 5px 5px 0 var(--ink);
+  --split-seg-radius: 0px;
+  --split-seg-edge: 3px;
+  --split-parts-gap: 10px;
+  --split-parts-wrap: wrap;
+  --split-part-radius: 12px;
+  --split-part-shadow: 3px 3px 0 var(--ink);
+  /* Insurance's cover map: white tiles, each policy on its own bright face with an even ink edge and an ink term bar. */
+  --cover-tile: var(--surface);
+  --pol-edge-l: var(--surface-edge-width);
+  --pol-edge-l-color: var(--ink);
+  --term-track: var(--surface);
+  --term-fill: var(--ink);
+  /* text on a policy's bright face: darker than --muted, and an ink-red warning, so both read on any face */
+  --on-face-muted: oklch(0 0 0 / 0.72);
+  --on-face-warn: oklch(0.42 0.17 28);
+  --cover-gap: var(--surface);
+  --cover-gap-edge: 3px;
+  --cover-gap-edge-color: var(--ink);
+  /* A colour as a face (a hero's segment, a policy): its flat bright shade. Classic falls back to the swatch or the surface. */
+  --face-amber: var(--card-amber-from);
+  --face-aubergine: var(--card-aubergine-from);
+  --face-azure: var(--card-azure-from);
+  --face-bronze: var(--card-bronze-from);
+  --face-burgundy: var(--card-burgundy-from);
+  --face-cobalt: var(--card-cobalt-from);
+  --face-copper: var(--card-copper-from);
+  --face-coral: var(--card-coral-from);
+  --face-emerald: var(--card-emerald-from);
+  --face-forest: var(--card-forest-from);
+  --face-graphite: var(--card-graphite-from);
+  --face-honey: var(--card-honey-from);
+  --face-indigo: var(--card-indigo-from);
+  --face-jade: var(--card-jade-from);
+  --face-magenta: var(--card-magenta-from);
+  --face-mocha: var(--card-mocha-from);
+  --face-moss: var(--card-moss-from);
+  --face-mulberry: var(--card-mulberry-from);
+  --face-navy: var(--card-navy-from);
+  --face-ocean: var(--card-ocean-from);
+  --face-olive: var(--card-olive-from);
+  --face-onyx: var(--card-onyx-from);
+  --face-orchid: var(--card-orchid-from);
+  --face-pine: var(--card-pine-from);
+  --face-pink: var(--card-pink-from);
+  --face-plum: var(--card-plum-from);
+  --face-raspberry: var(--card-raspberry-from);
+  --face-rose: var(--card-rose-from);
+  --face-ruby: var(--card-ruby-from);
+  --face-rust: var(--card-rust-from);
+  --face-sapphire: var(--card-sapphire-from);
+  --face-sky: var(--card-sky-from);
+  --face-slate: var(--card-slate-from);
+  --face-spruce: var(--card-spruce-from);
+  --face-teal: var(--card-teal-from);
+  --face-violet: var(--card-violet-from);
   --chart-area-opacity: 0.6;
   --chart-end-dot: #ffd43b;
   --chart-end-ring: var(--ink);

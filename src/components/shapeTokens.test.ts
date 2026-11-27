@@ -155,4 +155,14 @@ describe("shape stays on tokens", () => {
     expect([...read].filter((name) => !ownTokens.has(name) && !set.has(name))).toEqual([]);
     expect([...set].filter((name) => !read.has(name))).toEqual([]);
   });
+
+  it("gives every card colour a Neubrutalism face", () => {
+    // A segment or policy reads `var(--face-<key>, <Classic colour>)`, so every colour needs its face, or that one stays deep.
+    const globals = readFileSync(join(src, "app/globals.css"), "utf8");
+    const start = globals.indexOf(':root[data-look="neubrutal"]');
+    const look = globals.slice(start, globals.indexOf("\n}\n", start));
+    const keys = [...new Set([...globals.matchAll(/^ {2}--card-([a-z-]+)-from:/gm)].map((m) => m[1]))];
+    expect(keys.length).toBeGreaterThan(30);
+    expect(keys.filter((key) => !look.includes(`--face-${key}: var(--card-${key}-from);`))).toEqual([]);
+  });
 });

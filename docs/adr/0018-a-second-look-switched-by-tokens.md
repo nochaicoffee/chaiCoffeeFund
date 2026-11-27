@@ -118,3 +118,8 @@ Defaults taken unless Prathik says otherwise: the phone greeting is 38px, not 58
   - the phone's pinned quick-add bar gets the same fields and buttons.
 
   `daily.css` is plain CSS, so it reads `--dy-*` tokens, each with its Classic value as the fallback. Where an element had no border, the fallback is `0 solid`, the reset's own value, not `none`. Only Neubrutalism sets them, in its block in `globals.css`. `shapeTokens.test.ts` fails if a token is read without a fallback, or set without being read. Classic was checked the same on Daily (desktop and phone) and on All spends, sizes included.
+- **2026-11-27, Expenses and Insurance heroes.** Both heroes take their board's colour under Neubrutalism:
+  - **Expenses** is orange (`--hero-expenses`), with the big figure on a white offset. What came in is one outlined bar with ink lines between its segments. The parts are outlined boxes. The month chips are white outlined boxes, and the picked one is ink.
+  - **Insurance** is teal-green (`--hero-insurance`), with white tiles. Each policy is filled with its own bright colour, with an even ink edge and an ink term bar. The "no policy" and "Something else?" tiles are white with ink dashes.
+
+  A colour drawn as a face (a segment or a policy) reads `var(--face-<key>, <Classic value>)`. Neubrutalism sets `--face-<key>` to that colour's flat bright shade for all 36 colours, and a test keeps that list complete. Classic was checked the same on both pages, desktop and phone.
