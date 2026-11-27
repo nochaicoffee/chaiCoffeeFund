@@ -15,6 +15,7 @@ import { getCachedInstrumentsTab, getCachedInvestmentTransactionsTab } from "@/l
 import { readCash } from "../loadCash";
 import { tradeFormsData } from "../tradeFormsData";
 import { bookView, findHolding, holdingRefs, listSentence, tradesListView, type Part } from "./tradesView";
+import { figureClass } from "@/components/shell/sentenceFigure";
 
 export const metadata: Metadata = { title: "Trades" };
 
@@ -87,7 +88,7 @@ function Sentence({ parts }: { parts: Part[] }) {
     <p className="text-[length:var(--greeting-sentence-size-sm,15px)] leading-[var(--greeting-sentence-leading,1.625)] font-medium text-[color:var(--greeting-sentence-color,var(--muted))] md:text-[length:var(--greeting-sentence-size,15px)]">
       {parts.map((part, i) =>
         part.strong ? (
-          <span key={i} className="font-bold whitespace-nowrap text-fg tabular-nums">
+          <span key={i} className={figureClass(part.text)}>
             {part.text}
           </span>
         ) : (

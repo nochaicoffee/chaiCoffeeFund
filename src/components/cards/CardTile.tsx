@@ -163,9 +163,13 @@ function TileFace(props: CardTileProps & { isAll: boolean }) {
   );
 }
 
-/** The dashed tiles at the end of the row that aren't cards: the closed-cards fold and Add card. */
+/**
+ * The dashed tiles at the end of the row that aren't cards: the closed-cards fold and Add card. Positioned, so a screen-reader-only
+ * label inside (Add card's "Sample data can't be changed") is held by the tile, not the page: unpositioned, it took the page as its
+ * containing block from its place off to the right of the scrolling row, and widened a phone's page to 1395px.
+ */
 const END_TILE_CLASS =
-  "flex h-[196px] shrink-0 snap-start items-center justify-center rounded-card border-[1.5px] border-dashed border-divider text-muted transition-colors hover:border-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
+  "relative flex h-[196px] shrink-0 snap-start items-center justify-center rounded-card border-[1.5px] border-dashed border-divider text-muted transition-colors hover:border-muted hover:text-fg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent";
 
 /**
  * The fold for closed cards with nothing left to pay, after the live cards: a

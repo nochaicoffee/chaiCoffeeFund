@@ -14,6 +14,7 @@ import { formatInrCompact } from "@/lib/format/money";
 import { loadIncomeData } from "../loadIncomeData";
 import { incomeFormsData, incomeHref, incomeYears } from "../views";
 import { entriesHeader, ledgerRows, passbook, passbookSources } from "./entriesView";
+import { figureClass } from "@/components/shell/sentenceFigure";
 
 export const metadata: Metadata = { title: "Income entries" };
 
@@ -66,7 +67,7 @@ export default async function IncomeEntriesPage({ searchParams }: PageProps<"/in
           <p className="text-[length:var(--greeting-sentence-size-sm,15px)] leading-[var(--greeting-sentence-leading,1.625)] font-medium text-[color:var(--greeting-sentence-color,var(--muted))] md:text-[length:var(--greeting-sentence-size,15px)]">
             {header.sentence.map((part, i) =>
               part.strong ? (
-                <span key={i} className="font-bold whitespace-nowrap text-fg tabular-nums">
+                <span key={i} className={figureClass(part.text)}>
                   {part.text}
                 </span>
               ) : (

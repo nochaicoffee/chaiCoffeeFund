@@ -12,6 +12,7 @@ import { expenseFormsData } from "../formsData";
 import { loadExpenseData } from "../loadExpenseData";
 import { expenseModel } from "../views";
 import { ledgerView, monthStatementView } from "./statementsView";
+import { figureClass } from "@/components/shell/sentenceFigure";
 
 export const metadata: Metadata = { title: "Expense statements" };
 
@@ -59,7 +60,7 @@ export default async function ExpenseStatementsPage({ searchParams }: PageProps<
           <p className="text-[length:var(--greeting-sentence-size-sm,15px)] leading-[var(--greeting-sentence-leading,1.625)] font-medium text-[color:var(--greeting-sentence-color,var(--muted))] md:text-[length:var(--greeting-sentence-size,15px)]">
             {one
               ? "One month at a time, from what your accounts held at its start to what they held at its end. Every payment sits under its part; cash and UPI is what's left over."
-              : ledger?.sentence.map((part, i) => (part.strong ? <span key={i} className="font-bold whitespace-nowrap text-fg tabular-nums">{part.text}</span> : <span key={i}>{part.text}</span>))}
+              : ledger?.sentence.map((part, i) => (part.strong ? <span key={i} className={figureClass(part.text)}>{part.text}</span> : <span key={i}>{part.text}</span>))}
           </p>
           {requested !== undefined && !one && <p className="w-fit rounded-full badge-edge bg-warning-tint px-3 py-1 text-xs font-bold text-warning-text">That month isn&apos;t one of the last 12, so every month is shown.</p>}
           <SkippedRowsNotice tabs={skipped} />
