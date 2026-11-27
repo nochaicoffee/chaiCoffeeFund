@@ -34,7 +34,7 @@ export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: 
   const columns = columnsFor(cover.tiles);
   const { open } = useInsuranceForms();
   return (
-    <section id="cover-map" aria-label="Your cover" className="relative isolate flex min-w-0 scroll-mt-6 flex-col gap-5 rounded-[26px] border border-feature-tile-line bg-feature-tile p-5 text-fg md:p-7">
+    <section id="cover-map" aria-label="Your cover" className="relative isolate flex min-w-0 scroll-mt-6 flex-col gap-5 rounded-[26px] border border-[length:var(--card-edge-width,1px)] border-feature-tile-line bg-[var(--hero-insurance,var(--color-feature-tile))] card-lift p-5 text-fg md:p-7">
       <RingTexture width={1416} height={640} dx={60} dy={60} first={60} step={30} stroke="var(--rings-ink)" opacity={0.09} />
       <div className="flex flex-wrap items-start justify-between gap-x-8 gap-y-5">
         <div className="flex min-w-0 flex-col gap-2.5">
@@ -75,7 +75,7 @@ export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: 
         {cover.tiles.map((tile) => (
           <Tile key={tile.key} tile={tile} pickId={pickId} onPick={onPick} onAdd={() => open({ kind: "add", start: tile.gap?.start })} />
         ))}
-        <div className="flex min-w-0 flex-col gap-3.5 rounded-card border-[1.5px] border-dashed border-fg/20 p-[18px]">
+        <div className="flex min-w-0 flex-col gap-3.5 rounded-card border-[length:var(--cover-gap-edge,1.5px)] border-dashed border-[color:var(--cover-gap-edge-color,color-mix(in_oklab,var(--color-fg)_20%,transparent))] bg-[var(--cover-gap,transparent)] p-[18px]">
           <div className="flex items-center gap-3">
             <span aria-hidden="true" className="flex size-10 items-center justify-center rounded-xl bg-fill-strong text-muted">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
@@ -115,7 +115,7 @@ export function CoverMap({ cover, pickId, onPick }: { cover: CoverView; pickId: 
 function Tile({ tile, pickId, onPick, onAdd }: { tile: CoverTile; pickId: string; onPick: (id: string) => void; onAdd: () => void }) {
   const wide = tile.boxes.length > 1;
   return (
-    <div className={`flex min-w-0 flex-col gap-3.5 rounded-card p-[18px] ${tile.gap ? "border-[1.5px] border-dashed border-fg/20" : "surface-edge bg-surface/60 shadow-soft"} ${wide ? "sm:col-span-2" : ""}`}>
+    <div className={`flex min-w-0 flex-col gap-3.5 rounded-card p-[18px] ${tile.gap ? "border-[length:var(--cover-gap-edge,1.5px)] border-dashed border-[color:var(--cover-gap-edge-color,color-mix(in_oklab,var(--color-fg)_20%,transparent))] bg-[var(--cover-gap,transparent)]" : "surface-edge bg-[var(--cover-tile,color-mix(in_oklab,var(--color-surface)_60%,transparent))] shadow-soft"} ${wide ? "sm:col-span-2" : ""}`}>
       <div className="flex items-center gap-3">
         <TileMark icon={tile.icon} />
         <span className="min-w-0 flex-1">
@@ -148,25 +148,26 @@ function Tile({ tile, pickId, onPick, onAdd }: { tile: CoverTile; pickId: string
 
 function Box({ box, pickId, onPick }: { box: PolicyBox; pickId: string; onPick: (id: string) => void }) {
   const on = pickId === box.id;
-  const style = { "--c": `var(--card-${box.colorKey})`, boxShadow: on ? "0 0 0 2px var(--c), var(--card-shadow)" : undefined } as CSSProperties;
+  // The policy's face: its bright flat shade where a look sets `--face-<key>` (Neubrutalism, as on its board), else the white surface.
+  const style = { "--c": `var(--card-${box.colorKey})`, "--face": `var(--face-${box.colorKey}, var(--color-surface))`, boxShadow: on ? "0 0 0 2px var(--c), var(--card-shadow)" : undefined } as CSSProperties;
   const badge = box.badge ? BADGE[box.badge] : null;
   return (
     <div
       onClick={() => onPick(box.id)}
       style={style}
-      className={`flex min-w-0 cursor-pointer flex-col gap-2 rounded-2xl surface-edge border-l-4 border-l-[var(--c)] bg-surface p-3 shadow-soft motion-safe:transition-[box-shadow,opacity,transform] motion-safe:duration-200 hover:-translate-y-px ${pickId !== ALL && !on ? "opacity-45" : ""}`}
+      className={`flex min-w-0 cursor-pointer flex-col gap-2 rounded-2xl surface-edge border-l-[length:var(--pol-edge-l,4px)] border-l-[color:var(--pol-edge-l-color,var(--c))] bg-[var(--face)] p-3 shadow-soft motion-safe:transition-[box-shadow,opacity,transform] motion-safe:duration-200 hover:-translate-y-px ${pickId !== ALL && !on ? "opacity-45" : ""}`}
     >
       <button type="button" aria-pressed={on} aria-label={`${box.name}, ${box.insurer}`} className="flex min-w-0 flex-col gap-2 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-accent">
         <span className="flex items-center justify-between gap-2">
           <span className="min-w-0">
             <b className="block truncate text-[13px] leading-tight font-extrabold">{box.name}</b>
-            <small className="mt-px block truncate text-[11px] font-semibold text-muted">{box.insurer}</small>
+            <small className="mt-px block truncate text-[11px] font-semibold text-[color:var(--on-face-muted,var(--color-muted))]">{box.insurer}</small>
           </span>
           {badge && <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold ${badge.className}`}>{badge.text}</span>}
         </span>
         <span className="text-[22px] leading-none font-extrabold tracking-[-0.02em] tabular-nums">
           {box.cover}
-          <small className="ml-1.5 text-[10.5px] font-extrabold tracking-[0.04em] text-muted uppercase label-face">{box.coverWord}</small>
+          <small className="ml-1.5 text-[10.5px] font-extrabold tracking-[0.04em] text-[color:var(--on-face-muted,var(--color-muted))] uppercase label-face">{box.coverWord}</small>
         </span>
       </button>
       {box.tip.rows.length > 0 ? (
@@ -176,12 +177,12 @@ function Box({ box, pickId, onPick }: { box: PolicyBox; pickId: string; onPick: 
       ) : (
         <TermBar box={box} />
       )}
-      <span className="flex justify-between gap-2 text-[11px] font-bold text-muted">
-        <span className={box.warn ? "text-warning-text" : ""}>{box.footLeft}</span>
+      <span className="flex justify-between gap-2 text-[11px] font-bold text-[color:var(--on-face-muted,var(--color-muted))]">
+        <span className={box.warn ? "text-[color:var(--on-face-warn,var(--color-warning-text))]" : ""}>{box.footLeft}</span>
         <span className="truncate">{box.footRight}</span>
       </span>
       {(box.costLeft || box.costRight) && (
-        <span className="flex justify-between gap-2 text-[11px] font-bold text-muted">
+        <span className="flex justify-between gap-2 text-[11px] font-bold text-[color:var(--on-face-muted,var(--color-muted))]">
           <span>{box.costLeft}</span>
           <span>{box.costRight}</span>
         </span>
@@ -192,8 +193,8 @@ function Box({ box, pickId, onPick }: { box: PolicyBox; pickId: string; onPick: 
 
 function TermBar({ box }: { box: PolicyBox }) {
   return (
-    <span className="relative block h-[var(--track-h,0.5rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-fill-strong" aria-hidden="true">
-      <i className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${Math.max(2, box.elapsed * 100)}%`, background: box.warn ? WARN_BAR : "var(--c)" }} />
+    <span className="relative block h-[var(--track-h,0.5rem)] border-[length:var(--track-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] overflow-hidden rounded-full bg-[var(--term-track,var(--color-fill-strong))]" aria-hidden="true">
+      <i className="absolute inset-y-0 left-0 rounded-full" style={{ width: `${Math.max(2, box.elapsed * 100)}%`, background: box.warn ? WARN_BAR : "var(--term-fill, var(--c))" }} />
     </span>
   );
 }
