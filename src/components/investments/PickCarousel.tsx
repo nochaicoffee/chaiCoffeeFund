@@ -12,6 +12,16 @@ import { WidgetCard } from "../shell/WidgetCard";
 
 const UP = "oklch(0.82 0.17 150)";
 const DOWN = "oklch(0.74 0.16 25)";
+const MUTED = "oklch(0.72 0.01 250)";
+
+/**
+ * A card's colours. Under Neubrutalism (NbInvestments) a holding sits on its bright face with ink text and Everything on ink, as on the
+ * board, so each reads its own tokens; Classic reads the fallbacks, the dark card's.
+ */
+const tones = (all: boolean) =>
+  all
+    ? { up: `var(--inv-up, ${UP})`, down: `var(--inv-down, ${DOWN})`, muted: `var(--inv-muted, ${MUTED})` }
+    : { up: `var(--inv-pick-up, ${UP})`, down: `var(--inv-pick-down, ${DOWN})`, muted: `var(--inv-pick-muted, ${MUTED})` };
 const SPARK_W = 216;
 const SPARK_H = 120;
 
@@ -24,21 +34,21 @@ function sparkPath(values: number[]): { line: string; area: string } | null {
   return { line, area: `${line} L${SPARK_W},${SPARK_H} L0,${SPARK_H} Z` };
 }
 
-function Sparkline({ values }: { values: number[] }) {
+function Sparkline({ values, up, down }: { values: number[]; up: string; down: string }) {
   const id = useId();
   const path = sparkPath(values);
-  if (!path) return <div className="flex h-[104px] items-center justify-center rounded-[14px] border border-dashed border-white/20 text-xs font-bold text-white/60">no price yet</div>;
-  const colour = values.at(-1)! >= values[0] ? UP : DOWN;
+  if (!path) return <div className="flex h-[104px] items-center justify-center rounded-[14px] border border-dashed border-[color:var(--inv-pick-empty-edge,color-mix(in_oklab,var(--color-white)_20%,transparent))] text-xs font-bold text-[color:var(--inv-pick-empty-ink,color-mix(in_oklab,var(--color-white)_60%,transparent))]">no price yet</div>;
+  const colour = values.at(-1)! >= values[0] ? up : down;
   return (
     <svg aria-hidden="true" viewBox={`0 0 ${SPARK_W} ${SPARK_H}`} preserveAspectRatio="none" className="h-[104px] w-full overflow-visible">
       <defs>
         <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor={colour} stopOpacity="0.35" />
-          <stop offset="1" stopColor={colour} stopOpacity="0" />
+          <stop offset="0" style={{ stopColor: colour, stopOpacity: 0.35 }} />
+          <stop offset="1" style={{ stopColor: colour, stopOpacity: 0 }} />
         </linearGradient>
       </defs>
       <path d={path.area} fill={`url(#${id})`} />
-      <path d={path.line} fill="none" stroke={colour} strokeWidth="1.8" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+      <path d={path.line} fill="none" style={{ stroke: colour, strokeWidth: "var(--inv-spark-width, 1.8)" }} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
     </svg>
   );
 }
@@ -52,7 +62,7 @@ function Tile({ card }: { card: PickCard }) {
     );
   }
   return (
-    <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-[11px] text-[10px] font-extrabold" style={{ background: `linear-gradient(155deg, var(--card-${card.colorKey}-from), var(--card-${card.colorKey}-to))` }}>
+    <span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-[11px] card-edge text-[10px] font-extrabold" style={{ background: `linear-gradient(155deg, var(--card-${card.colorKey}-from), var(--card-${card.colorKey}-to))` }}>
       {card.title.slice(0, 4)}
     </span>
   );
@@ -78,6 +88,9 @@ export function PickCarousel({ cards, pick, onPick }: { cards: PickCard[]; pick:
       <div ref={scroller} role="group" aria-label="What to look at" className="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1.5 py-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {cards.map((c) => {
           const on = c.key === pick;
+          const all = c.colorKey === null;
+          const t = tones(all);
+          const dark = on ? "linear-gradient(160deg, oklch(0.34 0.035 255), oklch(0.2 0.018 260))" : "linear-gradient(160deg, oklch(0.22 0.015 255), oklch(0.15 0.01 260))";
           return (
             <button
               key={c.key}
@@ -86,22 +99,23 @@ export function PickCarousel({ cards, pick, onPick }: { cards: PickCard[]; pick:
               onClick={() => onPick(c.key)}
               className="flex w-[232px] shrink-0 snap-start flex-col gap-2.5 rounded-card border-[length:var(--card-edge-width,1px)] border-[color:var(--card-edge-color,color-mix(in_oklab,var(--color-white)_6%,transparent))] p-3.5 text-left text-on-card transition-transform hover:-translate-y-0.5 focus-visible:outline-2 focus-visible:outline-offset-2"
               style={{
-                background: on ? "linear-gradient(160deg, oklch(0.34 0.035 255), oklch(0.2 0.018 260))" : "linear-gradient(160deg, oklch(0.22 0.015 255), oklch(0.15 0.01 260))",
-                boxShadow: on ? "0 0 0 2.5px oklch(0.84 0.13 160)" : "inset 0 1px 0 oklch(1 0 0 / 0.08)",
+                background: all ? `var(--inv-pick-all, ${dark})` : `var(--face-${c.colorKey}, ${dark})`,
+                boxShadow: on ? "var(--inv-pick-on-shadow, 0 0 0 2.5px oklch(0.84 0.13 160))" : "var(--inv-pick-shadow, inset 0 1px 0 oklch(1 0 0 / 0.08))",
+                ...(all ? { color: "var(--inv-stage-ink, var(--color-on-card))" } : {}),
               }}
             >
               <span className="flex items-center gap-2.5">
                 <Tile card={c} />
                 <span className="min-w-0">
                   <b className="block truncate text-[13.5px] font-extrabold">{c.title}</b>
-                  <small className="block truncate text-[11px] font-semibold" style={{ color: "oklch(0.72 0.01 250)" }}>{c.subtitle}</small>
+                  <small className="block truncate text-[11px] font-semibold" style={{ color: t.muted }}>{c.subtitle}</small>
                 </span>
               </span>
-              <Sparkline values={c.spark} />
-              <span className="text-[11px] font-semibold" style={{ color: "oklch(0.72 0.01 250)" }}>{c.detail}</span>
+              <Sparkline values={c.spark} up={t.up} down={t.down} />
+              <span className="text-[11px] font-semibold" style={{ color: t.muted }}>{c.detail}</span>
               <span>
                 <span className="block text-[22px] font-extrabold tracking-tight tabular-nums">{c.price}</span>
-                <span className="block text-[11.5px] font-extrabold" style={{ color: c.dayTone === "gain" ? UP : c.dayTone === "loss" ? DOWN : "oklch(0.72 0.01 250)" }}>{c.day}</span>
+                <span className="block text-[11.5px] font-extrabold" style={{ color: c.dayTone === "gain" ? t.up : c.dayTone === "loss" ? t.down : t.muted }}>{c.day}</span>
               </span>
             </button>
           );

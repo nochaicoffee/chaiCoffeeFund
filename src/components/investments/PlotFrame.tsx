@@ -41,7 +41,7 @@ export function PlotFrame({ scale, dates, plot, plotRef, bars, formatTick = tick
         {bars && bars.length > 0 && (
           <div aria-hidden="true" className="mt-2 flex h-[34px] items-end gap-[2px]">
             {bars.map((b, i) => (
-              <i key={i} className="block flex-1 rounded-[2px]" style={{ height: `${Math.max(b > 0 ? 6 : 0, b * 100)}%`, background: "oklch(0.72 0.1 258 / 0.8)" }} />
+              <i key={i} className="block flex-1 rounded-[2px]" style={{ height: `${Math.max(b > 0 ? 6 : 0, b * 100)}%`, background: "var(--inv-bars, oklch(0.72 0.1 258 / 0.8))" }} />
             ))}
           </div>
         )}

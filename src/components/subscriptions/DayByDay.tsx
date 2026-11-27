@@ -48,15 +48,19 @@ const PILL: Record<DayCardView["pill"], string> = {
 };
 
 // Longhand borders only, so the pick can recolour one without React mixing shorthand and longhand.
-const edge = (style: "solid" | "dashed", color: string): CSSProperties => ({ borderWidth: 1.5, borderStyle: style, borderColor: color });
+const edge = (style: "solid" | "dashed", color: string): CSSProperties => ({ borderWidth: "var(--sub-day-edge, 1.5px)", borderStyle: style, borderColor: `var(--sub-day-edge-color, ${color})` });
+/** Every other day's edge: none in Classic (the reset's own 0 and currentColor), an ink outline where a look sets one (Neubrutalism, as on its board). */
+const PLAIN_EDGE: CSSProperties = { borderWidth: "var(--sub-day-edge, 0px)", borderStyle: "solid", borderColor: "var(--sub-day-edge-color, currentColor)" };
+/** A heat level's colour: Subscriptions' own where a look sets one (Neubrutalism's violet, as on its board), else the shared heat scale. */
+const heat = (level: number | string) => `var(--sub-heat-${level}, var(--heat-${level}))`;
 
 /** How a day with renewals is drawn, and what its rings are drawn in. */
 function dayLook(day: GridDayView): { style: CSSProperties; rings: string } {
-  if (day.kind === "missing") return { style: { background: "var(--warning-tint)", ...edge("solid", "var(--warning)") }, rings: "var(--warning)" };
+  if (day.kind === "missing") return { style: { background: "var(--sub-missing, var(--warning-tint))", ...edge("solid", "var(--warning)") }, rings: "var(--warning)" };
   if (day.kind === "expected" || day.kind === "pending")
-    return { style: { background: "color-mix(in oklch, var(--heat-1) 50%, transparent)", ...edge("dashed", `var(--heat-${day.level})`) }, rings: "var(--rings-ink)" };
+    return { style: { background: `color-mix(in oklch, ${heat(1)} 50%, transparent)`, ...edge("dashed", heat(day.level)) }, rings: "var(--rings-ink)" };
   if (day.kind === "skipped") return { style: { background: "var(--fill-strong)" }, rings: "var(--rings-ink)" };
-  return { style: { background: `var(--heat-${day.level})` }, rings: day.level >= 4 ? "var(--rings-light)" : "var(--rings-ink)" };
+  return { style: { background: heat(day.level) }, rings: day.level >= 4 ? "var(--rings-light)" : "var(--rings-ink)" };
 }
 
 const plural = (n: number, one: string) => `${n} ${n === 1 ? one : `${one}s`}`;
@@ -224,7 +228,7 @@ export function DayByDay({ chart, pick, empty }: { chart: ChartView; pick: PickV
       let rings = "";
       let opacity = 1;
       if (!day) {
-        style = { background: selected ? RANGE_FILL : "var(--heat-no-data)" };
+        style = { background: selected ? RANGE_FILL : "var(--sub-no-data, var(--heat-no-data))" };
       } else {
         const look = dayLook(day);
         style = look.style;
@@ -239,6 +243,7 @@ export function DayByDay({ chart, pick, empty }: { chart: ChartView; pick: PickV
         }
       }
       if (spot && date.slice(0, 7) !== spot) opacity = Math.min(opacity, 0.16);
+      if (!style.borderStyle) style = { ...PLAIN_EDGE, ...style };
       // Focus is ink, not the accent: today's ring is the accent.
       out.push(
         <button

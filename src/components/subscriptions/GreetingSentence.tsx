@@ -21,7 +21,7 @@ function Strip({ months, average }: { months: StripMonth[]; average?: number }) 
         {months.map((m) => (
           <span
             key={m.key}
-            className={`flex-1 rounded-t-[4px] rounded-b-[2px] ${m.future ? "border-[1.5px] border-dashed border-fill-strong" : m.lit ? "bg-heat-4" : "bg-heat-2"}`}
+            className={`flex-1 rounded-t-[4px] rounded-b-[2px] ${m.future ? "border-[1.5px] border-dashed border-fill-strong" : m.lit ? "bg-[var(--sub-heat-4,var(--color-heat-4))]" : "bg-[var(--sub-heat-2,var(--color-heat-2))]"}`}
             style={{ height: m.future ? 8 : Math.max(3, (m.paid / top) * H) }}
           />
         ))}

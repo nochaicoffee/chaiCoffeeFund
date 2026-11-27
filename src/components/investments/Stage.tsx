@@ -21,16 +21,19 @@ import { PlotFrame } from "./PlotFrame";
  * Move along the chart (or use the arrow keys) to read a day. Race against the indices comes next.
  */
 
-const MINT = "oklch(0.84 0.13 160)";
-const AMBER = "oklch(0.82 0.12 85)";
-const UP = "oklch(0.82 0.17 150)";
-const DOWN = "oklch(0.74 0.16 25)";
-const MUTED = "oklch(0.74 0.01 250)";
+// Under Neubrutalism (NbInvestments): a flat ink stage with a periwinkle shadow, a periwinkle worth line over a solid area, what was put in as a
+// white dash, money added in lime, and the toggles as white boxes. Classic reads every fallback.
+const MINT = "var(--inv-line, oklch(0.84 0.13 160))";
+const AMBER = "var(--inv-cost, oklch(0.82 0.12 85))";
+const UP = "var(--inv-up, oklch(0.82 0.17 150))";
+const DOWN = "var(--inv-down, oklch(0.74 0.16 25))";
+const MUTED = "var(--inv-muted, oklch(0.74 0.01 250))";
+const ADDED = "var(--inv-bars, oklch(0.72 0.1 258))";
 const W = 800;
 const H = 260;
-const STAGE_BG = "radial-gradient(120% 90% at 10% 0%, oklch(0.27 0.02 255), oklch(0.15 0.01 260) 60%)";
-const STAGE = "card-edge flex flex-col gap-4 rounded-[28px] px-5 py-6 text-on-card md:px-[26px]";
-const STAGE_STYLE = { background: STAGE_BG, boxShadow: "inset 0 1px 0 oklch(1 0 0 / 0.08), 0 22px 50px oklch(0 0 0 / 0.22)" } as const;
+const STAGE_BG = "var(--inv-stage, radial-gradient(120% 90% at 10% 0%, oklch(0.27 0.02 255), oklch(0.15 0.01 260) 60%))";
+const STAGE = "card-edge flex flex-col gap-4 rounded-[28px] px-5 py-6 text-[color:var(--inv-stage-ink,var(--color-on-card))] md:px-[26px]";
+const STAGE_STYLE = { background: STAGE_BG, boxShadow: "var(--inv-stage-shadow, inset 0 1px 0 oklch(1 0 0 / 0.08), 0 22px 50px oklch(0 0 0 / 0.22))" } as const;
 
 export function Stage({ series, race = [], lenses = [], picks = [], holdingCount = 0 }: { series: StagePoint[]; race?: RaceLine[]; lenses?: LensView[]; picks?: PickCard[]; holdingCount?: number }) {
   const { pick, setPick } = useAsOf();
@@ -51,9 +54,9 @@ export function Stage({ series, race = [], lenses = [], picks = [], holdingCount
 /** A row of pill chips on the dark stage: one is on. */
 function Chips<K extends string>({ label, items, value, onChange }: { label: string; items: readonly { key: K; label: string }[]; value: K; onChange: (key: K) => void }) {
   return (
-    <div role="group" aria-label={label} className="flex max-w-full overflow-x-auto rounded-full p-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ background: "oklch(1 0 0 / 0.09)" }}>
+    <div role="group" aria-label={label} className="flex max-w-full overflow-x-auto rounded-[var(--inv-chips-radius,calc(infinity*1px))] border-[length:var(--inv-chips-edge,0px)] border-[color:var(--inv-chips-edge-color,currentColor)] p-[var(--inv-chips-pad,calc(var(--spacing)*1))] [box-shadow:var(--inv-chips-shadow,none)] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden" style={{ background: "var(--inv-chips, oklch(1 0 0 / 0.09))" }}>
       {items.map((item) => (
-        <button key={item.key} type="button" aria-pressed={value === item.key} onClick={() => onChange(item.key)} className="min-h-8 rounded-full px-3.5 text-[12.5px] font-extrabold whitespace-nowrap transition-colors focus-visible:outline-2 focus-visible:outline-white" style={value === item.key ? { background: "oklch(0.99 0 0)", color: "oklch(0.18 0.01 260)" } : { color: "oklch(0.8 0.01 250)" }}>
+        <button key={item.key} type="button" aria-pressed={value === item.key} onClick={() => onChange(item.key)} className="min-h-8 rounded-[var(--inv-chip-radius,calc(infinity*1px))] border-r-[length:var(--inv-chip-divider,0px)] border-[color:var(--inv-chips-edge-color,currentColor)] px-3.5 text-[12.5px] font-extrabold whitespace-nowrap transition-colors last:border-r-0 focus-visible:outline-2 focus-visible:outline-white" style={value === item.key ? { background: "var(--inv-chip-on, oklch(0.99 0 0))", color: "var(--inv-chip-on-ink, oklch(0.18 0.01 260))" } : { color: "var(--inv-chip-ink, oklch(0.8 0.01 250))" }}>
           {item.label}
         </button>
       ))}
@@ -162,8 +165,8 @@ function WorthStage({ series, race, holdingCount, range: chosen, onRange, goBack
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
           <defs>
             <linearGradient id="stage-worth" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={MINT} stopOpacity="0.42" />
-              <stop offset="100%" stopColor={MINT} stopOpacity="0.02" />
+              <stop offset="0%" style={{ stopColor: `var(--inv-area, ${MINT})`, stopOpacity: "var(--inv-area-top, 0.42)" }} />
+              <stop offset="100%" style={{ stopColor: `var(--inv-area, ${MINT})`, stopOpacity: "var(--inv-area-foot, 0.02)" }} />
             </linearGradient>
           </defs>
           {racing ? (
@@ -173,8 +176,8 @@ function WorthStage({ series, race, holdingCount, range: chosen, onRange, goBack
           ) : (
             <>
               <path d={`${valuePath} L ${W} ${H} L 0 ${H} Z`} fill="url(#stage-worth)" />
-              <path d={costPath} fill="none" stroke={AMBER} strokeWidth="1.6" strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />
-              <path d={valuePath} fill="none" stroke={MINT} strokeWidth="2.4" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              <path d={costPath} fill="none" style={{ stroke: AMBER, strokeWidth: "var(--inv-cost-width, 1.6)", strokeDasharray: "var(--inv-cost-dash, 5 4)" }} vectorEffect="non-scaling-stroke" />
+              <path d={valuePath} fill="none" style={{ stroke: MINT, strokeWidth: "var(--inv-line-width, 2.4)" }} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
             </>
           )}
           {hover !== null && <line x1={(hover / (n - 1)) * W} x2={(hover / (n - 1)) * W} y1={0} y2={H} stroke="oklch(1 0 0 / 0.5)" strokeWidth="1" vectorEffect="non-scaling-stroke" />}
@@ -216,7 +219,7 @@ function WorthStage({ series, race, holdingCount, range: chosen, onRange, goBack
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11.5px] font-bold" style={{ color: "oklch(0.8 0.01 250)" }}>
           <Key colour={MINT}>Worth</Key>
           <Key colour={AMBER}>Put in</Key>
-          <Key colour="oklch(0.72 0.1 258)">Money added</Key>
+          <Key colour={ADDED}>Money added</Key>
           <span className="ml-auto text-[11px]" style={{ color: MUTED }}>Move across the chart for any day</span>
         </div>
       )}
@@ -334,8 +337,8 @@ function LensStage({ lens }: { lens: LensView }) {
         }}
       >
         <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" className="absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
-          {costPath && <path d={costPath} fill="none" stroke={AMBER} strokeWidth="1.6" strokeDasharray="5 4" vectorEffect="non-scaling-stroke" />}
-          <path d={pricePath} fill="none" stroke={MINT} strokeWidth="2.4" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+          {costPath && <path d={costPath} fill="none" style={{ stroke: AMBER, strokeWidth: "var(--inv-cost-width, 1.6)", strokeDasharray: "var(--inv-cost-dash, 5 4)" }} vectorEffect="non-scaling-stroke" />}
+          <path d={pricePath} fill="none" style={{ stroke: MINT, strokeWidth: "var(--inv-line-width, 2.4)" }} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
           {hover !== null && <line x1={(hover / (n - 1)) * W} x2={(hover / (n - 1)) * W} y1={0} y2={H} stroke="oklch(1 0 0 / 0.5)" strokeWidth="1" vectorEffect="non-scaling-stroke" />}
         </svg>
         {win.markers.map((m) => {
