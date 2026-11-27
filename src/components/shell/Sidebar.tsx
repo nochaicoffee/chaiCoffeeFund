@@ -9,6 +9,20 @@ import { LogoLockup, LogoMark } from "./Logo";
 import { LookSwitch } from "./LookSwitch";
 import { isActiveSection, SECTIONS, SIDEBAR_COOKIE, splitForPhone, type Section } from "./sections";
 import type { Look } from "@/lib/sheets/types";
+import type { CSSProperties } from "react";
+import { navColorKey } from "./sectionKey";
+
+/**
+ * Neubrutalism's navigation (ADR 0018, design/neubrutalism/Sidebar.dc.html): each icon sits in a chip of its section's
+ * colour, the page you are on is an ink pill with a hard shadow in that colour, and the logo is a tilted yellow block.
+ * Every value is a token only Neubrutalism sets; in Classic the chip is `display: contents` and adds no box at all.
+ */
+const NAV_CHIP =
+  "[display:var(--nav-chip-display,contents)] size-8 shrink-0 items-center justify-center rounded-[var(--nav-chip-radius,0px)] border-solid border-[length:var(--nav-chip-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] bg-[var(--nav-chip,transparent)] text-[color:var(--nav-chip-ink,currentColor)]";
+const NAV_LOGO =
+  "rotate-[var(--logo-tilt,0deg)] border-solid border-[length:var(--logo-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] bg-[var(--logo-bg,transparent)] py-[var(--logo-pad-y,0px)] [box-shadow:var(--logo-shadow,none)]";
+/** The section's colour for its chip and the active pill's shadow, from the page tag tokens (undefined in Classic). */
+const navColor = (section: Section) => ({ "--nav-chip": `var(--tag-bg-${navColorKey(section.href, section.label)})` }) as CSSProperties;
 
 const ONE_YEAR_SECONDS = 60 * 60 * 24 * 365;
 /** Matches Tailwind's `md` breakpoint, where the rail replaces the phone menu. */
@@ -34,10 +48,11 @@ function SectionLink({
 }) {
   const active = isActiveSection(section.href, pathname);
   const shape = {
-    rail: "h-[38px] w-[38px] justify-center",
-    "rail-expanded": "h-[38px] gap-3 px-[11px] text-sm font-semibold",
+    rail: "h-[var(--nav-rail-item,38px)] w-[var(--nav-rail-item,38px)] justify-center",
+    "rail-expanded": "h-[var(--nav-item-h,38px)] gap-3 px-[11px] text-[length:var(--nav-label-size,0.875rem)] leading-[var(--nav-label-leading,var(--text-sm--line-height))] [font-weight:var(--nav-label-weight,600)]",
   }[variant];
-  const idle = "text-muted hover:bg-fill hover:text-fg";
+  const idle = "border-[color:var(--nav-idle-edge,currentColor)] text-muted hover:bg-fill hover:text-fg";
+  const on = "border-[color:var(--nav-active-edge,currentColor)] bg-ink text-on-ink [box-shadow:var(--nav-active-offset)_var(--nav-chip)]";
   const iconOnly = variant === "rail";
   return (
     <Link
@@ -46,9 +61,10 @@ function SectionLink({
       aria-current={active ? "page" : undefined}
       aria-label={iconOnly ? section.label : undefined}
       title={iconOnly ? section.label : undefined}
-      className={`flex shrink-0 items-center rounded-full transition-colors ${FOCUS_RING} ${shape} ${active ? "bg-ink text-on-ink" : idle}`}
+      style={navColor(section)}
+      className={`flex shrink-0 items-center rounded-[var(--nav-item-radius,calc(infinity*1px))] border-solid border-[length:var(--nav-item-edge,0px)] transition-colors ${FOCUS_RING} ${shape} ${active ? on : idle}`}
     >
-      {icons[section.icon]}
+      <span className={NAV_CHIP}>{icons[section.icon]}</span>
       {!iconOnly && <span className="truncate">{section.label}</span>}
     </Link>
   );
@@ -62,16 +78,25 @@ function PhoneTab({ section, active, inSheetTrap }: { section: Section; active: 
       href={section.href}
       aria-current={active ? "page" : undefined}
       tabIndex={inSheetTrap ? -1 : undefined}
+      style={navColor(section)}
       className={`${PHONE_BUTTON} ${active ? "text-fg" : "text-muted"} ${FOCUS_RING}`}
     >
-      <PhonePill active={active}>{icons[section.icon]}</PhonePill>
+      <PhonePill active={active}>
+        <span className={NAV_CHIP.replace("size-8", "size-[26px]")}>{icons[section.icon]}</span>
+      </PhonePill>
       {section.label}
     </Link>
   );
 }
 
 function PhonePill({ active, children }: { active: boolean; children: React.ReactNode }) {
-  return <span className={`flex h-[30px] w-[52px] items-center justify-center rounded-full [&_svg]:size-5 ${active ? "bg-ink text-on-ink" : ""}`}>{children}</span>;
+  return (
+    <span
+      className={`flex h-[30px] w-[52px] items-center justify-center rounded-[var(--nav-item-radius,calc(infinity*1px))] [&_svg]:size-5 ${active ? "border-solid border-[length:var(--nav-item-edge,0px)] border-[color:var(--nav-active-edge,currentColor)] bg-ink text-on-ink [box-shadow:var(--nav-active-offset)_var(--nav-chip)]" : ""}`}
+    >
+      {children}
+    </span>
+  );
 }
 
 /**
@@ -156,7 +181,7 @@ export function Sidebar({
     <>
       <nav
         aria-label={`${appName} sections`}
-        className={`sticky top-[var(--rail-top,1.5rem)] hidden h-[calc(100dvh-var(--rail-inset,3rem))] shrink-0 flex-col gap-2.5 border-solid border-[color:var(--surface-edge,var(--surface-line))] border-y-[length:var(--rail-edge,var(--surface-edge-width))] border-l-[length:var(--rail-edge,var(--surface-edge-width))] border-r-[length:var(--surface-edge-width)] bg-surface py-[18px] shadow-[var(--rail-shadow,var(--soft-shadow))] md:flex ${
+        className={`sticky top-[var(--rail-top,1.5rem)] hidden h-[calc(100dvh-var(--rail-inset,3rem))] shrink-0 flex-col gap-[var(--rail-gap,0.625rem)] border-solid border-[color:var(--surface-edge,var(--surface-line))] border-y-[length:var(--rail-edge,var(--surface-edge-width))] border-l-[length:var(--rail-edge,var(--surface-edge-width))] border-r-[length:var(--surface-edge-width)] bg-surface py-[18px] shadow-[var(--rail-shadow,var(--soft-shadow))] md:flex ${
           expanded ? "w-[var(--rail-width,212px)] rounded-[var(--rail-radius,28px)] px-3" : "w-16 items-center rounded-[var(--rail-radius,calc(infinity*1px))]"
         }`}
       >
@@ -164,18 +189,22 @@ export function Sidebar({
           href="/"
           aria-label={expanded ? undefined : appName}
           title={expanded ? undefined : appName}
-          className={`mb-1 flex shrink-0 items-center rounded-full ${FOCUS_RING} ${expanded ? "px-[11px]" : "justify-center"}`}
+          className={`mb-1 flex shrink-0 items-center rounded-[var(--logo-radius,calc(infinity*1px))] ${NAV_LOGO} ${FOCUS_RING} ${expanded ? "px-[11px]" : "justify-center px-[var(--logo-pad-x-sm,0px)]"}`}
         >
           {expanded ? <LogoLockup appName={appName} size={26} /> : <LogoMark size={30} />}
         </Link>
-        {SECTIONS.map((section) => (
-          <SectionLink
-            key={section.href}
-            section={section}
-            pathname={pathname}
-            variant={expanded ? "rail-expanded" : "rail"}
-          />
-        ))}
+        {/* Only the sections scroll on a short screen under Neubrutalism, so the footer and the rail's look-switch bubble
+            stay visible and unclipped; in Classic this wrapper is `display: contents` and adds no box. */}
+        <div className={`[display:var(--nav-list-display,contents)] min-h-0 flex-col gap-[var(--rail-gap,0.625rem)] overflow-y-auto pr-[var(--nav-list-pad,0px)] pb-[var(--nav-list-pad,0px)] ${expanded ? "" : "items-center"}`}>
+          {SECTIONS.map((section) => (
+            <SectionLink
+              key={section.href}
+              section={section}
+              pathname={pathname}
+              variant={expanded ? "rail-expanded" : "rail"}
+            />
+          ))}
+        </div>
 
         <div className="mt-auto flex flex-col gap-3">
         {expanded && <LookSwitch look={look} variant="rail-expanded" />}
@@ -215,7 +244,7 @@ export function Sidebar({
       </nav>
 
       <header className="sticky top-[env(safe-area-inset-top,0px)] z-20 flex min-h-14 items-center justify-between rule-b bg-page py-1.5 pr-[max(0.75rem,env(safe-area-inset-right))] pl-[max(1rem,env(safe-area-inset-left))] md:hidden">
-        <Link href="/" className={`rounded-full ${FOCUS_RING}`}>
+        <Link href="/" className={`rounded-[var(--logo-radius,calc(infinity*1px))] px-[var(--logo-pad-x-sm,0px)] ${NAV_LOGO} ${FOCUS_RING}`}>
           <LogoLockup appName={appName} size={26} />
         </Link>
         <div className="flex size-[34px] items-center justify-center rounded-full bg-ink text-[13px] font-extrabold text-on-ink" aria-hidden="true">
@@ -244,10 +273,11 @@ export function Sidebar({
                     key={section.href}
                     href={section.href}
                     onClick={closeMenu}
+                    style={navColor(section)}
                     aria-current={active ? "page" : undefined}
                     className={`flex min-w-0 flex-col items-center gap-[7px] rounded-[20px] px-1 pt-3 pb-2.5 text-center text-xs leading-tight font-extrabold [overflow-wrap:anywhere] ${active ? "bg-ink text-on-ink" : "bg-page text-fg"} ${FOCUS_RING}`}
                   >
-                    <span className={`flex size-[38px] items-center justify-center rounded-full ${active ? "bg-on-ink/15" : "bg-surface shadow-soft"}`}>{icons[section.icon]}</span>
+                    <span className={`flex size-[38px] items-center justify-center rounded-[var(--nav-chip-radius,calc(infinity*1px))] border-solid border-[length:var(--nav-chip-edge,0px)] border-[color:var(--chart-edge-color,currentColor)] text-[color:var(--nav-chip-ink,currentColor)] ${active ? "bg-[var(--nav-chip,color-mix(in_oklab,var(--color-on-ink)_15%,transparent))]" : "bg-[var(--nav-chip,var(--surface))] shadow-soft"}`}>{icons[section.icon]}</span>
                     {section.label}
                   </Link>
                 );
